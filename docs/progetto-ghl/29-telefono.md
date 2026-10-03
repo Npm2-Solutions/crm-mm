@@ -175,7 +175,7 @@ abbiamo prese:
 | Da fare | `ElencoCose`: Mie o Di tutti, divise per quando scadono (In ritardo, Oggi, Domani, Più avanti, Senza un giorno). Il cerchio la segna fatta, con «Annulla» nell'avviso. |
 | Trattative | `TrattativePerFase`: le fasi sono una riga di chip, ciascuna con quante trattative contiene. Le trattative della fase scelta sono schede una sotto l'altra: chi, quanto vale, chi la segue, quando si è mossa. La pagina si apre sulla prima fase aperta che ha trattative. Il «+» mette la nuova trattativa nella pipeline e nella fase che si vedono, mai in una chiusa. |
 | Agenda | `AgendaDelGiorno`: il telefono apre sul giorno come elenco. Prima quello che dura tutto il giorno, poi tutto in ordine di ora, con una linea dove cade adesso. Sopra c'è la settimana per saltare a un giorno. La griglia delle ore resta a una scelta (Lista, Giorno, Settimana, Mese) e si apre sullo stesso giorno. «Tutto il giorno» accanto alle ore va su due righe corte. |
-| Oggi | I quattro numeri stanno in una riga di riquadri piccoli (`dc-stat-row`): gli appuntamenti cominciano nella prima schermata. |
+| Accoglienza | I quattro numeri stanno in una riga di riquadri piccoli (`dc-stat-row`): gli appuntamenti cominciano nella prima schermata. |
 | Una persona, una trattativa | `SchedeDelTelefono`: le schede di ogni giorno in una barra corta (Attività, Dettagli, Eventi, poi Clinica o Da fare), le altre sotto «Altro», che mostra il nome della scheda aperta quando è una di quelle. Le sei azioni rapide stanno in una riga. |
 
 Il server dà ogni lista in una sola chiamata (`crm/api/sul_telefono.py`), con
@@ -232,7 +232,7 @@ suoi componenti: ogni schermata lo prende insieme, anche quelle che verranno.
 | Altro | Una pagina (`pages/Altro.vue`, `/altro`), non più il cassetto con la barra del computer: chi sei (il profilo, che apre le impostazioni), le notifiche con quante sono da leggere, le voci del menu che la barra non ha, le viste salvate, i primi passi, le voci dell'account come le ha ordinate il centro (`composables/vociAccount.js`: le stesse del menu dell'account sul computer), Esci in rosso. Righe da 52px in schede, l'icona in un riquadro. La voce resta accesa sulle pagine che si aprono da lì. |
 | Impostazioni | La radice è un elenco da app: il titolo grande, la X per uscire, le categorie in righe da 52px con l'icona in un riquadro. Dentro, la barra ha «‹» col nome di dove torna (Impostazioni, poi la categoria) e la X: il titolo della pagina lo dice la pagina, una volta sola. |
 | Aziende, Contatti, Chiamate | `ElencoAziende`, `ElencoContatti`, `ElencoChiamate` come le persone: si cerca scrivendo (il numero in qualsiasi modo), una riga per cosa, il «+». Un'azienda dice cosa fa, il suo sito e quante trattative ha; una chiamata con chi, da che parte, com'è andata, quando e quanto è durata, le perse in rosso, richiamare a un tocco. |
-| Oggi | «Oggi» una volta sola (il titolo; il pulsante del giorno solo su un altro giorno), Accogli e Non venuti larghi quanto la riga e alti 40, i giorni passati senza esito ai primi quattro con «Mostra tutti e 25». |
+| Accoglienza | Il titolo è «Accoglienza ▾»: le tre viste dell'agenda (Accoglienza, Agenda, Lista d'attesa) stanno nel suo menu, perché tre non entrano accanto ai pulsanti della testata. Il pulsante del giorno dice sempre quale («Oggi», «ven 2 ott»). Accogli e Non venuti larghi quanto la riga e alti 40, i giorni passati senza esito ai primi quattro con «Mostra tutti e 25». |
 | Agenda | Con il pannello aperto la vista dietro si toglie: la select «Lista» e le frecce del giorno, posizionate, finivano sopra il titolo del pannello. Niente settimana (sette colonne da 45px non si leggono); i filtri sfumano sul bordo, a dire che scorrono. |
 | Le liste rimaste | Le trattative e i contatti di un'azienda: le caselle compaiono solo tenendo premuta una riga, come nelle liste di un telefono, e un tocco poi sceglie invece di aprire; un dettaglio senza valore non ha la sua etichetta (né «€ 0,00» per un fatturato mai scritto). |
 
@@ -268,7 +268,7 @@ del settimo passo; i comandi che comparivano solo al passaggio del mouse si
 vedono su uno schermo al tocco. Sul tema scuro gli stati (in attesa, non
 venuti, confermato) restavano coi colori del chiaro, scuri su scuro: ora hanno
 quelli che il design system disegna sullo scuro. A 360 punti il nome di un
-numero di Oggi va su due righe invece di tagliarsi.
+numero dell'Accoglienza va su due righe invece di tagliarsi.
 
 Le parole: Sig., Dott. e gli altri titoli, i generi, le fonti che mancavano,
 le parti del giorno, le ricette delle automazioni e quello che scrivono, la
@@ -323,7 +323,8 @@ patch corregge quelle già salvate.
 | `frontend/src/components/Settings/Settings.vue` | La radice da app, la barra col nome di dove torna |
 | `frontend/src/components/Mobile/ElencoAziende.vue`, `ElencoContatti.vue`, `ElencoChiamate.vue` + `crm/api/sul_telefono.py` (`get_organizations`, `get_contacts`, `get_calls`) | Le liste di aziende, contatti e chiamate |
 | `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
-| `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | Oggi sul telefono |
+| `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | L'accoglienza sul telefono |
+| `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu |
 | `frontend/src/components/Mobile/ElencoNote.vue`, `pages/Notes.vue` + `crm/api/sul_telefono.py` (`get_notes`) | Le note sul telefono |
 | `frontend/src/components/Mobile/DescrizioneRipiegata.vue` | La riga che spiega una scheda, piegata a due righe |
 | `frontend/src/telefono.css` (impostazioni, fogli, tendine, avvisi) | Una pagina che scorre sola, le righe delle impostazioni, i pulsanti dei fogli che vanno a capo, le tendine a 40px, l'avviso dall'alto sopra un foglio |

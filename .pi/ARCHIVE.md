@@ -2219,3 +2219,22 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Sul telefono l'editor di un'automazione tiene in testata solo gli avvisi, Salva e «⋯» | Con statistiche e prova accanto a Salva il titolo era «Recupero no-» |
 | Un'ora del database si scrive con `hhmm` (server e browser), mai tagliandone i primi cinque caratteri | Un campo Time arriva come timedelta, «9:00:00»: tagliato era «9:00:», e confrontato come testo veniva dopo «10:30», così la finestra oraria di un'automazione dalle 9 non si apriva mai |
 | Un errore dell'assistente è una frase intera tra quelle di `modello.ERRORI`, tradotta dove si mostra | La persona leggeva «ConnectionError»; le frasi sono costanti, quindi un test le vuole nel catalogo |
+
+## L'accoglienza nell'agenda
+
+> **Completato** (03/10/2026). *Oggi* era una voce del menu a sé, accanto
+> all'Agenda: gli stessi appuntamenti dello stesso giorno in due posti. Ora è
+> l'**Accoglienza**, la prima delle tre viste dell'agenda (doc 34 di
+> progetto-ghl).
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'accoglienza è una sorella dell'agenda (Accoglienza · Agenda · Lista d'attesa), non una voce del menu | La segreteria guarda gli stessi appuntamenti per accogliere chi arriva, non per prenotare: con due voci la giornata si cercava in due posti |
+| Si chiama «Accoglienza» («Reception desk» in inglese), non «Oggi» né «Segreteria» | Dice cosa ci si fa, non il giorno: si sfogliano anche ieri e domani; «Segreteria» è già un livello e la casella di posta del centro |
+| Chi segna gli arrivi entra ancora lì al mattino, e per loro la dashboard resta l'ultima voce | Cambia dove sta la pagina, non come comincia la giornata |
+| La rotta tiene il nome `Today` e l'indirizzo `/oggi`, alias di `/accoglienza` | Le notifiche, le email già mandate e i segnalibri continuano ad aprirla |
+| Sul telefono tre sorelle sono il menu del titolo («Accoglienza ▾»); due restano il selettore | Tre nomi italiani non stanno accanto ai pulsanti della testata a 360 punti; due sì, e si vedono senza aprire niente |
+| Il posto della barra del telefono che era di Oggi va alle fatture, o alle cose da fare per chi non ha il registro delle fatture | L'agenda nella barra porta già all'accoglienza, e l'accoglienza resta la pagina d'ingresso |
+| Il pulsante del giorno dice sempre quale giorno, anche oggi | Il titolo diceva «Oggi»; ora è il nome della vista, e il giorno lo dice il pulsante |
