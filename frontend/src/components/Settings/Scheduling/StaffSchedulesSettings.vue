@@ -230,15 +230,23 @@
           <p class="text-p-sm text-ink-gray-5">
             {{ __('Holidays, sick days, or extra hours on one date.') }}
           </p>
+          <!-- six columns on a desk; on a phone a card of three rows - the
+               date, what it is and the bin; the hours; the reason - or the
+               reason and the "all day" are squeezed to nothing -->
           <div
             v-for="(row, i) in form.exceptions"
             :key="i"
-            class="grid grid-cols-[140px_130px_1fr_1fr_1.4fr_32px] items-center gap-2"
+            class="grid grid-cols-[140px_130px_1fr_1fr_1.4fr_32px] items-center gap-2 max-md:grid-cols-[1fr_1fr_auto] max-md:rounded-lg max-md:border max-md:border-outline-gray-2 max-md:p-2"
           >
-            <FormControl v-model="row.date" type="date" />
+            <FormControl
+              v-model="row.date"
+              type="date"
+              class="max-md:col-start-1 max-md:row-start-1"
+            />
             <FormControl
               :modelValue="row.unavailable ? 'off' : 'extra'"
               type="select"
+              class="max-md:col-start-2 max-md:row-start-1"
               :options="[
                 { label: __('Day off'), value: 'off' },
                 { label: __('Extra hours'), value: 'extra' },
@@ -246,20 +254,34 @@
               @update:modelValue="(v) => (row.unavailable = v === 'off')"
             />
             <template v-if="!row.unavailable">
-              <FormControl v-model="row.start_time" type="time" />
-              <FormControl v-model="row.end_time" type="time" />
+              <FormControl
+                v-model="row.start_time"
+                type="time"
+                class="max-md:col-start-1 max-md:row-start-2"
+              />
+              <FormControl
+                v-model="row.end_time"
+                type="time"
+                class="max-md:col-start-2 max-md:row-start-2"
+              />
             </template>
-            <span v-else class="col-span-2 text-p-sm text-ink-gray-5">
+            <span
+              v-else
+              class="col-span-2 text-p-sm text-ink-gray-6 max-md:col-start-1 max-md:row-start-2"
+            >
               {{ __('All day') }}
             </span>
             <FormControl
               v-model="row.reason"
               type="text"
+              class="max-md:col-span-3 max-md:col-start-1 max-md:row-start-3"
               :placeholder="__('Reason (optional)')"
             />
             <Button
               variant="ghost"
               icon="lucide-trash-2"
+              class="max-md:col-start-3 max-md:row-start-1"
+              :aria-label="__('Remove')"
               @click="form.exceptions.splice(i, 1)"
             />
           </div>
@@ -286,7 +308,8 @@
           <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('Limits') }}
           </h3>
-          <div class="grid grid-cols-2 gap-3">
+          <!-- a label on two lines beside one on one: the fields still line up -->
+          <div class="grid grid-cols-2 items-end gap-3">
             <FormControl
               v-model.number="form.max_daily_appointments"
               type="number"
