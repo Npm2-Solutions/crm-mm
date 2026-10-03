@@ -44,7 +44,7 @@
       <li
         v-for="doc in shown"
         :key="doc.name"
-        class="flex items-start gap-3 border-b border-outline-gray-1 py-2 last:border-0"
+        class="flex items-start gap-3 border-b border-outline-gray-1 py-2 last:border-0 max-md:flex-wrap"
       >
         <span
           class="mt-0.5 size-4 shrink-0 text-ink-gray-5"
@@ -73,34 +73,41 @@
           </span>
         </div>
         <!-- read like the clinical record: the dossier's rules, the access log;
-             what kind of data it is, the design system's Tag -->
-        <CategoryTag
-          v-if="doc.clinical"
-          color="rose"
-          class="shrink-0"
-          :label="__('Health data')"
-        />
-        <Badge
-          v-if="doc.visibility === 'Only me'"
-          size="sm"
-          theme="gray"
-          class="shrink-0"
-          :label="__('Only me')"
-        />
-        <Badge
-          v-if="doc.visibility === 'My discipline'"
-          size="sm"
-          theme="gray"
-          class="shrink-0"
-          :label="__('My discipline')"
-        />
-        <Badge
-          v-if="doc.obscured"
-          size="sm"
-          theme="orange"
-          class="shrink-0"
-          :label="__('Obscured')"
-        />
+             what kind of data it is, the design system's Tag. On a phone the
+             marks go on a line of their own under the words, which beside them
+             were squeezed to a column of five lines -->
+        <div
+          v-if="
+            doc.clinical ||
+            doc.obscured ||
+            ['Only me', 'My discipline'].includes(doc.visibility)
+          "
+          class="flex shrink-0 flex-wrap items-center gap-1 max-md:order-last max-md:w-full max-md:pl-7"
+        >
+          <CategoryTag
+            v-if="doc.clinical"
+            color="rose"
+            :label="__('Health data')"
+          />
+          <Badge
+            v-if="doc.visibility === 'Only me'"
+            size="sm"
+            theme="gray"
+            :label="__('Only me')"
+          />
+          <Badge
+            v-if="doc.visibility === 'My discipline'"
+            size="sm"
+            theme="gray"
+            :label="__('My discipline')"
+          />
+          <Badge
+            v-if="doc.obscured"
+            size="sm"
+            theme="orange"
+            :label="__('Obscured')"
+          />
+        </div>
         <Dropdown
           v-if="actionsFor(doc).length"
           :options="actionsFor(doc)"
