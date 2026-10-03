@@ -6,8 +6,9 @@ inputs:
         required: false
         default: "MariaDB"
     token:
-        description: Codecov upload token
-        required: true
+        description: Codecov upload token (the repository's CODECOV_TOKEN; empty where it is not set)
+        required: false
+        default: ""
     fail-ci-if-error:
         description: Fail workflow if Codecov upload fails
         required: false
@@ -19,7 +20,15 @@ inputs:
 runs:
     using: composite
     steps:
+        # without the repository's CODECOV_TOKEN Codecov refuses every upload
+        # ("Token required"): the coverage stays in the run's artifacts instead
+        - name: No Codecov token
+          if: inputs.token == ''
+          shell: bash
+          run: echo "::notice title=Codecov::CODECOV_TOKEN is not set in the repository's secrets, so the coverage stays in this run's artifacts and is not sent to Codecov."
+
         - name: Upload coverage data
+          if: inputs.token != ''
           uses: codecov/codecov-action@v4
           with:
               name: ${{ inputs.name }}
