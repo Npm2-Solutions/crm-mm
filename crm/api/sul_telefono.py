@@ -16,6 +16,13 @@ email and phone come masked to whoever may not read them.
   the name of the person or deal they are about.
 - **Deals**: the stages of a pipeline with how many open deals each holds, and
   the deals of one stage.
+- **Contacts**: a company's people, by name, company, email or a number written
+  any way.
+- **Companies**: by name, website or industry, with how many deals the session
+  reads of each.
+- **Calls**: the register, the latest first, with whom each was (the person, else
+  the number), which way, whether nobody took it; found by a name or a number
+  written any way.
 """
 
 from __future__ import annotations
@@ -24,6 +31,7 @@ import frappe
 from frappe.utils import cint, now_datetime
 
 from crm.permissions import livelli
+from crm.telephony.pannello import persa
 from crm.utils import count_field
 
 #: How many rows a page of the phone's lists holds.
@@ -223,3 +231,178 @@ def get_deals(status: str, pipeline: str | None = None, start: int = 0) -> dict:
 		limit=PER_PAGINA + 1,
 	)
 	return _pagina(righe, start)
+
+
+# ------------------------------------------------------------------ contacts
+
+
+@frappe.whitelist()
+def get_contacts(text: str | None = None, start: int = 0) -> dict:
+	"""The contacts the session reads, the latest touched first; found by name,
+	company, email or a number written any way."""
+	livelli.verifica_nel_crm("persone.vedi")
+	start = max(cint(start), 0)
+	testo = (text or "").strip()
+	filtri, o_filtri = {}, None
+	cifre = _cifre(testo)
+	if testo and cifre and not any(c.isalpha() for c in testo):
+		if len(cifre) < 3:
+			return _pagina([], start)
+		candidati = frappe.db.sql(
+			"""select name from `tabContact`
+			where replace(replace(replace(replace(coalesce(mobile_no, ''), ' ', ''), '-', ''), '.', ''), '/', '') like %(coda)s
+			or replace(replace(replace(replace(coalesce(phone, ''), ' ', ''), '-', ''), '.', ''), '/', '') like %(coda)s
+			order by modified desc limit 200""",
+			{"coda": f"%{cifre[-CIFRE:]}%"},
+			pluck=True,
+		)
+		if not candidati:
+			return _pagina([], start)
+		filtri = {"name": ["in", candidati]}
+	elif testo:
+		simile = f"%{testo}%"
+		o_filtri = [
+			["full_name", "like", simile],
+			["company_name", "like", simile],
+			["email_id", "like", simile],
+		]
+	righe = frappe.get_list(
+		"Contact",
+		filters=filtri,
+		or_filters=o_filtri,
+		fields=[
+			"name",
+			"full_name",
+			"first_name",
+			"image",
+			"email_id",
+			"mobile_no",
+			"phone",
+			"company_name",
+			"modified",
+		],
+		order_by="modified desc",
+		offset=start,
+		limit=PER_PAGINA + 1,
+	)
+	return _pagina(righe, start)
+
+
+# ------------------------------------------------------------------ companies
+
+
+@frappe.whitelist()
+def get_organizations(text: str | None = None, start: int = 0) -> dict:
+	"""The companies the session reads, the latest touched first; found by name,
+	website or industry; each with how many of its deals the session reads."""
+	livelli.verifica_nel_crm("persone.vedi")
+	start = max(cint(start), 0)
+	testo = (text or "").strip()
+	o_filtri = None
+	if testo:
+		simile = f"%{testo}%"
+		o_filtri = [
+			["organization_name", "like", simile],
+			["website", "like", simile],
+			["industry", "like", simile],
+		]
+	righe = frappe.get_list(
+		"CRM Organization",
+		or_filters=o_filtri,
+		fields=["name", "organization_name", "organization_logo", "website", "industry", "modified"],
+		order_by="modified desc",
+		offset=start,
+		limit=PER_PAGINA + 1,
+	)
+	pagina = _pagina(righe, start)
+	if pagina["rows"] and livelli.puo("trattative.vedi"):
+		quante = frappe.get_list(
+			"CRM Deal",
+			filters={"organization": ["in", [r.name for r in pagina["rows"]]]},
+			fields=["organization", count_field()],
+			group_by="organization",
+			as_list=True,
+		)
+		quante = {azienda: cint(numero) for azienda, numero in quante}
+		for riga in pagina["rows"]:
+			riga["deals"] = quante.get(riga.name, 0)
+	return pagina
+
+
+# ------------------------------------------------------------------ calls
+
+
+@frappe.whitelist()
+def get_calls(text: str | None = None, start: int = 0) -> dict:
+	"""The register of calls the session reads, the latest first; found by the
+	name of whom they were with or by a number written any way."""
+	livelli.verifica_nel_crm("telefono.registro")
+	start = max(cint(start), 0)
+	testo = (text or "").strip()
+	filtri = {}
+	cifre = _cifre(testo)
+	if testo and cifre and not any(c.isalpha() for c in testo):
+		if len(cifre) < 3:
+			return _pagina([], start)
+		# the numbers as the carrier or a hand wrote them, read as digits only
+		candidate = frappe.db.sql(
+			"""select name from `tabCRM Call Log`
+			where replace(replace(replace(replace(coalesce(`from`, ''), ' ', ''), '-', ''), '.', ''), '/', '') like %(coda)s
+			or replace(replace(replace(replace(coalesce(`to`, ''), ' ', ''), '-', ''), '.', ''), '/', '') like %(coda)s
+			order by creation desc limit 500""",
+			{"coda": f"%{cifre[-CIFRE:]}%"},
+			pluck=True,
+		)
+		if not candidate:
+			return _pagina([], start)
+		filtri = {"name": ["in", candidate]}
+	elif testo:
+		simile = f"%{testo}%"
+		con_chi = frappe.get_list(
+			"CRM Lead", filters={"lead_name": ["like", simile]}, pluck="name", limit=200
+		) + frappe.get_list("CRM Deal", filters={"lead_name": ["like", simile]}, pluck="name", limit=200)
+		if not con_chi:
+			return _pagina([], start)
+		filtri = {"reference_docname": ["in", con_chi]}
+
+	righe = frappe.get_list(
+		"CRM Call Log",
+		filters=filtri,
+		fields=[
+			"name",
+			"type",
+			"status",
+			"from",
+			"to",
+			"start_time",
+			"creation",
+			"duration",
+			"reference_doctype",
+			"reference_docname",
+			"left_message",
+			"callback_status",
+		],
+		order_by="creation desc",
+		offset=start,
+		limit=PER_PAGINA + 1,
+	)
+	pagina = _pagina(righe, start)
+	nomi = _nomi_dei_riferimenti(pagina["rows"])
+	pagina["rows"] = [
+		frappe._dict(
+			name=r.name,
+			type=r.type,
+			status=r.status,
+			missed=persa(r),
+			left_message=bool(r.left_message),
+			number=r.get("from") if r.type == "Incoming" else r.get("to"),
+			when=str(r.start_time or r.creation),
+			duration=r.duration,
+			person=nomi.get((r.reference_doctype, r.reference_docname)),
+			reference_doctype=r.reference_doctype,
+			reference_docname=r.reference_docname,
+			callback_status=r.callback_status,
+		)
+		for r in pagina["rows"]
+	]
+	return pagina

@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the register is a list of its own, found by a name or a number
+  (components/Mobile/ElencoChiamate.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -11,12 +17,20 @@
       <!-- the round of calls starts from the register too, not only from
            the phone at the top -->
       <Button
-        v-if="callEnabled && puo('telefono.chiama')"
-        :label="__('Call round')"
-        iconLeft="list-ordered"
+        v-if="callEnabled && puo('telefono.chiama') && isMobileView"
+        icon="lucide-list-ordered"
+        :tooltip="__('Call round')"
+        :aria-label="__('Call round')"
         :route="{ name: 'Dialer' }"
       />
       <Button
+        v-else-if="callEnabled && puo('telefono.chiama')"
+        :label="__('Call round')"
+        iconLeft="lucide-list-ordered"
+        :route="{ name: 'Dialer' }"
+      />
+      <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -24,7 +38,13 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: typed to find, one line each, the + where the thumb is -->
+  <template v-if="isMobileView">
+    <ElencoChiamate ref="elencoChiamate" @apri="showCallLog" />
+    <PulsanteAggiungi :label="__('Log a call')" @click="createCallLog" />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="callLogs"
     v-model:loadMore="loadMore"
@@ -33,7 +53,7 @@
     doctype="CRM Call Log"
   />
   <CallLogsListView
-    v-if="callLogs.data && rows.length"
+    v-if="!isMobileView && callLogs.data && rows.length"
     ref="callLogsListView"
     v-model="callLogs.data.page_length_count"
     v-model:list="callLogs"
@@ -57,7 +77,7 @@
     "
   />
   <EmptyState
-    v-else-if="callLogs.data && !rows.length"
+    v-else-if="!isMobileView && callLogs.data && !rows.length"
     name="Call Logs"
     :icon="PhoneIcon"
   />
@@ -76,6 +96,9 @@ import ViewControls from '@/components/ViewControls.vue'
 import CallLogsListView from '@/components/ListViews/CallLogsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
+import ElencoChiamate from '@/components/Mobile/ElencoChiamate.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { callEnabled } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
@@ -85,6 +108,7 @@ import { createResource } from 'frappe-ui'
 import { computed, ref, onMounted } from 'vue'
 
 const callLogsListView = ref(null)
+const elencoChiamate = ref(null)
 const { puo } = usersStore()
 
 // callLogs data is loaded in the ViewControls component
@@ -148,7 +172,8 @@ function createCallLog() {
     callbacks: {
       afterInsert: () => {
         capture('call_log_created')
-        callLogs.value.reload()
+        if (isMobileView.value) elencoChiamate.value?.ricarica()
+        else callLogs.value.reload()
       },
     },
   })

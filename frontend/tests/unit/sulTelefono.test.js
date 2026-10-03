@@ -5,15 +5,19 @@ import { describe, expect, it } from 'vitest'
 import {
   contattoDi,
   cosePerGruppo,
+  dominioDi,
   doveAdesso,
+  durataDellaChiamata,
   elencoDelGiorno,
   faseIniziale,
   gruppoDi,
   quandoTorna,
+  rigaDellAzienda,
   scadenzaInBreve,
   settimanaDi,
   spostaGiorno,
   valoreDellaTrattativa,
+  versoDellaChiamata,
 } from '@/utils/sulTelefono'
 
 const ADESSO = new Date('2026-10-03T11:00:00')
@@ -230,5 +234,41 @@ describe('the day on a phone', () => {
     expect(doveAdesso(righe, '2026-10-04', new Date(2026, 9, 3, 12, 0))).toBe(
       -1,
     )
+  })
+})
+
+describe('a company on one line', () => {
+  it('reads a website by its name', () => {
+    expect(dominioDi('https://www.acme.it/chi-siamo')).toBe('acme.it')
+    expect(dominioDi('studioverdi.com')).toBe('studioverdi.com')
+    expect(dominioDi('http://clinica.example:8080')).toBe('clinica.example')
+    expect(dominioDi('')).toBe('')
+    expect(dominioDi(null)).toBe('')
+  })
+
+  it('says what it does and where it is online', () => {
+    expect(
+      rigaDellAzienda({ industry: 'Healthcare', website: 'https://acme.it' }),
+    ).toBe('Healthcare · acme.it')
+    expect(rigaDellAzienda({ website: 'www.acme.it' })).toBe('acme.it')
+    expect(rigaDellAzienda({})).toBe('')
+  })
+})
+
+describe('a call on one line', () => {
+  it('goes one way, or was missed', () => {
+    expect(versoDellaChiamata({ type: 'Incoming', missed: true })).toBe(
+      'missed',
+    )
+    expect(versoDellaChiamata({ type: 'Incoming' })).toBe('incoming')
+    expect(versoDellaChiamata({ type: 'Outgoing' })).toBe('outgoing')
+  })
+
+  it('lasts as a clock reads it', () => {
+    expect(durataDellaChiamata(109)).toBe('1:49')
+    expect(durataDellaChiamata(7)).toBe('0:07')
+    expect(durataDellaChiamata(3723)).toBe('1:02:03')
+    expect(durataDellaChiamata(0)).toBe('')
+    expect(durataDellaChiamata(null)).toBe('')
   })
 })

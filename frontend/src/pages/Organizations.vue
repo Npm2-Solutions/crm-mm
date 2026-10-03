@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the companies are a list of their own, found by typing
+  (components/Mobile/ElencoAziende.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -9,6 +15,7 @@
         :actions="organizationsListView.customListActions"
       />
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -16,7 +23,17 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: typed to find, one line each, the + where the thumb is -->
+  <template v-if="isMobileView">
+    <ElencoAziende />
+    <PulsanteAggiungi
+      v-if="puo('persone.scrivi')"
+      :label="__('New organization')"
+      @click="showOrganizationModal = true"
+    />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="organizations"
     v-model:loadMore="loadMore"
@@ -25,7 +42,7 @@
     doctype="CRM Organization"
   />
   <OrganizationsListView
-    v-if="organizations.data && rows.length"
+    v-if="!isMobileView && organizations.data && rows.length"
     ref="organizationsListView"
     v-model="organizations.data.page_length_count"
     v-model:list="organizations"
@@ -48,7 +65,7 @@
     "
   />
   <EmptyState
-    v-else-if="organizations.data && !rows.length"
+    v-else-if="!isMobileView && organizations.data && !rows.length"
     name="Organizations"
     :icon="OrganizationsIcon"
   />
@@ -65,6 +82,10 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import OrganizationsListView from '@/components/ListViews/OrganizationsListView.vue'
 import ViewControls from '@/components/ViewControls.vue'
+import ElencoAziende from '@/components/Mobile/ElencoAziende.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
+import { usersStore } from '@/stores/users'
 import { getMeta } from '@/stores/meta'
 import { formatDate, website } from '@/utils'
 import { timestampCell } from '@/composables/useTimelinePreferences'
@@ -75,6 +96,7 @@ const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Organization')
 
 const organizationsListView = ref(null)
+const { puo } = usersStore()
 const showOrganizationModal = ref(false)
 
 // organizations data is loaded in the ViewControls component

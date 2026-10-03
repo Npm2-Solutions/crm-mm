@@ -31,16 +31,24 @@
             'cursor-pointer': isTappable,
             'dc-riga-scelta': selectable && isSelected(row),
           }"
+          @click.capture="intercetta(row, $event)"
           @click="onRowClick(row, $event)"
+          @pointerdown="tieni(row, $event)"
+          @pointermove="forseLascia($event)"
+          @pointerup="lascia"
+          @pointercancel="lascia"
+          @contextmenu.prevent
         >
           <!-- A <button> cannot be nested inside the row's <a>.
                `@click.stop.prevent` on a plain wrapper is how frappe-ui's own
                ListRow keeps the checkbox from following the link. -->
-          <!-- the box is 14px; its hit area is the full height of the row and
-               runs from the edge of the screen, so a near miss selects instead
-               of opening the record -->
+          <!-- The boxes are there only while choosing: a row held down starts
+               it, as in a phone's own lists, and a tap then chooses instead of
+               opening. The box is 14px; its hit area is the full height of the
+               row and runs from the edge of the screen. -->
           <div
-            v-if="selectable"
+            v-if="selectable && scegliendo"
+            data-casella
             class="-my-3 -ml-3 -mr-2 flex items-start py-3.5 pl-3 pr-2"
             @click.stop.prevent="toggle(row)"
           >
@@ -85,10 +93,10 @@
                  like "12" or a date says nothing on its own once it is off the
                  table header it used to sit under. -->
             <dl
-              v-if="detailColumns.length"
+              v-if="pieneDi(row).length"
               class="mt-2 grid grid-cols-2 gap-x-3 gap-y-2"
             >
-              <div v-for="column in detailColumns" :key="column.key">
+              <div v-for="column in pieneDi(row)" :key="column.key">
                 <dt class="truncate text-xs text-ink-gray-5">
                   {{ __(column.label) }}
                 </dt>
@@ -126,7 +134,7 @@
  * scoped slot as `ListRows.vue`, so each *ListView keeps one copy of its cell
  * renderers and only swaps which component lays them out.
  */
-import { splitColumnsForCard } from '@/utils/mobileList'
+import { haValore, splitColumnsForCard } from '@/utils/mobileList'
 import { useStorage } from '@vueuse/core'
 import { Checkbox, ListGroupHeader } from 'frappe-ui'
 import { ref, computed, watch, inject, onBeforeUnmount } from 'vue'
@@ -168,9 +176,71 @@ function routeFor(row) {
   return getRowRoute(row)
 }
 
+// a label over nothing says nothing: only the details a row has
+function pieneDi(row) {
+  return detailColumns.value.filter((column) =>
+    haValore(row[column.key], column),
+  )
+}
+
+// Choosing rows on a phone: a row held down starts it; while some are chosen a
+// tap chooses or lets go instead of opening, and the bar of what to do with
+// them is frappe-ui's own.
+const scegliendo = computed(
+  () => selectable.value && list.value.selections.size > 0,
+)
+const TENUTA = 450
+let timer = null
+let partenza = null
+let tenuta = false
+
+function tieni(row, event) {
+  if (!selectable.value || row.disabled || event.pointerType === 'mouse') return
+  partenza = { x: event.clientX, y: event.clientY }
+  tenuta = false
+  clearTimeout(timer)
+  timer = setTimeout(() => {
+    tenuta = true
+    toggle(row)
+    navigator.vibrate?.(10)
+  }, TENUTA)
+}
+
+// a finger that moves is scrolling, not holding
+function forseLascia(event) {
+  if (!partenza) return
+  if (
+    Math.abs(event.clientX - partenza.x) > 8 ||
+    Math.abs(event.clientY - partenza.y) > 8
+  )
+    lascia()
+}
+
+function lascia() {
+  clearTimeout(timer)
+  partenza = null
+}
+
+// The tap that ends a hold, or one while choosing, chooses: it opens nothing.
+// It is caught on its way down, before the link's own handler, which follows
+// the link unless the click was prevented. The box chooses by itself.
+let scelta = false
+function intercetta(row, event) {
+  if (event.target.closest?.('[data-casella]')) return
+  if (!tenuta && !scegliendo.value) return
+  event.preventDefault()
+  if (!tenuta) toggle(row)
+  tenuta = false
+  scelta = true
+}
+
 // Tasks and Call Logs open a modal rather than a page, so the card has to honour
 // `onRowClick` the way frappe-ui's own row does.
 function onRowClick(row, event) {
+  if (scelta) {
+    scelta = false
+    return
+  }
   if (row.disabled) return
   list.value.options.onRowClick?.(row, event)
 }
