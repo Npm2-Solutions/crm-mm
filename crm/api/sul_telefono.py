@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What the phone's own screens read (docs/progetto-ghl/34, the phone).
+"""What the phone's own screens read (docs/progetto-ghl/29, the phone).
 
 On a phone a list is not the desk's table squeezed into cards: it is one line
 per thing, found by typing, with what one does next. These calls give exactly
@@ -11,7 +11,7 @@ email and phone come masked to whoever may not read them.
 
 - **People**: by name, number (written any way: the digits are compared) or
   email, the newest first; with the next appointment for whoever reads the
-  agenda.
+  agenda. Whoever reads them masked finds them by name only.
 - **Tasks**: the open ones, one's own or everybody's, by when they are due, with
   the name of the person or deal they are about.
 - **Deals**: the stages of a pipeline with how many open deals each holds, and
@@ -55,10 +55,13 @@ def get_people(text: str | None = None, start: int = 0) -> dict:
 	start = max(cint(start), 0)
 	testo = (text or "").strip()
 	filtri, o_filtri = {}, None
+	# whoever reads people masked (Marketing) finds them by name only: a number
+	# or an email typed would tell whose it is
+	mascherato = livelli.ambito("persone.vedi") == livelli.MASCHERATO
 
 	cifre = _cifre(testo)
 	if testo and cifre and not any(c.isalpha() for c in testo):
-		if len(cifre) < 3:
+		if len(cifre) < 3 or mascherato:
 			return _pagina([], start)
 		coda = cifre[-CIFRE:]
 		# the numbers as written - "+39 340 111 2233" - read as digits only
@@ -77,10 +80,11 @@ def get_people(text: str | None = None, start: int = 0) -> dict:
 		simile = f"%{testo}%"
 		o_filtri = [
 			["lead_name", "like", simile],
-			["email", "like", simile],
 			["organization", "like", simile],
 			["name", "like", simile],
 		]
+		if not mascherato:
+			o_filtri.append(["email", "like", simile])
 
 	righe = frappe.get_list(
 		"CRM Lead",

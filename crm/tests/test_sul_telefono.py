@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
-"""The phone's own lists (docs/progetto-ghl/34): a person found by a number
+"""The phone's own lists (docs/progetto-ghl/29): a person found by a number
 written any way, by name or by email, a page at a time, with when they come
 next; the open tasks by when they are due, one's own or everybody's; the deals
 of a pipeline by stage."""
@@ -13,6 +13,7 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, now_datetime
 
 from crm.api import sul_telefono as T
+from crm.permissions import livelli, utenti
 from crm.scheduling.timeutils import to_system_naive
 from crm.tests.test_scheduling import SchedulingCase
 
@@ -44,6 +45,25 @@ class LePersone(IntegrationTestCase):
 		self.assertIn(persona.name, _nomi(T.get_people("Quaglia")))
 		self.assertIn(persona.name, _nomi(T.get_people("zefferina.q@")))
 		self.assertNotIn(persona.name, _nomi(T.get_people("Nessunodicosi")))
+
+	def test_marketing_finds_people_by_name_only(self):
+		# they read email and phone masked: a number typed would tell whose it is
+		persona = self.persona("Mascherina", mobile_no="+39 340 555 1212", email="mascherina.m@example.com")
+		utente = "telefono.marketing@example.com"
+		if not frappe.db.exists("User", utente):
+			frappe.get_doc(
+				{"doctype": "User", "email": utente, "first_name": "Marketing", "send_welcome_email": 0}
+			).insert(ignore_permissions=True)
+		utenti.assegna_livelli(utente, ["marketing"])
+		livelli.dimentica_cache()
+		frappe.set_user(utente)
+		try:
+			self.assertEqual(T.get_people("3405551212")["rows"], [])
+			self.assertNotIn(persona.name, _nomi(T.get_people("mascherina.m@")))
+			self.assertIn(persona.name, _nomi(T.get_people("Mascherina")))
+		finally:
+			frappe.set_user("Administrator")
+			livelli.dimentica_cache()
 
 	def test_a_page_at_a_time_saying_when_there_are_more(self):
 		for i in range(T.PER_PAGINA + 2):

@@ -36,7 +36,7 @@
         </template>
       </Dropdown>
       <Button
-        v-if="!isMobileView"
+        v-if="!isMobileView && puo('trattative.scrivi')"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -48,6 +48,7 @@
   <template v-if="isMobileView">
     <TrattativePerFase ref="trattativePerFase" />
     <PulsanteAggiungi
+      v-if="puo('trattative.scrivi')"
       :label="__('New deal')"
       @click="nuovaTrattativaSulTelefono"
     />
@@ -322,7 +323,7 @@ import { ref, reactive, computed, h } from 'vue'
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Deal')
 const { makeCall } = globalStore()
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const { getOrganization } = organizationsStore()
 const { getDealStatus } = statusesStore()
 const { pipelines, getStages, pipelineOptions } = pipelinesStore()

@@ -41158,3 +41158,7 @@ msgstr "Evento"
 #: frontend/src/pages/Calendar.vue
 msgid "View"
 msgstr "Vista"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Name or company"
+msgstr "Nome o azienda"

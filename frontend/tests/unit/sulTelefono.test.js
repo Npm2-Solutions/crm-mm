@@ -26,6 +26,14 @@ describe('a person on one line', () => {
     expect(contattoDi({ phone: '0212345678' })).toBe('0212345678')
     expect(contattoDi({ email: 'a@b.it' })).toBe('a@b.it')
     expect(contattoDi({ organization: 'Studio Verdi' })).toBe('Studio Verdi')
+    // masked (Marketing): nothing to reach them on, the company if any
+    expect(
+      contattoDi({
+        mobile_no: '+39XXXXXX',
+        email: 'XXXXXXXX',
+        organization: 'Studio Verdi',
+      }),
+    ).toBe('Studio Verdi')
     expect(contattoDi({})).toBe('')
   })
 })

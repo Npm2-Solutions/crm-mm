@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda on a phone (docs/progetto-ghl/34): a grid of hours shows four of
+  The agenda on a phone (docs/progetto-ghl/29): a grid of hours shows four of
   them at a time and a short appointment as a sliver, so a phone opens on the
   day as a list - when, who, what - in the order it happens, with a line where
   "now" falls. The week above is a tap away from any of its days; the hours'

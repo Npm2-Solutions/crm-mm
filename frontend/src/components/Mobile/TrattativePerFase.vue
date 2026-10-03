@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The deals on a phone (docs/progetto-ghl/34): a board of columns does not fit a
+  The deals on a phone (docs/progetto-ghl/29): a board of columns does not fit a
   hand, so the stages are a row of chips with how many deals each holds, and the
   deals of the stage chosen are cards one under the other - who, what they are
   worth when there is a value, who follows them, when they last moved. It opens
@@ -91,9 +91,11 @@
         v-else-if="!righe.length && carica.fetched"
         :title="__('No deals in this stage')"
         :text="
-          __(
-            'A deal moves here from its page, or starts here with the + button.',
-          )
+          puo('trattative.scrivi')
+            ? __(
+                'A deal moves here from its page, or starts here with the + button.',
+              )
+            : ''
         "
       />
     </div>
@@ -120,7 +122,7 @@ const pipelineStore = pipelinesStore()
 const { pipelines, getStages } = pipelineStore
 // a computed read off the store stays a ref only through storeToRefs
 const { defaultPipeline } = storeToRefs(pipelineStore)
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const lingua = window.navigator?.language || 'it-IT'
 
 const pipeline = ref('')

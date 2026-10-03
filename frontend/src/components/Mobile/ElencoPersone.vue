@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The people on a phone (docs/progetto-ghl/34): found by typing a name, a number
+  The people on a phone (docs/progetto-ghl/29): found by typing a name, a number
   written any way, or an email; one line each - who, how to reach them, when
   they come next - and the call a thumb away. The list grows as it scrolls.
 -->
@@ -13,7 +13,9 @@
         v-model="testo"
         type="search"
         size="md"
-        :placeholder="__('Name, number or email')"
+        :placeholder="
+          mascherati ? __('Name or company') : __('Name, number or email')
+        "
         :aria-label="__('Search people')"
         autocomplete="off"
       >
@@ -88,9 +90,11 @@
         v-else-if="!righe.length && carica.fetched"
         :title="__('No people yet')"
         :text="
-          __(
-            'Whoever writes, calls or books is here: add one with the + button.',
-          )
+          puo('persone.scrivi')
+            ? __(
+                'Whoever writes, calls or books is here: add one with the + button.',
+              )
+            : ''
         "
       />
     </div>
@@ -99,7 +103,8 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
-import { indirizzoTel } from '@/utils/schedaPersona'
+import { usersStore } from '@/stores/users'
+import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
 import { contattoDi, quandoTorna } from '@/utils/sulTelefono'
 import {
   Avatar,
@@ -108,8 +113,11 @@ import {
   createResource,
   debounce,
 } from 'frappe-ui'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
+const { puo, ambito } = usersStore()
+// whoever reads people masked finds them by name only (the server says so too)
+const mascherati = computed(() => ambito('persone.vedi') === 'mascherato')
 const lingua = window.navigator?.language || 'it-IT'
 
 const testo = ref('')
@@ -145,8 +153,11 @@ function nomeDi(persona) {
   return persona.lead_name || persona.first_name || persona.name
 }
 
+// a masked number (Marketing's) is none to call
 function numeroDi(persona) {
-  return persona.mobile_no || persona.phone || ''
+  return (
+    [persona.mobile_no, persona.phone].find((n) => n && !mascherato(n)) || ''
+  )
 }
 
 function torna(persona) {

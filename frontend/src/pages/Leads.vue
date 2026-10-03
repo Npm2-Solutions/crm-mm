@@ -26,7 +26,7 @@
         @click="showOutOfCare = true"
       />
       <Button
-        v-if="!isMobileView"
+        v-if="!isMobileView && puo('persone.scrivi')"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -37,7 +37,11 @@
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
     <ElencoPersone />
-    <PulsanteAggiungi :label="__('New person')" @click="showLeadModal = true" />
+    <PulsanteAggiungi
+      v-if="puo('persone.scrivi')"
+      :label="__('New person')"
+      @click="showLeadModal = true"
+    />
   </template>
   <OutOfCareDialog v-if="puo('clinica.fuori_equipe')" v-model="showOutOfCare" />
   <ViewControls

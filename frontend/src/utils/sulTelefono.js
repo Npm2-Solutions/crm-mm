@@ -2,19 +2,24 @@
 // For license information, please see license.txt
 
 /**
- * The phone's own screens (docs/progetto-ghl/34), without a screen: what the
+ * The phone's own screens (docs/progetto-ghl/29), without a screen: what the
  * line under a person's name says, the open tasks by when they are due, the
  * stage a deals board opens on, a deal's value only when it has one. What the
  * server gives is `crm/api/sul_telefono.py`; the words are English, translated
  * where they are drawn.
  */
 
-/** The line under a person's name: how to reach them, else their company. */
+import { mascherato } from '@/utils/schedaPersona'
+
+/**
+ * The line under a person's name: how to reach them, else their company. A
+ * value that came masked (Marketing reads no email nor phone) says nothing.
+ */
 export function contattoDi(persona = {}) {
   return (
-    persona.mobile_no ||
-    persona.phone ||
-    persona.email ||
+    [persona.mobile_no, persona.phone, persona.email].find(
+      (valore) => valore && !mascherato(valore),
+    ) ||
     persona.organization ||
     ''
   )
