@@ -2259,3 +2259,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Nessuna frase dell'editor delle automazioni nomina un altro prodotto | «Il "create opportunity" di GHL» diceva a un centro il nome di un concorrente; un test lo impedisce |
 | Sul telefono «Non salvata» è un punto accanto al titolo | Il pulsante Salva è lì accanto; la scritta toglieva al titolo tutto lo spazio |
 | Un campo collegato di frappe-ui senza segnaposto dice «Cerca» | Diceva «Search doctype», in inglese e con il nome tecnico del tipo di documento |
+
+## Il medico al telefono: quello che gli si offre e quello che legge
+
+> **Completato** (03/10/2026). Il giro che preme ogni pulsante è passato su tutte
+> le pagine a 390 punti come il medico (livello Operatore). Il medico apriva una
+> persona che non segue dalla lista d'attesa e dai contatti, e la pagina diceva
+> «Non consentito tramite il controllo dei permessi del controller» sotto il codice
+> della persona. In rubrica leggeva nome, email e telefono di tutto il centro, e su
+> ogni azienda trovava «Elimina». Le parole dei registri (gli usi di un modulo, le
+> capacità a scelta) erano in inglese.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Una voce della rubrica si legge se si legge la persona a cui appartiene, o se sta su una trattativa che si vede; una voce di nessuno resta del centro | La voce è il nome, l'email e il telefono della persona: chi vede le sue persone le leggeva tutte nella rubrica. Una condizione sola per l'elenco e per la scheda (`seguono.contact_conditions`) |
+| Un'azienda si crea e si modifica con `persone.scrivi`, si elimina con `persone.elimina` | Stava a Sales User, che hanno tutti i livelli. L'elenco offriva già «Nuova azienda» solo a chi scrive le persone; il server ora dice lo stesso, e la scheda non offre un «Elimina» che il server rifiuterebbe |
+| La lista d'attesa dice per ogni voce se la persona si apre (`can_open`) | Aspettare un servizio del medico non rende la persona sua (doc 30): il collegamento portava a un rifiuto |
+| Una scheda che non si apre lo dice in parole sue: «Non segui questa persona», «Questa trattativa non c'è più» (`utils/schedaChiusa.js`) | La frase del server è del framework, e il titolo era il codice della persona. Sulle pagine di contatto e azienda lo stato non c'era: restavano bianche |
+| L'errore di caricamento sta sulla risorsa del documento, non su chi l'ha creata per primo | La seconda volta che si apriva la stessa scheda la pagina non sapeva dell'errore e restava vuota; e niente avviso sopra la pagina che lo spiega già |
+| Una conversazione aperta dall'indirizzo aspetta la persona; dall'elenco si apre subito | La persona di un indirizzo può non essere da leggere: il codice al posto del nome e «Non permesso». Una riga dell'elenco l'ha già data il server |
+| Il giorno libero di un professionista è una scheda di tre righe sul telefono | Sei colonne in 358 punti: il motivo largo zero e «Tutto il giorno» su tre righe |
+| Un test vuole nel catalogo le parole degli usi, dei livelli e delle capacità a scelta, e una frase per ogni capacità a scelta | Si traducono dove si disegnano e l'estrazione non le vede; senza frase lo schermo mostrava il nome tecnico |
