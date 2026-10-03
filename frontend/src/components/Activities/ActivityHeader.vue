@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     One row while it fits, two when it does not.
@@ -8,19 +11,25 @@
     is — and those seventy pixels were the ones the last pill needed: on the
     Conversations page «Comments» was cut to «Comme…».
   -->
+  <!--
+    On a phone the bar of tabs above already names the tab: the title steps
+    aside, the tab's actions take the row, and a tab whose actions live in its
+    own record has no header at all.
+  -->
   <div
     v-if="title !== 'Data'"
     ref="header"
     class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 text-lg-medium"
-    :class="
+    :class="[
       title == 'Activity'
         ? 'py-2.5 sm:px-4'
-        : 'pb-3 pt-5 sm:px-10 sm:pb-4 sm:pt-6'
-    "
+        : 'pb-3 pt-5 sm:px-10 sm:pb-4 sm:pt-6 max-md:pt-3',
+      { 'max-md:hidden': azioniNelRecord },
+    ]"
   >
     <div
       v-if="title != 'Activity'"
-      class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8"
+      class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8 max-md:hidden"
     >
       <!-- the area's tab is named by its words: the clinic's patient area -->
       {{ title == 'Area' ? __('Client area') : __(title) }}
@@ -100,22 +109,33 @@
         </template>
       </Dropdown>
     </div>
-    <div v-else-if="title == 'Events'" class="flex items-center gap-2">
-      <Button v-if="canBook && puo('agenda.prenota')" @click="bookAppointment">
+    <div
+      v-else-if="title == 'Events'"
+      class="flex items-center gap-2 max-md:w-full"
+    >
+      <Button
+        v-if="canBook && puo('agenda.prenota')"
+        class="max-md:flex-1"
+        @click="bookAppointment"
+      >
         <template #prefix>
           <span class="lucide-calendar-plus size-4" aria-hidden="true" />
         </template>
-        <span>{{ __('Book an appointment') }}</span>
+        <!-- half a phone wide: the thing it makes, not the whole sentence -->
+        <span class="max-md:hidden">{{ __('Book an appointment') }}</span>
+        <span class="md:hidden">{{ __('Appointment') }}</span>
       </Button>
       <Button
         v-if="puo('agenda.prenota')"
         variant="solid"
+        class="max-md:flex-1"
         @click="modalRef.showEvent()"
       >
         <template #prefix>
           <EventIcon class="h-4 w-4" />
         </template>
-        <span>{{ __('Schedule an Event') }}</span>
+        <span class="max-md:hidden">{{ __('Schedule an Event') }}</span>
+        <span class="md:hidden">{{ __('Event') }}</span>
       </Button>
     </div>
     <!-- each tab offers to add only what the level may add (doc 30) -->
@@ -123,6 +143,7 @@
       <Button
         v-if="puo('note.scrivi')"
         variant="solid"
+        class="max-md:w-full"
         :label="__('New Note')"
         iconLeft="plus"
         @click="modalRef.showNote()"
@@ -132,6 +153,7 @@
       <Button
         v-if="!solaLettura()"
         variant="solid"
+        class="max-md:w-full"
         :label="__('New Task')"
         iconLeft="plus"
         @click="modalRef.showTask()"
@@ -141,31 +163,24 @@
       <Button
         v-if="canWrite"
         variant="solid"
+        class="max-md:w-full"
         :label="__('Upload Attachment')"
         iconLeft="plus"
         @click="showFilesUploader = true"
       />
     </template>
     <!-- the record's buttons live in the record: signing is not a «New» -->
-    <div
-      v-else-if="
-        title == 'Clinic' ||
-        title == 'Forms' ||
-        title == 'Area' ||
-        title == 'Documents' ||
-        title == 'Quotes' ||
-        title == 'Plans'
-      "
-    />
+    <div v-else-if="azioniNelRecord" />
     <Dropdown
       v-else-if="defaultActions.length"
       :options="defaultActions"
+      class="max-md:w-full"
       @click.stop
     >
       <template #default="{ open }">
         <Button
           variant="solid"
-          class="flex items-center gap-1"
+          class="flex items-center gap-1 max-md:w-full"
           :label="__('New')"
           iconLeft="plus"
           :iconRight="open ? 'chevron-up' : 'chevron-down'"
@@ -207,6 +222,13 @@ const props = defineProps({
 })
 
 const { puo, solaLettura } = usersStore()
+
+// the tabs whose buttons are in the record they show
+const azioniNelRecord = computed(() =>
+  ['Clinic', 'Forms', 'Area', 'Documents', 'Quotes', 'Plans'].includes(
+    props.title,
+  ),
+)
 
 // «write in this channel»: the composer is below, and it decides what opening
 // one means
