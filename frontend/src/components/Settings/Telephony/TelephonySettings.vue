@@ -42,7 +42,10 @@
     </div>
 
     <div v-if="telephonyAgent.doc" class="flex-1 flex flex-col overflow-y-auto">
-      <div class="flex items-center justify-between gap-8 py-3 pl-2 pr-1">
+      <div
+        v-if="piuMezzi"
+        class="flex items-center justify-between gap-8 py-3 pl-2 pr-1"
+      >
         <div class="flex flex-col">
           <div class="text-p-base-medium text-ink-gray-7 truncate">
             {{ __('Default Medium') }}
@@ -68,7 +71,7 @@
         </div>
       </div>
       <div
-        v-if="isEnabled('twilio')"
+        v-if="piuMezzi && isEnabled('twilio')"
         class="h-px border-t mx-2 border-outline-elevation-2"
       />
       <div
@@ -115,69 +118,6 @@
           />
         </div>
       </div>
-      <div
-        v-if="isEnabled('exotel')"
-        class="h-px border-t mx-2 border-outline-elevation-2"
-      />
-      <div
-        v-if="isEnabled('exotel')"
-        class="flex items-center justify-between gap-8 py-3 pl-2 pr-1"
-      >
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
-            {{ __('Exotel Number') }}
-          </div>
-          <div class="text-p-sm text-ink-gray-5">
-            {{ __('Set the Exotel number to be used for outgoing calls.') }}
-          </div>
-        </div>
-        <div>
-          <FormControl
-            v-model="telephonyAgent.doc.exotel_number"
-            class="flex-1 truncate w-44 p-1"
-            :placeholder="__('Enter Exotel Number')"
-            :error="
-              Boolean(telephonyAgent.doc.exotel_number) &&
-              !validatePhone(telephonyAgent.doc.exotel_number)
-                ? __('Enter a valid phone number')
-                : undefined
-            "
-            placement="bottom-end"
-          />
-        </div>
-      </div>
-      <div
-        v-if="isEnabled('exotel')"
-        class="flex items-center justify-between gap-8 py-3 pl-2 pr-1"
-      >
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
-            {{ __('Personal Mobile Number') }}
-          </div>
-          <div class="text-p-sm text-ink-gray-5">
-            {{
-              __(
-                'Enter your personal mobile number used by Exotel to make calls',
-              )
-            }}
-          </div>
-        </div>
-        <div>
-          <FormControl
-            v-model="telephonyAgent.doc.mobile_no"
-            class="flex-1 truncate w-44 p-1"
-            :placeholder="__('Enter Personal Mobile Number')"
-            :error="
-              Boolean(telephonyAgent.doc.mobile_no) &&
-              !validatePhone(telephonyAgent.doc.mobile_no)
-                ? __('Enter a valid phone number')
-                : undefined
-            "
-            placement="bottom-end"
-          />
-        </div>
-      </div>
-
       <div
         v-if="puo('telefono.configura')"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
@@ -283,33 +223,6 @@
           @click="emit('updateStep', 'twilio-settings')"
         />
       </div>
-
-      <div
-        v-if="puo('telefono.configura')"
-        class="h-px border-t mx-2 border-outline-elevation-2"
-      />
-
-      <div
-        v-if="puo('telefono.configura')"
-        class="flex items-center justify-between py-3 px-2"
-      >
-        <div class="flex flex-col gap-1">
-          <span class="text-base-medium text-ink-gray-8">
-            {{ __('Exotel') }}
-          </span>
-          <span class="text-p-sm text-ink-gray-6">
-            {{
-              __('Configure your Exotel telephony integration settings here')
-            }}
-          </span>
-        </div>
-        <Button
-          :label="
-            isEnabled('exotel') ? __('Update Configuration') : __('Configure')
-          "
-          @click="emit('updateStep', 'exotel-settings')"
-        />
-      </div>
     </div>
     <ErrorMessage
       :message="isNewDoc ? insertResource.error : telephonyAgent.save?.error"
@@ -370,6 +283,9 @@ const mediumOptions = computed(() => [
     .filter((p) => p.enabled)
     .map((p) => ({ label: p.label, value: p.label })),
 ])
+
+// with one carrier there is nothing to choose: one calls with it
+const piuMezzi = computed(() => mediumOptions.value.length > 2)
 
 const emit = defineEmits(['updateStep'])
 

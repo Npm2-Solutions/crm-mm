@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  Settings > Phone > Telephony and the pages it opens: Twilio, the answering
+  service, transcription, the numbers shown on calls.
+-->
 <template>
   <TelephonySettings
     v-if="step === 'telephony-settings'"
@@ -5,10 +11,6 @@
   />
   <TwilioSettings
     v-else-if="step === 'twilio-settings'"
-    @updateStep="updateStep"
-  />
-  <ExotelSettings
-    v-else-if="step === 'exotel-settings'"
     @updateStep="updateStep"
   />
   <AnsweringServiceSettings
@@ -26,7 +28,6 @@
 </template>
 <script setup>
 import TelephonySettings from './TelephonySettings.vue'
-import ExotelSettings from './ExotelSettings.vue'
 import TwilioSettings from './TwilioSettings.vue'
 import AnsweringServiceSettings from './AnsweringServiceSettings.vue'
 import TranscriptionSettings from './TranscriptionSettings.vue'

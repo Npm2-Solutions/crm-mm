@@ -1,6 +1,11 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The call from DottorCloud: the carriers on come from the server's registry
+  (Twilio), and a default naming one that is not on calls with one that is.
+-->
 <template>
   <TwilioCallUI ref="twilio" />
-  <ExotelCallUI ref="exotel" />
   <Dialog
     v-model:open="show"
     :title="__('Make Call')"
@@ -44,7 +49,6 @@
 </template>
 <script setup>
 import TwilioCallUI from '@/components/Telephony/TwilioCallUI.vue'
-import ExotelCallUI from '@/components/Telephony/ExotelCallUI.vue'
 import {
   defaultCallingMedium,
   providers,
@@ -58,7 +62,6 @@ const { setMakeCall } = globalStore()
 const { isEnabled, isAnyEnabled } = useTelephony()
 
 const twilio = ref(null)
-const exotel = ref(null)
 
 const callMedium = ref('')
 const isDefaultMedium = ref(false)
@@ -69,7 +72,7 @@ const mobileNumber = ref('')
 // which carriers exist comes from the backend registry; only the in-browser
 // calling component stays mapped by name here, because each SDK is genuinely
 // its own thing and there is nothing to share between them
-const uiComponents = { twilio, exotel }
+const uiComponents = { twilio }
 
 const enabledIntegrations = computed(() =>
   providers.value
@@ -81,17 +84,26 @@ const mediumOptions = computed(() =>
   enabledIntegrations.value.map(({ label }) => label),
 )
 
+// the default one when it is still on, else the first that is: a default
+// naming a carrier switched off (or gone) never leaves the call nowhere
+function mezzoPredefinito() {
+  const predefinito = enabledIntegrations.value.find(
+    ({ label }) => label === defaultCallingMedium.value,
+  )
+  return (predefinito || enabledIntegrations.value[0])?.label ?? ''
+}
+
 function makeCall(number) {
-  if (enabledIntegrations.value.length > 1 && !defaultCallingMedium.value) {
+  const predefinitoAcceso = enabledIntegrations.value.some(
+    ({ label }) => label === defaultCallingMedium.value,
+  )
+  if (enabledIntegrations.value.length > 1 && !predefinitoAcceso) {
     mobileNumber.value = number
     show.value = true
     return
   }
 
-  callMedium.value = enabledIntegrations.value[0]?.label ?? ''
-  if (defaultCallingMedium.value) {
-    callMedium.value = defaultCallingMedium.value
-  }
+  callMedium.value = mezzoPredefinito()
 
   mobileNumber.value = number
   makeCallUsing()
@@ -129,10 +141,7 @@ watch(
       }
 
       if (isAnyEnabled.value) {
-        callMedium.value =
-          defaultCallingMedium.value ||
-          enabledIntegrations.value[0]?.label ||
-          ''
+        callMedium.value = mezzoPredefinito()
         setMakeCall(makeCall)
       }
     }),
