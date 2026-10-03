@@ -131,6 +131,19 @@ class TestAssegnare(LevelsCase):
 		self.as_user(DESK)
 		self.assertTrue(check_app_permission())
 
+	def test_entra_anche_mentre_la_lista_dei_moduli_si_riempie(self):
+		"""Frappe's list of an app's modules answers None to a request that misses
+		its cache while another fills it: the director's crawl got the whole page
+		as a server error. The way in asks only the blocked modules."""
+		self.as_user(DESK)
+		with patch("frappe.utils.modules.get_modules_from_app", return_value=None):
+			self.assertTrue(check_app_permission())
+
+	def test_chi_ha_il_crm_bloccato_non_entra(self):
+		self.as_user(DESK)
+		with patch("frappe.core.doctype.user.user.User.get_blocked_modules", return_value=["FCRM"]):
+			self.assertFalse(check_app_permission())
+
 	def test_togliere_dal_crm_toglie_livelli_e_ruoli(self):
 		utenti.togli_dal_crm(DESK)
 		self.assertEqual(roles_of(DESK) & set(livelli.ruoli_registrati()), set())
