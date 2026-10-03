@@ -439,6 +439,8 @@ def _cruscotto():
 		"stethoscope",
 		sequence=5,
 		requires=("clinic",),
+		# the day's agenda and the no-shows: for whoever reads the operational numbers
+		reader="numeri.operativi",
 		sections=(
 			section(
 				Line.of(

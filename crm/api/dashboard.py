@@ -52,7 +52,8 @@ def get_widget_catalog() -> dict:
 	parola = verticali.traduttore()
 	widgets = []
 	for widget in registry.all_widgets():
-		if widget.retired or (widget.managers_only and not manager):
+		# what the viewer's level does not read is not offered at all (doc 30)
+		if widget.retired or (widget.managers_only and not manager) or not store.reads(widget):
 			continue
 		blocked = store.availability(widget)
 		widgets.append(
@@ -81,7 +82,7 @@ def get_widget_catalog() -> dict:
 				),
 			}
 			for template in templates.tutti()
-			if manager or not template.managers_only
+			if store.offers(template)
 		],
 		"periods": list(store.PERIODS),
 	}
@@ -129,7 +130,10 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 	blocked = store.availability(widget)
 	if blocked:
 		return {"kind": widget.kind, **about, "unavailable": blocked}
-	scope = "me" if only_mine and widget.scope == "team" else widget.scope
+	scope = widget.scope
+	# one's own work only: asked for, or all the level reads of these numbers
+	if scope == "team" and (only_mine or store.own_numbers_only(widget)):
+		scope = "me"
 	ctx = Context.build(
 		from_date,
 		to_date,

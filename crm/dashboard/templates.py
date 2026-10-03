@@ -59,6 +59,10 @@ class Template:
 	# every widget counts only the viewer's own work (the personal dashboard)
 	only_mine: bool = False
 	managers_only: bool = False
+	#: the capability that reads what it is about (doc 30): the Agenda is for whoever
+	#: reads the operational numbers, not for Marketing because one of its numbers
+	#: is the new clients. None: whoever reads any of its widgets
+	reader: str | None = None
 	sequence: int = 100
 	#: Features the site must use for the template to become a dashboard on its own
 	#: (the clinic's): offered all the same, like any template the site cannot answer.
@@ -126,6 +130,7 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Sales"),
 		_lt("Deals won and lost, pipeline, forecast and who sells what"),
 		"handshake",
+		reader="trattative.vedi",
 		sequence=20,
 		sections=(
 			section(
@@ -157,8 +162,8 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Invoicing"),
 		_lt("What was invoiced, what is waiting to be sent, and what the agenda has not billed yet"),
 		"receipt-text",
+		reader="numeri.economici",
 		period="this_month",
-		managers_only=True,
 		sequence=25,
 		sections=(
 			section(
@@ -187,6 +192,7 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Conversations"),
 		_lt("Who is waiting, how fast the team answers, and every channel"),
 		"messages-square",
+		reader="numeri.operativi",
 		sequence=30,
 		sections=(
 			section(
@@ -234,6 +240,7 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Agenda"),
 		_lt("How full the agenda is, who shows up, what it is worth"),
 		"calendar",
+		reader="numeri.operativi",
 		sequence=40,
 		sections=(
 			section(
@@ -271,6 +278,7 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Phone"),
 		_lt("Calls in and out, missed calls, call backs and the dialer"),
 		"phone",
+		reader="numeri.operativi",
 		sequence=50,
 		sections=(
 			section(
@@ -301,6 +309,7 @@ TEMPLATES: tuple[Template, ...] = (
 		_lt("Marketing"),
 		_lt("Where people come from, the website, and what the ads cost against what they sold"),
 		"megaphone",
+		reader="numeri.marketing",
 		sequence=60,
 		sections=(
 			section(

@@ -20,8 +20,9 @@ submitted means issued, and the fiscal date is ``posting_date``.
 - **What is waiting** is what ``crm.invoicing.api.pending_actions`` lists: issued
   documents still to send to the SdI or the Sistema TS, or sent back by either.
 
-Every widget is for managers, like the Invoices page, and counts the whole
-practice: an invoice belongs to the business, not to the salesperson looking.
+Every widget counts the whole practice - an invoice belongs to the business, not to
+the salesperson looking - so it is read by whoever reads the economic numbers of
+the whole centre (doc 30: the Manager and Accounting).
 """
 
 from __future__ import annotations
@@ -109,7 +110,6 @@ def with_money(payload: dict) -> dict:
 	title=_lt("Invoiced"),
 	description=_lt("What the invoices issued in the period are worth, credit notes taken off"),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(MEASURE,),
 	keywords=("revenue", "turnover", "billing", "fatturato"),
@@ -128,7 +128,6 @@ def invoiced_revenue(ctx: Context):
 	title=_lt("Invoices issued"),
 	description=_lt("Invoices issued in the period, credit notes not counted"),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	keywords=("documents", "fatture"),
 )
@@ -146,7 +145,6 @@ def invoices_issued(ctx: Context):
 	title=_lt("Average invoice"),
 	description=_lt("What an invoice issued in the period is worth, on average"),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(MEASURE,),
 )
@@ -171,7 +169,6 @@ def average_invoice(ctx: Context):
 	title=_lt("Credit notes"),
 	description=_lt("Invoices taken back, in full or in part, in the period"),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 )
 def credit_notes(ctx: Context):
@@ -193,7 +190,6 @@ def waiting_for_action():
 	description=_lt("Invoices waiting to be sent, or sent back by the SdI or the Sistema TS"),
 	live=True,
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 )
 def invoicing_to_do(ctx: Context):
@@ -208,7 +204,6 @@ def invoicing_to_do(ctx: Context):
 	description=_lt("To correct and send again within five days, with the same number and date"),
 	live=True,
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	keywords=("scartate", "notice", "NS"),
 )
@@ -247,7 +242,6 @@ def not_invoiced(ctx: Context):
 	description=_lt("Appointments that took place and have no invoice yet"),
 	live=True,
 	requires=FROM_THE_AGENDA,
-	managers_only=True,
 	scope="site",
 	options=(DAYS,),
 	keywords=("unbilled", "da fatturare"),
@@ -267,7 +261,6 @@ def appointments_to_invoice(ctx: Context):
 	description=_lt("What the invoices issued are worth, day by day or month by month"),
 	size=(10, 8),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(MEASURE,),
 )
@@ -306,7 +299,6 @@ def lines_by(ctx: Context, key, empty: str) -> list[dict]:
 	description=_lt("Which services bring the money in: taxable amount of the invoice lines"),
 	size=(10, 8),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(BARS,),
 )
@@ -323,7 +315,6 @@ def invoiced_by_service(ctx: Context):
 	description=_lt("Who performed what was invoiced: taxable amount of the invoice lines"),
 	size=(10, 8),
 	requires=("invoicing", "centre"),
-	managers_only=True,
 	scope="site",
 	options=(BARS,),
 	keywords=("professional", "practitioner", "professionista"),
@@ -341,7 +332,6 @@ def invoiced_by_provider(ctx: Context):
 	description=_lt("The clients the invoices of the period were made out to, largest first"),
 	size=(10, 8),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(BARS, MEASURE),
 	keywords=("customers", "clienti"),
@@ -375,7 +365,6 @@ SDI_OUTCOMES = (
 	description=_lt("Where the invoices of the period stand with the Sistema di Interscambio"),
 	size=(10, 8),
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 )
 def sdi_outcomes(ctx: Context):
@@ -432,7 +421,6 @@ def urgency():
 	size=(10, 8),
 	live=True,
 	requires=INVOICING,
-	managers_only=True,
 	scope="site",
 	options=(ROWS,),
 )
@@ -481,7 +469,6 @@ def invoicing_to_do_list(ctx: Context):
 	size=(10, 8),
 	live=True,
 	requires=FROM_THE_AGENDA,
-	managers_only=True,
 	scope="site",
 	options=(DAYS, ROWS),
 )
@@ -529,7 +516,6 @@ def appointments_to_invoice_list(ctx: Context):
 	description=_lt("Healthcare expenses not yet sent to the Sistema TS"),
 	live=True,
 	requires=SISTEMA_TS,
-	managers_only=True,
 	scope="site",
 	keywords=("tessera sanitaria", "730", "spese sanitarie"),
 )
@@ -548,7 +534,6 @@ def ts_to_send(ctx: Context):
 	description=_lt("Healthcare expenses the Sistema TS sent back, to correct and send again"),
 	live=True,
 	requires=SISTEMA_TS,
-	managers_only=True,
 	scope="site",
 	keywords=("tessera sanitaria", "scartate"),
 )
@@ -565,7 +550,6 @@ def ts_rejected(ctx: Context):
 	title=_lt("Reported to the Sistema TS"),
 	description=_lt("Healthcare expenses of the period the Sistema TS has accepted"),
 	requires=SISTEMA_TS,
-	managers_only=True,
 	scope="site",
 	keywords=("tessera sanitaria", "730", "spese sanitarie"),
 )
@@ -586,7 +570,6 @@ def ts_reported(ctx: Context):
 	title=_lt("Supplier invoices"),
 	description=_lt("What the invoices received from suppliers in the period are worth"),
 	requires=SUPPLIERS,
-	managers_only=True,
 	scope="site",
 	keywords=("purchases", "costs", "passive", "fornitori"),
 )
@@ -609,7 +592,6 @@ def supplier_invoices_received(ctx: Context):
 	description=_lt("Invoices received from suppliers that nobody has registered yet"),
 	live=True,
 	requires=SUPPLIERS,
-	managers_only=True,
 	scope="site",
 )
 def supplier_invoices_to_register(ctx: Context):

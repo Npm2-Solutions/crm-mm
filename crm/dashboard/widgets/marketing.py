@@ -15,7 +15,9 @@ Three sources of truth, each offered only when the site has it:
   as ``crm.integrations.meta.insights.performance``, over the dashboard's period.
 
 Marketing numbers belong to the business, not to a salesperson: these widgets
-count the whole site whatever the person filter says.
+count the whole site whatever the person filter says, and whoever reads the
+marketing numbers of the whole centre reads them (doc 30: the Manager, Marketing
+and Accounting).
 """
 
 from __future__ import annotations
@@ -65,7 +67,6 @@ def real_visits():
 	description=_lt("Different people who visited your pages"),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 )
 def website_visitors(ctx: Context):
 	return charts.number(
@@ -81,7 +82,6 @@ def website_visitors(ctx: Context):
 	description=_lt("Visits to your pages; one person can visit many times"),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 )
 def website_sessions(ctx: Context):
 	return charts.number(*two_periods(ctx, Session, Session.started_on, real_visits()))
@@ -95,7 +95,6 @@ def website_sessions(ctx: Context):
 	description=_lt("Share of visits that ended in a form, a booking or a new person"),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 )
 def visitor_conversion(ctx: Context):
 	def rate(previous: bool):
@@ -118,7 +117,6 @@ def visitor_conversion(ctx: Context):
 	size=(10, 8),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 )
 def traffic_sources(ctx: Context):
 	rows = grouped(Session, Session.source_category, ctx.within(Session.started_on), real_visits())
@@ -136,7 +134,6 @@ def traffic_sources(ctx: Context):
 	size=(10, 8),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 )
 def visits_trend(ctx: Context):
 	visits = per_bucket(ctx, per_day(ctx, Session, Session.started_on, real_visits()))
@@ -170,7 +167,6 @@ def page_of(url: str | None) -> str:
 	size=(10, 8),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 	options=(ROWS,),
 )
 def top_landing_pages(ctx: Context):
@@ -209,7 +205,6 @@ def top_landing_pages(ctx: Context):
 	size=(10, 8),
 	requires=TRACKING,
 	scope="site",
-	managers_only=True,
 	options=(ROWS,),
 )
 def top_campaigns(ctx: Context):
@@ -257,7 +252,6 @@ def top_campaigns(ctx: Context):
 	live=True,
 	requires=("tracked_links",),
 	scope="site",
-	managers_only=True,
 	options=(ROWS,),
 )
 def tracked_links(ctx: Context):
@@ -357,7 +351,6 @@ def meta_leads_by_form(ctx: Context):
 	live=True,
 	requires=("meta_leads",),
 	scope="site",
-	managers_only=True,
 )
 def meta_sync_errors(ctx: Context):
 	value = total(FailedSync, FailedSync.type == "Failure")
@@ -420,7 +413,6 @@ def per_unit(amount: float, units: float) -> float | None:
 	description=_lt("What the Meta ads cost in the period"),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 )
 def meta_spend(ctx: Context):
 	now, currency = spend(ctx)
@@ -436,7 +428,6 @@ def meta_spend(ctx: Context):
 	description=_lt("Ad spend divided by the people the ads brought in"),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 	keywords=("cpl",),
 )
 def meta_cost_per_lead(ctx: Context):
@@ -459,7 +450,6 @@ def meta_cost_per_lead(ctx: Context):
 	description=_lt("Ad spend divided by the deals won from the people the ads brought"),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 	keywords=("cac", "acquisition"),
 )
 def meta_cost_per_customer(ctx: Context):
@@ -493,7 +483,6 @@ def ad_clients(ctx: Context, previous: bool = False) -> float:
 	description=_lt("Ad spend divided by the people the ads brought who became clients"),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 	keywords=("cac", "acquisition", "clients"),
 )
 def meta_cost_per_client(ctx: Context):
@@ -516,7 +505,6 @@ def meta_cost_per_client(ctx: Context):
 	description=_lt("Value of the deals won from the ads, for each unit spent on them"),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 	keywords=("roas", "roi"),
 )
 def meta_roas(ctx: Context):
@@ -536,7 +524,6 @@ def meta_roas(ctx: Context):
 	size=(10, 8),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 )
 def meta_spend_trend(ctx: Context):
 	query = (
@@ -563,7 +550,6 @@ def meta_spend_trend(ctx: Context):
 	size=(20, 8),
 	requires=("meta_ads",),
 	scope="site",
-	managers_only=True,
 	options=(ROWS,),
 )
 def meta_ads_table(ctx: Context):
@@ -641,7 +627,6 @@ def meta_ads_table(ctx: Context):
 	),
 	requires=("meta_conversions",),
 	scope="site",
-	managers_only=True,
 	keywords=("conversions api", "capi", "lead quality"),
 )
 def meta_conversions_coverage(ctx: Context):

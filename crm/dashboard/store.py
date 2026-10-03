@@ -13,7 +13,10 @@ again.
 The widgets on a saved layout are checked on the way out too: a widget whose
 feature was switched off, or that only managers may see, is dropped for a
 salesperson and shown to a manager as "not available" with the reason — they
-are the ones who can do something about it.
+are the ones who can do something about it. A widget whose numbers the viewer's
+level does not read (doc 30: Marketing reads no agenda, the front desk no
+revenue) is dropped for everybody, and a shared dashboard with nothing left for
+them is not in their list.
 """
 
 from __future__ import annotations
@@ -52,8 +55,29 @@ def can_view(doc, user: str | None = None) -> bool:
 	user = user or frappe.session.user
 	if not doc.private:
 		template = templates.get(doc.template)
-		return not (template and template.managers_only and not is_manager(user))
+		if template and not offers(template, user):
+			return False
+		return reads_any(_widget_ids(doc, template), user)
 	return doc.user == user
+
+
+def offers(template: templates.Template, user: str | None = None) -> bool:
+	"""Whether ``template`` is for ``user``: its level reads what it is about, and some of it."""
+	from crm.permissions import livelli
+
+	user = user or frappe.session.user
+	if template.managers_only and not is_manager(user):
+		return False
+	if template.reader and not livelli.puo(template.reader, user):
+		return False
+	return reads_any(template.widget_ids(), user)
+
+
+def _widget_ids(doc, template) -> list[str]:
+	"""The widgets ``doc`` holds: its template's while it follows it, else its own."""
+	if template and not doc.customized:
+		return template.widget_ids()
+	return [item.get("name") for item in _stored_layout(doc) if isinstance(item, dict)]
 
 
 def can_edit(doc, user: str | None = None) -> bool:
@@ -82,11 +106,49 @@ def get_editable(name: str):
 # -- which widgets a viewer can have -----------------------------------------------
 
 
+def reads(widget: registry.Widget, user: str | None = None) -> bool:
+	"""Whether ``user``'s level reads ``widget``'s numbers (doc 30, "Dashboard e numeri").
+
+	A ``site`` widget counts the whole centre, so it asks for the capability on the
+	whole centre: a practitioner reads their own revenue, not the centre's.
+	"""
+	from crm.permissions import livelli
+
+	capacita = widget.read_by
+	if not capacita:
+		return True
+	ambito = livelli.ambito(capacita, user or frappe.session.user)
+	if not ambito:
+		return False
+	return widget.scope != "site" or ambito in (livelli.CENTRO, livelli.MASCHERATO)
+
+
+def reads_any(widget_ids, user: str | None = None) -> bool:
+	"""Whether ``user`` reads the numbers of at least one of ``widget_ids``.
+
+	Headings and spacers say nothing, and a dashboard of widgets that no longer
+	exist is left to whoever can see it now.
+	"""
+	widgets = [registry.get(name) for name in widget_ids if name not in layout.STRUCTURAL]
+	known = [widget for widget in widgets if widget and not widget.retired]
+	return not known or any(reads(widget, user) for widget in known)
+
+
+def own_numbers_only(widget: registry.Widget, user: str | None = None) -> bool:
+	"""Whether ``user`` reads only their own share of ``widget``'s numbers (a scope of "their own")."""
+	from crm.permissions import livelli
+
+	capacita = widget.read_by
+	return bool(capacita) and livelli.ambito(capacita, user or frappe.session.user) == livelli.SUOI
+
+
 def availability(widget: registry.Widget, user: str | None = None) -> dict[str, Any] | None:
 	"""Why ``widget`` cannot be shown to ``user``; ``None`` when it can."""
 	user = user or frappe.session.user
 	if widget.managers_only and not is_manager(user):
 		return {"reason": "managers_only", "message": _("Only managers can see this")}
+	if not reads(widget, user):
+		return {"reason": "level", "message": _("Your level does not read these numbers")}
 	missing = features.missing(widget.requires)
 	if missing:
 		first = features.describe(missing[0])
@@ -138,8 +200,9 @@ def resolve(doc) -> list[dict[str, Any]]:
 			continue
 		blocked = availability(widget)
 		if blocked:
-			# a salesperson cannot switch WhatsApp on: showing them the gap is noise
-			if not manager or blocked["reason"] == "managers_only":
+			# a salesperson cannot switch WhatsApp on: showing them the gap is noise;
+			# and nobody switches a level's numbers on from the dashboard
+			if not manager or blocked["reason"] in ("managers_only", "level"):
 				continue
 			item["unavailable"] = blocked
 		item["type"] = widget.kind
@@ -156,7 +219,7 @@ def unlocks(template: templates.Template, manager: bool) -> list[dict[str, Any]]
 	counts: Counter[str] = Counter()
 	for widget_id in template.widget_ids():
 		widget = registry.get(widget_id)
-		if not widget or widget.retired or (widget.managers_only and not manager):
+		if not widget or widget.retired or (widget.managers_only and not manager) or not reads(widget):
 			continue
 		missing = features.missing(widget.requires)
 		if len(missing) == 1:
@@ -169,7 +232,7 @@ def preview(template: templates.Template, manager: bool) -> list[str]:
 	titles: list[str] = []
 	for widget_id in template.widget_ids():
 		widget = registry.get(widget_id)
-		if not widget or widget.retired or (widget.managers_only and not manager):
+		if not widget or widget.retired or (widget.managers_only and not manager) or not reads(widget):
 			continue
 		title = str(widget.title)
 		if title not in titles:
@@ -227,6 +290,7 @@ def visible_dashboards() -> list[dict[str, Any]]:
 			"icon",
 			"template",
 			"customized",
+			"layout",
 			"private",
 			"user",
 			"only_mine",

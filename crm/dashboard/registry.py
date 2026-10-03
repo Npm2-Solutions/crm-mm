@@ -25,6 +25,12 @@ import time would stay in whichever language came first.
 and ignore the period. ``scope`` says whose work is counted: ``team`` follows
 the dashboard's person filter, ``me`` is always the person looking, ``site`` is
 the whole business (ad spend has no owner).
+
+Who reads a widget's numbers is doc 30's table ("Dashboard e numeri"): each
+category asks for a capability (``READERS``) and a widget may ask for another
+(``reader``) - the value of the agenda is an economic number, not an operational
+one. A ``site`` widget counts the whole centre and asks for the capability on
+the whole centre: one's own numbers are not the centre's.
 """
 
 from __future__ import annotations
@@ -55,6 +61,29 @@ CATEGORIES = (
 	"tasks",
 	"team",
 )
+
+#: The capability that reads a category's numbers (doc 30). The desk's work - the
+#: agenda, bookings, messages and calls - is the operational numbers; invoices the
+#: economic ones; the website, Meta and social the marketing ones. Deals, people
+#: and automations are counted for whoever reads them, and everybody has tasks.
+READERS: dict[str, str | None] = {
+	"sales": "trattative.vedi",
+	"invoicing": "numeri.economici",
+	"people": "persone.vedi",
+	"conversations": "numeri.operativi",
+	"whatsapp": "numeri.operativi",
+	"sms": "numeri.operativi",
+	"email": "numeri.operativi",
+	"calls": "numeri.operativi",
+	"agenda": "numeri.operativi",
+	"booking": "numeri.operativi",
+	"marketing": "numeri.marketing",
+	"meta": "numeri.marketing",
+	"automations": "automazioni.vedi",
+	"social": "numeri.marketing",
+	"tasks": None,
+	"team": None,
+}
 
 
 @dataclass(frozen=True)
@@ -116,6 +145,13 @@ class Widget:
 	# kept so layouts saved with it still load, but no longer offered in the library
 	retired: bool = False
 	keywords: tuple[str, ...] = field(default=())
+	#: the capability that reads its numbers, when not its category's (``READERS``)
+	reader: str | None = None
+
+	@property
+	def read_by(self) -> str | None:
+		"""The capability whose holders read this widget's numbers; None for everybody."""
+		return self.reader or READERS.get(self.category)
 
 	def option(self, key: str) -> Option | None:
 		return next((option for option in self.options if option.key == key), None)
