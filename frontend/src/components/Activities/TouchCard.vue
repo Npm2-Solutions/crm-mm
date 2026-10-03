@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   One attribution snapshot — the campaign that introduced this person, or the
   one that brought them back — as a row on the journey.
 
@@ -79,9 +82,11 @@ function says(value, category) {
 const rows = computed(() => {
   const t = props.touch || {}
   const fromAnAd = t.landing_page === 'lead_ad_form'
+  // a source DottorCloud wrote comes with its words, and says it all: «Online
+  // booking», not «service_booking» over «booking»
   return [
-    { label: __('Source'), value: t.source },
-    { label: __('Medium'), value: t.medium },
+    { label: __('Source'), value: t.source_label || t.source },
+    { label: __('Medium'), value: t.source_label ? '' : t.medium },
     { label: __('Campaign'), value: t.campaign },
     { label: fromAnAd ? __('Ad set') : __('Term'), value: t.term },
     { label: fromAnAd ? __('Ad') : __('Content'), value: t.content },

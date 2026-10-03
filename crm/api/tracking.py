@@ -658,11 +658,48 @@ def get_journey(doctype: str, name: str, limit: int = 200) -> dict:
 	return {
 		"visitor": doc.get("visitor"),
 		"created_on": doc.get("creation"),
-		"first_touch": {k[len("first_touch_") :]: v for k, v in doc.items() if k.startswith("first_touch_")},
-		"last_touch": {k[len("last_touch_") :]: v for k, v in doc.items() if k.startswith("last_touch_")},
+		"first_touch": _con_il_nome(
+			{k[len("first_touch_") :]: v for k, v in doc.items() if k.startswith("first_touch_")}
+		),
+		"last_touch": _con_il_nome(
+			{k[len("last_touch_") :]: v for k, v in doc.items() if k.startswith("last_touch_")}
+		),
 		"sessions": sessions,
 		"events": events,
 	}
+
+
+#: The sources DottorCloud writes itself, by the words a person reads.
+FONTI_NOSTRE = {
+	"service_booking": "Online booking",
+	"booking_page": "Booking page",
+	"web_form": "Website form",
+}
+
+
+def nome_della_fonte(fonte: str | None) -> str | None:
+	"""A source DottorCloud wrote (its booking page, a website form, a booking
+	platform it syncs) in words; None for one that came from a link, whose
+	words are the centre's own."""
+	if not fonte:
+		return None
+	if fonte in FONTI_NOSTRE:
+		return _(FONTI_NOSTRE[fonte])
+	from crm.booking_platforms import provider_class
+
+	try:
+		return provider_class(fonte).label
+	except KeyError:
+		return None
+
+
+def _con_il_nome(tocco: dict) -> dict:
+	"""A touch with its source's words, when DottorCloud wrote the source: «Online
+	booking», never «service_booking / booking»."""
+	nome = nome_della_fonte(tocco.get("source"))
+	if nome:
+		tocco["source_label"] = nome
+	return tocco
 
 
 def snapshot_fieldnames() -> list[str]:
