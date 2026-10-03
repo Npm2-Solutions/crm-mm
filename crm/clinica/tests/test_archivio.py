@@ -155,6 +155,10 @@ class IlReferto(ArchivioCase):
 		)
 		# the visit's own report: not put right, not taken away
 		self.assertFalse(referto["can_edit"] or referto["can_remove"])
+		# a visit with no title is called so in the centre's language, whoever signed it
+		from crm.lingue import del_centro
+
+		self.assertEqual(referto["title"], firmata.get("title") or frappe._("Visit", lang=del_centro()))
 		self.come(DOC1)
 		with self.assertRaises(frappe.PermissionError):
 			archivio.remove_document(referto["name"], "per sbaglio")
