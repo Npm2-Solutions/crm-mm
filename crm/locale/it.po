@@ -41533,3 +41533,23 @@ msgstr "Letto"
 msgctxt "Conversation read"
 msgid "Read"
 msgstr "Letta"
+
+#: crm/clinica/sintesi.py
+msgid "Medications"
+msgstr "Farmaci"
+
+#: crm/clinica/sintesi.py
+msgid "Conditions"
+msgstr "Condizioni"
+
+#: crm/clinica/sintesi.py
+msgid "Weight"
+msgstr "Peso"
+
+#: crm/clinica/sintesi.py
+msgid "Blood pressure"
+msgstr "Pressione arteriosa"
+
+#: crm/clinica/sintesi.py
+msgid "Heart rate"
+msgstr "Frequenza cardiaca"
