@@ -40976,3 +40976,7 @@ msgstr "Nome o azienda"
 #: frontend/src/components/Settings/PlanSettings.vue
 msgid "Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. The centre pays WhatsApp messages directly to Meta, and calls, numbers and SMS to Twilio when the account is its own."
 msgstr "Oltre quello che è incluso, crediti SdI e firme avanzate li fattura l'agenzia una volta al mese. I messaggi WhatsApp il centro li paga direttamente a Meta, e chiamate, numeri e SMS a Twilio quando l'account è il suo."
+
+#: crm/moduli/modelli.py
+msgid "The consents in the centre's language"
+msgstr "I consensi nella lingua del centro"

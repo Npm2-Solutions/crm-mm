@@ -85,6 +85,17 @@ def testo_per_lingua(tipo: TipoConsenso, lingua: str | None) -> str:
 	return tipo.testi.get(lingua) or tipo.testi.get("it") or next(iter(tipo.testi.values()), "")
 
 
+def testo_da_tradurre(tipo: TipoConsenso, testo: str | None, lingua: str) -> str | None:
+	"""The shipped text in ``lingua`` when ``testo`` is the shipped one of another
+	language: words nobody wrote, which follow the language. None for the centre's
+	own words, for words already right, and where nothing was shipped in ``lingua``."""
+	nuovo = tipo.testi.get((lingua or "")[:2])
+	testo = (testo or "").strip()
+	if not nuovo or testo == nuovo.strip():
+		return None
+	return nuovo if testo in {spedito.strip() for spedito in tipo.testi.values()} else None
+
+
 def stato_attuale(risposte: list[dict]) -> dict | None:
 	"""The answer that counts: the latest one, whatever it said.
 

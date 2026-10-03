@@ -142,7 +142,12 @@ jinja = {
 # Setup wizard
 # setup_wizard_requires = "assets/crm/js/setup_wizard.js"
 # setup_wizard_stages = "crm.setup.setup_wizard.setup_wizard.get_setup_stages"
-setup_wizard_complete = "crm.demo.api.create_demo_data"
+setup_wizard_complete = [
+	# DottorCloud's own words in the language and country the wizard chose
+	# (`crm.lingue`): the consents'
+	"crm.moduli.consensi.dopo_la_configurazione",
+	"crm.demo.api.create_demo_data",
+]
 # setup_wizard_test = "crm.setup.setup_wizard.test_setup_wizard.run_setup_wizard_test"
 
 # Installation
