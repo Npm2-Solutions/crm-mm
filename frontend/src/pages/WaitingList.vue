@@ -23,7 +23,9 @@
       />
     </template>
   </LayoutHeader>
-  <div class="flex-1 overflow-y-auto">
+  <div ref="contenitore" class="flex-1 overflow-y-auto">
+    <!-- pulled down from the top on a phone, the line reloads -->
+    <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex max-w-4xl flex-col gap-6 px-5 py-6 max-md:px-4">
       <div class="flex flex-wrap items-center gap-2">
         <div class="w-60 max-md:w-full">
@@ -157,8 +159,10 @@ import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
 import { STATO, comeStaLOfferta, quandoPuo } from '@/utils/attese'
 import { appLocale } from '@/utils/locale'
@@ -189,6 +193,9 @@ const list = createResource({
   auto: true,
 })
 watch([closed, service, staff], () => list.reload())
+
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, () => list.reload())
 
 const entries = computed(() => list.data?.entries || [])
 

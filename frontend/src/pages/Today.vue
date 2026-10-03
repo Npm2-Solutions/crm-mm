@@ -38,7 +38,10 @@
       </div>
     </template>
   </LayoutHeader>
-  <div class="flex-1 overflow-y-auto">
+  <!-- touch-pan-y: sideways, the finger is the page's (it changes the day) -->
+  <div ref="contenitore" class="flex-1 touch-pan-y overflow-y-auto">
+    <!-- pulled down from the top on a phone, the day reloads -->
+    <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-6 max-md:px-4">
       <!-- how the day stands, at a glance: on a phone one short row -->
       <div class="dc-stat-row grid grid-cols-4 gap-3">
@@ -226,6 +229,9 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useScorriGiorni } from '@/composables/scorriGiorni'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { laSeduta } from '@/utils/cicli'
 import {
   byDay,
@@ -311,6 +317,14 @@ const dayLabel = computed(() =>
 function shift(days) {
   date.value = shiftDay(day.data?.date || date.value, days)
 }
+
+// on a phone, as in the agenda's day: pulled down it reloads, swiped
+// sideways it is the next day or the one before
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, () =>
+  Promise.all([day.reload(), toInvoice.data && toInvoice.reload()]),
+)
+useScorriGiorni(contenitore, shift, { segue: true })
 
 // the service, which session of its cycle - "session 4 of 10" - and who
 function appointmentLine(appointment) {

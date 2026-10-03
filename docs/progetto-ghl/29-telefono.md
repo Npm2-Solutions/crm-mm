@@ -384,11 +384,12 @@ Con il tocco, come in un'app:
   gesto del browser ricaricava tutto, anche un modulo scritto a metà: è spento,
   e la cornice non rimbalza. Le liste del telefono (persone, contatti, aziende,
   chiamate, note, cose da fare, trattative per fase, la giornata dell'agenda,
-  le chat, le notifiche e gli eventi, le fatture) hanno il loro: una freccia
+  le chat, le notifiche e gli eventi) e le pagine di ogni giorno (le fatture,
+  l'accoglienza, la lista d'attesa, la panoramica) hanno il loro: una freccia
   che si gira quando basta lasciare, poi il segno che gira finché la lista non
-  è tornata (`composables/tiraPerAggiornare.js`). Si tira la scatola che scorre, che c'è
-  anche quando la lista è vuota: «Nessuna notifica» si tira come una lista
-  piena, per vedere se ne è arrivata una.
+  è tornata (`composables/tiraPerAggiornare.js`). Si tira la scatola che
+  scorre, che c'è anche quando la lista è vuota: «Nessuna notifica» si tira
+  come una lista piena, per vedere se ne è arrivata una.
 - **Tornando indietro, una lista è com'era.** Aperta una persona (una
   trattativa, una chat) e tornati indietro, la lista ha ancora le parole
   cercate, le righe che aveva e il punto a cui era arrivata; poi si aggiorna da
@@ -420,8 +421,9 @@ Con il tocco, come in un'app:
 - **Il giorno dell'agenda si sfoglia col dito**, come nel calendario del
   telefono: la lista del giorno spinta a sinistra è il giorno dopo, a destra
   quello prima, e segue un poco il dito; la striscia della settimana sposta di
-  una settimana. Solo un gesto di lato conta: su e giù la lista scorre (o si
-  tira per aggiornare), e dal bordo dello schermo è l'indietro del telefono.
+  una settimana. Anche l'accoglienza, che mostra un giorno, si sfoglia così.
+  Solo un gesto di lato conta: su e giù la lista scorre (o si tira per
+  aggiornare), e dal bordo dello schermo è l'indietro del telefono.
   Un gesto di lato in una pagina non porta più il browser alla pagina prima
   (`touch-pan-y`, `overscroll-behavior-x: none`; `composables/scorriGiorni.js`).
 - **Sulla schermata Home si apre come un'app**, a tutto schermo, senza le
@@ -511,12 +513,12 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/breakpoints.js` (`isPhoneSize`) + `telefono.css` sezione 10 | Il telefono tenuto di traverso resta un telefono, la scheda e la barra compatte. Testato in `tests/unit/breakpoints.test.js` |
-| `frontend/src/composables/scorriGiorni.js` | Il giorno (e la settimana) dell'agenda si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
+| `frontend/src/composables/scorriGiorni.js` + `components/Mobile/AgendaDelGiorno.vue`, `pages/Today.vue` | Il giorno (e la settimana) dell'agenda e il giorno dell'accoglienza si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
 | `frontend/src/utils/installa.js` + `components/Mobile/InstallaApp.vue` | L'app sulla schermata Home: cosa propone «Altro» (`comeInstallare`), l'offerta del browser tenuta per il pulsante. Testato in `tests/unit/installa.test.js` |
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
 | `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
 | `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
-| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
+| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
