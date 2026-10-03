@@ -1,7 +1,9 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
+import datetime
 import json
+from unittest import mock
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -235,6 +237,32 @@ class TestAutomation(IntegrationTestCase):
 		self.assertEqual(enr.status, "Completed")
 		self.assertEqual(enr.logs[0].status, "Failed")
 		self.assertEqual(enr.logs[1].status, "Success")
+
+
+class LaFinestraOraria(IntegrationTestCase):
+	"""The hours an automation may write in: Time fields come from the database
+	as a timedelta, «9:00:00», and compared as text «9:00» sorts after «10:30»."""
+
+	def finestra(self, inizio, fine):
+		return frappe._dict(
+			time_window_enabled=1,
+			window_days="[]",
+			window_start=datetime.timedelta(hours=inizio),
+			window_end=datetime.timedelta(hours=fine),
+		)
+
+	def test_una_finestra_che_apre_alle_nove(self):
+		for ora, dentro in ((8, False), (9, True), (10, True), (17, True), (19, False)):
+			adesso = datetime.datetime(2026, 10, 5, ora, 30)
+			with mock.patch.object(engine, "now_datetime", return_value=adesso):
+				self.assertEqual(engine.within_time_window(self.finestra(9, 18)), dentro, ora)
+
+	def test_la_prossima_apertura(self):
+		adesso = datetime.datetime(2026, 10, 5, 20, 0)
+		with mock.patch.object(engine, "now_datetime", return_value=adesso):
+			self.assertEqual(
+				engine.next_window_open(self.finestra(9, 18)), datetime.datetime(2026, 10, 6, 9, 0)
+			)
 
 
 class TestAutomationV2(IntegrationTestCase):
