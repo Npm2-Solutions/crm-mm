@@ -24,6 +24,7 @@ from crm.api.site_routes import (
 	unique_slug,
 )
 from crm.patches.v1_0 import create_first_web_site
+from crm.permissions import livelli
 
 
 class TestSiteRoutes(IntegrationTestCase):
@@ -140,9 +141,25 @@ class TestWebsiteFields(IntegrationTestCase):
 
 
 class TestSiteAPI(IntegrationTestCase):
+	"""The website's calls where Frappe Builder is installed: managing the site
+	needs it (`sito.gestisci` asks the "builder" requirement), and the bench that
+	runs the tests has not got it."""
+
+	def setUp(self):
+		livelli.carica()
+		registro = self.enterContext(livelli.registro_isolato(vuoto=False))
+		registro.requisiti["builder"] = lambda: True
+		livelli.dimentica_cache()
+
 	def tearDown(self):
+		livelli.dimentica_cache()
 		frappe.set_user("Administrator")
 		frappe.db.rollback()
+
+	def test_without_builder_nobody_manages_the_site(self):
+		livelli._r.requisiti["builder"] = lambda: False
+		livelli.dimentica_cache()
+		self.assertRaises(frappe.PermissionError, site.check_route, "una-pagina-nuova")
 
 	def test_status_reports_what_the_ui_needs(self):
 		status = site.get_status()
