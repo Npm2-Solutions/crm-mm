@@ -250,7 +250,10 @@
           :label="entry.obscured ? __('Reveal') : __('Obscure')"
           @click="askObscure('Clinic Record', entry)"
         />
-        <div v-if="entry.mine" class="flex shrink-0 gap-1">
+        <!-- the actions wrap: on a phone attaching, dictating, editing and
+             deleting a draft are wider than the card, and held in one line they
+             pushed the whole Clinic tab sideways -->
+        <div v-if="entry.mine" class="flex min-w-0 flex-wrap gap-1">
           <template v-if="entry.docstatus === 0">
             <FileUploader
               :uploadArgs="{

@@ -41,7 +41,7 @@
         v-for="quote in quotes.data.quotes"
         :key="quote.name"
         type="button"
-        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none max-md:flex-wrap max-md:gap-1"
         @click="openQuote(quote.name)"
       >
         <span class="flex min-w-0 flex-col">
@@ -54,7 +54,9 @@
             {{ quote.practitioner_name }}
           </span>
         </span>
-        <span class="flex shrink-0 items-center gap-2">
+        <!-- on a phone the marks go under the words, which beside them wrapped
+             the amount and who is doing it onto two short lines -->
+        <span class="flex shrink-0 items-center gap-2 max-md:w-full">
           <!-- read like the clinical record: the dossier's rules, the access log -->
           <Badge
             v-if="quote.clinical"
