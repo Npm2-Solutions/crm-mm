@@ -1,45 +1,31 @@
-import json
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-import frappe
+"""The deal's lost reason in its side panel.
+
+The section used to be added to the side panel shared by every deal when one
+deal was marked lost, and taken away when another moved on: whether a deal
+showed it depended on the last deal that changed stage, and every change of
+stage rewrote the layout. Now the layout keeps the section once, after the
+contacts, and a deal's page shows it only while that deal is lost.
+"""
+
+LOST_REASON_SECTION = "lost_reason_section"
 
 
-def add_or_remove_lost_reason_section_in_sidepanel(doc):
-	doctype = doc.doctype
-	if doctype not in ("CRM Deal", "CRM Lead"):
-		return
-
-	status_doctype = "CRM Deal Status" if doctype == "CRM Deal" else "CRM Lead Status"
-
-	status = None
-	if getattr(doc, "status", None):
-		status = frappe.db.get_value(status_doctype, doc.status, "type")
-	is_lost = status and status == "Lost"
-
-	layout_doc = frappe.get_doc("CRM Fields Layout", f"{doctype}-Side Panel")
-	sections = json.loads(layout_doc.layout)
-
-	lost_reason_section = {
-		"name": "lost_reason_section",
+def lost_reason_section() -> dict:
+	return {
 		"label": "Lost Reason",
+		"name": LOST_REASON_SECTION,
 		"opened": True,
-		"columns": [
-			{
-				"name": "lost_reason_column",
-				"fields": ["lost_reason", "lost_notes"],
-			}
-		],
+		"columns": [{"name": "lost_reason_column", "fields": ["lost_reason", "lost_notes"]}],
 	}
 
-	section_exists = any(section.get("name") == "lost_reason_section" for section in sections)
 
-	if is_lost and not section_exists:
-		if sections and sections[0].get("name") == "contacts_section":
-			sections = [*sections[:1], lost_reason_section, *sections[1:]]
-		else:
-			sections = [lost_reason_section, *sections]
-		layout_doc.layout = json.dumps(sections)
-		layout_doc.save(ignore_permissions=True)
-	elif not is_lost and section_exists:
-		sections = [section for section in sections if section.get("name") != "lost_reason_section"]
-		layout_doc.layout = json.dumps(sections)
-		layout_doc.save(ignore_permissions=True)
+def with_lost_reason_section(sections: list) -> list:
+	"""The side panel's sections with the lost reason once: after the contacts,
+	else first. Pure: the same list back when it is there already."""
+	if any(section.get("name") == LOST_REASON_SECTION for section in sections):
+		return sections
+	if sections and sections[0].get("name") == "contacts_section":
+		return [*sections[:1], lost_reason_section(), *sections[1:]]
+	return [lost_reason_section(), *sections]

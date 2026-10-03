@@ -2,6 +2,7 @@ import {
   defaultPipeline,
   kanbanColumnsForPipeline,
   pipelineOfColumns,
+  sezioniDellaTrattativa,
   stageNames,
   stagesOfPipeline,
 } from '@/utils/pipelines'
@@ -112,5 +113,26 @@ describe('defaultPipeline', () => {
 
   it('returns null without pipelines', () => {
     expect(defaultPipeline([])).toBe(null)
+  })
+})
+
+describe('sezioniDellaTrattativa', () => {
+  const sezioni = [
+    { name: 'contacts_section' },
+    { name: 'lost_reason_section' },
+    { name: 'organization_section' },
+  ]
+
+  it('shows the lost reason only while the deal is lost', () => {
+    expect(sezioniDellaTrattativa(sezioni, false).map((s) => s.name)).toEqual([
+      'contacts_section',
+      'organization_section',
+    ])
+    expect(sezioniDellaTrattativa(sezioni, true)).toHaveLength(3)
+  })
+
+  it('takes a layout not loaded yet', () => {
+    expect(sezioniDellaTrattativa(undefined, false)).toEqual([])
+    expect(sezioniDellaTrattativa(null, true)).toEqual([])
   })
 })

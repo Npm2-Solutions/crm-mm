@@ -59,3 +59,14 @@ export function defaultPipeline(pipelines = []) {
     null
   )
 }
+
+/**
+ * A deal's side panel: the lost reason only while the deal is lost. The
+ * layout keeps the section for every deal (crm/fcrm/doctype/utils.py).
+ */
+export function sezioniDellaTrattativa(sezioni = [], persa = false) {
+  if (persa) return sezioni || []
+  return (sezioni || []).filter(
+    (sezione) => sezione.name !== 'lost_reason_section',
+  )
+}
