@@ -55,7 +55,7 @@
           }}
         </div>
         <div
-          v-if="bloccata && !scelta && (calling || onCall)"
+          v-if="avvisoAgcom && !scelta && (calling || onCall)"
           class="flex gap-1.5 text-sm leading-snug"
         >
           <span
@@ -108,7 +108,7 @@
               </button>
             </div>
           </div>
-          <div v-if="bloccata" class="flex gap-1.5 text-sm leading-snug">
+          <div v-if="avvisoAgcom" class="flex gap-1.5 text-sm leading-snug">
             <span
               class="lucide-triangle-alert mt-0.5 size-3.5 shrink-0 text-ink-amber-6"
               aria-hidden="true"
@@ -306,6 +306,7 @@ import { useDoctypeModal } from '@/composables/doctypeModal'
 import {
   TASTI,
   bloccataInItalia,
+  incertaInItalia,
   numeroIniziale,
   siSceglie,
 } from '@/utils/chiamate'
@@ -427,15 +428,24 @@ const paeseChiamato = ref('')
 const bloccata = computed(() =>
   bloccataInItalia(numeri.value, mostrato.value, paeseChiamato.value),
 )
-const avvisoAgcom = computed(() =>
-  siSceglie(numeri.value)
-    ? __(
-        'Calls to Italy showing an Italian mobile have been blocked since November 2025: choose a landline.',
-      )
-    : __(
-        'Calls to Italy showing an Italian mobile have been blocked since November 2025: ask the manager for a landline.',
-      ),
+const incerta = computed(() =>
+  incertaInItalia(numeri.value, mostrato.value, paeseChiamato.value),
 )
+const avvisoAgcom = computed(() => {
+  if (bloccata.value)
+    return siSceglie(numeri.value)
+      ? __(
+          'Calls to Italy showing an Italian mobile have been blocked since November 2025: choose a landline.',
+        )
+      : __(
+          'Calls to Italy showing an Italian mobile have been blocked since November 2025: ask the manager for a landline.',
+        )
+  if (incerta.value)
+    return __(
+      'This number is only verified in Twilio: in Italy the call may arrive without it, as the operators allow since August 2025.',
+    )
+  return ''
+})
 
 // the number shown last, remembered in this browser only
 const RICORDATO = 'dottorcloud:numero-da-mostrare'

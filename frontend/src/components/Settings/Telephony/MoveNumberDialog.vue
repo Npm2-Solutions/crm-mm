@@ -5,9 +5,9 @@
   A number the centre already has (doc 52, sixth part). In its own Twilio account:
   the account's codes pasted again - for this alone, never kept - the numbers
   there, and the one chosen moved into DottorCloud's space with its documents and
-  its address, answering on DottorCloud. With another operator: its calls
-  forwarded to a number of the centre's here, or the number ported to Twilio and
-  then moved.
+  its address, answering on DottorCloud. With another operator: shown on calls
+  once Twilio verified it, its calls forwarded to a number of the centre's here,
+  or the number ported to Twilio and then moved.
 -->
 <template>
   <Dialog
@@ -133,6 +133,24 @@
         </template>
 
         <div v-else class="flex flex-col gap-4 text-p-sm text-ink-gray-7">
+          <div class="flex flex-col gap-1.5">
+            <span class="text-p-base-medium text-ink-gray-8">
+              {{ __('Show it on the calls you make') }}
+            </span>
+            <span>
+              {{
+                __(
+                  'Twilio verifies it with a call and a code, with no document: calls to it keep ringing where they ring now. In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, port it.',
+                )
+              }}
+            </span>
+            <Button
+              class="self-start"
+              variant="subtle"
+              :label="__('Verify it')"
+              @click="emit('verifica')"
+            />
+          </div>
           <div class="flex flex-col gap-1">
             <span class="text-p-base-medium text-ink-gray-8">
               {{ __('Forward its calls') }}
@@ -205,7 +223,7 @@ const props = defineProps({
   // whether DottorCloud's space is in the centre's own account
   delCentro: { type: Boolean, default: false },
 })
-const emit = defineEmits(['moved'])
+const emit = defineEmits(['moved', 'verifica'])
 const show = defineModel({ type: Boolean })
 
 const dove = ref('twilio')
