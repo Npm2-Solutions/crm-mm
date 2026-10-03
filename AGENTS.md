@@ -625,6 +625,11 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   (`v-show`), or the covered page's positioned controls are drawn over it.
 - An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
   or `lucide-…`: any other name draws an empty circle.
+- A field asks for its keyboard (`utils/tastiera.js`): `tastieraDi(field)` for
+  a DocType's field, `tastiera('telefono')`, `'email'`, `'url'`, `'codice'`,
+  `'cifre'` elsewhere; a whole number on `type="number"` has
+  `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
+  keyboard: iPhone's decimal pad has only the comma.
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
   setting's words above, its field under them as wide as the screen, a switch
   beside its words; a page's save bar is the screen's bar, its button as wide
