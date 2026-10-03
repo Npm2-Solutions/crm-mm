@@ -436,7 +436,9 @@ CRM](#i-nuovi-clienti-passano-al-crm-diventare-paziente-è-diventare-cliente).
 ### La seconda cucitura: la giornata della segreteria
 
 Fatta il 29/09/2026 (fase 1), in `crm/scheduling/esiti.py`, `crm/api/oggi.py` e nella
-pagina **Oggi** (`/crm/oggi`, per chi ha `agenda.presenze`):
+pagina **Oggi** (`/crm/oggi`, per chi ha `agenda.presenze`), che dal 03/10/2026 è
+l'**Accoglienza** (`/crm/accoglienza`), una vista dell'agenda accanto alla griglia e
+alla lista d'attesa (doc 34 di progetto-ghl):
 
 - **L'accettazione.** Al banco si dice che qualcuno è arrivato: il partecipante
   passa a "Arrived" e la sala d'attesa conta da quel momento. Con la clinica accesa

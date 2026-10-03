@@ -161,8 +161,8 @@ separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 ### The main menu (docs/progetto-ghl/34)
 | File | Role |
 |---|---|
-| `frontend/src/utils/menu.js` | The menu as data: the day's group (no label, the dashboard last where the day opens on Today), then marketing; each entry its page, icon and `condition` on the session; the pages that live together (`SORELLE`: Agenda and the waiting list, People and the companies, Tasks and the notes); `menuDi()`, `paginaSorelle()`, `barraDelTelefono()` (the phone's four places) — tested |
-| `frontend/src/components/Layouts/AppSidebar.vue`, `Mobile/MobileBottomNav.vue`, `Icons/menu.js`, `ViewBreadcrumbs.vue` | The sidebar draws the menu with the design system's group labels, the phone's bar takes its places; the same icons; a page with sisters draws their switch in its header, and lights the entry it lives in (`utils/navigation.js`) |
+| `frontend/src/utils/menu.js` | The menu as data: the day's group (no label, the dashboard last where the day opens on the reception desk), then marketing; each entry its page, icon and `condition` on the session; the pages that live together (`SORELLE`: the reception desk, the agenda and the waiting list; People and the companies; Tasks and the notes); `menuDi()`, `paginaSorelle()`, `barraDelTelefono()` (the phone's four places) — tested |
+| `frontend/src/components/Layouts/AppSidebar.vue`, `Mobile/MobileBottomNav.vue`, `Icons/menu.js`, `ViewBreadcrumbs.vue` | The sidebar draws the menu with the design system's group labels, the phone's bar takes its places; the same icons; a page with sisters draws their switch in its header (on a phone, three sisters are the title's menu), and lights the entry it lives in (`utils/navigation.js`) |
 | `frontend/src/components/Telephony/PhoneButton.vue`, `PhonePanel.vue` + `crm/telephony/pannello.py`, `utils/telefono.js` | The phone at the top right of every page where a telephony is on: a number or a name, the keypad, the last calls, the callbacks owed, the register and the round of calls (`Dialer`) — never menu entries |
 
 A new page that people open every day goes in the menu's data, in the group of its
@@ -568,7 +568,7 @@ the Frappe site's public pages: those belong to each centre.
 | File | Role |
 |---|---|
 | `crm/scheduling/esiti.py` | How an appointment went: check-in (`Arrived`, `arrived_at`), who may mark (`agenda.presenze`), visit and invoice close it, the end-of-day "did they come?" |
-| `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The Today page: arrivals, waiting room, days left open, what is left to invoice |
+| `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The reception desk («Accoglienza», `/accoglienza`, once Today at `/oggi`): arrivals, waiting room, days left open, what is left to invoice; a view of the agenda, beside it and the waiting list in the header's switch |
 | `frontend/src/utils/oggi.js` | Pure: waiting time, next outcomes, summary, days — tested |
 
 An automation for marketing asks `marketing_consent`: `engine.enroll` skips whoever
