@@ -39,14 +39,12 @@ AGENZIA = {
 		"webhook_base_url",
 		"sip_trunks",
 	),
-	"CRM Exotel Settings": ("account_sid", "api_key", "api_token", "webhook_verify_token", "subdomain"),
 	"CRM Transcription Settings": ("base_url", "model", "api_key", "max_recording_mb", "request_timeout"),
 	"CRM Tracking Settings": ("retention_days", "allowed_origins", "excluded_ips"),
 }
 CENTRO = {
 	"FCRM Settings": ("currency", "service_provider", "enable_forecasting"),
 	"CRM Twilio Settings": ("enabled", "record_calls", "recording_notice"),
-	"CRM Exotel Settings": ("enabled", "record_call"),
 	"CRM Transcription Settings": (
 		"enabled",
 		"auto_transcribe",

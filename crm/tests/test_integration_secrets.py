@@ -17,7 +17,6 @@ from unittest.mock import MagicMock, patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
-from frappe.utils import set_request
 from frappe.utils.password import remove_encrypted_password
 
 from crm.fcrm.doctype.crm_booking_connection.crm_booking_connection import connection_for_token
@@ -28,7 +27,6 @@ SALES_USER = "secrets.user@example.com"
 SECRETS = {
 	"FCRM Settings": ("access_key",),
 	"CRM Meta Settings": ("webhook_verify_token",),
-	"CRM Exotel Settings": ("api_key", "webhook_verify_token"),
 	"CRM Booking Connection": ("webhook_token",),
 }
 
@@ -37,8 +35,6 @@ SECRETS = {
 PLAIN_TEXT = {
 	("FCRM Settings", "access_key"): "plain-exchange-key",
 	("CRM Meta Settings", "webhook_verify_token"): "plain-meta-token",
-	("CRM Exotel Settings", "api_key"): "plain-exotel-key",
-	("CRM Exotel Settings", "webhook_verify_token"): "plain-exotel-token",
 }
 
 
@@ -116,42 +112,20 @@ class TestSecretsAreNotHandedOut(SecretsTestCase):
 		self.assertEqual(len(token), 32)
 		self.assert_single_masked_for(MANAGER, "CRM Meta Settings", "webhook_verify_token", token)
 
-	def test_the_exotel_credentials_are_masked_for_a_manager(self):
-		save_single("CRM Exotel Settings", enabled=0, api_key="exotel-key", webhook_verify_token="exo-verify")
-		self.assert_single_masked_for(MANAGER, "CRM Exotel Settings", "api_key", "exotel-key")
-		self.assert_single_masked_for(MANAGER, "CRM Exotel Settings", "webhook_verify_token", "exo-verify")
-
 	def test_the_agency_keys_do_not_reach_a_manager_at_all(self):
 		save_single("FCRM Settings", access_key="exchange-live-key")
-		save_single("CRM Exotel Settings", enabled=0, api_key="exotel-key", account_sid="exo-sid")
+		save_single(
+			"CRM Transcription Settings",
+			enabled=0,
+			api_key="transcription-key",
+			base_url="https://transcribe.example.com",
+		)
 		frappe.set_user(MANAGER)
 		# Frappe lists every field of the doctype: the value is what must not come
 		self.assertIsNone(frappe.client.get("FCRM Settings").get("access_key"))
-		exotel = frappe.client.get("CRM Exotel Settings")
-		self.assertIsNone(exotel.get("api_key"))
-		self.assertIsNone(exotel.get("account_sid"))
-
-	def test_a_manager_saving_the_settings_leaves_the_agency_keys_alone(self):
-		save_single("CRM Exotel Settings", enabled=0, account_sid="exo-sid", subdomain="api.exotel.com")
-		frappe.set_user(MANAGER)
-		exotel = frappe.get_doc(frappe.client.get("CRM Exotel Settings"))
-		exotel.record_call = 1
-		exotel.account_sid = "someone-else"
-		exotel.subdomain = "evil.example.com"
-		exotel.save()
-		frappe.set_user("Administrator")
-		frappe.clear_document_cache("CRM Exotel Settings", "CRM Exotel Settings")
-		saved = frappe.get_single("CRM Exotel Settings")
-		self.assertEqual(saved.record_call, 1)
-		self.assertEqual(saved.account_sid, "exo-sid")
-		self.assertEqual(saved.subdomain, "api.exotel.com")
-
-	def test_connecting_a_provider_is_the_agencys(self):
-		frappe.set_user(MANAGER)
-		exotel = frappe.get_doc(frappe.client.get("CRM Exotel Settings"))
-		exotel.enabled = 1
-		with self.assertRaises(frappe.PermissionError):
-			exotel.save()
+		trascrizione = frappe.client.get("CRM Transcription Settings")
+		self.assertIsNone(trascrizione.get("api_key"))
+		self.assertIsNone(trascrizione.get("base_url"))
 
 	def test_the_booking_webhook_token_is_masked_for_a_manager(self):
 		conn = make_connection()
@@ -213,32 +187,6 @@ class TestSecretsStillWork(SecretsTestCase):
 				)
 				self.assertEqual(refused.status_code, 403, offered)
 
-	def test_exotel_gets_the_key_and_checks_its_webhook(self):
-		from crm.integrations.exotel import handler
-
-		save_single(
-			"CRM Exotel Settings",
-			enabled=0,
-			api_key="exotel-key",
-			api_token="exotel-token",
-			subdomain="api.exotel.com",
-			account_sid="acme",
-			webhook_verify_token="exo-verify",
-		)
-		self.assertIn("exotel-key:exotel-token@", handler.get_exotel_endpoint("Calls/connect"))
-		self.assertIn("key=exo-verify", handler.get_status_updater_url())
-
-		original = getattr(frappe.local, "request", None)
-		try:
-			set_request(method="POST", path="/api/method/x", query_string="key=exo-verify")
-			handler.validate_request()
-			for key in ("*" * 10, "wrong", "", "clé"):
-				set_request(method="POST", path="/api/method/x", query_string={"key": key})
-				with self.assertRaises(frappe.PermissionError, msg=key):
-					handler.validate_request()
-		finally:
-			frappe.local.request = original
-
 	def test_the_booking_token_names_its_connection(self):
 		conn = make_connection()
 		token = conn.get_password("webhook_token")
@@ -295,10 +243,10 @@ class TestTheMigrationPatch(SecretsTestCase):
 	def test_nothing_stored_stays_nothing(self):
 		from crm.patches.v1_0.encrypt_integration_secrets import execute
 
-		remove_encrypted_password("CRM Exotel Settings", "CRM Exotel Settings", "api_key")
-		frappe.db.set_single_value("CRM Exotel Settings", "api_key", None)
+		remove_encrypted_password("CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token")
+		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", None)
 		execute()
-		self.assertFalse(frappe.db.get_single_value("CRM Exotel Settings", "api_key"))
+		self.assertFalse(frappe.db.get_single_value("CRM Meta Settings", "webhook_verify_token"))
 		self.assertIsNone(
-			frappe.get_single("CRM Exotel Settings").get_password("api_key", raise_exception=False)
+			frappe.get_single("CRM Meta Settings").get_password("webhook_verify_token", raise_exception=False)
 		)

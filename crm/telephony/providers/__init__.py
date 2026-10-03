@@ -20,7 +20,6 @@ from crm.telephony.providers.base import (  # re-exported so callers import one 
 
 REGISTRY: dict[str, str] = {
 	"twilio": "crm.telephony.providers.twilio.TwilioProvider",
-	"exotel": "crm.telephony.providers.exotel.ExotelProvider",
 }
 
 

@@ -59,7 +59,7 @@ class CRMCallLog(Document):
 		transcript_language: DF.Data | None
 		transcription_error: DF.SmallText | None
 		transcription_status: DF.Literal["", "Pending", "In Progress", "Completed", "Failed", "Skipped"]
-		telephony_medium: DF.Literal["", "Manual", "Twilio", "Exotel"]
+		telephony_medium: DF.Literal["", "Manual", "Twilio"]
 		to: DF.Data
 		type: DF.Literal["Incoming", "Outgoing"]
 	# end: auto-generated types
@@ -147,11 +147,11 @@ class CRMCallLog(Document):
 		agent = frappe.db.get_value(
 			"CRM Telephony Agent",
 			frappe.session.user,
-			["mobile_no", "twilio_number", "exotel_number"],
+			["mobile_no", "twilio_number"],
 			as_dict=True,
 		)
 		if agent:
-			for field in ("mobile_no", "twilio_number", "exotel_number"):
+			for field in ("mobile_no", "twilio_number"):
 				if agent.get(field):
 					return agent[field]
 		return frappe.db.get_value("User", frappe.session.user, "mobile_no") or ""

@@ -1,4 +1,5 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 import frappe
@@ -18,8 +19,7 @@ class CRMTelephonyAgent(Document):
 		from crm.fcrm.doctype.crm_telephony_phone.crm_telephony_phone import CRMTelephonyPhone
 
 		call_receiving_device: DF.Literal["Computer", "Phone"]
-		default_medium: DF.Literal["", "Twilio", "Exotel"]
-		exotel_number: DF.Data | None
+		default_medium: DF.Literal["", "Twilio"]
 		mobile_no: DF.Data | None
 		phone_nos: DF.Table[CRMTelephonyPhone]
 		twilio_number: DF.Data | None
