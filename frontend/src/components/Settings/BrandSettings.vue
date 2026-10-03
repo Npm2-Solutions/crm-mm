@@ -1,4 +1,6 @@
 <!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
   Settings > The centre > General > Name & logo: the centre's own mark, which
   leads where a person deals with the centre - the client area, the public pages -
   while the product signs at the foot (crm.marchio); the sidebar wears the
@@ -39,8 +41,12 @@
       </div>
     </div>
 
-    <!-- Fields -->
-    <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-2">
+    <!-- Fields: once the settings have come, or the first draw reads a name
+         from nothing -->
+    <div
+      v-if="settings.doc"
+      class="flex flex-1 flex-col gap-4 overflow-y-auto p-2"
+    >
       <!-- on a phone the field goes under its label: beside it, it had room
            for «Enter Brand N» -->
       <div
