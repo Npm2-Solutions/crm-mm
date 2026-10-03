@@ -142,7 +142,7 @@
 <script setup>
 import { Button, ErrorMessage, FormControl } from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import LucideCalendar from '~icons/lucide/calendar'
 import LucideFileText from '~icons/lucide/file-text'
 import LucideHouse from '~icons/lucide/house'
@@ -153,6 +153,7 @@ import { area, choose, loadMe, logout, section } from './store'
 import CentreTile from '@/components/CentreTile.vue'
 import { useFormaDelLogo } from '@/composables/formaDelLogo'
 import { marchio } from '@/utils/marchio'
+import { chiudiPrimaDiTornare } from '@/utils/indietro'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
 
 // the keyboard covers the bottom of the phone without making the page any
@@ -161,12 +162,17 @@ import { seguiLaTastiera } from '@/utils/tastieraAperta'
 // shows it, where iPhone listens to a touch
 let smettiDiSeguire = () => {}
 function alTocco() {}
+// Android's back closes a dialog of the area before it leaves the page
+const router = useRouter()
+let smettiIndietro = () => {}
 onMounted(() => {
   smettiDiSeguire = seguiLaTastiera()
+  smettiIndietro = chiudiPrimaDiTornare(router)
   document.addEventListener('touchstart', alTocco, { passive: true })
 })
 onBeforeUnmount(() => {
   smettiDiSeguire()
+  smettiIndietro()
   document.removeEventListener('touchstart', alTocco)
 })
 
