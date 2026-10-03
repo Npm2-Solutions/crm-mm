@@ -468,10 +468,14 @@ the draft with `modello.accetta`.
 | `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
 | `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts, the data import pages, the editor's toolbar), the agenda's calendar named by Intl in the boot's language; each rewrite must match frappe-ui's source — tested |
 | `frontend/src/area/it.js` | The client area's dictionary: a test reads every `__()` of `src/area` and wants it there |
+| `crm/lingue.py` | The language DottorCloud writes its own words in on a site (`del_centro()`): the site's, Italian where it was left on the framework's English in Italy or nowhere said; the consents' texts, the pipelines' stages, the libraries' words. What DottorCloud wrote in another language follows it at a migrate and after the setup wizard (a consent's text by `registro.testo_da_tradurre`, a new version of the forms frozen on it, the libraries loaded again); the centre's words stay — tested |
 
 A value a list shows from a choice (status, priority) or from a translated
 DocType (stages, sources, reasons) goes through `__()`: the default ones read in
-the user's language, a name the centre wrote stays as written. Times are the
+the user's language, a name the centre wrote stays as written. What DottorCloud
+writes into a site once (a consent's text, a pipeline's stages, a library's words)
+is in `lingue.del_centro()`, never the System Settings language read on its own: a
+site installed before anybody chose is in the framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 When one English sentence needs two Italian ones, the rarer place passes a
 context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
