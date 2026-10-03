@@ -14,7 +14,9 @@ at what was assigned to it as Twilio would - every field of whose the number is,
 a document of an accepted kind for each requirement. ``Mondo.carica`` stands for
 the upload of a document's file. What a space spends this month is
 ``Mondo.spende``, a line of its log of problems ``Mondo.problema``; its usage
-triggers are kept as Twilio keeps them.
+triggers are kept as Twilio keeps them. A number to verify is called and its code
+typed with ``Mondo.codice_digitato``; one verified in the console is
+``Mondo.verificato``.
 """
 
 from __future__ import annotations
@@ -187,6 +189,10 @@ class Mondo:
 		self.consumi: dict[str, dict[str, SimpleNamespace]] = {}
 		self.soglie: dict[str, list[SimpleNamespace]] = {}
 		self.allarmi: dict[str, list[SimpleNamespace]] = {}
+		#: the numbers each account verified to show on calls (its outgoing caller
+		#: IDs), and every verification asked, waiting for its code
+		self.verificati: dict[str, list[SimpleNamespace]] = {}
+		self.verifiche: list[SimpleNamespace] = []
 
 	def conto(self, nome: str, padre: str | None = None, tipo: str = "Full", stato: str = "active"):
 		sid = _sid("AC")
@@ -201,7 +207,31 @@ class Mondo:
 		self.conti[sid] = conto
 		self.chiavi[sid], self.app[sid], self.numeri[sid] = [], [], []
 		self.consumi[sid], self.soglie[sid], self.allarmi[sid] = {}, [], []
+		self.verificati[sid] = []
 		return conto
+
+	def codice_digitato(self, verifica: SimpleNamespace, giusto: bool = True) -> SimpleNamespace | None:
+		"""Whoever answered Twilio's call typed the code: the number becomes one of
+		the account's outgoing caller IDs. A wrong code, or no answer, leaves nothing."""
+		verifica.esito = "success" if giusto else "failed"
+		if not giusto:
+			return None
+		verificato = SimpleNamespace(
+			sid=_sid("PN"),
+			phone_number=verifica.phone_number,
+			friendly_name=verifica.friendly_name,
+			account_sid=verifica.account_sid,
+		)
+		self.verificati[verifica.account_sid].append(verificato)
+		return verificato
+
+	def verificato(self, conto: str, telefono: str, nome: str | None = None) -> SimpleNamespace:
+		"""A number the account verified already, in Twilio's console."""
+		verificato = SimpleNamespace(
+			sid=_sid("PN"), phone_number=telefono, friendly_name=nome or telefono, account_sid=conto
+		)
+		self.verificati[conto].append(verificato)
+		return verificato
 
 	def spende(
 		self, conto: str, categoria: str, price: str, count=0, usage=0, usage_unit="", price_unit="usd"
@@ -429,6 +459,64 @@ class _Una:
 			(self.risorsa.conto.sid, f"delete {self.risorsa.tipo}", self.cosa.sid)
 		)
 		return True
+
+
+class _Verificati(_Risorsa):
+	"""An account's outgoing caller IDs: Twilio filters them by number."""
+
+	def list(self, phone_number=None, friendly_name=None, limit=None, **_filtri):
+		trovati = [
+			c
+			for c in self.elenco
+			if (phone_number is None or c.phone_number == phone_number)
+			and (friendly_name is None or c.friendly_name == friendly_name)
+		]
+		return trovati[:limit] if limit else trovati
+
+
+class _Verifiche:
+	"""Twilio's ValidationRequests: a call to the number, and the code to type on it."""
+
+	def __init__(self, mondo, conto):
+		self.mondo, self.conto = mondo, conto
+
+	def create(
+		self,
+		phone_number,
+		friendly_name=None,
+		call_delay=None,
+		extension=None,
+		status_callback=None,
+		status_callback_method=None,
+	):
+		percorso = "/OutgoingCallerIds.json"
+		if any(c.phone_number == phone_number for c in self.mondo.verificati[self.conto.sid]):
+			raise TwilioRestException(400, percorso, "Phone number is already verified.", code=21450)
+		if any(n.phone_number == phone_number for n in self.mondo.numeri[self.conto.sid]):
+			raise TwilioRestException(
+				400, percorso, "Phone number is already a Twilio number of the account.", code=21449
+			)
+		if call_delay is not None and not 0 <= int(call_delay) <= 60:
+			raise TwilioRestException(400, percorso, "CallDelay is invalid.", code=21454)
+		if friendly_name and len(friendly_name) > 64:
+			raise TwilioRestException(400, percorso, "FriendlyName is too long.", code=20001)
+		if not str(phone_number).startswith("+"):
+			raise TwilioRestException(400, percorso, "The phone number is invalid.", code=21401)
+		verifica = SimpleNamespace(
+			account_sid=self.conto.sid,
+			call_sid=_sid("CA"),
+			phone_number=phone_number,
+			friendly_name=friendly_name or phone_number,
+			validation_code=f"{secrets.randbelow(10**6):06d}",
+			call_delay=call_delay,
+			extension=extension,
+			status_callback=status_callback,
+			status_callback_method=status_callback_method,
+			esito=None,
+		)
+		self.mondo.verifiche.append(verifica)
+		self.mondo.cambi.append((self.conto.sid, "create ValidationRequest", verifica.call_sid))
+		return verifica
 
 
 class _Numeri(_Risorsa):
@@ -784,7 +872,8 @@ class _Client:
 		self.incoming_phone_numbers = _Numeri(
 			mondo, conto, "IncomingPhoneNumber", mondo.numeri[sid], crea=compra
 		)
-		self.outgoing_caller_ids = _Risorsa(mondo, conto, "OutgoingCallerId", [])
+		self.outgoing_caller_ids = _Verificati(mondo, conto, "OutgoingCallerId", mondo.verificati[sid])
+		self.validation_requests = _Verifiche(mondo, conto)
 
 		def nuova_soglia(callback_url=None, trigger_value=None, usage_category=None, **valori):
 			return SimpleNamespace(

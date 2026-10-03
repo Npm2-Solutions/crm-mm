@@ -12,6 +12,14 @@
   "enabled",
   "provider",
   "source",
+  "provider_sid",
+  "verification_section",
+  "verification_status",
+  "verified_on",
+  "column_break_verification",
+  "verification_requested_by",
+  "verification_requested_on",
+  "verification_call_sid",
   "classification_section",
   "number_type",
   "country",
@@ -75,6 +83,57 @@
    "in_standard_filter": 1,
    "label": "Source",
    "options": "Account Number\nVerified Caller ID\nManual"
+  },
+  {
+   "fieldname": "provider_sid",
+   "fieldtype": "Data",
+   "label": "SID at the provider",
+   "read_only": 1,
+   "description": "How the provider names the number: Twilio's PN… code."
+  },
+  {
+   "fieldname": "verification_section",
+   "fieldtype": "Section Break",
+   "label": "Verification",
+   "depends_on": "eval:doc.source=='Verified Caller ID'"
+  },
+  {
+   "fieldname": "verification_status",
+   "fieldtype": "Select",
+   "label": "Verification",
+   "options": "\nPending\nVerified\nFailed",
+   "read_only": 1,
+   "description": "Pending: Twilio is calling the number and waits for the code. Verified: it can be shown on calls. Failed: the call was not answered or the code was not typed."
+  },
+  {
+   "fieldname": "verified_on",
+   "fieldtype": "Datetime",
+   "label": "Verified On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_verification",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "verification_requested_by",
+   "fieldtype": "Link",
+   "label": "Asked By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verification_requested_on",
+   "fieldtype": "Datetime",
+   "label": "Asked On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verification_call_sid",
+   "fieldtype": "Data",
+   "label": "Verification Call",
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "classification_section",
@@ -177,7 +236,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Caller ID",

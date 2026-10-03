@@ -55,6 +55,8 @@ MESSAGGI = ("whatsapp", "sms", "email")
 PAGINE = {"CRM Lead": ("Lead", "leadId"), "CRM Deal": ("Deal", "dealId")}
 #: The kinds that open a page of the settings instead: the page, and the step of it.
 IMPOSTAZIONI = {"phone": {"page": "Telephony", "step": "twilio-settings"}}
+#: What a notification is about, when it opens another step of that page.
+IMPOSTAZIONI_DI = {"CRM Caller ID": {"page": "Telephony", "step": "caller-id-settings"}}
 
 
 @frappe.whitelist()
@@ -99,7 +101,8 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 				"count": cint(riga.count) or 1,
 				"creation": riga.creation,
 				"route": percorso(riga, genere, esistenti, compiti_aperti),
-				"settings": IMPOSTAZIONI.get(genere),
+				"settings": IMPOSTAZIONI.get(genere)
+				and IMPOSTAZIONI_DI.get(riga.notification_type_doctype, IMPOSTAZIONI[genere]),
 			}
 		)
 	return pannello

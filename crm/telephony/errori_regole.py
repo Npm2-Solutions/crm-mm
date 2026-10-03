@@ -24,7 +24,7 @@ ERRORI: dict[int, str] = {
 	20003: "Twilio refused {brand}'s codes: check the connection on Twilio's page.",
 	# the SMS
 	21211: "The person's number is not a valid number.",
-	21212: "Twilio does not take the SMS sender: choose another one on Twilio's page.",
+	21212: "Twilio does not take the number or the name shown: choose one of the centre's, or verify it, on Twilio's page.",
 	21408: "SMS to this country are not allowed in the Twilio account's permissions.",
 	21606: "This number of the centre cannot send SMS.",
 	21610: "The person had asked Twilio to stop the SMS from this number, with STOP.",
@@ -41,6 +41,12 @@ ERRORI: dict[int, str] = {
 	13227: "Calls to this country are not allowed in the Twilio account's permissions.",
 	21215: "Calls to this country are not allowed in the Twilio account's permissions.",
 	21216: "Twilio blocked the call: the number is premium-rate or on its block list.",
+	# the number shown on a call
+	13214: "The number shown on the call is neither one of the centre's in Twilio nor verified there: choose another, or verify it on Twilio's page.",
+	21210: "The number shown on the call is not verified in the Twilio space: verify it on Twilio's page, under Numbers.",
+	21264: "The number shown on the call is not verified in the Twilio space: verify it on Twilio's page, under Numbers.",
+	21449: "This number is already one of the centre's numbers on Twilio: it can be shown on calls already.",
+	21450: "This number is verified already: it can be shown on calls.",
 	# the product and Twilio
 	11200: "Twilio could not reach {brand}: an incoming call or SMS may have been lost.",
 	11205: "Twilio could not reach {brand}: an incoming call or SMS may have been lost.",

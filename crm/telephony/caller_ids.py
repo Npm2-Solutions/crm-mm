@@ -83,10 +83,23 @@ def sync(provider_name: str = "twilio") -> dict:
 	if not hasattr(provider, "list_caller_ids"):
 		frappe.throw(_("{0} cannot list its numbers.").format(provider.label), title=_("Not Supported"))
 
+	from crm.telephony import verificati
+	from crm.telephony import verificati_regole as V
+
 	seen: set[str] = set()
 	added = 0
+	rows = provider.list_caller_ids()
+	# a number of the space that is verified too is the space's: calls to it arrive here
+	owned = {classify(r.get("phone_number"))["e164"] for r in rows if r.get("source") == SOURCE_ACCOUNT}
 
-	for row in provider.list_caller_ids():
+	for row in rows:
+		if row.get("source") == SOURCE_VERIFIED:
+			number = classify(row.get("phone_number"))["e164"]
+			if number in owned:
+				continue
+			# verified while nobody was looking: whoever asked hears of it
+			if frappe.db.get_value("CRM Caller ID", number, "verification_status") == V.IN_ATTESA:
+				verificati.segna(number, V.VERIFICATO, sid=row.get("sid"), avvisa_chi=True)
 		name, is_new = _upsert(provider_name, row)
 		if not name:
 			continue
@@ -94,6 +107,7 @@ def sync(provider_name: str = "twilio") -> dict:
 		added += int(is_new)
 
 	retired = _retire_missing(provider_name, seen)
+	verificati.scadute()
 	return {
 		"total": len(seen),
 		"added": added,
@@ -109,9 +123,11 @@ def _upsert(provider_name: str, row: dict) -> tuple[str | None, bool]:
 	if not number:
 		return None, False
 
+	source = row.get("source") or SOURCE_MANUAL
 	values = {
 		"provider": provider_name,
-		"source": row.get("source") or SOURCE_MANUAL,
+		"source": source,
+		"provider_sid": row.get("sid") or None,
 		"number_type": facts["number_type"],
 		"country": facts["country"],
 		"voice_capable": 1 if row.get("voice_capable", True) else 0,
@@ -119,10 +135,12 @@ def _upsert(provider_name: str, row: dict) -> tuple[str | None, bool]:
 		"sip_trunk": row.get("sip_trunk") or None,
 		"sip_trunk_sid": row.get("sip_trunk_sid") or None,
 		"voice_url": row.get("voice_url") or None,
-		"last_synced_on": now_datetime(),
 		"enabled": 1,
+		# Twilio lists a verified number only once its code was typed
+		"verification_status": "Verified" if source == SOURCE_VERIFIED else "",
 	}
 	values.update(_routing(row))
+	synced = now_datetime()
 
 	if frappe.db.exists("CRM Caller ID", number):
 		doc = frappe.get_doc("CRM Caller ID", number)
@@ -130,8 +148,15 @@ def _upsert(provider_name: str, row: dict) -> tuple[str | None, bool]:
 		# when nobody has, so a hand-written one survives every refresh
 		if not doc.label and row.get("label"):
 			values["label"] = row["label"]
-		doc.update(values)
-		doc.save(ignore_permissions=True)
+		if source == SOURCE_VERIFIED and not doc.verified_on:
+			values["verified_on"] = synced
+		if any(_differs(doc.get(field), value) for field, value in values.items()):
+			doc.update(values)
+			doc.last_synced_on = synced
+			doc.save(ignore_permissions=True)
+		else:
+			# nothing changed: the row is not written again every hour
+			frappe.db.set_value("CRM Caller ID", doc.name, "last_synced_on", synced, update_modified=False)
 		return doc.name, False
 
 	doc = frappe.get_doc(
@@ -139,11 +164,21 @@ def _upsert(provider_name: str, row: dict) -> tuple[str | None, bool]:
 			"doctype": "CRM Caller ID",
 			"phone_number": number,
 			"label": row.get("label") or "",
+			"last_synced_on": synced,
+			"verified_on": synced if source == SOURCE_VERIFIED else None,
 			**values,
 		}
 	)
 	doc.insert(ignore_permissions=True)
 	return doc.name, True
+
+
+def _differs(current, new) -> bool:
+	"""Whether a stored value and the one read from the provider are different:
+	a check is 0 or 1, an empty text is no text."""
+	if isinstance(new, bool | int):
+		return frappe.utils.cint(current) != int(new)
+	return (current or None) != (new or None)
 
 
 def _routing(row: dict) -> dict:
@@ -161,9 +196,11 @@ def _routing(row: dict) -> dict:
 	if row.get("source") == SOURCE_VERIFIED:
 		return {
 			"routes_to_crm": 0,
-			"routing_note": _(
-				"Verified as an outgoing caller ID only. It can be presented on calls "
-				"you place, but incoming calls to it do not belong to this account."
+			"routing_note": con_nome(
+				_(
+					"Verified to be shown on the calls you make. Calls to it still ring "
+					"wherever the line is, not in {brand}."
+				)
 			),
 		}
 
@@ -216,6 +253,7 @@ def _retire_missing(provider_name: str, seen: set[str]) -> int:
 			{
 				"enabled": 0,
 				"routes_to_crm": 0,
+				"verification_status": "",
 				"routing_note": _("No longer present on the provider account."),
 			},
 			update_modified=False,
@@ -242,6 +280,9 @@ FIELDS = (
 	"routing_note",
 	"sip_trunk",
 	"last_synced_on",
+	"verification_status",
+	"verification_requested_on",
+	"verified_on",
 )
 
 
@@ -267,27 +308,6 @@ def sync_caller_ids(provider: str = "twilio") -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def verify_number(phone_number: str, label: str | None = None, provider: str = "twilio") -> dict:
-	"""Start the provider's verification for a number the practice owns elsewhere.
-
-	The provider rings it and hands back a code to type on the phone. Answering and
-	entering it is the proof of control — which is the whole difference between a
-	legitimate caller ID and spoofing.
-	"""
-	from crm.telephony import providers
-
-	if not frappe.has_permission("CRM Caller ID", "create"):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
-	if not (phone_number or "").strip():
-		frappe.throw(_("Enter the number to verify."))
-
-	handler = providers.get(provider)
-	if not hasattr(handler, "start_caller_id_verification"):
-		frappe.throw(_("{0} cannot verify a caller ID.").format(handler.label), title=_("Not Supported"))
-	return handler.start_caller_id_verification(phone_number.strip(), label)
-
-
-@frappe.whitelist(methods=["POST"])
 def set_label(name: str, label: str | None = None) -> dict:
 	"""Rename a number in words. The sync leaves a hand-written label alone."""
 	doc = frappe.get_doc("CRM Caller ID", name)
@@ -303,6 +323,9 @@ def set_enabled(name: str, enabled: bool = True) -> dict:
 	doc = frappe.get_doc("CRM Caller ID", name)
 	doc.check_permission("write")
 	doc.enabled = 1 if frappe.utils.sbool(enabled) else 0
+	if doc.enabled and doc.source == SOURCE_VERIFIED and doc.verification_status != "Verified":
+		# Twilio would refuse the call that shows it
+		frappe.throw(_("{0} is not verified: verify it first.").format(doc.phone_number))
 	doc.save()
 	return {"name": doc.name, "enabled": bool(doc.enabled)}
 
@@ -310,6 +333,16 @@ def set_enabled(name: str, enabled: bool = True) -> dict:
 def answering_capable_numbers() -> list[str]:
 	"""Numbers the answering service can actually answer on."""
 	return frappe.get_all("CRM Caller ID", filters={"enabled": 1, "routes_to_crm": 1}, pluck="phone_number")
+
+
+def outbound_filters(provider: str = "twilio") -> dict:
+	"""The rows that may be presented as a caller ID. Twilio presents only a number
+	of the space or one verified there: a row typed by hand would get the call
+	refused (13214), so it is not offered."""
+	filters = {"enabled": 1, "provider": provider, "voice_capable": 1}
+	if provider == "twilio":
+		filters["source"] = ["in", [SOURCE_ACCOUNT, SOURCE_VERIFIED]]
+	return filters
 
 
 def usable_for_outbound(provider: str = "twilio") -> list[str]:
@@ -320,7 +353,7 @@ def usable_for_outbound(provider: str = "twilio") -> list[str]:
 	"""
 	return frappe.get_all(
 		"CRM Caller ID",
-		filters={"enabled": 1, "provider": provider, "voice_capable": 1},
+		filters=outbound_filters(provider),
 		pluck="phone_number",
 		order_by="phone_number asc",
 	)

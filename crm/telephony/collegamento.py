@@ -340,8 +340,9 @@ def _ripara(impostazioni) -> dict:
 	numeri = _numeri(cliente)
 	if app.sid != impostazioni.twiml_sid:
 		frappe.db.set_single_value(IMPOSTAZIONI, "twiml_sid", app.sid)
-	if numeri["sistemati"]:
-		_aggiorna_i_numeri()
+	# the list as the space has it: a number bought, released or verified in the
+	# console, a verification Twilio could not tell DottorCloud of
+	_aggiorna_i_numeri()
 	# somebody may have opened other countries in the console
 	_allinea_i_paesi(impostazioni)
 	# the spend alert the centre set, as Twilio keeps it

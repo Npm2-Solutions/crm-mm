@@ -10,7 +10,8 @@
 - **Which number it shows**: one of the centre's; an Italian mobile shown on a
   call to Italy is blocked since 19 November 2025 (AGCOM 106/25/CONS: a call
   from abroad - Twilio's - with an Italian mobile as its number), so the screen
-  says so.
+  says so. An Italian landline of another operator's, only verified in Twilio,
+  may be blocked the same way since 19 August 2025: the screen warns.
 - **Twilio's own permissions**: the countries the space may call, set the same
   way in Twilio, so a key that leaked could not call anywhere else either.
 
@@ -95,6 +96,22 @@ def cellulare_italiano(numero: str | None) -> bool:
 def bloccata_in_italia(mostrato: str | None, chiamato: str | None) -> bool:
 	"""Whether a call showing ``mostrato`` to ``chiamato`` is one AGCOM has blocked."""
 	return cellulare_italiano(mostrato) and paese_di(chiamato) == ITALIA
+
+
+def incerta_in_italia(mostrato: str | None, chiamato: str | None, verificato: bool) -> bool:
+	"""Whether a call showing ``mostrato`` to ``chiamato`` may arrive without that
+	number, or not arrive: an Italian landline of another operator's, only verified
+	in Twilio, shown on a call to Italy. Since 19/08/2025 an Italian operator may
+	block a call from abroad that shows an Italian landline of somebody else's
+	network (AGCOM 106/25/CONS), and Twilio shows a verified Italian number in Italy
+	only as far as the operators let it. A number bought in Twilio, or moved there,
+	is shown for certain."""
+	return (
+		bool(verificato)
+		and paese_di(mostrato) == ITALIA
+		and not cellulare_italiano(mostrato)
+		and paese_di(chiamato) == ITALIA
+	)
 
 
 #: Twilio's three switches of a country: its ordinary numbers, its special ones,
