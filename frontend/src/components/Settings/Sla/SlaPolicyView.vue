@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <SettingsLayoutBase>
     <template #title>
@@ -141,13 +144,19 @@
                 v-if="!useNewUI"
                 class="flex flex-col gap-3 items-center text-center text-ink-gray-7 text-sm mb-2 border border-outline-gray-3 rounded-md p-3 py-4"
               >
-                <span class="text-p-sm">
-                  Conditions for this SLA were created from
-                  <a :href="deskUrl" target="_blank" class="underline">desk</a>
-                  which are not compatible with this UI, you will need to
-                  recreate the conditions here if you want to manage and add new
-                  conditions from this UI.
-                </span>
+                <!-- one sentence, the link inside it: the words of a language
+                     are never glued around an English one -->
+                <span
+                  class="text-p-sm"
+                  v-html="
+                    __(
+                      'The conditions of this SLA were written in {0}, in a way this page cannot show: write them again here to manage them from this page.',
+                      [
+                        `<a href='${deskUrl}' target='_blank' class='underline'>${__('Desk')}</a>`,
+                      ],
+                    )
+                  "
+                />
                 <Button
                   :label="__('I understand, add conditions')"
                   variant="subtle"
@@ -290,7 +299,8 @@ const slaPolicyListResource = inject('slaPolicyListResource')
 const step = inject('step')
 const updateStep = inject('updateStep')
 
-const deskUrl = `${window.location.origin}/app/crm-service-level-agreement/${step.value.data?.name}`
+// its name escaped: the link is written into the sentence as HTML
+const deskUrl = `${window.location.origin}/app/crm-service-level-agreement/${encodeURIComponent(step.value.data?.name || '')}`
 
 const getSlaResource = createResource({
   url: 'frappe.client.get',
