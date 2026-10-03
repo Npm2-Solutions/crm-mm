@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <Dialog v-model="show" :options="{ title: __('Test run'), size: '2xl' }">
     <template #body-content>
@@ -16,7 +20,7 @@
             type="select"
             :label="__('Record', null, 'Automation record')"
             :options="[
-              { label: __('Lead'), value: 'CRM Lead' },
+              { label: __('Person'), value: 'CRM Lead' },
               { label: __('Deal'), value: 'CRM Deal' },
             ]"
           />

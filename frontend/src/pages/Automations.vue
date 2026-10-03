@@ -1,3 +1,10 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  The automations: the list, a recipe to start from, a new one; on a phone
+  «+» creates one.
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -5,12 +12,26 @@
     </template>
     <template #right-header>
       <div class="flex items-center gap-2">
-        <Button :label="__('Start from a recipe')" @click="showRecipes = true">
+        <!-- on a phone the recipes are an icon and «+» creates: the title had
+             the room of one letter -->
+        <Button
+          v-if="isMobileView"
+          icon="book-open"
+          :aria-label="__('Start from a recipe')"
+          :tooltip="__('Start from a recipe')"
+          @click="showRecipes = true"
+        />
+        <Button
+          v-else
+          :label="__('Start from a recipe')"
+          @click="showRecipes = true"
+        >
           <template #prefix>
             <FeatherIcon name="book-open" class="size-4" />
           </template>
         </Button>
         <Button
+          v-if="!isMobileView"
           variant="solid"
           iconLeft="plus"
           :label="__('Create')"
@@ -129,6 +150,11 @@
       </div>
     </div>
   </div>
+  <PulsanteAggiungi
+    v-if="isMobileView"
+    :label="__('New automation')"
+    @click="create()"
+  />
 
   <Dialog
     v-model="showRecipes"
@@ -166,6 +192,8 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
   Breadcrumbs,

@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div v-if="trigger" class="flex h-full flex-col">
     <div
@@ -67,7 +71,7 @@
             type="select"
             :label="__('Record', null, 'Automation record')"
             :options="[
-              { label: __('Lead'), value: 'CRM Lead' },
+              { label: __('Person'), value: 'CRM Lead' },
               { label: __('Deal'), value: 'CRM Deal' },
             ]"
           />
@@ -131,7 +135,7 @@
         type="select"
         :label="__('Fields to work with (the triggers do not agree)')"
         :options="[
-          { label: __('Lead'), value: 'CRM Lead' },
+          { label: __('Person'), value: 'CRM Lead' },
           { label: __('Deal'), value: 'CRM Deal' },
         ]"
       />
