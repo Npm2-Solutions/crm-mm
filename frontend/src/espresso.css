@@ -116,6 +116,11 @@
     0px 44px 52px -4px rgba(0, 0, 0, 0.42);
   --block-deep: #123b36;
   --on-block-deep: #e1f5f1;
+  /* the states as the system draws them on the dark (espresso-componenti.css):
+     the light ones above would read dark on dark */
+  --ink-amber-8: #f5b544;
+  --ink-red-8: #ff7a80;
+  --ink-green-8: #4cd38a;
 }
 
 /* 4. The cloud's tail: the corner at the bottom left nearly straight, like the
