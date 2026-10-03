@@ -1099,11 +1099,8 @@ msgstr "ACTIVE, PAUSED, DISAPPROVED, WITH_ISSUES… Così Meta dice se questa in
 msgid "API Base URL"
 msgstr "URL di base dell'API"
 
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:45
 #: frontend/src/components/Settings/emailConfig.js:87
-#. Label of the api_key (Data) field in DocType 'CRM Exotel Settings'
 #. Label of the api_key (Data) field in DocType 'CRM Twilio Settings'
 #. Label of the api_key (Data) field in DocType 'ERPNext CRM Settings'
 msgid "API Key"
@@ -1119,12 +1116,6 @@ msgstr "Chiave API / token"
 #. Label of the api_secret (Password) field in DocType 'ERPNext CRM Settings'
 msgid "API Secret"
 msgstr "Segreto API"
-
-#. Label of the api_token (Password) field in DocType 'CRM Exotel Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:53
-msgid "API Token"
-msgstr "Token API"
 
 #: frontend/src/components/Settings/Booking/BookingPlatforms.vue
 msgid "API base URL"
@@ -1282,11 +1273,8 @@ msgstr "Numero dell'account"
 msgid "Account Number: owned outright. Verified Caller ID: proven by a verification call, presentable outbound. Manual: entered by hand and not yet confirmed with the provider."
 msgstr "Numero dell'account: appartiene all'account a tutti gli effetti. ID chiamante verificato: confermato con una chiamata di verifica, si può mostrare nelle chiamate in uscita. Manuale: inserito a mano e non ancora confermato con il fornitore."
 
-#. Label of the account_sid (Data) field in DocType 'CRM Exotel Settings'
 #. Label of the account_sid (Data) field in DocType 'CRM Twilio Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:59
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:45
 msgid "Account SID"
 msgstr "SID dell'Account"
@@ -1599,14 +1587,9 @@ msgstr "Aggiungi una condizione"
 msgid "Add a Custom Condition"
 msgstr "Aggiungi una condizione personalizzata"
 
-#: frontend/src/components/Telephony/ExotelCallUI.vue:183
 #: frontend/src/components/Telephony/TwilioCallUI.vue:57
 msgid "Add a Note"
 msgstr "Aggiungi una nota"
-
-#: frontend/src/components/Telephony/ExotelCallUI.vue:191
-msgid "Add a Task"
-msgstr "Aggiungi una cosa da fare"
 
 #: frontend/src/components/Settings/Forms/TemplateFieldCard.vue
 msgid "Add a band"
@@ -4940,11 +4923,6 @@ msgid "CRM Exercise"
 msgstr "Esercizio"
 
 #. Name of a DocType
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-msgid "CRM Exotel Settings"
-msgstr "Impostazioni Exotel"
-
-#. Name of a DocType
 #: crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.json
 msgid "CRM Fields Layout"
 msgstr "Disposizione dei campi"
@@ -5475,10 +5453,6 @@ msgstr "Richiama entro"
 #: crm/dashboard/widgets/calls.py
 msgid "Call backs due"
 msgstr "Richiamate da fare"
-
-#: frontend/src/components/Telephony/ExotelCallUI.vue
-msgid "Call connected, but the call log could not be saved. Please contact your administrator."
-msgstr "Chiamata avviata, ma non è stato possibile registrarla. Contatta il tuo amministratore."
 
 #: crm/fcrm/doctype/crm_transcription_settings/crm_transcription_settings.json
 msgid "Call content is personal data, and for a health practice it is a special category. Keep it only as long as there is a reason to."
@@ -6775,14 +6749,6 @@ msgstr ""
 #: frontend/src/components/Settings/CalendarSettings.vue:12
 msgid "Configure your Calendar Settings like Default View and Event Notifications here"
 msgstr ""
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:184
-msgid "Configure your Exotel Telephony Integration Settings here"
-msgstr ""
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
-msgid "Configure your Exotel telephony integration settings here"
-msgstr "Configura qui l'integrazione telefonica con Exotel"
 
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:157
 msgid "Configure your Twilio Telephony Integration Settings here"
@@ -8164,7 +8130,6 @@ msgstr "Scadenza {0}, mancano {1} giorni."
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:77
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:51
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:59
-#: frontend/src/components/Telephony/ExotelCallUI.vue:200
 #: frontend/src/pages/Tasks.vue:132
 msgid "Deal"
 msgstr "Trattativa"
@@ -8829,7 +8794,6 @@ msgstr "Direzione"
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.js:30
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:31
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:316
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:29
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:29
 msgid "Disable"
 msgstr "Disattiva"
@@ -8850,7 +8814,6 @@ msgid "Discard"
 msgstr "Annulla"
 
 #: frontend/src/components/Settings/SealSettings.vue
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:25
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:25
 msgid "Discard Changes"
 msgstr "Scarta le modifiche"
@@ -9811,7 +9774,6 @@ msgstr "Vuoto: finché non si usano tutte le sedute"
 
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.js:30
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:72
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:117
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:124
 msgid "Enable"
 msgstr "Abilita"
@@ -9819,10 +9781,6 @@ msgstr "Abilita"
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
 msgid "Enable Answering Service"
 msgstr "Attiva la segreteria telefonica"
-
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:112
-msgid "Enable Exotel integration to make and receive calls directly from {brand}"
-msgstr "Attiva l'integrazione Exotel per fare e ricevere chiamate direttamente da {brand}"
 
 #. Label of the enable_forecasting (Check) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
@@ -9859,7 +9817,6 @@ msgstr "Attiva la trascrizione"
 msgid "Enable Twilio integration to make and receive calls directly from {brand}"
 msgstr "Attiva l'integrazione Twilio per fare e ricevere chiamate direttamente da {brand}"
 
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:90
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:97
 msgid "Enable call recording for incoming and outgoing calls"
 msgstr "Attiva la registrazione delle chiamate in arrivo e in uscita"
@@ -9880,7 +9837,6 @@ msgstr "Attiva per le aziende"
 msgid "Enable lead tracking"
 msgstr "Attiva il tracciamento dei contatti"
 
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
@@ -9893,7 +9849,6 @@ msgstr "Attiva il tracciamento dei contatti"
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:57
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue:65
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:30
-#. Label of the enabled (Check) field in DocType 'CRM Exotel Settings'
 #. Label of the enabled (Check) field in DocType 'CRM Form Script'
 #. Label of the enabled (Check) field in DocType 'CRM Service Level Agreement'
 #. Label of the enabled (Check) field in DocType 'CRM Twilio Settings'
@@ -10072,17 +10027,9 @@ msgstr ""
 msgid "Enter Brand Name"
 msgstr ""
 
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:109
-msgid "Enter Exotel Number"
-msgstr "Scrivi il numero Exotel"
-
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:134
 msgid "Enter Personal Mobile No."
 msgstr ""
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
-msgid "Enter Personal Mobile Number"
-msgstr "Scrivi il cellulare personale"
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSourceForm.vue:74
 msgid "Enter Source Name"
@@ -10127,10 +10074,6 @@ msgstr ""
 #: crm/documenti/area.py
 msgid "Enter your code again to download it"
 msgstr "Inserisci di nuovo il codice per scaricarlo"
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:124
-msgid "Enter your personal mobile number used by Exotel to make calls"
-msgstr "Scrivi il tuo cellulare personale, che Exotel usa per fare le chiamate"
 
 #: frontend/src/components/FieldLayout/Field.vue:576
 msgid "Enter {0}"
@@ -10574,43 +10517,6 @@ msgstr "Interrompi alla risposta"
 #: crm/fcrm/doctype/crm_automation_enrollment/crm_automation_enrollment.json
 msgid "Exited"
 msgstr "Uscito"
-
-#. Option for the 'Telephony Medium' (Select) field in DocType 'CRM Call Log'
-#. Option for the 'Default Medium' (Select) field in DocType 'CRM Telephony
-#. Agent'
-#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
-#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
-#: frontend/src/components/Layouts/AppSidebar.vue:632
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:52
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:180
-msgid "Exotel"
-msgstr "Exotel"
-
-#: crm/integrations/exotel/handler.py:113
-msgid "Exotel Exception"
-msgstr "Errore di Exotel"
-
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:108
-msgid "Exotel Integration Disabled"
-msgstr "Integrazione Exotel disattivata"
-
-#. Label of the exotel_number (Data) field in DocType 'CRM Telephony Agent'
-#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:99
-msgid "Exotel Number"
-msgstr "Numero Exotel"
-
-#: crm/integrations/exotel/handler.py:84
-msgid "Exotel Number Missing"
-msgstr "Manca il numero Exotel"
-
-#: crm/integrations/exotel/handler.py:88
-msgid "Exotel Number {0} is not valid"
-msgstr "Il numero Exotel {0} non è valido"
-
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:8
-msgid "Exotel Settings"
-msgstr "Impostazioni di Exotel"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:120
 msgid "Expand"
@@ -14382,10 +14288,6 @@ msgstr ""
 msgid "Integration"
 msgstr ""
 
-#: crm/integrations/exotel/handler.py:72
-msgid "Integration Not Enabled"
-msgstr "Integrazione non attiva"
-
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:144
 msgid "Integrations"
 msgstr "Integrazioni"
@@ -14406,10 +14308,6 @@ msgstr "Indirizzo email non valido"
 #: frontend/src/stores/session.js:22
 msgid "Invalid Email or Password"
 msgstr "Email o password non valide"
-
-#: crm/integrations/exotel/handler.py:88
-msgid "Invalid Exotel Number"
-msgstr "Numero Exotel non valido"
 
 #: frontend/src/components/Controls/GeolocationControl.vue:122
 msgid "Invalid GeoJSON"
@@ -14438,10 +14336,6 @@ msgstr ""
 #: crm/api/dashboard.py:88
 msgid "Invalid chart name"
 msgstr "Nome del grafico non valido"
-
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.py:42
-msgid "Invalid credentials"
-msgstr "Credenziali non valide"
 
 #: frontend/src/components/Settings/emailConfig.js:185
 msgid "Invalid email ID"
@@ -14785,7 +14679,6 @@ msgstr "Layout"
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:55
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:76
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:55
-#: frontend/src/components/Telephony/ExotelCallUI.vue:200
 #: frontend/src/pages/Tasks.vue:133
 msgid "Lead"
 msgstr "Lead"
@@ -15859,7 +15752,6 @@ msgid "Mine"
 msgstr "Miei"
 
 #: frontend/src/components/Telephony/TwilioCallUI.vue
-#: frontend/src/components/Telephony/ExotelCallUI.vue:126
 msgid "Minimize"
 msgstr "Riduci a icona"
 
@@ -15981,10 +15873,6 @@ msgstr ""
 #: frontend/src/pages/Contact.vue:431
 msgid "Mobile Number"
 msgstr "Numero di cellulare"
-
-#: crm/integrations/exotel/handler.py:92
-msgid "Mobile Number Missing"
-msgstr "Manca il cellulare"
 
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.json
 msgid "Mobile for the offers"
@@ -17731,7 +17619,6 @@ msgstr "Non interessato"
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:15
 #: frontend/src/components/Settings/SettingsPage.vue:23
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:18
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:15
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:12
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:15
 msgid "Not Saved"
@@ -20266,10 +20153,6 @@ msgstr "Questionario iniziale completato"
 msgid "Personal Mobile No."
 msgstr ""
 
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
-msgid "Personal Mobile Number"
-msgstr "Cellulare personale"
-
 #: crm/install.py
 msgid "Pharmaceuticals"
 msgstr "Farmaceutica"
@@ -20636,10 +20519,6 @@ msgstr "Imposta un sito da visitare"
 #: frontend/src/pages/Deal.vue:98 frontend/src/pages/Lead.vue:146
 msgid "Please set an email address to send emails"
 msgstr "Imposta un indirizzo email per mandare email"
-
-#: crm/integrations/exotel/handler.py:72
-msgid "Please setup Exotel intergration"
-msgstr "Prima configura l'integrazione con Exotel"
 
 #: crm/fcrm/doctype/crm_deal/crm_deal.py:261
 msgid "Please specify a reason for losing the deal."
@@ -21811,15 +21690,9 @@ msgstr "Documento"
 
 #. Label of the record_calls (Check) field in DocType 'CRM Twilio Settings'
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:86
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:93
 msgid "Record Calls"
 msgstr "Registra le chiamate"
-
-#. Label of the record_call (Check) field in DocType 'CRM Exotel Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-msgid "Record Outgoing Calls"
-msgstr "Registra le chiamate in uscita"
 
 #: frontend/src/components/Activities/WhatsAppBox.vue
 msgid "Record a voice message"
@@ -23133,7 +23006,6 @@ msgstr ""
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.json
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 #: crm/fcrm/doctype/crm_global_settings/crm_global_settings.json
@@ -23288,7 +23160,6 @@ msgstr "Sabato"
 #: frontend/src/components/Settings/Sla/EditResponseResolutionModal.vue:51
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:34
 #: frontend/src/components/Settings/Sla/WorkDayModal.vue:78
-#: frontend/src/components/Telephony/ExotelCallUI.vue:221
 #: frontend/src/components/ViewControls.vue:125
 #: frontend/src/pages/Dashboard.vue:36
 msgid "Save"
@@ -24226,10 +24097,6 @@ msgstr "Impostato il"
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 msgid "Set once the first admin completes the onboarding persona questionnaire"
 msgstr "Si imposta quando il primo amministratore completa il questionario iniziale"
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:102
-msgid "Set the Exotel number to be used for outgoing calls."
-msgstr "Imposta il numero Exotel da usare per le chiamate in uscita."
 
 #: crm/integrations/meta/api.py
 msgid "Set the Meta App ID and App Secret first"
@@ -25552,12 +25419,6 @@ msgstr "Orari del centro"
 msgid "Studio, up to 2 rooms"
 msgstr "Studio, fino a 2 ambulatori"
 
-#. Label of the subdomain (Data) field in DocType 'CRM Exotel Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:75
-msgid "Subdomain"
-msgstr "Sottodominio"
-
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:68
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:68
 msgid "Subject"
@@ -25839,7 +25700,6 @@ msgstr ""
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.json
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 #: crm/fcrm/doctype/crm_global_settings/crm_global_settings.json
@@ -25942,10 +25802,6 @@ msgstr "Etichette aggiunte"
 #: crm/dashboard/widgets/automations.py
 msgid "Tags removed"
 msgstr "Etichette tolte"
-
-#: frontend/src/components/Telephony/ExotelCallUI.vue:148
-msgid "Take a note..."
-msgstr "Scrivi una nota..."
 
 #: frontend/src/components/Documents/DocumentsCard.vue
 msgid "Take away"
@@ -26502,25 +26358,13 @@ msgstr "L'indirizzo della sua pagina: /servizi/<slug>. Si compila dal nome."
 msgid "The address takes lowercase letters, numbers and dashes"
 msgstr "L'indirizzo può contenere solo lettere minuscole, numeri e trattini"
 
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue
-msgid "The agency connects Exotel, so that you can make and receive calls from {brand}."
-msgstr "L'agenzia collega Exotel, così puoi fare e ricevere chiamate da {brand}."
-
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue
 msgid "The agency connects Twilio, so that you can make and receive calls from {brand}."
 msgstr "L'agenzia collega Twilio, così puoi fare e ricevere chiamate da {brand}."
 
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.py
-msgid "The agency connects and disconnects Exotel."
-msgstr "Collegare e scollegare Exotel spetta all'agenzia."
-
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.py
 msgid "The agency connects and disconnects Twilio."
 msgstr "Collegare e scollegare Twilio spetta all'agenzia."
-
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue
-msgid "The agency connects the Exotel account and its keys. Here you decide whether calls are recorded."
-msgstr "L'account Exotel e le sue chiavi li collega l'agenzia. Qui decidi se registrare le chiamate."
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue
 msgid "The agency connects the Twilio account: its keys, the app and the SIP trunks. Here you decide whether calls are recorded and which numbers you call from."
@@ -29870,10 +29714,6 @@ msgstr "Non assegnate"
 msgid "Unassignment Condition"
 msgstr "Condizione per togliere l'assegnazione"
 
-#: crm/integrations/exotel/handler.py:169
-msgid "Unauthorized request"
-msgstr "Richiesta non autorizzata"
-
 #: crm/fcrm/doctype/crm_availability_exception/crm_availability_exception.json
 msgid "Unavailable all day"
 msgstr "Non disponibile tutto il giorno"
@@ -30115,21 +29955,14 @@ msgstr "Appuntamenti in arrivo per cliente"
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSourceForm.vue:30
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:25
 #: frontend/src/components/Settings/SettingsPage.vue:32
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:32
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:27
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:32
-#: frontend/src/components/Telephony/ExotelCallUI.vue:209
 msgid "Update"
 msgstr "Aggiorna"
 
 #: frontend/src/components/Settings/EmailEdit.vue:75
 msgid "Update Account"
 msgstr "Aggiorna l'account"
-
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:163
-#: frontend/src/components/Settings/Telephony/TelephonySettings.vue:190
-msgid "Update Configuration"
-msgstr "Aggiorna la configurazione"
 
 #. Description of the 'Update timestamp on new communication' (Check) field in
 #. DocType 'FCRM Settings'
@@ -30828,10 +30661,7 @@ msgstr "Token del webhook"
 msgid "Webhook URL must start with http(s)://"
 msgstr "L'URL del webhook deve iniziare con http(s)://"
 
-#. Label of the webhook_verify_token (Data) field in DocType 'CRM Exotel
 #. Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:67
 msgid "Webhook Verify Token"
 msgstr "Token di verifica del webhook"
 
@@ -32463,17 +32293,9 @@ msgstr "Non puoi indicare com'è andato questo appuntamento"
 msgid "You cannot take the Manager level away from yourself: ask another manager"
 msgstr "Non puoi toglierti da solo il livello Responsabile: chiedilo a un altro responsabile"
 
-#: crm/integrations/exotel/handler.py:84
-msgid "You do not have Exotel Number set in your Telephony Agent"
-msgstr "Non hai impostato il tuo numero Exotel in Impostazioni → Telefono → Telefonia"
-
 #: frontend/src/pages/NotPermitted.vue:12
 msgid "You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error."
 msgstr "Non hai i permessi per accedere a {brand}. Se pensi che sia un errore, contatta il tuo amministratore."
-
-#: crm/integrations/exotel/handler.py:92
-msgid "You do not have mobile number set in your Telephony Agent"
-msgstr "Non hai impostato il tuo cellulare personale in Impostazioni → Telefono → Telefonia"
 
 #: crm/www/crm.py:18
 msgid "You do not have permission to access {brand}"
