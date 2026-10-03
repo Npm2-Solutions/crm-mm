@@ -17,6 +17,7 @@
            telefono.css): as a card it kept frappe-ui's margins, 16px a side and
            48px above, and was 32px taller than the screen. -->
       <div
+        ref="radice"
         class="settings-modal flex bg-surface-gray-1"
         :class="
           isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100vh_-_8rem)]'
@@ -291,8 +292,9 @@ import {
 } from '@/composables/settings'
 import { isWhatsappInstalled } from '@/composables/whatsapp'
 import { menuDi, trova } from '@/utils/impostazioni'
+import { chiudeConIndietro } from '@/utils/indietro'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
-import { ref, markRaw, computed, watch, h, provide } from 'vue'
+import { ref, markRaw, computed, watch, h, provide, onBeforeUnmount } from 'vue'
 import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import SlaConfig from './Sla/SlaConfig.vue'
 
@@ -451,6 +453,20 @@ function indietro() {
 // Which pane a phone is looking at. Ignored on anything wider, where both are
 // always on screen.
 const showingDetail = ref(false)
+
+// on a phone Android's back takes the settings one step back, as their own
+// bar does, before it closes them (utils/indietro.js)
+const radice = ref(null)
+let togliDaIndietro = null
+watch(
+  () => showSettings.value && isMobileView.value && showingDetail.value,
+  (dentro) => {
+    togliDaIndietro?.()
+    togliDaIndietro = dentro ? chiudeConIndietro(indietro, radice) : null
+  },
+  { immediate: true },
+)
+onBeforeUnmount(() => togliDaIndietro?.())
 
 watch(showSettings, (open) => {
   if (!open) return
