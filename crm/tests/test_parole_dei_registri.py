@@ -42,6 +42,26 @@ class LeParoleDeiRegistri(unittest.TestCase):
 		]
 		self.assertEqual(mancano, [])
 
+	def test_i_tipi_di_documento(self):
+		# drawn with `__(doc.document_type)` on the Documents tab and in its
+		# dialog: the clinic's read "Test result", "Imaging" on a phone
+		from crm.documenti import regole
+
+		mancano = [tipo.chiave for tipo in regole.tipi() if tipo.chiave not in self.catalogo]
+		self.assertEqual(mancano, [])
+
+	def test_i_tipi_di_piano_e_le_loro_voci(self):
+		from crm.piani import regole
+
+		mancano = [
+			parola
+			for tipo in regole.tipi()
+			for parola in (tipo.chiave, tipo.descrizione)
+			if parola and parola not in self.catalogo
+		]
+		mancano += [chiave for chiave in regole._generi if chiave not in self.catalogo]
+		self.assertEqual(mancano, [])
+
 	def test_le_capacita_a_scelta_si_dicono_in_parole(self):
 		# a capability one may also allow is a box to tick in a user's access:
 		# without a sentence the box showed its technical name
