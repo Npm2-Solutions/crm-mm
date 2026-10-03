@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -36,7 +40,9 @@
     </template>
   </LayoutHeader>
 
-  <div class="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+  <div ref="contenitore" class="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+    <!-- pulled down from the top on a phone, the invoices reload -->
+    <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <!-- Nothing configured yet: say what to do, not that the list is empty. -->
       <div
@@ -408,6 +414,8 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
 import { formatEuro, invoiceStatusTheme, statusLabel } from '@/utils/invoicing'
 import {
@@ -579,10 +587,15 @@ function channelLabel(channel) {
 
 // whatever the invoice dialog changed shows up in the lists behind it
 function ricarica() {
-  daFatturare.reload()
-  invoices.reload()
-  if (company.value) pending.fetch({ company: company.value })
+  return Promise.all([
+    daFatturare.reload(),
+    invoices.reload(),
+    company.value && pending.fetch({ company: company.value }),
+  ])
 }
+
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, ricarica)
 
 function openSettings(page) {
   // Everything that configures invoicing lives in the settings modal, so the
