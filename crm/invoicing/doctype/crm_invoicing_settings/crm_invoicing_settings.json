@@ -78,7 +78,7 @@
   },
   {
    "default": "0",
-   "description": "0 means no expiry. The 45-day cap of the original design existed because the file lived outside the controller's systems; here it does not.",
+   "description": "0 means no expiry: the file stays in the centre's own systems, so its link can stay open.",
    "fieldname": "retention_days",
    "fieldtype": "Int",
    "label": "Keep the download link open for (days)"
@@ -90,10 +90,10 @@
   },
   {
    "default": "30",
-   "description": "The most dangerous failure in this domain produces no error: it produces absence, and absence surfaces in January.",
+   "description": "An expense that never left gives no error: without this warning it shows only at the January deadline.",
    "fieldname": "ts_silence_days",
    "fieldtype": "Int",
-   "label": "Alert after N days with no accepted TS submission"
+   "label": "Warn when no expense has reached the Sistema TS for (days)"
   },
   {
    "fieldname": "column_monitoring",
@@ -103,7 +103,7 @@
    "default": "90",
    "fieldname": "certificate_warning_days",
    "fieldtype": "Int",
-   "label": "Warn N days before the TS certificate expires"
+   "label": "Warn before the Sistema TS certificate expires (days)"
   },
   {
    "description": "One account for every centre: each company is registered under it by itself, the first time an invoice of it leaves. Empty here, the server's is used (itala_client_id and itala_client_secret in common_site_config.json).",
@@ -154,7 +154,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 23:45:00.000000",
+ "modified": "2026-10-03 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Settings",
