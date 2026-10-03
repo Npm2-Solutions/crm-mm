@@ -403,12 +403,41 @@ def _nasconde_i_recapiti(user: str) -> bool:
 	return livelli.nel_crm(user) and livelli.ambito("persone.vedi", user) == livelli.MASCHERATO
 
 
-def get_contact_permission_query_conditions(user: str | None = None) -> str:
+def contact_conditions(user: str | None = None):
+	"""The address book entries ``user`` reads: ``None`` all of them.
+
+	An entry is little else than a name, an email and a phone, and every person has
+	one (`CRM Lead.contact`): it follows the person, as the rest of what is theirs
+	does - a practitioner read the whole centre's in the address book. One on a deal
+	the user sees comes with the deal; one nobody owns (a company's, an old record)
+	is the centre's.
+	"""
 	user = user or frappe.session.user
-	if not _nasconde_i_recapiti(user):
-		return ""
-	return _sql(frappe.qb.DocType("Contact").name.isnull())
+	if not livelli.nel_crm(user):
+		return None
+	C = frappe.qb.DocType("Contact")
+	if _nasconde_i_recapiti(user):
+		return C.name.isnull()
+	persone = oh.visible_leads(user)
+	if persone is None:
+		return None
+	Lead = frappe.qb.DocType("CRM Lead").as_("_contact_lead")
+	di_qualcuno = frappe.qb.from_(Lead).select(Lead.contact).where(Lead.contact.isnotnull())
+	delle_sue = frappe.qb.from_(Lead).select(Lead.contact).where(Lead.name.isin(persone))
+	Riga = frappe.qb.DocType("CRM Contacts").as_("_contact_deal")
+	sulle_sue = frappe.qb.from_(Riga).select(Riga.contact).where(Riga.parenttype == "CRM Deal")
+	trattative = oh.visible_deals(user)
+	if trattative is not None:
+		sulle_sue = sulle_sue.where(Riga.parent.isin(trattative))
+	return C.name.notin(di_qualcuno) | C.name.isin(delle_sue) | C.name.isin(sulle_sue)
+
+
+def get_contact_permission_query_conditions(user: str | None = None) -> str:
+	return _sql(contact_conditions(user))
 
 
 def has_contact_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
-	return not _nasconde_i_recapiti(user or frappe.session.user)
+	user = user or frappe.session.user
+	if _nasconde_i_recapiti(user):
+		return False
+	return _riga_visibile(doc, "Contact", contact_conditions(user))

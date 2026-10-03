@@ -137,7 +137,8 @@ def get_owning_lead(contact: str) -> str | None:
 	of them and reads like a second, poorer copy of the same person.
 
 	Returns nothing for a contact nobody owns — an old record, or one made
-	outside the CRM — and the caller then shows the Contact page as before.
+	outside the CRM — and the caller then shows the Contact page as before; nor
+	for an owner the session does not read, whose page would only refuse it.
 	"""
 	if not contact:
 		return None
@@ -145,7 +146,7 @@ def get_owning_lead(contact: str) -> str | None:
 	if not frappe.has_permission("Contact", "read", contact):
 		return None
 
-	leads = frappe.get_all(
+	leads = frappe.get_list(
 		"CRM Lead",
 		filters={"contact": contact},
 		pluck="name",

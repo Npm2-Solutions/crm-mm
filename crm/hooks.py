@@ -248,6 +248,7 @@ permission_query_conditions = {
 has_permission = {
 	"CRM Lead": "crm.permissions.org_hierarchy.has_lead_permission",
 	"CRM Deal": "crm.permissions.org_hierarchy.has_deal_permission",
+	"CRM Organization": "crm.permissions.org_hierarchy.has_organization_permission",
 	"CRM Call Log": "crm.permissions.org_hierarchy.has_call_log_permission",
 	"FCRM Note": "crm.permissions.org_hierarchy.has_note_permission",
 	"CRM Task": "crm.permissions.org_hierarchy.has_task_permission",
@@ -440,6 +441,7 @@ doc_events = {
 		],
 	},
 	"CRM Organization": {
+		"validate": ["crm.permissions.org_hierarchy.scrittura_per_capacita"],
 		"on_update": ["crm.api.mirror.on_organization_updated"],
 		"on_trash": ["crm.invoicing.anagrafica.cancella_con_il_titolare"],
 	},
