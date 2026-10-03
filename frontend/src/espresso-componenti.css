@@ -265,12 +265,16 @@
   .dc-stat-row .dc-crosses {
     display: none;
   }
+  /* the word goes on a second line rather than losing its end: four tiles
+     on a phone of 360 read «Non ven…» */
   .dc-stat-row .dc-stat__label {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     padding-right: 0;
     font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.25;
   }
   .dc-stat-row .dc-stat__value {
     font-size: 20px;
