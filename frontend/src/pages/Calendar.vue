@@ -44,7 +44,8 @@
         always made an event. Now «New» opens the panel on whatever was made
         last, and the panel's first line switches between the two.
       -->
-      <ShortcutTooltip :label="__('New')" combo="Mod+E">
+      <!-- making one is for who books (doc 30): an event or an appointment -->
+      <ShortcutTooltip v-if="prenota" :label="__('New')" combo="Mod+E">
         <Button
           variant="solid"
           :label="isMobileView ? undefined : __('New')"
@@ -195,6 +196,7 @@
         :serviceColors="serviceColors"
         :selected="selectedAppointment"
         :pxPerMinute="Number(zoom)"
+        :modificabile="prenota"
         @select="(name) => openAppointment(name)"
         @edit="(name) => openAppointment(name, 'edit')"
         @create="onGridCreate"
@@ -231,7 +233,8 @@
       class="min-w-0 flex-1 overflow-hidden"
       :config="{
         defaultMode: defaultMode,
-        isEditMode: true,
+        // dragging and resizing move an event: for who books
+        isEditMode: prenota,
         eventIcons: {},
         allowCustomClickEvents: true,
         enableShortcuts: false,
@@ -484,7 +487,10 @@ function connectGoogle() {
   })
 }
 const { settings } = getSettings()
-const { users, getUser } = usersStore()
+const { users, getUser, puo } = usersStore()
+// booking, and any event in the agenda, is `agenda.prenota`'s (doc 30): who
+// only reads the agenda opens what is there
+const prenota = computed(() => puo('agenda.prenota'))
 const route = useRoute()
 
 // grey and red, which the calendar does not know by itself
@@ -824,6 +830,7 @@ function allElenco(dataDellaGriglia) {
 }
 
 function startNew(at = {}) {
+  if (!prenota.value) return
   const fromTime = at.time ? getFromToTime(at.time)[0] : nextQuarter()
   newAt = {
     date: dayjs(at.date || undefined).format('YYYY-MM-DD'),
@@ -892,6 +899,7 @@ function onAppointmentDeleted() {
 }
 
 function onGridCreate({ date, minutes, mode, key }) {
+  if (!prenota.value) return
   openNewAppointment({
     date,
     time: formatMinutes(minutes),
@@ -1074,6 +1082,7 @@ const lastRange = ref(null)
 
 const isCreateDisabled = computed(
   () =>
+    !prenota.value ||
     ['edit', 'new', 'duplicate'].includes(mode.value) ||
     ['edit', 'new'].includes(appointmentPanel.mode),
 )
@@ -1307,7 +1316,7 @@ onMounted(async () => {
   // cycle's service, from a cycle of sessions. The query stays in the address —
   // the page is keyed on it, and taking it away rebuilds the page without the
   // panel it had just opened.
-  if (route.query.new === 'appointment') {
+  if (route.query.new === 'appointment' && prenota.value) {
     openNewAppointment({
       date: date || today(),
       time: nextQuarter(),

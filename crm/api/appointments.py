@@ -396,6 +396,11 @@ def get_appointment(name: str) -> dict:
 	# the subscriptions an entry is used of
 	data["cycle"] = cicli.della_seduta(doc)
 	data["subscription"] = abbonamenti.del_appuntamento(doc)
+	# what the panel offers: who reads the agenda without booking (the medical
+	# director, the read-only level) sees the appointment, not the controls the
+	# server would refuse
+	data["can_write"] = bool(doc.has_permission("write"))
+	data["can_delete"] = bool(doc.has_permission("delete"))
 	return data
 
 

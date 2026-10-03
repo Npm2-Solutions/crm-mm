@@ -225,3 +225,28 @@ class LaFatturaELaGiornata(OggiCase):
 		riga = next(a for a in risposta["appointments"] if a["name"] == oggi_incontro.name)["participants"][0]
 		esito = oggi.set_outcome(oggi_incontro.name, riga.name, "Arrived")
 		self.assertEqual(esito["participants"][0]["status"], "Arrived")
+
+
+class IlPannelloDellAppuntamento(OggiCase):
+	"""The agenda's panel offers what the server says (`get_appointment`): who
+	reads the agenda without booking - the medical director, the read-only level -
+	found edit, delete, the status and «repeat», which the server then refused."""
+
+	def test_chi_prenota_lo_cambia_chi_legge_soltanto_no(self):
+		from crm.api.appointments import get_appointment
+
+		lettore = "oggi.readonly@example.com"
+		make_user(lettore)
+		utenti.assegna_livelli(lettore, ["segreteria", "sola_lettura"])
+		incontro = self.appuntamento(self.tomorrow(10), self.mario)
+
+		self.come(DESK)
+		dati = get_appointment(incontro.name)
+		self.assertTrue(dati["can_write"])
+		self.assertFalse(dati["can_delete"], "deleting is the manager's (agenda.elimina)")
+
+		self.come(lettore)
+		dati = get_appointment(incontro.name)
+		self.assertEqual(dati["name"], incontro.name)
+		self.assertFalse(dati["can_write"])
+		self.assertFalse(dati["can_delete"])
