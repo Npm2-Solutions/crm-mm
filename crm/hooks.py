@@ -350,7 +350,10 @@ doc_events = {
 		"validate": "crm.tessera_sanitaria.qualifica.valida_azienda",
 	},
 	"Contact": {
-		"validate": ["crm.api.contact.validate"],
+		"validate": [
+			"crm.api.contact.validate",
+			"crm.permissions.org_hierarchy.scrittura_per_capacita",
+		],
 		# created by a webhook, a form, a booking: nobody was logged in, and
 		# «Guest created this contact» reads like somebody got in from outside
 		"before_insert": ["crm.utils.ownership.credit_the_system"],

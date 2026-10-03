@@ -440,4 +440,7 @@ def has_contact_permission(doc, ptype: str | None = None, user: str | None = Non
 	user = user or frappe.session.user
 	if _nasconde_i_recapiti(user):
 		return False
+	# reading an entry is not changing the person it belongs to (doc 30)
+	if not oh._puo_scrivere("Contact", ptype, user):
+		return False
 	return _riga_visibile(doc, "Contact", contact_conditions(user))
