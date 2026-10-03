@@ -82,6 +82,7 @@ def valuta(ctx: Context) -> str:
 	title=_lt("Quotes proposed"),
 	description=_lt("Quotes handed to people in the period"),
 	requires=("quotes",),
+	reader="preventivi.vedi",
 	keywords=("estimates", "care plans", "proposals"),
 )
 def quotes_proposed(ctx: Context):
@@ -95,6 +96,7 @@ def quotes_proposed(ctx: Context):
 	title=_lt("Quotes accepted"),
 	description=_lt("Of the quotes answered in the period, the share accepted"),
 	requires=("quotes",),
+	reader="preventivi.vedi",
 	keywords=("acceptance", "case acceptance", "conversion", "estimates"),
 )
 def quotes_acceptance_rate(ctx: Context):
@@ -113,6 +115,7 @@ def quotes_acceptance_rate(ctx: Context):
 	description=_lt("What the quotes still waiting for an answer are worth"),
 	live=True,
 	requires=("quotes",),
+	reader="preventivi.vedi",
 	keywords=("pending", "unscheduled", "follow up"),
 )
 def quotes_waiting_value(ctx: Context):
@@ -138,6 +141,7 @@ def quotes_waiting_value(ctx: Context):
 	size=(10, 8),
 	live=True,
 	requires=("quotes",),
+	reader="preventivi.vedi",
 	options=(ROWS,),
 	keywords=("pending", "follow up", "unanswered", "estimates"),
 )

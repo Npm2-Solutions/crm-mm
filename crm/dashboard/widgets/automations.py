@@ -3,7 +3,8 @@
 
 """Automations: what is running, what it did, and what failed.
 
-Managers only, like the automations page. An enrollment is one person or deal
+Read by whoever reads the automations (``automazioni.vedi``), like the
+automations page. An enrollment is one person or deal
 going through one automation; a step log is one thing an automation did — an
 email, a WhatsApp template, a task. Soft skips are logged as successes with a
 "Skipped:" note by the engine, so "done" here means "ran".
@@ -27,7 +28,7 @@ Automation = DocType("CRM Automation")
 Enrollment = DocType("CRM Automation Enrollment")
 StepLog = DocType("CRM Automation Step Log")
 
-META = {"requires": ("automations",), "managers_only": True, "scope": "site"}
+META = {"requires": ("automations",), "scope": "site"}
 AUTOMATIONS = {"name": "Automations"}
 ROWS = Option("limit", _lt("Rows"), type="int", default=6, min=3, max=20)
 

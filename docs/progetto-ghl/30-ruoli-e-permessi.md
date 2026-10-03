@@ -792,6 +792,13 @@ nota, un task (non in Sola lettura). I pulsanti di chiamata si vedono con
 `telefono.chiama`; i filtri dei canali della cronologia (email, chiamate, commenti)
 e i passi del "Getting started" solo a chi li legge o li può fare.
 
+**I numeri della dashboard seguono la tabella.** Ogni widget chiede la capacità
+che ne legge i numeri (`numeri.operativi`, `numeri.economici`, `numeri.marketing`,
+o quella dei suoi record: `trattative.vedi`, `persone.vedi`, `automazioni.vedi`,
+`preventivi.vedi`), e un widget che conta tutto il centro la chiede sul centro.
+Quello che un livello non legge non è nel catalogo né nelle sue dashboard, e una
+dashboard condivisa senza niente da leggere non è nel suo elenco (doc 28).
+
 **Leggere i numeri non è fare dashboard.** Vedere i numeri del centro e le dashboard
 del Manager è `dashboard.centro`, che non scrive; condividere e modificare quelle del
 team resta `dashboard.condivise`, farne di proprie `dashboard.personali`. Così la

@@ -86,8 +86,27 @@ elimina.
 - Le dashboard **del team** le vedono tutti e le cambiano i manager; le
   **private** sono di chi le ha fatte, venditori compresi, e nessun altro le vede
   (permission query e `has_permission`, come per le notifiche).
-- I 54 widget **da manager** (spesa pubblicitaria, carico della squadra, classifiche)
-  non arrivano a un venditore, nemmeno nel catalogo.
+- **I numeri li legge chi ha la capacita' che li legge** (doc 30, "Dashboard e
+  numeri"): ogni categoria di widget ne chiede una (`registry.READERS`) - l'agenda,
+  le prenotazioni, i messaggi e le chiamate sono i numeri operativi
+  (`numeri.operativi`), le fatture quelli economici (`numeri.economici`), il sito,
+  Meta e i social quelli di marketing (`numeri.marketing`); trattative, persone e
+  automazioni li legge chi legge i record, le cose da fare tutti. Un widget puo'
+  chiederne un'altra (`reader`): il valore dell'agenda e quello perso con le assenze
+  sono numeri economici, i preventivi li legge `preventivi.vedi`. Un widget `site`
+  conta tutto il centro e chiede la capacita' su tutto il centro: un operatore legge
+  il suo fatturato, non quello dello studio; chi la ha solo sui suoi vede solo il
+  suo lavoro anche in un widget del team. Cosi' il Marketing non vede gli
+  appuntamenti di oggi ne' le chiamate perse, l'Amministrazione ha la Fatturazione
+  e la segreteria no. Il giro del telefono col profilo del marketing (03/10/2026)
+  apriva la Panoramica sugli arrivi e le chiamate.
+- Quello che il livello non legge non c'e': non nel catalogo, non nella dashboard
+  (nemmeno come "non disponibile"), e una dashboard condivisa resta fuori dall'elenco
+  quando non c'e' niente da leggere. Un modello dice per chi e' (`Template.reader`):
+  l'Agenda e' di chi legge i numeri operativi, anche se tra i suoi numeri ci sono i
+  nuovi clienti che il Marketing legge.
+- I widget **da manager** che restano (carico della squadra, classifiche, chi
+  risponde a chi) non arrivano a un venditore, nemmeno nel catalogo.
 - Il filtro "persona" segue la gerarchia (`crm/permissions/org_hierarchy.py`):
   un responsabile vede i suoi, un venditore solo se stesso.
 - Un widget dice anche cosa conta: il team (default), solo chi guarda (`me`) o
@@ -132,9 +151,9 @@ Le regole sono quelle della data visualization, non del gusto:
 
 Quando il sito fattura (un'azienda emittente configurata, o documenti gia'
 emessi) compaiono la dashboard **Fatturazione** e, nella Panoramica, una riga con
-fatturato, cose da fare e appuntamenti da fatturare. E' tutto per i manager, come
-la pagina Fatture, e conta lo studio intero: una fattura e' dello studio, non del
-venditore che guarda.
+fatturato, cose da fare e appuntamenti da fatturare. La legge chi legge i numeri
+economici di tutto il centro (il Manager e l'Amministrazione), e conta lo studio
+intero: una fattura e' dello studio, non del venditore che guarda.
 
 - **Il fatturato e' l'imponibile** (`net_total`: niente IVA, bollo o cassa), o il
   totale del documento se il widget e' impostato cosi'. Le note di credito

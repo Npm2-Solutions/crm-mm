@@ -76,7 +76,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | File | Role |
 |---|---|
 | `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store |
-| `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)` |
+| `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)`; who reads a widget is the capability of its category (`registry.READERS`: doc 30's numbers) or its own `reader`, a template's `reader` says whom it is for (`store.reads`, `store.offers`) |
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
 | `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |

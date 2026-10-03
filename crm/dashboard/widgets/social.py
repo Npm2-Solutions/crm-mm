@@ -60,7 +60,6 @@ def social_scheduled(ctx: Context):
 	title=_lt("Posts to approve"),
 	description=_lt("Posts the team proposed that are waiting for a manager"),
 	live=True,
-	managers_only=True,
 	**META,
 )
 def social_pending_approval(ctx: Context):

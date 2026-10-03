@@ -42052,3 +42052,7 @@ msgstr "Presente"
 msgctxt "One person"
 msgid "Did not come"
 msgstr "Assente"
+
+#: crm/dashboard/store.py:139
+msgid "Your level does not read these numbers"
+msgstr "Il tuo livello non vede questi numeri"

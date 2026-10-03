@@ -28,6 +28,7 @@ from crm.dashboard.context import Context, where
 from crm.dashboard.queries import grouped, per_bucket, per_day, total, two_periods, weekday_hour
 from crm.dashboard.registry import Option, widget
 from crm.dashboard.widgets.conversations import full_names, hour_labels, weekday_labels
+from crm.permissions import livelli
 
 Appt = DocType("CRM Appointment")
 Staff = DocType("CRM Appointment Staff")
@@ -200,6 +201,8 @@ def appointments_cancellation_rate(ctx: Context):
 	title=_lt("Appointments value"),
 	description=_lt("What the period's appointments are worth, done and still to do"),
 	requires=AGENDA,
+	# what the agenda is worth is an economic number (doc 30)
+	reader="numeri.economici",
 	keywords=("revenue", "takings", "income"),
 )
 def appointments_revenue(ctx: Context):
@@ -224,6 +227,8 @@ def appointments_revenue(ctx: Context):
 	title=_lt("Lost to no-shows"),
 	description=_lt("Value of the appointments the client did not turn up to"),
 	requires=AGENDA,
+	# what the agenda is worth is an economic number (doc 30)
+	reader="numeri.economici",
 )
 def appointments_no_show_value(ctx: Context):
 	return charts.number(
@@ -307,7 +312,8 @@ def appointments_trend(ctx: Context):
 	options=(MEASURE,),
 )
 def appointments_by_service(ctx: Context):
-	by_value = ctx.option("measure") == "value"
+	# by value only for whoever reads the economic numbers; the others count
+	by_value = ctx.option("measure") == "value" and livelli.puo("numeri.economici", ctx.viewer)
 	rows = grouped(
 		Appt,
 		Appt.service,
