@@ -59,6 +59,7 @@ from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetim
 from jinja2 import DebugUndefined
 from jinja2.sandbox import SandboxedEnvironment
 
+from crm.scheduling.timeutils import hhmm
 from crm.telephony import sms, sms_regole
 from crm.utils import count_field
 
@@ -906,14 +907,16 @@ def within_time_window(automation) -> bool:
 	days = parse_json(automation.get("window_days")) or []
 	if days and now.strftime("%A") not in days:
 		return False
-	start = str(automation.get("window_start") or "00:00:00")[:5]
-	end = str(automation.get("window_end") or "23:59:59")[:5]
+	# compared as text, so both with their zero: a Time comes as a timedelta,
+	# «9:00:00», and «9:00» sorts after «10:30» - a window from 9 never opened
+	start = hhmm(automation.get("window_start")) or "00:00"
+	end = hhmm(automation.get("window_end")) or "23:59"
 	current = now.strftime("%H:%M")
 	return start <= current <= end
 
 
 def next_window_open(automation):
-	start = str(automation.get("window_start") or "09:00:00")[:5]
+	start = hhmm(automation.get("window_start")) or "09:00"
 	days = parse_json(automation.get("window_days")) or None
 	return next_occurrence(start, days)
 
