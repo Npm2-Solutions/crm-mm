@@ -181,7 +181,7 @@ is never a menu entry.
 | File | Role |
 |---|---|
 | `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents, a message on the answering service); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…") |
-| `crm/notifiche/regole.py` | The sentences (English, in the catalogue), a sentence with its names in bold, the words of the ones written before, the kind — pure, tested with plain `unittest` (every sentence in `it.po` with the same places) |
+| `crm/notifiche/regole.py` | The sentences (English, in the catalogue), a sentence with its names in bold, the words of the ones written before and the sentence they said (`frase_di_prima`, which the patch `the_old_notifications_name_the_person` gave them), the kind — pure, tested with plain `unittest` (every sentence in `it.po` with the same places) |
 | `crm/notifiche/api.py` | The panel's page with the unread count, where each row opens (decided here), the message's first words where the reader may read them; read, all read, unread again in one query and one signal |
 | `frontend/src/components/Notifications/`, `Notifications.vue`, `pages/MobileNotification.vue`, `stores/notifications.js`, `composables/notifiche.js` + `utils/notifiche.js` | The panel and the phone's page on one list (days, the kind's mark, the dot), listened to once per layout, the brand's toast when one arrives; the look and the days tested |
 

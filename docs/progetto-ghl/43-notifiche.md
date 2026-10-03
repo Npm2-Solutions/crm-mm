@@ -57,8 +57,10 @@ anche dei difetti veri:
   compare se il pannello o la pagina delle notifiche sono già aperti. Sul telefono
   il pallino sta su «Altro».
 - **La lingua è quella di chi legge**: la frase resta in inglese con i suoi nomi a
-  parte e viene tradotta quando la si legge. Quelle scritte prima si leggono allo
-  stesso modo.
+  parte e viene tradotta quando la si legge. Quelle scritte prima prendono la
+  frase di oggi (03/10/2026): un messaggio, una menzione, un'assegnazione o una
+  domanda dall'area dicono la persona per nome, non più «in lead
+  CRM-LEAD-2026-00397»; le parole di un'automazione restano sue.
 - **Dopo sei mesi se ne vanno**, lette o no (Impostazioni dei log).
 
 ## Come è fatta
@@ -69,8 +71,12 @@ anche dei difetti veri:
   letta non viene scritta due volte; un messaggio della stessa persona prende il
   posto della notifica precedente col conto.
 - `crm/notifiche/regole.py`: le frasi, la frase con i nomi, le parole di quelle
-  scritte prima e il tipo, senza sito; provato in `tests/test_regole.py`, che
-  controlla anche che ogni frase sia nel catalogo italiano con gli stessi posti.
+  scritte prima e la frase che dicevano (`frase_di_prima()`: dal tipo e da che
+  cosa riguardano, in inglese o in italiano, il nome di un'attività non conta), il
+  tipo, senza sito; provato in `tests/test_regole.py`, che controlla anche che ogni
+  frase sia nel catalogo italiano con gli stessi posti.
+- La patch `the_old_notifications_name_the_person` dà a quelle scritte prima la
+  frase e i nomi di oggi; una su qualcosa che non c'è più resta com'era.
 - `crm/notifiche/api.py`: una pagina alla volta col conto da leggere; per ogni riga
   il percorso, deciso sul server; letta, tutte lette o di nuovo da leggere con una
   query sola e un segnale solo alle altre schede.

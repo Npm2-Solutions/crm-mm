@@ -88,6 +88,68 @@ class LeParoleDiPrima(UnitTestCase):
 		self.assertEqual(R.testo_vecchio(None), "")
 
 
+def _nome(testo: str) -> str:
+	"""A name inside an old notification, the way it was drawn."""
+	return f'<span class="font-medium text-ink-gray-9">{testo}</span>'
+
+
+class LaFraseDiPrima(UnitTestCase):
+	"""What an old notification said, from its kind and what it is about: its
+	words can be English, Italian, the first ones or the later ones."""
+
+	def test_un_whatsapp_con_il_codice_della_persona(self):
+		# the very words of the first notifications, the ID in place of the name
+		vecchio = (
+			f'<div class="mb-2 leading-5 text-ink-gray-5">{_nome("You")}'
+			f"<span>received a whatsapp message in lead</span>{_nome('CRM-LEAD-2026-00397')}</div>"
+		)
+		self.assertEqual(R.frase_di_prima("WhatsApp", "WhatsApp Message", "CRM Lead", vecchio), R.WHATSAPP)
+		self.assertEqual(
+			R.frase_di_prima("WhatsApp", "WhatsApp Message", "CRM Deal", vecchio), R.WHATSAPP_TRATTATIVA
+		)
+
+	def test_sms_ed_email(self):
+		self.assertEqual(R.frase_di_prima("SMS", "CRM SMS Message", "CRM Lead", ""), R.SMS)
+		self.assertEqual(R.frase_di_prima("Email", "Communication", "CRM Deal", ""), R.EMAIL_TRATTATIVA)
+
+	def test_una_menzione(self):
+		vecchio = f"{_nome('Anna')}<span>mentioned you in deal</span>{_nome('Acme')}"
+		self.assertEqual(R.frase_di_prima("Mention", "Comment", "CRM Deal", vecchio), R.MENZIONE_TRATTATIVA)
+		self.assertEqual(R.frase_di_prima("Mention", "Comment", "CRM Lead", vecchio), R.MENZIONE)
+
+	def test_un_assegnazione_data_e_tolta(self):
+		data = f"{_nome('Anna')}<span>assigned a lead {_nome('Laura Bianchi')} to you</span>"
+		self.assertEqual(R.frase_di_prima("Assignment", "CRM Lead", "CRM Lead", data), R.ASSEGNATA)
+		tolte = (
+			f"<span>Your assignment on deal {_nome('Acme')} has been removed by {_nome('Anna')}</span>",
+			f"{_nome('Anna')} ti ha tolto l'assegnazione della trattativa {_nome('Acme')}",
+			f"<span>La tua assegnazione su deal {_nome('Acme')} è stata rimossa da {_nome('Anna')}</span>",
+		)
+		for vecchio in tolte:
+			self.assertEqual(
+				R.frase_di_prima("Assignment", "CRM Deal", "CRM Deal", vecchio), R.TOLTA_TRATTATIVA, vecchio
+			)
+
+	def test_un_attivita_si_riconosce_dalle_parole_non_dal_nome(self):
+		# the task's title is a name: "tolto" in it takes nothing away
+		data = f"{_nome('Anna')}<span>assigned a new task {_nome('Dente tolto: controllo')} to you</span>"
+		self.assertEqual(R.frase_di_prima("Assignment", "CRM Task", "CRM Lead", data), R.COMPITO)
+		tolta = (
+			f"<span>Your assignment on task {_nome('Richiamare')} has been removed by {_nome('Anna')}</span>"
+		)
+		self.assertEqual(R.frase_di_prima("Assignment", "CRM Task", None, tolta), R.COMPITO_TOLTO)
+
+	def test_una_domanda_nell_area(self):
+		vecchio = "Laura Bianchi asked the centre a question in their area"
+		self.assertEqual(R.frase_di_prima("Area", "CRM Area Message", "CRM Lead", vecchio), R.DOMANDA_AREA)
+
+	def test_le_parole_di_qualcuno_restano_sue(self):
+		self.assertIsNone(R.frase_di_prima("Automation", None, "CRM Lead", "Richiamare entro oggi"))
+		self.assertIsNone(R.frase_di_prima("Invoicing", "CRM Invoice", None, "Scartata dallo SdI"))
+		# a message about nobody has nobody to name
+		self.assertIsNone(R.frase_di_prima("WhatsApp", "WhatsApp Message", None, "ciao"))
+
+
 class LePrimeParole(UnitTestCase):
 	def test_senza_markup_su_una_riga(self):
 		self.assertEqual(

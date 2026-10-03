@@ -2,8 +2,9 @@
 # For license information, please see license.txt
 
 """What a notification says, without a site: the sentences, a sentence with its
-names, the words of a notification written before, the first words of a message,
-what kind of notification it is. Tested with plain `unittest`.
+names, the words of a notification written before and the sentence it said, the
+first words of a message, what kind of notification it is. Tested with plain
+`unittest`.
 
 A sentence is kept in English, the way the catalogue knows it, with its names
 apart: whoever reads it reads it in their own language, the names in bold. Each
@@ -187,6 +188,50 @@ def testo_vecchio(testo: str | None) -> str:
 		else:
 			nodo.unwrap()
 	return re.sub(r"\s+", " ", str(zuppa)).strip()
+
+
+#: The kinds of a notification written before the sentences were kept apart
+#: (02/10/2026) whose sentence its fields tell: a message on a channel, a mention,
+#: an assignment, a question in the client area. The others carry somebody's own
+#: words.
+DI_PRIMA = ("WhatsApp", "SMS", "Email", "Mention", "Assignment", "Area")
+_CANALI = {
+	"WhatsApp": (WHATSAPP, WHATSAPP_TRATTATIVA),
+	"SMS": (SMS, SMS_TRATTATIVA),
+	"Email": (EMAIL, EMAIL_TRATTATIVA),
+}
+#: In the words of an old assignment, without its names: one taken away, in
+#: English and in the Italian the catalogue gave it.
+_TOLTA = re.compile(r"\bremoved\b|\brimoss[ao]\b|\btolto\b", re.I)
+
+
+def frase_di_prima(
+	tipo: str | None, oggetto: str | None, riguarda: str | None, testo: str | None
+) -> str | None:
+	"""The sentence a notification written before the sentences were kept apart
+	said, told by its kind and what it is about (`oggetto`: the comment, the
+	message, what was assigned; `riguarda`: the person or deal it opens). None
+	when its words are somebody's own, or it was about nobody: it stays as it is."""
+	trattativa = riguarda == "CRM Deal"
+	di_qualcuno = riguarda in ("CRM Lead", "CRM Deal")
+	if tipo in _CANALI and di_qualcuno:
+		return _CANALI[tipo][trattativa]
+	if tipo == "Mention" and di_qualcuno:
+		return MENZIONE_TRATTATIVA if trattativa else MENZIONE
+	# the area told the centre one thing only: a person's question in the chat
+	if tipo == "Area" and riguarda == "CRM Lead":
+		return DOMANDA_AREA
+	if tipo == "Assignment":
+		# the names are in bold: a task called "Dente tolto" takes nothing away
+		parole = solo_testo(re.sub(r"<b>.*?</b>", " ", testo_vecchio(testo)))
+		tolta = bool(_TOLTA.search(parole))
+		if oggetto == "CRM Task":
+			return COMPITO_TOLTO if tolta else COMPITO
+		if oggetto == "CRM Deal":
+			return TOLTA_TRATTATIVA if tolta else ASSEGNATA_TRATTATIVA
+		if oggetto == "CRM Lead":
+			return TOLTA if tolta else ASSEGNATA
+	return None
 
 
 #: Where one block of text ends and another begins: a space between their words.
