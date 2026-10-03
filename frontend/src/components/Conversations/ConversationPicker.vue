@@ -122,6 +122,7 @@
 <script setup>
 import ConversationList from '@/components/ConversationList.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import LucideChevronDown from '~icons/lucide/chevron-down'
 import LucideChevronUp from '~icons/lucide/chevron-up'
@@ -144,6 +145,9 @@ const emit = defineEmits(['open', 'loadMore'])
 
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => props.aggiorna?.())
+// back from a conversation (or a person's page): the list where it was; the
+// page keeps its rows, and its search and view (pages/Conversations.vue)
+useRitorno('elenco-conversazioni', { contenitore })
 
 const view = defineModel('view', { type: String, default: 'open' })
 const search = defineModel('search', { type: String, default: '' })

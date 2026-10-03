@@ -105,6 +105,7 @@
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { useRitorno } from '@/composables/ritorno'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { cosePerGruppo, scadenzaInBreve } from '@/utils/sulTelefono'
@@ -140,6 +141,16 @@ function ricarica() {
 }
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, ricarica)
+// back from a task's page: whose tasks, the tasks and where the list was, at
+// once; then brought up to date
+useRitorno('cose', {
+  contenitore,
+  stato: () => ({ di: di.value, righe: righe.value }),
+  rimetti: (salvato) => {
+    di.value = salvato.di
+    righe.value = salvato.righe
+  },
+})
 watch(di, ricarica)
 ricarica()
 
