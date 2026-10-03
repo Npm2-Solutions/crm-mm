@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="space-y-1.5 p-[2px] !-m-[2px]">
     <label v-if="attrs.label" class="block" :class="labelClasses">
@@ -185,13 +188,17 @@ const opzioni = computed(() => {
 })
 
 // A record shown by its title gets its name under it from the search
-// («Fisioterapista» over `fisioterapista`): a code nobody reads, left out.
+// («Fisioterapista» over `fisioterapista`): a code nobody reads, left out; and
+// so does what only repeats the line above it («Consulenza» under
+// «Consulenza», «Dott. Verdi, osteopata» under «Dott. Verdi» reads «osteopata»).
 function senzaIlCodice(descrizione, option) {
-  if (!option.label || option.label === option.value) return descrizione
-  if (descrizione === option.value) return ''
-  return descrizione.startsWith(`${option.value}, `)
-    ? descrizione.slice(option.value.length + 2)
-    : descrizione
+  let resto = descrizione
+  for (const gia of new Set([option.value, option.label])) {
+    if (!gia) continue
+    if (resto === gia) return ''
+    if (resto.startsWith(`${gia}, `)) resto = resto.slice(gia.length + 2)
+  }
+  return resto
 }
 
 function stripHtml(html) {

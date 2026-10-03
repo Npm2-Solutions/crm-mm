@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Somebody on a waiting list. New or put right, it says the service, with whom,
   the days and parts of the day, until when, how the offers reach them. Read, it
   says what they wait for and how the offers went; the desk looks for a free
@@ -569,7 +572,9 @@ function placeLabel(offer) {
 function offerFacts(offer) {
   const parts = []
   if (offer.channel) parts.push(__('sent by {0}', [__(offer.channel)]))
-  else if (offer.not_sent) parts.push(offer.not_sent)
+  // why it did not leave, kept in the words of whoever offered it (a job
+  // writes English): read in the reader's language
+  else if (offer.not_sent) parts.push(__(offer.not_sent))
   if (offer.offered_by) parts.push(__('offered by {0}', [offer.offered_by]))
   if (offer.sent_on) parts.push(formatDate(offer.sent_on, 'D MMM, HH:mm'))
   return parts.join(' · ')

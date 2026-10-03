@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -469,7 +473,7 @@
             />
             <Button
               variant="solid"
-              :label="__('Schedule')"
+              :label="__('Schedule', null, 'Social post action')"
               @click="save('Scheduled')"
             />
             <!-- one primary action: two solid buttons side by side, black

@@ -248,14 +248,44 @@
   .dialog-content > div.px-4.pb-7.pt-4 > div.flex.justify-end {
     flex-direction: row-reverse;
   }
-  .dialog-content > div.px-4.pb-7.pt-4 > div.flex.justify-end > button,
-  .dialog-footer > div.flex:not(.flex-col) > button,
-  .dialog-footer > div.flex:not(.flex-col) > div > button {
-    flex: 1 1 0;
+  /* the buttons share the row, whichever way it is written: frappe-ui's own
+     row, a footer that holds it, or the footer that is the row itself
+     (`dialog-footer flex`, the commonest); a group of buttons in it shares
+     its part, and a placeholder that only pushed a button to the right goes.
+     A button never gets narrower than its words: four of them («Save draft»,
+     «Approve», «Schedule», «Publish now») go on two rows instead of running
+     off the screen */
+  .dialog-content > div.px-4.pb-7.pt-4 > div.flex:not(.flex-col),
+  .dialog-footer.flex:not(.flex-col),
+  .dialog-footer > div.flex:not(.flex-col) {
+    flex-wrap: wrap;
   }
-  .dialog-footer > div.flex:not(.flex-col) > div:has(> button) {
+  .dialog-content > div.px-4.pb-7.pt-4 > div.flex:not(.flex-col) > button,
+  .dialog-footer.flex:not(.flex-col) > button,
+  .dialog-footer > div.flex:not(.flex-col) > button,
+  .dialog-footer > div.flex:not(.flex-col) > div > button,
+  .dialog-footer.flex:not(.flex-col) > div:has(> button) > button,
+  .dialog-content
+    > div.px-4.pb-7.pt-4
+    > div.flex:not(.flex-col)
+    > div
+    > button {
+    flex: 1 0 auto;
+  }
+  .dialog-footer > div.flex:not(.flex-col) > div:has(> button),
+  .dialog-footer.flex:not(.flex-col) > div:has(> button),
+  .dialog-content
+    > div.px-4.pb-7.pt-4
+    > div.flex:not(.flex-col)
+    > div:has(> button) {
     display: flex;
-    flex: 1 1 0;
+    flex: 1 0 auto;
+    gap: 0.5rem;
+  }
+  .dialog-content > div.px-4.pb-7.pt-4 > div.flex > span:empty,
+  .dialog-footer.flex > span:empty,
+  .dialog-footer > div.flex > span:empty {
+    display: none;
   }
 }
 @keyframes dc-foglio-su {
@@ -355,6 +385,13 @@
   }
   [data-sonner-toaster] [data-sonner-toast] {
     width: 100% !important;
+  }
+  /* over a sheet a toast comes from the top: at the bottom it covered the
+     sheet's own buttons */
+  body:has(.dialog-content[data-state='open'])
+    [data-sonner-toaster][data-y-position='bottom'] {
+    top: max(0.75rem, env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
   }
 }
 
