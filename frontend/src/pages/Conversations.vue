@@ -303,15 +303,30 @@ const nonSiApre = computed(() =>
     : null,
 )
 
-// Back to the list, which on a phone is the pane this one replaced.
+// On a phone the chat takes the list's place: opening one is a step forward,
+// so Android's back, and the arrow, return to the list, as in WhatsApp. On a
+// computer the list stays beside the chat, and changing chat writes no history.
 function back() {
   showPerson.value = false
+  if (isMobileView.value && vieneDallaLista()) {
+    router.back()
+    return
+  }
   router.replace({ name: 'Conversations' })
+}
+
+function vieneDallaLista() {
+  const prima = window.history.state?.back
+  if (!prima) return false
+  const dove = router.resolve(prima)
+  return dove.name === 'Conversations' && !dove.query.person
 }
 
 function choose(row) {
   if (row.name === chosen.value) return
-  router.replace({ name: 'Conversations', query: { person: row.name } })
+  const dove = { name: 'Conversations', query: { person: row.name } }
+  if (isMobileView.value && !chosen.value) router.push(dove)
+  else router.replace(dove)
 }
 
 watch(
