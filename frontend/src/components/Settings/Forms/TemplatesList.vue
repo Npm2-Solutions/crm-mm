@@ -97,7 +97,11 @@
                   size="sm"
                 />
               </div>
-              <div class="mt-0.5 truncate text-p-base text-ink-gray-5">
+              <!-- on a phone the line wraps: cut, it lost the address's end
+                   and when the form was published -->
+              <div
+                class="mt-0.5 truncate text-p-base text-ink-gray-5 max-md:whitespace-normal max-md:[overflow-wrap:anywhere]"
+              >
                 {{ summary(template) }}
               </div>
             </button>
