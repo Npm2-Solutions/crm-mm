@@ -124,7 +124,7 @@
             v-for="block in column.blocks"
             :key="`${column.key}-${block.name}`"
             type="button"
-            draggable="true"
+            :draggable="modificabile"
             class="dc-evento absolute overflow-hidden py-1 pr-1.5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-outline-gray-3"
             :class="[
               block.status === 'Cancelled'
@@ -219,6 +219,8 @@ const props = defineProps({
   serviceColors: { type: Object, default: () => ({}) },
   selected: { type: String, default: '' },
   pxPerMinute: { type: Number, default: 1.1 },
+  /** false for who reads the agenda only: a click on a free time makes nothing, a block does not move */
+  modificabile: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['select', 'edit', 'create', 'move'])
@@ -316,6 +318,7 @@ function minutesAt(event) {
 }
 
 function onCellClick(event, column) {
+  if (!props.modificabile) return
   emit('create', {
     date: props.date,
     minutes: minutesAt(event),
@@ -338,6 +341,7 @@ function onDragStart(event, block, column) {
 }
 
 function onDrop(event, column) {
+  if (!props.modificabile) return
   let payload
   try {
     payload = JSON.parse(event.dataTransfer.getData('text/plain'))

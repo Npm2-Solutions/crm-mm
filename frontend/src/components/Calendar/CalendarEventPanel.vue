@@ -32,8 +32,9 @@
         >
           <Button icon="lucide-trash-2" variant="ghost" @click="deleteEvent" />
         </ShortcutTooltip>
+        <!-- a copy is a new event: for who books (doc 30) -->
         <ShortcutTooltip
-          v-if="mode === 'edit' || mode === 'details'"
+          v-if="(mode === 'edit' || mode === 'details') && prenota"
           :label="__('Duplicate Event')"
           combo="Mod+D"
         >
@@ -567,6 +568,7 @@ import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
 import RichTextField from '@/components/RichTextField.vue'
 import { globalStore } from '@/stores/global'
 import { sessionStore } from '@/stores/session'
+import { usersStore } from '@/stores/users'
 import { validateEmail, deepClone, sanitizeHTML } from '@/utils'
 import {
   normalizeParticipants,
@@ -612,6 +614,8 @@ const emit = defineEmits([
 const router = useRouter()
 const { $dialog } = globalStore()
 const { user } = sessionStore()
+const { puo } = usersStore()
+const prenota = computed(() => puo('agenda.prenota'))
 
 const show = defineModel({ type: Boolean })
 const event = defineModel('event', { type: Object, default: () => ({}) })
@@ -1016,6 +1020,7 @@ useKeyboardShortcuts({
     },
     {
       match: (e) =>
+        prenota.value &&
         ['details', 'edit'].includes(props.mode) &&
         (e.metaKey || e.ctrlKey) &&
         !e.shiftKey &&

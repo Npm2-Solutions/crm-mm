@@ -37,8 +37,9 @@
       </button>
       <span v-else class="truncate">{{ heading }}</span>
       <div class="flex shrink-0 items-center gap-x-1">
+        <!-- who reads the agenda without booking sees it, nothing to change -->
         <Button
-          v-if="mode === 'details' && doc"
+          v-if="mode === 'details' && doc?.can_write"
           variant="ghost"
           icon="lucide-pencil"
           :tooltip="__('Edit')"
@@ -46,7 +47,7 @@
           @click="emit('mode', 'edit')"
         />
         <Button
-          v-if="mode !== 'new' && doc"
+          v-if="mode !== 'new' && doc?.can_delete"
           variant="ghost"
           icon="lucide-trash-2"
           :tooltip="__('Delete')"
@@ -75,7 +76,7 @@
       <template v-else>
         <div
           class="flex items-start gap-2 px-4.5 pt-1"
-          @dblclick="emit('mode', 'edit')"
+          @dblclick="doc.can_write && emit('mode', 'edit')"
         >
           <div
             class="mx-0.5 my-[7px] size-2.5 shrink-0 rounded-full"
@@ -100,7 +101,7 @@
 
         <!-- what is done to an appointment once it exists: its status -->
         <div class="flex items-center gap-2 px-4.5 pt-3">
-          <Dropdown :options="statusActions">
+          <Dropdown v-if="doc.can_write" :options="statusActions">
             <Button
               size="sm"
               :variant="'subtle'"
@@ -110,6 +111,13 @@
               :loading="changing"
             />
           </Dropdown>
+          <Badge
+            v-else
+            size="lg"
+            variant="subtle"
+            :theme="STATUS_THEME[doc.status] || 'gray'"
+            :label="__(doc.status)"
+          />
           <span v-if="doc.series" class="text-p-sm text-ink-gray-5">
             {{ __('Part of a series') }}
           </span>
@@ -180,7 +188,7 @@
               {{ [row.phone, row.email].filter(Boolean).join(' · ') }}
             </div>
           </div>
-          <Dropdown :options="attendanceActions(row)">
+          <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
             <Button
               size="sm"
               variant="ghost"
@@ -188,6 +196,9 @@
               iconRight="chevron-down"
             />
           </Dropdown>
+          <span v-else class="shrink-0 text-p-sm text-ink-gray-6">
+            {{ __(row.status || 'Booked') }}
+          </span>
           <Button
             v-if="row.party"
             variant="ghost"
@@ -312,7 +323,7 @@
 
         <!-- a course, a cycle of sessions: the same appointment, repeated -->
         <div
-          v-if="!doc.series && doc.status !== 'Cancelled'"
+          v-if="doc.can_write && !doc.series && doc.status !== 'Cancelled'"
           class="mt-auto border-t border-outline-gray-1 px-4.5 py-3"
         >
           <div class="mb-2 text-p-sm text-ink-gray-6">
@@ -780,6 +791,7 @@ import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import { addMinutes, minutesBetween } from '@/utils/scheduler'
 import {
+  Badge,
   Button,
   DatePicker,
   Dropdown,
@@ -841,7 +853,9 @@ function load(name) {
     {
       onSuccess: (data) => {
         doc.value = data
-        if (props.mode !== 'details') loadInto(data)
+        // asked to edit (a double click) one it may not change: it reads
+        if (props.mode === 'edit' && !data.can_write) emit('mode', 'details')
+        else if (props.mode !== 'details') loadInto(data)
       },
       onError: (e) => {
         toast.error(e.messages?.[0] || __('Could not open the appointment'))
@@ -1692,7 +1706,10 @@ watch(
       load(name)
       return
     }
-    if (mode === 'edit' && oldMode !== 'edit') loadInto(doc.value)
+    if (mode === 'edit' && oldMode !== 'edit') {
+      if (doc.value?.can_write) loadInto(doc.value)
+      else if (doc.value) emit('mode', 'details')
+    }
   },
   { immediate: true },
 )
