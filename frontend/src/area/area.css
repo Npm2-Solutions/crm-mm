@@ -333,7 +333,7 @@
    the area is as tall as what one sees: the header stays, the places at the
    bottom step aside, the chat's box sits on the keyboard, a dialog's buttons
    in sight. No grey flash at a tap, no pull that reloads the area. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   :root[data-tastiera='aperta'] #app {
     position: relative;
     top: var(--vista-sopra, 0px);

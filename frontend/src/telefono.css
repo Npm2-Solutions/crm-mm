@@ -8,7 +8,9 @@
    a small control is easy to hit, a toast keeps clear of the bar at the bottom.
    frappe-ui draws them for a mouse; here they are found by the markup it gives
    them, so every screen gets the same at once. The phone is `max-md` (767px),
-   the width `isMobileView` picks the phone's components at. */
+   the width `isMobileView` picks the phone's components at, or a phone held
+   sideways: under 500px tall and touched (`(max-height: 499px) and (pointer:
+   coarse)`), which keeps its phone's layout. */
 
 /* 1. A control drawn for a mouse, reached with a finger.
 
@@ -47,7 +49,8 @@
 /* The crumbs at the top of a page are 26px tall, and the one a page came
    from is the way back to it (utils/indietro.js): a ring makes it a thumb's
    height. */
-@media (pointer: coarse) and (max-width: 767px) {
+@media (pointer: coarse) and (max-width: 767px),
+  (pointer: coarse) and (max-height: 499px) {
   #app-header a[href].text-ink-gray-5 {
     position: relative;
   }
@@ -60,7 +63,7 @@
 
 /* 2. A field on a phone: 16px, or iOS zooms the whole page in when it is
       tapped and leaves it zoomed. A line one types on is 40px tall. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
       [type='checkbox'],
       [type='radio'],
@@ -115,7 +118,7 @@
 /* 3. The settings on a phone: a screen of their own, not a card floating over
       the page. frappe-ui gives a dialog no class of its own, so it is found by
       what it holds. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   .dialog-scroll-container > div:has(> .dialog-content > .settings-modal) {
     padding: 0;
   }
@@ -187,7 +190,7 @@
    stays, which on a phone left half the screen still and the other half a
    window - and the last lines cut. A short list that scrolls on purpose
    (`max-h-*`) keeps doing so. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   /* a page's columns, not what fills a box (an avatar's letter, a picture) */
   .settings-modal [data-pagina-impostazioni] .h-full.flex-col {
     height: auto;
@@ -215,7 +218,7 @@
       clips the dialog with `overflow: hidden`, which makes it a scroll box of
       its own and keeps anything sticky inside it from sticking; `clip` cuts the
       same corners without that. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   /* the sheet sits at the bottom by its own top margin, not by the row's
      alignment: a sheet taller than the screen then grows downwards, where the
      container scrolls. Pushed down by `flex-end`, it overflowed upwards, out
@@ -340,7 +343,8 @@
     transform: translateY(100%);
   }
 }
-@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 767px) and (prefers-reduced-motion: reduce),
+  (max-height: 499px) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
   .dialog-content[data-state='open'],
   .dialog-content[data-state='closed'] {
     animation: none;
@@ -352,7 +356,7 @@
       places the list next to what opened it, with a fixed position and a
       transform written on its wrapper; on a phone the wrapper is laid at the
       bottom instead. A list with a search on top keeps it on top. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-reka-popper-content-wrapper]:has(> [role='menu']),
   [data-reka-popper-content-wrapper]:has(> [role='listbox']),
   div[style*='position: fixed']:has(> [role='listbox'][data-slot='content']) {
@@ -404,7 +408,7 @@
    search and a listbox one level deeper than the rules above reach. It opened
    as a box under the field, over the next one; it is a sheet as well, the
    search on top. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-reka-popper-content-wrapper]:has(> [role='dialog'] [role='listbox']) {
     position: fixed !important;
     inset: auto 0 0 0 !important;
@@ -427,7 +431,7 @@
     max-height: 50dvh !important;
   }
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-theme='dark']
     [data-reka-popper-content-wrapper]
     > [role='dialog']
@@ -435,7 +439,7 @@
     box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6) !important;
   }
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-theme='dark'] [data-reka-popper-content-wrapper] > [role='menu'],
   [data-theme='dark'] [data-reka-popper-content-wrapper] > [role='listbox'],
   [data-theme='dark']
@@ -447,7 +451,7 @@
 
 /* 6. A toast on a phone: above the bar at the bottom, never over it, as wide as
       the screen less its gutters. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-sonner-toaster][data-y-position='bottom'] {
     bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px)) !important;
     left: 1rem !important;
@@ -469,7 +473,7 @@
 /* 7. A button as wide as its form is that form's action (book, save, send): on
       a phone it is as tall as a thumb, as the sheets' actions are. A field
       that opens a list is not one. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   button.w-full:not(
       [role='switch'],
       [role='tab'],
@@ -488,7 +492,7 @@
       aside (as a phone's own apps do), and the box that scrolls - a list, a
       chat, the agenda's panel - ends on the keyboard with its buttons. A sheet
       and a list's sheet sit on the keyboard, their Save in sight. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   :root[data-tastiera='aperta'] [data-cornice-telefono] {
     position: relative;
     top: var(--vista-sopra, 0px);
@@ -563,7 +567,7 @@
       Holding a finger on the bar, a tab, a button or a row chooses the row
       (`MobileListRows`) or does nothing: never the browser's menu of a link
       nor a selected word. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   /* the page's own colour, not the browser's canvas: the header lies on it,
      and the phone's status bar takes it (MobileLayout's theme-color) */
   html {
@@ -581,5 +585,48 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+  }
+}
+
+/* 10. A phone held sideways (under 500px tall) keeps the phone's layout
+       (composables/breakpoints.js), and what stays put leaves the rest room:
+       a record's card is one row - its name, what comes next, the round keys
+       without their words (still their names for who cannot see them) - and
+       the bar at the bottom puts each word beside its icon, as a phone's own
+       apps do sideways. The page under them had no room left at all. */
+@media (max-height: 499px) and (pointer: coarse) {
+  [data-testata-persona] {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  [data-testata-persona] > :first-child {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  [data-testata-persona] [data-volto] {
+    display: none;
+  }
+  [data-testata-persona] [data-prossimo] {
+    max-width: 14rem;
+  }
+  [data-testata-persona] [role='toolbar'] {
+    display: flex;
+    flex: none;
+    gap: 0.25rem;
+  }
+  [data-testata-persona] [role='toolbar'] button > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  nav[data-slot='mobile-nav'] [data-slot='mobile-nav-item'] {
+    flex-direction: row;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding-block: 0.25rem;
   }
 }

@@ -247,7 +247,7 @@
 }
 /* a row of a few numbers on a phone: one line of small tiles, the number
    above its word, no crosses - the list under it starts on the first screen */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   .dc-stat-row {
     grid-template-columns: none;
     grid-auto-flow: column;
@@ -498,7 +498,7 @@
 /* «All day» beside the hours: on a phone the column is narrower than the
    words, so they take two short lines inside the row instead of spilling over
    the first hour (the class is put on frappe-ui's label at build) */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   .dc-tutto-il-giorno {
     font-size: 11px;
     line-height: 1.1;

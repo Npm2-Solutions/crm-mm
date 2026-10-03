@@ -16,15 +16,42 @@ import { computed, ref } from 'vue'
  * the app are already written against.
  */
 export const MOBILE_BREAKPOINT = 768
+// A phone held sideways is still a phone: 844 pixels wide but under 500 tall,
+// and touched. It got the desktop's sidebar and table, the agenda two hours
+// tall. Shorter than this and touched, the phone's layout stays (telefono.css
+// asks the same: `(max-height: 499px) and (pointer: coarse)`).
+export const PHONE_LANDSCAPE_HEIGHT = 500
 
 export const viewportWidth = ref(getWidth())
+export const viewportHeight = ref(getHeight())
+const coarsePointer = ref(getCoarse())
 
 function getWidth() {
   return typeof window === 'undefined' ? MOBILE_BREAKPOINT : window.innerWidth
 }
 
+function getHeight() {
+  return typeof window === 'undefined' ? 1000 : window.innerHeight
+}
+
+function getCoarse() {
+  if (typeof window === 'undefined' || !window.matchMedia) return false
+  return window.matchMedia('(pointer: coarse)').matches
+}
+
 function sync() {
   viewportWidth.value = getWidth()
+  viewportHeight.value = getHeight()
+  coarsePointer.value = getCoarse()
+}
+
+/**
+ * Whether a screen gets the phone's layout: narrower than a tablet, or a phone
+ * held sideways (short, and touched with a finger).
+ */
+export function isPhoneSize({ width, height, coarse }) {
+  if (width < MOBILE_BREAKPOINT) return true
+  return Boolean(coarse) && height < PHONE_LANDSCAPE_HEIGHT
 }
 
 if (typeof window !== 'undefined') {
@@ -35,6 +62,10 @@ if (typeof window !== 'undefined') {
   window.addEventListener('orientationchange', sync, { passive: true })
 }
 
-export const isMobileView = computed(
-  () => viewportWidth.value < MOBILE_BREAKPOINT,
+export const isMobileView = computed(() =>
+  isPhoneSize({
+    width: viewportWidth.value,
+    height: viewportHeight.value,
+    coarse: coarsePointer.value,
+  }),
 )

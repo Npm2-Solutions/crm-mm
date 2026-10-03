@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
   MOBILE_BREAKPOINT,
+  PHONE_LANDSCAPE_HEIGHT,
   isMobileView,
+  isPhoneSize,
   viewportWidth,
 } from '@/composables/breakpoints'
 
@@ -44,5 +46,21 @@ describe('breakpoints', () => {
   it('puts the old 640-767 dead zone on the mobile side', () => {
     setWidth(700)
     expect(isMobileView.value).toBe(true)
+  })
+
+  // a phone held sideways: 844 wide, 390 tall, touched; it got the desktop
+  it('keeps a phone held sideways on the phone, not a short desktop window', () => {
+    expect(isPhoneSize({ width: 844, height: 390, coarse: true })).toBe(true)
+    expect(isPhoneSize({ width: 844, height: 390, coarse: false })).toBe(false)
+    // a tablet held sideways is tall enough for the desktop
+    expect(isPhoneSize({ width: 1180, height: 820, coarse: true })).toBe(false)
+    expect(
+      isPhoneSize({
+        width: 900,
+        height: PHONE_LANDSCAPE_HEIGHT,
+        coarse: true,
+      }),
+    ).toBe(false)
+    expect(isPhoneSize({ width: 390, height: 844, coarse: false })).toBe(true)
   })
 })

@@ -10,9 +10,11 @@
   through the device's own dialer on a phone or where there is no telephony.
 -->
 <template>
-  <div class="flex flex-col gap-4">
+  <!-- data-testata-persona, data-volto, data-prossimo: a phone held sideways
+       lays the card out in one row (telefono.css) -->
+  <div class="flex flex-col gap-4" data-testata-persona>
     <div class="flex items-center gap-4">
-      <slot name="avatar" />
+      <span class="contents" data-volto><slot name="avatar" /></span>
       <div class="flex min-w-0 flex-1 flex-col gap-1">
         <Tooltip :text="title">
           <h1
@@ -36,6 +38,7 @@
     <!-- what comes next: one line, its day on the agenda a tap away -->
     <router-link
       v-if="prossimo"
+      data-prossimo
       :to="{
         name: 'Calendar',
         query: {
