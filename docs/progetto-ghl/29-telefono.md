@@ -260,6 +260,7 @@ corretto per tutte le schermate insieme quando la causa era comune.
 | Note | Un elenco suo (`ElencoNote`, `get_notes`): si trova scrivendo il titolo o le parole, una riga per nota con le prime parole, chi l'ha scritta, di chi parla e quando, «+» ne scrive una. |
 | Automazioni | Il titolo non si riduce più a una lettera: le ricette sono un'icona e «+» ne crea una. Nell'editor il titolo resta intero: la prova a vuoto e le statistiche stanno nel menu «⋯». |
 | Lista d'attesa | I tre numeri su una riga, come i riquadri del design system. |
+| Cartella clinica | L'odontogramma va a capo dopo il primo quadrante e si legge di seguito (18-11, poi 21-28): sedici denti affiancati uscivano dallo schermo. Le voci della sintesi sono tutte in italiano. |
 | /prenota | I passi su una riga: quello dove si è dice il suo nome, gli altri il numero. |
 
 Le scritte troppo chiare per essere lette (il rosso e il blu `ink-*-4`) sono
@@ -283,7 +284,10 @@ framework traduce in un senso solo hanno il loro dove le usiamo in un altro:
 la registrazione, la «Pagina di provenienza» di una visita, «Presa visione»
 per un'informativa e «Letto» per un messaggio (erano «Leggere»), un periodo
 «1 ott 2026 – 31 ott 2026». Nelle frasi di una scheda le date sono per esteso
-(«Paziente dal 29 set 2026»), non nel formato del sistema. Le opzioni della fatturazione
+(«Paziente dal 29 set 2026»), non nel formato del sistema. Un'ora che il
+database manda senza lo zero («7:30:00») si scrive «07:30», non «7:30:»; un
+errore dell'assistente è una frase («L'assistente ora non è raggiungibile»),
+non il nome di un'eccezione. Le opzioni della fatturazione
 non parlano più del «progetto originale». La scritta che accompagna una bozza
 dell'assistente è nella lingua del centro: la legge il paziente, non chi l'ha
 controllata.
