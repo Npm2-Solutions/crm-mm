@@ -106,7 +106,7 @@
                             <div
                               class="min-w-0 truncate max-md:whitespace-normal max-md:[overflow-wrap:anywhere]"
                             >
-                              {{ doc[field.fieldname] }}
+                              {{ valoreDaLeggere(field, doc[field.fieldname]) }}
                             </div>
                           </Tooltip>
                         </div>
@@ -451,6 +451,7 @@ import {
   evaluateDependsOnValue,
   isNull,
   interpolateTemplate,
+  valoreDaLeggere,
 } from '@/utils'
 import { flt } from '@/utils/numberFormat.js'
 import {
