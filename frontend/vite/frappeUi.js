@@ -108,8 +108,20 @@ const SOSTITUZIONI = {
       'toLocaleDateString(linguaDelCalendario(), options)',
     ],
   ],
-  'Calendar/CalendarWeekly.vue': [testo('All day')],
-  'Calendar/CalendarDaily.vue': [testo('All day')],
+  // «All day» beside the hours: a class of ours lets it take two short lines
+  // on a phone, where the column is narrower than the words
+  'Calendar/CalendarWeekly.vue': [
+    [
+      /class="text-sm text-ink-gray-6 h-\[29px\] inline-flex items-center"\s*>\s*All day\s*</,
+      `class="dc-tutto-il-giorno text-sm text-ink-gray-6 h-[29px] inline-flex items-center">{{ __('All day') }}<`,
+    ],
+  ],
+  'Calendar/CalendarDaily.vue': [
+    [
+      /class="text-sm text-ink-gray-6 h-7 inline-flex items-center"\s*>\s*All day\s*</,
+      `class="dc-tutto-il-giorno text-sm text-ink-gray-6 h-7 inline-flex items-center">{{ __('All day') }}<`,
+    ],
+  ],
   'ListView/ListFooter.vue': [attributo('label', 'Load More'), testo('of')],
   'Autocomplete/Autocomplete.vue': [
     attributo('placeholder', 'Search'),

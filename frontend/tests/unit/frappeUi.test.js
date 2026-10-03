@@ -95,6 +95,8 @@ describe('frappe-ui in the user’s language', () => {
     ]) {
       expect(tradotto(file)).toContain(`{{ __('All day') }}`)
       expect(tradotto(file)).not.toMatch(/>\s*All day\s*</)
+      // its two short lines on a phone are ours (espresso-componenti.css)
+      expect(tradotto(file)).toContain('dc-tutto-il-giorno')
     }
   })
 

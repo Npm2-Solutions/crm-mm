@@ -1,0 +1,277 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  The agenda on a phone (docs/progetto-ghl/34): a grid of hours shows four of
+  them at a time and a short appointment as a sliver, so a phone opens on the
+  day as a list - when, who, what - in the order it happens, with a line where
+  "now" falls. The week above is a tap away from any of its days; the hours'
+  grid stays one switch away in the header.
+-->
+<template>
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+    <div
+      class="flex shrink-0 items-center gap-1 border-b border-outline-gray-2 px-1 py-2"
+    >
+      <Button
+        variant="ghost"
+        icon="lucide-chevron-left"
+        :aria-label="__('Previous week')"
+        @click="giorno = spostaGiorno(giorno, -7)"
+      />
+      <div class="grid flex-1 grid-cols-7 gap-0.5">
+        <button
+          v-for="data in settimana"
+          :key="data"
+          type="button"
+          class="flex flex-col items-center gap-0.5 rounded-lg py-1.5"
+          :class="
+            data === giorno
+              ? 'bg-[var(--brand-action)] text-[var(--on-brand-solid)]'
+              : 'text-ink-gray-7 active:bg-surface-gray-2'
+          "
+          :aria-pressed="data === giorno"
+          :aria-label="giornoPerEsteso(data)"
+          @click="giorno = data"
+        >
+          <span
+            class="text-xs"
+            :class="data === giorno ? '' : 'text-ink-gray-5'"
+          >
+            {{ nomeBreve(data) }}
+          </span>
+          <span
+            class="text-base"
+            :class="[
+              data === oggi ? 'font-semibold' : '',
+              data === oggi && data !== giorno
+                ? 'text-[var(--brand-action)]'
+                : '',
+            ]"
+          >
+            {{ numero(data) }}
+          </span>
+        </button>
+      </div>
+      <Button
+        variant="ghost"
+        icon="lucide-chevron-right"
+        :aria-label="__('Next week')"
+        @click="giorno = spostaGiorno(giorno, 7)"
+      />
+    </div>
+
+    <div class="flex shrink-0 items-center justify-between gap-2 px-4 pt-3">
+      <h2 class="truncate text-base-medium text-ink-gray-8">
+        {{ giornoPerEsteso(giorno) }}
+      </h2>
+      <div class="flex shrink-0 items-center gap-1">
+        <Button
+          v-if="giorno !== oggi"
+          variant="ghost"
+          :label="__('Today')"
+          @click="giorno = oggi"
+        />
+        <!-- the page's switch to the hours' grid -->
+        <slot name="vista" />
+      </div>
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-2">
+      <template v-for="(riga, i) in righe" :key="riga.id">
+        <div
+          v-if="i === adesso"
+          class="my-1.5 flex items-center gap-1.5"
+          role="separator"
+          :aria-label="__('Now')"
+        >
+          <span class="size-2 rounded-full bg-[var(--brand-segno)]" />
+          <span class="flex-1 border-t border-[var(--brand-segno)]" />
+        </div>
+        <button
+          type="button"
+          class="mb-2 flex w-full items-stretch gap-3 rounded-lg border px-3 py-2.5 text-left active:bg-surface-gray-2"
+          :class="
+            riga.id === `appt:${selected}`
+              ? 'border-outline-gray-4 bg-surface-gray-2'
+              : 'border-outline-gray-2'
+          "
+          @click="emit('open', { id: riga.id })"
+        >
+          <span class="flex w-11 shrink-0 flex-col text-p-sm">
+            <span v-if="riga.intero" class="text-ink-gray-7">
+              {{ __('All day') }}
+            </span>
+            <template v-else>
+              <span class="font-medium text-ink-gray-8">
+                {{ ora(riga.inizio) }}
+              </span>
+              <span class="text-ink-gray-5">{{ ora(riga.fine) }}</span>
+            </template>
+          </span>
+          <span
+            class="w-1 shrink-0 rounded-full"
+            :style="{ background: colore(riga) }"
+            aria-hidden="true"
+          />
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span
+              class="truncate text-base-medium"
+              :class="
+                annullato(riga)
+                  ? 'text-ink-gray-5 line-through'
+                  : 'text-ink-gray-9'
+              "
+            >
+              {{ titolo(riga) }}
+            </span>
+            <span v-if="sotto(riga)" class="truncate text-p-sm text-ink-gray-5">
+              {{ sotto(riga) }}
+            </span>
+          </span>
+          <span
+            v-if="riga.dati.first_visit"
+            class="shrink-0 self-start rounded bg-[var(--brand-subtle)] px-1.5 py-0.5 text-xs text-[var(--on-brand-subtle)]"
+          >
+            {{ __('First visit') }}
+          </span>
+          <span
+            v-else-if="statoDaDire(riga)"
+            class="shrink-0 self-start rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+          >
+            {{ __(riga.dati.status) }}
+          </span>
+        </button>
+      </template>
+
+      <div v-if="caricando && !righe.length" class="flex justify-center py-8">
+        <LoadingIndicator class="size-5" />
+      </div>
+      <EmptyState
+        v-else-if="!righe.length"
+        :title="__('Nothing on this day')"
+        :text="__('Book an appointment or add an event with the + button.')"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
+import { usersStore } from '@/stores/users'
+import { NAMED_HEX } from '@/utils/calendarColors'
+import { appointmentColor } from '@/utils/scheduler'
+import {
+  doveAdesso,
+  elencoDelGiorno,
+  settimanaDi,
+  spostaGiorno,
+} from '@/utils/sulTelefono'
+import { Button, LoadingIndicator } from 'frappe-ui'
+import { computed, onBeforeUnmount, ref } from 'vue'
+
+const props = defineProps({
+  appointments: { type: Array, default: () => [] },
+  events: { type: Array, default: () => [] },
+  serviceColors: { type: Object, default: () => ({}) },
+  // the appointment open in the panel beside, if any
+  selected: { type: String, default: '' },
+  caricando: { type: Boolean, default: false },
+})
+// the day shown, YYYY-MM-DD: the page's own, so the grid opens on it too
+const giorno = defineModel('date', { type: String, required: true })
+const emit = defineEmits(['open'])
+
+const { getUser } = usersStore()
+const lingua = window.navigator?.language || 'it-IT'
+
+// "now" moves on its own while the page stays open
+const adessoOra = ref(new Date())
+const orologio = setInterval(() => (adessoOra.value = new Date()), 60000)
+onBeforeUnmount(() => clearInterval(orologio))
+
+const oggi = computed(() => locale(adessoOra.value))
+const settimana = computed(() => settimanaDi(giorno.value))
+const righe = computed(() =>
+  elencoDelGiorno(props.appointments, props.events, giorno.value),
+)
+const adesso = computed(() =>
+  doveAdesso(righe.value, giorno.value, adessoOra.value),
+)
+
+function locale(data) {
+  const due = (n) => String(n).padStart(2, '0')
+  return `${data.getFullYear()}-${due(data.getMonth() + 1)}-${due(data.getDate())}`
+}
+
+function comeData(giornoScritto) {
+  const [a, m, g] = giornoScritto.split('-').map(Number)
+  return new Date(a, m - 1, g)
+}
+
+function nomeBreve(giornoScritto) {
+  return new Intl.DateTimeFormat(lingua, { weekday: 'short' })
+    .format(comeData(giornoScritto))
+    .replace('.', '')
+}
+
+function numero(giornoScritto) {
+  return comeData(giornoScritto).getDate()
+}
+
+function giornoPerEsteso(giornoScritto) {
+  const testo = new Intl.DateTimeFormat(lingua, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(comeData(giornoScritto))
+  return testo.charAt(0).toUpperCase() + testo.slice(1)
+}
+
+function ora(data) {
+  return new Intl.DateTimeFormat(lingua, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(data)
+}
+
+function annullato(riga) {
+  return riga.tipo === 'appointment' && riga.dati.status === 'Cancelled'
+}
+
+function colore(riga) {
+  if (annullato(riga)) return 'var(--outline-gray-3)'
+  if (riga.tipo === 'appointment')
+    return appointmentColor(riga.dati, props.serviceColors)
+  return NAMED_HEX[riga.dati.color] || 'var(--outline-gray-4)'
+}
+
+// who comes, as the desk says it; an event by its subject
+function titolo(riga) {
+  if (riga.tipo === 'event') return riga.dati.title || __('Event')
+  const nomi = (riga.dati.participants || [])
+    .filter((p) => p.status !== 'Cancelled')
+    .map((p) => p.participant_name || p.party)
+    .filter(Boolean)
+  return nomi.join(', ') || riga.dati.title || riga.dati.service
+}
+
+// what and with whom: the service and the professionals, or where an event is
+function sotto(riga) {
+  if (riga.tipo === 'event') return riga.dati.location || ''
+  const professionisti = (riga.dati.staff || [])
+    .map((s) => getUser(s.user)?.full_name || s.user)
+    .filter(Boolean)
+  return [riga.dati.service, ...professionisti].filter(Boolean).join(' · ')
+}
+
+// booked is what an appointment is: the other states are worth a word
+function statoDaDire(riga) {
+  return (
+    riga.tipo === 'appointment' &&
+    riga.dati.status &&
+    riga.dati.status !== 'Scheduled'
+  )
+}
+</script>

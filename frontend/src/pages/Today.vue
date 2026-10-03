@@ -32,8 +32,8 @@
   </LayoutHeader>
   <div class="flex-1 overflow-y-auto">
     <div class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-6 max-md:px-4">
-      <!-- how the day stands, at a glance -->
-      <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
+      <!-- how the day stands, at a glance: on a phone one short row -->
+      <div class="dc-stat-row grid grid-cols-4 gap-3">
         <StatTile
           v-for="(stat, i) in stats"
           :key="stat.label"

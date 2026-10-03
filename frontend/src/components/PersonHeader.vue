@@ -62,7 +62,12 @@
     </router-link>
 
     <!-- the actions, as round keys with their word under them -->
-    <div class="grid grid-cols-5 gap-1" role="toolbar" :aria-label="title">
+    <div
+      class="grid gap-1"
+      :class="puoPrenotare ? 'grid-cols-6' : 'grid-cols-5'"
+      role="toolbar"
+      :aria-label="title"
+    >
       <Dropdown v-if="modi.length > 1" :options="opzioniChiamata">
         <template #default>
           <button type="button" :class="tasto" :aria-label="__('Call')">
