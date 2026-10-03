@@ -545,8 +545,11 @@
       (`MobileListRows`) or does nothing: never the browser's menu of a link
       nor a selected word. */
 @media (max-width: 767px) {
+  /* the page's own colour, not the browser's canvas: the header lies on it,
+     and the phone's status bar takes it (MobileLayout's theme-color) */
   html {
     -webkit-tap-highlight-color: transparent;
+    background-color: var(--surface-base);
   }
   html,
   body {
