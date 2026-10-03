@@ -13,6 +13,7 @@ import {
   gruppoDi,
   quandoTorna,
   rigaDellAzienda,
+  rigaDellaNota,
   scadenzaInBreve,
   settimanaDi,
   spostaGiorno,
@@ -270,5 +271,18 @@ describe('a call on one line', () => {
     expect(durataDellaChiamata(3723)).toBe('1:02:03')
     expect(durataDellaChiamata(0)).toBe('')
     expect(durataDellaChiamata(null)).toBe('')
+  })
+})
+
+describe('a note on one line', () => {
+  it('says who wrote it, about whom and when, what of it is known', () => {
+    expect(
+      rigaDellaNota(
+        { reference_title: 'Laura Rossi' },
+        { autore: 'Anna Bianchi', quando: '2 ore fa' },
+      ),
+    ).toBe('Anna Bianchi · Laura Rossi · 2 ore fa')
+    expect(rigaDellaNota({}, { quando: 'ieri' })).toBe('ieri')
+    expect(rigaDellaNota()).toBe('')
   })
 })

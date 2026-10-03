@@ -5,7 +5,7 @@
 written any way, by name or by email, a page at a time, with when they come
 next; the open tasks by when they are due, one's own or everybody's; the deals
 of a pipeline by stage; the companies with their deals; the register of calls,
-found by a name or a number."""
+found by a name or a number; the notes, by their title or their words."""
 
 import datetime
 
@@ -287,3 +287,53 @@ class LeChiamate(IntegrationTestCase):
 		# a call of ours nobody answered is not one we missed
 		self.assertFalse(righe[uscita.name]["missed"])
 		self.assertEqual(righe[uscita.name]["number"], "+39 347 000 1111")
+
+
+class LeNote(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def nota(self, titolo: str, contenuto: str = "", **campi):
+		return frappe.get_doc(
+			{"doctype": "FCRM Note", "title": titolo, "content": contenuto, **campi}
+		).insert()
+
+	def test_found_by_title_or_words_the_latest_first(self):
+		parola = frappe.generate_hash(length=8)
+		prima = self.nota(f"Richiamo {parola}")
+		dopo = self.nota("Promemoria", f"<p>Chiedere del <b>{parola}</b></p>")
+		frappe.db.set_value(
+			"FCRM Note", prima.name, "modified", add_days(now_datetime(), -1), update_modified=False
+		)
+
+		righe = [r.name for r in T.get_notes(parola)["rows"]]
+		self.assertEqual(righe, [dopo.name, prima.name])
+		self.assertNotIn(dopo.name, _nomi(T.get_notes("Nessunadicosi")))
+
+	def test_their_first_words_in_plain_text_and_whom_they_are_about(self):
+		persona = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Annotata", "last_name": "Bene"}
+		).insert()
+		lunga = "parola " * 60
+		nota = self.nota(
+			"Visita",
+			f"<p>Prima <i>riga</i></p><p>{lunga}</p>",
+			reference_doctype="CRM Lead",
+			reference_docname=persona.name,
+		)
+		riga = next(r for r in T.get_notes("Visita")["rows"] if r.name == nota.name)
+		self.assertTrue(riga.content.startswith("Prima riga parola"))
+		self.assertLessEqual(len(riga.content), T.INIZIO_DELLA_NOTA)
+		self.assertNotIn("<", riga.content)
+		self.assertEqual(riga.reference_title, persona.lead_name)
+
+	def test_without_reading_notes_nothing(self):
+		utente = "telefono.senzanote@example.com"
+		if not frappe.db.exists("User", utente):
+			frappe.get_doc(
+				{"doctype": "User", "email": utente, "first_name": "Senza", "send_welcome_email": 0}
+			).insert(ignore_permissions=True)
+		frappe.set_user(utente)
+		with self.assertRaises(frappe.PermissionError):
+			T.get_notes()
