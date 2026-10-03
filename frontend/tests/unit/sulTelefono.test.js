@@ -5,10 +5,14 @@ import { describe, expect, it } from 'vitest'
 import {
   contattoDi,
   cosePerGruppo,
+  doveAdesso,
+  elencoDelGiorno,
   faseIniziale,
   gruppoDi,
   quandoTorna,
   scadenzaInBreve,
+  settimanaDi,
+  spostaGiorno,
   valoreDellaTrattativa,
 } from '@/utils/sulTelefono'
 
@@ -111,5 +115,112 @@ describe('when a person comes next', () => {
       giorno: '9 ott',
     })
     expect(quandoTorna(null, 'it-IT', ADESSO)).toBeNull()
+  })
+})
+
+describe('the day on a phone', () => {
+  it('gives the week a day falls in, Monday first', () => {
+    const settimana = settimanaDi('2026-10-03') // a Saturday
+    expect(settimana).toHaveLength(7)
+    expect(settimana[0]).toBe('2026-09-28')
+    expect(settimana[5]).toBe('2026-10-03')
+    expect(settimana[6]).toBe('2026-10-04')
+    expect(settimanaDi('2026-10-05')[0]).toBe('2026-10-05') // a Monday
+    expect(settimanaDi('')).toEqual([])
+  })
+
+  it('moves a day across months', () => {
+    expect(spostaGiorno('2026-10-31', 1)).toBe('2026-11-01')
+    expect(spostaGiorno('2026-03-01', -1)).toBe('2026-02-28')
+    expect(spostaGiorno('2026-10-03', 7)).toBe('2026-10-10')
+  })
+
+  it('lists the whole-day events first, then by when things start', () => {
+    const righe = elencoDelGiorno(
+      [
+        {
+          name: 'B',
+          starts_on: '2026-10-03 17:00:00',
+          ends_on: '2026-10-03 17:30:00',
+        },
+        {
+          name: 'A',
+          starts_on: '2026-10-03 09:00:00',
+          ends_on: '2026-10-03 09:45:00',
+        },
+        // another day: out
+        {
+          name: 'C',
+          starts_on: '2026-10-04 09:00:00',
+          ends_on: '2026-10-04 10:00:00',
+        },
+        // from the night before into this morning: in
+        {
+          name: 'D',
+          starts_on: '2026-10-02 23:30:00',
+          ends_on: '2026-10-03 00:30:00',
+        },
+      ],
+      [
+        {
+          id: 'EV1',
+          fromDate: '2026-10-03',
+          toDate: '2026-10-03',
+          fromTime: '12:00',
+          toTime: '13:00',
+        },
+        {
+          id: 'EV2',
+          fromDate: '2026-10-03',
+          toDate: '2026-10-03',
+          isFullDay: true,
+        },
+        {
+          id: 'EV3',
+          fromDate: '2026-10-01',
+          toDate: '2026-10-01',
+          fromTime: '12:00',
+          toTime: '13:00',
+        },
+      ],
+      '2026-10-03',
+    )
+    expect(righe.map((r) => r.id)).toEqual([
+      'EV2',
+      'appt:D',
+      'appt:A',
+      'EV1',
+      'appt:B',
+    ])
+    expect(righe[0].intero).toBe(true)
+    expect(righe[2].tipo).toBe('appointment')
+    expect(righe[3].tipo).toBe('event')
+  })
+
+  it('puts now before the first thing still to start, on today only', () => {
+    const righe = elencoDelGiorno(
+      [
+        {
+          name: 'A',
+          starts_on: '2026-10-03 09:00:00',
+          ends_on: '2026-10-03 09:45:00',
+        },
+        {
+          name: 'B',
+          starts_on: '2026-10-03 17:00:00',
+          ends_on: '2026-10-03 17:30:00',
+        },
+      ],
+      [],
+      '2026-10-03',
+    )
+    expect(doveAdesso(righe, '2026-10-03', new Date(2026, 9, 3, 12, 0))).toBe(1)
+    expect(doveAdesso(righe, '2026-10-03', new Date(2026, 9, 3, 8, 0))).toBe(0)
+    expect(doveAdesso(righe, '2026-10-03', new Date(2026, 9, 3, 18, 0))).toBe(
+      -1,
+    )
+    expect(doveAdesso(righe, '2026-10-04', new Date(2026, 9, 3, 12, 0))).toBe(
+      -1,
+    )
   })
 })

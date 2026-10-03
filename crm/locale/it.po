@@ -41134,3 +41134,27 @@ msgstr "Nuova persona"
 msgctxt "Tasks"
 msgid "Mine"
 msgstr "Mie"
+
+#: frontend/src/components/Mobile/SchedeDelTelefono.vue
+msgid "Sections"
+msgstr "Sezioni"
+
+#: frontend/src/components/Mobile/AgendaDelGiorno.vue
+msgid "Previous week"
+msgstr "La settimana prima"
+
+#: frontend/src/components/Mobile/AgendaDelGiorno.vue
+msgid "Nothing on this day"
+msgstr "Niente in questo giorno"
+
+#: frontend/src/components/Mobile/AgendaDelGiorno.vue
+msgid "Book an appointment or add an event with the + button."
+msgstr "Prenota un appuntamento o aggiungi un evento con il pulsante +."
+
+#: frontend/src/components/Mobile/AgendaDelGiorno.vue
+msgid "Event"
+msgstr "Evento"
+
+#: frontend/src/pages/Calendar.vue
+msgid "View"
+msgstr "Vista"

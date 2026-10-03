@@ -1,3 +1,8 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The tabs one opens every day in a short bar, the rest behind More.
+-->
 <template>
   <LayoutHeader>
     <header
@@ -49,13 +54,19 @@
       />
     </div>
   </div>
-  <div v-if="doc.name" class="flex h-full overflow-hidden">
+  <div v-if="doc.name" class="flex h-full flex-col overflow-hidden">
+    <!-- the tabs one opens every day, the rest behind More -->
+    <SchedeDelTelefono
+      v-model="tabIndex"
+      :tabs="tabs"
+      :principali="['Details', 'Events', 'Quotes', 'Notes', 'Tasks']"
+    />
     <Tabs
       ref="tabsRef"
       v-model="tabIndex"
       as="div"
       :tabs="tabs"
-      class="flex flex-1 overflow-auto flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-3 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
+      class="flex min-h-0 flex-1 overflow-auto flex-col [&>[role='tablist']]:hidden [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-3 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
     >
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
@@ -284,6 +295,7 @@ import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import SchedeDelTelefono from '@/components/Mobile/SchedeDelTelefono.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'

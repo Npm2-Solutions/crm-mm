@@ -245,6 +245,35 @@
   --c: var(--mint-300);
   opacity: 0.5;
 }
+/* a row of a few numbers on a phone: one line of small tiles, the number
+   above its word, no crosses - the list under it starts on the first screen */
+@media (max-width: 767px) {
+  .dc-stat-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .dc-stat-row .dc-stat {
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 2px;
+    min-height: 0;
+    padding: 8px 10px;
+    border-radius: 12px 12px 12px var(--radius-tail);
+  }
+  .dc-stat-row .dc-crosses {
+    display: none;
+  }
+  .dc-stat-row .dc-stat__label {
+    padding-right: 0;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dc-stat-row .dc-stat__value {
+    font-size: 20px;
+  }
+}
 .dc-stat--link {
   cursor: pointer;
   transition: box-shadow 120ms;
@@ -460,6 +489,16 @@
        colour as its ground and its bar, the time in that colour; a first visit
        the brand's full block, the one going on now ringed with the cross, a
        cancelled one grey and struck through */
+/* «All day» beside the hours: on a phone the column is narrower than the
+   words, so they take two short lines inside the row instead of spilling over
+   the first hour (the class is put on frappe-ui's label at build) */
+@media (max-width: 767px) {
+  .dc-tutto-il-giorno {
+    font-size: 11px;
+    line-height: 1.1;
+  }
+}
+
 .dc-evento {
   --evento: var(--surface-gray-6);
   border-radius: 8px 8px 8px var(--radius-tail);

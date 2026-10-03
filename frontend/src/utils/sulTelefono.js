@@ -141,3 +141,105 @@ export function quandoTorna(startsOn, locale, adesso = new Date()) {
     }).format(inizio),
   }
 }
+
+// ------------------------------------------------------------------ the day
+
+/** A day written YYYY-MM-DD as local midnight (not UTC's, a day earlier west). */
+function giornoLocale(giorno) {
+  const [anno, mese, giornoDelMese] = String(giorno || '')
+    .slice(0, 10)
+    .split('-')
+    .map(Number)
+  if (!anno || !mese || !giornoDelMese) return null
+  return new Date(anno, mese - 1, giornoDelMese)
+}
+
+function scritto(data) {
+  const due = (n) => String(n).padStart(2, '0')
+  return `${data.getFullYear()}-${due(data.getMonth() + 1)}-${due(data.getDate())}`
+}
+
+/** The seven days of the week a day falls in, Monday first, as YYYY-MM-DD. */
+export function settimanaDi(giorno) {
+  const data = giornoLocale(giorno)
+  if (!data) return []
+  const lunedi = new Date(data)
+  lunedi.setDate(data.getDate() - ((data.getDay() + 6) % 7))
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(lunedi)
+    d.setDate(lunedi.getDate() + i)
+    return scritto(d)
+  })
+}
+
+/** A day moved by some days, as YYYY-MM-DD. */
+export function spostaGiorno(giorno, giorni) {
+  const data = giornoLocale(giorno)
+  if (!data) return giorno
+  data.setDate(data.getDate() + giorni)
+  return scritto(data)
+}
+
+/**
+ * A day's appointments and events as one list, as a phone shows the agenda:
+ * what lasts the whole day first, then by when it starts. Appointments come as
+ * `crm.api.appointments.get_calendar` gives them, events as the calendar draws
+ * them (`fromDate`, `fromTime`, `isFullDay`); whatever overlaps the day is in.
+ */
+export function elencoDelGiorno(appuntamenti = [], eventi = [], giorno) {
+  const inizioGiorno = giornoLocale(giorno)
+  if (!inizioGiorno) return []
+  const fineGiorno = new Date(inizioGiorno)
+  fineGiorno.setDate(inizioGiorno.getDate() + 1)
+  const dentro = (inizio, fine) =>
+    inizio && fine && inizio < fineGiorno && fine > inizioGiorno
+
+  const righe = []
+  for (const appuntamento of appuntamenti) {
+    const inizio = letta(appuntamento.starts_on)
+    const fine = letta(appuntamento.ends_on)
+    if (!dentro(inizio, fine)) continue
+    righe.push({
+      id: `appt:${appuntamento.name}`,
+      tipo: 'appointment',
+      inizio,
+      fine,
+      intero: false,
+      dati: appuntamento,
+    })
+  }
+  for (const evento of eventi) {
+    const intero = Boolean(evento.isFullDay)
+    const inizio = letta(
+      `${evento.fromDate} ${intero ? '00:00' : evento.fromTime || '00:00'}`,
+    )
+    let fine = letta(
+      `${evento.toDate || evento.fromDate} ${intero ? '23:59' : evento.toTime || '23:59'}`,
+    )
+    if (fine && inizio && fine <= inizio) fine = new Date(inizio.getTime() + 1)
+    if (!dentro(inizio, fine)) continue
+    righe.push({
+      id: evento.id,
+      tipo: 'event',
+      inizio,
+      fine,
+      intero,
+      dati: evento,
+    })
+  }
+  return righe.sort(
+    (a, b) =>
+      Number(b.intero) - Number(a.intero) ||
+      a.inizio - b.inizio ||
+      a.fine - b.fine,
+  )
+}
+
+/**
+ * Where "now" falls in a day's list: before the first item still to start;
+ * -1 when the day is not today or everything has started.
+ */
+export function doveAdesso(righe = [], giorno, adesso = new Date()) {
+  if (scritto(adesso) !== String(giorno).slice(0, 10)) return -1
+  return righe.findIndex((riga) => !riga.intero && riga.inizio > adesso)
+}

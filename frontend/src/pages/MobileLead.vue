@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The phone's person: their card with the calls and messages a thumb away, the
+  tabs one opens every day in a short bar and the rest behind More.
+-->
 <template>
   <LayoutHeader>
     <header
@@ -39,13 +45,26 @@
       </template>
     </PersonHeader>
   </div>
-  <div v-if="doc.name" class="flex h-full overflow-hidden">
+  <div v-if="doc.name" class="flex h-full flex-col overflow-hidden">
+    <!-- the tabs one opens every day, the rest behind More -->
+    <SchedeDelTelefono
+      v-model="tabIndex"
+      :tabs="tabs"
+      :principali="[
+        'Activity',
+        'Details',
+        'Events',
+        'Clinic',
+        'Tasks',
+        'Notes',
+      ]"
+    />
     <Tabs
       ref="tabsRef"
       v-model="tabIndex"
       as="div"
       :tabs="tabs"
-      class="flex flex-1 overflow-auto flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-3 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
+      class="flex min-h-0 flex-1 overflow-auto flex-col [&>[role='tablist']]:hidden [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-3 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
     >
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
@@ -122,6 +141,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import SchedeDelTelefono from '@/components/Mobile/SchedeDelTelefono.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'

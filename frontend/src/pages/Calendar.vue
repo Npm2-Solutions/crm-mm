@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the day opens as a list (components/Mobile/AgendaDelGiorno.vue),
+  the hours' grid one choice away.
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -44,7 +50,7 @@
           :label="isMobileView ? undefined : __('New')"
           :aria-label="__('New')"
           :disabled="isCreateDisabled"
-          @click="startNew()"
+          @click="nuovo()"
         >
           <template #prefix>
             <span class="lucide-plus h-4" aria-hidden="true" />
@@ -191,6 +197,28 @@
         @move="onGridMove"
       />
     </div>
+    <!-- a phone opens on the day as a list; the hours' grid is one choice away -->
+    <AgendaDelGiorno
+      v-else-if="viewMode === 'elenco'"
+      v-model:date="agendaDate"
+      :appointments="appointments"
+      :events="shownEvents"
+      :serviceColors="serviceColors"
+      :selected="selectedAppointment"
+      :caricando="scheduler.loading"
+      @open="showDetails"
+    >
+      <template #vista>
+        <FormControl
+          type="select"
+          class="w-28"
+          modelValue="List"
+          :aria-label="__('View')"
+          :options="vistePerIlTelefono"
+          @update:modelValue="dallElenco"
+        />
+      </template>
+    </AgendaDelGiorno>
     <Calendar
       v-else
       ref="calendar"
@@ -274,13 +302,14 @@
               type="select"
               class="mr-1 w-24"
               :modelValue="activeView"
-              :options="[
-                { label: __('Day'), value: 'Day' },
-                { label: __('Week'), value: 'Week' },
-                { label: __('Month'), value: 'Month' },
-              ]"
+              :options="isMobileView ? vistePerIlTelefono : vistePerIlComputer"
               :placeholder="__('Operator')"
-              @update:modelValue="updateActiveView($event)"
+              @update:modelValue="
+                (vista) =>
+                  vista === 'List'
+                    ? allElenco(selectedMonthDate)
+                    : updateActiveView(vista)
+              "
             />
 
             <Link
@@ -389,6 +418,7 @@ import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
 import { isMobileView } from '@/composables/breakpoints'
+import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { formatMinutes } from '@/utils/scheduler'
@@ -460,12 +490,25 @@ const modeMap = {
   Monthly: 'Month',
 }
 
+// On a phone the grid opens on the view chosen from the list, the day at first
+const vistaSulTelefono = ref('Day')
+
 const defaultMode = computed(() => {
   // A seven-column week grid on a 390px screen is a smear; a phone calendar
   // opens on the day.
-  if (isMobileView.value) return 'Day'
+  if (isMobileView.value) return vistaSulTelefono.value
   return modeMap[settings.value?.default_calendar_view] || 'Week'
 })
+
+const vistePerIlComputer = [
+  { label: __('Day'), value: 'Day' },
+  { label: __('Week'), value: 'Week' },
+  { label: __('Month'), value: 'Month' },
+]
+const vistePerIlTelefono = [
+  { label: __('List'), value: 'List' },
+  ...vistePerIlComputer,
+]
 
 const calendar = ref(null)
 const activeRangeKey = ref('')
@@ -479,10 +522,12 @@ const APPOINTMENT_PREFIX = 'appt:'
 const isAppointmentId = (id) => String(id || '').startsWith(APPOINTMENT_PREFIX)
 const appointmentName = (id) => String(id).slice(APPOINTMENT_PREFIX.length)
 
-// Pinned to 'calendar' on a phone: the agenda is one column per professional.
-const viewMode = ref('calendar')
+// The agenda is one column per professional: never on a phone, which opens on
+// the day as a list ('elenco') and keeps the hours' grid one choice away.
+const viewMode = ref(isMobileView.value ? 'elenco' : 'calendar')
 watch(isMobileView, (mobile) => {
-  if (mobile) viewMode.value = 'calendar'
+  if (mobile) viewMode.value = 'elenco'
+  else if (viewMode.value === 'elenco') viewMode.value = 'calendar'
 })
 const columnMode = ref('staff')
 const zoom = ref(1.1)
@@ -616,7 +661,7 @@ function setAgendaDate(value) {
 
 /** Window the appointment feed should cover for the current view. */
 function schedulerRange() {
-  if (viewMode.value === 'agenda') {
+  if (viewMode.value === 'agenda' || viewMode.value === 'elenco') {
     return { start: agendaDate.value, end: agendaDate.value }
   }
   const range = lastRange.value
@@ -703,7 +748,7 @@ const countLabel = computed(() => {
     parts.push(
       booked === 1 ? __('1 appointment') : __('{0} appointments', [booked]),
     )
-  if (planned && viewMode.value === 'calendar')
+  if (planned && viewMode.value !== 'agenda')
     parts.push(planned === 1 ? __('1 event') : __('{0} events', [planned]))
   return parts.join(' · ')
 })
@@ -748,6 +793,29 @@ let newAt = {}
  * slot: a date, a time (in whatever form the calendar gives it), all day or
  * not. A click on the all-day row is an event: an appointment has hours.
  */
+// «New» from the header: on the phone's list, on the day it shows
+function nuovo() {
+  if (viewMode.value === 'elenco' && agendaDate.value !== today())
+    return startNew({ date: agendaDate.value })
+  startNew()
+}
+
+// from the list to the hours' grid, on the same day
+async function dallElenco(vista) {
+  if (vista === 'List') return
+  vistaSulTelefono.value = vista
+  viewMode.value = 'calendar'
+  await nextTick()
+  calendar.value?.onMonthYearChange?.(dayjs(agendaDate.value).toDate())
+}
+
+// from the grid back to the list, on the day the grid was on
+function allElenco(dataDellaGriglia) {
+  if (dataDellaGriglia)
+    agendaDate.value = dayjs(dataDellaGriglia).format('YYYY-MM-DD')
+  viewMode.value = 'elenco'
+}
+
 function startNew(at = {}) {
   const fromTime = at.time ? getFromToTime(at.time)[0] : nextQuarter()
   newAt = {
@@ -969,6 +1037,27 @@ const events = createListResource({
 })
 
 provide('events', events)
+
+// the list asks the events of its day itself: the grid asks its range
+async function eventiDelGiorno() {
+  // when the grid comes back it asks its range again
+  activeRangeKey.value = ''
+  events.update({
+    filters: buildEventFilters({
+      startDate: agendaDate.value,
+      endDate: agendaDate.value,
+    }),
+    orFilters: buildEventOrFilters(),
+  })
+  await events.reload()
+}
+watch(
+  [viewMode, agendaDate],
+  ([modo]) => {
+    if (modo === 'elenco') eventiDelGiorno()
+  },
+  { immediate: true },
+)
 
 const eventPanel = ref(null)
 const showEventPanel = ref(false)
@@ -1198,6 +1287,7 @@ onMounted(async () => {
   reloadScheduler()
 
   const { eventId, date, appointment } = route.query
+  if (date) setAgendaDate(date)
   if (appointment) {
     openAppointment(appointment)
     // on its day, not on this week's
@@ -1223,9 +1313,7 @@ onMounted(async () => {
     await nextTick()
 
     // Set calendar date to the event's date
-    if (calendar.value.onMonthYearChange) {
-      calendar.value.onMonthYearChange(dayjs(date).toDate())
-    }
+    calendar.value?.onMonthYearChange?.(dayjs(date).toDate())
 
     showDetails({ id: eventId })
   }
