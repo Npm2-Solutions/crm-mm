@@ -199,6 +199,52 @@ Le regole per le prossime schermate si allungano:
   nell'intestazione.
 - **Più di cinque schede passano per `SchedeDelTelefono`.**
 
+## Terza parte: un'app, non il computer in piccolo (03/10/2026)
+
+Un giro di prova ha toccato ogni pulsante, menu e dialogo di ogni pagina su un
+telefono di 390 punti (Playwright, solo letture: ogni scrittura fermata prima
+del server), misurando su ogni schermata i bersagli piccoli, i campi che fanno
+ingrandire iOS, il testo tagliato o minuscolo, i dialoghi che escono dallo
+schermo. Quello che restava del computer si vedeva in ogni pagina: dialoghi
+centrati come finestre, menu a tendina da mouse, campi a 14px, pulsanti di 28,
+il «Altro» che apriva la barra laterale del computer in un cassetto, le
+impostazioni con un elenco di righe da 31px e lo stesso titolo tre volte.
+
+Le scelte sono quelle di un'app (iOS e Android le fanno uguali):
+
+- **Un dialogo è un foglio che sale dal basso**: largo quanto lo schermo, gli
+  angoli in alto tondi, la maniglia, il titolo e i pulsanti fermi mentre il
+  modulo scorre, i pulsanti larghi quanto il foglio e alti 44px.
+- **Un menu, le scelte di una select, l'elenco di un campo sono un foglio di
+  azioni**: in basso, righe di 48px a 16px, lo schermo dietro velato.
+- **Un campo è a 16px e alto 40**: sotto i 16px iOS ingrandisce la pagina al
+  tocco e la lascia ingrandita. Lo stesso per le select di frappe-ui.
+- **Un controllo piccolo ha un anello invisibile** che prende il tocco (solo
+  sugli schermi al tocco): i pulsanti da 28 e 32px arrivano a 40.
+- **Un pulsante largo quanto il suo modulo** (prenota, salva, invia) è alto 44.
+- **Un avviso compare sopra la barra in basso**, mai sopra di essa.
+
+Tutto questo è in `frontend/src/telefono.css`, sul markup che frappe-ui dà ai
+suoi componenti: ogni schermata lo prende insieme, anche quelle che verranno.
+
+| Dove | Sul telefono |
+|---|---|
+| Altro | Una pagina (`pages/Altro.vue`, `/altro`), non più il cassetto con la barra del computer: chi sei (il profilo, che apre le impostazioni), le notifiche con quante sono da leggere, le voci del menu che la barra non ha, le viste salvate, i primi passi, le voci dell'account come le ha ordinate il centro (`composables/vociAccount.js`: le stesse del menu dell'account sul computer), Esci in rosso. Righe da 52px in schede, l'icona in un riquadro. La voce resta accesa sulle pagine che si aprono da lì. |
+| Impostazioni | La radice è un elenco da app: il titolo grande, la X per uscire, le categorie in righe da 52px con l'icona in un riquadro. Dentro, la barra ha «‹» col nome di dove torna (Impostazioni, poi la categoria) e la X: il titolo della pagina lo dice la pagina, una volta sola. |
+| Aziende, Contatti, Chiamate | `ElencoAziende`, `ElencoContatti`, `ElencoChiamate` come le persone: si cerca scrivendo (il numero in qualsiasi modo), una riga per cosa, il «+». Un'azienda dice cosa fa, il suo sito e quante trattative ha; una chiamata con chi, da che parte, com'è andata, quando e quanto è durata, le perse in rosso, richiamare a un tocco. |
+| Oggi | «Oggi» una volta sola (il titolo; il pulsante del giorno solo su un altro giorno), Accogli e Non venuti larghi quanto la riga e alti 40, i giorni passati senza esito ai primi quattro con «Mostra tutti e 25». |
+| Agenda | Con il pannello aperto la vista dietro si toglie: la select «Lista» e le frecce del giorno, posizionate, finivano sopra il titolo del pannello. Niente settimana (sette colonne da 45px non si leggono); i filtri sfumano sul bordo, a dire che scorrono. |
+| Le liste rimaste | Le trattative e i contatti di un'azienda: le caselle compaiono solo tenendo premuta una riga, come nelle liste di un telefono, e un tocco poi sceglie invece di aprire; un dettaglio senza valore non ha la sua etichetta (né «€ 0,00» per un fatturato mai scritto). |
+
+Le parole trovate in inglese sono ora in italiano: le schede vuote
+dell'attività di una persona, «Outgoing Call» (incollato a una parola
+inglese) e «Lead» nel dettaglio di una chiamata, le colonne del registro,
+«Mobile No». Le icone che frappe-ui non sa disegnare (un nome che Feather non
+ha diventava un cerchio vuoto: il giro di chiamate, «Fuori dalla tua cura»)
+sono di Lucide; automazioni e post social hanno le loro (prima il fulmine delle
+trattative e la freccia di un link esterno). Un centro che non ha scelto una
+valuta conta in euro, non in dollari.
+
 ## File
 
 | File | Cosa cambia |
@@ -221,6 +267,12 @@ Le regole per le prossime schermate si allungano:
 | `frontend/src/components/Mobile/ElencoPersone.vue`, `ElencoCose.vue`, `TrattativePerFase.vue`, `AgendaDelGiorno.vue`, `SchedeDelTelefono.vue`, `PulsanteAggiungi.vue` | Le schermate fatte per il telefono |
 | `frontend/src/utils/sulTelefono.js` | Le parti pure: la riga di una persona, i gruppi delle cose da fare, la fase di partenza, il valore di una trattativa, la settimana, la giornata in ordine, dove cade adesso. Testato |
 | `frontend/src/pages/Leads.vue`, `Tasks.vue`, `Deals.vue`, `Calendar.vue`, `Today.vue`, `MobileLead.vue`, `MobileDeal.vue`, `components/PersonHeader.vue` | Le schermate del telefono al posto di tabelle e lavagne |
+| `frontend/src/telefono.css` | Fogli dal basso, fogli di azioni, campi a 16px, anelli al tocco, pulsanti delle azioni, avvisi sopra la barra |
+| `frontend/src/pages/Altro.vue`, `composables/vociAccount.js`, `composables/visteSalvate.js` | La pagina «Altro»; le voci dell'account e le viste salvate, le stesse del computer |
+| `frontend/src/components/Settings/Settings.vue` | La radice da app, la barra col nome di dove torna |
+| `frontend/src/components/Mobile/ElencoAziende.vue`, `ElencoContatti.vue`, `ElencoChiamate.vue` + `crm/api/sul_telefono.py` (`get_organizations`, `get_contacts`, `get_calls`) | Le liste di aziende, contatti e chiamate |
+| `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
+| `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | Oggi sul telefono |
 
 ## Non incluso
 

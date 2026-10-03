@@ -173,8 +173,10 @@ is never a menu entry.
 ### The phone's own screens (docs/progetto-ghl/29, second part)
 | File | Role |
 |---|---|
-| `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals — tested in `crm/tests/test_sul_telefono.py` |
-| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+») |
+| `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number — tested in `crm/tests/test_sul_telefono.py` |
+| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+») |
+| `frontend/src/pages/Altro.vue` + `composables/vociAccount.js`, `visteSalvate.js` | The phone's «More» page (`/altro`): the profile, the notifications, the menu entries the bar has no room for, the saved views, the first steps, the account's entries the sidebar's dropdown draws too |
+| `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
 | `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
 
 ### Notifications (docs/progetto-ghl/43)
@@ -610,6 +612,12 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   from `crm/api/sul_telefono.py`), never the desk's table in rows; the page's
   main action is `PulsanteAggiungi`; more than five tabs go through
   `SchedeDelTelefono`.
+- A dialog, a menu and a select are sheets from the bottom by themselves
+  (`telefono.css`): never a size, a margin or a position of one's own on a
+  phone. A page that opens over another (a panel) hides what it covers there
+  (`v-show`), or the covered page's positioned controls are drawn over it.
+- An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
+  or `lucide-…`: any other name draws an empty circle.
 
 ---
 
