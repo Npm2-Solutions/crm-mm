@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!-- `data-required`: what a form that opens puts its cursor in first -->
   <div
@@ -514,9 +517,12 @@ const field = computed(() => {
     window.state_options,
   )
 
+  // a choice reads in the user's language, its value stays the stored one
+  // («Incoming» reads «In arrivo»; a choice the centre wrote has no entry in
+  // the catalogue and stays as written)
   if (field.fieldtype == 'Select' && typeof field.options === 'string') {
     field.options = field.options.split('\n').map((option) => {
-      return { label: option, value: option }
+      return { label: option ? __(option) : option, value: option }
     })
 
     if (field.options[0].value !== '' && !field.reqd) {
@@ -631,7 +637,7 @@ const getOptions = (options) => {
     return options
   } else if (typeof options === 'string') {
     return options.split('\n').map((option) => {
-      return { label: option, value: option }
+      return { label: option ? __(option) : option, value: option }
     })
   } else {
     return []

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="'xl'">
     <template #body-header>
@@ -82,7 +85,7 @@
               :class="[_event.isFullDay ? 'w-full' : 'w-full sm:w-[158px]']"
               variant="outline"
               :value="_event.fromDate"
-              :format="'MMM D, YYYY'"
+              :format="'D MMM YYYY'"
               :placeholder="__('May 1, 2025')"
               :clearable="false"
               @update:modelValue="(date) => updateDate(date, true)"

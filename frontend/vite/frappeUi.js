@@ -136,6 +136,7 @@ const SOSTITUZIONI = {
   'DatePicker/DateTimePicker.vue': [
     attributo('today-label', 'Now'),
     attributo('placeholder', 'Select time'),
+    predefinito('placeholder', 'Select date & time'),
   ],
   'DatePicker/DateRangePicker.vue': [
     predefinito('placeholder', 'Select range'),

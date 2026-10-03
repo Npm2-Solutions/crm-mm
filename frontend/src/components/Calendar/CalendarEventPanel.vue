@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div v-if="show" class="flex flex-col w-[352px] text-base h-full">
@@ -311,7 +314,7 @@
             class="w-full"
             variant="outline"
             :value="_event.fromDate"
-            :format="'MMM D, YYYY'"
+            :format="'D MMM YYYY'"
             :placeholder="__('May 1, 2025')"
             :clearable="false"
             @update:modelValue="(date) => updateDate(date, true)"
