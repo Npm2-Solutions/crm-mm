@@ -68,29 +68,31 @@
       role="toolbar"
       :aria-label="title"
     >
-      <Dropdown v-if="modi.length > 1" :options="opzioniChiamata">
-        <template #default>
-          <button type="button" :class="tasto" :aria-label="__('Call')">
-            <span :class="[tondo, primario]">
-              <PhoneIcon class="size-[18px]" />
-            </span>
-            <span class="truncate">{{ __('Call') }}</span>
-          </button>
-        </template>
-      </Dropdown>
-      <button
-        v-else
-        type="button"
-        :class="tasto"
-        :disabled="!modi.length"
-        :title="modi.length ? modi[0].numero : __('No phone number yet')"
-        @click="chiama(modi[0])"
-      >
-        <span :class="[tondo, modi.length ? primario : spento]">
-          <PhoneIcon class="size-[18px]" />
-        </span>
-        <span class="truncate">{{ __('Call') }}</span>
-      </button>
+      <template v-if="!soloMascherati">
+        <Dropdown v-if="modi.length > 1" :options="opzioniChiamata">
+          <template #default>
+            <button type="button" :class="tasto" :aria-label="__('Call')">
+              <span :class="[tondo, primario]">
+                <PhoneIcon class="size-[18px]" />
+              </span>
+              <span class="truncate">{{ __('Call') }}</span>
+            </button>
+          </template>
+        </Dropdown>
+        <button
+          v-else
+          type="button"
+          :class="tasto"
+          :disabled="!modi.length"
+          :title="modi.length ? modi[0].numero : __('No phone number yet')"
+          @click="chiama(modi[0])"
+        >
+          <span :class="[tondo, modi.length ? primario : spento]">
+            <PhoneIcon class="size-[18px]" />
+          </span>
+          <span class="truncate">{{ __('Call') }}</span>
+        </button>
+      </template>
 
       <button
         v-if="whatsappEnabled && scrive"
@@ -168,6 +170,7 @@ import { usersStore } from '@/stores/users'
 import {
   giornoInBreve,
   indirizzoTel,
+  mascherato,
   modiDiChiamare,
   numeriDi,
   prossimoAppuntamento,
@@ -209,6 +212,15 @@ const spento = 'bg-surface-gray-1 text-ink-gray-4'
 const scrive = computed(() => puo('conversazioni.usa'))
 
 const numeri = computed(() => numeriDi(props.doc))
+
+// a number reaches whoever sees people masked (Marketing) as «+39XXXXXX»: it is
+// no number to call, and «No phone number yet» would not be true either, so
+// there is no key at all
+const soloMascherati = computed(
+  () =>
+    !numeri.value.length &&
+    ['mobile_no', 'phone'].some((campo) => mascherato(props.doc?.[campo])),
+)
 
 // the centre's telephony, for whoever may call with it
 const telefonia = computed(() => callEnabled.value && puo('telefono.chiama'))
