@@ -29,8 +29,9 @@
         iconLeft="lucide-list-ordered"
         :route="{ name: 'Dialer' }"
       />
+      <!-- logging a call is for who calls, as on the person's page -->
       <Button
-        v-if="!isMobileView"
+        v-if="!isMobileView && puo('telefono.chiama')"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -41,7 +42,11 @@
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
     <ElencoChiamate ref="elencoChiamate" @apri="showCallLog" />
-    <PulsanteAggiungi :label="__('Log a call')" @click="createCallLog" />
+    <PulsanteAggiungi
+      v-if="puo('telefono.chiama')"
+      :label="__('Log a call')"
+      @click="createCallLog"
+    />
   </template>
   <ViewControls
     v-if="!isMobileView"
