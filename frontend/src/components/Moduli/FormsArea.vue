@@ -129,7 +129,10 @@
           <div class="truncate text-base font-medium text-ink-gray-8">
             {{ form.title }}
           </div>
-          <div class="truncate text-sm text-ink-gray-5">
+          <!-- on a phone the line wraps: who filled it in is at its end -->
+          <div
+            class="truncate text-sm text-ink-gray-5 max-md:whitespace-normal"
+          >
             {{ describe(form) }}
           </div>
         </div>

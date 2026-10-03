@@ -99,10 +99,15 @@
                               'Text Editor',
                             ].includes(field.fieldtype)
                           "
-                          class="flex h-7 cursor-pointer items-center px-2 py-1 text-ink-gray-5"
+                          class="flex h-7 cursor-pointer items-center px-2 py-1 text-ink-gray-5 max-md:h-auto max-md:min-h-7"
                         >
                           <Tooltip :text="__(field.tooltip)">
-                            <div>{{ doc[field.fieldname] }}</div>
+                            <!-- a long email reads whole on a phone, cut with dots elsewhere -->
+                            <div
+                              class="min-w-0 truncate max-md:whitespace-normal max-md:[overflow-wrap:anywhere]"
+                            >
+                              {{ doc[field.fieldname] }}
+                            </div>
                           </Tooltip>
                         </div>
                         <PrimaryDropdown
