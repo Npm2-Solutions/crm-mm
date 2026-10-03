@@ -62,28 +62,52 @@
     />
 
     <div v-if="chosen" class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <ConversationHeader
-        :person="current"
-        :back="isMobileView"
-        :details="!roomForPanel"
-        :wide="!isMobileView"
-        @back="back()"
-        @details="showPerson = true"
-        @changed="reload()"
-      />
-      <!--
+      <!-- a person one does not follow, opened by the address: why, in words,
+           and the way back, never their code over an empty thread -->
+      <template v-if="nonSiApre">
+        <div v-if="isMobileView" class="flex shrink-0 items-center px-2 py-2">
+          <Button
+            variant="ghost"
+            icon="lucide-arrow-left"
+            :aria-label="__('Back to the list')"
+            @click="back()"
+          />
+        </div>
+        <ErrorPage
+          :errorTitle="nonSiApre.titolo"
+          :errorMessage="nonSiApre.testo"
+        />
+      </template>
+      <div
+        v-else-if="!leggibile"
+        class="flex flex-1 items-center justify-center"
+      >
+        <LoadingIndicator class="size-5 text-ink-gray-5" />
+      </div>
+      <template v-else>
+        <ConversationHeader
+          :person="current"
+          :back="isMobileView"
+          :details="!roomForPanel"
+          :wide="!isMobileView"
+          @back="back()"
+          @details="showPerson = true"
+          @changed="reload()"
+        />
+        <!--
         The Activity tab of that person, whole: the channel picker, the stream
         and the composer, with everything they already know about replies,
         templates, voice notes and failed sends. Rebuilding a chat here to gain
         a layout would have lost all of it.
       -->
-      <Activities
-        :key="chosen"
-        doctype="CRM Lead"
-        :docname="chosen"
-        :newMessages="newMessages"
-        @afterSave="reload()"
-      />
+        <Activities
+          :key="chosen"
+          doctype="CRM Lead"
+          :docname="chosen"
+          :newMessages="newMessages"
+          @afterSave="reload()"
+        />
+      </template>
     </div>
     <!-- on a phone the list *is* the empty state, so there is nothing to say -->
     <div
@@ -100,7 +124,7 @@
     </div>
 
     <ConversationAside
-      v-if="chosen && roomForPanel"
+      v-if="chosen && roomForPanel && leggibile"
       :person="current"
       @changed="reload()"
     />
@@ -125,6 +149,7 @@ import Activities from '@/components/Activities/Activities.vue'
 import ConversationAside from '@/components/Conversations/ConversationAside.vue'
 import ConversationHeader from '@/components/Conversations/ConversationHeader.vue'
 import ConversationPicker from '@/components/Conversations/ConversationPicker.vue'
+import ErrorPage from '@/components/ErrorPage.vue'
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
@@ -132,9 +157,12 @@ import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import { readReceipts } from '@/composables/conversationState'
 import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
+import { schedaChiusa } from '@/utils/schedaChiusa'
 import {
   Breadcrumbs,
+  Button,
   Dialog,
+  LoadingIndicator,
   createResource,
   dayjsLocal,
   debounce,
@@ -261,6 +289,19 @@ const current = computed(() => {
     }
   )
 })
+
+// A conversation opened from the list is one the server listed; one opened by
+// its address waits for the person, who may not be one's to read (doc 30).
+const leggibile = computed(
+  () =>
+    person.data?.name === chosen.value ||
+    rows.value.some((row) => row.name === chosen.value),
+)
+const nonSiApre = computed(() =>
+  !leggibile.value && person.error
+    ? schedaChiusa(person.error, 'CRM Lead')
+    : null,
+)
 
 // Back to the list, which on a phone is the pane this one replaced.
 function back() {

@@ -219,6 +219,7 @@ import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'
 import { getView } from '@/utils/view'
+import { schedaChiusa } from '@/utils/schedaChiusa'
 import {
   validateIsImageFile,
   setupCustomizations,
@@ -256,9 +257,6 @@ const { capture } = useTelemetry()
 const route = useRoute()
 const router = useRouter()
 
-const errorTitle = ref('')
-const errorMessage = ref('')
-
 const showDeleteLinkedDocModal = ref(false)
 
 const {
@@ -266,9 +264,15 @@ const {
   permissions,
   scripts,
   triggerOnRender,
+  error: nonSiApre,
 } = useDocument('CRM Organization', props.organizationId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+
+// why the page did not open, in words
+const chiusa = computed(() => schedaChiusa(nonSiApre.value, 'CRM Organization'))
+const errorTitle = computed(() => chiusa.value?.titolo || '')
+const errorMessage = computed(() => chiusa.value?.testo || '')
 
 function onEnriched() {
   organization.reload?.()

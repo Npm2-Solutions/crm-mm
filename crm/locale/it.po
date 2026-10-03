@@ -41937,3 +41937,67 @@ msgstr "Curare le librerie con cui si scrivono i piani: correggere nomi e gruppi
 #: crm/permissions/catalogo.py
 msgid "Write social drafts, for a manager to approve"
 msgstr "Scrivere le bozze dei post social, che un responsabile approva"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "You do not follow this person"
+msgstr "Non segui questa persona"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "Their page opens for whoever follows them. If you need it, ask the front desk or the manager."
+msgstr "La sua scheda la apre chi la segue. Se ti serve, chiedi alla segreteria o al responsabile del centro."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This person is no longer here"
+msgstr "Questa persona non c'è più"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "They may have been deleted, or merged into another person."
+msgstr "Forse è stata eliminata, o unita a un'altra persona."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This deal is not one of yours"
+msgstr "Questa trattativa non è tra le tue"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "A deal opens for whoever follows it. If you need it, ask the front desk or the manager."
+msgstr "Una trattativa la apre chi la segue. Se ti serve, chiedi alla segreteria o al responsabile del centro."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This deal is no longer here"
+msgstr "Questa trattativa non c'è più"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "It may have been deleted."
+msgstr "Forse è stata eliminata."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This contact is no longer here"
+msgstr "Questo contatto non c'è più"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "It may have been deleted, or merged into another."
+msgstr "Forse è stato eliminato, o unito a un altro."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "You cannot open this company"
+msgstr "Non puoi aprire questa azienda"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "If you need it, ask the front desk or the manager."
+msgstr "Se ti serve, chiedi alla segreteria o al responsabile del centro."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This company is no longer here"
+msgstr "Questa azienda non c'è più"
+
+#: frontend/src/pages/InvalidPage.vue
+msgid "This page is not here"
+msgstr "Questa pagina non c'è"
+
+#: frontend/src/pages/InvalidPage.vue
+msgid "The address may be wrong, or the page is not one your level opens."
+msgstr "Forse l'indirizzo è sbagliato, o la pagina non è tra quelle che il tuo livello apre."
+
+#: frontend/src/pages/InvalidPage.vue
+msgid "Go to the start"
+msgstr "Vai all'inizio"

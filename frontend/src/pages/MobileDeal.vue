@@ -309,6 +309,7 @@ import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations, isTranslatable } from '@/utils'
 import { getView } from '@/utils/view'
+import { schedaChiusa, nomeInAttesa } from '@/utils/schedaChiusa'
 import { sezioniDellaTrattativa } from '@/utils/pipelines'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
@@ -347,8 +348,6 @@ const props = defineProps({
   dealId: { type: String, required: true },
 })
 
-const errorTitle = ref('')
-const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 
 const {
@@ -386,19 +385,10 @@ onMounted(async () => {
   if (document.doc) await triggerOnRender()
 })
 
-watch(error, (err) => {
-  if (err) {
-    errorTitle.value = __(
-      err.exc_type == 'DoesNotExistError'
-        ? __('Document not found')
-        : __('Error occurred'),
-    )
-    errorMessage.value = __(err.messages?.[0] || 'An error occurred')
-  } else {
-    errorTitle.value = ''
-    errorMessage.value = ''
-  }
-})
+// why the page did not open, in words (a person one does not follow, one gone)
+const chiusa = computed(() => schedaChiusa(error.value, 'CRM Deal'))
+const errorTitle = computed(() => chiusa.value?.titolo || '')
+const errorMessage = computed(() => chiusa.value?.testo || '')
 
 watch(
   () => document.doc,
@@ -458,6 +448,8 @@ const breadcrumbs = computed(() => {
 const title = computed(() => {
   let t = doctypeMeta.value?.title_field || 'name'
   // no organization on the deal: the person it is with names it, not its ID
+  // not loaded, or not one's to open: a word, never the record's code
+  if (!doc.value?.name) return nomeInAttesa('CRM Deal')
   return doc.value?.[t] || doc.value?.lead_name || props.dealId
 })
 

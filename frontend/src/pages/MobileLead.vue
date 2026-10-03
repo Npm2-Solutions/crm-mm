@@ -165,6 +165,7 @@ import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations, openWebsite, copyToClipboard } from '@/utils'
 import { getView } from '@/utils/view'
+import { schedaChiusa, nomeInAttesa } from '@/utils/schedaChiusa'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { getMeta } from '@/stores/meta'
@@ -197,8 +198,6 @@ const props = defineProps({
   leadId: { type: String, required: true },
 })
 
-const errorTitle = ref('')
-const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 
 const {
@@ -220,19 +219,10 @@ onMounted(async () => {
   if (document.doc) await triggerOnRender()
 })
 
-watch(error, (err) => {
-  if (err) {
-    errorTitle.value = __(
-      err.exc_type == 'DoesNotExistError'
-        ? __('Document Not Found')
-        : __('Error Occurred'),
-    )
-    errorMessage.value = __(err.messages?.[0] || 'An Error Occurred')
-  } else {
-    errorTitle.value = ''
-    errorMessage.value = ''
-  }
-})
+// why the page did not open, in words (a person one does not follow, one gone)
+const chiusa = computed(() => schedaChiusa(error.value, 'CRM Lead'))
+const errorTitle = computed(() => chiusa.value?.titolo || '')
+const errorMessage = computed(() => chiusa.value?.testo || '')
 
 watch(
   () => document.doc,
@@ -288,6 +278,8 @@ const breadcrumbs = computed(() => {
 
 const title = computed(() => {
   let t = doctypeMeta.value?.title_field || 'name'
+  // not loaded, or not one's to open: a word, never the record's code
+  if (!doc.value?.name) return nomeInAttesa('CRM Lead')
   return doc.value?.[t] || props.leadId
 })
 

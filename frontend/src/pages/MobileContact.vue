@@ -158,6 +158,11 @@
       </template>
     </Tabs>
   </div>
+  <ErrorPage
+    v-else-if="chiusa"
+    :errorTitle="chiusa.titolo"
+    :errorMessage="chiusa.testo"
+  />
 </template>
 
 <script setup>
@@ -174,6 +179,8 @@ import { validateIsImageFile } from '@/utils'
 import { useContactFields } from '@/composables/useContactFields'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { getView } from '@/utils/view'
+import { schedaChiusa } from '@/utils/schedaChiusa'
+import ErrorPage from '@/components/ErrorPage.vue'
 import { useDocument } from '@/data/document'
 import { getSettings } from '@/stores/settings'
 import { getMeta } from '@/stores/meta'
@@ -218,9 +225,13 @@ const {
   document: contact,
   permissions,
   triggerOnRender,
+  error: nonSiApre,
 } = useDocument('Contact', props.contactId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+
+// why the page did not open, in words
+const chiusa = computed(() => schedaChiusa(nonSiApre.value, 'Contact'))
 
 const transformField = useContactFields(contact)
 
