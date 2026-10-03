@@ -20,3 +20,17 @@ def load_crm_user_test_records():
 			if not frappe.db.exists("User", record.get("email")):
 				doc = frappe.get_doc(record)
 				doc.insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+
+def con_whatsapp() -> bool:
+	"""Whether this bench has frappe_whatsapp. The CI's has only frappe and crm:
+	what needs WhatsApp's DocTypes is skipped there, and runs where the app is."""
+	from crm.api.whatsapp import is_whatsapp_installed
+
+	return is_whatsapp_installed()
+
+
+def serve_whatsapp(caso) -> None:
+	"""Skip ``caso`` where frappe_whatsapp is not installed."""
+	if not con_whatsapp():
+		caso.skipTest("frappe_whatsapp is not installed on this bench")

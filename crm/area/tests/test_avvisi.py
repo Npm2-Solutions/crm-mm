@@ -20,16 +20,20 @@ import frappe
 from crm.area import api, avvisi, messaggi
 from crm.area.tests.test_area import ANNA, DESK, MANAGER, AreaCase
 from crm.telephony.tests.test_sms import mittente_di_prova
+from crm.tests import serve_whatsapp
 
 NUMERO = "+393331234567"
 MODELLO = "novita-area-prova"
 
 
 class AvvisiCase(AreaCase):
-	#: whether the centre offers WhatsApp too: its template needs frappe_whatsapp
+	#: whether the centre offers WhatsApp too: its template needs frappe_whatsapp,
+	#: and where the bench has not got it the test is skipped
 	whatsapp = True
 
 	def setUp(self):
+		if self.whatsapp:
+			serve_whatsapp(self)
 		super().setUp()
 		self.invita()
 		frappe.set_user("Administrator")
@@ -104,12 +108,6 @@ class AvvisiCase(AreaCase):
 
 
 class LaScelta(AvvisiCase):
-	def test_senza_offerta_solo_l_email(self):
-		self.offri()
-		self.entra(ANNA)
-		self.assertFalse(api.get_me()["notices"])
-		self.assertEqual(avvisi.notice_options(), {"email": ANNA, "channels": []})
-
 	def test_solo_un_numero_che_ha_scritto_al_centro(self):
 		self.entra(ANNA)
 		self.assertTrue(api.get_me()["notices"])
@@ -123,11 +121,35 @@ class LaScelta(AvvisiCase):
 		[spento] = avvisi.set_notice("WhatsApp", 0)["channels"]
 		self.assertFalse(spento["on"])
 
+
+class SenzaWhatsApp(AvvisiCase):
+	"""What asks nothing of WhatsApp runs on every bench: the email alone, a
+	channel the centre does not offer, the SMS."""
+
+	whatsapp = False
+
+	def test_senza_offerta_solo_l_email(self):
+		self.offri()
+		self.entra(ANNA)
+		self.assertFalse(api.get_me()["notices"])
+		self.assertEqual(avvisi.notice_options(), {"email": ANNA, "channels": []})
+
 	def test_un_canale_che_il_centro_non_offre(self):
 		self.ha_scritto(avvisi.SMS)
 		self.entra(ANNA)
 		with self.assertRaises(frappe.ValidationError):
 			avvisi.set_notice("SMS", 1)
+
+	def test_sms_con_le_stesse_parole_dal_numero_del_centro(self):
+		self.offri(sms="+390212345678", twilio=1)
+		self.ha_scritto(avvisi.SMS)
+		self.sceglie(avvisi.SMS)
+		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
+			self.scrive("Il referto è pronto: lo trova nell'area")
+		[sms] = consegna.call_args.args
+		self.assertEqual((sms.get("from"), sms.to), ("+390212345678", NUMERO))
+		self.assertIn("There is news in your area at", sms.message)
+		self.assertNotIn("referto", sms.message)
 
 
 class LAvviso(AvvisiCase):
@@ -150,17 +172,6 @@ class LAvviso(AvvisiCase):
 		self.assertEqual((doc.template, doc.to, doc.use_template), (MODELLO, NUMERO, 1))
 		self.assertEqual(json.loads(doc.template_parameters), ["Centro Prova"])
 		self.assertEqual((doc.reference_doctype, doc.reference_name), ("CRM Lead", self.anna.name))
-
-	def test_sms_con_le_stesse_parole_dal_numero_del_centro(self):
-		self.offri(sms="+390212345678", twilio=1)
-		self.ha_scritto(avvisi.SMS)
-		self.sceglie(avvisi.SMS)
-		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
-			self.scrive("Il referto è pronto: lo trova nell'area")
-		[sms] = consegna.call_args.args
-		self.assertEqual((sms.get("from"), sms.to), ("+390212345678", NUMERO))
-		self.assertIn("There is news in your area at", sms.message)
-		self.assertNotIn("referto", sms.message)
 
 	def test_un_avviso_che_non_parte_non_ferma_la_bacheca(self):
 		self.ha_scritto()

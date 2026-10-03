@@ -21,6 +21,7 @@ from crm.clinica import cartella
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER, SALES, RecordCase
 from crm.documenti import api as archivio
 from crm.moduli import consensi, traccia
+from crm.tests import serve_whatsapp
 
 
 class ArchivioCase(RecordCase):
@@ -219,6 +220,11 @@ class IlRegistro(ArchivioCase):
 
 
 class DallaConversazione(ArchivioCase):
+	def setUp(self):
+		# a file received on WhatsApp: the conversation is frappe_whatsapp's
+		serve_whatsapp(self)
+		super().setUp()
+
 	def ricevuto(self, contenuto=b"ricetta", persona=None):
 		frappe.set_user("Administrator")
 		persona = persona or self.anna.name

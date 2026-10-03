@@ -17,6 +17,7 @@ from crm.api import appointments as agenda
 from crm.fcrm.doctype.crm_deal.crm_deal import create_deal
 from crm.permissions import documenti, livelli, org_hierarchy, utenti
 from crm.permissions.test_org_hierarchy import make_user
+from crm.tests import con_whatsapp
 from crm.tests.test_scheduling import SchedulingCase
 
 DESK = "scope.desk@example.com"
@@ -237,7 +238,9 @@ class IMessaggiEIlTracciamento(Livelli, IntegrationTestCase):
 		return scritto(doctype, **valori)
 
 	def test_whatsapp_e_sms_seguono_la_persona(self):
-		for doctype in ("WhatsApp Message", "CRM SMS Message"):
+		# WhatsApp's messages where the bench has frappe_whatsapp
+		messaggi = ["CRM SMS Message", *(["WhatsApp Message"] if con_whatsapp() else [])]
+		for doctype in messaggi:
 			sulla_sua = self.messaggio(doctype, self.sua)
 			sull_altra = self.messaggio(doctype, self.altra)
 			di_nessuno = self.messaggio(doctype)
@@ -276,7 +279,10 @@ class IDocumentiDelManager(Livelli, IntegrationTestCase):
 		return bool(frappe.has_permission(doctype, ptype, doc=doc, user=chi))
 
 	def test_servizi_listini_fasi_e_modelli_al_manager(self):
-		for doctype in ("CRM Service", "CRM Price List", "CRM Lead Status", "WhatsApp Templates"):
+		doctypes = ["CRM Service", "CRM Price List", "CRM Lead Status"]
+		# WhatsApp's templates where the bench has frappe_whatsapp
+		doctypes += ["WhatsApp Templates"] if con_whatsapp() else []
+		for doctype in doctypes:
 			self.assertFalse(self.puo(DESK, doctype), doctype)
 			self.assertFalse(self.puo(SALES, doctype), doctype)
 			self.assertTrue(self.puo(MANAGER, doctype), doctype)
