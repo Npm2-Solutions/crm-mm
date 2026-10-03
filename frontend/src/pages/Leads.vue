@@ -22,7 +22,7 @@
       <Button
         v-if="puo('clinica.fuori_equipe')"
         :label="__('Out of your care')"
-        iconLeft="lock-open"
+        iconLeft="lucide-lock-open"
         @click="showOutOfCare = true"
       />
       <Button

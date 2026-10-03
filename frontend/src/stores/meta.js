@@ -64,7 +64,8 @@ export function getMeta(doctype) {
   }
 
   function getFormattedCurrency(fieldname, doc, parentDoc = null) {
-    let currency = window.sysdefaults.currency || 'USD'
+    // a centre that never chose one counts in euros, not the framework's dollars
+    let currency = window.sysdefaults.currency || 'EUR'
     let df = doctypesMeta[doctype]?.fields.find((f) => f.fieldname == fieldname)
     let precision = df?.precision || null
 

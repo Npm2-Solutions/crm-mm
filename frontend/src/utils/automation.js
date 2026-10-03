@@ -306,7 +306,7 @@ export const TRIGGER_CATALOG = {
   // CRM already knows, and that submission still has to start something
   'Lead Form Submitted': {
     category: 'lead',
-    icon: 'clipboard-check',
+    icon: 'clipboard',
     doctype: 'CRM Lead',
     hint: conMarchio(
       "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows.",
