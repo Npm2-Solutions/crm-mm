@@ -2791,7 +2791,7 @@ msgstr "Si applica a"
 #. Label of the view (Select) field in DocType 'CRM Form Script'
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 msgid "Apply To"
-msgstr "Applica A"
+msgstr "Si applica a"
 
 #: crm/invoicing/doctype/crm_invoice/crm_invoice.json
 msgid "Apply the optional rivalsa"
@@ -3181,7 +3181,7 @@ msgstr "Assegna a (facoltativo)"
 #. Label of the assigned_to (Link) field in DocType 'CRM Task'
 #: crm/fcrm/doctype/crm_task/crm_task.json
 msgid "Assigned To"
-msgstr "Assegnato A"
+msgstr "Assegnato a"
 
 #: crm/automation/engine.py
 msgid "Assigned by automation"
