@@ -388,6 +388,14 @@ Con il tocco, come in un'app:
   (`composables/tiraPerAggiornare.js`). Si tira la scatola che scorre, che c'è
   anche quando la lista è vuota: «Nessuna notifica» si tira come una lista
   piena, per vedere se ne è arrivata una.
+- **Tornando indietro, una lista è com'era.** Aperta una persona (una
+  trattativa, una chat) e tornati indietro, la lista ha ancora le parole
+  cercate, le righe che aveva e il punto a cui era arrivata; poi si aggiorna da
+  sé, in silenzio, pagina per pagina: un numero corretto sulla scheda si vede
+  già nella riga. Solo l'indietro la rimette così: aperta dal menu riparte
+  dall'inizio, come una pagina nel browser. Quello che si ricorda resta in
+  memoria per la sessione: un nome cercato non si scrive sul telefono
+  (`utils/ritorno.js`).
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
 - **La barra di stato ha il colore dell'app**, chiara o scura, e lo cambia col
@@ -458,6 +466,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
 | `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
