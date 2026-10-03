@@ -2295,17 +2295,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | In Accoglienza un giorno passato chiede «Presente» o «Assente», mai «Accogli» | Nessuno si accoglie in sala d'attesa due giorni dopo: la domanda del giorno passato è se è venuto (`prossimiEsiti`) |
 | Lo stato di una persona sola è al singolare, senza genere: «In arrivo», «Presente», «Assente» (contesto «One person») | Le caselle del giorno contano tutti («Attesi», «Non venuti»); sulla riga di una persona «Non venuti» era un plurale |
 
-## La segreteria, il marketing e l'amministrazione al telefono
+## I livelli al telefono: segreteria, marketing, amministrazione, direzione, sola lettura
 
 > Il giro che preme ogni pulsante, a 390 punti, coi profili della segreteria, del
-> marketing e dell'amministrazione (3 ottobre 2026). La segreteria ha trovato un
+> marketing, dell'amministrazione, della direzione sanitaria e della sola lettura
+> (3 ottobre 2026). La segreteria ha trovato un
 > errore vero nel riquadro degli SMS. Il marketing apriva la Panoramica sugli
 > appuntamenti di oggi e le chiamate perse, vedeva in chiaro email e telefono dei
 > contatti di una trattativa, apriva i Dati di una persona come un modulo da
 > compilare (con «numero non valido» sul cellulare mascherato) e trovava la
 > rubrica «vuota». L'amministrazione non aveva i numeri delle fatture, cambiava le
 > persone dalla rubrica e trovava una pagina Telefonia vuota. Arrivando a
-> Trattative dalla barra, la pagina restava bianca per tutti.
+> Trattative dalla barra, la pagina restava bianca per tutti. La direzione
+> sanitaria leggeva nomi e messaggi di chi aspetta una risposta, e una volta ha
+> avuto la pagina intera come «Errore del server». La sola lettura trovava il «+»
+> dell'agenda e del registro delle chiamate, il pannello di un appuntamento da
+> modificare, «Comunica» al Sistema TS, la fotocamera sull'immagine di un
+> contatto, e campi che mostravano il valore salvato («2026-09-30»).
 
 ### Decisioni
 
@@ -2322,3 +2328,12 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La pagina Telefonia è di chi chiama o la imposta | Per gli altri era un titolo sopra il vuoto |
 | La pagina Trattative si mette in ascolto della pipeline prima di sceglierla | Con le pipeline già caricate da un'altra pagina, la scelta avveniva prima che ci fosse chi la sentiva: nessun conteggio e nessuna trattativa |
 | L'oggetto proposto di un'email è il nome del centro, o quello della persona | Era il codice della scheda, e l'oggetto è obbligatorio: non può restare vuoto |
+| Un elenco della dashboard chiede di leggere i record che mostra (`reader`): chi aspetta (`conversazioni.vedi`), le chiamate da restituire (`telefono.registro`), i prossimi appuntamenti (`agenda.vedi`, non come libero e occupato), i preventivi | La direzione legge i numeri della segreteria (doc 30), non le sue conversazioni: «Chi aspetta da più tempo» le mostrava nomi e messaggi. Un numero si legge con la capacità dei numeri, una riga con quella del suo record |
+| L'accesso a DottorCloud chiede soltanto se il modulo FCRM è bloccato per l'utente o per tutti, non la lista dei moduli di Frappe | Quella lista è in cache per app (`redis_cache`): una richiesta che la manca mentre un'altra la riempie riceve None, e la pagina diventava «Errore del server». Con più richieste insieme dopo una pulizia della cache succede anche in produzione |
+| Le lettere accentate si scrivono accentate anche nei testi del motore della fatturazione («Società», «Modalità di pagamento», «non dà diritto»), e una qualifica spedita con l'apostrofo si corregge con una patch solo dove nessuno l'ha cambiata | L'apostrofo al posto dell'accento arrivava sulle fatture e nell'elenco dei professionisti; il tracciato FatturaPA ammette il Latin-1. Il registro delle qualifiche è dello studio, che può correggerlo |
+| Il referto di una visita senza titolo si chiama nella lingua del centro (`lingue.del_centro()`) | Era «Visit» in inglese: il nome del documento resta scritto, e un sito installato senza scegliere la lingua è nell'inglese del framework |
+| L'agenda crea e sposta solo con `agenda.prenota` (il «+», la scorciatoia, un orario libero, il trascinamento); il pannello di un appuntamento offre modifica, stato, esiti e ripetizione su `can_write` e il cestino su `can_delete`, che `get_appointment` calcola con i permessi del documento | Il server rifiutava già: lo schermo offriva lo stesso. Il permesso del singolo appuntamento conta, non solo il livello: un operatore cambia i suoi |
+| «Comunica» al Sistema TS e «Prepara il file da inviare» chiedono `fatture.invia`, e anche `prepare_ts_submission` lo chiede | Il file dell'anno è un invio: chiedere se i ruoli creano un invio non teneva fuori la sola lettura |
+| Registrare una chiamata dal registro chiede `telefono.chiama`, come dalla scheda; costruire un'automazione `automazioni.gestisci`, con l'editor che per chi le legge soltanto non salva, non prova e non si accende | Il commerciale legge le automazioni senza gestirle, e il server rifiutava ogni comando che trovava |
+| Un campo in sola lettura si legge con `valoreDaLeggere` (utils): data nel formato del sistema, un utente col nome, una fonte o una fase tradotta, una scelta col suo nome | Da quando chi non scrive vede testo e non caselle, il testo era il valore salvato |
+| A chi non può aggiungere, la scheda vuota di note, cose da fare e allegati dice cosa compare lì, senza invitarlo | «Aggiungi una nota» a chi non può aggiungerne |
