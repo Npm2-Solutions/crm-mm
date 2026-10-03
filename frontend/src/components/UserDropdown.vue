@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The account's menu heading the sidebar: its entries are the centre's
+  (composables/vociAccount.js), the phone draws the same as rows (pages/Altro.vue).
+-->
 <template>
   <Dropdown :options="dropdownItems" v-bind="$attrs">
     <template #default="{ open }">
@@ -55,122 +61,40 @@
 <script setup>
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import AppsIcon from '@/components/Icons/AppsIcon.vue'
-import LucideLayoutGrid from '~icons/lucide/layout-grid'
-import { sessionStore } from '@/stores/session'
+import { useVociAccount } from '@/composables/vociAccount'
 import { usersStore } from '@/stores/users'
-import { getSettings } from '@/stores/settings'
 import { marchio } from '@/utils/marchio'
-import { showSettings, mobileSidebarOpened } from '@/composables/settings'
-import { showAboutModal } from '@/composables/modals'
-import { safeDropdownIcon, safeDropdownRoute } from '@/utils/dropdownItems'
-import { createResource, Dropdown } from 'frappe-ui'
+import { Dropdown } from 'frappe-ui'
 import { computed, h, markRaw } from 'vue'
 
 defineProps({
   isCollapsed: { type: Boolean, default: false },
 })
 
-const { settings } = getSettings()
 // the product's brand heads the sidebar; the centre's mark leads on the pages
 // its people open (crm.marchio)
 const platform = marchio()
-const { logout } = sessionStore()
 const { getUser } = usersStore()
+const { gruppi, apps } = useVociAccount()
 
 const user = computed(() => getUser() || {})
 
-const apps = createResource({
-  url: 'frappe.apps.get_apps',
-  cache: 'apps',
-  auto: true,
-  transform: (data) => [deskApp(), ...crmSiblingApps(data)],
-})
-
-const dropdownItems = computed(() => {
-  if (!settings.value?.dropdown_items) return []
-
-  let items = settings.value.dropdown_items
-
-  let _dropdownItems = [
-    {
-      group: 'Dropdown Items',
-      hideLabel: true,
-      items: [],
-    },
-  ]
-
-  items.forEach((item) => {
-    if (item.hidden) return
-    if (item.type !== 'Separator') {
-      const option = dropdownItemObj(item)
-      if (option) _dropdownItems[_dropdownItems.length - 1].items.push(option)
-    } else {
-      _dropdownItems.push({
-        group: '',
-        hideLabel: true,
-        items: [],
-      })
-    }
-  })
-
-  return _dropdownItems
-})
-
-function dropdownItemObj(item) {
-  let _item = JSON.parse(JSON.stringify(item))
-  // Home Actions are edited by Sales Managers and opened by everyone: the icon
-  // is only ever a Feather name, never markup (see utils/dropdownItems.js)
-  _item.icon = safeDropdownIcon(_item.icon)
-
-  if (_item.is_standard) {
-    return getStandardItem(_item)
-  }
-
-  // a route that would run script rather than navigate stays out of the menu
-  const route = safeDropdownRoute(_item.route)
-  if (!route) return null
-
-  return {
-    icon: _item.icon,
-    label: __(_item.label),
-    onClick: () =>
-      window.open(route, _item.open_in_new_window ? '_blank' : '', 'noopener'),
-  }
-}
-
-function getStandardItem(item) {
-  switch (item.name1) {
-    case 'app_selector':
-      return {
-        icon: markRaw(AppsIcon),
-        label: __(item.label),
-        submenu: appMenuItems(),
-      }
-    case 'settings':
-      return {
-        icon: item.icon,
-        label: __(item.label),
-        onClick: () => {
-          // Settings is a dialog and so is the phone's nav drawer; leaving the
-          // drawer open behind it stacks two focus traps.
-          mobileSidebarOpened.value = false
-          showSettings.value = true
-        },
-      }
-    case 'about':
-      return {
-        icon: item.icon,
-        label: __(item.label),
-        onClick: () => (showAboutModal.value = true),
-      }
-    case 'logout':
-      return {
-        icon: item.icon,
-        label: __(item.label),
-        onClick: () => logout.submit(),
-      }
-  }
-}
+// the account's menu (composables/vociAccount.js) as the dropdown's groups
+const dropdownItems = computed(() =>
+  gruppi.value.map((gruppo, i) => ({
+    group: i ? '' : 'Dropdown Items',
+    hideLabel: true,
+    items: gruppo.map((voce) =>
+      voce.tipo === 'app'
+        ? {
+            icon: markRaw(AppsIcon),
+            label: voce.etichetta,
+            submenu: appMenuItems(),
+          }
+        : { icon: voce.icona, label: voce.etichetta, onClick: voce.azione },
+    ),
+  })),
+)
 
 function appMenuItems() {
   return (apps.data || []).map((app) => ({
@@ -183,26 +107,5 @@ function appMenuItems() {
           : h('img', { class: 'size-5 rounded', src: app.logo }),
     },
   }))
-}
-
-// the back office: an icon of its own, not the framework's logo
-function deskApp() {
-  return {
-    name: 'desk',
-    icon: markRaw(LucideLayoutGrid),
-    title: __('Desk'),
-    route: '/desk',
-  }
-}
-
-function crmSiblingApps(data) {
-  return data
-    .filter((app) => app.name !== 'crm')
-    .map((app) => ({
-      name: app.name,
-      logo: app.logo,
-      title: __(app.title),
-      route: app.route,
-    }))
 }
 </script>

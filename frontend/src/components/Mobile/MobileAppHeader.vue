@@ -1,6 +1,6 @@
 <template>
-  <!-- The hamburger used to live here. The drawer it opened is now the "More"
-       tab at the bottom, within thumb reach, so the header gives all of its
+  <!-- The hamburger used to live here. What it opened is now the "More" page,
+       a tab at the bottom within thumb reach, so the header gives all of its
        width — all 390px of it on a phone — to the page's own breadcrumbs and
        actions. -->
   <div class="flex items-center gap-1 pl-2 pr-3 pt-safe">

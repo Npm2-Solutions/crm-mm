@@ -36,6 +36,14 @@ const routes = [
     component: () => import('@/pages/MobileNotification.vue'),
   },
   {
+    // "More" on a phone: what the bar at the bottom has no room for
+    // (pages/Altro.vue). The desk has all of it in its sidebar.
+    path: '/altro',
+    name: 'More',
+    beforeEnter: () => (isMobileView.value ? true : { name: 'Home' }),
+    component: () => import('@/pages/Altro.vue'),
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     meta: { richiede: DASHBOARD_CAPABILITIES },

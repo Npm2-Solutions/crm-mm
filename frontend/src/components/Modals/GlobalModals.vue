@@ -16,12 +16,11 @@
     v-model="showChangePasswordModal"
   />
   <AboutModal v-model="showAboutModal" />
-  <!-- Mounted here rather than in AppSidebar: on a phone the sidebar is itself a
-       dialog, and Settings was guarded off it entirely — there was no way to
-       open Settings from a phone at all. -->
+  <!-- Mounted here rather than in AppSidebar: a phone has no sidebar, and
+       opens the settings from its "More" page. -->
   <Settings />
-  <!-- the first steps: opened by the sidebar's card, on a desktop and in the
-       phone's drawer alike -->
+  <!-- the first steps: opened by their card, in the sidebar on a desktop and
+       on the "More" page on a phone -->
   <FirstStepsPanel />
   <FieldLayoutDialogContainer />
   <!-- the invoice, made and read inside DottorCloud: from the invoices, the

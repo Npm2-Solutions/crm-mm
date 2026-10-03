@@ -7,13 +7,13 @@ import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideClipboardCheck from '~icons/lucide/clipboard-check'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideReceipt from '~icons/lucide/receipt-text'
+import LucideShare from '~icons/lucide/share-2'
+import LucideWorkflow from '~icons/lucide/workflow'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
-import AutomationIcon from '@/components/Icons/AutomationIcon.vue'
-import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import { markRaw } from 'vue'
 
 export const ICONE_DEL_MENU = Object.fromEntries(
@@ -26,8 +26,9 @@ export const ICONE_DEL_MENU = Object.fromEntries(
     invoices: LucideReceipt,
     people: LeadsIcon,
     deals: DealsIcon,
-    automations: AutomationIcon,
-    social: SocialIcon,
+    // a flow of steps, and posts shared: not the deals' bolt nor a link out
+    automations: LucideWorkflow,
+    social: LucideShare,
     site: LucideGlobe,
   }).map(([nome, icona]) => [nome, markRaw(icona)]),
 )

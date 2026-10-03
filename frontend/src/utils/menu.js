@@ -158,6 +158,7 @@ export const SORELLE = [
 // keypad's round, an import. A page with nothing to say keeps the product's name.
 export const ALTRE_PAGINE = {
   Notifications: 'Notifications',
+  More: 'More',
   Inbox: 'Conversations',
   Lead: 'People',
   Deal: 'Deals',
@@ -209,7 +210,7 @@ export function menuDi(c, menu = MENU) {
 }
 
 // The phone's bar: four places a phone opens all day, the rest behind "More"
-// (the drawer is the sidebar). The day's pages, the people, the conversations
+// (pages/Altro.vue). The day's pages, the people, the conversations
 // and the invoices first; then whatever else the level opens, in the menu's order.
 export const PREFERITI_DEL_TELEFONO = [
   'Today',
