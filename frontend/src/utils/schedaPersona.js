@@ -17,6 +17,15 @@ export function soloCifre(numero) {
     : cifre
 }
 
+/**
+ * Whether a value reached the browser masked: whoever may not read people's
+ * email and phone (Marketing) gets Frappe's placeholder, «+39XXXXXX», which is
+ * no number to call or write to.
+ */
+export function mascherato(valore) {
+  return /X{4,}/.test(String(valore || ''))
+}
+
 /** The address a device's own dialer opens: `tel:+393401112233`. */
 export function indirizzoTel(numero) {
   const cifre = soloCifre(numero)
@@ -36,6 +45,7 @@ export function numeriDi(doc = {}) {
     ['phone', 'Phone'],
   ]) {
     const numero = String(doc?.[campo] || '').trim()
+    if (mascherato(numero)) continue
     const chiave = soloCifre(numero).replace(/^\+39/, '')
     if (!chiave || visti.has(chiave)) continue
     visti.add(chiave)

@@ -15,7 +15,7 @@
         :actions="tasksListView.customListActions"
       />
       <Button
-        v-if="!isMobileView"
+        v-if="!isMobileView && !solaLettura()"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -26,7 +26,11 @@
   <!-- on a phone: what is left, by when it is due, done with one tap -->
   <template v-if="isMobileView">
     <ElencoCose ref="elencoCose" @apri="showTask" />
-    <PulsanteAggiungi :label="__('New task')" @click="createTask()" />
+    <PulsanteAggiungi
+      v-if="!solaLettura()"
+      :label="__('New task')"
+      @click="createTask()"
+    />
   </template>
   <ViewControls
     v-if="!isMobileView"
@@ -250,7 +254,7 @@ import { useRouter } from 'vue-router'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Task')
-const { getUser } = usersStore()
+const { getUser, solaLettura } = usersStore()
 const { capture } = useTelemetry()
 
 const router = useRouter()

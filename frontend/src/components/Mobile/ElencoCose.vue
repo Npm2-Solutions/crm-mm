@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  What is left to do, on a phone (docs/progetto-ghl/34): one's own or
+  What is left to do, on a phone (docs/progetto-ghl/29): one's own or
   everybody's, by when it is due - late, today, tomorrow, later, without a day
   - with whom it is about. One tap on the circle marks it done, with a moment
   to take it back; a tap on the words opens it.
@@ -27,10 +27,16 @@
           class="flex items-start gap-2 border-b border-outline-gray-1 px-3 py-2.5"
         >
           <button
+            v-if="!solaLettura()"
             type="button"
             class="touch-target mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-outline-gray-3 active:bg-surface-gray-3"
             :aria-label="__('Mark done: {0}', [cosa.title])"
             @click="fatta(cosa)"
+          />
+          <span
+            v-else
+            class="mt-0.5 size-6 shrink-0 rounded-full border-2 border-outline-gray-2"
+            aria-hidden="true"
           />
           <button
             type="button"
@@ -77,7 +83,11 @@
           di === 'mie' ? __('Nothing left for you') : __('Nothing left to do')
         "
         :text="
-          __('A call to make, a document to send: add it with the + button.')
+          solaLettura()
+            ? ''
+            : __(
+                'A call to make, a document to send: add it with the + button.',
+              )
         "
       />
       <p
@@ -105,7 +115,7 @@ import {
 import { computed, ref, watch } from 'vue'
 
 const emit = defineEmits(['apri'])
-const { getUser } = usersStore()
+const { getUser, solaLettura } = usersStore()
 const lingua = window.navigator?.language || 'it-IT'
 
 const di = ref('mie')

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   giornoInBreve,
   indirizzoTel,
+  mascherato,
   modiDiChiamare,
   numeriDi,
   prossimoAppuntamento,
@@ -53,6 +54,20 @@ describe('numeriDi', () => {
     expect(numeriDi({})).toEqual([])
     expect(numeriDi(null)).toEqual([])
     expect(numeriDi({ mobile_no: ' ' })).toEqual([])
+  })
+
+  it('leaves out a number that came masked', () => {
+    expect(numeriDi({ mobile_no: '+39XXXXXX', phone: '+1-XXXXXX' })).toEqual([])
+  })
+})
+
+describe('mascherato', () => {
+  it('knows the placeholder of a masked value', () => {
+    expect(mascherato('+39XXXXXX')).toBe(true)
+    expect(mascherato('XXXXXXXX')).toBe(true)
+    expect(mascherato('+393401112233')).toBe(false)
+    expect(mascherato('Xavier')).toBe(false)
+    expect(mascherato('')).toBe(false)
   })
 })
 
