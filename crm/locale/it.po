@@ -42526,3 +42526,7 @@ msgstr "Mostra i dettagli"
 #: frontend/src/pages/Deal.vue
 msgid "Hide details"
 msgstr "Nascondi i dettagli"
+
+#: frontend/src/components/Controls/RatingInput.vue
+msgid "Rating: {0} of {1}"
+msgstr "Voto: {0} su {1}"

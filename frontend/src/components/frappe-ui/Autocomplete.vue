@@ -72,6 +72,7 @@
               />
               <button
                 class="absolute right-1.5 inline-flex h-7 w-7 items-center justify-center"
+                :aria-label="__('Clear')"
                 @click="selectedValue = null"
               >
                 <span class="lucide-x w-4 text-ink-gray-8" aria-hidden="true" />
