@@ -42852,3 +42852,33 @@ msgstr "Un codice per entrare, e nient'altro."
 #: frontend/src/components/Settings/WhatsAppTemplates.vue
 msgid "Hi {0}, we look forward to seeing you tomorrow at {1}."
 msgstr "Ciao {0}, ti aspettiamo domani alle {1}."
+
+#: frontend/src/components/Settings/Sla/SlaPriorityList.vue
+msgid "Replied"
+msgstr "Risposto"
+
+#: frontend/src/components/SLASection.vue
+msgid "First Response"
+msgstr "Prima risposta"
+
+#: frontend/src/components/SLASection.vue
+msgid "Rolling Response"
+msgstr "Risposta successiva"
+
+#: frontend/src/components/SLASection.vue
+msgctxt "SLA"
+msgid "Fulfilled"
+msgstr "Rispettato"
+
+#: frontend/src/components/SLASection.vue
+msgctxt "SLA"
+msgid "Failed"
+msgstr "Non rispettato"
+
+#: frontend/src/components/SLASection.vue
+msgid "Fulfilled in {0}"
+msgstr "Rispettato in {0}"
+
+#: frontend/src/components/SLASection.vue
+msgid "Failed: answered in {0}"
+msgstr "Non rispettato: risposta in {0}"
