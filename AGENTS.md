@@ -635,8 +635,14 @@ CSS asks `(max-width: 767px), (max-height: 499px) and (pointer: coarse)`, as
 row, the bar's words beside their icons).
 
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
+  What the pointer shows beside a thing (a message's actions) is, where nothing
+  hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its
+  focus on a parent the bar is in (`azioni-della-bolla` in `index.css`).
 - Small controls get `.touch-target` (an invisible ring on touch screens); frappe-ui
-  switches already have it. Long dialogs put `.dialog-footer` on their actions
+  switches already have it. A ring a scrolling strip would cut gets room inside
+  the strip (the channels above a conversation); icon buttons side by side, with
+  no room for a ring, are 40px on a phone (`strumenti-compositore`, a composer's
+  tools). Long dialogs put `.dialog-footer` on their actions
   (frappe-ui's own `#actions` row gets the same treatment in `index.css`).
 - Titles have no fixed height; a header stacks title, description, then actions.
 - In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.
