@@ -521,7 +521,8 @@
               variant="outline"
               :placeholder="__('Name')"
             />
-            <div class="grid grid-cols-2 gap-1.5">
+            <!-- side by side an email had 160 points on a phone, and read cut -->
+            <div class="grid grid-cols-2 gap-1.5 max-md:grid-cols-1">
               <TextInput
                 v-model="row.phone"
                 v-bind="tastiera('telefono')"
