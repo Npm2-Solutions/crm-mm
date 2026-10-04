@@ -212,6 +212,11 @@ class CRMAppointment(Document):
 		A forced booking is not silently accepted: what it collided with is written
 		to ``conflict_note`` so the clash stays visible on the record.
 		"""
+		# a save that leaves the time, who does it, the rooms and who comes as they
+		# were (an outcome, a note, a price) books nothing new: what it clashed
+		# with was settled when it was booked or moved, by whoever could
+		if not self.is_new() and not self.slot_changed():
+			return
 		conflicts = find_conflicts(self)
 		if not conflicts:
 			self.conflict_note = None
@@ -230,6 +235,30 @@ class CRMAppointment(Document):
 			"<br>".join([_("This appointment cannot be booked:"), *conflicts]),
 			title=_("Scheduling conflict"),
 		)
+
+	def slot_changed(self) -> bool:
+		"""The time, who does it, the rooms or who comes changed, or a cancelled
+		appointment is brought back."""
+		before = self.get_doc_before_save()
+		if not before:
+			return True
+		if before.status == "Cancelled" and self.status != "Cancelled":
+			return True
+		if get_datetime(before.starts_on) != get_datetime(self.starts_on):
+			return True
+		if get_datetime(before.ends_on) != get_datetime(self.ends_on):
+			return True
+
+		def chi(doc):
+			return sorted(row.user for row in doc.staff if row.user)
+
+		def dove(doc):
+			return sorted(row.resource for row in doc.resources if row.resource)
+
+		def chi_viene(doc):
+			return sorted(row.party for row in doc.participants if row.party and row.status != "Cancelled")
+
+		return chi(before) != chi(self) or dove(before) != dove(self) or chi_viene(before) != chi_viene(self)
 
 	def notify_online_client(self):
 		"""A client who booked online hears about approval or cancellation."""
