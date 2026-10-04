@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { getScript } from '@/data/script'
 import { globalStore } from '@/stores/global'
 import { getMeta } from '@/stores/meta'
@@ -36,7 +38,9 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
           setValue: {
             onSuccess: () => {
               triggerOnSave()
-              toast.success(__('Document updated successfully'))
+              // a field saved: «Document updated» said a word of the framework's,
+              // and a person's documents are something else
+              toast.success(__('Saved'))
               processPendingDeletions()
             },
             onError: (err) => {
@@ -58,7 +62,7 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
               })
 
               if (err.messages?.length === 0) {
-                toast.error(__('An error occurred while updating the document'))
+                toast.error(__('Could not save'))
               }
 
               console.error(err)

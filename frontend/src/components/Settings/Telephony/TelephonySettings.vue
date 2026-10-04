@@ -303,7 +303,7 @@ const telephonyAgent = createDocumentResource({
   name: getUser().name,
   auto: false,
   setValue: {
-    onSuccess: () => toast.success(__('Document updated successfully')),
+    onSuccess: () => toast.success(__('Saved')),
     onError: (err) => {
       err.messages?.forEach((msg) => toast.error(msg))
     },
@@ -331,7 +331,7 @@ const insertResource = createResource({
     isNewDoc.value = false
     telephonyAgent.doc = data
     telephonyAgent.originalDoc = JSON.parse(JSON.stringify(data))
-    toast.success(__('Document created successfully'))
+    toast.success(__('Saved'))
   },
   onError: (err) => {
     err.messages?.forEach((msg) => toast.error(msg))
