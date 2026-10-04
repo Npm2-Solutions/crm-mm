@@ -128,7 +128,9 @@
      size and line height with a single class, and this has to win. The
      placeholder stays while the cursor is in the line, as a textarea's does:
      the editor hides it on focus, so clicking into an email used to wipe the
-     one thing that said what the line was for. */
+     one thing that said what the line was for. It stays on one line, cut with
+     «…» where it does not fit: beside a phone's 40px tools the note's went on
+     a second line, and the line under it cut that in half. */
   .ProseMirror.composer-text {
     --prose-font-size: 14px;
     min-height: 2.25rem;
@@ -138,10 +140,20 @@
     line-height: 1.5;
     color: var(--ink-gray-9);
   }
+  .ProseMirror.composer-text p.is-editor-empty:first-child {
+    position: relative;
+  }
   .ProseMirror.composer-text p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
-    float: left;
-    height: 0;
+    /* the editor's own rule floats it with no height */
+    float: none;
+    height: auto;
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--ink-gray-4);
     pointer-events: none;
   }
