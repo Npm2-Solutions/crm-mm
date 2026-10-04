@@ -158,6 +158,7 @@
     v-model="showDeleteLinkedDocModal"
     :doctype="'CRM Lead'"
     :docname="leadId"
+    :title="title"
     name="Leads"
   />
 </template>

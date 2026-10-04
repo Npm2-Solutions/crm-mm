@@ -174,6 +174,7 @@
     v-model="showDeleteLinkedDocModal"
     :doctype="'Contact'"
     :docname="contact.doc.name"
+    :title="contact.doc.full_name"
     name="Contacts"
   />
 </template>

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <ListView
     ref="listViewRef"
@@ -33,20 +36,36 @@
               v-if="column.key === 'title'"
               class="truncate text-base flex gap-2 w-full"
             >
-              <span class="max-w-[90%] truncate">
-                {{ label }}
+              <span class="min-w-0 max-w-[90%]">
+                <span class="block truncate">{{ label }}</span>
+                <!-- on a phone the kind has no column of its own: under the name -->
+                <span
+                  v-if="isMobileView"
+                  class="block truncate text-sm text-ink-gray-6"
+                >
+                  {{ __(row.reference_doctype) }}
+                </span>
               </span>
-              <span
-                class="lucide-external-link h-4 w-4 cursor-pointer"
-                aria-hidden="true"
+              <!-- only where it has a page of its own (utils/collegati.js) -->
+              <button
+                v-if="indirizzoDelCollegato(row)"
+                type="button"
+                class="touch-target shrink-0 rounded text-ink-gray-6 hover:text-ink-gray-8"
+                :aria-label="__('Open {0} in a new tab', [label])"
                 @click.stop="viewLinkedDoc(row)"
-              />
+              >
+                <span
+                  class="lucide-external-link block h-4 w-4"
+                  aria-hidden="true"
+                />
+              </button>
             </div>
+            <!-- what it is, in the reader's language: «Trattativa», not «Deal» -->
             <span
               v-if="column.key === 'reference_doctype'"
               class="truncate text-base flex gap-2"
             >
-              {{ getDoctypeName(row.reference_doctype) }}
+              {{ __(row.reference_doctype) }}
             </span>
           </template>
         </ListRowItem>
@@ -57,6 +76,8 @@
 
 <script setup>
 import ListRows from '@/components/ListViews/ListRows.vue'
+import { isMobileView } from '@/composables/settings'
+import { indirizzoDelCollegato } from '@/utils/collegati'
 import { ListView, ListHeader, ListHeaderItem, ListRowItem } from 'frappe-ui'
 import { ref } from 'vue'
 
@@ -94,50 +115,7 @@ function onColumnWidthUpdated({ width, save }, column) {
 }
 
 const viewLinkedDoc = (doc) => {
-  let page = ''
-  let id = ''
-  let openDesk = false
-  switch (doc.reference_doctype) {
-    case 'CRM Lead':
-      page = 'leads'
-      id = doc.reference_docname
-      break
-    case 'CRM Call Log':
-      page = 'call-logs'
-      id = `view?open=${doc.reference_docname}`
-      break
-    case 'CRM Task':
-      page = 'tasks'
-      id = `view?open=${doc.reference_docname}`
-      break
-    case 'Contact':
-      page = 'contacts'
-      id = doc.reference_docname
-      break
-    case 'CRM Organization':
-      page = 'organizations'
-      id = doc.reference_docname
-      break
-    case 'CRM Notification':
-      page = 'crm-notification'
-      id = doc.reference_docname
-      openDesk = true
-      break
-    case 'FCRM Note':
-      page = 'notes'
-      id = `view?open=${doc.reference_docname}`
-      break
-    default:
-      break
-  }
-  let base = '/crm'
-  if (openDesk) {
-    base = '/app'
-  }
-  window.open(`${base}/${page}/${id}`)
-}
-
-const getDoctypeName = (doctype) => {
-  return doctype.replace(/^(CRM|FCRM)\s*/, '')
+  const indirizzo = indirizzoDelCollegato(doc)
+  if (indirizzo) window.open(indirizzo)
 }
 </script>

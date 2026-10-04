@@ -42555,3 +42555,23 @@ msgstr "Nessuna icona per «{0}»"
 #: frontend/vite/frappeUi.js
 msgid "No icons available."
 msgstr "Nessuna icona disponibile."
+
+#: frontend/src/components/ListViews/LinkedDocsListView.vue
+msgid "Open {0} in a new tab"
+msgstr "Apri {0} in una nuova scheda"
+
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Are you sure you want to delete this person?"
+msgstr "Vuoi davvero eliminare questa persona?"
+
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Are you sure you want to delete this deal?"
+msgstr "Vuoi davvero eliminare questa trattativa?"
+
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Are you sure you want to delete this document?"
+msgstr "Vuoi davvero eliminare questo documento?"
+
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Before deleting {0}, delete or unlink these linked documents"
+msgstr "Prima di eliminare {0}, elimina o scollega questi documenti collegati"
