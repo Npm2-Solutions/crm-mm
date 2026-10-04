@@ -18,7 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate
 
-from crm.demo import dati, registro, simulazione
+from crm.demo import abbonati, dati, registro, simulazione
 from crm.demo.contesto import Contesto, indirizzo, nome_libero
 from crm.demo.registro import Parte, registra_parte
 
@@ -71,6 +71,16 @@ def registra() -> None:
 			dopo=("clienti", "aziende"),
 			descrizione="Things to do for everybody (you too), notes on people, the calls of the "
 			"last weeks with the ones to call back.",
+		)
+	)
+	registra_parte(
+		Parte(
+			"abbonamenti",
+			"Subscriptions",
+			abbonati.crea,
+			dopo=("clienti",),
+			descrizione="Three kinds of subscription to the classes and the regulars who bought them: "
+			"months renewed by themselves, a suspension, the reminders of the end.",
 		)
 	)
 

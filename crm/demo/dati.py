@@ -972,3 +972,53 @@ NO_AL_PREVENTIVO = (
 	("Other", "Ha scelto un centro più vicino a casa."),
 	("Long Sales Cycle", "Ci pensa e si fa sentire dopo le vacanze."),
 )
+
+# -- subscriptions to the classes -------------------------------------------------------------
+
+#: key, name, months, payment, price, how the entries count, entries in that week or
+#: month, the services it comprises, the most days of suspension (0: none), the days
+#: of the reminder before the end, renewed by itself, description.
+ABBONAMENTI = (
+	(
+		"pilates8",
+		"Pilates · 8 ingressi al mese",
+		1,
+		"Upfront",
+		110,
+		"Per month",
+		8,
+		("pilates",),
+		0,
+		5,
+		True,
+		"Fino a otto lezioni di Pilates al mese. Si rinnova da solo ogni mese.",
+	),
+	(
+		"posturale",
+		"Ginnastica posturale · 3 mesi",
+		3,
+		"Upfront",
+		130,
+		"Per week",
+		2,
+		("posturale",),
+		21,
+		10,
+		False,
+		"Due lezioni a settimana per tre mesi, sospendibile per le vacanze.",
+	),
+	(
+		"open",
+		"Movimento open · 6 mesi",
+		6,
+		"Monthly",
+		390,
+		"Unlimited",
+		0,
+		("pilates", "posturale"),
+		30,
+		14,
+		False,
+		"Tutte le lezioni di gruppo per sei mesi, con il pagamento in rate mensili.",
+	),
+)
