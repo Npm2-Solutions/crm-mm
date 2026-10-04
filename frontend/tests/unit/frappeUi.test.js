@@ -333,6 +333,15 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it('builds the table toolbar’s buttons the first time a table is entered', () => {
+    const tabella = tradotto('editor/EditorTableMenu.vue', MOLECOLE)
+    expect(tabella).toContain(
+      '<MenuItems v-if="editor && giaVisto" :editor="editor" :items="tableToolbar" />',
+    )
+    expect(tabella).toContain('const giaVisto = ref(false)')
+    expect(tabella).toContain('if (si) giaVisto.value = true')
+  })
+
   it('draws a tooltip only where a pointer rests over things', () => {
     const suggerimento = tradotto('Tooltip/Tooltip.vue')
     expect(suggerimento).toContain('<slot v-if="disabled || !siPosa" />')
