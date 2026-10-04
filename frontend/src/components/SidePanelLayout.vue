@@ -2,7 +2,7 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
-  <div class="sections flex flex-col overflow-y-auto">
+  <div ref="scatola" class="sections flex flex-col overflow-y-auto">
     <template v-for="(section, i) in _sections" :key="section.name">
       <div v-if="section.visible" class="section flex flex-col">
         <div
@@ -40,6 +40,7 @@
                 >
                   <div
                     v-if="field.visible"
+                    data-campo-riga
                     class="field flex gap-2 px-3 leading-5 first:mt-3"
                     :class="
                       isTextareaField(field) ? 'items-start' : 'items-center'
@@ -56,6 +57,7 @@
                       >
                         <!-- two lines rather than «No. of Employe…» -->
                         <div
+                          data-etichetta
                           class="line-clamp-2 break-words text-sm text-ink-gray-5"
                         >
                           {{ __(field.label) }}
@@ -82,6 +84,7 @@
                       ]"
                     >
                       <div
+                        data-valore
                         class="grid min-h-[28px] flex-1 items-center overflow-hidden text-base"
                       >
                         <div
@@ -171,6 +174,7 @@
                         >
                           <template v-if="doc[field.fieldname]" #prefix>
                             <UserAvatar
+                              aria-hidden="true"
                               class="mr-1.5"
                               :user="doc[field.fieldname]"
                               size="sm"
@@ -178,6 +182,7 @@
                           </template>
                           <template #item-prefix="{ option }">
                             <UserAvatar
+                              aria-hidden="true"
                               class="mr-1.5"
                               :user="option.value"
                               size="sm"
@@ -480,6 +485,7 @@ import {
   Tooltip,
 } from 'frappe-ui'
 import { useDocument } from '@/data/document'
+import { useEtichetteDeiCampi } from '@/composables/nomeAlControllo'
 import { ref, computed, getCurrentInstance } from 'vue'
 
 const props = defineProps({
@@ -498,6 +504,10 @@ const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
 const { users, getUser, puo } = usersStore()
 
 const showSidePanelModal = ref(false)
+
+// each field's words name its control, for VoiceOver and TalkBack
+const scatola = ref(null)
+useEtichetteDeiCampi(scatola)
 
 let document = { doc: {} }
 let triggerOnChange
