@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div v-if="events.length || appointments.length" class="pt-1">
     <!--
@@ -152,6 +155,7 @@ import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import { useEvent, showEventModal, activeEvent } from '@/composables/event'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { laSeduta } from '@/utils/cicli'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { Avatar, Badge, createResource, dayjs } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -193,7 +197,10 @@ const appointments = computed(() => booked.data || [])
 const t = (text, args) => __(text, args)
 
 const appointmentGroups = computed(() => {
-  const now = dayjs()
+  // the centre's now, as the appointments' times are the centre's: the
+  // phone's own put tonight's appointment among the coming ones on a phone in
+  // another time zone
+  const now = dayjs(adessoDelCentro())
   const upcoming = appointments.value
     .filter((row) => dayjs(row.ends_on).isAfter(now))
     .sort((a, b) => dayjs(a.starts_on).diff(dayjs(b.starts_on)))
