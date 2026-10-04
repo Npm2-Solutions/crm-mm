@@ -337,12 +337,6 @@ const tabs = computed(() => {
       condition: () => puo('agenda.vedi'),
     },
     {
-      name: 'Calls',
-      label: __('Calls'),
-      icon: PhoneIcon,
-      condition: () => puo('telefono.registro'),
-    },
-    {
       name: 'Tasks',
       label: __('Tasks'),
       icon: TaskIcon,

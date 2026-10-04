@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     Bare: one line inside the notice in the chat. A call has no words, so what
@@ -93,7 +96,7 @@
         </div>
       </div>
       <div class="flex items-center flex-wrap gap-2">
-        <Badge :label="formatDate(call.creation, 'MMM D, dddd')">
+        <Badge :label="giornoDellaChiamata(call.creation)">
           <template #prefix>
             <CalendarIcon class="size-3" />
           </template>
@@ -152,8 +155,15 @@ import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { getCallStatusColor, getCallStatusLabel } from '@/utils/callLog.js'
 import { formatDate } from '@/utils'
-import { Avatar, Badge, createResource } from 'frappe-ui'
+import { Avatar, Badge, createResource, dayjs } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+
+// «dom 4 ott», as every day of DottorCloud is written, with the year when it is
+// not this one: «ott 4, domenica» was English's order in Italian words
+function giornoDellaChiamata(quando) {
+  const questAnno = dayjs(quando).year() === dayjs().year()
+  return formatDate(quando, questAnno ? 'ddd D MMM' : 'ddd D MMM YYYY')
+}
 
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
