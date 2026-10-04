@@ -20,16 +20,20 @@
     >
       <div class="flex min-w-0 items-center gap-1.5">
         <!-- two lines on a phone: half a screen wide, «Waiting for an
-             answer» and «Appointments today» were cut to «Waiting for an ans…» -->
+             answer» and «Appointments today» were cut to «Waiting for an ans…»;
+             a word wider than the column breaks where Italian does
+             («Appunta-menti»), not «Appuntam…» -->
         <span
-          class="truncate text-sm font-medium text-ink-gray-7 max-md:line-clamp-2 max-md:whitespace-normal"
+          class="truncate text-sm font-medium text-ink-gray-7 max-md:line-clamp-2 max-md:hyphens-auto max-md:whitespace-normal"
           :title="title"
         >
           {{ title }}
         </span>
+        <!-- a tooltip opens on hover: on a touch screen the ⓘ opened nothing
+             and took the room «Appuntamenti» needed -->
         <Tooltip v-if="description" :text="description" :hoverDelay="0.4">
           <span
-            class="lucide-info size-3.5 shrink-0 text-ink-gray-4"
+            class="lucide-info size-3.5 shrink-0 text-ink-gray-4 [@media(hover:none)]:hidden"
             aria-hidden="true"
           />
         </Tooltip>
