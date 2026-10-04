@@ -1,3 +1,11 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  A filter of several choices: a chip, and a list of ticks under it. On a phone
+  the list is a sheet from the bottom with rows a finger hits (`data-foglio`,
+  telefono.css): it was a box of 30px rows under the chip.
+-->
 <template>
   <Popover placement="bottom-start">
     <template #target="{ togglePopover }">
@@ -15,7 +23,10 @@
       </Button>
     </template>
     <template #body-main>
-      <div class="flex max-h-72 w-60 flex-col gap-1 overflow-y-auto p-1.5">
+      <div
+        data-foglio
+        class="flex max-h-72 w-60 flex-col gap-1 overflow-y-auto p-1.5"
+      >
         <div class="flex items-center justify-between px-1.5 pb-1">
           <span class="text-xs-medium text-ink-gray-5">{{ label }}</span>
           <Button

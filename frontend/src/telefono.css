@@ -497,6 +497,43 @@
     box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6) !important;
   }
 }
+/* A popover of choices, its list marked `data-foglio` (the agenda's filters): a
+   sheet as well, its rows 48px and 16px. It opened as a box of 30px rows under
+   its chip. */
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  [data-reka-popper-content-wrapper]:has([data-foglio]) {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [data-foglio]) {
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+    box-shadow: 0 0 0 100vmax rgba(11, 46, 42, 0.32) !important;
+    animation: dc-foglio-su 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  [data-foglio] {
+    width: 100% !important;
+    max-height: 75dvh !important;
+    padding: 0.75rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  [data-foglio] > label {
+    min-height: 3rem;
+  }
+  [data-foglio] > label .text-p-sm {
+    font-size: 16px;
+  }
+  [data-theme='dark']
+    [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [data-foglio]) {
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6) !important;
+  }
+}
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   [data-theme='dark'] [data-reka-popper-content-wrapper] > [role='menu'],
   [data-theme='dark'] [data-reka-popper-content-wrapper] > [role='listbox'],
