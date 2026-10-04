@@ -42611,3 +42611,7 @@ msgstr "volte"
 #: frontend/src/components/Automations/ConditionBuilder.vue
 msgid "And another condition"
 msgstr "E un'altra condizione"
+
+#: frontend/vite/frappeUi.js
+msgid "Show the choices"
+msgstr "Mostra le scelte"

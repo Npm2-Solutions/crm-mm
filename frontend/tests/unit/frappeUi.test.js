@@ -316,6 +316,18 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it('names for a screen reader, in the user’s language, what reka and frappe-ui name in English', () => {
+    const scelta = tradotto('Combobox/Combobox.vue')
+    expect(scelta).toContain(`:aria-label="__('Show the choices')"`)
+    expect(tradotto('Toast/Toast.vue')).toContain(`:aria-label="__('Close')"`)
+    expect(tradotto('Toast/Toast.vue')).not.toContain('aria-label="Close"')
+    expect(tradotto('Spinner/Spinner.vue')).toContain(
+      `:aria-label="__('Loading')"`,
+    )
+    const calendario = tradotto('DatePicker/CalendarPanel.vue')
+    expect(calendario).not.toContain('cycle-calendar-view')
+  })
+
   it('mounts a dialog and a menu’s content at their first opening', () => {
     const finestra = tradotto('Dialog/Dialog.vue')
     expect(finestra).toContain(
