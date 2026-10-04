@@ -181,6 +181,36 @@ class AttivazioneTest(Base):
 			prova.back_to_test(self.azienda.name)
 
 
+class SenzaCredenzialiTest(Base):
+	"""A company that reports to the Sistema TS by itself, its codes not all there:
+	«Comunica» says so in words. They were read outside what turns the transport's
+	errors into a message, and the screen said «Internal Server Error»."""
+
+	def setUp(self):
+		super().setUp()
+		prima = frappe.db.get_value(AZIENDA, self.azienda.name, ["ts_mode", "ts_username"], as_dict=True)
+		self.addCleanup(self.imposta, ts_mode=prima.ts_mode, ts_username=prima.ts_username)
+		self.imposta(
+			provider_environment=connessione.PRODUZIONE,
+			sdi_mode="export",
+			ts_mode="credenziali_studio",
+			ts_username="",
+		)
+
+	def test_dice_che_mancano_le_credenziali(self):
+		from crm.tessera_sanitaria import trasporto
+
+		documento = self.emessa()
+		self.assertEqual(documento.ts_status, "da_inviare")
+		with (
+			patch.object(trasporto, "_post") as spedisce,
+			self.assertRaises(frappe.ValidationError) as errore,
+		):
+			trasporto.invia_documento(documento.name)
+		self.assertIn("credentials", str(errore.exception))
+		spedisce.assert_not_called()
+
+
 class ItalaTest(Base):
 	def setUp(self):
 		super().setUp()
