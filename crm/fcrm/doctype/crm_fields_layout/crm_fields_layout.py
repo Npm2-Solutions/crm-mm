@@ -193,9 +193,14 @@ def get_field_obj(field):
 	# keep «Add» on those too.
 	label = in_frase(_(field.label or ""))
 	choose = field.fieldtype == "Link" or (field.fieldtype == "Select" and field.options)
-	field["placeholder"] = field.get("placeholder") or (
-		_("Select {0}...").format(label) if choose else _("Add {0}...").format(label)
-	)
+	if not field.get("placeholder"):
+		if field.fieldtype in ("Date", "Datetime"):
+			# the label is beside it: «Aggiungi data di chiusura...» was cut on a phone
+			field["placeholder"] = _("Select date")
+		else:
+			field["placeholder"] = (
+				_("Select {0}...").format(label) if choose else _("Add {0}...").format(label)
+			)
 
 	if field.fieldtype == "Select" and field.options:
 		field["options"] = [{"label": _(option), "value": option} for option in field.options.split("\n")]
