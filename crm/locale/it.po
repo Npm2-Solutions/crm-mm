@@ -42114,3 +42114,8 @@ msgstr "Installa"
 #: frontend/src/components/Mobile/InstallaApp.vue
 msgid "Not now"
 msgstr "Non ora"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgctxt "Free times"
+msgid "{0} more"
+msgstr "altri {0}"

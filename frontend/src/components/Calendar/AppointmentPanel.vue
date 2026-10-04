@@ -362,10 +362,16 @@
     <div v-else class="flex flex-1 flex-col overflow-y-auto">
       <!-- the service decides the rest: length, who can do it, where, how many -->
       <div class="flex items-center gap-3 px-4.5 py-[7px] text-ink-gray-7">
-        <div
-          class="size-2.5 shrink-0 rounded-full"
-          :style="{ backgroundColor: formServiceColor || 'var(--ink-gray-4)' }"
-        />
+        <!-- the service's colour where the other rows have their icon, the
+             fields one under the other -->
+        <div class="flex size-4 shrink-0 items-center justify-center">
+          <div
+            class="size-2.5 rounded-full"
+            :style="{
+              backgroundColor: formServiceColor || 'var(--ink-gray-4)',
+            }"
+          />
+        </div>
         <FormControl
           :modelValue="form.service"
           class="w-full"
@@ -397,6 +403,7 @@
                  moved on. The × puts the picker back. -->
             <div
               v-if="row.party"
+              data-campo
               class="flex h-7 w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-base px-2 text-base text-ink-gray-8"
             >
               <span class="min-w-0 flex-1 truncate">
@@ -546,15 +553,34 @@
             {{ slotHint }}
           </span>
         </div>
-        <div v-if="slotList.length" class="mt-2 flex flex-wrap gap-1.5">
-          <Button
-            v-for="slot in slotList"
-            :key="slot.start + (slot.join_appointment || '')"
-            size="sm"
-            variant="outline"
-            :label="slotLabel(slot)"
-            @click="applySlot(slot)"
-          />
+        <!-- a day at a time, as a booking app shows them: the day once, then
+             its times; a day with many shows the first and the rest asked -->
+        <div v-if="slotDays.length" class="mt-2 flex flex-col gap-2.5">
+          <div v-for="day in slotDays" :key="day.giorno">
+            <div
+              class="mb-1 text-p-xs font-medium text-ink-gray-6 first-letter:uppercase"
+            >
+              {{ slotDayLabel(day.giorno) }}
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <Button
+                v-for="slot in day.orari"
+                :key="slot.start + (slot.join_appointment || '')"
+                size="sm"
+                variant="outline"
+                class="tabular-nums"
+                :label="slotLabel(slot)"
+                @click="applySlot(slot)"
+              />
+              <Button
+                v-if="day.altri"
+                size="sm"
+                variant="ghost"
+                :label="__('{0} more', [day.altri], 'Free times')"
+                @click="slotDaysOpen.add(day.giorno)"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -793,7 +819,7 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
-import { addMinutes, minutesBetween } from '@/utils/scheduler'
+import { addMinutes, minutesBetween, orariPerGiorno } from '@/utils/scheduler'
 import { tastiera } from '@/utils/tastiera'
 import {
   Badge,
@@ -1158,6 +1184,21 @@ const error = ref('')
 const conflicts = ref([])
 const slotList = ref([])
 const slotHint = ref('')
+// the days whose every time was asked for («3 more»)
+const slotDaysOpen = reactive(new Set())
+const slotDays = computed(() =>
+  orariPerGiorno(slotList.value, { perGiorno: 12, giorni: 5 }).map((day) =>
+    slotDaysOpen.has(day.giorno)
+      ? {
+          ...day,
+          orari: slotList.value.filter((slot) =>
+            String(slot.start).startsWith(day.giorno),
+          ),
+          altri: 0,
+        }
+      : day,
+  ),
+)
 // what the form held when it was opened, to know whether leaving loses anything
 const opened = ref('')
 
@@ -1344,7 +1385,8 @@ function findSlots() {
     },
     {
       onSuccess: (data) => {
-        slotList.value = (data || []).slice(0, 24)
+        slotDaysOpen.clear()
+        slotList.value = data || []
         slotHint.value = slotList.value.length
           ? __('{0} free times in the next 7 days', [data.length])
           : __('No free time in the next 7 days')
@@ -1355,11 +1397,16 @@ function findSlots() {
   )
 }
 
+// the time alone: the day is said once, above its times
 function slotLabel(slot) {
-  const when = dayjs(slot.start).format('ddd D MMM HH:mm')
+  const when = dayjs(slot.start).format('HH:mm')
   return slot.join_appointment
     ? `${when} · ${__('join')} (${slot.seats_left})`
     : when
+}
+
+function slotDayLabel(day) {
+  return dayjs(day).format('dddd D MMMM')
 }
 
 function applySlot(slot) {

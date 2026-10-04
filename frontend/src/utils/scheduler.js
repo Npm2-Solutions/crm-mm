@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 /**
  * Pure geometry for the resource scheduler grid.
  *
@@ -244,4 +247,27 @@ export function hhmm(value) {
   const hours = Number(match[1])
   if (hours > 23) return ''
   return `${String(hours).padStart(2, '0')}:${match[2]}`
+}
+
+/**
+ * The free times found for a service, a day at a time, as a booking app shows
+ * them: `[{ giorno, orari, altri }]` in the order the days came, `giorno` the
+ * date the times start on (YYYY-MM-DD), `orari` the first `perGiorno` of them
+ * and `altri` how many more that day has; no more than `giorni` days. A list
+ * of buttons said the day on each one («Sun 4 Oct 09:00», «Sun 4 Oct 09:30»),
+ * and the first 24 times could all be the first morning.
+ */
+export function orariPerGiorno(slots, { perGiorno = 12, giorni = 5 } = {}) {
+  const tutti = new Map()
+  for (const slot of slots || []) {
+    const giorno = String(slot?.start || '').slice(0, 10)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(giorno)) continue
+    if (!tutti.has(giorno)) tutti.set(giorno, [])
+    tutti.get(giorno).push(slot)
+  }
+  return [...tutti].slice(0, giorni).map(([giorno, orari]) => ({
+    giorno,
+    orari: orari.slice(0, perGiorno),
+    altri: Math.max(orari.length - perGiorno, 0),
+  }))
 }

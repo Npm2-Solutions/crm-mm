@@ -10,6 +10,7 @@ import {
   minutesAtRatio,
   minutesBetween,
   minutesFromMidnight,
+  orariPerGiorno,
   snapMinutes,
   unassigned,
   visibleWindow,
@@ -235,5 +236,62 @@ describe('minutesBetween', () => {
   it('is nothing backwards, or without times', () => {
     expect(minutesBetween('10:00', '09:00')).toBe(0)
     expect(minutesBetween('', '09:00')).toBe(0)
+  })
+})
+
+describe('orariPerGiorno', () => {
+  const orario = (start) => ({ start, end: start })
+
+  it('groups the times by the day they start on, in the order they came', () => {
+    const giorni = orariPerGiorno([
+      orario('2026-10-05 09:00:00'),
+      orario('2026-10-05 09:30:00'),
+      orario('2026-10-06T10:00:00'),
+    ])
+    expect(giorni.map((g) => g.giorno)).toEqual(['2026-10-05', '2026-10-06'])
+    expect(giorni[0].orari).toHaveLength(2)
+    expect(giorni[1].orari[0].start).toBe('2026-10-06T10:00:00')
+    expect(giorni.every((g) => g.altri === 0)).toBe(true)
+  })
+
+  it('keeps a day together even when its times come apart', () => {
+    const giorni = orariPerGiorno([
+      orario('2026-10-05 09:00:00'),
+      orario('2026-10-06 09:00:00'),
+      orario('2026-10-05 15:00:00'),
+    ])
+    expect(giorni.map((g) => g.orari.length)).toEqual([2, 1])
+  })
+
+  it('shows so many times a day and says how many more there are', () => {
+    const giorno = Array.from({ length: 20 }, (_, i) =>
+      orario(
+        `2026-10-05 ${String(8 + Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}:00`,
+      ),
+    )
+    const [primo] = orariPerGiorno(giorno, { perGiorno: 12 })
+    expect(primo.orari).toHaveLength(12)
+    expect(primo.altri).toBe(8)
+  })
+
+  it('stops at so many days', () => {
+    const giorni = orariPerGiorno(
+      ['01', '02', '03', '04', '05', '06', '07'].map((d) =>
+        orario(`2026-10-${d} 09:00:00`),
+      ),
+      { giorni: 5 },
+    )
+    expect(giorni.map((g) => g.giorno.slice(8))).toEqual([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+    ])
+  })
+
+  it('leaves out what has no day, and nothing is nothing', () => {
+    expect(orariPerGiorno([{ start: '' }, {}, null])).toEqual([])
+    expect(orariPerGiorno(undefined)).toEqual([])
   })
 })
