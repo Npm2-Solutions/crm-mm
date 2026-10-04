@@ -86,6 +86,36 @@
     filter: drop-shadow(0 1px 0.5px rgb(11 20 26 / 0.13));
   }
 
+  /* A message's actions where nothing hovers (ChatBubble, WhatsAppArea): a
+     bar above the message, from the bubble's own side towards the middle,
+     shown by a tap on it. Beside the bubble, as with a mouse, a wide message
+     on a phone left its last button off the screen. While hidden the bar
+     takes no tap — above a bubble it lies over the message before — and the
+     focus that shows it is on its parent (the bubble, the WhatsApp row), so a
+     tap on a button keeps it. */
+  @media (hover: none) {
+    .azioni-della-bolla[data-lato] {
+      position: absolute;
+      top: auto;
+      bottom: 100%;
+      z-index: 10;
+      margin: 0 0 0.25rem;
+      transform: none;
+      pointer-events: none;
+    }
+    .azioni-della-bolla[data-lato='in'] {
+      right: auto;
+      left: 0;
+    }
+    .azioni-della-bolla[data-lato='out'] {
+      right: 0;
+      left: auto;
+    }
+    :focus-within > .azioni-della-bolla[data-lato] {
+      pointer-events: auto;
+    }
+  }
+
   /* The words of an email or a note being written: the same line as a WhatsApp
      message — the same size, the same padding — growing with what is written
      and scrolling past two fifths of the screen.

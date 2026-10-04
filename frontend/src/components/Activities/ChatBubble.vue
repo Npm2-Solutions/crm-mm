@@ -162,11 +162,15 @@
         side, and only when the pointer is on it: a toolbar on every message is
         a toolbar nobody reads past. Where there is no pointer, a tap on the
         bubble shows it: the bubble takes the focus, and a finger cannot hover.
+        There it is a bar above the bubble, on the bubble's own side
+        (`azioni-della-bolla`, index.css): beside it, on a phone, a wide
+        message left the last button off the screen.
       -->
       <div
         v-if="$slots.actions"
-        class="absolute top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/bubble:opacity-100 group-hover/bubble:opacity-100"
+        class="azioni-della-bolla absolute top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/bubble:opacity-100 group-hover/bubble:opacity-100"
         :class="mine ? 'right-full mr-1.5' : 'left-full ml-1.5'"
+        :data-lato="mine ? 'out' : 'in'"
       >
         <slot name="actions" />
       </div>
