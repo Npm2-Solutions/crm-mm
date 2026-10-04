@@ -17,6 +17,7 @@ from unittest.mock import patch
 import frappe
 
 from crm import marchio
+from crm.integrations.twilio import api
 from crm.permissions import livelli
 from crm.telephony import collegamento
 from crm.telephony import collegamento_regole as R
@@ -302,3 +303,20 @@ class ChiPuo(TwilioCase):
 		with patch.dict(frappe.conf, {"dottorcloud_twilio": {"account_sid": "", "auth_token": ""}}):
 			with self.assertRaises(frappe.ValidationError):
 				collegamento.connect_agency_twilio()
+
+
+class IlTelefonoNelBrowser(TwilioCase):
+	"""The browser asks for its key on every page: before a connection made one it
+	gets nothing, not an error."""
+
+	def test_niente_prima_del_collegamento(self):
+		frappe.db.set_single_value(collegamento.IMPOSTAZIONI, {"enabled": 1, "api_key": "SKsenzasegreto"})
+		frappe.set_user(MANAGER)
+		self.assertEqual(api.generate_access_token(), {})
+
+	def test_dopo_il_collegamento_va_oltre(self):
+		self.collega()
+		frappe.set_user(MANAGER)
+		# past the key: a token, or the line the calls show that is still missing
+		risposta = api.generate_access_token()
+		self.assertTrue(risposta.get("token") or risposta.get("error") == "caller_phone_identity_missing")

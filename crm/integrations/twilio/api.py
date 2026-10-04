@@ -119,9 +119,14 @@ def usable_caller_ids() -> list[str]:
 @frappe.whitelist()
 def generate_access_token():
 	"""Returns access token that is required to authenticate Twilio Client SDK."""
-	twilio = Twilio.connect()
-	if not twilio:
+	# switched on before a connection gave it a key and the key's secret: no phone
+	# in the browser yet, rather than an error on every page that asks
+	settings = frappe.get_single("CRM Twilio Settings")
+	if not (
+		settings.enabled and settings.api_key and settings.get_password("api_secret", raise_exception=False)
+	):
 		return {}
+	twilio = Twilio(settings=settings)
 
 	from_number = frappe.db.get_value("CRM Telephony Agent", frappe.session.user, "twilio_number")
 	if not from_number:

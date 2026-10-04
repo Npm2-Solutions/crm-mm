@@ -492,6 +492,11 @@ async function startupClient() {
 
   try {
     const data = await call('crm.integrations.twilio.api.generate_access_token')
+    // no key yet (not connected), or no line of one's own: no phone here
+    if (!data?.token) {
+      log.value = data?.detail || 'No access token.'
+      return
+    }
     log.value = 'Got a token.'
     intitializeDevice(data.token)
   } catch (err) {
