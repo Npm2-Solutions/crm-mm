@@ -29,13 +29,11 @@
       <div
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
-        <Button
+        <AzioneImpostazioni
           v-if="isDirty"
           :loading="
             isNewDoc ? insertResource.loading : telephonyAgent.save?.loading
           "
-          :label="__('Update')"
-          variant="solid"
           @click="update"
         />
       </div>
@@ -232,6 +230,7 @@
   </div>
 </template>
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import {
   FormControl,
   Badge,

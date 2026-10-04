@@ -47,7 +47,7 @@
               :label="__('Not Saved')"
             />
           </div>
-          <Button
+          <AzioneImpostazioni
             v-if="isDirty"
             :label="__('Save')"
             :loading="user.save.loading"
@@ -96,6 +96,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import { marchio } from '@/utils/marchio'
 import ThemeSwitcher from '@/components/Settings/ThemeSwitcher.vue'

@@ -28,10 +28,8 @@
       <div
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
-        <Button
+        <AzioneImpostazioni
           v-if="isDirty"
-          :label="__('Update')"
-          variant="solid"
           :loading="settings.loading"
           @click="updateSettings"
         />
@@ -167,6 +165,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import Link from '@/components/Controls/Link.vue'
 import { getMeta } from '@/stores/meta'
 import {

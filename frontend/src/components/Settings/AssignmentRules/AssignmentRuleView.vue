@@ -40,11 +40,9 @@
           />
           <span class="text-sm text-ink-gray-7">{{ __('Enabled') }}</span>
         </div>
-        <Button
+        <AzioneImpostazioni
           :disabled="Boolean(!isDirty && step.data)"
           :label="__('Save')"
-          theme="gray"
-          variant="solid"
           :loading="isLoading || getAssignmentRuleData.loading"
           @click="saveAssignmentRule()"
         />
@@ -325,6 +323,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import {
   Badge,
   Button,

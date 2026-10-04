@@ -21,12 +21,7 @@
           }}
         </p>
       </div>
-      <Button
-        variant="solid"
-        :label="__('Save')"
-        :loading="saving"
-        @click="save"
-      />
+      <AzioneImpostazioni :label="__('Save')" :loading="saving" @click="save" />
     </div>
 
     <div class="flex flex-1 flex-col gap-8 overflow-y-auto px-2 pb-4">
@@ -132,6 +127,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'

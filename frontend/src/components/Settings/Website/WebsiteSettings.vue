@@ -33,9 +33,8 @@
         >
           {{ form.site_name }}
         </span>
-        <Button
+        <AzioneImpostazioni
           v-if="!noSites"
-          variant="solid"
           :label="__('Save')"
           :loading="saving"
           :disabled="loading"
@@ -458,6 +457,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import ImageField from '@/components/Settings/Website/ImageField.vue'
 import { activeSettingsSite } from '@/composables/settings'
 import { tastiera } from '@/utils/tastiera'

@@ -46,12 +46,7 @@
           variant="subtle"
           @click="twilio.reload()"
         />
-        <Button
-          variant="solid"
-          :label="__('Update')"
-          :loading="twilio.save.loading"
-          @click="update"
-        />
+        <AzioneImpostazioni :loading="twilio.save.loading" @click="update" />
       </div>
     </template>
     <template #content>
@@ -787,6 +782,7 @@
   />
 </template>
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SceltaRadio from '@/components/Settings/Invoicing/SceltaRadio.vue'
 import MoveNumberDialog from '@/components/Settings/Telephony/MoveNumberDialog.vue'
 import NewNumberDialog from '@/components/Settings/Telephony/NewNumberDialog.vue'

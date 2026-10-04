@@ -28,8 +28,7 @@
     </template>
 
     <template #header-actions>
-      <Button
-        variant="solid"
+      <AzioneImpostazioni
         :label="__('Save')"
         :loading="saving"
         :disabled="!isDirty"
@@ -202,6 +201,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'

@@ -25,9 +25,8 @@
       <div
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
-        <Button
+        <AzioneImpostazioni
           :label="__('Send Invites')"
-          variant="solid"
           :disabled="
             !invitees.length ||
             !chosenLevels.length ||
@@ -108,6 +107,7 @@
   </div>
 </template>
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import LevelPicker from '@/components/Settings/LevelPicker.vue'
 import { useLevels, levelLabels } from '@/composables/levels'
 import { validateEmail, convertArrayToString } from '@/utils'
