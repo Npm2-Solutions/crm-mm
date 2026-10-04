@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -74,6 +78,23 @@
             :options="timezoneOptions"
           />
         </div>
+        <!-- the screens show every time on the site's clock: hours read in
+             another zone come out moved by the difference -->
+        <p
+          v-if="
+            form.timezone &&
+            settings.data?.site_timezone &&
+            form.timezone !== settings.data.site_timezone
+          "
+          class="text-p-sm text-ink-amber-7"
+        >
+          {{
+            __(
+              "DottorCloud shows every time on the site's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the site's time zone.",
+              [settings.data.site_timezone, form.timezone],
+            )
+          }}
+        </p>
       </section>
 
       <!-- 3. what the agenda refuses -->
