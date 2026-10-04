@@ -1739,14 +1739,16 @@ abbonamenti sono del CRM (`crm/scheduling/abbonamenti.py`, le regole in
   tipo da un giorno, magari a un altro prezzo o pagato in un altro modo.
   L'abbonamento copia le condizioni del tipo, e un tipo cambiato dopo non cambia
   niente di venduto. Finisce il giorno prima dello stesso giorno tanti mesi dopo.
-- **Un appuntamento di un servizio compreso usa un ingresso da solo**: è della
-  persona, nei giorni dell'abbonamento e non in una sospensione, e nella settimana
-  (dal lunedì alla domenica) o nel mese dell'abbonamento resta un ingresso. Non
-  costa niente: l'abbonamento si paga a parte. Un ciclo dello stesso servizio viene
-  prima.
+- **Il posto di una persona in un servizio compreso usa un ingresso da solo**: nei
+  giorni del suo abbonamento e non in una sospensione, e nella settimana (dal lunedì
+  alla domenica) o nel mese dell'abbonamento resta un ingresso. Non le costa niente:
+  l'abbonamento si paga a parte. Un ciclo dello stesso servizio viene prima.
+  - In una lezione di gruppo ognuno usa il suo abbonamento (il posto lo tiene:
+    `CRM Appointment Participant.subscription`), e chi non ce l'ha paga il suo posto.
+    La lezione si fattura finché qualcuno paga, a chi paga.
   - Una disdetta rende l'ingresso; un'assenza lo usa, se il tipo lo dice.
-  - Un abbonamento nuovo prende gli appuntamenti già prenotati nei suoi giorni; il
-    pannello dell'appuntamento lo mette dentro o fuori a mano.
+  - Un abbonamento nuovo prende i posti già prenotati nei suoi giorni; il pannello
+    dell'appuntamento mette dentro o fuori a mano il posto di ognuno.
 - **Le rate**: una sola il primo giorno, o una al mese lo stesso giorno, l'ultima con
   i centesimi che avanzano.
   - Il giorno di una rata la sua fattura si apre da sola, con la scheda fiscale del
@@ -1757,8 +1759,7 @@ abbonamenti sono del CRM (`crm/scheduling/abbonamenti.py`, le regole in
     fatturare.
   - Senza scheda fiscale le rate sono solo un calendario.
 - **Sospeso** da un giorno a un giorno, se il tipo lo consente: la fine si sposta di
-  quei giorni, e gli appuntamenti prenotati in quei giorni smettono di usare un
-  ingresso.
+  quei giorni, e i posti prenotati in quei giorni smettono di usare un ingresso.
 - **Prima della fine** arriva alla persona un'email di promemoria, una volta. Un tipo
   che si rinnova da solo fa partire l'abbonamento successivo il giorno dopo l'ultimo,
   al prezzo del tipo di quel giorno; la segreteria rinnova anche a mano.
