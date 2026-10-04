@@ -81,6 +81,9 @@ export const usersStore = defineStore('crm-users', () => {
   let backgroundFetchScheduled = false
   function scheduleBackgroundFetch() {
     if (backgroundFetchScheduled) return
+    // only the agency (System Manager) gets more than the first list: for anybody
+    // else the server sent the same users again, a second call at every opening
+    if (!isAgency()) return
     backgroundFetchScheduled = true
     const fire = () => usersFull.fetch()
     if (typeof requestIdleCallback === 'function') {
