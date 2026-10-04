@@ -18,7 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate
 
-from crm.demo import abbonati, dati, registro, simulazione
+from crm.demo import abbonati, dati, in_attesa, registro, simulazione
 from crm.demo.contesto import Contesto, indirizzo, nome_libero
 from crm.demo.registro import Parte, registra_parte
 
@@ -81,6 +81,16 @@ def registra() -> None:
 			dopo=("clienti",),
 			descrizione="Three kinds of subscription to the classes and the regulars who bought them: "
 			"months renewed by themselves, a suspension, the reminders of the end.",
+		)
+	)
+	registra_parte(
+		Parte(
+			"attese",
+			"Waiting list",
+			in_attesa.crea,
+			dopo=("clienti", "abbonamenti"),
+			descrizione="People waiting for a place with the osteopath, the dietitian or in a full "
+			"class: an offer waiting for its answer, places booked from an offer.",
 		)
 	)
 

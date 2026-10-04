@@ -1022,3 +1022,68 @@ ABBONAMENTI = (
 		"Tutte le lezioni di gruppo per sei mesi, con il pagamento in rate mensili.",
 	),
 )
+
+# -- the waiting list --------------------------------------------------------------------------
+
+#: Who waits for what: the service key, the practitioner's key (None: anybody), the
+#: days and hours that suit (weekday, from, to), urgent, where they joined, the
+#: desk's note, how many days ago they joined, what happened (None: still waiting,
+#: "offered", "booked", "expired", "removed").
+ATTESE = (
+	(
+		"osteo",
+		"luca",
+		(("Monday", "09:00", "13:00"), ("Wednesday", "09:00", "13:00")),
+		True,
+		"Desk",
+		"Dolore acuto alla schiena da tre giorni: va bene anche un posto all'ultimo momento.",
+		1,
+		"offered",
+	),
+	(
+		"osteo",
+		"luca",
+		(("Tuesday", "17:00", "20:00"), ("Thursday", "17:00", "20:00")),
+		False,
+		"Online",
+		None,
+		5,
+		None,
+	),
+	("osteo", None, (), False, "Client area", None, 9, None),
+	(
+		"nutri",
+		"elena",
+		(("Tuesday", "14:00", "18:00"), ("Thursday", "14:00", "18:00")),
+		False,
+		"Desk",
+		"Vuole iniziare prima delle vacanze di Natale.",
+		4,
+		"booked",
+	),
+	(
+		"fisio",
+		"giulia",
+		(("Saturday", "09:00", "13:00"),),
+		False,
+		"Online",
+		"Lavora tutta la settimana, solo il sabato mattina.",
+		3,
+		None,
+	),
+	("massaggio", None, (("Friday", "14:00", "18:00"),), False, "Desk", None, 12, "booked"),
+	(
+		"osteo",
+		"luca",
+		(),
+		False,
+		"Desk",
+		"Ha trovato posto in un altro centro, toglierla dalla lista.",
+		16,
+		"removed",
+	),
+	("nutri", None, (), False, "Online", None, 34, "expired"),
+)
+
+#: How many people wait for a seat in the class that is full.
+IN_ATTESA_DELLA_LEZIONE = 2
