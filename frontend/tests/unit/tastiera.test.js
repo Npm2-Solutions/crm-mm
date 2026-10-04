@@ -40,10 +40,18 @@ describe('tastieraDi', () => {
     }
   })
 
+  it("writes a person's name with a capital to each word, never corrected", () => {
+    for (const fieldname of ['first_name', 'last_name', 'full_name']) {
+      expect(tastieraDi({ fieldtype: 'Data', fieldname })).toEqual({
+        autocapitalize: 'words',
+        autocorrect: 'off',
+        spellcheck: 'false',
+      })
+    }
+  })
+
   it('leaves every other field to the ordinary keyboard', () => {
-    expect(tastieraDi({ fieldtype: 'Data', fieldname: 'first_name' })).toEqual(
-      {},
-    )
+    expect(tastieraDi({ fieldtype: 'Data', fieldname: 'city' })).toEqual({})
     // a postal code may hold letters abroad: no digits-only pad
     expect(tastieraDi({ fieldtype: 'Data', fieldname: 'postal_code' })).toEqual(
       {},

@@ -4,7 +4,8 @@
 /**
  * The keyboard a phone opens for a field: the dial pad for a number to call,
  * the one with @ for an email, a web address's, the digits for a count, the
- * decimal pad for an amount, capitals for a code. Only the keyboard changes:
+ * decimal pad for an amount, capitals for a code, a capital to each word of a
+ * name. Only the keyboard changes:
  * what the field keeps is the same, and no form of the app hands the value to
  * the browser's own checks. Nothing here offers the operator's own email or
  * phone (the inputs keep frappe-ui's autocomplete="off"): the field is somebody
@@ -28,6 +29,9 @@ const TASTIERE = {
   },
   // a code made only of digits: the Sistema TS's region, ASL, facility
   cifre: { inputmode: 'numeric', autocorrect: 'off', spellcheck: 'false' },
+  // a person's name: a capital to each word («Maria Grazia De Luca», where the
+  // phone's own capital only starts the field), never corrected into a word
+  nome: { autocapitalize: 'words', autocorrect: 'off', spellcheck: 'false' },
   // a search: the key says «Search» and closes the keyboard over the results
   // (utils/tastieraAperta.js); a surname is never corrected into a word
   cerca: {
@@ -39,7 +43,7 @@ const TASTIERE = {
   },
 }
 
-/** The attributes of a keyboard by its name (`telefono`, `email`, `url`, `intero`, `decimale`, `codice`, `cifre`, `cerca`). */
+/** The attributes of a keyboard by its name (`telefono`, `email`, `url`, `intero`, `decimale`, `codice`, `cifre`, `nome`, `cerca`). */
 export function tastiera(nome) {
   return TASTIERE[nome] || {}
 }
@@ -53,6 +57,14 @@ const CODICI = new Set([
   'iban',
 ])
 const INDIRIZZI_WEB = new Set(['website', 'video_url'])
+// a person's name, in the fields that hold one
+const NOMI = new Set([
+  'first_name',
+  'middle_name',
+  'last_name',
+  'lead_name',
+  'full_name',
+])
 // emails named so where the field is no DocType's (a PEC is an email too)
 const EMAIL = new Set(['email', 'email_id', 'pec'])
 
@@ -74,5 +86,6 @@ export function tastieraDi(field) {
   if (field.options === 'IBAN' || CODICI.has(field.fieldname)) {
     return tastiera('codice')
   }
+  if (NOMI.has(field.fieldname)) return tastiera('nome')
   return {}
 }
