@@ -31,7 +31,7 @@
         @click="openSettings('Issuing company')"
       />
       <Button
-        v-if="puo('fatture.emetti')"
+        v-if="puo('fatture.emetti') && !isMobileView"
         variant="solid"
         :label="__('New invoice')"
         iconLeft="plus"
@@ -39,8 +39,18 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone the page's «+», where the thumb is, as on every list: in the
+       header it squeezed the company's name to «Studio Test Fat…» -->
+  <PulsanteAggiungi
+    v-if="puo('fatture.emetti') && isMobileView"
+    :label="__('New invoice')"
+    @click="nuovaFattura(null, { alCambio: ricarica })"
+  />
 
-  <div ref="contenitore" class="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+  <div
+    ref="contenitore"
+    class="flex-1 overflow-y-auto px-3 py-4 sm:px-5 max-md:pb-24"
+  >
     <!-- pulled down from the top on a phone, the invoices reload -->
     <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-4">
@@ -415,6 +425,7 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
 import { formatEuro, invoiceStatusTheme, statusLabel } from '@/utils/invoicing'
