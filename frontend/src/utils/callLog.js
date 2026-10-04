@@ -1,9 +1,16 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { formatDate } from '@/utils'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { getMeta } from '@/stores/meta'
 
-const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
-  getMeta('CRM Call Log')
+// The call log's fields, asked when a detail is formatted (the calls' list, a
+// call's details): asked when this file loaded, a call's colour in a person's
+// conversation fetched the whole DocType
+let formati = null
+function formato() {
+  return (formati ||= getMeta('CRM Call Log'))
+}
 
 export function getCallLogDetail(row, log, columns = []) {
   let incoming = log.type === 'Incoming'
@@ -48,15 +55,15 @@ export function getCallLogDetail(row, log, columns = []) {
   }
 
   if (fieldType && fieldType == 'Currency') {
-    return getFormattedCurrency(row, log)
+    return formato().getFormattedCurrency(row, log)
   }
 
   if (fieldType && fieldType == 'Float') {
-    return getFormattedFloat(row, log)
+    return formato().getFormattedFloat(row, log)
   }
 
   if (fieldType && fieldType == 'Percent') {
-    return getFormattedPercent(row, log)
+    return formato().getFormattedPercent(row, log)
   }
 
   return log[row]

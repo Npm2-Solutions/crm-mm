@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { globalStore } from '@/stores/global'
 import { getMeta } from '@/stores/meta'
 import { getClassNames, createDocProxy } from '@/utils/scriptHelpers'
@@ -40,10 +42,12 @@ export function getScript(doctype, view = 'Form') {
     fields: ['name', 'dt', 'view', 'script'],
     filters: { view, dt: doctype, enabled: 1 },
     onSuccess: (_scripts) => {
+      // remembered even when there are none: every record of the kind opened
+      // asked for them again
+      if (!doctypeScripts[doctype]) {
+        doctypeScripts[doctype] = {}
+      }
       for (let script of _scripts) {
-        if (!doctypeScripts[doctype]) {
-          doctypeScripts[doctype] = {}
-        }
         doctypeScripts[doctype][script.name] = script || {}
       }
     },
@@ -55,7 +59,9 @@ export function getScript(doctype, view = 'Form') {
     },
   })
 
-  if (!doctypeScripts[doctype] && !scripts.loading) {
+  // a list resource is loading in `list.loading`: asked of `scripts`, the same
+  // three requests went for a record that three parts of its page open at once
+  if (!doctypeScripts[doctype] && !scripts.list.loading) {
     scripts.fetch()
   }
 

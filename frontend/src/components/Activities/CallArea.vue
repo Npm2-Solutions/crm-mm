@@ -40,6 +40,7 @@
       <AudioPlayer :src="callLog.data.recording_url_path" />
     </div>
     <CallLogDetailModal
+      v-if="dettagliMontati"
       v-model="showCallLogDetailModal"
       v-model:callLog="callLog"
     />
@@ -139,6 +140,7 @@
       </div>
     </div>
     <CallLogDetailModal
+      v-if="dettagliMontati"
       v-model="showCallLogDetailModal"
       v-model:callLog="callLog"
     />
@@ -155,8 +157,9 @@ import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { getCallStatusColor, getCallStatusLabel } from '@/utils/callLog.js'
 import { formatDate } from '@/utils'
+import { apertoUnaVolta } from '@/utils/aRichiesta'
 import { Avatar, Badge, createResource, dayjs } from 'frappe-ui'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 // «dom 4 ott», as every day of DottorCloud is written, with the year when it is
 // not this one: «ott 4, domenica» was English's order in Italian words
@@ -190,11 +193,24 @@ const outcome = computed(() =>
     : getCallStatusLabel(call.status, call.type),
 )
 
+// The call's details - its recording, notes and tasks - are asked for when they
+// are needed, the details opened or the recording played: asked for every call
+// the conversation showed, and the details' window, mounted closed, opening each
+// call as a document, a person with ten calls cost sixty requests to open.
 const callLog = createResource({
   url: 'crm.fcrm.doctype.crm_call_log.crm_call_log.get_call_log',
   params: { name: call.name },
   cache: ['call_log', call.name],
-  auto: true,
 })
 const showCallLogDetailModal = ref(false)
+const dettagliMontati = apertoUnaVolta(showCallLogDetailModal)
+let chiesto = false
+watch(
+  () => showCallLogDetailModal.value || call.show_recording,
+  (serve) => {
+    if (!serve || chiesto) return
+    chiesto = true
+    callLog.fetch()
+  },
+)
 </script>
