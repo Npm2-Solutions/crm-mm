@@ -649,10 +649,12 @@ async function apri() {
         { tutta: true },
       )
     } else {
+      // what proposed it (an appointment) fills in what it knows; the rest is asked
+      const bozza = stato.bozza || {}
       const nuova = await call('crm.invoicing.emissione.preview', {
-        data: { ...(stato.cliente || {}), items: [] },
+        data: { ...(stato.cliente || {}), ...bozza, items: bozza.items || [] },
       })
-      nuova.items = [rigaVuota(nuova.shape?.provider)]
+      if (!nuova.items?.length) nuova.items = [rigaVuota(nuova.shape?.provider)]
       applica(nuova, { tutta: true })
     }
   } catch (e) {

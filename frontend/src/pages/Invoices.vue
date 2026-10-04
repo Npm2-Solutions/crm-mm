@@ -529,6 +529,16 @@ const allAppointments = ref(false)
 async function fatturaIncontro(incontro) {
   emettendo.value = incontro.name
   try {
+    const proposta = await call(
+      'crm.invoicing.api.appointment_invoice_proposal',
+      { appointment: incontro.name },
+    )
+    if (!proposta.items.every((riga) => riga.service_provider)) {
+      // the agenda cannot tell who performed it: the dialog opens with what it
+      // knows and asks only that, instead of an error with nowhere to go
+      nuovaFattura(null, { alCambio: ricarica, bozza: proposta })
+      return
+    }
     const nome = await call('crm.invoicing.api.issue_from_appointment', {
       appointment: incontro.name,
     })

@@ -13,6 +13,9 @@ const stato = reactive({
   nome: null,
   // a new invoice's client: { party_type, party }
   cliente: null,
+  // what a new invoice starts from, when something proposes it (an appointment):
+  // the client, the lines, the appointment it closes - completed in the dialog
+  bozza: null,
   // told when the invoice is saved, issued or thrown away
   alCambio: null,
   // one more each time somebody opens one: the dialog loads it then, and only then
@@ -24,12 +27,22 @@ export function useFattura() {
   return {
     stato,
     apriFattura(nome, { alCambio } = {}) {
-      Object.assign(stato, { nome, cliente: null, alCambio: alCambio || null })
+      Object.assign(stato, {
+        nome,
+        cliente: null,
+        bozza: null,
+        alCambio: alCambio || null,
+      })
       stato.aperto = true
       stato.richiesta++
     },
-    nuovaFattura(cliente = null, { alCambio } = {}) {
-      Object.assign(stato, { nome: null, cliente, alCambio: alCambio || null })
+    nuovaFattura(cliente = null, { alCambio, bozza } = {}) {
+      Object.assign(stato, {
+        nome: null,
+        cliente,
+        bozza: bozza || null,
+        alCambio: alCambio || null,
+      })
       stato.aperto = true
       stato.richiesta++
     },

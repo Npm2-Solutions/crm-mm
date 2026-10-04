@@ -184,6 +184,7 @@ def _vista(doc) -> dict:
 		"is_note": (doc.document_type or "") in NOTE,
 		"posting_date": str(getdate(doc.posting_date)) if doc.posting_date else None,
 		"company": doc.company,
+		"appointment": doc.appointment,
 		"client": {
 			**{campo: doc.get(campo) for campo in CAMPI_CLIENTE},
 			"party_label": _nome_di(doc.party_type, doc.party),
@@ -301,6 +302,12 @@ def _carica(invoice: str | None, dati: dict | None):
 		frappe.has_permission(FATTURA, "create", throw=True)
 		doc = frappe.new_doc(FATTURA)
 		doc.recipient_type = TipoDestinatario.PERSONA_FISICA
+		# made from an appointment (its proposal, completed here): it keeps it, so the
+		# agenda closes it when the invoice is issued and it leaves the list to invoice
+		if dati and dati.get("appointment"):
+			incontro = frappe.get_doc("CRM Appointment", dati["appointment"])
+			incontro.check_permission("read")
+			doc.appointment = incontro.name
 	if dati and cint(doc.docstatus) == 0:
 		prima = doc.recipient_type
 		_applica(doc, dati)
