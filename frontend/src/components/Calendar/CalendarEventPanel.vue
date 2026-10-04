@@ -8,14 +8,26 @@
     <div
       class="flex items-center justify-between p-4.5 text-ink-gray-7 text-lg-medium"
     >
-      <div
-        class="flex items-center gap-x-2"
-        :class="mode == 'edit' && 'cursor-pointer hover:text-ink-gray-8'"
-        @click="mode == 'edit' && details()"
+      <!-- back to the details is a button; otherwise the panel's heading,
+           where the agenda puts focus when it opens (pages/Calendar.vue) -->
+      <button
+        v-if="mode == 'edit'"
+        type="button"
+        data-titolo-pannello
+        class="flex items-center gap-x-2 cursor-pointer hover:text-ink-gray-8"
+        @click="details()"
       >
-        <LucideChevronLeft v-if="mode == 'edit'" class="size-4" />
+        <LucideChevronLeft class="size-4" aria-hidden="true" />
         {{ __(title) }}
-      </div>
+      </button>
+      <h2
+        v-else
+        data-titolo-pannello
+        tabindex="-1"
+        class="flex items-center gap-x-2 focus:outline-none"
+      >
+        {{ __(title) }}
+      </h2>
       <div class="flex items-center gap-x-1">
         <ShortcutTooltip
           v-if="mode == 'details' && !readonly"

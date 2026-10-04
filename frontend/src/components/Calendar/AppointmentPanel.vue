@@ -26,16 +26,26 @@
     <div
       class="flex items-center justify-between gap-2 p-4.5 text-lg-medium text-ink-gray-7"
     >
+      <!-- `data-titolo-pannello`: where the agenda puts focus when the panel
+           opens (pages/Calendar.vue), so a screen reader starts here -->
       <button
         v-if="mode === 'edit'"
         type="button"
+        data-titolo-pannello
         class="flex min-w-0 items-center gap-x-2 hover:text-ink-gray-8"
         @click="backToDetails"
       >
         <span class="lucide-chevron-left size-4 shrink-0" aria-hidden="true" />
         <span class="truncate">{{ heading }}</span>
       </button>
-      <span v-else class="truncate">{{ heading }}</span>
+      <h2
+        v-else
+        data-titolo-pannello
+        tabindex="-1"
+        class="truncate focus:outline-none"
+      >
+        {{ heading }}
+      </h2>
       <div class="flex shrink-0 items-center gap-x-1">
         <!-- who reads the agenda without booking sees it, nothing to change -->
         <Button

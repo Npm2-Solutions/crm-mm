@@ -13,7 +13,9 @@
     <Layout v-else-if="session.isLoggedIn" class="isolate">
       <!-- the page's name, for a screen reader's headings: on a phone it is a
            link or a switch in the header, never a heading -->
-      <h1 v-if="titolo" class="sr-only">{{ __(titolo) }}</h1>
+      <h1 v-if="titolo" id="titolo-pagina" tabindex="-1" class="sr-only">
+        {{ __(titolo) }}
+      </h1>
       <router-view :key="$route.fullPath" />
     </Layout>
     <Dialogs />

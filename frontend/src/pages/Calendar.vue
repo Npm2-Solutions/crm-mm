@@ -363,6 +363,7 @@
       calendar. An appointment used to open in a dialog over everything.
     -->
     <div
+      ref="pannello"
       class="flex flex-none flex-col overflow-hidden transition-all duration-300 ease-in-out"
       :class="
         panelOpen
@@ -1094,6 +1095,33 @@ watch(
 
 const eventPanel = ref(null)
 const showEventPanel = ref(false)
+
+// A panel that opens takes focus to its heading, so a screen reader reads it
+// from the top (on a phone it covers the agenda); closed, focus goes back to
+// whatever opened it, or to the page's heading when that was drawn anew
+const pannello = ref(null)
+let primaDelPannello = null
+watch(panelOpen, async (aperto) => {
+  if (aperto) {
+    primaDelPannello = document.activeElement
+    await nextTick()
+    pannello.value
+      ?.querySelector('[data-titolo-pannello]')
+      ?.focus({ preventScroll: true })
+    return
+  }
+  // only when focus was in the panel (its close button) or lost, never taken
+  // from somewhere else
+  const qui = document.activeElement
+  const prima = primaDelPannello
+  primaDelPannello = null
+  if (qui && qui !== document.body && !pannello.value?.contains(qui)) return
+  await nextTick()
+  const dove = prima?.isConnected
+    ? prima
+    : document.getElementById('titolo-pagina')
+  dove?.focus({ preventScroll: true })
+})
 
 // on a phone the panel covers the agenda: a back closes it, not the page.
 // After `showEventPanel`: the watch reads it at once
