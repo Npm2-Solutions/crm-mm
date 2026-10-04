@@ -800,3 +800,14 @@ nessun browser di prova ha la sua tastiera.
   pagina sa che l'agente va creato. frappe-ui rilancia l'errore di ogni
   richiesta partita da sola, e la console lo mostra, ma chi usa la pagina non
   vede niente.
+- **Tre accelerazioni misurate e lasciate** (telefono con il processore 4 volte
+  più lento). Il compositore della scheda montato dopo il disegno: un tocco
+  sulle schede il 13% più veloce, ma chiede uno scheletro del compositore e un
+  campo che prenda il fuoco al tocco su iPhone, dove la tastiera si apre solo
+  dentro il tocco stesso. L'editor di testo fatto più tardi: le schede il 10%
+  più veloci, ma quando arriva fa un fotogramma lungo 100 ms in più, e chi
+  scrive se ne accorge. Gli stili che il menu di frappe-ui scrive sulla pagina
+  aprendosi (niente tocchi né scorrimento sul resto, 46 elementi nascosti ai
+  lettori di schermo): circa 100 ms di ricalcolo sul menu «Nuovo», ma toglierli
+  vuol dire rifare il menu come non modale, con il fuoco e il tocco fuori da
+  tenere a mano.
