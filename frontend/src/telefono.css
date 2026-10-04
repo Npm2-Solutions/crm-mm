@@ -778,3 +778,24 @@
     padding-block: 0.25rem;
   }
 }
+
+/* 11. A conversation is the screen. While one is open with its box to write
+       in (a person's Activity, a thread of the Chat:
+       `composables/chatAperta.js`), the bar at the bottom steps aside and the
+       box is the screen's bottom, above the iPhone's home line, as in a
+       phone's own messengers; with the keyboard up the record's tabs, the
+       channels above the messages and the box's own row of channels
+       (`data-via-scrivendo`) step aside too. The card, the tabs, the
+       channels, the box and the bar left a person's chat a quarter of an
+       iPhone, and with the keyboard up a strip. */
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  :root[data-chat='aperta'] nav[data-slot='mobile-nav'] {
+    display: none;
+  }
+  :root[data-chat='aperta']:not([data-tastiera='aperta']) [data-compositore] {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+  }
+  :root[data-chat='aperta'][data-tastiera='aperta'] [data-via-scrivendo] {
+    display: none;
+  }
+}

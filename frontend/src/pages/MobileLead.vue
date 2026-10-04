@@ -2,7 +2,9 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
   The phone's person: their card with the calls and messages a thumb away, the
-  tabs one opens every day in a short bar and the rest behind More.
+  tabs one opens every day in a short bar and the rest behind More. On the
+  conversation the card waits folded and the chat has the screen, as in a
+  phone's own messengers: the person's name in the header opens it.
 -->
 <template>
   <LayoutHeader>
@@ -12,6 +14,19 @@
       <Breadcrumbs :items="breadcrumbs" class="min-w-0">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
+        </template>
+        <!-- on the conversation the name opens and folds the card -->
+        <template #suffix="{ item }">
+          <template v-if="item.scheda">
+            <span
+              class="ml-1 size-4 shrink-0 text-ink-gray-5"
+              :class="raccolta ? 'lucide-chevron-down' : 'lucide-chevron-up'"
+              aria-hidden="true"
+            />
+            <span class="sr-only">
+              {{ raccolta ? __('Show the card') : __('Hide the card') }}
+            </span>
+          </template>
         </template>
       </Breadcrumbs>
       <!-- whom the person is with, beside their name as on the computer -->
@@ -61,9 +76,11 @@
     ref="schede"
     class="flex h-full flex-col overflow-hidden"
   >
-    <!-- the tabs one opens every day, the rest behind More -->
+    <!-- the tabs one opens every day, the rest behind More; while somebody
+         writes in the chat they step aside (telefono.css, «11») -->
     <SchedeDelTelefono
       v-model="tabIndex"
+      data-via-scrivendo
       :tabs="tabs"
       :principali="[
         'Activity',
@@ -206,6 +223,7 @@ import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useTestataRaccolta } from '@/composables/testataRaccolta'
+import { useChatAperta } from '@/composables/chatAperta'
 import { apertoUnaVolta } from '@/utils/aRichiesta'
 import DopoIlDisegno from '@/components/DopoIlDisegno.vue'
 import {
@@ -299,14 +317,20 @@ const breadcrumbs = computed(() => {
     }
   }
 
-  items.push({
-    label: title.value,
-    route: {
-      name: 'Lead',
-      params: { leadId: props.leadId },
-      query: route.query,
-    },
-  })
+  // on the conversation the name is the card's: a tap opens it, another folds
+  // it. Elsewhere it is the page's own link, as it was
+  items.push(
+    inChat.value
+      ? { label: title.value, scheda: true, onClick: alternaLaScheda }
+      : {
+          label: title.value,
+          route: {
+            name: 'Lead',
+            params: { leadId: props.leadId },
+            query: route.query,
+          },
+        },
+  )
   return items
 })
 
@@ -451,7 +475,28 @@ const attivitaMontate = apertoUnaVolta(() => !inDettagli.value)
 // the card folds while a tab is scrolled, and opens at its top
 const testata = ref(null)
 const schede = ref(null)
-const raccolta = useTestataRaccolta(schede, testata, tabIndex)
+const raccoltaScorrendo = useTestataRaccolta(schede, testata, tabIndex)
+
+// The conversation is a chat: the card waits folded, the name in the header
+// opens it (`alternaLaScheda`), somebody's scrolling folds it again. Open, the
+// card and the bar at the bottom left the chat a quarter of an iPhone.
+const inChat = computed(
+  () => !inDettagli.value && tabs.value[tabIndex.value]?.name === 'Activity',
+)
+const schedaAperta = ref(false)
+const raccolta = computed(
+  () => !schedaAperta.value && (raccoltaScorrendo.value || inChat.value),
+)
+function alternaLaScheda() {
+  schedaAperta.value = raccolta.value
+  // scrolled before, the card would fold at the first move: it starts afresh
+  raccoltaScorrendo.value = false
+}
+watch(raccoltaScorrendo, (si) => si && (schedaAperta.value = false))
+watch(tabIndex, () => (schedaAperta.value = false))
+// for whoever writes in it the bar at the bottom steps aside, and with the
+// keyboard up the tabs: the box to write in is the screen's bottom
+useChatAperta(() => inChat.value && puo('conversazioni.usa'))
 
 const sections = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',

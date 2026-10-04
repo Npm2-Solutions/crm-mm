@@ -1,4 +1,8 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
+<!--
   The box everything is written in, on every tab that writes.
 
   It says when it is being written in. Clicking into the WhatsApp line used to
@@ -10,8 +14,11 @@
   customer never sees.
 -->
 <template>
+  <!-- data-compositore: where an open chat is the screen, the box is its
+       bottom (telefono.css, «11»); on a phone it keeps less room round it -->
   <div
-    class="shrink-0 bg-surface-gray-2 px-3 pb-3 pt-2 dark:bg-surface-base sm:px-4"
+    data-compositore
+    class="shrink-0 bg-surface-gray-2 px-3 pb-3 pt-2 dark:bg-surface-base sm:px-4 max-md:px-2 max-md:pb-2 max-md:pt-1.5"
   >
     <div
       class="overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow,background-color] duration-150 focus-within:shadow-md focus-within:ring-2"
