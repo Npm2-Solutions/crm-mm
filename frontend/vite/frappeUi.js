@@ -13,6 +13,9 @@
  * Every replacement must find what it replaces: a frappe-ui that writes these
  * lines differently stops the build (and the unit test) instead of going back to
  * English in silence.
+ *
+ * The same door mends what frappe-ui draws wrong for everybody: the calendar's
+ * weeks from Monday, the switch's value and name.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -269,6 +272,34 @@ const SOSTITUZIONI = {
   'MultiSelect/MultiSelect.vue': [
     predefinito('placeholder', 'Select option'),
     predefinito('emptyText', 'No results'),
+  ],
+  // the switch, mended. A check field comes from the server as 0 or 1 and
+  // reka's SwitchRoot is on only for `true`: a setting saved on was drawn off.
+  // An `aria-label` stayed on the outer box, where no screen reader looks, and
+  // VoiceOver read «switch» and nothing else. The value is read as a number,
+  // the name goes to the button.
+  'Switch/Switch.vue': [
+    [
+      '<template>\n  <div class="flex flex-col">',
+      '<template>\n  <div class="flex flex-col" v-bind="senzaIlNome($attrs)">',
+    ],
+    [
+      'v-model="model"',
+      `:model-value="Boolean(Number(model))"
+        :aria-label="$attrs['aria-label']"
+        :aria-labelledby="$attrs['aria-labelledby']"
+        @update:model-value="(acceso) => (model = acceso)"`,
+    ],
+    [
+      'const attrs = useAttrs()',
+      `const attrs = useAttrs()
+// DottorCloud (frontend/vite/frappeUi.js): the name is the button's
+defineOptions({ inheritAttrs: false })
+function senzaIlNome(tutti: Record<string, unknown>) {
+  const { 'aria-label': _nome, 'aria-labelledby': _da, ...resto } = tutti
+  return resto
+}`,
+    ],
   ],
 }
 
