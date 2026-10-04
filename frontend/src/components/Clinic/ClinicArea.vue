@@ -34,8 +34,11 @@
       class="flex flex-wrap items-center justify-between gap-2 max-md:flex-col max-md:items-stretch"
     >
       <div class="flex min-w-0 flex-wrap items-center gap-2 text-p-sm">
+        <!-- a sentence, not a word: on a phone it wraps, or its one line made
+             the header wider than the screen and pushed the buttons off it -->
         <Badge
           v-if="record.data"
+          class="max-w-full max-md:h-auto max-md:whitespace-normal max-md:rounded-lg max-md:py-0.5"
           variant="subtle"
           :theme="record.data.dossier ? 'green' : 'gray'"
           :label="

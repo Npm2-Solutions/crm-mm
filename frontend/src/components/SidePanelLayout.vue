@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="sections flex flex-col overflow-y-auto">
     <template v-for="(section, i) in _sections" :key="section.name">
@@ -56,16 +59,17 @@
                         >
                           {{ __(field.label) }}
                         </div>
-                        <div
+                        <!-- the design system's small cross, as on every form -->
+                        <span
                           v-if="
                             field.reqd ||
                             (field.mandatory_depends_on &&
                               field.mandatory_via_depends_on)
                           "
-                          class="text-ink-red-6"
+                          class="segno-obbligatorio shrink-0 text-ink-red-6"
+                          aria-hidden="true"
+                          >*</span
                         >
-                          *
-                        </div>
                       </div>
                     </Tooltip>
                     <div
