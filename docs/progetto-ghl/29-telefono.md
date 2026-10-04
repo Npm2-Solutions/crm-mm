@@ -813,6 +813,7 @@ nessun browser di prova ha la sua tastiera.
 | `Modals/CreateDocumentModal.vue` | Il dialogo che crea un record da un campo collegato si intitola «Crea settore», col nome del DocType nella lingua di chi legge: era «Nuovo Industry» |
 | `crm/invoicing/scelte.py` (`PAESI`, `paesi()`) | Il paese dell'azienda emittente si sceglie per nome («Italia»), nella lingua di chi legge: mostrava «IT», il codice che va in fattura e che resta salvato |
 | `crm/invoicing/install.py` (`parole_di`, `nella_lingua`), `crm/tessera_sanitaria/install.py` | Le qualifiche che DottorCloud porta scrivono nome, note e punti da verificare nella lingua del centro, e li seguono dopo un migrate finché lo studio non li cambia: erano in inglese nel record («Cassa Forense contributo integrativo 4%: mandatory…», «Consulente (non-regulated profession)»). Il codice di una qualifica è «un nome breve che non cambia mai», non «un identificativo usato dal motore» |
+| `Settings/Hierarchy/Hierarchy.vue` | «Abilita» e «Disattiva» della gerarchia li vede solo chi può davvero accenderla, l'amministratore di sistema (la regola del server: un responsabile messo nell'albero si toglierebbe il suo limite). Il responsabile premeva «Abilita» e riceveva un errore; ora legge «Solo un amministratore di sistema può attivarla», e l'albero lo gestisce come prima |
 
 ## Non incluso
 
