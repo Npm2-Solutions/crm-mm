@@ -16,8 +16,27 @@ export const SOGLIA_TESTATA = 24
 // a box shorter than this is something inside a tab, not the tab
 const ALTEZZA_MINIMA = 120
 const CAMPI = 'textarea, input, select, [contenteditable]'
-// what somebody moves a box with
-const GESTI = ['touchstart', 'touchmove', 'wheel', 'keydown']
+// what somebody moves a box with: a finger that moves, a wheel, a key that
+// scrolls. A tap moves nothing: tapping «Activity» the conversation went to
+// its last message in two steps, and the second, inside the gesture's time,
+// folded the card as if somebody had scrolled
+const GESTI = ['touchmove', 'wheel', 'keydown']
+const TASTI_CHE_SCORRONO = new Set([
+  'ArrowUp',
+  'ArrowDown',
+  'PageUp',
+  'PageDown',
+  'Home',
+  'End',
+  ' ',
+])
+
+/** Whether `evento` is somebody moving what is under it: never a tap, nor a
+ * key that does not scroll (Escape closing a menu). */
+export function muoveLaPagina(evento) {
+  if (evento.type === 'keydown') return TASTI_CHE_SCORRONO.has(evento.key)
+  return GESTI.includes(evento.type)
+}
 
 // how long after a finger, a wheel or a key a box's scrolling is theirs
 export const DOPO_UN_GESTO = 1500
@@ -62,7 +81,9 @@ export function useTestataRaccolta(area, testata, scheda) {
   const cime = new WeakMap()
   // when somebody last moved something in the tabs
   let ultimoGesto = 0
-  const gesto = () => (ultimoGesto = Date.now())
+  const gesto = (evento) => {
+    if (muoveLaPagina(evento)) ultimoGesto = Date.now()
+  }
 
   function scorre(evento) {
     const box = evento.target
