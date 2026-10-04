@@ -196,6 +196,9 @@
   margin-left: 3px;
   vertical-align: 1px;
   font-size: 0;
+  /* the asterisk it hides has no height: without this its baseline is its top,
+     and the cross hung below the words */
+  overflow: hidden;
   background: currentColor;
   clip-path: polygon(
     34% 0,

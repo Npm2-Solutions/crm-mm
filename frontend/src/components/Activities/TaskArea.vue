@@ -12,12 +12,22 @@
           <div class="font-medium text-ink-gray-9 truncate">
             {{ task.title }}
           </div>
-          <div class="flex gap-1.5 text-ink-gray-8">
-            <div class="flex items-center gap-1.5">
+          <div
+            class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-ink-gray-8"
+          >
+            <div class="flex min-w-0 items-center gap-1.5">
               <UserAvatar :user="task.assigned_to" size="xs" />
-              {{ getUser(task.assigned_to).full_name }}
+              <span class="truncate">
+                {{ getUser(task.assigned_to).full_name }}
+              </span>
             </div>
-            <div v-if="task.due_date" class="flex items-center justify-center">
+            <!-- on a phone the day and the priority go on a line of their own:
+                 in one line they were cut to «● l» -->
+            <div class="hidden max-md:block max-md:basis-full" />
+            <div
+              v-if="task.due_date"
+              class="flex items-center justify-center max-md:hidden"
+            >
               <DotIcon class="h-2.5 w-2.5 text-ink-gray-5" :radius="2" />
             </div>
             <div v-if="task.due_date">
@@ -50,12 +60,15 @@
                 </div>
               </Tooltip>
             </div>
-            <div class="flex items-center justify-center">
+            <div
+              class="flex items-center justify-center"
+              :class="{ 'max-md:hidden': !task.due_date }"
+            >
               <DotIcon class="h-2.5 w-2.5 text-ink-gray-5" :radius="2" />
             </div>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
               <TaskPriorityIcon class="!h-2 !w-2" :priority="task.priority" />
-              {{ task.priority }}
+              {{ __(task.priority) }}
             </div>
           </div>
         </div>
