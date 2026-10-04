@@ -295,7 +295,15 @@ def create_call_log(call_details: TwilioCallDetails):
 
 
 def link(contact_number, call_log):
+	from crm.demo import guardie
+
 	contact = find_contact_by_phone_number(contact_number)
+	if guardie.contatto_della_demo(contact):
+		# a demo person has this number too: the call is a real person's (crm.demo.guardie)
+		vero = guardie.persona_vera(contact_number)
+		if vero:
+			call_log.link_with_reference_doc("CRM Lead", vero)
+		return
 	if contact.get("name"):
 		doctype = "Contact"
 		docname = contact.get("name")

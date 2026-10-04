@@ -14,7 +14,9 @@ So, while the demo data are in (or being made):
 - a call to one does not leave (`crm.telephony.uscita.perche_no`);
 - a notification about a demo record stays in the panel, never by email;
 - the public booking page offers the demo's services only to somebody signed in,
-  who is trying the page out: never to a visitor.
+  who is trying the page out: never to a visitor;
+- a message or a call that comes in from a number a demo person has too is never
+  filed on them (`persona_vera`): the demo's go with it, a real message stays.
 
 Each check costs one cached read when no demo is in.
 """
@@ -131,6 +133,45 @@ def nascosto_al_pubblico(doctype: str, name: str | None) -> bool:
 	if frappe.session.user != "Guest" or not name:
 		return False
 	return name in registro.nomi_di_prova(doctype)
+
+
+# -- what comes in ------------------------------------------------------------------------------
+
+
+def della_demo_per_chi_arriva(doctype: str, nome: str | None) -> bool:
+	"""Whether a record found for somebody who just wrote or called is one of the
+	demo's, while the demo is in and not being made. The demo's numbers look like
+	anybody's: a real one may be a demo person's too, and what is filed on a demo
+	person goes with the demo."""
+	if not nome or registro.raccolta() is not None or not registro.caricati():
+		return False
+	return str(nome) in registro.nomi_di_prova(doctype)
+
+
+def contatto_della_demo(contatto: dict | None) -> bool:
+	"""Whether the person, deal or address book entry found for a number is the demo's."""
+	contatto = contatto or {}
+	return any(
+		della_demo_per_chi_arriva(doctype, contatto.get(chiave))
+		for doctype, chiave in (("CRM Lead", "lead"), ("CRM Deal", "deal"), ("Contact", "name"))
+	)
+
+
+def persona_vera(numero: str | None) -> str | None:
+	"""The person of the centre's with ``numero``, not the demo's: the oldest, as
+	the number was theirs first."""
+	cifre = _cifre(numero)
+	if len(cifre) < 9:
+		return None
+	for (persona,) in frappe.db.sql(
+		"""select name from `tabCRM Lead`
+		where replace(replace(replace(mobile_no, ' ', ''), '-', ''), '.', '') like %(fine)s
+		order by creation asc""",
+		{"fine": f"%{cifre}"},
+	):
+		if not della_demo_per_chi_arriva("CRM Lead", persona):
+			return persona
+	return None
 
 
 # -- calls ---------------------------------------------------------------------------------------
