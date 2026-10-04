@@ -727,6 +727,7 @@ row, the bar's words beside their icons).
   What frappe-ui weighs for nobody is cut at the build in `vite/frappeUi.js`,
   each rewrite tested on the pinned frappe-ui: the code block without
   highlight.js, the emoji list fetched at the first ":", no Markdown format.
+  A dynamic import preloads only what is not loaded (`vite/precarica.js`).
 
 ---
 
@@ -738,7 +739,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1133 tests · ~15s** — all must pass before committing
+- **1137 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

@@ -6,14 +6,18 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import frappeUiNellaLingua from './vite/frappeUi.js'
+import precaricaSoloIlNuovo from './vite/precarica.js'
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
   const isDev = mode === 'development'
+  // a dynamic import preloads only what its caller has not loaded (vite/precarica.js)
+  const precarica = precaricaSoloIlNuovo()
   const config = {
     plugins: [
       // frappe-ui's own words in the user's language, not English (vite/frappeUi.js)
       frappeUiNellaLingua(),
+      precarica.plugin,
       vue(),
       vueJsx(),
       VitePWA({
@@ -83,6 +87,9 @@ export default defineConfig(async ({ mode }) => {
         // downloaded two
         'sortablejs',
       ],
+    },
+    build: {
+      modulePreload: { resolveDependencies: precarica.resolveDependencies },
     },
     optimizeDeps: {
       include: [
