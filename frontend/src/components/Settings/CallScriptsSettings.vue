@@ -46,11 +46,12 @@
           @click="newScript"
         />
         <template v-else>
+          <!-- a script not saved yet has nothing to delete -->
           <Button
+            v-if="draft.name"
             :label="__('Delete')"
             variant="subtle"
             theme="red"
-            :disabled="!draft.name"
             @click="remove"
           />
           <AzioneImpostazioni
@@ -121,7 +122,7 @@
 
       <!-- the editor -->
       <div v-else class="flex flex-col gap-4">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
           <FormControl
             v-model="draft.script_name"
             :label="__('Name')"
@@ -134,7 +135,7 @@
             :options="serviceOptions"
           />
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
           <FormControl
             v-model="draft.description"
             :label="__('When to use it')"
