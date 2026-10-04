@@ -1,4 +1,7 @@
+/* Modifications copyright (c) 2026, NPM2 Solutions Srl */
 @import 'frappe-ui/style.css';
+/* Inter cut to the Latin alphabets, over frappe-ui's whole files */
+@import './carattere.css';
 /* The editor's own rules — no outline of its own, the caret's colour, the
    placeholder, a selected picture's frame. frappe-ui imports them from its
    editor entry, but the package declares only CSS and Vue files as having side

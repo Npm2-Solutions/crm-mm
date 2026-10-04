@@ -1,0 +1,78 @@
+/* Copyright (c) 2026, NPM2 Solutions Srl and contributors
+   For license information, please see license.txt */
+
+/* DottorCloud's typeface, Inter, as frappe-ui draws it (the same axes, weight
+   and optical size, and the same features), cut to the Latin alphabets and the
+   signs its words use (assets/fonts/README.md): 131 KB instead of 264, which a
+   phone downloaded the first time it opened the app or a patient the area.
+   Declared after frappe-ui's faces of the same names, these are the first a
+   browser looks in for these characters (CSS Fonts 4: the last face defined
+   wins where unicode-ranges overlap); a Greek, Cyrillic or Vietnamese letter
+   still falls to frappe-ui's whole file, downloaded only when one is drawn. */
+@font-face {
+  font-family: 'InterVar';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  src:
+    url('./assets/fonts/Inter-latino.var.woff2') format('woff2-variations'),
+    url('./assets/fonts/Inter-latino.var.woff2') format('woff2');
+  src: url('./assets/fonts/Inter-latino.var.woff2') format('woff2')
+    tech('variations');
+  unicode-range: U+0000-024F, U+0259, U+02B9-02DD, U+0300-036F, U+1E9E,
+    U+2000-206F, U+2070-209F, U+20A0-20CF, U+2116, U+2122, U+2126, U+2190-21FF,
+    U+2212, U+2215, U+221E, U+2248, U+2260, U+2264, U+2265, U+22EE, U+22EF,
+    U+2318, U+23CE, U+24D8, U+25CB, U+25CF, U+2713, U+2715, U+2717, U+FB01,
+    U+FB02, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'InterVar';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: italic;
+  src:
+    url('./assets/fonts/Inter-Italic-latino.var.woff2')
+      format('woff2-variations'),
+    url('./assets/fonts/Inter-Italic-latino.var.woff2') format('woff2');
+  src: url('./assets/fonts/Inter-Italic-latino.var.woff2') format('woff2')
+    tech('variations');
+  unicode-range: U+0000-024F, U+0259, U+02B9-02DD, U+0300-036F, U+1E9E,
+    U+2000-206F, U+2070-209F, U+20A0-20CF, U+2116, U+2122, U+2126, U+2190-21FF,
+    U+2212, U+2215, U+221E, U+2248, U+2260, U+2264, U+2265, U+22EE, U+22EF,
+    U+2318, U+23CE, U+24D8, U+25CB, U+25CF, U+2713, U+2715, U+2717, U+FB01,
+    U+FB02, U+FEFF, U+FFFD;
+}
+/* frappe-ui names the same faces 'Inter' too */
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  src:
+    url('./assets/fonts/Inter-latino.var.woff2') format('woff2-variations'),
+    url('./assets/fonts/Inter-latino.var.woff2') format('woff2');
+  src: url('./assets/fonts/Inter-latino.var.woff2') format('woff2')
+    tech('variations');
+  unicode-range: U+0000-024F, U+0259, U+02B9-02DD, U+0300-036F, U+1E9E,
+    U+2000-206F, U+2070-209F, U+20A0-20CF, U+2116, U+2122, U+2126, U+2190-21FF,
+    U+2212, U+2215, U+221E, U+2248, U+2260, U+2264, U+2265, U+22EE, U+22EF,
+    U+2318, U+23CE, U+24D8, U+25CB, U+25CF, U+2713, U+2715, U+2717, U+FB01,
+    U+FB02, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: italic;
+  src:
+    url('./assets/fonts/Inter-Italic-latino.var.woff2')
+      format('woff2-variations'),
+    url('./assets/fonts/Inter-Italic-latino.var.woff2') format('woff2');
+  src: url('./assets/fonts/Inter-Italic-latino.var.woff2') format('woff2')
+    tech('variations');
+  unicode-range: U+0000-024F, U+0259, U+02B9-02DD, U+0300-036F, U+1E9E,
+    U+2000-206F, U+2070-209F, U+20A0-20CF, U+2116, U+2122, U+2126, U+2190-21FF,
+    U+2212, U+2215, U+221E, U+2248, U+2260, U+2264, U+2265, U+22EE, U+22EF,
+    U+2318, U+23CE, U+24D8, U+25CB, U+25CF, U+2713, U+2715, U+2717, U+FB01,
+    U+FB02, U+FEFF, U+FFFD;
+}
