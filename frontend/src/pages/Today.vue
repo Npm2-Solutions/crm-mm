@@ -78,7 +78,7 @@
               :canMark="appointment.can_mark"
               :past="giornoPassato"
               :now="now"
-              @changed="day.reload()"
+              @changed="ricarica"
             />
           </div>
         </div>
@@ -144,7 +144,19 @@
                 :canMark="appointment.can_mark"
                 :past="giornoPassato"
                 :now="now"
-                @changed="day.reload()"
+                @changed="ricarica"
+              />
+              <!-- they came and it is not invoiced yet: the invoice from here,
+                   not from the list of the last two weeks in Invoices -->
+              <Button
+                v-if="daFatturare(appointment)"
+                variant="solid"
+                :label="__('Invoice it')"
+                icon-left="file-text"
+                :size="isMobileView ? 'lg' : 'sm'"
+                class="mt-1 self-start max-md:w-full"
+                :loading="emettendo === appointment.name"
+                @click="fattura(appointment)"
               />
             </div>
           </div>
@@ -192,7 +204,7 @@
                 :canMark="appointment.can_mark"
                 :past="true"
                 :now="now"
-                @changed="day.reload()"
+                @changed="ricarica"
               />
             </template>
           </div>
@@ -232,6 +244,8 @@ import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { isMobileView } from '@/composables/breakpoints'
+import { useFattura } from '@/composables/fattura'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { laSeduta } from '@/utils/cicli'
@@ -269,6 +283,32 @@ watch(
   () => day.data?.can_invoice,
   (can) => can && !toInvoice.data && toInvoice.fetch(),
 )
+const nonFatturati = computed(
+  () => new Set((toInvoice.data || []).map((incontro) => incontro.name)),
+)
+// somebody came, and no invoice was made for it
+function daFatturare(appointment) {
+  return (
+    nonFatturati.value.has(appointment.name) &&
+    appointment.participants.some((p) => p.status === 'Attended')
+  )
+}
+const { fatturaDellIncontro } = useFattura()
+const emettendo = ref('')
+async function fattura(appointment) {
+  emettendo.value = appointment.name
+  try {
+    await fatturaDellIncontro(appointment.name, { alCambio: ricarica })
+  } finally {
+    emettendo.value = ''
+  }
+}
+
+// an outcome given or an invoice made: the day, and what is left to invoice
+function ricarica() {
+  day.reload()
+  if (toInvoice.data) toInvoice.reload()
+}
 
 // the waiting times move, and a colleague may check somebody in from another desk
 const timer = setInterval(() => {

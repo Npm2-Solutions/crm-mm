@@ -596,7 +596,11 @@ Con il tocco, come in un'app:
   d'attesa, e l'attesa si conta sull'orologio del centro. Accanto a
   «Presente» c'era «Annulla», che in accoglienza si leggeva come annullare
   l'appuntamento. Ora dice cosa toglie: «Annulla l'arrivo», o «Annulla
-  l'esito» dopo «Presente» o «Assente».
+  l'esito» dopo «Presente» o «Assente». Dopo «Presente» la fattura era in
+  Fatture, in mezzo agli appuntamenti delle ultime due settimane: ora
+  «Emetti la fattura» sta sull'appuntamento stesso, finché non è fatturato,
+  e apre la fattura già compilata (`useFattura().fatturaDellIncontro`, la
+  stessa strada della pagina Fatture).
 - **Un documento fotografato, provato davvero.** Dai Documenti della persona,
   «Aggiungi un documento» apre il foglio, e «Scegli il file» lascia al
   telefono la scelta tra fotocamera, foto e file. Il tipo partiva da «Modulo
