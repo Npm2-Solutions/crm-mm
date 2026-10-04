@@ -43302,3 +43302,52 @@ msgstr "Scegli qui sotto il nuovo orario."
 #: crm/www/book.html
 msgid "Rescheduled! A new confirmation email is on its way."
 msgstr "Spostata! Ti arriva una nuova email di conferma."
+
+#: frontend/src/components/IconPicker.vue
+msgid "More reactions"
+msgstr "Altre reazioni"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Smileys & Emotion"
+msgstr "Faccine ed emozioni"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "People & Body"
+msgstr "Persone e corpo"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Animals & Nature"
+msgstr "Animali e natura"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Food & Drink"
+msgstr "Cibo e bevande"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Travel & Places"
+msgstr "Viaggi e luoghi"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Activities"
+msgstr "Attività"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Objects"
+msgstr "Oggetti"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Symbols"
+msgstr "Simboli"
+
+#: frontend/src/components/IconPicker.vue
+msgctxt "Emoji group"
+msgid "Flags"
+msgstr "Bandiere"

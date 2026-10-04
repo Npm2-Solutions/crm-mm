@@ -9,28 +9,42 @@
       </slot>
     </template>
     <template #body="{ togglePopover }">
+      <!--
+        The six quick reactions, each a button the size of what it shows: they
+        were 20px boxes round a 24px emoji, and on a phone a finger took the one
+        beside it. Where nothing hovers each is 40px.
+      -->
       <div
         v-if="reaction"
-        class="px-2 py-1 flex items-center justify-center gap-2 rounded-full bg-surface-elevation-2 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="flex items-center justify-center gap-1 rounded-full bg-surface-elevation-2 px-1.5 py-1 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none [@media(hover:none)]:gap-0.5 [@media(hover:none)]:p-1"
       >
-        <div
+        <button
           v-for="r in reactionEmojis"
           :key="r"
-          class="size-5 cursor-pointer rounded-full bg-transparent text-2xl"
+          class="grid size-8 place-items-center rounded-full text-2xl leading-none hover:bg-surface-gray-2 [@media(hover:none)]:size-10 [@media(hover:none)]:active:bg-surface-gray-3"
           @click="() => (emoji = r) && togglePopover()"
         >
-          <button>
-            {{ r }}
-          </button>
-        </div>
+          {{ r }}
+        </button>
         <Button
-          class="rounded-full"
+          class="rounded-full [@media(hover:none)]:!size-10"
           icon="lucide-plus"
+          :aria-label="__('More reactions')"
           @click.stop="() => (reaction = false)"
         />
       </div>
-      <div v-else class="my-3 max-w-max transform bg-surface-base px-4 sm:px-0">
+      <!--
+        On a phone the whole picker is a sheet from the bottom (`data-foglio`,
+        telefono.css), eight 40px columns across the screen (the style below):
+        as a box of twelve columns it was 440px wide, off a 360px screen on both
+        sides with its search field above the top.
+      -->
+      <div
+        v-else
+        class="tutte my-3 max-w-max transform bg-surface-base px-4 sm:px-0"
+      >
         <div
+          data-foglio
           class="relative max-h-96 pb-3 overflow-y-auto min-w-40 rounded-lg bg-surface-elevation-2 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
         >
           <div class="flex gap-2 px-3 pb-1 pt-3">
@@ -44,14 +58,14 @@
             </div>
             <Button @click="setRandom">{{ __('Random') }}</Button>
           </div>
-          <div class="w-96"></div>
+          <div class="spazio w-96"></div>
           <div v-for="(emojis, group) in emojiGroups" :key="group" class="px-3">
             <div
               class="sticky top-0 bg-surface-elevation-2 pb-2 pt-3 text-sm text-ink-gray-7"
             >
-              {{ group }}
+              {{ nomeDelGruppo(group) }}
             </div>
-            <div class="grid w-96 grid-cols-12 place-items-center">
+            <div class="griglia grid w-96 grid-cols-12 place-items-center">
               <button
                 v-for="_emoji in emojis"
                 :key="_emoji.description"
@@ -89,6 +103,24 @@ const emoji = defineModel({ type: String, default: '' })
 const reaction = defineModel('reaction', { type: Boolean })
 
 const reactionEmojis = ref(['👍', '❤️', '😂', '😮', '😢', '🙏'])
+
+// gemoji's groups, in the reader's language: they were drawn as gemoji names
+// them, «Smileys & Emotion» on an Italian screen
+function nomeDelGruppo(gruppo) {
+  const nomi = {
+    'Smileys & Emotion': __('Smileys & Emotion', null, 'Emoji group'),
+    'People & Body': __('People & Body', null, 'Emoji group'),
+    'Animals & Nature': __('Animals & Nature', null, 'Emoji group'),
+    'Food & Drink': __('Food & Drink', null, 'Emoji group'),
+    'Travel & Places': __('Travel & Places', null, 'Emoji group'),
+    Activities: __('Activities', null, 'Emoji group'),
+    Objects: __('Objects', null, 'Emoji group'),
+    Symbols: __('Symbols', null, 'Emoji group'),
+    Flags: __('Flags', null, 'Emoji group'),
+    'No results': __('No results'),
+  }
+  return nomi[gruppo] || gruppo
+}
 
 const emojiGroups = computed(() => {
   let groups = {}
@@ -129,3 +161,28 @@ function randomInt(min, max) {
 
 defineExpose({ setRandom })
 </script>
+
+<style scoped>
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  .tutte {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tutte > [data-foglio] {
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: none;
+  }
+  .spazio {
+    display: none;
+  }
+  .griglia {
+    width: 100%;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .griglia > button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+</style>
