@@ -133,11 +133,14 @@ def valido_ora(firmatario) -> bool:
 
 
 def marcatore(cfg=None):
-	"""The time-stamping authority, if the centre has one."""
+	"""The time-stamping authority, if the centre has one. Never while the demo data
+	are made: a form of the demo spends none of the stamps the centre buys."""
 	from pyhanko.sign import timestamps
 
+	from crm.demo import registro
+
 	cfg = cfg or _impostazioni()
-	if not cfg.get("tsa_url"):
+	if not cfg.get("tsa_url") or registro.raccolta() is not None:
 		return None
 	utente = cfg.get("tsa_username")
 	parola = cfg.get_password("tsa_password", raise_exception=False) if utente else None

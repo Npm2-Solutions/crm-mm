@@ -125,6 +125,17 @@ class Raccolta:
 	#: never writes a record twice
 	scritti: set[tuple[str, str]] = field(default_factory=set)
 	chiavi_scritte: set[tuple[str, str, str]] = field(default_factory=set)
+	#: the emails the part's paths would have sent, kept here instead: a demo person
+	#: reads the link or the code in theirs, as somebody would in their mailbox
+	posta: list[dict] = field(default_factory=list)
+
+
+def posta_per(indirizzo: str) -> list[dict]:
+	"""What the part being made would have sent to ``indirizzo``, the latest last."""
+	corrente = raccolta()
+	if corrente is None:
+		return []
+	return [email for email in corrente.posta if indirizzo in email["recipients"]]
 
 
 def raccolta() -> Raccolta | None:
