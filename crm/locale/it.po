@@ -42534,3 +42534,8 @@ msgstr "Voto: {0} su {1}"
 #: frontend/src/components/Settings/CalendarSettings.vue
 msgid "How long before"
 msgstr "Quanto prima"
+
+#: frontend/src/components/Activities/EmailArea.vue:42
+msgctxt "Answer a message"
+msgid "Reply"
+msgstr "Rispondi"
