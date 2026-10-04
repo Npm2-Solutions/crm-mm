@@ -632,6 +632,9 @@ row, the bar's words beside their icons).
   iPhone's installed app has no swipe back). The tab one is on, tapped again,
   takes the page to the top; a page with something open in it (a chat) says
   what it does first with `alToccoDellaScheda` (`utils/schedaAttiva.js`).
+- A box drawn as a field (what was chosen, with the × that puts the search
+  back) carries `data-campo`: `telefono.css` gives it the fields' 40px and
+  16px.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet taken by its grabber follows the finger down and closes as
