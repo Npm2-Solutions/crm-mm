@@ -33,8 +33,13 @@ def consentiti() -> list[str]:
 
 def perche_no(numero: str | None) -> str:
 	"""Why a call to ``numero`` does not leave, in the reader's words; '' when it does."""
+	from crm.demo import guardie
+
 	motivo = R.si_chiama(numero, consentiti())
-	return _(motivo) if motivo else ""
+	if motivo:
+		return _(motivo)
+	# a person of the demo data is never called
+	return guardie.perche_non_chiamare(numero)
 
 
 def numero_da_mostrare(utente: str | None, richiesto: str | None = None) -> str | None:

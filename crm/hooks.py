@@ -329,6 +329,9 @@ override_doctype_class = {
 	"Email Template": "crm.overrides.email_template.CustomEmailTemplate",
 	# somebody's own mailbox brings only the centre's emails (crm.posta.personale)
 	"Email Account": "crm.overrides.email_account.CasellaDiDottorCloud",
+	# a person of the demo data is never written to (crm.demo.guardie); only where
+	# the WhatsApp app is, as the doctype is
+	"WhatsApp Message": "crm.demo.whatsapp.MessaggioWhatsApp",
 }
 
 # Document Events
@@ -339,6 +342,12 @@ doc_events = {
 	# Read only writes nothing, not even what is shared with it for writing
 	"*": {
 		"validate": ["crm.permissions.documenti.sola_lettura_al_salvataggio"],
+		# while the demo data are made, every record is written down (crm.demo)
+		"after_insert": ["crm.demo.registro.annota"],
+	},
+	# an email to a person of the demo data is never sent (crm.demo.guardie)
+	"Email Queue": {
+		"before_insert": ["crm.demo.guardie.posta_in_coda"],
 	},
 	# conditions written in Python are the agency's: the server writes the others
 	# from the guided conditions, before anything evaluates them
