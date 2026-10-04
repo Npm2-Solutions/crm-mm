@@ -6,7 +6,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import dayjs from 'dayjs/esm'
-import 'dayjs/esm/locale/it'
 import {
   FILE,
   FILE_FRAPPE,
@@ -39,14 +38,12 @@ function nomi(lang) {
   return new Function(`${NOMI}; return { nomiDeiMesi, nomiDeiGiorni }`)()
 }
 
-// the date picker's names, with dayjs in the language App.vue gives it
-function selettore(lang, linguaDiDayjs = 'en') {
+// the date picker's names and its Monday
+function selettore(lang) {
   window.lang = lang
-  const conLingua = (...a) => dayjs(...a).locale(linguaDiDayjs)
   return new Function(
-    'dayjs',
-    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni }`,
-  )(conLingua)
+    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni, dalLunedi }`,
+  )()
 }
 
 describe('frappe-ui in the user’s language', () => {
@@ -167,18 +164,22 @@ describe('frappe-ui in the user’s language', () => {
     expect(traduciFrappeUi('x', '/src/pages/Calendar.vue')).toBe(null)
   })
 
-  it('heads the date picker’s columns with the days its grid starts from', () => {
+  it('starts the date picker’s weeks on Monday, its letters with them', () => {
     const utils = tradotto('DatePicker/utils.ts')
     expect(utils).toContain(
       'export const months: string[] = mesiDelSelettore()',
     )
+    expect(utils).toContain(
+      'const start = dalLunedi(monthStart(year, monthIndex))',
+    )
+    expect(utils).not.toContain("startOf('week')")
     expect(utils).not.toContain("'Oct'")
     expect(utils.endsWith(SELETTORE)).toBe(true)
     const pannello = tradotto('DatePicker/CalendarPanel.vue')
     expect(pannello).toContain('const WEEKDAYS = inizialiDeiGiorni()')
     expect(pannello).not.toContain("['S', 'M', 'T'")
-    // Home and End follow the week's first column
-    expect(pannello).toContain("shiftFocus(cell.date.startOf('week'), -1)")
+    // Home and End go to Monday and Sunday
+    expect(pannello).toContain('shiftFocus(dalLunedi(cell.date), -1)')
     expect(pannello).not.toContain('cell.date.day()')
     // the arrows and the grid are named in the user's language too
     expect(pannello.match(/:label="__\('Previous month'\)"/g)).toHaveLength(2)
@@ -189,15 +190,44 @@ describe('frappe-ui in the user’s language', () => {
   })
 
   it('names the picker’s months and days in Italian, from Monday', () => {
-    const { mesiDelSelettore, inizialiDeiGiorni } = selettore('it', 'it')
+    const { mesiDelSelettore, inizialiDeiGiorni, dalLunedi } = selettore('it')
     expect(mesiDelSelettore()[9]).toBe('Ott')
     expect(inizialiDeiGiorni()).toEqual(['L', 'M', 'M', 'G', 'V', 'S', 'D'])
+    // Sunday 4 October 2026 is in the week of Monday 28 September
+    expect(dalLunedi(dayjs('2026-10-04')).format('YYYY-MM-DD')).toBe(
+      '2026-09-28',
+    )
+    expect(dalLunedi(dayjs('2026-09-28')).format('YYYY-MM-DD')).toBe(
+      '2026-09-28',
+    )
   })
 
-  it('keeps the picker as it was for an English user', () => {
+  it('starts the week on Monday in English too, in English words', () => {
     const { mesiDelSelettore, inizialiDeiGiorni } = selettore('en')
     expect(mesiDelSelettore()[9]).toBe('Oct')
-    expect(inizialiDeiGiorni()).toEqual(['S', 'M', 'T', 'W', 'T', 'F', 'S'])
+    expect(inizialiDeiGiorni()).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+  })
+
+  it('says how many more events a day holds in the user’s language', () => {
+    expect(tradotto('Calendar/ShowMoreCalendarEvent.vue')).toContain(
+      "{{ __('{0} more', [totalEventsCount - 2]) }}",
+    )
+    expect(tradotto('Calendar/CalendarWeekly.vue')).not.toContain("+ ' more'")
+    expect(tradotto('Calendar/CalendarDaily.vue')).not.toContain("+ ' more'")
+  })
+
+  it('starts the agenda’s weeks on Monday, in the month and the week', () => {
+    const utili = tradotto('Calendar/calendarUtils.ts')
+    expect(utili).toContain('let leftPadding = (firstDay.getDay() + 6) % 7')
+    const mese = tradotto('Calendar/CalendarMonthly.vue')
+    expect(mese).toContain('v-for="day in [...daysList.slice(1), daysList[0]]"')
+    const evento = tradotto('Calendar/CalendarWeekDayEvent.vue')
+    expect(evento).toContain(
+      'const leftBoundary = (currentDate.getDay() + 6) % 7',
+    )
+    expect(evento).toContain(
+      'const rightBoundary = 6 - ((currentDate.getDay() + 6) % 7)',
+    )
   })
 
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
