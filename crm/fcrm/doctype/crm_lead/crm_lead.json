@@ -842,7 +842,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 21:00:00.000000",
+ "modified": "2026-10-04 00:30:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",
@@ -894,6 +894,7 @@
   }
  ],
  "row_format": "Dynamic",
+ "search_fields": "mobile_no,email",
  "sender_field": "email",
  "sender_name_field": "first_name",
  "show_title_field_in_link": 1,

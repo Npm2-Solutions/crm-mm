@@ -34,8 +34,10 @@
 
       <template #item-label="{ active, selected, option }">
         <slot name="item-label" v-bind="{ active, selected, option }">
+          <!-- the name as in a row without a line under it: in bold, a list
+               of people read in two weights, the ones without a number lighter -->
           <div v-if="option.description" class="flex flex-col gap-1">
-            <div class="flex-1 font-semibold truncate text-ink-gray-7">
+            <div class="flex-1 truncate text-ink-gray-7">
               {{ option.label }}
             </div>
             <div class="flex-1 text-sm truncate text-ink-gray-5">
