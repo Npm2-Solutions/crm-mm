@@ -25325,7 +25325,7 @@ msgstr "Da rispondere ancora: {0}"
 
 #: frontend/src/components/Settings/Forms/PaperFormDialog.vue
 msgid "Still to put right in the builder"
-msgstr "Ancora da sistemare nel builder"
+msgstr "Ancora da sistemare nell'editor del modulo"
 
 #: frontend/src/pages/Today.vue
 msgid "Still without an outcome"
@@ -26460,7 +26460,7 @@ msgstr "L'assistente propone ricette fatte con gli alimenti della libreria. I gr
 
 #: frontend/src/components/Settings/Forms/PaperFormDialog.vue
 msgid "The assistant reads the PDF and proposes the fields, with the words of the paper. You check them here and in the builder: nothing is published by the assistant."
-msgstr "L'assistente legge il PDF e propone i campi, con le parole del modulo cartaceo. Li controlli qui e nel builder: l'assistente non pubblica niente."
+msgstr "L'assistente legge il PDF e propone i campi, con le parole del modulo cartaceo. Li controlli qui e nell'editor del modulo: l'assistente non pubblica niente."
 
 #: crm/assistente/doctype/crm_ai_event/crm_ai_event.py
 msgid "The assistant's register is kept: an event is not deleted"

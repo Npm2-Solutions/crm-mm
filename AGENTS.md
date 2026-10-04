@@ -517,6 +517,8 @@ What a rule without a site says is wrong - a `Problema` (plans, programmes,
 quotes, teeth, foods) or an `Errore` (the forms' schema) - is English translated
 when it is said (`testo(_)`); the catalog's extraction never sees it, so its
 Italian goes in `it.po` by hand: `crm/tests/test_frasi_delle_regole.py` checks.
+The same for a word a pure helper hands to the translator it is given
+(`t('1 month')` in `src/utils`): `tests/unit/paroleDaTradurre.test.js` checks.
 
 ### The brand
 | File | Role |
@@ -714,7 +716,9 @@ row, the bar's words beside their icons).
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
   setting's words above, its field under them as wide as the screen, a switch
   beside its words; a page's save bar is the screen's bar, its button as wide
-  as it. A page's fields wait for the settings they read (`v-if="settings.doc"`).
+  as it: a page's own action («Update», «Save») is `AzioneImpostazioni`, beside
+  the title on a desk, in the bar at the bottom of the settings on a phone. A
+  page's fields wait for the settings they read (`v-if="settings.doc"`).
 - Text never wears the palest inks (`ink-*-4`): warnings take the 7th step.
 - A table one writes in (a quote's rows) is a card per row on a phone; a table
   one only reads keeps its columns and scrolls sideways.
@@ -778,7 +782,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1164 tests · ~15s** — all must pass before committing
+- **1166 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
