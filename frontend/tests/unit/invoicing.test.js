@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 import { describe, expect, it } from 'vitest'
 import {
   statusLabel,
@@ -33,7 +36,12 @@ describe('statusLabel', () => {
     expect(statusLabel('da_inviare')).toBe('Da inviare')
     expect(statusLabel('mancata_consegna')).toBe('Mancata consegna')
     expect(statusLabel('scartata')).toBe('Scartata')
-    expect(statusLabel('pronto_export')).toBe('Pronto export')
+  })
+
+  it('says what is left to do for the states that are ours, and keeps an acronym', () => {
+    // in the file prepared for the Sistema TS portal, waiting to be uploaded
+    expect(statusLabel('pronto_export')).toBe('Nel file da caricare')
+    expect(statusLabel('esito_pa')).toBe('Esito PA')
   })
 
   it('has nothing to say about nothing', () => {

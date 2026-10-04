@@ -515,9 +515,11 @@ const altro = computed(() => [
     onClick: () => openWebsite(doc.value.website),
   },
   {
-    label: __('Copy the code'),
-    icon: 'copy',
-    onClick: () => copyToClipboard(props.leadId),
+    // the page's address, to send a colleague: its code said nothing to anybody
+    label: __('Copy the link'),
+    icon: 'link',
+    onClick: () =>
+      copyToClipboard(window.location.origin + window.location.pathname),
   },
   canDelete.value && {
     label: __('Delete'),

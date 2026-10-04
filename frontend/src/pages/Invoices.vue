@@ -320,10 +320,15 @@
               class="flex flex-col gap-3 rounded-xl border border-outline-gray-2 px-5 py-4"
             >
               <div class="flex items-center justify-between gap-3">
-                <span class="text-p-base-medium text-ink-gray-8">
+                <span
+                  class="whitespace-nowrap text-p-base-medium text-ink-gray-8"
+                >
                   {{ __('Year {0}', [year]) }}
                 </span>
+                <!-- as wide as a year: on a phone it took the row and the
+                     title went on two lines, «Anno» over «2026» -->
                 <FormControl
+                  class="w-28 shrink-0"
                   type="select"
                   :modelValue="String(year)"
                   :options="yearOptions"

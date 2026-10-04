@@ -9518,7 +9518,7 @@ msgstr "Elty"
 #. Label of the email (Data) field in DocType 'CRM Invitation'
 #. Label of the email (Data) field in DocType 'CRM Lead'
 msgid "Email"
-msgstr "E-mail"
+msgstr "Email"
 
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:67
 msgid "Email Account"
@@ -9642,7 +9642,7 @@ msgstr "Invia un'email al professionista"
 #: frontend/src/pages/Deal.vue:566 frontend/src/pages/Lead.vue:418
 #: frontend/src/pages/MobileDeal.vue:442 frontend/src/pages/MobileLead.vue:290
 msgid "Emails"
-msgstr "E-mail"
+msgstr "Email"
 
 #: frontend/src/components/Settings/Profile/ProfileSettings.vue:96
 msgid "Emails & Signature"
@@ -16302,7 +16302,7 @@ msgstr "Nuova trattativa"
 
 #: frontend/src/components/Activities/ActivityHeader.vue:12
 msgid "New Email"
-msgstr "Nuova E-mail"
+msgstr "Nuova email"
 
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:674
 msgid "New Event"
@@ -25880,7 +25880,7 @@ msgstr "Obiettivi di una giornata"
 #: frontend/src/components/Activities/ActivityHeader.vue:152
 #: frontend/src/components/Layouts/AppSidebar.vue:585
 msgid "Task"
-msgstr "Attività"
+msgstr "Cosa da fare"
 
 #: crm/fcrm/doctype/crm_automation/crm_automation.json
 msgid "Task Completed"
@@ -33481,10 +33481,6 @@ msgstr "proposta da {0}"
 msgid "offered to {0} already"
 msgstr "già proposto a {0}"
 
-#: frontend/src/components/Waiting/WaitingDialog.vue
-msgid "offers by {0}"
-msgstr "proposte via {0}"
-
 #: crm/api/activities.py:109 crm/api/activities.py:250
 msgid "old_value"
 msgstr ""
@@ -40360,10 +40356,6 @@ msgstr "Cliente dal {0}"
 msgid "Last visit {0}"
 msgstr "Ultima visita il {0}"
 
-#: frontend/src/pages/Lead.vue
-msgid "Copy the code"
-msgstr "Copia il codice"
-
 #: frontend/src/components/PersonHeader.vue
 msgid "Next appointment"
 msgstr "Prossimo appuntamento"
@@ -42575,3 +42567,15 @@ msgstr "Vuoi davvero eliminare questo documento?"
 #: frontend/src/components/DeleteLinkedDocModal.vue
 msgid "Before deleting {0}, delete or unlink these linked documents"
 msgstr "Prima di eliminare {0}, elimina o scollega questi documenti collegati"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "offers by email"
+msgstr "proposte via email"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "offers on WhatsApp"
+msgstr "proposte su WhatsApp"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "offers by SMS"
+msgstr "proposte via SMS"

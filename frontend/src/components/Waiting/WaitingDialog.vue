@@ -550,7 +550,13 @@ const facts = computed(() => {
       ? __('until {0}', [formatDate(entry.until, 'D MMM YYYY')])
       : __('with no last day'),
   )
-  parts.push(__('offers by {0}', [__(entry.channel)]))
+  // a sentence per channel: «Email» glued into one read «proposte via Email»
+  const proposte = {
+    Email: () => __('offers by email'),
+    WhatsApp: () => __('offers on WhatsApp'),
+    SMS: () => __('offers by SMS'),
+  }[entry.channel]
+  if (proposte) parts.push(proposte())
   // where they go, when the person gave them joining
   const to =
     entry.channel === 'Email' ? entry.email : entry.phone || entry.email
