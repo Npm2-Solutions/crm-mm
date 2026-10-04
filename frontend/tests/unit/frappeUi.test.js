@@ -326,6 +326,10 @@ describe('frappe-ui in the user’s language', () => {
     )
     const calendario = tradotto('DatePicker/CalendarPanel.vue')
     expect(calendario).not.toContain('cycle-calendar-view')
+    expect(tradotto('InputLabeling/RequiredIndicator.vue')).toContain(
+      `{{ __('(required)') }}`,
+    )
+    expect(tradotto('Menu/Menu.vue')).toContain(`{{ __('No options') }}`)
   })
 
   it('mounts a dialog and a menu’s content at their first opening', () => {

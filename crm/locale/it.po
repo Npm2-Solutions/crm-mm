@@ -42787,3 +42787,7 @@ msgstr "Medio-bassa"
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue
 msgid "Medium-High"
 msgstr "Medio-alta"
+
+#: frontend/vite/frappeUi.js
+msgid "(required)"
+msgstr "(obbligatorio)"
