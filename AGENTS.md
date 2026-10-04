@@ -283,7 +283,8 @@ codes nor the tracciato's names (`tipoSpesa`). What is stored stays the code.
 A register a module ships goes in with `spedito=True`: what the practice wrote in
 its register always answers first. A new record on a settings screen starts from
 the DocType's defaults (`DocFields`), never from a copy of them in the page.
-An invoice is opened with `useFattura()` (`apriFattura(name)`, `nuovaFattura()`),
+An invoice is opened with `useFattura()` (`apriFattura(name)`, `nuovaFattura()`;
+something that proposes one, an appointment, passes `{ bozza }`),
 never `/app/crm-invoice`; a sentence of the engine with a value in it is a
 `Messaggio` (an SdI finding a `Rilievo`), never an f-string, and its English is
 in `it.po` by hand: `crm/tests/test_frasi_del_motore.py` checks both.
