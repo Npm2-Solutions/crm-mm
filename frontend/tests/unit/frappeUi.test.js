@@ -250,6 +250,16 @@ describe('frappe-ui in the user’s language', () => {
     ])
   })
 
+  it('names a dialog by its first heading, and says «Close» in the user’s language', () => {
+    const finestra = tradotto('Dialog/Dialog.vue')
+    expect(finestra).not.toContain('label="Close"')
+    expect(finestra).toContain(`:label="__('Close')"`)
+    expect(finestra).toContain('function nominaLaFinestra(')
+    expect(finestra).toContain(
+      'nominaLaFinestra(event.target as HTMLElement | null, resolved.value.title)',
+    )
+  })
+
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
     expect(() =>
       traduciFrappeUi(

@@ -301,6 +301,33 @@ function senzaIlNome(tutti: Record<string, unknown>) {
 }`,
     ],
   ],
+  // the dialog, named. One that draws its own body (`#body`, `#body-header`)
+  // has no DialogTitle, and VoiceOver read «dialog» and nothing else: its
+  // first heading names it, else the title it was given. Its close button
+  // said «Close» in English to a screen reader.
+  'Dialog/Dialog.vue': [
+    [/label="Close"/g, `:label="__('Close')"`],
+    [
+      'function handleOpenAutoFocus(event: Event) {',
+      `// DottorCloud (frontend/vite/frappeUi.js): the dialog's name
+function nominaLaFinestra(finestra: HTMLElement | null, titolo?: string) {
+  if (!finestra) return
+  const per = finestra.getAttribute('aria-labelledby')
+  if (per && document.getElementById(per)?.textContent?.trim()) return
+  const intestazione = finestra.querySelector('h1, h2, h3, h4') as HTMLElement | null
+  if (intestazione?.textContent?.trim()) {
+    if (!intestazione.id) intestazione.id = (finestra.id || 'finestra') + '-intestazione'
+    finestra.setAttribute('aria-labelledby', intestazione.id)
+  } else if (titolo) {
+    finestra.removeAttribute('aria-labelledby')
+    finestra.setAttribute('aria-label', titolo)
+  }
+}
+
+function handleOpenAutoFocus(event: Event) {
+  nominaLaFinestra(event.target as HTMLElement | null, resolved.value.title)`,
+    ],
+  ],
 }
 
 // frappe-ui/frappe: the data import pages, written with no translator at all
