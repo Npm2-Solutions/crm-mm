@@ -520,8 +520,14 @@
     width: 100% !important;
   }
   /* over a sheet a toast comes from the top: at the bottom it covered the
-     sheet's own buttons */
-  body:has(.dialog-content[data-state='open'])
+     sheet's own buttons. The sheet is found down the path frappe-ui's dialog
+     always takes (body > its scroll container > a wrapper > the dialog):
+     `body:has(.dialog-content…)` looked through the whole page, 9,000
+     elements on a person, at every `data-state` that changed anywhere - a
+     tab, a menu, a tooltip -: 50 ms more to open a menu on a slow phone */
+  body:has(
+      > .dialog-scroll-container > div > .dialog-content[data-state='open']
+    )
     [data-sonner-toaster][data-y-position='bottom'] {
     top: max(0.75rem, env(safe-area-inset-top, 0px)) !important;
     bottom: auto !important;
@@ -529,7 +535,9 @@
   /* and each toast hangs from its top, as a top toaster's: hung from its
      bottom it stood above the screen, only its last line in sight. It comes
      down from above, and a second one goes below it. */
-  body:has(.dialog-content[data-state='open'])
+  body:has(
+      > .dialog-scroll-container > div > .dialog-content[data-state='open']
+    )
     [data-sonner-toaster][data-y-position='bottom']
     [data-sonner-toast] {
     top: 0;
@@ -537,7 +545,9 @@
     --lift: 1;
     --lift-amount: var(--gap);
   }
-  body:has(.dialog-content[data-state='open'])
+  body:has(
+      > .dialog-scroll-container > div > .dialog-content[data-state='open']
+    )
     [data-sonner-toaster][data-y-position='bottom']
     [data-sonner-toast]:not([data-mounted='true']) {
     --y: translateY(-100%);
