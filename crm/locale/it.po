@@ -42425,3 +42425,11 @@ msgstr "Annulla l'appuntamento"
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "Appointment cancelled"
 msgstr "Appuntamento annullato"
+
+#: frontend/src/components/Today/ParticipantRow.vue
+msgid "Undo the check-in"
+msgstr "Annulla l'arrivo"
+
+#: frontend/src/components/Today/ParticipantRow.vue
+msgid "Undo the outcome"
+msgstr "Annulla l'esito"
