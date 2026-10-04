@@ -375,15 +375,23 @@ def _with_attribution(layout: str, doctype: str) -> str:
 	return json.dumps(parsed)
 
 
+# A person's rows are sections of their own - title, name, surname; mobile,
+# email, gender - one field per column: a phone reads a section column by column,
+# and three columns of two read «Title, Email, Name, Mobile, Surname»
+# (`crm.patches.v1_0.the_quick_entry_reads_by_rows`)
+LEAD_QUICK_ENTRY = '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation"]}, {"name": "column_5CPV", "fields": ["first_name"]}, {"name": "column_gXOy", "fields": ["last_name"]}]}, {"name": "person_contacts_section", "hideBorder": true, "columns": [{"name": "column_Mb7q", "fields": ["mobile_no"]}, {"name": "column_Em2w", "fields": ["email"]}, {"name": "column_Gn4z", "fields": ["gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "lead_section", "columns": [{"name": "column_RWBe", "fields": ["lead_owner"]}]}]'
+DEAL_QUICK_ENTRY = '[{"name": "organization_section", "hidden": true, "editable": false, "columns": [{"name": "column_GpMP", "fields": ["organization"]}, {"name": "column_FPTn", "fields": []}]}, {"name": "organization_details_section", "editable": false, "columns": [{"name": "column_S3tQ", "fields": ["organization_name", "territory"]}, {"name": "column_KqV1", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_1r67", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "contact_section", "hidden": true, "editable": false, "columns": [{"name": "column_CeXr", "fields": ["contact"]}, {"name": "column_yHbk", "fields": []}]}, {"name": "contact_details_section", "editable": false, "columns": [{"name": "column_ZTWr", "fields": ["salutation"]}, {"name": "column_tabr", "fields": ["first_name"]}, {"name": "column_Qjdx", "fields": ["last_name"]}]}, {"name": "contact_details_more_section", "editable": false, "hideBorder": true, "columns": [{"name": "column_Kp3m", "fields": ["mobile_no"]}, {"name": "column_Rv8s", "fields": ["email"]}, {"name": "column_Wd5n", "fields": ["gender"]}]}, {"name": "deal_section", "columns": [{"name": "column_mdps", "fields": ["pipeline", "status"]}, {"name": "column_H40H", "fields": ["deal_owner"]}]}]'
+
+
 def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation", "email"]}, {"name": "column_5CPV", "fields": ["first_name", "mobile_no"]}, {"name": "column_gXOy", "fields": ["last_name", "gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "lead_section", "columns": [{"name": "column_RWBe", "fields": ["lead_owner"]}]}]',
+			"layout": LEAD_QUICK_ENTRY,
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name": "organization_section", "hidden": true, "editable": false, "columns": [{"name": "column_GpMP", "fields": ["organization"]}, {"name": "column_FPTn", "fields": []}]}, {"name": "organization_details_section", "editable": false, "columns": [{"name": "column_S3tQ", "fields": ["organization_name", "territory"]}, {"name": "column_KqV1", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_1r67", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "contact_section", "hidden": true, "editable": false, "columns": [{"name": "column_CeXr", "fields": ["contact"]}, {"name": "column_yHbk", "fields": []}]}, {"name": "contact_details_section", "editable": false, "columns": [{"name": "column_ZTWr", "fields": ["salutation", "email"]}, {"name": "column_tabr", "fields": ["first_name", "mobile_no"]}, {"name": "column_Qjdx", "fields": ["last_name", "gender"]}]}, {"name": "deal_section", "columns": [{"name": "column_mdps", "fields": ["pipeline", "status"]}, {"name": "column_H40H", "fields": ["deal_owner"]}]}]',
+			"layout": DEAL_QUICK_ENTRY,
 		},
 		"Contact-Quick Entry": {
 			"doctype": "Contact",
