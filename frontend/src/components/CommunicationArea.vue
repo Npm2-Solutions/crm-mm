@@ -24,6 +24,7 @@
     @keydown.meta.enter.capture.stop="submitEmail"
   >
     <EmailEditor
+      v-if="emailMontata"
       ref="newEmailEditor"
       v-model:content="newEmail"
       v-model="doc"
@@ -66,6 +67,7 @@
     @keydown.meta.enter.capture.stop="submitComment"
   >
     <CommentBox
+      v-if="notaMontata"
       ref="newCommentEditor"
       v-model:content="newComment"
       v-model="doc"
@@ -98,6 +100,7 @@ import { usersStore } from '@/stores/users'
 import { getSettings } from '@/stores/settings'
 import { nomeDelCentro } from '@/utils/marchio'
 import { markAnswered } from '@/composables/conversationState'
+import { apertoUnaVolta } from '@/utils/aRichiesta'
 import { useDraft } from '@/composables/drafts'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { call, createResource, toast } from 'frappe-ui'
@@ -139,6 +142,11 @@ const attachments = kept('attachments', [], FILES)
 const commentAttachments = kept('commentAttachments', [], FILES)
 const newEmailEditor = ref(null)
 const newCommentEditor = ref(null)
+// Each box from the first time its way is open, and kept afterwards. Both
+// were made with the person's page: two text editors, a second one for a note
+// nobody might write, a tenth of the time a slow phone took to open a person.
+const emailMontata = apertoUnaVolta(() => props.way === 'email')
+const notaMontata = apertoUnaVolta(() => props.way === 'comment')
 
 // The centre's name, once there is a record to write from: it is what the
 // person reads in their inbox. Never the record's code, as it was («Mario Rossi
@@ -404,9 +412,15 @@ function open(which = props.way, at = 'end') {
  * quoted and folded under a line to write on — keeping whatever had already
  * been written.
  */
-function reply(email, all = false) {
+async function reply(email, all = false) {
+  if (!email) return
+  // an answer while the note is open: the email's box comes first
+  if (!newEmailEditor.value) {
+    emit('open', 'email')
+    await nextTick()
+  }
   const editor = newEmailEditor.value
-  if (!editor || !email) return
+  if (!editor) return
   const ours = [
     getUser().email,
     ...(editor.fromOptions || []).map((option) => option.value),
