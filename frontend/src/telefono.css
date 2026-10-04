@@ -54,18 +54,19 @@
 }
 
 /* A composer's tools (WhatsApp, email, SMS, a note: `strumenti-compositore`)
-   on a phone: 40px each. They were frappe-ui's 28px buttons side by side, with
-   no room between them for a ring, and a thumb on «Attach» took «Formatting»
-   or «Send». */
+   and other icon buttons side by side (`icone-a-dito`: a conversation's
+   decisions) on a phone: 40px each. They were frappe-ui's 28px buttons side
+   by side, with no room between them for a ring, and a thumb on «Attach» took
+   «Formatting» or «Send». */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   .strumenti-compositore {
     height: 2.5rem;
   }
-  .strumenti-compositore button.w-7 {
+  :is(.strumenti-compositore, .icone-a-dito) button.w-7 {
     width: 2.5rem;
     height: 2.5rem;
   }
-  .strumenti-compositore button.w-7::after {
+  :is(.strumenti-compositore, .icone-a-dito) button.w-7::after {
     content: none;
   }
 }

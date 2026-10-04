@@ -18,7 +18,21 @@
   reading and replying, not a table you click out of.
 -->
 <template>
-  <LayoutHeader>
+  <!-- on a phone a chat open is the screen, as in WhatsApp: its own header
+       takes the page's row, beside the phone at the top right -->
+  <LayoutHeader v-if="filoSulTelefono">
+    <ConversationHeader
+      :person="current"
+      back
+      details
+      :wide="false"
+      inTestata
+      @back="back()"
+      @details="showPerson = true"
+      @changed="reload()"
+    />
+  </LayoutHeader>
+  <LayoutHeader v-else>
     <template #left-header>
       <Breadcrumbs
         :items="[
@@ -87,6 +101,7 @@
       </div>
       <template v-else>
         <ConversationHeader
+          v-if="!filoSulTelefono"
           :person="current"
           :back="isMobileView"
           :details="!roomForPanel"
@@ -325,15 +340,13 @@ const nonSiApre = computed(() =>
     : null,
 )
 
-// a chat open on a phone is the screen, as in WhatsApp: the bar at the bottom
-// steps aside for its box to write in (composables/chatAperta.js)
-useChatAperta(
-  () =>
-    isMobileView.value &&
-    Boolean(chosen.value) &&
-    leggibile.value &&
-    puo('conversazioni.usa'),
+// a chat open on a phone is the screen, as in WhatsApp: its header takes the
+// page's, and the bar at the bottom steps aside for its box to write in
+// (composables/chatAperta.js)
+const filoSulTelefono = computed(
+  () => isMobileView.value && Boolean(chosen.value) && leggibile.value,
 )
+useChatAperta(() => filoSulTelefono.value && puo('conversazioni.usa'))
 
 // On a phone the chat takes the list's place: opening one is a step forward,
 // so Android's back, and the arrow, return to the list, as in WhatsApp. On a
