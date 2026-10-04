@@ -7,9 +7,12 @@
 <html class="h-full" lang="{{ boot.lang or 'en' }}">
   <head>
     <meta charset="UTF-8" />
+    <!-- two fingers enlarge the page, as on every site: whoever sees little
+         needs it (iOS allowed it anyway). A field never zooms by itself, at
+         16px on a phone (telefono.css) -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <!-- the product's brand - the vertical's (crm.marchio), from the server:
          its name, its icons, the phone's manifest -->
