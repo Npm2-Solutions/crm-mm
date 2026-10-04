@@ -395,7 +395,13 @@ function showTask(name) {
 }
 
 function createTask(column) {
-  const defaults = { status: 'Backlog', priority: 'Low' }
+  // one's own unless given to somebody else in the sheet: made without anyone,
+  // it was nobody's, and «Mine» stayed empty as if it had not been saved
+  const defaults = {
+    status: 'Backlog',
+    priority: 'Low',
+    assigned_to: getUser().name,
+  }
 
   if (column?.column?.name) {
     let column_field = tasks.value.params.column_field
