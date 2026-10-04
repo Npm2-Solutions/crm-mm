@@ -14,7 +14,17 @@
     <link rel="icon" href="{{ marchio.favicon }}" />
     <link rel="apple-touch-icon" href="{{ marchio.touch_icon }}" />
     <link rel="manifest" href="/api/method/crm.marchio.manifest?app=area" />
-    <meta name="theme-color" content="#ffffff" />
+    <!-- the phone's bar in the area's colour, light or dark as the phone is -->
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#1d201f"
+      media="(prefers-color-scheme: dark)"
+    />
     <meta name="apple-mobile-web-app-title" content="{{ marchio.name }}" />
   </head>
   <body class="h-full bg-surface-gray-1">
