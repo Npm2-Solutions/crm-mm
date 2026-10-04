@@ -56,7 +56,8 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    meta: { richiede: DASHBOARD_CAPABILITIES },
+    // it follows `?d=` itself (App.vue keys the page on its path)
+    meta: { richiede: DASHBOARD_CAPABILITIES, segueLaQuery: true },
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
@@ -65,7 +66,8 @@ const routes = [
     // somewhere else on every click.
     path: '/conversazioni',
     name: 'Conversations',
-    meta: { richiede: 'conversazioni.usa' },
+    // it follows `?person=` itself (App.vue keys the page on its path)
+    meta: { richiede: 'conversazioni.usa', segueLaQuery: true },
     component: () => import('@/pages/Conversations.vue'),
   },
   {

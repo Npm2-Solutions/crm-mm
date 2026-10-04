@@ -19,7 +19,10 @@
       <!-- keyed on the page, not on its tab: another record is another page,
            but the hash only names the tab (or the message a notification
            opens), and the whole record was unmounted and mounted again at
-           every tab -->
+           every tab. A page that follows its query itself
+           (`meta.segueLaQuery`) is keyed on its path: the dashboard wrote
+           `?d=` when it opened and asked for everything twice, the
+           conversations rebuilt their list at every conversation chosen -->
       <router-view :key="chiaveDellaPagina" />
     </Layout>
     <Dialogs />
@@ -46,7 +49,9 @@ provide('session', session)
 
 const route = useRoute()
 const titolo = computed(() => titoloDellaPagina(route.name))
-const chiaveDellaPagina = computed(() => route.fullPath.split('#')[0])
+const chiaveDellaPagina = computed(() =>
+  route.meta.segueLaQuery ? route.path : route.fullPath.split('#')[0],
+)
 
 const { setTheme } = useTheme()
 if (!localStorage.getItem('theme')) {

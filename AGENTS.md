@@ -670,7 +670,10 @@ row, the bar's words beside their icons).
   page without its hash (`App.vue`): the hash names a tab, or the message a
   notification opens, never another page. A hash that names no tab is a
   message: it opens the conversation (`useActiveTabManager`), which lands on it
-  (`target`), an email too (its name is its `id`).
+  (`target`), an email too (its name is its `id`). A page that follows its
+  query itself (`?d=`, `?person=`) says so in its route (`meta.segueLaQuery`)
+  and is keyed on its path; the others are rebuilt when their query changes,
+  which the lists need (`ViewControls` reads `?view=` once).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet's or a page's row of actions is one row on a phone: what
