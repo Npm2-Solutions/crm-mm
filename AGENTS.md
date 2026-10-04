@@ -575,6 +575,7 @@ a 28px-high button with its words cut to one line.
 
 A module with steps of its own registers them from its `registra()`; a step is
 done by the data, never by a click, so a centre that already works sees nothing.
+The data are the centre's own: `c_e` leaves out what the demo made.
 
 ### The website (`sito/`)
 | File | Role |
@@ -595,16 +596,19 @@ the Frappe site's public pages: those belong to each centre.
 | File | Role |
 |---|---|
 | `crm/demo/registro.py` | The parts (`Parte`, `registra_parte`: a module's share, its plan module, the parts it needs) and the register (`CRM Demo Record`): every record made while a part runs, written down by the `"*"` `after_insert` (`annota`), with a key a later part finds it by (`ricorda`, `trova`); `fuori_dal_registro` for what is the product's (the new clients pipeline) |
-| `crm/demo/modo.py` | `in_prova(parte)`: the part through the screens' own code, with nothing leaving - no email, job, realtime, automation, calendar mirror, platform push, global search; committed whole, written down as it goes |
+| `crm/demo/modo.py` | `in_prova(parte)`: the part through the screens' own code, with nothing leaving - no email (kept in the part, where the demo person reads a link or a code: `registro.posta_per`), job, realtime, automation, calendar mirror, platform push, global search, time stamp (`sigillo.marcatore`); committed whole, written down as it goes |
 | `crm/demo/base.py`, `simulazione.py`, `dati.py`, `contesto.py` | The base's parts: the team (levels, qualifications, shifts), rooms and services, three months of the centre day by day through the CRM's own rules - with the cycle sold or the quote proposed at a first visit, the sessions after it joining the cycle and taking the quote's rows by themselves - companies and agreements, tasks, notes, calls; the Italian words; today in the centre's clock, the same chances every time (one seed per part) |
 | `crm/demo/abbonati.py`, `in_attesa.py`, `conversazioni.py` | The regulars' subscriptions (sold, renewed and suspended by `crm.scheduling.abbonamenti`; in a class each regular uses their own), the waiting list through its engine (`Sguardo`, `offri`, `conferma`; a full class with people waiting), the emails and - where they are on - SMS and WhatsApp, each at its moment, the conversations dealt with, waiting or parked |
+| `crm/moduli/demo.py`, `crm/documenti/demo.py` | The forms' and the documents' shares, from their modules' `registra()`: the forms published this morning and signed today through the person's own pages (the link, the code read in their email, the desk's tablet), half-way or not opened yet, the physiotherapist's sheets, the website's requests; every subscription's contract handed over, the regulars' certificates, a few online, one downloaded |
 | `crm/demo/togli.py` | Taking it away by the database: what the centre took over stays, what is about the demo goes with it whoever wrote it, then the framework's traces, the users, the files, the counters - every table counted before and after in `crm/tests/test_demo_data.py` |
-| `crm/demo/guardie.py` + `whatsapp.py` | While the demo is in, nobody is written to: email (`Email Queue` before_insert), WhatsApp, SMS (`api/sms.deliver_via_twilio`), calls (`uscita.perche_no`), notifications by email (`avvisa`), the public booking page (`service_booking`); and nothing real lands on a demo person: a message or call from a number one of them has too goes to the real person (`persona_vera`, in `integrations/api.py` and Twilio's `link`) |
+| `crm/demo/guardie.py` + `whatsapp.py` | While the demo is in, nobody is written to: email (`Email Queue` before_insert), WhatsApp, SMS (`api/sms.deliver_via_twilio`), calls (`uscita.perche_no`), notifications by email (`avvisa`), the public booking page (`service_booking`); the demo's forms are owed by its people only (`solo_per_la_demo`, in `dovuti`); and nothing real lands on a demo person: a message or call from a number one of them has too goes to the real person (`persona_vera`, in `integrations/api.py` and Twilio's `link`) |
 | `crm/demo/api.py` + `Settings/DemoDataSettings.vue`, `composables/demoData.js` | Settings > The centre > Demo data: the parts, loading in a job with its progress by the socket, the parts a module switched on later adds, removal in one request |
 
 A module adds its share of the demo from its `registra()` with `registra_parte`,
-and makes it through its own code paths, never rows written beside them. A module
-that sends something on its own adds its guard to `crm/demo/guardie.py`; one that
+and makes it through its own code paths, never rows written beside them; what
+carries evidence (a signature, a delivery, a download) is dated when the part
+runs, never back. A module that sends something on its own, or asks something of
+people by itself, adds its guard to `crm/demo/guardie.py`; one that
 keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.

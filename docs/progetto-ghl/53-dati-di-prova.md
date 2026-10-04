@@ -87,6 +87,26 @@ d'attesa, conversazioni.
     messaggio al suo momento; le conversazioni sono quasi tutte gestite, alcune
     aspettano il centro (quelle della segreteria assegnate a chi carica la demo),
     una è rimandata di due giorni.
+- Le parti dei moduli del CRM, registrate dal loro `registra()`:
+  - **Moduli e consensi** (`crm/moduli/demo.py`): il responsabile ha pubblicato
+    l'informativa con i due consensi (presa visione e novità) e un questionario di
+    benvenuto, chiesti a chi non li ha ancora firmati; la scheda della seduta del
+    fisioterapista; il modulo «Richiedi informazioni» del sito. **Quello che si firma
+    si firma oggi, con il suo PDF e le sue prove**: una firma non si data mai
+    indietro. Il centro ha cominciato stamattina: la segreteria ha mandato il link a
+    chi viene nei prossimi sette giorni, e molti hanno già firmato da casa, come lo
+    farebbe una persona (apre il link, chiede il codice, lo legge nella sua email,
+    compila, firma); qualcuno si è fermato a metà, altri non l'hanno ancora aperto.
+    Chi è arrivato oggi ha firmato sul tablet dell'accoglienza; il fisioterapista ha
+    scritto le schede delle sue ultime sedute; tre persone hanno scritto dal sito
+    (la persona trovata o creata, il modulo con il suo PDF, i consensi, la
+    trattativa). Così la demo è piena a qualunque ora si carichi.
+  - **Documenti** (`crm/documenti/demo.py`): il contratto di ogni abbonamento (un
+    PDF con le sue condizioni), firmato e consegnato a mano; il certificato per
+    l'attività non agonistica portato dagli abituali delle lezioni, scansionato; il
+    contratto di alcuni anche online (il link per email, il codice detto allo
+    sportello), e una persona l'ha già scaricato dalla pagina. Archiviati oggi,
+    come i moduli.
 - È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
   parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
@@ -99,7 +119,13 @@ d'attesa, conversazioni.
   non si accodano, il browser non riceve messaggi, le automazioni tacciono,
   l'appuntamento non si copia nel calendario del framework (né nella sua email
   quotidiana), nessuna piattaforma di prenotazione viene avvisata, la ricerca
-  globale (che le schermate di DottorCloud non leggono) non registra nulla.
+  globale (che le schermate di DottorCloud non leggono) non registra nulla, e il
+  sigillo dei PDF non chiede la marca temporale (`sigillo.marcatore`): un modulo
+  della demo non consuma le marche che il centro compra.
+- **Un'email resta nella parte** invece di partire (`registro.posta_per`): la
+  persona della demo la legge come farebbe nella sua casella, per il link di un
+  modulo o il codice che lo apre. Così la demo passa dalle stesse pagine di una
+  persona vera, con le prove vere di quello che è successo.
 - **Ogni record creato finisce nel registro** (`CRM Demo Record`), anche quelli
   che i controller creano da soli: il contatto della persona, l'assegnazione, la
   versione, il commento, la notifica. Lo scrive un `after_insert` su tutti i
@@ -127,7 +153,9 @@ il resto, in pochi secondi (circa 6.500 record in meno di 4 secondi).
    framework tiene accanto: versioni, commenti, comunicazioni, assegnazioni,
    condivisioni, notifiche, log, la ricerca globale, i documenti eliminati, le
    email in coda verso gli indirizzi della demo; i colleghi della demo con ruoli,
-   impostazioni, sessioni e permessi; i file sul disco (i PDF dei preventivi); i
+   impostazioni, sessioni e permessi; i file sul disco (i PDF dei preventivi e dei
+   moduli firmati, i tratti delle firme, i contratti, le scansioni); le prove di un
+   modulo o di una consegna se ne vanno con la loro catena intera; i
    contatori dei nomi tornano all'ultimo numero ancora usato, mai sotto un record
    esistente né sotto dov'erano prima della demo (`crm_demo_data_series`), e quelli
    che la demo ha cominciato, vuoti, se ne vanno.
@@ -146,6 +174,13 @@ Finché i dati di prova ci sono:
 - una **notifica** su un record della demo resta nel pannello, mai per email;
 - la **pagina di prenotazione** non mostra i servizi della demo ai visitatori;
   chi è entrato in DottorCloud li vede, per provarla;
+- i **moduli della demo** (l'informativa, il questionario) si chiedono solo alle
+  persone della demo: una persona vera prenotata mentre la demo c'è non riceve il
+  link e non li deve allo sportello (`solo_per_la_demo`). Il centro li usa
+  scegliendoli, e allora restano suoi;
+- i **primi passi** contano solo quello che è del centro (`primi_passi.c_e`): i
+  servizi, i colleghi, le persone e gli appuntamenti della demo non fanno un passo
+  al posto suo, e la scheda continua a dire cosa resta da preparare;
 - un **messaggio o una chiamata in arrivo** da un numero che è anche di una
   persona della demo non viene mai attaccato a lei (`persona_vera`): i numeri della
   demo sembrano quelli di chiunque, e quello che è attaccato a una persona della
@@ -162,8 +197,9 @@ Finché i dati di prova ci sono:
 
 ## Prossime parti
 
-- **Fatturazione, moduli e consensi, documenti, area clienti, piani**: le fatture
-  di prova, i moduli firmati, i documenti consegnati, l'area di una persona, i
-  piani e i programmi.
+- **Fatturazione**: l'azienda in prova, le fatture di prova delle visite, una nota
+  di credito, il resoconto al Sistema TS controllato e mai mandato.
+- **Area clienti e piani** (con il modulo «area»): gli inviti, la bacheca, i piani
+  e i programmi pubblicati.
 - **La clinica**: pazienti, cartelle e visite firmate, la sintesi, il dossier,
   l'odontogramma e i piani di cura, le diete.
