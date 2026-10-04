@@ -86,10 +86,12 @@
     <!-- the teeth, and the care plans proposed as quotes -->
     <DentalCard :lead="lead" />
 
-    <!-- writing: a visit or a note, for the care team or for oneself -->
+    <!-- writing: a visit or a note, for the care team or for oneself; opened, it
+         comes into view (on a phone it opened below the summary, off screen) -->
     <section
       v-if="composer.open"
-      class="flex flex-col gap-3 rounded-lg border border-outline-gray-3 p-4"
+      ref="composerRef"
+      class="scroll-mt-3 flex flex-col gap-3 rounded-lg border border-outline-gray-3 p-4"
     >
       <div v-if="composer.addendumTo" class="text-p-sm text-ink-gray-6">
         {{ __('Addendum to the record of {0}', [composer.addendumLabel]) }}
@@ -462,7 +464,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   lead: { type: String, required: true },
@@ -529,6 +531,8 @@ const composer = reactive({
   saving: '',
 })
 
+const composerRef = ref(null)
+
 function reset(values = {}) {
   Object.assign(composer, {
     open: true,
@@ -545,6 +549,10 @@ function reset(values = {}) {
     saving: '',
     ...values,
   })
+  // after the change, so the tick waits for the composer to be drawn
+  nextTick(() =>
+    composerRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+  )
 }
 
 function startNew() {

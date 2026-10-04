@@ -499,6 +499,12 @@ Con il tocco, come in un'app:
     fattura con quello che l'agenda sa e chiede solo «Chi l'ha eseguito»
     (`appointment_invoice_proposal`, `nuovaFattura(cliente, { bozza })`); sotto
     ogni professionista la qualifica in parole, non il suo codice.
+- **La visita del medico, provata davvero.** Dal telefono la dottoressa apre
+  la persona, la scheda Clinica, «Nuova visita» e «Visita libera», scrive e
+  salva la bozza. Il riquadro per scrivere si apriva sotto la sintesi, fuori
+  dallo schermo, e sembrava che il pulsante non facesse nulla: ora, aperto,
+  viene in vista da sé (`ClinicArea.vue`, dopo il cambio di stato, così il
+  `nextTick` aspetta che sia disegnato).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
