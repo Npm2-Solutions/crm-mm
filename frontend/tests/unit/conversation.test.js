@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 import { describe, expect, it } from 'vitest'
 import {
   CHANNELS,
@@ -20,6 +23,7 @@ import {
   listTime,
   momentLabel,
   newSince,
+  hidesTheNew,
   opensRun,
   replyChannel,
   smsSegments,
@@ -985,5 +989,31 @@ describe('opensRun', () => {
   it('is nothing where there is no message', () => {
     expect(opensRun([], 0)).toBe(false)
     expect(opensRun(undefined, 0)).toBe(false)
+  })
+})
+
+describe('hidesTheNew', () => {
+  const items = [
+    wa('1', 'Incoming', '2026-09-28 09:00:00'),
+    comment('c', '2026-09-28 09:10:00'),
+    email('e', 'Received', '2026-09-28 10:00:00'),
+  ]
+
+  it('says so when the channel read last hides every new message', () => {
+    // left on the notes, opened on the email that came
+    expect(hidesTheNew(items, 'comment', '2026-09-28 09:30:00')).toBe(true)
+    expect(hidesTheNew(items, 'whatsapp', '2026-09-28 09:30:00')).toBe(true)
+  })
+
+  it('keeps a channel that shows one of them', () => {
+    expect(hidesTheNew(items, 'email', '2026-09-28 09:30:00')).toBe(false)
+    // never read: the WhatsApp is new too, and it shows
+    expect(hidesTheNew(items, 'whatsapp', null)).toBe(false)
+  })
+
+  it('has nothing to say with nothing new, or reading everything', () => {
+    expect(hidesTheNew(items, 'comment', '2026-09-28 11:00:00')).toBe(false)
+    expect(hidesTheNew(items, 'all', '2026-09-28 09:30:00')).toBe(false)
+    expect(hidesTheNew([], 'comment', null)).toBe(false)
   })
 })
