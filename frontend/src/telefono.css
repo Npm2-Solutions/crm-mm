@@ -120,6 +120,13 @@
     height: 2.5rem;
     font-size: 16px;
   }
+  /* a switch of a few segments (frappe-ui's TabButtons: «Tutte · Da leggere»,
+     «Mie · Di tutti», «Appuntamento · Evento», the sister pages «Da fare ·
+     Note» drawn as links): each segment 36px tall, not 26px, and side by
+     side there is no room for a ring around them */
+  [data-slot='tab-button'] > span {
+    min-height: 2.25rem;
+  }
   /* an editor's toolbar: its buttons on two rows rather than the last ones
      cut off at the edge of the screen */
   [data-slot='fixed-menu'] {
