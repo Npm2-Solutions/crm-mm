@@ -31,6 +31,7 @@ import frappe
 from frappe.query_builder import Criterion
 from frappe.utils import getdate, now_datetime, nowdate
 
+from crm import lingue
 from crm.dashboard import periods
 
 
@@ -159,7 +160,7 @@ class Context:
 	@cached_property
 	def currency(self) -> str:
 		"""The currency every amount on the dashboard is converted to."""
-		return frappe.db.get_single_value("FCRM Settings", "currency") or "USD"
+		return lingue.valuta()
 
 
 def where(query, *criteria):

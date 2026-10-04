@@ -1,10 +1,12 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import frappe
 from frappe import _
 from frappe.query_builder import Case, DocType
 from frappe.query_builder.functions import Avg, Coalesce, Count, Date, DateFormat, IfNull, Sum
 from pypika.functions import Function
 
-from crm import verticali
+from crm import lingue, verticali
 from crm.dashboard import layout as grid
 from crm.dashboard import registry, store, templates
 from crm.dashboard.context import Context, is_manager, keeps_own, shares
@@ -1329,7 +1331,7 @@ def get_base_currency_symbol():
 	"""
 	Get the base currency symbol from the system settings.
 	"""
-	base_currency = frappe.db.get_single_value("FCRM Settings", "currency") or "USD"
+	base_currency = lingue.valuta()
 	return frappe.db.get_value("Currency", base_currency, "symbol") or ""
 
 
