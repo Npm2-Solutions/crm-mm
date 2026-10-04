@@ -1,3 +1,4 @@
+/* Modifications copyright (c) 2026, NPM2 Solutions Srl */
 @config '../../../tailwind.email.config.js';
 
 @tailwind base;
@@ -34,6 +35,10 @@
 [data-theme='dark'] {
   --bg-surface-gray-3: #343434;
   --bg-surface-gray-4: #424242;
+  /* DottorCloud's dark theme says `color-scheme: dark` (index.css): a frame
+     that says nothing gets an opaque white canvas behind it, and the email's
+     light words were drawn on white. The same scheme keeps it transparent. */
+  color-scheme: dark;
 }
 
 .replied-content .collapse {
