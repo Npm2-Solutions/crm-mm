@@ -230,6 +230,26 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it('draws a check field saved on as on, and names the switch’s button', () => {
+    const interruttore = tradotto('Switch/Switch.vue')
+    expect(interruttore).toContain(':model-value="Boolean(Number(model))"')
+    expect(interruttore).not.toContain('v-model="model"')
+    expect(interruttore).toContain(`:aria-label="$attrs['aria-label']"`)
+    expect(interruttore).toContain('defineOptions({ inheritAttrs: false })')
+    expect(interruttore).toContain('v-bind="senzaIlNome($attrs)"')
+    // 1 from the server is on, 0, null and nothing are off
+    const acceso = (valore) => Boolean(Number(valore))
+    expect([1, true, '1', 0, false, null, undefined].map(acceso)).toEqual([
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+    ])
+  })
+
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
     expect(() =>
       traduciFrappeUi(
