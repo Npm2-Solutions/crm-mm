@@ -284,6 +284,10 @@ const SOSTITUZIONI = {
   // the cross that closes a message and the circle that turns while something
   // loads, named for a screen reader in the user's language
   'Toast/Toast.vue': [attributo('aria-label', 'Close')],
+  // a menu with nothing in it
+  'Menu/Menu.vue': [testo('No options')],
+  // what a screen reader says after a required field's name
+  'InputLabeling/RequiredIndicator.vue': [frase('(required)')],
   'Spinner/Spinner.vue': [attributo('aria-label', 'Loading')],
   'MultiSelect/MultiSelect.vue': [
     predefinito('placeholder', 'Select option'),
