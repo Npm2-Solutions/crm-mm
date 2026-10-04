@@ -188,7 +188,10 @@
               <span class="text-p-sm text-ink-gray-5">{{
                 __('Anonymize')
               }}</span>
-              <Switch v-model="settings.doc.anonymize_ip" />
+              <Switch
+                v-model="settings.doc.anonymize_ip"
+                :aria-label="__('Anonymize IP Address')"
+              />
             </span>
           </div>
         </SettingsRow>

@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The only screen here that makes the ads better instead of better understood.
 
   Everything else reads from Meta. This writes back: the stage each lead reached
@@ -46,6 +49,7 @@
               </div>
             </div>
             <Switch
+              :aria-label="__('Send lead stages to Meta')"
               :modelValue="Boolean(form.enabled)"
               @update:modelValue="(v) => save({ enabled: v })"
             />

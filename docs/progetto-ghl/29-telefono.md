@@ -736,6 +736,9 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/Conversations/ConversationPicker.vue` | In cima alla chat la vista («Aperte») e il filtro «Da leggere» alti 36px |
 | `frontend/src/components/PersonHeader.vue` | Sotto il nome, «Paziente dal…» e «Ultima visita…» vanno a capo senza che la seconda riga cominci con «·» |
 | `frontend/src/components/RelatedPeopleSection.vue` | Collegare una persona: «Già in DottorCloud» e «Una persona nuova» le due metà di un interruttore solo, non due pulsanti uno sotto l'altro |
+| `frontend/vite/frappeUi.js` (`Switch/Switch.vue`) | Un interruttore legato a un campo sì/no del server (0 o 1) si accendeva solo per `true`: «Aggiorna la data di modifica», salvato acceso, si vedeva spento. Ora 1 è acceso. E il nome dato all'interruttore va al suo pulsante, dove VoiceOver e TalkBack lo leggono, non al contenitore |
+| `Settings/SettingsRow.vue`, `Telephony/SettingRow.vue` + `composables/nomeAlControllo.js` | Le parole di una riga delle impostazioni sono l'etichetta del suo interruttore (o campo): lo nominano, e toccarle lo accende o lo spegne |
+| 31 pagine e finestre (Generale, Dashboard, Sito, Regole di assegnazione, SLA, Modelli email, Meta, profili social, prenotazione online, agenda…) | Ogni interruttore ha un nome: le parole che ha accanto, o in un elenco il nome della riga («Pagina Studio», «Dottoressa Verdi»), mai solo «interruttore» |
 
 ## Non incluso
 

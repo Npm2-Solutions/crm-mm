@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-5 text-ink-gray-8">
     <div class="flex flex-col gap-1">
@@ -112,7 +115,11 @@
                 {{ __(i.descrizione) }}
               </span>
             </div>
-            <Switch v-model="stato[i.campo]" class="shrink-0" />
+            <Switch
+              :aria-label="__(i.etichetta)"
+              v-model="stato[i.campo]"
+              class="shrink-0"
+            />
           </div>
         </div>
       </template>

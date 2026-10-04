@@ -202,6 +202,7 @@
                 @click="editProfile(person)"
               />
               <Switch
+                :aria-label="person.full_name"
                 :modelValue="person.online"
                 :disabled="busy"
                 @update:modelValue="

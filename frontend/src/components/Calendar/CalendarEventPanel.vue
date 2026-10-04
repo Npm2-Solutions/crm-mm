@@ -315,7 +315,11 @@
       </div>
       <div class="flex justify-between py-2.5 px-4.5 text-ink-gray-6">
         <div class="flex items-center">
-          <Switch v-model="_event.isFullDay" @update:model-value="sync" />
+          <Switch
+            :aria-label="__('All Day')"
+            v-model="_event.isFullDay"
+            @update:model-value="sync"
+          />
           <div class="ml-2">
             {{ __('All Day') }}
           </div>

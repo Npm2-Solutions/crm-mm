@@ -40,6 +40,7 @@
         </div>
         <div>
           <Switch
+            :aria-label="__('Update timestamp on new communication')"
             v-model="settings.doc.update_timestamp_on_new_communication"
             size="sm"
             @click.stop="toggle('update_timestamp_on_new_communication')"
@@ -62,6 +63,7 @@
         </div>
         <div>
           <Switch
+            :aria-label="__('Mark lead/deal as replied on response')"
             v-model="settings.doc.auto_mark_replied_on_response"
             size="sm"
             @click.stop="toggle('auto_mark_replied_on_response')"
@@ -84,6 +86,7 @@
         </div>
         <div>
           <Switch
+            :aria-label="__('Reopen lead/deal on new communication')"
             v-model="settings.doc.auto_reopen_on_new_communication"
             size="sm"
             @click.stop="toggle('auto_reopen_on_new_communication')"
@@ -156,6 +159,7 @@
         </div>
         <div>
           <Switch
+            :aria-label="__('Send WhatsApp read receipts')"
             v-model="settings.doc.whatsapp_read_receipts"
             @update:modelValue="save()"
           />

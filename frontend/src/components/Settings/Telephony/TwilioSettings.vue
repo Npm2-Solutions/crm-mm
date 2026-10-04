@@ -524,7 +524,11 @@
                 }}
               </div>
             </div>
-            <Switch v-model="twilio.doc.record_calls" size="sm" />
+            <Switch
+              :aria-label="__('Record Calls')"
+              v-model="twilio.doc.record_calls"
+              size="sm"
+            />
           </div>
 
           <div v-if="twilio.doc.record_calls" class="pt-1">

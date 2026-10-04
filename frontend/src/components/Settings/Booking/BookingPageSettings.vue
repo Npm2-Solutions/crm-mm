@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -279,6 +283,7 @@
             :summary="summary.data?.[item.service]"
           >
             <Switch
+              :aria-label="item.label()"
               v-if="item.type === 'check'"
               v-model="form[item.key]"
               size="sm"

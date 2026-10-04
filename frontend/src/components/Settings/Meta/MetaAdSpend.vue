@@ -112,6 +112,7 @@
                   __('Read spend')
                 }}</span>
                 <Switch
+                  :aria-label="__('Read spend')"
                   :modelValue="Boolean(account.sync_enabled)"
                   @update:modelValue="(v) => toggleAccount(account, v)"
                 />

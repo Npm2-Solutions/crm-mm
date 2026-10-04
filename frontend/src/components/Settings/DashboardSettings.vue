@@ -52,7 +52,11 @@
           </div>
         </div>
         <div>
-          <Switch v-model="settings.doc.enable_forecasting" size="sm" />
+          <Switch
+            :aria-label="__('Enable Forecasting')"
+            v-model="settings.doc.enable_forecasting"
+            size="sm"
+          />
         </div>
       </div>
       <div class="h-px border-t mx-2 border-outline-elevation-2" />
@@ -71,6 +75,7 @@
         </div>
         <div>
           <Switch
+            :aria-label="__('Auto Update Expected Deal Value')"
             v-model="settings.doc.auto_update_expected_deal_value"
             size="sm"
           />

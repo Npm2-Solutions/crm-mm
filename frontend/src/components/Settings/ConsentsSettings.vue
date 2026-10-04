@@ -105,6 +105,7 @@
             </span>
           </div>
           <Switch
+            :aria-label="__(type.label)"
             v-model="type.enabled"
             class="shrink-0"
             :disabled="!!type.saving"

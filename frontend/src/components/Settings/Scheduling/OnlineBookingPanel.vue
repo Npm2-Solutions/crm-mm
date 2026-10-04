@@ -91,6 +91,7 @@
           <div>
             <template v-if="isCustomised(form, rule.key)">
               <Switch
+                :aria-label="__(rule.label)"
                 v-if="rule.type === 'check'"
                 v-model="form[rule.key]"
                 size="sm"
