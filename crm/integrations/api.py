@@ -167,7 +167,13 @@ def get_contact_lead_or_deal_from_number(number: str):
 	Not whitelisted: only the server asks it, filing a message that just arrived,
 	and over HTTP it would tell anyone whose number this is.
 	"""
+	from crm.demo import guardie
+
 	contact = find_contact_by_phone_number(number)
+	if guardie.contatto_della_demo(contact):
+		# the number is a demo person's too: a real message is never filed on them
+		vero = guardie.persona_vera(number)
+		return (vero, "CRM Lead") if vero else (None, None)
 	if not contact.get("name"):
 		return None, None
 
@@ -211,8 +217,12 @@ def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[
 	# onto their address book entry. `converted = 0` here was the last place a
 	# returning customer could still be given a second record of their own.
 	from crm.api.lead import find_person
+	from crm.demo import guardie
 
 	existing = find_person(phone=mobile_no)
+	if guardie.della_demo_per_chi_arriva("CRM Lead", existing):
+		# a demo person has this number too: the real one, or a new one (crm.demo.guardie)
+		existing = guardie.persona_vera(mobile_no)
 	if existing:
 		return existing, "CRM Lead"
 
