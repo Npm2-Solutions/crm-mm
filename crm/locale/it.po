@@ -43566,6 +43566,10 @@ msgstr "Chi aspetta un posto con l'osteopata, con la dietista o in una lezione a
 msgid "Emails between the centre and its people, and SMS and WhatsApp messages where they are on: most dealt with, a few waiting for an answer, some for you."
 msgstr "Email tra il centro e le sue persone, e messaggi SMS e WhatsApp dove sono attivi: quasi tutte gestite, qualcuna in attesa di risposta, alcune per te."
 
+#: crm/moduli/__init__.py
+msgid "The privacy notice with its consents, a welcome questionnaire, a session's sheet and the website's request form: sent this morning to who comes in the next days and already signed at home by many, signed on the desk's tablet by today's arrivals, the physiotherapist's sheets, requests from the website."
+msgstr "L'informativa privacy con i suoi consensi, un questionario di benvenuto, la scheda della seduta e il modulo di richiesta del sito: mandati stamattina a chi viene nei prossimi giorni e già firmati da casa da molti, firmati sul tablet dell'accoglienza da chi è arrivato oggi, le schede del fisioterapista, le richieste dal sito."
+
 #: crm/scheduling/abbonamenti.py
 msgid "One of the {0} people uses their subscription"
 msgstr "Una persona su {0} usa il suo abbonamento"
