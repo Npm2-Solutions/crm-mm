@@ -19,7 +19,9 @@ QUALIFICA = "CRM Professional Qualification"
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def professionisti(doctype, txt, searchfield, start, page_len, filters):
+def professionisti(
+	doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict | list | None
+):
 	"""Who performs a service: the name, and the qualification in its words."""
 	nomi = dict(frappe.get_all(QUALIFICA, fields=["name", "qualification_name"], as_list=True))
 	altri = None
