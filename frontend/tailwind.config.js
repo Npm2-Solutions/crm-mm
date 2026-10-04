@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import frappeUIPreset from 'frappe-ui/tailwind'
 
 export default {
@@ -13,6 +15,11 @@ export default {
     // arbitrary-variant classes (e.g. Notifications TabButtons overrides) are generated
     '../../frappe/ui/src/**/*.{vue,js,ts,jsx,tsx}',
   ],
+  // The typography sizes nobody draws: frappe-ui's editor only names them in a
+  // regular expression, and each built 55 rules that every element is tested
+  // against when its style is worked out (`.prose-xl :where(h4 + *)…` keys on
+  // no class): 40 ms more to open a menu on a slow phone
+  blocklist: ['prose-xl', 'prose-2xl'],
   safelist: [
     '!text-gray-700',
     '!text-blue-600',
