@@ -29,9 +29,9 @@ import {
 } from 'frappe-ui'
 
 import { telemetryPlugin } from 'frappe-ui/frappe'
-// injects the lucide SVG sprite into the DOM so the IconPicker and lucide Icons
-// (used for view icons) can render from it
-import { spritePlugin } from 'frappe-ui/icons'
+// the lucide icons drawn by name come into the page one by one, and the
+// sprite's text when the app is idle - not the whole sprite at the start
+import { caricaQuandoLibero } from '@/utils/icone'
 
 let globalComponents = {
   Button,
@@ -62,7 +62,6 @@ let app = createApp(App)
 
 setConfig('resourceFetcher', frappeRequest)
 app.use(FrappeUI)
-app.use(spritePlugin)
 app.use(pinia)
 app.use(router)
 app.use(translationPlugin)
@@ -94,3 +93,5 @@ if (import.meta.env.DEV) {
 if (import.meta.env.DEV) {
   window.$dialog = createDialog
 }
+
+caricaQuandoLibero()

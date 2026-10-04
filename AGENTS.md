@@ -737,6 +737,10 @@ row, the bar's words beside their icons).
   each rewrite tested on the pinned frappe-ui: the code block without
   highlight.js, the emoji list fetched at the first ":", no Markdown format.
   A dynamic import preloads only what is not loaded (`vite/precarica.js`).
+  A Lucide icon drawn by name (`Icon.vue`) goes into the page by itself
+  (`utils/icone.js`), the sprite's text fetched when the app is idle; all of
+  them only for the picker (`ScegliIcona.vue`), never frappe-ui's
+  `spritePlugin`: 82 KB of the first download and 8,673 hidden elements.
 - The first page waits on no call in a row: what the router needs comes with
   the page's boot (`crm_user`, `ask_persona`, the capabilities), and a page asks
   its calls together - what the server would answer from a capability, the
@@ -762,7 +766,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1138 tests · ~15s** — all must pass before committing
+- **1143 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

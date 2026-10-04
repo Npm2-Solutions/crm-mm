@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog
     v-model:open="show"
@@ -70,7 +73,8 @@
 </template>
 
 <script setup>
-import { IconPicker } from 'frappe-ui/icons'
+// frappe-ui's picker, once every icon is in the page
+import IconPicker from '@/components/ScegliIcona.vue'
 import { isEmoji } from '@/utils'
 import { call } from 'frappe-ui'
 import { ref, computed, watch, nextTick } from 'vue'
