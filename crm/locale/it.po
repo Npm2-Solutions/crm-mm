@@ -43503,8 +43503,8 @@ msgid "People and appointments"
 msgstr "Persone e appuntamenti"
 
 #: crm/demo/base.py
-msgid "Three months of the centre's life: about two hundred people, their requests, the appointments they came to and the ones booked, today's reception desk."
-msgstr "Tre mesi di vita del centro: alcune centinaia di persone, le loro richieste, gli appuntamenti a cui sono venute e quelli prenotati, l'accoglienza di oggi."
+msgid "Three months of the centre's life: a few hundred people, their requests, the appointments they came to and the ones booked, today's reception desk; the cycles of sessions and the quotes agreed at the first visit."
+msgstr "Tre mesi di vita del centro: alcune centinaia di persone, le loro richieste, gli appuntamenti a cui sono venute e quelli prenotati, l'accoglienza di oggi; i cicli di sedute e i preventivi concordati alla prima visita."
 
 #: crm/demo/base.py
 msgid "Companies and agreements"
