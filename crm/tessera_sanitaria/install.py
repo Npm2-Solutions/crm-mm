@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import frappe
 
-from crm.invoicing.install import campi_qualifica
+from crm.invoicing.install import campi_qualifica, nella_lingua
 from crm.tessera_sanitaria.engine.professioni import elenco
 
 
@@ -41,3 +41,9 @@ def semina_qualifiche() -> int:
 		).insert(ignore_permissions=True)
 		creati += 1
 	return creati
+
+
+def qualifiche_nella_lingua(_args=None) -> int:
+	"""After a migrate and the setup wizard: the healthcare half of the register in
+	the centre's language, where its words are still DottorCloud's."""
+	return nella_lingua(elenco())
