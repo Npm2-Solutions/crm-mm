@@ -558,6 +558,12 @@ Con il tocco, come in un'app:
   persona, «Compila un modulo» apre la pagina da compilare e firmare. La barra
   in basso accendeva «Altro», come se il modulo non fosse di nessuno: ora
   accende Persone, e così la barra laterale (`utils/navigation.js`).
+  Poi la firma col dito: la barra delle azioni in fondo (Scarta, Salva per
+  dopo, Altri modi di firmare, Firma e concludi) occupa tre righe, e quello
+  che veniva portato in vista (un campo toccato con la tastiera aperta, la
+  firma) poteva finirci sotto: il dito sulla firma apriva «Vuoi scartare
+  questo modulo?». Ora il riquadro che scorre tiene conto della barra
+  (`scroll-padding-bottom`), e la firma si fa e si conclude.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
