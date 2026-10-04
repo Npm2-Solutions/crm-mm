@@ -110,28 +110,33 @@ def get_twilio_usage() -> dict:
 	impostazioni = frappe.get_single(IMPOSTAZIONI)
 	if not (collegamento.collegato(impostazioni) and _vede(impostazioni)):
 		return {"visible": False}
+	# what the page's sentences name, whether Twilio answers or not: without
+	# them they read «spent since ,» and «the last {0} days»
+	pagina = {
+		"visible": True,
+		"since": str(get_first_day(today())),
+		"days": GIORNI,
+		"alert": flt(impostazioni.spend_alert) or None,
+		"agency": _paga_l_agenzia(impostazioni),
+	}
 	dati = frappe.cache.get_value(_chiave(impostazioni))
 	if not dati:
 		try:
 			dati = _chiedi(impostazioni)
 		except collegamento.NON_RISPONDE as errore:
 			collegamento._registra("DottorCloud: Twilio's usage", errore)
-			return {"visible": True, "error": collegamento.in_parole(errore)}
+			return {**pagina, "error": collegamento.in_parole(errore)}
 		frappe.cache.set_value(_chiave(impostazioni), dati, expires_in_sec=DURATA)
 	mese = R.consumi(dati.get("records") or {})
 	for voce in mese["items"]:
 		voce["label"] = _(voce["label"])
 	return {
-		"visible": True,
-		"since": str(get_first_day(today())),
+		**pagina,
 		"month": mese,
 		"problems": [
 			{**riga, "sentence": errori.in_parole(riga["code"], riga["twilio"])}
 			for riga in E.raggruppa(dati.get("alerts") or [])
 		],
-		"days": GIORNI,
-		"alert": flt(impostazioni.spend_alert) or None,
-		"agency": _paga_l_agenzia(impostazioni),
 	}
 
 

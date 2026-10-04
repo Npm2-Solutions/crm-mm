@@ -91,6 +91,9 @@ class IlMese(ConsumiCase):
 			dati = consumi.get_twilio_usage()
 		self.assertTrue(dati["visible"])
 		self.assertTrue(dati["error"])
+		# the page's sentences still have what they name
+		self.assertTrue(dati["since"])
+		self.assertEqual(dati["days"], consumi.GIORNI)
 
 
 class ChiLoVede(ConsumiCase):
