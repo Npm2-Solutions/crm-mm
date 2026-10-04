@@ -196,7 +196,12 @@ def invia_documento(nome_fattura: str, operazione: str | None = None) -> dict:
 		}[operazione or fattura.ts_operation or "I"]
 	)
 	dove = destinazione(canale_per_modalita(modalita), _ambiente())
-	credenziali = _credenziali(emittente)
+	# credentials not all there are said in words: raised bare, they reached the
+	# screen as «Internal Server Error»
+	try:
+		credenziali = _credenziali(emittente)
+	except ErroreTrasporto as errore:
+		frappe.throw(str(errore), title=_("Sistema TS"))
 	busta = costruisci_busta(spesa, credenziali, dove, ts.cifratore(emittente), scelta)
 
 	intestazioni = {
