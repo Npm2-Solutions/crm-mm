@@ -58,6 +58,7 @@
           <FormControl
             v-model="settings.doc.default_calendar_view"
             type="select"
+            :aria-label="__('Default View')"
             class="w-28"
             :options="[
               { label: __('Daily'), value: 'Daily' },
@@ -91,6 +92,7 @@
             <div class="flex items-center gap-2">
               <FormControl
                 v-model="notification.type"
+                :aria-label="__('Type')"
                 class="w-36 shrink-0"
                 type="select"
                 :options="[
@@ -107,6 +109,7 @@
               />
               <FormControl
                 v-model.number="notification.before"
+                :aria-label="__('How long before')"
                 class="w-20 shrink-0"
                 type="number"
                 inputmode="numeric"
@@ -118,6 +121,7 @@
               />
               <FormControl
                 v-model="notification.interval"
+                :aria-label="__('Unit')"
                 class="w-32 shrink-0"
                 type="select"
                 :options="[
@@ -192,6 +196,7 @@
             <div class="flex items-center gap-2">
               <FormControl
                 v-model="notification.type"
+                :aria-label="__('Type')"
                 class="w-36 shrink-0"
                 type="select"
                 :options="[
@@ -208,6 +213,7 @@
               />
               <FormControl
                 v-model.number="notification.before"
+                :aria-label="__('How long before')"
                 class="w-20 shrink-0"
                 type="number"
                 inputmode="numeric"
@@ -218,6 +224,7 @@
               />
               <FormControl
                 v-model="notification.interval"
+                :aria-label="__('Unit')"
                 class="w-32 shrink-0"
                 type="select"
                 :options="[

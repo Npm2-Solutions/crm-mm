@@ -154,9 +154,13 @@ export function useEtichetteDeiCampi(scatola) {
     for (const riga of scatola.value?.querySelectorAll('[data-campo-riga]') ||
       []) {
       const parole = riga.querySelector('[data-etichetta]')
-      const controllo = riga
-        .querySelector('[data-valore]')
-        ?.querySelector(CAMPI)
+      // the value may be the whole row, its words inside it
+      const valore = riga.matches('[data-valore]')
+        ? riga
+        : riga.querySelector('[data-valore]')
+      const controllo = [...(valore?.querySelectorAll(CAMPI) || [])].find(
+        (elemento) => !parole?.contains(elemento),
+      )
       if (parole && controllo) collega(parole, controllo)
     }
   })

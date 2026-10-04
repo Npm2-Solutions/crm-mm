@@ -225,6 +225,7 @@
             {{ __('At the end of the emails you write from {brand}.') }}
           </p>
           <RichTextField
+            :label="__('Signature')"
             editor-class="prose-sm min-h-28 max-w-full border rounded-b-lg border-t-0 p-2 border-outline-elevation-2"
             :content="utente.doc.email_signature"
             :fixed-menu="true"

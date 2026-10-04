@@ -42530,3 +42530,7 @@ msgstr "Nascondi i dettagli"
 #: frontend/src/components/Controls/RatingInput.vue
 msgid "Rating: {0} of {1}"
 msgstr "Voto: {0} su {1}"
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "How long before"
+msgstr "Quanto prima"

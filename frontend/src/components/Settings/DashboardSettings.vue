@@ -124,6 +124,7 @@
           <FormControl
             v-model="settings.doc.service_provider"
             type="select"
+            :aria-label="__('Exchange Rate Provider')"
             class="w-44"
             :options="[
               { label: 'Frankfurter', value: 'frankfurter.app' },

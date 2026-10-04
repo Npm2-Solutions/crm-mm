@@ -4,6 +4,7 @@
 -->
 <template>
   <div
+    ref="scatola"
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div
@@ -361,6 +362,7 @@ import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
 import { activeSettingsPage } from '@/composables/settings'
 import { hhmm } from '@/utils/scheduler'
+import { useEtichetteDeiCampi } from '@/composables/nomeAlControllo'
 import { computed, defineComponent, h, reactive, ref, watch } from 'vue'
 
 // the rule on the settings page ↔ the service field that inherits it
@@ -459,14 +461,27 @@ const RuleField = defineComponent({
             ])
           : __('{0} services follow it', [s.inherit])
         : ''
-      return h('div', { class: 'flex flex-col gap-1' }, [
-        h('div', { class: 'flex items-center justify-between gap-2' }, [
-          h('span', { class: 'text-xs text-ink-gray-5' }, props.rule.label()),
-          props.rule.type === 'check' ? slots.default?.() : null,
-        ]),
-        props.rule.type === 'check' ? null : slots.default?.(),
-        hint ? h('span', { class: 'text-p-xs text-ink-gray-4' }, hint) : null,
-      ])
+      // a rule's words name its field (useEtichetteDeiCampi, below)
+      return h(
+        'div',
+        {
+          class: 'flex flex-col gap-1',
+          'data-campo-riga': '',
+          'data-valore': '',
+        },
+        [
+          h('div', { class: 'flex items-center justify-between gap-2' }, [
+            h(
+              'span',
+              { class: 'text-xs text-ink-gray-5', 'data-etichetta': '' },
+              props.rule.label(),
+            ),
+            props.rule.type === 'check' ? slots.default?.() : null,
+          ]),
+          props.rule.type === 'check' ? null : slots.default?.(),
+          hint ? h('span', { class: 'text-p-xs text-ink-gray-4' }, hint) : null,
+        ],
+      )
     }
   },
 })
@@ -498,6 +513,10 @@ const FIELDS = [
 ]
 
 const saving = ref(false)
+
+// each rule's words name its field, for VoiceOver and TalkBack
+const scatola = ref(null)
+useEtichetteDeiCampi(scatola)
 const form = reactive({
   require_privacy_consent: true,
   ask_marketing_consent: false,
