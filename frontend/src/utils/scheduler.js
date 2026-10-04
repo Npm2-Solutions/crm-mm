@@ -350,6 +350,18 @@ export function adessoDelCentro(
   return new Date(anno, mese - 1, giorno, ore, minuti, d.getSeconds())
 }
 
+/**
+ * The next quarter of an hour from `ora` (a Date read on the centre's clock, as
+ * `adessoDelCentro()` gives it), where something new is proposed to start:
+ * 20:19 → 20:30, 20:30 stays, 23:50 → 00:00 of the day after. Rounding down
+ * proposed a time already gone; the minute something was opened, a 14:49.
+ */
+export function prossimoQuarto(ora = adessoDelCentro()) {
+  const d = new Date(ora)
+  const minuti = Math.ceil((d.getHours() * 60 + d.getMinutes()) / 15) * 15
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, minuti)
+}
+
 /** The centre's today, «2026-10-04». */
 export function oggiDelCentro(fuso) {
   return oraDelCentro(adessoDelCentro(fuso)).slice(0, 10)
