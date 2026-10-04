@@ -72,6 +72,8 @@
       </div>
     </template>
   </LayoutHeader>
+  <!-- the deal's name is in the crumbs: its heading, for a screen reader -->
+  <h1 v-if="doc.name" class="sr-only">{{ title }}</h1>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <Tabs
       v-model="tabIndex"
