@@ -89,7 +89,7 @@
         :channel="channel"
         :them="them"
         :modalRef="modalRef"
-        :emailBox="emailBox"
+        :emailBox="scatolaEmail"
         :newMessages="newMessages"
         class="flex-1"
         @reload="all_activities.reload()"
@@ -270,7 +270,7 @@
             v-if="activity.activity_type == 'communication'"
             class="pb-5 mt-px"
           >
-            <EmailArea :activity="activity" :emailBox="emailBox" />
+            <EmailArea :activity="activity" :emailBox="scatolaEmail" />
           </div>
           <!-- no id here: WhatsAppArea puts it on the bubble itself, and two
                elements with the same id break the jump to a replied message -->
@@ -515,6 +515,7 @@
          directive on a component like that is silently ignored -->
     <div v-show="way === 'email' || way === 'comment'">
       <CommunicationArea
+        v-if="used.email || used.comment"
         ref="emailBox"
         v-model="doc"
         v-model:reload="reload_email"
@@ -583,7 +584,7 @@
     />
   </ComposerShell>
   <WhatsappTemplateSelectorModal
-    v-if="whatsappEnabled"
+    v-if="whatsappEnabled && modelliAperti"
     v-model="showWhatsappTemplates"
     :doctype="doctype"
     @send="(t, params) => sendTemplate(t, params)"
@@ -596,6 +597,7 @@
     @mostra="(quale) => (channel = quale)"
   />
   <FilesUploader
+    v-if="caricamentoAperto"
     v-model="showFilesUploader"
     :doctype="doctype"
     :docname="docname"
@@ -625,14 +627,6 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
-import EventArea from '@/components/Activities/EventArea.vue'
-import AttributionArea from '@/components/Activities/AttributionArea.vue'
-import ClinicArea from '@/components/Clinic/ClinicArea.vue'
-import FormsArea from '@/components/Moduli/FormsArea.vue'
-import PersonArea from '@/components/Area/PersonArea.vue'
-import DocumentsCard from '@/components/Documents/DocumentsCard.vue'
-import QuotesCard from '@/components/Quotes/QuotesCard.vue'
-import PlansCard from '@/components/Plans/PlansCard.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
@@ -651,11 +645,8 @@ import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
 import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
 import ComposerShell from '@/components/Activities/ComposerShell.vue'
 import ChannelSwitcher from '@/components/Activities/ChannelSwitcher.vue'
-import CommunicationArea from '@/components/CommunicationArea.vue'
 import ConversationView from '@/components/Activities/ConversationView.vue'
-import WhatsappTemplateSelectorModal from '@/components/Modals/WhatsappTemplateSelectorModal.vue'
 import AllModals from '@/components/Activities/AllModals.vue'
-import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { isContentEmpty, startCase } from '@/utils'
 import { useDraft } from '@/composables/drafts'
@@ -687,6 +678,43 @@ import {
   onBeforeUnmount,
 } from 'vue'
 import { useRoute } from 'vue-router'
+import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
+
+// Each tab but the conversation comes when it is opened, and a dialog the first
+// time it opens: imported here, every tab and every dialog of every module was
+// in the first download of every person's page, on a phone too.
+const EventArea = aRichiesta(
+  () => import('@/components/Activities/EventArea.vue'),
+)
+const AttributionArea = aRichiesta(
+  () => import('@/components/Activities/AttributionArea.vue'),
+)
+const ClinicArea = aRichiesta(
+  () => import('@/components/Clinic/ClinicArea.vue'),
+)
+const FormsArea = aRichiesta(() => import('@/components/Moduli/FormsArea.vue'))
+const PersonArea = aRichiesta(() => import('@/components/Area/PersonArea.vue'))
+const DocumentsCard = aRichiesta(
+  () => import('@/components/Documents/DocumentsCard.vue'),
+)
+const QuotesCard = aRichiesta(
+  () => import('@/components/Quotes/QuotesCard.vue'),
+)
+const PlansCard = aRichiesta(() => import('@/components/Plans/PlansCard.vue'))
+// the email and notes box carries the text editor, most of a person's page: it
+// comes the first time it is written in, like the WhatsApp and SMS boxes
+const CommunicationArea = aRichiesta(
+  () => import('@/components/CommunicationArea.vue'),
+  { attesa: false },
+)
+const WhatsappTemplateSelectorModal = aRichiesta(
+  () => import('@/components/Modals/WhatsappTemplateSelectorModal.vue'),
+  { attesa: false },
+)
+const FilesUploader = aRichiesta(
+  () => import('@/components/FilesUploader/FilesUploader.vue'),
+  { attesa: false },
+)
 
 const { $socket } = globalStore()
 const { getUser, puo, solaLettura } = usersStore()
@@ -719,6 +747,7 @@ const doc = computed(() => _document.doc || {})
 const reload_email = ref(false)
 const modalRef = ref(null)
 const showFilesUploader = ref(false)
+const caricamentoAperto = apertoUnaVolta(showFilesUploader)
 const fieldLayoutTabIndex = ref(0)
 const fieldLayoutTabName = ref('')
 
@@ -750,6 +779,7 @@ const all_activities = createResource({
 })
 
 const showWhatsappTemplates = ref(false)
+const modelliAperti = apertoUnaVolta(showWhatsappTemplates)
 
 const whatsappMessages = createResource({
   url: 'crm.api.whatsapp.get_whatsapp_messages',
@@ -1289,6 +1319,27 @@ watch(
 
 watch(way, (value) => value && (used[value] = true), { immediate: true })
 
+// The email box comes the first time it is used (CommunicationArea above): a
+// Reply pressed on an email before then, or the channel picked, mounts it and
+// is done as soon as it is there, instead of doing nothing.
+let perLaScatola = null
+watch(emailBox, (scatola) => {
+  if (!scatola || !perLaScatola) return
+  const fai = perLaScatola
+  perLaScatola = null
+  fai(scatola)
+})
+function conLaScatola(fai) {
+  if (emailBox.value) return fai(emailBox.value)
+  if (!puo('conversazioni.usa')) return
+  perLaScatola = fai
+  used.email = true
+}
+// what the conversation's emails answer through
+const scatolaEmail = {
+  reply: (email, all) => conLaScatola((scatola) => scatola.reply?.(email, all)),
+}
+
 // Picked in the composer. Reading one channel while writing in another is the
 // mismatch the picker exists to prevent, so a channel view follows the pick;
 // «All» and the call register stay where they are — «All» is where every
@@ -1301,7 +1352,8 @@ function pickWay(which, { open = true } = {}) {
   if (!open) return
   // chosen by hand is chosen to write: the cursor goes into it
   nextTick(() => {
-    if (which === 'email' || which === 'comment') emailBox.value?.open?.(which)
+    if (which === 'email' || which === 'comment')
+      conLaScatola((scatola) => scatola.open?.(which))
     else if (which === 'whatsapp') whatsappBox.value?.show?.()
     else if (which === 'sms') smsBox.value?.show?.()
   })

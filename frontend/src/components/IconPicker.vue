@@ -2,7 +2,7 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
-  <Popover transition="default">
+  <Popover transition="default" @open="carica">
     <template #target="{ togglePopover, isOpen }">
       <slot v-bind="{ isOpen, togglePopover }">
         <span class="text-base"> {{ modelValue || '' }} </span>
@@ -70,8 +70,19 @@
 </template>
 <script setup>
 import { Popover } from 'frappe-ui'
-import { gemoji } from 'gemoji'
-import { ref, computed } from 'vue'
+import { ref, computed, shallowRef } from 'vue'
+
+// the emoji database (gemoji, 320 KB) comes when the picker opens: imported at
+// the top, it was in the first download of every person's page, whose writing
+// boxes carry this picker
+const gemoji = shallowRef([])
+let caricamento = null
+function carica() {
+  caricamento ||= import('gemoji').then((modulo) => {
+    gemoji.value = modulo.gemoji
+  })
+  return caricamento
+}
 
 const search = ref('')
 const emoji = defineModel({ type: String, default: '' })
@@ -81,7 +92,7 @@ const reactionEmojis = ref(['👍', '❤️', '😂', '😮', '😢', '🙏'])
 
 const emojiGroups = computed(() => {
   let groups = {}
-  for (let _emoji of gemoji) {
+  for (let _emoji of gemoji.value) {
     if (search.value) {
       let keywords = [_emoji.description, ..._emoji.names, ..._emoji.tags]
         .join(' ')
@@ -98,16 +109,18 @@ const emojiGroups = computed(() => {
     }
     group.push(_emoji)
   }
-  if (!Object.keys(groups).length) {
+  // nothing yet while the emoji arrive: «No results» is for a search
+  if (!Object.keys(groups).length && gemoji.value.length) {
     groups['No results'] = []
   }
   return groups
 })
 
-function setRandom() {
-  let total = gemoji.length
+async function setRandom() {
+  await carica()
+  let total = gemoji.value.length
   let index = randomInt(0, total - 1)
-  emoji.value = gemoji[index].emoji
+  emoji.value = gemoji.value[index].emoji
 }
 
 function randomInt(min, max) {

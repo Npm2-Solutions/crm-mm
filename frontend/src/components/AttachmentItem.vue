@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <span>
     <a :href="isShowable ? null : url" target="_blank">
@@ -29,7 +32,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import mime from 'mime'
+import { tipoDelFile } from '@/utils/tipoDelFile'
 import FileTypeIcon from '@/components/Icons/FileTypeIcon.vue'
 import FileImageIcon from '@/components/Icons/FileImageIcon.vue'
 import FileTextIcon from '@/components/Icons/FileTextIcon.vue'
@@ -42,11 +45,11 @@ const props = defineProps({
 })
 
 const showDialog = ref(false)
-const mimeType = mime.getType(props.label) || ''
-const isImage = mimeType.startsWith('image/')
-const isPdf = mimeType === 'application/pdf'
-const isSpreadsheet = mimeType.includes('spreadsheet')
-const isText = mimeType === 'text/plain'
+const tipo = tipoDelFile(props.label)
+const isImage = tipo === 'immagine'
+const isPdf = tipo === 'pdf'
+const isSpreadsheet = tipo === 'foglio'
+const isText = tipo === 'testo'
 const isShowable = props.url && (isText || isImage)
 const content = ref('')
 
