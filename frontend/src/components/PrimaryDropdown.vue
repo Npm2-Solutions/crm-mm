@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Popover class="w-full min-w-0">
     <template #target="{ isOpen, togglePopover }">
@@ -7,7 +10,7 @@
         @click="togglePopover"
       >
         <div v-if="value" class="truncate">{{ value }}</div>
-        <div v-else class="text-base leading-5 text-ink-gray-4 truncate">
+        <div v-else class="text-base leading-5 text-ink-gray-5 truncate">
           {{ placeholder }}
         </div>
         <template #suffix>
@@ -37,7 +40,7 @@
             :validate="validate"
           />
           <div v-if="!options.length && !draft">
-            <div class="p-1.5 pl-3 pr-4 text-base text-ink-gray-4">
+            <div class="p-1.5 pl-3 pr-4 text-base text-ink-gray-5">
               {{ __('No {0} available', [label]) }}
             </div>
           </div>

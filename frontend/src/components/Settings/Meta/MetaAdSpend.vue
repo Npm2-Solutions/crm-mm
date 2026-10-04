@@ -226,7 +226,7 @@
                         size="sm"
                       />
                     </div>
-                    <div class="max-w-sm truncate text-ink-gray-4">
+                    <div class="max-w-sm truncate text-ink-gray-5">
                       {{
                         [row.campaign_name, row.adset_name]
                           .filter(Boolean)
@@ -444,7 +444,7 @@ function money(value, currency) {
 
 // green pays for itself, red does not; no colour when there is nothing to judge
 function roasClass(roas) {
-  if (roas === null || roas === undefined) return 'text-ink-gray-4'
+  if (roas === null || roas === undefined) return 'text-ink-gray-5'
   return roas >= 1 ? 'text-ink-green-8' : 'text-ink-red-8'
 }
 </script>

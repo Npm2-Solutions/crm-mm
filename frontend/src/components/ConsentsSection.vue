@@ -228,7 +228,7 @@ function dot(type) {
   if (status === 'Given') return parseColor('green')
   if (status === 'Withdrawn') return parseColor('red')
   if (status === 'Refused') return parseColor('orange')
-  return 'text-ink-gray-4'
+  return 'text-ink-gray-5'
 }
 
 function action(type) {

@@ -183,7 +183,7 @@
               :placeholder="__('value')"
             />
           </div>
-          <p class="text-xs text-ink-gray-4">
+          <p class="text-xs text-ink-gray-5">
             {{ __('Fields come from {0}.', [editor.recordDoctype.value]) }}
           </p>
         </template>
@@ -304,7 +304,7 @@
               inputmode="numeric"
               :label="__('Timeout in hours (empty = wait forever)')"
             />
-            <p class="text-xs text-ink-gray-4">
+            <p class="text-xs text-ink-gray-5">
               {{
                 __(
                   'After this wait an If / Else on the field «wait_result» tells the answer (event) from the timeout.',
@@ -412,7 +412,7 @@
             :label="__('Add branch')"
             @click="step.branches.push(newBranch())"
           />
-          <p class="text-xs text-ink-gray-4">
+          <p class="text-xs text-ink-gray-5">
             {{
               __(
                 'Branches are checked top to bottom; whatever matches none takes «None».',

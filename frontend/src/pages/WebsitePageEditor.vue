@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="flex h-screen w-screen flex-col overflow-hidden bg-surface-gray-2"
@@ -18,7 +22,7 @@
       </span>
       <span
         v-if="page.data?.route"
-        class="hidden truncate font-mono text-xs text-ink-gray-4 sm:inline"
+        class="hidden truncate font-mono text-xs text-ink-gray-5 sm:inline"
       >
         /{{ page.data.route }}
       </span>

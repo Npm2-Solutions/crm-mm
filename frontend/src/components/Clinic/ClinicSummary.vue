@@ -63,7 +63,7 @@
               <span v-if="line.value" class="text-ink-gray-8">{{
                 line.value
               }}</span>
-              <span v-else class="text-ink-gray-4">—</span>
+              <span v-else class="text-ink-gray-5">—</span>
               <span v-if="line.value" class="block text-p-xs text-ink-gray-5">
                 {{ line.source_title }} · {{ line.decided_by }},
                 {{ formatDate(line.decided_on, 'D MMM YYYY') }}

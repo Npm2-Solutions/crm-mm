@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     v-if="showGroupedRows"
@@ -12,7 +15,7 @@
           <div>{{ __(group.label) }} -</div>
           <div class="flex items-center gap-1">
             <component :is="group.icon" v-if="group.icon" />
-            <div v-if="group.group == ' '" class="text-ink-gray-4">
+            <div v-if="group.group == ' '" class="text-ink-gray-5">
               {{ __('Empty') }}
             </div>
             <div v-else>{{ group.group }}</div>

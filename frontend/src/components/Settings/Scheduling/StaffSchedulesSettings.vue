@@ -126,7 +126,7 @@
             </div>
             <div
               v-if="cell.state === 'closed'"
-              class="py-0.5 text-center text-p-xs text-ink-gray-4"
+              class="py-0.5 text-center text-p-xs text-ink-gray-5"
             >
               {{ __('Closed') }}
             </div>

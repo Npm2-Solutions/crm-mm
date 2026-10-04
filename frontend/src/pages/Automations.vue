@@ -129,7 +129,7 @@
 
       <div
         v-else-if="!automations.loading"
-        class="flex flex-col items-center gap-2 py-16 text-ink-gray-4"
+        class="flex flex-col items-center gap-2 py-16 text-ink-gray-5"
       >
         <FeatherIcon name="zap" class="size-8" />
         <span class="text-lg font-medium">
@@ -191,7 +191,7 @@
             <div class="text-sm text-ink-gray-5">
               {{ __(recipe.description) }}
             </div>
-            <div class="mt-1 text-xs text-ink-gray-4">
+            <div class="mt-1 text-xs text-ink-gray-5">
               {{ __(recipe.trigger_event) }}
             </div>
           </div>

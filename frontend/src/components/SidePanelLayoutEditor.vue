@@ -108,7 +108,7 @@
               <template #item-label="{ item }">
                 <div class="flex flex-col gap-1 text-ink-gray-9">
                   <div>{{ item.label }}</div>
-                  <div class="text-ink-gray-4 text-sm">
+                  <div class="text-ink-gray-5 text-sm">
                     {{ `${item.fieldname} - ${item.fieldtype}` }}
                   </div>
                 </div>
@@ -118,7 +118,7 @@
               v-else
               class="flex justify-center items-center border rounded border-dashed border-outline-elevation-2 p-3"
             >
-              <div class="text-sm text-ink-gray-4">
+              <div class="text-sm text-ink-gray-5">
                 {{ __('This section is not editable') }}
               </div>
             </div>

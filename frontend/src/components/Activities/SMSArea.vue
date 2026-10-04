@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div>
     <!-- inside the mixed chat the house bubble draws the frame, the clock and
@@ -63,7 +67,7 @@
               </Tooltip>
               <span
                 v-if="sms.type == 'Outgoing' && !failed(sms) && sms.status"
-                class="text-ink-gray-4"
+                class="text-ink-gray-5"
               >
                 · {{ __(sms.status) }}
               </span>

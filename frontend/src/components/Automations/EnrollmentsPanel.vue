@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-6">
     <div class="flex items-center justify-between">
@@ -69,7 +73,7 @@
                 </span>
                 <span class="text-ink-gray-5"> — {{ log.detail }}</span>
               </div>
-              <span class="shrink-0 text-xs text-ink-gray-4">
+              <span class="shrink-0 text-xs text-ink-gray-5">
                 {{ dayjs(log.creation).format('DD/MM HH:mm') }}
               </span>
             </li>
@@ -83,7 +87,7 @@
         </div>
       </div>
     </div>
-    <div v-else class="py-8 text-center text-sm text-ink-gray-4">
+    <div v-else class="py-8 text-center text-sm text-ink-gray-5">
       {{ __('No records have been enrolled yet.') }}
     </div>
   </div>

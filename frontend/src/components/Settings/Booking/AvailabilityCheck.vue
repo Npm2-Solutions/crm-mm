@@ -101,7 +101,7 @@
       <section class="flex flex-col gap-2">
         <h3 class="text-p-sm-medium text-ink-gray-6">
           {{ __('Professionals') }}
-          <span class="text-ink-gray-4">· {{ staffingLabel }}</span>
+          <span class="text-ink-gray-5">· {{ staffingLabel }}</span>
         </h3>
         <div
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
@@ -129,7 +129,7 @@
                 :key="why.code"
                 class="text-p-sm text-ink-gray-7"
               >
-                <span class="font-mono text-p-xs text-ink-gray-4">{{
+                <span class="font-mono text-p-xs text-ink-gray-5">{{
                   why.code
                 }}</span>
                 {{ why.text }}
@@ -182,7 +182,7 @@ const ReasonRow = defineComponent({
         [
           h(
             'span',
-            { class: 'font-mono text-p-xs text-ink-gray-4' },
+            { class: 'font-mono text-p-xs text-ink-gray-5' },
             props.reason.code + ' ',
           ),
           props.reason.text,

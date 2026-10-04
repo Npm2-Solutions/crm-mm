@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!-- Empty + editable -->
   <div
@@ -10,14 +13,14 @@
       :class="[iconClasses, 'text-ink-gray-5']"
       aria-hidden="true"
     />
-    <span class="whitespace-nowrap text-ink-gray-4">{{
+    <span class="whitespace-nowrap text-ink-gray-5">{{
       __('Attach file…')
     }}</span>
   </div>
 
   <!-- Empty + disabled -->
   <div v-else-if="!value && disabled" :class="containerClasses">
-    <span class="text-ink-gray-4">—</span>
+    <span class="text-ink-gray-5">—</span>
   </div>
 
   <!-- Has value -->
@@ -54,7 +57,7 @@
     </Tooltip>
     <button
       v-if="!disabled"
-      class="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded text-ink-gray-4 hover:bg-surface-gray-2 hover:text-ink-gray-7 dark:hover:bg-surface-gray-4"
+      class="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded text-ink-gray-5 hover:bg-surface-gray-2 hover:text-ink-gray-7 dark:hover:bg-surface-gray-4"
       :title="__('Clear')"
       @click.prevent="clearAttachment"
     >

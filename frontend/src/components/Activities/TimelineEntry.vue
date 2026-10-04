@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   One thing that happened, in the mixed history.
 
   A chat puts «them» on the left and «us» on the right, and that works because a
@@ -48,7 +51,7 @@
             {{ speaker }}
           </span>
           <span class="shrink-0 text-p-xs" :class="tone.ink">{{ label }}</span>
-          <span class="ml-auto shrink-0 text-p-xs text-ink-gray-4">
+          <span class="ml-auto shrink-0 text-p-xs text-ink-gray-5">
             {{ time }}
           </span>
         </div>

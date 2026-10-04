@@ -66,7 +66,7 @@
               type="time"
               @update:modelValue="(v) => patch(row, { start_time: v })"
             />
-            <span class="text-ink-gray-4">–</span>
+            <span class="text-ink-gray-5">–</span>
             <FormControl
               class="w-[92px] max-md:flex-1"
               :modelValue="hhmm(row.end_time)"
@@ -101,7 +101,7 @@
             @click="copyToAll(day)"
           />
         </div>
-        <span v-else class="flex h-7 items-center text-p-sm text-ink-gray-4">
+        <span v-else class="flex h-7 items-center text-p-sm text-ink-gray-5">
           {{ __('Closed') }}
         </span>
       </div>

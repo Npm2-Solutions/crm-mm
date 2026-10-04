@@ -14,7 +14,7 @@
     <!-- grip · kind · words · what applies to it · open · menu -->
     <div class="flex items-center gap-2 px-2.5 py-2">
       <DragVerticalIcon
-        class="drag-handle h-3.5 shrink-0 cursor-grab text-ink-gray-4"
+        class="drag-handle h-3.5 shrink-0 cursor-grab text-ink-gray-5"
       />
       <component
         :is="componentIcon(field.type)"
@@ -28,7 +28,7 @@
       >
         <span
           class="min-w-0 truncate text-base"
-          :class="headline ? 'text-ink-gray-8' : 'italic text-ink-gray-4'"
+          :class="headline ? 'text-ink-gray-8' : 'italic text-ink-gray-5'"
         >
           {{ headline || __('Write the question') }}
         </span>

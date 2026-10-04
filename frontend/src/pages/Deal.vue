@@ -222,7 +222,7 @@
             >
               <div
                 v-if="dealContacts?.loading && dealContacts?.data?.length == 0"
-                class="flex min-h-20 flex-1 items-center justify-center gap-3 text-base text-ink-gray-4"
+                class="flex min-h-20 flex-1 items-center justify-center gap-3 text-base text-ink-gray-5"
               >
                 <LoadingIndicator class="h-4 w-4" />
                 <span>{{ __('Loading...') }}</span>
@@ -312,7 +312,7 @@
                       </div>
                       <div
                         v-if="!contact.email && !contact.mobile_no"
-                        class="flex items-center justify-center py-4 text-sm text-ink-gray-4"
+                        class="flex items-center justify-center py-4 text-sm text-ink-gray-5"
                       >
                         {{ __('No Details Added') }}
                       </div>

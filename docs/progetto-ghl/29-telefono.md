@@ -743,6 +743,8 @@ nessun browser di prova ha la sua tastiera.
 | `CommentBox.vue`, `EmailEditor.vue` | Il riquadro dove si scrive una nota o un'email si chiama come il suo invito («Scrivi un'email…»): il segnaposto si disegna, non si legge |
 | `Activities/ChatBubble.vue`, `HappenedCard.vue` | Quello che le spunte di un messaggio dicono passandoci sopra («Letto», «Consegnato al telefono»), e «Inviato dal telefono», ora si legge anche con VoiceOver e TalkBack: un telefono non ha il passaggio del mouse. Le icone accanto alle parole non si leggono come «immagine» |
 | Impostazioni: Generale, Dashboard, Agenda e promemoria, Utenti, Modelli email, Pagina e regole, La tua email | Ogni campo ha un nome (lo controlla l'albero di accessibilità di Chrome su tutte le 53 pagine): i menu («Ordine delle attività», «Vista predefinita», i promemoria «Tipo», «Quanto prima», «Unità»), il filtro «Livelli», il menu «Opzioni» di un utente o di un modello, i numeri delle regole della prenotazione, la firma |
+| 55 file (stati vuoti, suggerimenti, «Nessun titolo», le regole della prenotazione, le automazioni, la chiamata…) | Nessuna parola nel grigio più chiaro (`ink-gray-4`, 2,83:1 sul bianco: al sole non si legge): passano al quinto (4,99:1 sul bianco, 5,21:1 sul fondo scuro). Il quarto resta alle icone che accompagnano, ai separatori e a uno spinner |
+| `Settings/Profile/ProfileSettings.vue` | La foto del profilo si cambia e si toglie con due pulsanti veri, con il loro nome («Cambia la foto», «Rimuovi la foto»); la × di 16px ha l'anello che la fa prendere al dito |
 
 ## Non incluso
 

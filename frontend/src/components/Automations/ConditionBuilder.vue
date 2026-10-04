@@ -1,9 +1,13 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex flex-col gap-2">
     <template v-for="(group, groupIndex) in groups" :key="groupIndex">
       <div
         v-if="groupIndex > 0"
-        class="flex items-center gap-2 text-xs font-medium uppercase text-ink-gray-4"
+        class="flex items-center gap-2 text-xs font-medium uppercase text-ink-gray-5"
       >
         <div class="h-px flex-1 bg-[var(--outline-gray-2)]" />
         {{ __('or') }}
@@ -16,7 +20,7 @@
           <template v-for="(condition, index) in group" :key="index">
             <div
               v-if="index > 0"
-              class="text-xs font-medium uppercase text-ink-gray-4"
+              class="text-xs font-medium uppercase text-ink-gray-5"
             >
               {{ __('and') }}
             </div>

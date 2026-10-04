@@ -194,7 +194,7 @@
                     ? 'bg-surface-gray-7 font-semibold text-ink-base'
                     : cell.inMonth
                       ? 'text-ink-gray-7'
-                      : 'text-ink-gray-4'
+                      : 'text-ink-gray-5'
                 "
               >
                 {{ cell.date.getDate() }}
@@ -365,7 +365,7 @@
             :rows="5"
             :placeholder="__('What do you want to share?')"
           />
-          <div class="mt-1 text-right text-xs text-ink-gray-4">
+          <div class="mt-1 text-right text-xs text-ink-gray-5">
             {{ form.content.length }} {{ __('characters') }}
           </div>
         </div>
@@ -702,7 +702,7 @@ function chipClass(status) {
       Failed: 'bg-surface-red-1 text-ink-red-8 hover:bg-surface-red-2',
       Draft:
         'bg-surface-elevation-2 text-ink-gray-5 border border-dashed border-outline-gray-2 hover:bg-surface-gray-1',
-      Cancelled: 'bg-surface-gray-1 text-ink-gray-4 line-through',
+      Cancelled: 'bg-surface-gray-1 text-ink-gray-5 line-through',
     }[status] || 'bg-surface-gray-1'
   )
 }

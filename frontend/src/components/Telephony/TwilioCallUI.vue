@@ -66,7 +66,7 @@
         </div>
         <div v-if="scelta" class="flex w-full flex-col gap-3">
           <div class="flex flex-col gap-1">
-            <div id="numero-da-mostrare" class="text-sm text-ink-gray-4">
+            <div id="numero-da-mostrare" class="text-sm text-ink-gray-5">
               {{ __('Call from') }}
             </div>
             <div
@@ -88,7 +88,7 @@
                   <div class="truncate text-base">
                     {{ n.label || n.number }}
                   </div>
-                  <div class="truncate text-sm text-ink-gray-4">
+                  <div class="truncate text-sm text-ink-gray-5">
                     {{
                       n.own
                         ? n.label

@@ -1,4 +1,8 @@
 <!-- eslint-disable vue/no-v-html -->
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex flex-col gap-3">
     <FormControl
@@ -58,7 +62,7 @@
               >
                 {{ step.title }}
               </span>
-              <span v-if="step.optional" class="ml-1.5 text-xs text-ink-gray-4">
+              <span v-if="step.optional" class="ml-1.5 text-xs text-ink-gray-5">
                 {{ __('optional') }}
               </span>
             </span>

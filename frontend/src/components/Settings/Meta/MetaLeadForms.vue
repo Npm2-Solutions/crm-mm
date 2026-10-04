@@ -168,7 +168,7 @@
                 <span class="truncate text-p-base text-ink-gray-7">{{
                   form.form_name
                 }}</span>
-                <span class="shrink-0 text-p-sm text-ink-gray-4">
+                <span class="shrink-0 text-p-sm text-ink-gray-5">
                   {{ __('{0} leads', [form.lead_count]) }}
                   <template v-if="form.form_status">
                     · {{ form.form_status }}</template
@@ -340,7 +340,7 @@
                   size="sm"
                 />
               </div>
-              <div class="text-p-sm text-ink-gray-4">{{ q.type }}</div>
+              <div class="text-p-sm text-ink-gray-5">{{ q.type }}</div>
             </div>
             <FormControl
               v-model="q.mapped_to_crm_field"
