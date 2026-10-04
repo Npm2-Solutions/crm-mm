@@ -479,6 +479,26 @@ Con il tocco, come in un'app:
     per l'anello del fuoco contato nella larghezza: `box-content` in
     `Controls/Link.vue`); la persona scelta, una scatola disegnata come un
     campo, è alta 40px come gli altri (`data-campo`, `telefono.css` sezione 2).
+- **La giornata della segreteria, provata davvero.** Dal telefono, con
+  scritture vere:
+  - **«Accogli»** fermava la segreteria in due casi: un appuntamento
+    sovrapposto forzato da un manager tornava a essere un errore per chi non
+    può forzare, e un professionista il cui account non c'è più dava
+    «Impossibile trovare Riga #1». Ora le sovrapposizioni si ricontrollano solo
+    quando cambia qualcosa che le decide (orario, chi lo fa, le stanze, chi
+    viene: `slot_changed`), e un esito si salva senza ricontrollare i
+    collegamenti. In sala d'attesa il servizio sta sopra la persona;
+  - **una cosa da fare nuova** è di chi la scrive: senza nessuno in «Assegnato
+    a» non era di nessuno, e «Mie» restava vuota come se non fosse salvata;
+  - **la barra di scrittura** sopra una descrizione, una nota, un commento o
+    un'email sta su una riga: grassetto, corsivo, elenchi, link, immagine
+    (`phoneToolbar` in `components/editor/config.ts`), non le due righe del
+    computer;
+  - **«Emetti la fattura»** su un appuntamento di cui l'agenda non sa chi ha
+    fatto la prestazione dava un errore e nessuna strada: ora si apre la
+    fattura con quello che l'agenda sa e chiede solo «Chi l'ha eseguito»
+    (`appointment_invoice_proposal`, `nuovaFattura(cliente, { bozza })`); sotto
+    ogni professionista la qualifica in parole, non il suo codice.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
