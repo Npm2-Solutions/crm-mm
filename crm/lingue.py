@@ -1,7 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The language DottorCloud writes its own words in on a site.
+"""The language DottorCloud writes its own words in on a site, and the currency
+it counts in.
 
 What DottorCloud puts in a site once - the consents' texts, the pipelines'
 stages, the libraries' instructions and names - is data written in one language,
@@ -33,3 +34,18 @@ def del_centro() -> str:
 		frappe.db.get_single_value("System Settings", "language"),
 		frappe.db.get_single_value("System Settings", "country"),
 	)
+
+
+def valuta() -> str:
+	"""The currency the centre counts in: the one chosen in Settings, else its
+	country's, the euro where nobody said where the centre is (the rule of
+	``scegli``). The framework's CRM fell back on the dollar: a centre in Italy
+	read "0 USD" on its dashboard, and every deal in euros was converted to
+	dollars at the day's rate."""
+	scelta = frappe.db.get_single_value("FCRM Settings", "currency")
+	if scelta:
+		return scelta
+	from frappe.geo.country_info import get_country_info
+
+	paese = frappe.db.get_single_value("System Settings", "country") or "Italy"
+	return (get_country_info(paese) or {}).get("currency") or "EUR"
