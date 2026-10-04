@@ -2,9 +2,11 @@
 # Modifications copyright (c) 2026, NPM2 Solutions Srl
 # See license.txt
 
+import frappe
+from frappe import _
 from frappe.tests import UnitTestCase
 
-from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import in_frase
+from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_field_obj, in_frase
 
 
 class TestCRMFieldsLayout(UnitTestCase):
@@ -15,3 +17,14 @@ class TestCRMFieldsLayout(UnitTestCase):
 		# as written: an acronym, an abbreviation, a capital inside, one letter
 		for come_scritto in ("IVA", "PEC", "N. di dipendenti", "WhatsApp", "X", ""):
 			self.assertEqual(in_frase(come_scritto), come_scritto)
+
+	def test_una_data_chiede_di_sceglierla(self):
+		# its label is beside it: «Aggiungi data di chiusura...» was cut on a phone
+		for tipo in ("Date", "Datetime"):
+			campo = get_field_obj(frappe._dict(fieldtype=tipo, label="Expected Closure Date"))
+			self.assertEqual(campo.placeholder, _("Select date"))
+		testo = get_field_obj(frappe._dict(fieldtype="Data", label="Website"))
+		self.assertEqual(testo.placeholder, _("Add {0}...").format(in_frase(_("Website"))))
+		# one written in the layout stays
+		scritto = get_field_obj(frappe._dict(fieldtype="Date", label="Birthday", placeholder="gg/mm/aaaa"))
+		self.assertEqual(scritto.placeholder, "gg/mm/aaaa")
