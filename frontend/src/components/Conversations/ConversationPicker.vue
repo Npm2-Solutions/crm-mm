@@ -25,8 +25,10 @@
       <div class="flex min-w-0 items-center justify-between gap-2">
         <Dropdown :options="viewOptions" placement="left">
           <template #default="{ open }">
+            <!-- on a phone the view and the unread filter are 36px tall, not
+                 a line of words to hit -->
             <button
-              class="flex max-w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-gray-2"
+              class="flex max-w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-gray-2 max-md:min-h-9"
             >
               <span
                 class="min-w-0 truncate text-lg font-semibold text-ink-gray-9"
@@ -65,7 +67,7 @@
           :text="__('Only the ones with something nobody here has read yet')"
         >
           <button
-            class="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-p-sm font-medium transition-colors"
+            class="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-p-sm font-medium transition-colors max-md:min-h-9 max-md:px-3"
             :class="
               onlyUnread
                 ? 'bg-surface-blue-2 text-ink-blue-8 ring-1 ring-outline-blue-2'
