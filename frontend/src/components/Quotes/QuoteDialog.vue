@@ -24,9 +24,11 @@
           :theme="STATO[plan.status] || 'gray'"
           :label="__(plan.status, null, 'Quote')"
         />
-        <!-- the deal it belongs to, a step away -->
+        <!-- the deal it belongs to, a step away; on a phone it goes under
+             the title, its words in line with it -->
         <Button
           v-if="plan.deal && puo('trattative.vedi')"
+          class="max-md:-ml-2"
           variant="ghost"
           size="sm"
           :label="
@@ -618,7 +620,8 @@ const Totals = (p) => {
     'dl',
     {
       class:
-        'ml-auto grid w-full max-w-xs grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 text-p-sm',
+        // on the right on a desk; on a phone as wide as the rows above
+        'ml-auto grid w-full max-w-xs grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 text-p-sm max-md:max-w-none',
     },
     rows.flatMap(([label, value, strong]) => [
       h(

@@ -264,12 +264,14 @@
     animation: dc-foglio-giu 180ms ease-in;
   }
   /* the title row of frappe-ui's own header stays on top while the form
-     scrolls, with the close button */
+     scrolls, with the close button: beside the title's first line, not in the
+     middle of a title that wraps (a quote's state and its deal under it) */
   .dialog-content
     div.mb-6.flex.items-center.justify-between:has(> div > header) {
     position: sticky;
     top: 0;
     z-index: 10;
+    align-items: flex-start;
     margin: -1rem -1rem 1rem;
     padding: 0.75rem 1rem;
     background-color: var(--surface-elevation-1);
@@ -282,6 +284,13 @@
     border-top: 1px solid var(--outline-elevation-2);
     background-color: var(--surface-elevation-1);
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  /* a footer written in frappe-ui's own row of actions is that row: one line
+     above the buttons, not two (a quote's) */
+  .dialog-content > div.px-4.pb-7.pt-4 .dialog-footer {
+    position: static;
+    border-top: 0;
+    padding-bottom: 0;
   }
   /* the actions of a sheet are for a thumb: as wide as they can be, 44px */
   .dialog-content > div.px-4.pb-7.pt-4 button,
