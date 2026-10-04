@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="'4xl'">
     <template #body>
@@ -18,6 +21,7 @@
               @click="openGridRowFieldsModal"
             />
             <Button
+              :aria-label="__('Close')"
               icon="lucide-x"
               variant="ghost"
               class="w-7"

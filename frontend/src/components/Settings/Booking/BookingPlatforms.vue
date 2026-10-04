@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -107,6 +110,7 @@
             @click.stop="syncNow(conn.name)"
           />
           <Button
+            :aria-label="__('Delete')"
             variant="ghost"
             icon="lucide-trash-2"
             @click.stop="remove(conn)"
@@ -426,6 +430,7 @@
               />
               <span v-else />
               <Button
+                :aria-label="__('Remove')"
                 variant="ghost"
                 icon="lucide-trash-2"
                 @click="form.mappings.splice(i, 1)"

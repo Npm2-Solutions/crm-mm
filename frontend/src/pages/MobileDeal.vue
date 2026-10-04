@@ -174,6 +174,7 @@
                                 :options="contactOptions(contact.name)"
                               >
                                 <Button
+                                  :aria-label="__('Options')"
                                   icon="lucide-more-horizontal"
                                   class="text-ink-gray-5"
                                   variant="ghost"

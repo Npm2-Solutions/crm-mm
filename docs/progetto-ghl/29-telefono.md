@@ -726,6 +726,8 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/pages/SocialPlanner.vue` | Il nuovo post è il «+», i profili l'ingranaggio |
 | `frontend/src/components/BillingProfileSection.vue` + `utils/locale.js` (`inFrase`), `utils/paesi.js`, `telefono.css` (2) | I dati di fatturazione: «Aggiungi codice fiscale…» come i campi sopra, il paese per nome («Italia», da cercare) salvato con le sue due lettere, un campo più lungo della sua casella che finisce in «…». Testato in `tests/unit/locale.test.js` e `paesi.test.js` |
 | `frontend/src/components/AssignTo.vue`, `AssignToBody.vue`, `MultipleAvatar.vue` | «Assegna a» è un foglio dal basso (si salva chiudendolo, come la scheda sul computer); nella testata solo la faccia di chi segue la persona, così il suo nome resta intero |
+| 72 componenti e pagine (`:aria-label`) | Ogni pulsante fatto solo di un'icona dice cosa fa: chiudere, rimuovere, le opzioni di una riga, il giorno o il mese prima e dopo, il microfono di una chiamata. VoiceOver e TalkBack leggevano «pulsante» |
+| `frontend/src/pages/SocialPlanner.vue` (telefono) | I post del mese sono righe da 44px, non le etichette da 26px della griglia |
 | `frontend/src/components/PersonHeader.vue` | Sotto il nome, «Paziente dal…» e «Ultima visita…» vanno a capo senza che la seconda riga cominci con «·» |
 | `frontend/src/components/RelatedPeopleSection.vue` | Collegare una persona: «Già in DottorCloud» e «Una persona nuova» le due metà di un interruttore solo, non due pulsanti uno sotto l'altro |
 

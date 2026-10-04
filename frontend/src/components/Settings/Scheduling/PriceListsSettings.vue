@@ -73,6 +73,7 @@
               size="sm"
             />
             <Button
+              :aria-label="__('Edit')"
               variant="ghost"
               icon="lucide-pencil"
               @click.stop="openListEditor(list)"
@@ -150,6 +151,7 @@
                 size="sm"
               />
               <Button
+                :aria-label="__('Delete')"
                 variant="ghost"
                 icon="lucide-trash-2"
                 @click.stop="removeRule(rule)"

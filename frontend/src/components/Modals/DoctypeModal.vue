@@ -39,6 +39,7 @@
               @click="chiediDiEliminare"
             />
             <Button
+              :aria-label="__('Close')"
               variant="ghost"
               class="w-7"
               icon="lucide-x"

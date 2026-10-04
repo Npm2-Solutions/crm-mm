@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="'xl'">
     <template #body-header>
@@ -15,7 +18,12 @@
             :icon="EditIcon"
             @click="openQuickEntryModal"
           />
-          <Button icon="lucide-x" variant="ghost" @click="show = false" />
+          <Button
+            :aria-label="__('Close')"
+            icon="lucide-x"
+            variant="ghost"
+            @click="show = false"
+          />
         </div>
       </div>
     </template>

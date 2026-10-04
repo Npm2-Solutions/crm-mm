@@ -84,6 +84,7 @@
             />
           </div>
           <Button
+            :aria-label="__('Remove')"
             icon="lucide-x"
             variant="ghost"
             @click="
@@ -146,6 +147,7 @@
             />
           </div>
           <Button
+            :aria-label="__('Remove')"
             icon="lucide-x"
             variant="ghost"
             @click="

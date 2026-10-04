@@ -134,6 +134,7 @@
     >
       <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
         <Button
+          :aria-label="__('Previous day')"
           variant="ghost"
           icon="lucide-chevron-left"
           @click="shiftDay(-1)"
@@ -144,6 +145,7 @@
           @click="agendaDate = today()"
         />
         <Button
+          :aria-label="__('Next day')"
           variant="ghost"
           icon="lucide-chevron-right"
           @click="shiftDay(1)"
@@ -292,6 +294,7 @@
             <!-- Increment and Decrement Button -->
 
             <Button
+              :aria-label="__('Previous')"
               variant="ghost"
               icon="lucide-chevron-left"
               @click="decrement"
@@ -302,6 +305,7 @@
               @click="setCalendarDate()"
             />
             <Button
+              :aria-label="__('Next')"
               variant="ghost"
               icon="lucide-chevron-right"
               @click="increment"

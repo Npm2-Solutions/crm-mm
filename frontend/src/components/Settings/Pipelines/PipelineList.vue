@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <SettingsLayoutBase
     :title="__('Pipelines')"
@@ -75,6 +78,7 @@
                   :options="dropdownOptions(pipeline)"
                 >
                   <Button
+                    :aria-label="__('Options')"
                     icon="lucide-more-horizontal"
                     variant="ghost"
                     @click="isConfirmingDelete = false"

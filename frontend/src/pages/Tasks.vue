@@ -179,6 +179,7 @@
           variant="ghost"
         >
           <Button
+            :aria-label="__('Options')"
             icon="lucide-more-horizontal"
             variant="ghost"
             @click.stop.prevent

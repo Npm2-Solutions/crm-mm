@@ -21,6 +21,7 @@
               <slot name="actions" v-bind="{ section }">
                 <Button
                   v-if="section.showEditButton"
+                  :aria-label="__('Edit')"
                   variant="ghost"
                   class="w-7 mr-2"
                   :icon="EditIcon"

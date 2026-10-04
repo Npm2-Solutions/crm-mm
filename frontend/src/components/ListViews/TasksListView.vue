@@ -186,7 +186,11 @@
         <Dropdown
           :options="listBulkActionsRef.bulkActions(selections, unselectAll)"
         >
-          <Button icon="lucide-more-horizontal" variant="ghost" />
+          <Button
+            :aria-label="__('Actions')"
+            icon="lucide-more-horizontal"
+            variant="ghost"
+          />
         </Dropdown>
       </template>
     </ListSelectBanner>

@@ -75,6 +75,7 @@
                       @keydown.esc.stop="editName = false"
                     />
                     <Button
+                      :aria-label="__('Save')"
                       variant="outline"
                       icon="lucide-check"
                       @click="save"

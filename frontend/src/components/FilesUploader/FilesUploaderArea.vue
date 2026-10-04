@@ -44,6 +44,7 @@
           />
           <div>
             <Button
+              :aria-label="__('Device')"
               :icon="isMobileView ? 'lucide-smartphone' : 'lucide-monitor'"
               size="md"
               @click="browseFiles"
@@ -52,6 +53,7 @@
           </div>
           <div v-if="!disableFileBrowser">
             <Button
+              :aria-label="__('Library')"
               icon="lucide-folder"
               size="md"
               @click="showFileBrowser = true"
@@ -59,11 +61,21 @@
             <div class="mt-1">{{ __('Library') }}</div>
           </div>
           <div v-if="allowWebLink">
-            <Button icon="lucide-link" size="md" @click="showWebLink = true" />
+            <Button
+              :aria-label="__('Link')"
+              icon="lucide-link"
+              size="md"
+              @click="showWebLink = true"
+            />
             <div class="mt-1">{{ __('Link') }}</div>
           </div>
           <div v-if="allowTakePhoto">
-            <Button icon="lucide-camera" size="md" @click="startCamera" />
+            <Button
+              :aria-label="__('Camera')"
+              icon="lucide-camera"
+              size="md"
+              @click="startCamera"
+            />
             <div class="mt-1">{{ __('Camera') }}</div>
           </div>
         </div>
@@ -128,6 +140,7 @@
             :showPercentage="file.uploading"
           />
           <Button
+            :aria-label="__('Remove')"
             v-else
             variant="ghost"
             icon="lucide-trash-2"

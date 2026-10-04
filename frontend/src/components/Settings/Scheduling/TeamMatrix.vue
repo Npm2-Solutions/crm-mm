@@ -101,6 +101,7 @@
                     <span class="grow" />
                     <Dropdown :options="rowActions(service)">
                       <Button
+                        :aria-label="__('Options')"
                         variant="ghost"
                         size="sm"
                         icon="lucide-ellipsis"

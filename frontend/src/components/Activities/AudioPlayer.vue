@@ -1,7 +1,11 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="w-full text-sm text-ink-gray-5">
     <div class="flex items-center gap-2">
       <Button
+        :aria-label="isPaused ? __('Play') : __('Pause')"
         variant="ghost"
         class="text-ink-gray-5"
         :icon="isPaused ? PlayIcon : PauseIcon"
@@ -62,6 +66,7 @@
         </div>
         <Dropdown :options="options">
           <Button
+            :aria-label="__('Options')"
             icon="lucide-more-horizontal"
             variant="ghost"
             @click="showPlaybackSpeed = false"

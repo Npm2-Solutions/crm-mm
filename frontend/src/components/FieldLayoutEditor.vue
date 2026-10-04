@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex flex-col gap-5.5">
     <div
@@ -40,6 +43,7 @@
                 />
                 <Button
                   v-if="tab.editingLabel"
+                  :aria-label="__('Done')"
                   icon="lucide-check"
                   variant="ghost"
                   @click="tab.editingLabel = false"
@@ -136,6 +140,7 @@
                     />
                     <Button
                       v-if="section.editingLabel"
+                      :aria-label="__('Done')"
                       icon="lucide-check"
                       variant="ghost"
                       @click="section.editingLabel = false"
@@ -202,6 +207,7 @@
                           <div class="truncate">{{ field.label }}</div>
                         </div>
                         <Button
+                          :aria-label="__('Remove')"
                           variant="ghost"
                           class="!size-4 rounded-sm"
                           icon="lucide-x"

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Popover placement="bottom-end">
     <template #target="{ togglePopover, close }">
@@ -43,6 +46,7 @@
                     {{ i == 0 ? __('Where') : __('And') }}
                   </div>
                   <Button
+                    :aria-label="__('Remove')"
                     class="flex"
                     variant="ghost"
                     icon="lucide-x"
@@ -113,6 +117,7 @@
                   </div>
                 </div>
                 <Button
+                  :aria-label="__('Remove')"
                   class="flex"
                   variant="ghost"
                   icon="lucide-x"

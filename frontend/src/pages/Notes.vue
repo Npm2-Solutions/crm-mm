@@ -70,6 +70,7 @@
             ]"
           >
             <Button
+              :aria-label="__('Options')"
               icon="lucide-more-horizontal"
               variant="ghost"
               class="hover:bg-surface-base"

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     v-if="isMobileView"
@@ -130,7 +133,11 @@
         :loading="updateQuickFilters.loading"
         @click="saveQuickFilters"
       />
-      <Button icon="lucide-x" @click="customizeQuickFilter = false" />
+      <Button
+        :aria-label="__('Cancel')"
+        icon="lucide-x"
+        @click="customizeQuickFilter = false"
+      />
     </div>
   </div>
   <div v-else class="flex items-center justify-between gap-2 px-5 py-4">

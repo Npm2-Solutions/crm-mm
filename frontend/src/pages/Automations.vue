@@ -117,7 +117,12 @@
             placement="right"
             @click.stop
           >
-            <Button variant="ghost" icon="lucide-more-horizontal" @click.stop />
+            <Button
+              :aria-label="__('Options')"
+              variant="ghost"
+              icon="lucide-more-horizontal"
+              @click.stop
+            />
           </Dropdown>
         </div>
       </div>

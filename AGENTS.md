@@ -674,6 +674,9 @@ row, the bar's words beside their icons).
   back closes it before leaving the page, as it does a sheet or a menu.
 - An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
   or `lucide-…`: any other name draws an empty circle.
+- A button that is only an icon says what it does (`:aria-label="__('Close')"`,
+  «Opzioni», «Il mese prima»): without it VoiceOver and TalkBack read «pulsante».
+  A tooltip is not its name.
 - While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
   `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
   must stay in sight sits at the bottom of the frame or of a sheet, never

@@ -42494,3 +42494,35 @@ msgstr "DottorCloud mostra ogni orario sull'ora del sito ({0}): con {1} qui, gli
 msgctxt "Assistant action"
 msgid "Draft"
 msgstr "Prepara una bozza"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Show changes"
+msgstr "Mostra le modifiche"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Hide changes"
+msgstr "Nascondi le modifiche"
+
+#: frontend/src/components/Activities/AudioPlayer.vue
+msgid "Play"
+msgstr "Riproduci"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Mute"
+msgstr "Disattiva il microfono"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Unmute"
+msgstr "Riattiva il microfono"
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "Clear search"
+msgstr "Cancella la ricerca"
+
+#: frontend/src/pages/Deal.vue
+msgid "Show details"
+msgstr "Mostra i dettagli"
+
+#: frontend/src/pages/Deal.vue
+msgid "Hide details"
+msgstr "Nascondi i dettagli"

@@ -22,7 +22,12 @@
           :label="__('Edit Event')"
           combo="Enter"
         >
-          <Button :icon="EditIcon" variant="ghost" @click="editDetails" />
+          <Button
+            :aria-label="__('Edit Event')"
+            :icon="EditIcon"
+            variant="ghost"
+            @click="editDetails"
+          />
         </ShortcutTooltip>
         <ShortcutTooltip
           v-if="(mode === 'edit' || mode === 'details') && !readonly"
@@ -30,7 +35,12 @@
           combo="Delete"
           :alt-combos="['Backspace']"
         >
-          <Button icon="lucide-trash-2" variant="ghost" @click="deleteEvent" />
+          <Button
+            :aria-label="__('Delete Event')"
+            icon="lucide-trash-2"
+            variant="ghost"
+            @click="deleteEvent"
+          />
         </ShortcutTooltip>
         <!-- a copy is a new event: for who books (doc 30) -->
         <ShortcutTooltip
@@ -38,10 +48,20 @@
           :label="__('Duplicate Event')"
           combo="Mod+D"
         >
-          <Button icon="lucide-copy" variant="ghost" @click="duplicateEvent" />
+          <Button
+            :aria-label="__('Duplicate Event')"
+            icon="lucide-copy"
+            variant="ghost"
+            @click="duplicateEvent"
+          />
         </ShortcutTooltip>
         <ShortcutTooltip :label="__('Close Panel')" combo="Esc">
-          <Button icon="lucide-x" variant="ghost" @click="close" />
+          <Button
+            :aria-label="__('Close Panel')"
+            icon="lucide-x"
+            variant="ghost"
+            @click="close"
+          />
         </ShortcutTooltip>
       </div>
     </div>

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex items-center justify-between">
     <div class="flex flex-col gap-1">
@@ -44,6 +47,7 @@
               </div>
               <div class="flex cursor-pointer items-center gap-1">
                 <Button
+                  :aria-label="__('Edit')"
                   variant="ghost"
                   icon="lucide-edit"
                   @click.stop="editHolidayList(holiday)"
@@ -142,6 +146,7 @@
           <div class="flex justify-end">
             <Dropdown placement="right" :options="dropdownOptions(row)">
               <Button
+                :aria-label="__('Options')"
                 icon="lucide-more-horizontal"
                 variant="ghost"
                 @click="isConfirmingDelete = false"

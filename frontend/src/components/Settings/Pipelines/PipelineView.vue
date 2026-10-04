@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <SettingsLayoutBase>
     <template #title>
@@ -136,6 +139,7 @@
                   </span>
                 </Tooltip>
                 <Button
+                  :aria-label="__('Delete')"
                   icon="lucide-trash-2"
                   variant="ghost"
                   @click="askToDeleteStage(stage)"

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="dialogOptions.size" bare>
     <template #default>
@@ -18,6 +21,7 @@
               @click="openQuickEntryModal"
             />
             <Button
+              :aria-label="__('Close')"
               variant="ghost"
               class="w-7"
               icon="lucide-x"

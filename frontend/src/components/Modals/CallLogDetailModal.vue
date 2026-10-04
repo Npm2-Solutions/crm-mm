@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <Dialog v-model:open="show">
@@ -13,7 +16,11 @@
             <!-- a note and a task are for who writes them (doc 30) -->
             <Dropdown v-if="opzioni.length" :options="opzioni">
               <template #default>
-                <Button variant="ghost" icon="lucide-more-horizontal" />
+                <Button
+                  :aria-label="__('Options')"
+                  variant="ghost"
+                  icon="lucide-more-horizontal"
+                />
               </template>
             </Dropdown>
             <Button
@@ -25,6 +32,7 @@
               @click="openCallLogModal"
             />
             <Button
+              :aria-label="__('Close')"
               icon="lucide-x"
               variant="ghost"
               class="w-7"

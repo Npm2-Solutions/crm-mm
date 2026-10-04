@@ -219,6 +219,7 @@
                 {{ ownSettings(row) }}
               </span>
               <Button
+                :aria-label="__('Remove')"
                 variant="ghost"
                 icon="lucide-trash-2"
                 @click="form.staff.splice(i, 1)"
@@ -262,6 +263,7 @@
                 min="1"
               />
               <Button
+                :aria-label="__('Remove')"
                 variant="ghost"
                 icon="lucide-trash-2"
                 @click="form.roles.splice(i, 1)"
@@ -329,6 +331,7 @@
                 <Switch v-model="row.required" size="sm" /> {{ __('Required') }}
               </label>
               <Button
+                :aria-label="__('Remove')"
                 variant="ghost"
                 icon="lucide-trash-2"
                 @click="form.resources.splice(i, 1)"
