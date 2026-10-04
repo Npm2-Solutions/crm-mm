@@ -854,6 +854,8 @@ nessun browser di prova ha la sua tastiera.
 | `src/index.css` | Il testo guida della casella (l'email, la nota) andava a capo dove non ci stava, e la riga sotto lo tagliava a metà: ora resta su una riga, con «…» dove non entra |
 | `Mobile/MobileAppHeader.vue`, `src/telefono.css` | L'anello invisibile del telefono in alto a destra arriva 8 px alla sua sinistra, e a 4 px di distanza prendeva gli ultimi 7 px dell'ultima icona della pagina: «Ricarica», «Altro», «Giorno dopo», «Giro di chiamate» rispondevano su 27 px. Ora fra i due c'è spazio, e rispondono su 34 × 40. Il nome della persona, che sulla conversazione apre la scheda, rispondeva su 26 px: ha l'anello delle briciole |
 | `Controls/Link.vue` | «Assegnata a» nel pannello della persona mostrava l'indirizzo email del collega finché non se ne apriva l'elenco: ora il suo nome, dagli utenti che l'app ha già, in ogni campo che sceglie un collega |
+| `Activities/WhatsAppBox.vue` | Di traverso il telefono è largo più di 768 px, e l'avviso delle 24 ore tornava di due righe con il suo pulsante: alla chat della persona restavano 90 px. Ora segue il telefono comunque lo si tenga: 111 px |
+| `composables/conversationScroll.js` (`farFromTheEnd`), `Activities/Activities.vue` | Chi risaliva una conversazione lunga doveva scorrere a mano fino in fondo. Ora, più di uno schermo sopra l'ultimo messaggio, in basso a destra compare «Vai all'ultimo messaggio», un pulsante da 40 px sopra i messaggi che non prende spazio; in fondo sparisce. Test: `tests/unit/conversationScroll.test.js` |
 
 ## Non incluso
 
