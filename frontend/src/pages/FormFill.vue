@@ -41,7 +41,10 @@
     </template>
   </LayoutHeader>
 
-  <div class="flex-1 overflow-y-auto">
+  <!-- what comes into view - a field touched with the keyboard up, the first
+       one missing - stays above the bar of actions at the bottom: on a phone
+       its three rows covered the signature -->
+  <div class="flex-1 overflow-y-auto scroll-pb-24 max-md:scroll-pb-44">
     <div v-if="!data" class="flex justify-center py-16">
       <LoadingIndicator class="w-5" />
     </div>
