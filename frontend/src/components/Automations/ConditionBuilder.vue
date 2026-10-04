@@ -36,7 +36,7 @@
           variant="ghost"
           size="sm"
           iconLeft="plus"
-          :label="__('And')"
+          :label="__('And another condition')"
           @click="group.push(newCondition())"
         />
       </div>
