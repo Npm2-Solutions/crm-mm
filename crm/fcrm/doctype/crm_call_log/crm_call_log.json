@@ -58,8 +58,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "From Number",
-   "reqd": 1,
-   "description": "The caller's number as the carrier reported it. A caller who hides their number shows as \"anonymous\"."
+   "description": "The caller's number as the carrier reported it. A caller who hides their number shows as \"anonymous\".",
+   "mandatory_depends_on": "eval:doc.telephony_medium && doc.telephony_medium != 'Manual'"
   },
   {
    "fieldname": "status",
@@ -99,7 +99,7 @@
    "in_standard_filter": 1,
    "label": "To Number",
    "options": "Phone",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.telephony_medium && doc.telephony_medium != 'Manual'"
   },
   {
    "fieldname": "duration",
@@ -267,7 +267,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-03 09:00:00.000000",
+ "modified": "2026-10-04 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Call Log",

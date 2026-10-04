@@ -1,3 +1,4 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 import json
 
 import frappe
@@ -785,7 +786,12 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 
 		title = data.get("title")
 		if data.doctype == "CRM Call Log":
-			title = f"Call from {data.get('from')} to {data.get('to')}"
+			# a call logged by hand may not know the number it was made from
+			title = (
+				_("Call from {0} to {1}").format(data.get("from"), data.get("to"))
+				if data.get("from")
+				else _("Call to {0}").format(data.get("to") or "")
+			)
 
 		if data.doctype == "CRM Deal":
 			title = data.get("organization")

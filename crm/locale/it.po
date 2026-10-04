@@ -42473,3 +42473,15 @@ msgstr "Cosa da fare eliminata"
 #: frontend/vite/frappeUi.js
 msgid "{0} more"
 msgstr "altri {0}"
+
+#: crm/api/doc.py
+msgid "Call from {0} to {1}"
+msgstr "Chiamata da {0} a {1}"
+
+#: crm/api/doc.py
+msgid "Call to {0}"
+msgstr "Chiamata a {0}"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.py
+msgid "A call from a telephony provider carries both numbers."
+msgstr "Una chiamata arrivata dal fornitore di telefonia porta entrambi i numeri."

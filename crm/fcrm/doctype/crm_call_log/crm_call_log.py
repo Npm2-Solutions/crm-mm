@@ -60,7 +60,7 @@ class CRMCallLog(Document):
 		transcription_error: DF.SmallText | None
 		transcription_status: DF.Literal["", "Pending", "In Progress", "Completed", "Failed", "Skipped"]
 		telephony_medium: DF.Literal["", "Manual", "Twilio"]
-		to: DF.Data
+		to: DF.Data | None
 		type: DF.Literal["Incoming", "Outgoing"]
 	# end: auto-generated types
 
@@ -73,6 +73,17 @@ class CRMCallLog(Document):
 
 	def validate(self):
 		self.link_only_what_the_user_can_read()
+		self.a_providers_call_carries_both_numbers()
+
+	def a_providers_call_carries_both_numbers(self):
+		"""A call logged by hand may know only the person's number: the desk called
+		from a line nobody wrote down, and the call is still worth keeping. A
+		provider's call always carries both ends, as its carrier reported them.
+		"""
+		if self.telephony_medium in ("", "Manual"):
+			return
+		if not (self.get("from") and self.get("to")):
+			frappe.throw(_("A call from a telephony provider carries both numbers."), frappe.MandatoryError)
 
 	def link_only_what_the_user_can_read(self):
 		"""Linking reaches into what is linked: the call shows on that lead's timeline,
