@@ -231,59 +231,10 @@ import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
-import Users from '@/components/Settings/Users.vue'
-import Hierarchy from '@/components/Settings/Hierarchy/Hierarchy.vue'
-import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
-import ProfilePage from '@/components/Settings/Profile/ProfilePage.vue'
-import PreferencesSettings from '@/components/Settings/PreferencesSettings.vue'
-import NotificationsSettings from '@/components/Settings/NotificationsSettings.vue'
-import MyEmail from '@/components/Settings/Profile/MyEmail.vue'
-import WhatsAppSettings from '@/components/Settings/WhatsAppSettings.vue'
-import WhatsAppTemplates from '@/components/Settings/WhatsAppTemplates.vue'
-import DefaultsSettings from '@/components/Settings/DefaultsSettings.vue'
-import BrandSettings from '@/components/Settings/BrandSettings.vue'
-import CalendarSettings from '@/components/Settings/CalendarSettings.vue'
-import HomeActions from '@/components/Settings/HomeActions.vue'
-import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
-import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
-import SealSettings from '@/components/Settings/SealSettings.vue'
-import AreaNoticeSettings from '@/components/Settings/AreaNoticeSettings.vue'
-import ExercisesSettings from '@/components/Settings/Plans/ExercisesSettings.vue'
-import FoodsSettings from '@/components/Settings/Clinic/FoodsSettings.vue'
-import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
-import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
-import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplatePage.vue'
-import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
-import BookingPlatforms from '@/components/Settings/Booking/BookingPlatforms.vue'
-import BookingPageSettings from '@/components/Settings/Booking/BookingPageSettings.vue'
-import OnlineBookingSetup from '@/components/Settings/Booking/OnlineBookingSetup.vue'
-import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
-import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
-import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSettings.vue'
-import PriceListsSettings from '@/components/Settings/Scheduling/PriceListsSettings.vue'
-import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedulesSettings.vue'
-import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
-import WaitingListSettings from '@/components/Settings/Scheduling/WaitingListSettings.vue'
-import SubscriptionTypesSettings from '@/components/Settings/Scheduling/SubscriptionTypesSettings.vue'
-import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings.vue'
-import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
-import MetaSettings from '@/components/Settings/Meta/MetaSettings.vue'
-import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
-import WebsiteSettings from '@/components/Settings/Website/WebsiteSettings.vue'
-import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
-import TrackingSettings from '@/components/Settings/TrackingSettings.vue'
-import InvoicingCompany from '@/components/Settings/Invoicing/InvoicingCompany.vue'
-import InvoicingDefaults from '@/components/Settings/Invoicing/InvoicingDefaults.vue'
-import QualificationsSettings from '@/components/Settings/Invoicing/QualificationsSettings.vue'
-import BillableServicesSettings from '@/components/Settings/Invoicing/BillableServicesSettings.vue'
-import ProvidersSettings from '@/components/Settings/Invoicing/ProvidersSettings.vue'
-import ProviderConnection from '@/components/Settings/Invoicing/ProviderConnection.vue'
-import EmailConfig from '@/components/Settings/EmailConfig.vue'
-import PlanSettings from '@/components/Settings/PlanSettings.vue'
-import ConsentsSettings from '@/components/Settings/ConsentsSettings.vue'
 import SettingsHub from '@/components/Settings/SettingsHub.vue'
 import Icon from '@/components/Icon.vue'
 import { usersStore } from '@/stores/users'
+import { aRichiesta } from '@/utils/aRichiesta'
 import {
   showSettings,
   activeSettingsPage,
@@ -295,69 +246,168 @@ import { menuDi, trova } from '@/utils/impostazioni'
 import { chiudeConIndietro } from '@/utils/indietro'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
 import { ref, markRaw, computed, watch, h, provide, onBeforeUnmount } from 'vue'
-import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
-import SlaConfig from './Sla/SlaConfig.vue'
 
 const { getUser, puo, ambito } = usersStore()
 
 const user = computed(() => getUser() || {})
 
 // What each page is drawn with, by the name it has in the menu
-// (utils/impostazioni.js): an entry of its own, or a tab of one.
+// (utils/impostazioni.js): an entry of its own, or a tab of one. Each comes
+// when it is opened: the modal is always mounted, and its pages imported here
+// were in every page's first download.
 const PAGINE = {
-  Profile: ProfilePage,
-  Preferences: PreferencesSettings,
-  Notifications: NotificationsSettings,
-  'Your email': MyEmail,
-  'Google Calendar': GoogleCalendarSettings,
-  Brand: BrandSettings,
-  General: GeneralSettings,
-  Dashboard: DashboardSettings,
-  'Home Actions': HomeActions,
-  Defaults: DefaultsSettings,
-  Users,
-  'Invite User': InviteUserPage,
-  'Sales Hierarchy': Hierarchy,
-  Plan: PlanSettings,
-  Services: ServicesSettings,
-  'Price Lists': PriceListsSettings,
-  Subscriptions: SubscriptionTypesSettings,
-  'Studio hours & rules': SchedulingDefaults,
-  'Team rota': StaffSchedulesSettings,
-  'Rooms & Equipment': ResourcesSettings,
-  'Calendar & reminders': CalendarSettings,
-  'Waiting list': WaitingListSettings,
-  'Online booking': OnlineBookingSetup,
-  'Page & rules': BookingPageSettings,
-  'Booking platforms': BookingPlatforms,
-  Forms: FormsSettings,
-  Consents: ConsentsSettings,
-  'News in the client area': AreaNoticeSettings,
-  Exercises: ExercisesSettings,
-  Foods: FoodsSettings,
-  Pipelines: PipelinesSettings,
-  'Assignment Rules': AssignmentRulePage,
-  'SLA Policies': SlaConfig,
-  Accounts: EmailConfig,
-  Templates: EmailTemplatePage,
-  WhatsApp: WhatsAppSettings,
-  'WhatsApp Templates': WhatsAppTemplates,
-  Telephony: TelephonyPage,
-  'Call Scripts': CallScriptsSettings,
-  Website: WebsiteSettings,
-  'Social profiles': SocialSettings,
-  'Lead Tracking': TrackingSettings,
-  'Tracked Links': TrackedLinksSettings,
-  'Issuing company': InvoicingCompany,
-  'Provider connection': ProviderConnection,
-  'Billable services': BillableServicesSettings,
-  Providers: ProvidersSettings,
-  'Qualification register': QualificationsSettings,
-  'Invoicing defaults': InvoicingDefaults,
+  Profile: aRichiesta(
+    () => import('@/components/Settings/Profile/ProfilePage.vue'),
+  ),
+  Preferences: aRichiesta(
+    () => import('@/components/Settings/PreferencesSettings.vue'),
+  ),
+  Notifications: aRichiesta(
+    () => import('@/components/Settings/NotificationsSettings.vue'),
+  ),
+  'Your email': aRichiesta(
+    () => import('@/components/Settings/Profile/MyEmail.vue'),
+  ),
+  'Google Calendar': aRichiesta(
+    () => import('@/components/Settings/GoogleCalendarSettings.vue'),
+  ),
+  Brand: aRichiesta(() => import('@/components/Settings/BrandSettings.vue')),
+  General: aRichiesta(
+    () => import('@/components/Settings/GeneralSettings.vue'),
+  ),
+  Dashboard: aRichiesta(
+    () => import('@/components/Settings/DashboardSettings.vue'),
+  ),
+  'Home Actions': aRichiesta(
+    () => import('@/components/Settings/HomeActions.vue'),
+  ),
+  Defaults: aRichiesta(
+    () => import('@/components/Settings/DefaultsSettings.vue'),
+  ),
+  Users: aRichiesta(() => import('@/components/Settings/Users.vue')),
+  'Invite User': aRichiesta(
+    () => import('@/components/Settings/InviteUserPage.vue'),
+  ),
+  'Sales Hierarchy': aRichiesta(
+    () => import('@/components/Settings/Hierarchy/Hierarchy.vue'),
+  ),
+  Plan: aRichiesta(() => import('@/components/Settings/PlanSettings.vue')),
+  Services: aRichiesta(
+    () => import('@/components/Settings/Scheduling/ServicesSettings.vue'),
+  ),
+  'Price Lists': aRichiesta(
+    () => import('@/components/Settings/Scheduling/PriceListsSettings.vue'),
+  ),
+  Subscriptions: aRichiesta(
+    () =>
+      import('@/components/Settings/Scheduling/SubscriptionTypesSettings.vue'),
+  ),
+  'Studio hours & rules': aRichiesta(
+    () => import('@/components/Settings/Scheduling/SchedulingDefaults.vue'),
+  ),
+  'Team rota': aRichiesta(
+    () => import('@/components/Settings/Scheduling/StaffSchedulesSettings.vue'),
+  ),
+  'Rooms & Equipment': aRichiesta(
+    () => import('@/components/Settings/Scheduling/ResourcesSettings.vue'),
+  ),
+  'Calendar & reminders': aRichiesta(
+    () => import('@/components/Settings/CalendarSettings.vue'),
+  ),
+  'Waiting list': aRichiesta(
+    () => import('@/components/Settings/Scheduling/WaitingListSettings.vue'),
+  ),
+  'Online booking': aRichiesta(
+    () => import('@/components/Settings/Booking/OnlineBookingSetup.vue'),
+  ),
+  'Page & rules': aRichiesta(
+    () => import('@/components/Settings/Booking/BookingPageSettings.vue'),
+  ),
+  'Booking platforms': aRichiesta(
+    () => import('@/components/Settings/Booking/BookingPlatforms.vue'),
+  ),
+  Forms: aRichiesta(
+    () => import('@/components/Settings/Forms/FormsSettings.vue'),
+  ),
+  Consents: aRichiesta(
+    () => import('@/components/Settings/ConsentsSettings.vue'),
+  ),
+  'News in the client area': aRichiesta(
+    () => import('@/components/Settings/AreaNoticeSettings.vue'),
+  ),
+  Exercises: aRichiesta(
+    () => import('@/components/Settings/Plans/ExercisesSettings.vue'),
+  ),
+  Foods: aRichiesta(
+    () => import('@/components/Settings/Clinic/FoodsSettings.vue'),
+  ),
+  Pipelines: aRichiesta(
+    () => import('@/components/Settings/Pipelines/PipelinesSettings.vue'),
+  ),
+  'Assignment Rules': aRichiesta(
+    () =>
+      import('@/components/Settings/AssignmentRules/AssignmentRulePage.vue'),
+  ),
+  'SLA Policies': aRichiesta(
+    () => import('@/components/Settings/Sla/SlaConfig.vue'),
+  ),
+  Accounts: aRichiesta(() => import('@/components/Settings/EmailConfig.vue')),
+  Templates: aRichiesta(
+    () => import('@/components/Settings/EmailTemplate/EmailTemplatePage.vue'),
+  ),
+  WhatsApp: aRichiesta(
+    () => import('@/components/Settings/WhatsAppSettings.vue'),
+  ),
+  'WhatsApp Templates': aRichiesta(
+    () => import('@/components/Settings/WhatsAppTemplates.vue'),
+  ),
+  Telephony: aRichiesta(
+    () => import('@/components/Settings/Telephony/TelephonyPage.vue'),
+  ),
+  'Call Scripts': aRichiesta(
+    () => import('@/components/Settings/CallScriptsSettings.vue'),
+  ),
+  Website: aRichiesta(
+    () => import('@/components/Settings/Website/WebsiteSettings.vue'),
+  ),
+  'Social profiles': aRichiesta(
+    () => import('@/components/Settings/Social/SocialSettings.vue'),
+  ),
+  'Lead Tracking': aRichiesta(
+    () => import('@/components/Settings/TrackingSettings.vue'),
+  ),
+  'Tracked Links': aRichiesta(
+    () => import('@/components/Settings/TrackedLinksSettings.vue'),
+  ),
+  'Issuing company': aRichiesta(
+    () => import('@/components/Settings/Invoicing/InvoicingCompany.vue'),
+  ),
+  'Provider connection': aRichiesta(
+    () => import('@/components/Settings/Invoicing/ProviderConnection.vue'),
+  ),
+  'Billable services': aRichiesta(
+    () =>
+      import('@/components/Settings/Invoicing/BillableServicesSettings.vue'),
+  ),
+  Providers: aRichiesta(
+    () => import('@/components/Settings/Invoicing/ProvidersSettings.vue'),
+  ),
+  'Qualification register': aRichiesta(
+    () => import('@/components/Settings/Invoicing/QualificationsSettings.vue'),
+  ),
+  'Invoicing defaults': aRichiesta(
+    () => import('@/components/Settings/Invoicing/InvoicingDefaults.vue'),
+  ),
   // one page with its own tabs: the connection and the three things it feeds
-  'Meta connection': MetaSettings,
-  'Seal and time stamp': SealSettings,
-  Assistant: AssistantSettings,
+  'Meta connection': aRichiesta(
+    () => import('@/components/Settings/Meta/MetaSettings.vue'),
+  ),
+  'Seal and time stamp': aRichiesta(
+    () => import('@/components/Settings/SealSettings.vue'),
+  ),
+  Assistant: aRichiesta(
+    () => import('@/components/Settings/AssistantSettings.vue'),
+  ),
 }
 
 // The icon of each category: the categories carry them, their entries are
