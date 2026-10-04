@@ -42607,3 +42607,7 @@ msgstr "Ancora nessun modello email"
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "times"
 msgstr "volte"
+
+#: frontend/src/components/Automations/ConditionBuilder.vue
+msgid "And another condition"
+msgstr "E un'altra condizione"
