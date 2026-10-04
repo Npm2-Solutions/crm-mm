@@ -554,6 +554,10 @@ Con il tocco, come in un'app:
   dieta a scambi: cinque momenti, ciascuno col suo giorno, l'ora e le voci.
   Il nome del momento divideva la riga col giorno e si leggeva «Spuntino del
   mattir»: sul telefono ora ha la sua riga, giorno, ora e cestino sotto.
+- **Un modulo compilato in segreteria, provato davvero.** Dai Moduli della
+  persona, «Compila un modulo» apre la pagina da compilare e firmare. La barra
+  in basso accendeva «Altro», come se il modulo non fosse di nessuno: ora
+  accende Persone, e così la barra laterale (`utils/navigation.js`).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della

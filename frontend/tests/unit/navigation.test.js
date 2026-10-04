@@ -33,6 +33,8 @@ describe('bottomNavTabFor', () => {
   it('keeps a tab lit while you are inside its section', () => {
     // a tab going dark because you opened a record would read as broken
     expect(bottomNavTabFor({ name: 'Lead' })).toBe('Leads')
+    // a person's form being filled
+    expect(bottomNavTabFor({ name: 'FormFill' })).toBe('Leads')
     expect(bottomNavTabFor({ name: 'Deal' })).toBe('Deals')
   })
 
