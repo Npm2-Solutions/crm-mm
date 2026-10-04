@@ -33,7 +33,7 @@
           v-if="logo && forma === 'wide'"
           :src="logo"
           :alt="centre || ''"
-          class="h-8 min-w-0 max-w-full object-contain object-left"
+          class="h-8 min-w-0 max-w-full object-contain object-left dark:rounded-md dark:bg-white dark:px-1.5 dark:py-0.5"
         />
         <template v-else>
           <CentreTile
