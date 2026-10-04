@@ -483,6 +483,9 @@ writes into a site once (a consent's text, a pipeline's stages, a library's word
 is in `lingue.del_centro()`, never the System Settings language read on its own: a
 site installed before anybody chose is in the framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
+An appointment's day and hours are the centre's clock (`window.timezone.system`), never
+the phone's own zone: a free slot (UTC) is read with `sulCentro()`, a moment is sent as
+the agenda keeps it with `oraDelCentro()` (`utils/scheduler.js`).
 When one English sentence needs two Italian ones, the rarer place passes a
 context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
 `msgctxt` entry. A short word the framework already translates («Read», «Start»,

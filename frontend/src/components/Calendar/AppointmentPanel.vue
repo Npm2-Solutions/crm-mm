@@ -819,7 +819,13 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
-import { addMinutes, minutesBetween, orariPerGiorno } from '@/utils/scheduler'
+import {
+  addMinutes,
+  minutesBetween,
+  oraDelCentro,
+  orariPerGiorno,
+  sulCentro,
+} from '@/utils/scheduler'
 import { tastiera } from '@/utils/tastiera'
 import {
   Badge,
@@ -1186,13 +1192,21 @@ const slotList = ref([])
 const slotHint = ref('')
 // the days whose every time was asked for («3 more»)
 const slotDaysOpen = reactive(new Set())
+// a free time comes as a UTC instant: its day and hour on the centre's clock,
+// as the agenda shows the appointments (utils/scheduler.js, sulCentro)
+const fusoDelCentro = window.timezone?.system || null
+const delCentro = (istante) => sulCentro(istante, fusoDelCentro)
 const slotDays = computed(() =>
-  orariPerGiorno(slotList.value, { perGiorno: 12, giorni: 5 }).map((day) =>
+  orariPerGiorno(slotList.value, {
+    perGiorno: 12,
+    giorni: 5,
+    giornoDi: (slot) => delCentro(slot.start)?.giorno,
+  }).map((day) =>
     slotDaysOpen.has(day.giorno)
       ? {
           ...day,
-          orari: slotList.value.filter((slot) =>
-            String(slot.start).startsWith(day.giorno),
+          orari: slotList.value.filter(
+            (slot) => delCentro(slot.start)?.giorno === day.giorno,
           ),
           altri: 0,
         }
@@ -1323,8 +1337,9 @@ function payload() {
   return {
     service: form.service,
     status: form.status,
-    starts_on: startsOn.value.toISOString(),
-    ends_on: endsOn.value.toISOString(),
+    // the centre's clock, as every page reads it back
+    starts_on: oraDelCentro(startsOn.value),
+    ends_on: oraDelCentro(endsOn.value),
     staff: form.staff.map((user) => ({ user, required: 1 })),
     participants: form.participants
       .filter((row) => row.party || row.participant_name)
@@ -1351,7 +1366,7 @@ function refreshPrice() {
   if (!form.service) return
   quote.submit({
     service: form.service,
-    when: startsOn.value.toISOString(),
+    when: oraDelCentro(startsOn.value),
     price_list: form.price_list || null,
     staff: form.staff,
     resources: form.resources.map((row) => row.resource).filter(Boolean),
@@ -1399,7 +1414,7 @@ function findSlots() {
 
 // the time alone: the day is said once, above its times
 function slotLabel(slot) {
-  const when = dayjs(slot.start).format('HH:mm')
+  const when = delCentro(slot.start)?.ora || ''
   return slot.join_appointment
     ? `${when} · ${__('join')} (${slot.seats_left})`
     : when
@@ -1410,9 +1425,12 @@ function slotDayLabel(day) {
 }
 
 function applySlot(slot) {
-  form.date = dayjs(slot.start).format('YYYY-MM-DD')
-  form.time = dayjs(slot.start).format('HH:mm')
-  form.end = dayjs(slot.end).format('HH:mm')
+  const inizio = delCentro(slot.start)
+  const fine = delCentro(slot.end)
+  if (!inizio || !fine) return
+  form.date = inizio.giorno
+  form.time = inizio.ora
+  form.end = fine.ora
   form.staff = [...(slot.staff || [])]
   if (slot.resources?.length) {
     form.resources = slot.resources.map((row) => ({ ...row }))
@@ -1448,9 +1466,12 @@ function autoAssign() {
     },
     {
       onSuccess: (data) => {
-        const wanted = dayjs(startsOn.value)
+        const wanted = `${form.date} ${form.time}`
         const match =
-          (data || []).find((slot) => dayjs(slot.start).isSame(wanted)) || null
+          (data || []).find((slot) => {
+            const inizio = delCentro(slot.start)
+            return inizio && `${inizio.giorno} ${inizio.ora}` === wanted
+          }) || null
         if (!match) {
           toast.error(__('Nobody is free at this time'))
           return

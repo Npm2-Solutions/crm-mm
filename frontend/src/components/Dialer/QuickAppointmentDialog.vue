@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <Dialog
     v-model="show"
@@ -90,6 +94,7 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { dateFormat } from '@/utils'
+import { sulCentro } from '@/utils/scheduler'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -133,11 +138,15 @@ const serviceOptions = computed(() => [
 ])
 
 // the picker is a flat list of times grouped under their day: mid-call nobody
-// wants a month view, they want the next few openings they can offer out loud
+// wants a month view, they want the next few openings they can offer out loud.
+// A free time comes as a UTC instant: its day and hour on the centre's clock,
+// as the agenda shows the appointments, whatever the phone's own
+const fusoDelCentro = window.timezone?.system || null
 const days = computed(() => {
   const grouped = new Map()
   for (const slot of slots.data || []) {
-    const key = dayjs(slot.start).format('YYYY-MM-DD')
+    const key = sulCentro(slot.start, fusoDelCentro)?.giorno
+    if (!key) continue
     if (!grouped.has(key)) grouped.set(key, [])
     grouped.get(key).push(slot)
   }
@@ -148,7 +157,7 @@ const days = computed(() => {
 })
 
 function time(value) {
-  return dayjs(value).format('HH:mm')
+  return sulCentro(value, fusoDelCentro)?.ora || ''
 }
 
 function loadSlots() {

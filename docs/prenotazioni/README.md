@@ -92,6 +92,10 @@ Lo **studio** (*Agenda → Orari e regole dello studio*): orario di apertura e f
 non ha orari propri, durata e listino predefiniti, fuso orario, doppie prenotazioni vietate,
 calendario e Google.
 
+L'agenda si legge e si scrive sull'**orologio del centro** (il fuso del sito): gli orari liberi,
+il giorno e l'ora di un appuntamento sono quelli del banco anche su un telefono rimasto su un
+altro fuso, e salvare un appuntamento senza toccarlo non lo sposta.
+
 Quando più livelli pongono un tetto vince **il più severo** (es. tetto del servizio e tetto
 globale per cliente).
 

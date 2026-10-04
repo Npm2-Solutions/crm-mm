@@ -10,8 +10,10 @@ import {
   minutesAtRatio,
   minutesBetween,
   minutesFromMidnight,
+  oraDelCentro,
   orariPerGiorno,
   snapMinutes,
+  sulCentro,
   unassigned,
   visibleWindow,
 } from '@/utils/scheduler'
@@ -293,5 +295,45 @@ describe('orariPerGiorno', () => {
   it('leaves out what has no day, and nothing is nothing', () => {
     expect(orariPerGiorno([{ start: '' }, {}, null])).toEqual([])
     expect(orariPerGiorno(undefined)).toEqual([])
+  })
+})
+
+describe("the centre's clock", () => {
+  it('keeps an appointment at the time the form shows', () => {
+    // a Date built from the form: the same wall clock goes back, no time zone
+    expect(oraDelCentro(new Date(2026, 8, 29, 0, 0))).toBe(
+      '2026-09-29 00:00:00',
+    )
+    expect(oraDelCentro(new Date(2026, 8, 29, 18, 45, 30))).toBe(
+      '2026-09-29 18:45:30',
+    )
+    expect(oraDelCentro('not a date')).toBe(null)
+  })
+
+  it("reads a free time on the centre's clock, whatever the phone's", () => {
+    // 22:00 UTC is midnight in Rome, half past three in Kolkata
+    expect(sulCentro('2026-09-28T22:00:00Z', 'Europe/Rome')).toEqual({
+      giorno: '2026-09-29',
+      ora: '00:00',
+    })
+    expect(sulCentro('2026-09-28T22:00:00Z', 'Asia/Kolkata')).toEqual({
+      giorno: '2026-09-29',
+      ora: '03:30',
+    })
+    expect(sulCentro('', 'Europe/Rome')).toBe(null)
+    // an unknown zone falls back to the phone's clock, never to nothing
+    expect(sulCentro('2026-09-28T22:00:00Z', 'Nowhere/Town')).not.toBe(null)
+  })
+
+  it("groups the free times by the centre's day", () => {
+    const giornoDi = (slot) => sulCentro(slot.start, 'Europe/Rome').giorno
+    const giorni = orariPerGiorno(
+      [{ start: '2026-09-28T22:30:00Z' }, { start: '2026-09-29T07:00:00Z' }],
+      { giornoDi },
+    )
+    // half past midnight in Rome is the 29th, not the 28th of the UTC string
+    expect(giorni.map((g) => [g.giorno, g.orari.length])).toEqual([
+      ['2026-09-29', 2],
+    ])
   })
 })

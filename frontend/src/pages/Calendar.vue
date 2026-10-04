@@ -431,7 +431,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
-import { formatMinutes } from '@/utils/scheduler'
+import { formatMinutes, oraDelCentro } from '@/utils/scheduler'
 import {
   NAMED_HEX,
   appointmentCalendarColor,
@@ -936,8 +936,8 @@ function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
       url: 'crm.api.appointments.move_appointment',
       params: {
         name,
-        starts_on: startsOn.toISOString(),
-        ends_on: endsOn.toISOString(),
+        starts_on: oraDelCentro(startsOn),
+        ends_on: oraDelCentro(endsOn),
       },
       auto: true,
       onSuccess: () => {
@@ -957,8 +957,8 @@ function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
       appointment: {
         service: target.service,
         status: target.status,
-        starts_on: startsOn.toISOString(),
-        ends_on: endsOn.toISOString(),
+        starts_on: oraDelCentro(startsOn),
+        ends_on: oraDelCentro(endsOn),
         staff: mode === 'staff' ? reassign : target.staff,
         resources: mode === 'resource' ? reassign : target.resources,
         participants: target.participants,
@@ -1190,8 +1190,8 @@ async function updateEvent(_event, afterDrag = false) {
       url: 'crm.api.appointments.move_appointment',
       params: {
         name: appointmentName(_event.id),
-        starts_on: start.toDate().toISOString(),
-        ends_on: end.toDate().toISOString(),
+        starts_on: oraDelCentro(start.toDate()),
+        ends_on: oraDelCentro(end.toDate()),
       },
       auto: true,
       onSuccess: () => {

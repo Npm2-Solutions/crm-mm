@@ -255,12 +255,20 @@ export function hhmm(value) {
  * date the times start on (YYYY-MM-DD), `orari` the first `perGiorno` of them
  * and `altri` how many more that day has; no more than `giorni` days. A list
  * of buttons said the day on each one («Sun 4 Oct 09:00», «Sun 4 Oct 09:30»),
- * and the first 24 times could all be the first morning.
+ * and the first 24 times could all be the first morning. `giornoDi` says the
+ * day a time falls on: the centre's, for the UTC instants the server sends.
  */
-export function orariPerGiorno(slots, { perGiorno = 12, giorni = 5 } = {}) {
+export function orariPerGiorno(
+  slots,
+  {
+    perGiorno = 12,
+    giorni = 5,
+    giornoDi = (slot) => String(slot?.start || '').slice(0, 10),
+  } = {},
+) {
   const tutti = new Map()
   for (const slot of slots || []) {
-    const giorno = String(slot?.start || '').slice(0, 10)
+    const giorno = String(giornoDi(slot) || '')
     if (!/^\d{4}-\d{2}-\d{2}$/.test(giorno)) continue
     if (!tutti.has(giorno)) tutti.set(giorno, [])
     tutti.get(giorno).push(slot)
@@ -270,4 +278,54 @@ export function orariPerGiorno(slots, { perGiorno = 12, giorni = 5 } = {}) {
     orari: orari.slice(0, perGiorno),
     altri: Math.max(orari.length - perGiorno, 0),
   }))
+}
+
+// ------------------------------------------------------------------ the centre's clock
+
+const due = (n) => String(n).padStart(2, '0')
+
+/**
+ * An appointment's time as the centre's clock reads it, the way the server
+ * keeps it and every page reads it back: «2026-09-29 10:00:00». `data` is a
+ * Date built from what the form shows. A UTC instant was the phone's clock: on
+ * a phone in another time zone than the centre's, or on a site whose own was
+ * never set, every save moved the appointment (00:00 became 03:30).
+ */
+export function oraDelCentro(data) {
+  const d = data instanceof Date ? data : new Date(data)
+  if (Number.isNaN(d.getTime())) return null
+  return (
+    `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())} ` +
+    `${due(d.getHours())}:${due(d.getMinutes())}:${due(d.getSeconds())}`
+  )
+}
+
+/**
+ * A free time comes from the server as a UTC instant: its day and hour on the
+ * centre's clock (`fuso`, the site's time zone), as the agenda shows the
+ * appointments - `{ giorno: '2026-09-29', ora: '10:00' }`, or null.
+ */
+export function sulCentro(istante, fuso) {
+  const d = new Date(istante)
+  if (!istante || Number.isNaN(d.getTime())) return null
+  let parti
+  try {
+    parti = new Intl.DateTimeFormat('en-CA', {
+      timeZone: fuso || undefined,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(d)
+  } catch {
+    // an unknown zone: the phone's own clock, as before
+    return sulCentro(istante, null)
+  }
+  const p = Object.fromEntries(parti.map(({ type, value }) => [type, value]))
+  return {
+    giorno: `${p.year}-${p.month}-${p.day}`,
+    ora: `${p.hour}:${p.minute}`,
+  }
 }

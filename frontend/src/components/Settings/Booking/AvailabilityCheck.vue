@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 text-ink-gray-8"
@@ -222,8 +226,8 @@ const check = createResource({
 })
 
 function run() {
-  // the moment is read in the browser's timezone, like the calendar
-  const start = new Date(`${date.value}T${time.value}:00`).toISOString()
+  // the moment on the centre's clock, as the agenda keeps it
+  const start = `${date.value} ${time.value}:00`
   check.submit({ service: service.value, start, online: online.value ? 1 : 0 })
 }
 
