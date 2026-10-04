@@ -44,7 +44,7 @@
       <li
         v-for="doc in shown"
         :key="doc.name"
-        class="flex items-start gap-3 border-b border-outline-gray-1 py-2 last:border-0 max-md:flex-wrap"
+        class="relative flex items-start gap-3 border-b border-outline-gray-1 py-2 last:border-0 max-md:flex-wrap"
       >
         <span
           class="mt-0.5 size-4 shrink-0 text-ink-gray-5"
@@ -52,12 +52,13 @@
           aria-hidden="true"
         />
         <div class="flex min-w-0 flex-1 flex-col">
+          <!-- the whole row opens it: its name alone was a line 16px tall -->
           <a
             v-if="doc.file"
             :href="doc.file"
             target="_blank"
             rel="noopener"
-            class="min-w-0 truncate text-base text-ink-gray-8 hover:underline"
+            class="min-w-0 truncate text-base text-ink-gray-8 after:absolute after:inset-0 after:content-[''] hover:underline"
           >
             {{ doc.title }}
           </a>
@@ -116,7 +117,7 @@
           <Button
             size="sm"
             variant="ghost"
-            class="touch-target shrink-0"
+            class="touch-target relative z-[1] shrink-0"
             icon="more-horizontal"
             :aria-label="__('Actions')"
           />
