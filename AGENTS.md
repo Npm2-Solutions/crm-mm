@@ -552,7 +552,10 @@ that is not under words (progress), a required field's mark `segno-obbligatorio`
 A new mark of the brand goes in `espresso.css`, for every screen at once, never as
 one screen's colours. A token it sets for the light theme gets its value in the
 dark block too: `:root[data-marchio]` weighs more than frappe-ui's
-`[data-theme=dark]`, so without one the light colour stays on the dark.
+`[data-theme=dark]`, so without one the light colour stays on the dark. A frame
+drawn inside a page (an email's iframe) says `color-scheme: dark` in the dark
+theme as the page does (`index.css`): one that says nothing gets an opaque white
+canvas behind it, under the dark theme's light words.
 An element whose tag is chosen while drawing is `ElementoNativo`
 (`components/ElementoNativo.js`), never `<component :is="'button'">`: Vue resolves
 the name to frappe-ui's Button, registered for the whole app, and the card becomes
@@ -659,7 +662,9 @@ row, the bar's words beside their icons).
   itself.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
-  phone. A sheet taken by its grabber follows the finger down and closes as
+  phone. A sheet's or a page's row of actions is one row on a phone: what
+  does not fit goes under a «⋯» (an icon button, which stays a 44px square),
+  as the form's «Discard» and «Other ways to sign» do. A sheet taken by its grabber follows the finger down and closes as
   Escape does (`utils/trascinaFoglio.js`); a dialog that is a screen of its own
   draws no grabber and is not dragged. A page that opens over another (a panel) hides what it covers there
   (`v-show`), or the covered page's positioned controls are drawn over it, and

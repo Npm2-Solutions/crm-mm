@@ -708,7 +708,7 @@ nessun browser di prova ha la sua tastiera.
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/breakpoints.js` (`isPhoneSize`) + `telefono.css` sezione 10 | Il telefono tenuto di traverso resta un telefono, la scheda e la barra compatte. Testato in `tests/unit/breakpoints.test.js` |
 | `frontend/src/utils/scheduler.js` (`orariPerGiorno`) + `components/Calendar/AppointmentPanel.vue` | Gli orari liberi di un servizio un giorno alla volta, i primi dodici e «altri N». Testato in `tests/unit/scheduler.test.js` |
-| `frontend/src/composables/testataRaccolta.js` + `pages/MobileLead.vue` | La scheda della persona si raccoglie mentre la scheda sotto scorre, e torna in cima (`raccogliereLaTestata`). Testato in `tests/unit/testataRaccolta.test.js` |
+| `frontend/src/composables/testataRaccolta.js` + `pages/MobileLead.vue` | La scheda della persona si raccoglie mentre la scheda sotto scorre, e torna in cima (`raccogliereLaTestata`); la raccoglie solo chi scorre (un dito, la rotella, un tasto, o la tastiera aperta), non la storia che si apre da sola sul giorno più recente. Testato in `tests/unit/testataRaccolta.test.js` |
 | `frontend/src/composables/scorriGiorni.js` + `components/Mobile/AgendaDelGiorno.vue`, `pages/Today.vue` | Il giorno (e la settimana) dell'agenda e il giorno dell'accoglienza si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
 | `frontend/src/utils/installa.js` + `components/Mobile/InstallaApp.vue` | L'app sulla schermata Home: cosa propone «Altro» (`comeInstallare`), l'offerta del browser tenuta per il pulsante. Testato in `tests/unit/installa.test.js` |
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
@@ -719,6 +719,11 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
 | `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
+| `frontend/src/components/Invoices/InvoiceDialog.vue`, `pages/Invoices.vue` + `crm/invoicing/emissione.py` | La fattura sul telefono: il «+» della pagina, ogni riga una scheda con le sue etichette e il totale a destra, la riga aggiunta che viene in vista, la fattura che si apre toccandola; le note del motore nella lingua di chi legge |
+| `frontend/src/pages/FormFill.vue` + `telefono.css` (un pulsante d'icona resta quadrato) | Le azioni di un modulo in una riga: «⋯» (gli altri modi di firmare, Scarta), Salva per dopo, Firma e concludi |
+| `frontend/src/components/Activities/TaskArea.vue`, `Clinic/ClinicArea.vue`, `SidePanelLayout.vue`, `espresso.css` (7) | Una cosa da fare con il giorno e la priorità su una riga loro; l'intestazione della Clinica che va a capo; la crocetta dei campi obbligatori accanto alle parole |
+| `frontend/src/components/Activities/emailContent.css` | Un'email nel tema scuro: il suo riquadro dice anche lui `color-scheme: dark`, o il browser gli mette dietro il bianco |
+| `frontend/src/pages/SocialPlanner.vue` | Il nuovo post è il «+», i profili l'ingranaggio |
 
 ## Non incluso
 
