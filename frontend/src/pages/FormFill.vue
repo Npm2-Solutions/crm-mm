@@ -181,19 +181,29 @@
         class="dialog-footer sticky bottom-0 flex items-center justify-between gap-2 border-t border-outline-gray-2 bg-surface-base py-3 max-md:flex-wrap"
       >
         <Button
+          v-if="!isMobileView"
           variant="ghost"
           theme="red"
           :label="__('Discard')"
           @click="discard"
         />
         <div class="flex gap-2 max-md:w-full max-md:justify-end">
+          <!-- on a phone the rest is under one button: three rows of actions
+               took a third of the screen, the form squeezed between -->
+          <Dropdown v-if="isMobileView" :options="sulTelefono" placement="left">
+            <Button
+              class="shrink-0"
+              icon="more-horizontal"
+              :aria-label="__('More')"
+            />
+          </Dropdown>
           <Button
             :label="__('Save for later')"
             :loading="saving"
             @click="save"
           />
           <Dropdown
-            v-if="otherWays.length"
+            v-if="otherWays.length && !isMobileView"
             :options="otherWays"
             placement="right"
           >
@@ -321,6 +331,7 @@ import PaperSignDialog from '@/components/Moduli/PaperSignDialog.vue'
 import { evaluate, fieldsOf } from '@/utils/moduli'
 import { formatDate } from '@/utils'
 import { globalStore } from '@/stores/global'
+import { isMobileView } from '@/composables/breakpoints'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
 import {
   Badge,
@@ -433,6 +444,25 @@ const otherWays = computed(() =>
       },
   ].filter(Boolean),
 )
+
+// the phone's «⋯»: the other ways to sign, then throwing the form away
+const sulTelefono = computed(() => [
+  ...(otherWays.value.length
+    ? [{ group: __('Other ways to sign'), items: otherWays.value }]
+    : []),
+  {
+    group: '',
+    hideLabel: true,
+    items: [
+      {
+        label: __('Discard'),
+        icon: 'lucide-trash-2',
+        theme: 'red',
+        onClick: discard,
+      },
+    ],
+  },
+])
 
 watch(atProvider, async (waiting) => {
   providerLinks.value = waiting
