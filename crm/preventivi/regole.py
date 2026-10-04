@@ -111,6 +111,26 @@ def completato(voci: list[dict]) -> bool:
 	return FATTA in stati and all(stato in (FATTA, ANNULLATA) for stato in stati)
 
 
+#: what the editor writes by itself in a new row
+DA_SOLI = ("qty", "phase", "discount", "status")
+
+
+def vuota(voce: dict) -> bool:
+	"""A row nobody wrote in. The editor opens with one and adds them one at a
+	time, so one can be left behind empty: it is no row, rather than a «choose the
+	service» that stops the draft. A module's field written in it (a tooth) makes
+	it a row."""
+	for campo, valore in voce.items():
+		if campo in DA_SOLI:
+			continue
+		if campo == "rate":
+			if float(valore or 0):
+				return False
+		elif valore is not None and str(valore).strip():
+			return False
+	return True
+
+
 def valida(voci: list[dict]) -> list[Problema]:
 	"""What is wrong with a quote's rows before it is proposed; a module checks
 	its own fields on top (the clinic: a tooth, its surfaces)."""

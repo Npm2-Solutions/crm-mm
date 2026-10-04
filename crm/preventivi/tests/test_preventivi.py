@@ -139,6 +139,18 @@ class IlPreventivo(PreventiviCase):
 				json.dumps({"title": "Col dente", "items": [{"service": self.viso.name, "tooth": "36"}]}),
 			)
 
+	def test_una_riga_lasciata_vuota_non_ferma_la_bozza(self):
+		# the editor adds rows one at a time: one left behind with nothing in it
+		self.come(OPERATORE)
+		vuota = {"service": None, "description": "", "qty": 1, "phase": 1, "rate": 0, "discount": 0}
+		bozza = preventivi.save_quote(
+			self.anna.name,
+			json.dumps(
+				{"title": "Una riga in più", "items": [{"service": self.viso.name, "rate": 60}, vuota]}
+			),
+		)
+		self.assertEqual([voce["service"] for voce in bozza["items"]], [self.viso.name])
+
 	def test_chi_non_scrive_preventivi_non_ne_scrive(self):
 		self.come(SALES)
 		self.assertTrue(preventivi.get_quotes(self.anna.name)["can_write"])
