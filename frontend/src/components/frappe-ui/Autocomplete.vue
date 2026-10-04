@@ -122,11 +122,13 @@
                   </li>
                 </ComboboxOption>
               </div>
+              <!-- a list that comes when it opens says so while it comes, not
+                   that nothing was found -->
               <li
                 v-if="groups.length == 0"
                 class="my-1.5 rounded-md px-2.5 py-1.5 text-base text-ink-gray-5"
               >
-                {{ __('No results found') }}
+                {{ loading ? __('Loading…') : __('No results found') }}
               </li>
             </ComboboxOptions>
             <div
@@ -191,6 +193,11 @@ const props = defineProps({
   maxOptions: {
     type: Number,
     default: 20,
+  },
+  // the options are on their way (a Link asks for them when the list opens)
+  loading: {
+    type: Boolean,
+    default: false,
   },
 })
 const emit = defineEmits(['update:modelValue', 'update:query', 'change'])
@@ -315,5 +322,6 @@ const inputClasses = computed(() => {
   ]
 })
 
-defineExpose({ query })
+// whether the list is open: a Link asks for its options the first time it is
+defineExpose({ query, showOptions })
 </script>
