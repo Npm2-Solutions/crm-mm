@@ -9,8 +9,9 @@ gets a contact, an appointment attended makes a client, a booking moves the deal
 the demo is the product's behaviour replayed, not rows written next to it. What
 those same paths would send - an email, a job that writes to somebody, a message
 to the browser, an automation, the agenda's mirror into the framework's calendar, the
-global search - does not leave while a part runs (`in_prova`), and every record made is written
-down in the register (`crm.demo.registro`).
+global search - does not leave while a part runs (`in_prova`): an email stays in the part, where
+the demo person it was for reads it (a link, a code), and every record made is written down in
+the register (`crm.demo.registro`).
 """
 
 from __future__ import annotations
@@ -37,6 +38,24 @@ SILENZI = (
 
 def _niente(*args, **kwargs):
 	return None
+
+
+def _trattieni(corrente: registro.Raccolta):
+	"""`frappe.sendmail` while a part runs: the email stays in the part, for the demo
+	person it is written to (`registro.posta_per`), and never leaves."""
+
+	def sendmail(recipients=None, sender="", subject="No Subject", message="No Message", *args, **kwargs):
+		if isinstance(recipients, str):
+			recipients = [indirizzo.strip() for indirizzo in recipients.replace(";", ",").split(",")]
+		corrente.posta.append(
+			{
+				"recipients": [indirizzo for indirizzo in recipients or () if indirizzo],
+				"subject": subject,
+				"message": message,
+			}
+		)
+
+	return sendmail
 
 
 @contextmanager
@@ -66,6 +85,7 @@ def in_prova(parte: str) -> Iterator[registro.Raccolta]:
 	frappe.local.conf["disable_global_search"] = 1
 	for (modulo, nome), _f in originali.items():
 		setattr(modulo, nome, _niente)
+	frappe.sendmail = _trattieni(corrente)
 	riuscita = False
 	try:
 		yield corrente
