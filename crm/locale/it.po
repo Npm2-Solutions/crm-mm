@@ -42918,3 +42918,139 @@ msgstr "{0}% in totale"
 #: frontend/src/components/Modals/CreateDocumentModal.vue
 msgid "Create {0}"
 msgstr "Crea {0}"
+
+#: crm/invoicing/engine/professioni.py
+msgid "Psicologo del lavoro (non-clinical services)"
+msgstr "Psicologo del lavoro (servizi non clinici)"
+
+#: crm/invoicing/engine/professioni.py
+msgid "Consulente (non-regulated profession)"
+msgstr "Consulente (professione non ordinistica)"
+
+#: crm/invoicing/engine/professioni.py
+msgid "Cassa Forense contributo integrativo 4%: mandatory, part of the VAT base, not subject to withholding."
+msgstr "Contributo integrativo Cassa Forense del 4%: obbligatorio, entra nella base imponibile IVA, non è soggetto a ritenuta."
+
+#: crm/invoicing/engine/professioni.py
+msgid "Commissions do not follow the professional pattern: the withholding is 23% of a reduced base, and ENASARCO is a contribution split with the principal, not a rivalsa charged to the client. Configure it explicitly."
+msgstr "Le provvigioni non seguono lo schema dei professionisti: la ritenuta è del 23% su una base ridotta, e l'ENASARCO è un contributo diviso con la mandante, non una rivalsa addebitata al cliente. Va impostato a mano."
+
+#: crm/invoicing/engine/professioni.py
+msgid "Organisational assessment, training and selection are not diagnosis or care: they are taxable and go through the SdI. The clinical work of the same professional does not - that is the `psicologo` entry."
+msgstr "Valutazione organizzativa, formazione e selezione non sono diagnosi né cura: sono imponibili e passano dallo SdI. Il lavoro clinico dello stesso professionista no: è la voce «Psicologo / psicoterapeuta»."
+
+#: crm/invoicing/engine/professioni.py
+msgid "Marketing, management, IT, training: taxable at 22%, SdI, optional INPS 4% rivalsa, 20% withholding towards a withholding agent."
+msgstr "Marketing, gestione, informatica, formazione: imponibile al 22%, SdI, rivalsa INPS del 4% facoltativa, ritenuta del 20% verso un sostituto d'imposta."
+
+#: crm/invoicing/engine/professioni.py
+msgid "Training is taxable as a rule. The art. 10 n. 20 exemption is narrow - recognised bodies and school or vocational education - and it is decided in the service card, never inferred from the word 'course'."
+msgstr "La formazione di regola è imponibile. L'esenzione dell'art. 10 n. 20 è stretta (enti riconosciuti, istruzione scolastica o professionale) e si decide nella scheda del servizio, mai dalla parola «corso»."
+
+#: crm/invoicing/engine/professioni.py
+msgid "Assignment of copyright in a work of the mind follows a different pattern (causale B, reduced base): it goes on its own line with its own service card."
+msgstr "La cessione dei diritti d'autore su un'opera dell'ingegno segue un altro schema (causale B, base ridotta): va su una riga a sé, con la sua scheda del servizio."
+
+#: crm/invoicing/engine/professioni.py
+msgid "A company is not subject to the withholding on self-employment income and has no professional fund to charge. The plain case, and the most common one in a CRM."
+msgstr "Una società non subisce la ritenuta sui redditi di lavoro autonomo e non ha una cassa professionale da addebitare. Il caso più semplice, e il più comune."
+
+#: crm/invoicing/engine/professioni.py
+msgid "An association keeps the withholding but as a legal person (RT02). The fund depends on the professionals it groups."
+msgstr "Un'associazione subisce la ritenuta, ma come persona giuridica (RT02). La cassa dipende dai professionisti che riunisce."
+
+#: crm/invoicing/engine/professioni.py
+msgid "the current Cassa Geometri contributo integrativo rate"
+msgstr "l'aliquota attuale del contributo integrativo della Cassa Geometri"
+
+#: crm/invoicing/engine/professioni.py
+msgid "the Cassa Nazionale del Notariato levy, which is not a rivalsa on the client"
+msgstr "il contributo alla Cassa Nazionale del Notariato, che non è una rivalsa sul cliente"
+
+#: crm/invoicing/engine/professioni.py
+msgid "the ENASARCO rate and the split between principal and agent"
+msgstr "l'aliquota ENASARCO e la divisione tra mandante e agente"
+
+#: crm/invoicing/engine/professioni.py
+msgid "the withholding base: 50% or 20% of the commission depending on the arrangement"
+msgstr "la base della ritenuta: il 50% o il 20% della provvigione, secondo il rapporto"
+
+#: crm/invoicing/engine/professioni.py
+msgid "exemption under art. 10 n. 20 for school-recognised training"
+msgstr "l'esenzione dell'art. 10 n. 20 per la formazione riconosciuta"
+
+#: crm/invoicing/engine/professioni.py
+msgid "the fund of the associated professionals and the rate to charge"
+msgstr "la cassa dei professionisti associati e l'aliquota da addebitare"
+
+#: crm/invoicing/engine/professioni.py
+msgid "whether the activity is commercial and therefore in scope of VAT"
+msgstr "se l'attività è commerciale, e quindi soggetta a IVA"
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "ENPAM provides for no contributo integrativo to charge the patient: nothing goes on the invoice. The 2% and 4% people quote belong to the Fondo della Medicina convenzionata, which the commissioning facilities pay."
+msgstr "L'ENPAM non prevede un contributo integrativo da addebitare al paziente: in fattura non va niente. Il 2% e il 4% che si sentono citare sono del Fondo della Medicina convenzionata, e li versano le strutture committenti."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Like the medico chirurgo: no rivalsa on the invoice."
+msgstr "Come il medico chirurgo: nessuna rivalsa in fattura."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Not bound to the Sistema TS for invoices issued to the employer: the recipient is a VAT subject, so the document goes to the SdI."
+msgstr "Non è tenuto al Sistema TS per le fatture al datore di lavoro: il destinatario è un soggetto IVA, quindi il documento va allo SdI."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "ENPAP contributo integrativo 2% on the gross fee, mandatory and shown on the invoice."
+msgstr "Contributo integrativo ENPAP del 2% sul compenso lordo, obbligatorio ed esposto in fattura."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "The reference fund has to be confirmed: nothing is assumed here."
+msgstr "La cassa di riferimento va confermata: qui non si dà niente per scontato."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty."
+msgstr "Ha una scadenza sua, a metà marzo: un invio a parte. Le società veterinarie (S.r.l., STP) possono inviare, non devono."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Admitted expense types: AD and AA only."
+msgstr "Tipi di spesa ammessi: solo i dispositivi medici e le altre spese."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 n. 18, the electronic invoice through the SdI is FORBIDDEN, the Sistema TS report is DUE (Ris. AdE 9/2026)."
+msgstr "Arte ausiliaria ex art. 99 R.D. 1265/1934: la prestazione è ESENTE ai sensi dell'art. 10 n. 18, la fattura elettronica allo SdI è VIETATA, la comunicazione al Sistema TS è DOVUTA (Ris. AdE 9/2026)."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Ris. AdE 9/2026: TAXABLE at the ordinary rate, electronic invoice through the SdI MANDATORY, no Sistema TS report. The profession is identified by L. 3/2018 and was listed among the technical prevention professions by the DM of 18 July 2024, but the process is not complete: until it is, no exemption and no SdI ban."
+msgstr "Ris. AdE 9/2026: IMPONIBILE con l'aliquota ordinaria, fattura elettronica allo SdI OBBLIGATORIA, nessuna comunicazione al Sistema TS. La professione è individuata dalla L. 3/2018 ed è stata inserita tra le professioni tecniche della prevenzione dal DM del 18 luglio 2024, ma il percorso non è concluso: finché non lo è, niente esenzione e niente divieto dello SdI."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Ris. AdE 9/2026: taxable, SdI mandatory, no Sistema TS report."
+msgstr "Ris. AdE 9/2026: imponibile, SdI obbligatorio, nessuna comunicazione al Sistema TS."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Ris. AdE 9/2026: NOT a health profession. Ordinary 22% VAT, SdI mandatory, no Sistema TS report."
+msgstr "Ris. AdE 9/2026: NON è una professione sanitaria. IVA ordinaria al 22%, SdI obbligatorio, nessuna comunicazione al Sistema TS."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. invoicing the patient is a bound subject ONLY if accredited or authorised under art. 8-ter; otherwise it is not one at all."
+msgstr "Serve il codice proprietario: i codici della Regione, dell'ASL e della struttura. Una S.r.l. che fattura al paziente è tenuta all'invio SOLO se accreditata o autorizzata ai sensi dell'art. 8-ter; altrimenti non lo è affatto."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "For public or accredited private facilities, payment traceability may not be required."
+msgstr "Per le strutture pubbliche o private accreditate la tracciabilità del pagamento può non essere richiesta."
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "pension fund and the rivalsa that goes with it"
+msgstr "la cassa previdenziale e la rivalsa che ne segue"
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "VAT regime of each individual supply"
+msgstr "il regime IVA di ogni singola fornitura"
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "the Sistema TS category it is enrolled under, and the tipoSpesa to use"
+msgstr "la categoria del Sistema TS a cui è iscritto, e il tipo di spesa da usare"
+
+#: crm/tessera_sanitaria/engine/professioni.py
+msgid "VAT regime per product type"
+msgstr "il regime IVA per tipo di prodotto"

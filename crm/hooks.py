@@ -147,6 +147,9 @@ setup_wizard_complete = [
 	# (`crm.lingue`): the consents', the libraries' (the clinic's foods hooked on here)
 	"crm.moduli.consensi.dopo_la_configurazione",
 	"crm.piani.librerie.dopo_la_configurazione",
+	# the qualifications' notes and points to check, both halves of the register
+	"crm.invoicing.install.qualifiche_nella_lingua",
+	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	"crm.clinica.librerie.dopo_la_configurazione",
 	"crm.demo.api.create_demo_data",
 ]
@@ -739,6 +742,9 @@ after_migrate = [
 	"crm.install.add_builder_page_custom_fields",
 	# the kinds of consent the modules registered, never overwriting the centre's text
 	"crm.moduli.consensi.assicura_tipi",
+	# the shipped qualifications' words follow the centre's language, its own stay
+	"crm.invoicing.install.qualifiche_nella_lingua",
+	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	# the access logs of the clinical record are kept two years at least
 	"crm.clinica.cartella.proteggi_registro_accessi",
 	# the core documents the Manager's pages write: templates, rules, imports

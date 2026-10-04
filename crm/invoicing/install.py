@@ -10,9 +10,24 @@ exists is left alone, and only a missing one is created.
 
 from __future__ import annotations
 
-import frappe
+from collections.abc import Iterable
 
+import frappe
+from frappe import _
+
+from crm import lingue
 from crm.invoicing.engine.professioni import Professione, elenco
+
+QUALIFICA = "CRM Professional Qualification"
+
+#: A shipped qualification's words that are DottorCloud's: its name, its notes, the
+#: points an accountant still has to check. Written in the centre's language
+#: (`crm.lingue`), and following it while nobody changed them. The English is the
+#: code's, the Italian is in it.po by hand: the extraction never sees a variable.
+PAROLE = ("qualification_name", "notes", "needs_verification")
+
+#: The languages DottorCloud ships these words in: the code's, and the catalog's.
+LINGUE = ("en", "it")
 
 RUOLI = (
 	("Invoicing Manager", "Issues, cancels and transmits invoices, and configures the register."),
@@ -77,7 +92,6 @@ def campi_qualifica(professione: Professione) -> dict:
 	return {
 		"doctype": "CRM Professional Qualification",
 		"code": professione.codice,
-		"qualification_name": professione.etichetta,
 		"category": professione.categoria,
 		"vat_exempt": int(professione.esente_iva),
 		"exemption_reference": professione.riferimento_esenzione,
@@ -91,10 +105,49 @@ def campi_qualifica(professione: Professione) -> dict:
 		"withholding_type": professione.tipo_ritenuta,
 		"payment_reason": professione.causale_pagamento,
 		"default_vat_rate": float(professione.aliquota_iva_default),
-		"needs_verification": "\n".join(professione.da_verificare),
-		"notes": professione.note,
+		**parole_di(professione, lingue.del_centro()),
 		"enabled": 1,
 	}
+
+
+def parole_di(professione: Professione, lingua: str) -> dict:
+	"""A shipped qualification's words in ``lingua``: the name, the notes, the points
+	to check one per line."""
+	return {
+		"qualification_name": _(professione.etichetta, lang=lingua),
+		"notes": _(professione.note, lang=lingua) if professione.note else "",
+		"needs_verification": "\n".join(_(punto, lang=lingua) for punto in professione.da_verificare),
+	}
+
+
+def nella_lingua(professioni: Iterable[Professione], lingua: str | None = None) -> int:
+	"""The shipped qualifications still holding DottorCloud's words in another
+	language take the centre's. A word the practice changed stays as written, and
+	a qualification it deleted is not made again."""
+	lingua = lingua or lingue.del_centro()
+	cambiate = 0
+	for professione in professioni:
+		attuali = frappe.db.get_value(QUALIFICA, professione.codice, list(PAROLE), as_dict=True)
+		if not attuali:
+			continue
+		volute = parole_di(professione, lingua)
+		spedite = [parole_di(professione, altra) for altra in LINGUE if altra != lingua]
+		nuove = {
+			campo: volute[campo]
+			for campo in PAROLE
+			if (attuali.get(campo) or "").strip() != volute[campo].strip()
+			and (attuali.get(campo) or "").strip() in {parole[campo].strip() for parole in spedite}
+		}
+		if nuove:
+			frappe.db.set_value(QUALIFICA, professione.codice, nuove, update_modified=False)
+			cambiate += 1
+	return cambiate
+
+
+def qualifiche_nella_lingua(_args=None) -> int:
+	"""After a migrate and the setup wizard: invoicing's half of the register in the
+	centre's language (the Sistema TS follows its own half)."""
+	return nella_lingua(elenco())
 
 
 def semina_qualifiche() -> int:
@@ -105,7 +158,7 @@ def semina_qualifiche() -> int:
 	"""
 	creati = 0
 	for professione in elenco():
-		if frappe.db.exists("CRM Professional Qualification", professione.codice):
+		if frappe.db.exists(QUALIFICA, professione.codice):
 			continue
 		frappe.get_doc(campi_qualifica(professione)).insert(ignore_permissions=True)
 		creati += 1
