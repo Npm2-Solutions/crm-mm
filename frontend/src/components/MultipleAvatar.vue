@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     v-if="avatars?.length"
@@ -14,7 +17,7 @@
           :label="avatars[0].label"
           :size="size"
         />
-        <div class="truncate">{{ avatars[0].label }}</div>
+        <div v-if="withName" class="truncate">{{ avatars[0].label }}</div>
       </div>
     </Tooltip>
     <Tooltip
@@ -41,6 +44,9 @@ import { computed } from 'vue'
 const props = defineProps({
   avatars: { type: Array, default: () => [] },
   size: { type: String, default: 'md' },
+  // the name beside a single avatar: a phone's header keeps its room for the
+  // page's own title
+  withName: { type: Boolean, default: true },
 })
 const reverseAvatars = computed(() => [...props.avatars].reverse())
 </script>
