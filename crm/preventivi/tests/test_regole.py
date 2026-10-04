@@ -83,3 +83,18 @@ class PrimaDiProporlo(unittest.TestCase):
 				"Row 4: the price is not negative",
 			],
 		)
+
+
+class LaRigaVuota(unittest.TestCase):
+	def test_una_riga_che_nessuno_ha_scritto_non_e_una_riga(self):
+		nuova = {"service": None, "description": "", "qty": 1, "phase": 1, "rate": 0, "discount": 0}
+		self.assertTrue(R.vuota(nuova))
+		self.assertTrue(R.vuota({**nuova, "description": "  ", "rate": "", "status": R.DA_FARE}))
+
+	def test_basta_una_cosa_scritta(self):
+		nuova = {"service": None, "description": "", "qty": 1, "phase": 1, "rate": 0, "discount": 0}
+		self.assertFalse(R.vuota({**nuova, "service": "Igiene"}))
+		self.assertFalse(R.vuota({**nuova, "description": "Sbiancamento"}))
+		self.assertFalse(R.vuota({**nuova, "rate": 70}))
+		# a module's field: the tooth a dentist wrote
+		self.assertFalse(R.vuota({**nuova, "tooth": "36"}))

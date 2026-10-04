@@ -406,11 +406,14 @@ def price_of(service: str, price_list: str | None = None) -> dict:
 
 
 def _voci_dal_modulo(dati: dict) -> list[dict]:
-	"""The rows as the editor sends them: one of each, unless it says how many."""
+	"""The rows as the editor sends them: one of each, unless it says how many; a
+	row nobody wrote in is left out."""
 	campi = campi_voce()
 	voci = []
 	for voce in dati.get("items") or []:
 		riga = {campo: voce.get(campo) for campo in campi}
+		if R.vuota(riga):
+			continue
 		if riga["qty"] in (None, ""):
 			riga["qty"] = 1
 		voci.append(riga)
