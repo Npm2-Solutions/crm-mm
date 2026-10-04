@@ -496,6 +496,22 @@
     top: max(0.75rem, env(safe-area-inset-top, 0px)) !important;
     bottom: auto !important;
   }
+  /* and each toast hangs from its top, as a top toaster's: hung from its
+     bottom it stood above the screen, only its last line in sight. It comes
+     down from above, and a second one goes below it. */
+  body:has(.dialog-content[data-state='open'])
+    [data-sonner-toaster][data-y-position='bottom']
+    [data-sonner-toast] {
+    top: 0;
+    bottom: auto;
+    --lift: 1;
+    --lift-amount: var(--gap);
+  }
+  body:has(.dialog-content[data-state='open'])
+    [data-sonner-toaster][data-y-position='bottom']
+    [data-sonner-toast]:not([data-mounted='true']) {
+    --y: translateY(-100%);
+  }
 }
 
 /* 7. A button as wide as its form is that form's action (book, save, send): on
