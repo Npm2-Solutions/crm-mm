@@ -1,4 +1,5 @@
-import { ref } from 'vue'
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+import { computed, ref } from 'vue'
 
 const show = ref(false)
 const doctype = ref('')
@@ -26,6 +27,10 @@ function triggerCallback(event, ...args) {
   callbacks.value[event]?.(...args)
 }
 
+// the sheet offers to take the record away when whoever opened it handles
+// that too (`callbacks.afterDelete`): on a phone the list has no menu of its own
+const eliminabile = computed(() => Boolean(callbacks.value.afterDelete))
+
 export function useDoctypeModal() {
   return {
     show,
@@ -35,5 +40,6 @@ export function useDoctypeModal() {
     defaults,
     showModal,
     triggerCallback,
+    eliminabile,
   }
 }

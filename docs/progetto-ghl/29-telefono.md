@@ -628,6 +628,13 @@ Con il tocco, come in un'app:
   ora arrivava come la sua mezzanotte: nella lista si leggeva «00:00», e una
   di oggi era già «In ritardo». Ora vale tutto il giorno e mostra solo il
   giorno, sul telefono, nella scheda della persona e nell'elenco.
+- **Una nota, provata davvero.** Scritta dal «+», trovata cercando una sua
+  parola, aperta, corretta e salvata. Una nota o una cosa da fare scritte per
+  sbaglio non si potevano togliere dal telefono: le liste del telefono non
+  hanno il menu delle righe del computer. Ora il loro foglio ha il cestino,
+  per chi può eliminarle (lo dice il server), con la domanda prima
+  (`DoctypeModal`, `callbacks.afterDelete` di chi apre il foglio), dalle Note,
+  dalle Cose da fare e dalla scheda della persona.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
