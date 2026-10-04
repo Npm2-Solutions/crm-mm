@@ -707,6 +707,46 @@ class TestAppointmentApi(SchedulingCase):
 			[("Marco", "Booked"), ("Lucia", "Booked"), ("Paolo", "Cancelled")],
 		)
 
+	def test_somebody_typed_with_a_contact_gets_a_record(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita scritta", [anna])
+		start = self.tomorrow(10)
+
+		def prenota(ore):
+			inizio = start + datetime.timedelta(hours=ore)
+			return A.save_appointment(
+				{
+					"service": "Visita scritta",
+					"starts_on": inizio.isoformat(),
+					"ends_on": (inizio + datetime.timedelta(minutes=30)).isoformat(),
+					"staff": [{"user": anna}],
+					"participants": [
+						{"participant_name": "Giulia Scritta", "email": "giulia.scritta@example.com"}
+					],
+				}
+			)
+
+		persona = prenota(0)["participants"][0]["party"]
+		self.assertTrue(persona)
+		self.assertEqual(frappe.db.get_value("CRM Lead", persona, "email"), "giulia.scritta@example.com")
+		# typed again, the same person: never a second record
+		self.assertEqual(prenota(2)["participants"][0]["party"], persona)
+
+	def test_a_name_typed_alone_stays_a_name(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita anonima", [anna])
+		start = self.tomorrow(10)
+		saved = A.save_appointment(
+			{
+				"service": "Visita anonima",
+				"starts_on": start.isoformat(),
+				"ends_on": (start + datetime.timedelta(minutes=30)).isoformat(),
+				"staff": [{"user": anna}],
+				"participants": [{"participant_name": "Maria Rossi"}],
+			}
+		)
+		self.assertFalse(saved["participants"][0]["party"])
+
 	def test_save_and_move_an_appointment(self):
 		anna = self.make_user("anna_sched@example.com")
 		self.make_service("Visita API", [anna])

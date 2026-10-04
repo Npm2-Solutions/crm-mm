@@ -329,7 +329,9 @@ A person's billing details, consents and links follow the person (`org_hierarchy
 and are deleted with them (`on_trash`); an answer in the register is never edited. A
 contact belongs to its owner: a booking finds the owner by email or phone and the
 person by name (`find_or_create_person`), so a child booked by a parent gets a record
-of their own, linked to the parent, never the parent's record.
+of their own, linked to the parent, never the parent's record. Somebody the desk types
+into an appointment with a contact is found or made the same way
+(`appointments._persona_scritta`); a name alone stays a name.
 
 ### The client area (`crm/area`, the plan's "area" module; the clinic comprises it)
 | File | Role |
