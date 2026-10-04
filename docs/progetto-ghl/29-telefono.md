@@ -516,6 +516,16 @@ Con il tocco, come in un'app:
   pagina, non del dito (le attività che si aprono sull'ultima), e non la
   raccoglie; un campo, un editor o un riquadro piccolo che scorrono dentro
   la scheda non contano (`composables/testataRaccolta.js`).
+- **L'odontogramma del dentista, provato davvero.** Dal telefono il dentista
+  apre l'odontogramma, sceglie il 46, aggiunge una carie con le superfici e
+  salva. «Salva l'odontogramma» stava in cima al riquadro, fuori schermo
+  mentre si scriveva sul dente in fondo: sul telefono ora sta alla fine, dove
+  si arriva scrivendo. Nella riga del dente la × finiva da sola su una riga:
+  ora sta accanto alla condizione, superfici e nota sotto, larghe quanto il
+  riquadro. Tra le condizioni c'era «Cellulare»: il «Mobile» di un dente che
+  si muove prendeva la parola del framework per il numero di telefono; ora le
+  condizioni passano il contesto «Tooth condition» e il catalogo dice
+  «Mobile».
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della

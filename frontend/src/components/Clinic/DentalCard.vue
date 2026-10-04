@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The teeth: the odontogram the dentists write. A care plan is a quote with a tooth
   on its rows: on the Quotes tab, with the others (crm.preventivi).
 -->
@@ -12,9 +15,16 @@
         {{ __('Teeth') }}
       </h3>
       <div class="flex shrink-0 flex-wrap items-center gap-2">
+        <!-- on a phone the chart is written top to bottom: saving is at
+             its end -->
         <template v-if="editing">
-          <Button :label="__('Cancel')" @click="stopEditing" />
           <Button
+            class="max-md:hidden"
+            :label="__('Cancel')"
+            @click="stopEditing"
+          />
+          <Button
+            class="max-md:hidden"
             variant="solid"
             :label="__('Save the chart')"
             :loading="saving"
@@ -64,7 +74,7 @@
           class="flex items-center gap-1.5 text-p-xs text-ink-gray-6"
         >
           <span class="size-2 rounded-sm" :class="segno(condition)" />
-          {{ __(condition) }}
+          {{ nomeDi(condition) }}
         </span>
       </div>
 
@@ -91,27 +101,32 @@
             class="shrink-0 rounded px-1.5 py-0.5 text-p-xs font-medium"
             :class="tono(row.condition)"
           >
-            {{ __(row.condition) }}
+            {{ nomeDi(row.condition) }}
           </span>
           <template v-if="editing">
-            <div v-if="suSuperfici(row.condition)" class="w-24">
-              <TextInput
-                v-model="row.surfaces"
-                :placeholder="__('MOD')"
-                :aria-label="__('Surfaces')"
-              />
-            </div>
-            <div class="min-w-32 flex-1">
-              <TextInput
-                v-model="row.note"
-                :placeholder="__('Note')"
-                :aria-label="__('Note')"
-              />
+            <!-- on a phone the fields go under the condition, the × beside it -->
+            <div
+              class="flex min-w-0 flex-1 gap-2 max-md:order-last max-md:basis-full"
+            >
+              <div v-if="suSuperfici(row.condition)" class="w-24 shrink-0">
+                <TextInput
+                  v-model="row.surfaces"
+                  :placeholder="__('MOD')"
+                  :aria-label="__('Surfaces')"
+                />
+              </div>
+              <div class="min-w-0 flex-1">
+                <TextInput
+                  v-model="row.note"
+                  :placeholder="__('Note')"
+                  :aria-label="__('Note')"
+                />
+              </div>
             </div>
             <Button
               variant="ghost"
               icon="x"
-              class="touch-target shrink-0"
+              class="touch-target shrink-0 max-md:ml-auto"
               :aria-label="__('Remove')"
               @click="removeRow(row)"
             />
@@ -145,6 +160,15 @@
         }}
       </p>
       <ErrorMessage :message="error" />
+      <div v-if="editing" class="flex gap-2 md:hidden [&>button]:flex-1">
+        <Button :label="__('Cancel')" @click="stopEditing" />
+        <Button
+          variant="solid"
+          :label="__('Save the chart')"
+          :loading="saving"
+          @click="saveChart"
+        />
+      </div>
     </template>
 
     <p v-if="!dental.data.chart && !editing" class="text-p-sm text-ink-gray-5">
@@ -257,7 +281,7 @@ const addOptions = computed(() =>
   CONDIZIONI.filter(
     (c) => !toothRows.value.some((row) => row.condition === c.value),
   ).map((c) => ({
-    label: __(c.value),
+    label: nomeDi(c.value),
     onClick: () =>
       draft.teeth.push({
         tooth: tooth.value,
@@ -267,6 +291,11 @@ const addOptions = computed(() =>
       }),
   })),
 )
+
+// a condition by its name: «Mobile» is a tooth that moves, not a phone
+function nomeDi(condizione) {
+  return __(condizione, null, 'Tooth condition')
+}
 
 function removeRow(row) {
   draft.teeth = draft.teeth.filter((one) => one !== row)
