@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A plan: written as a draft by its author, published to the person's area.
 
   The moments are the plan's rows - a session, a meal of the day - and each holds
@@ -97,8 +100,10 @@
           :key="moment.key"
           class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-3"
         >
+          <!-- on a phone the moment's name has its line («Spuntino del
+               mattino» was cut), its day, time and bin the next -->
           <div class="flex flex-wrap items-end gap-2">
-            <div class="min-w-40 flex-1">
+            <div class="min-w-40 flex-1 max-md:basis-full">
               <FormControl v-model="moment.label" :label="__('Moment')" />
             </div>
             <div class="w-40 max-md:flex-1">

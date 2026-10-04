@@ -550,6 +550,10 @@ Con il tocco, come in un'app:
   formato. Ora seguono quello del centro come i campi della scheda
   (`dateFormat()` in `utils/index.js`); l'area pazienti, che non ha le
   impostazioni di sistema, scrive il giorno per primo (`FORMATO_DEL_CAMPO`).
+- **La dieta a scambi, provata davvero.** Dai Piani la dietista apre una
+  dieta a scambi: cinque momenti, ciascuno col suo giorno, l'ora e le voci.
+  Il nome del momento divideva la riga col giorno e si leggeva «Spuntino del
+  mattir»: sul telefono ora ha la sua riga, giorno, ora e cestino sotto.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
