@@ -31,6 +31,8 @@ import re
 from datetime import date, datetime
 
 import frappe
+from frappe.query_builder import Case
+from frappe.query_builder.functions import Sum
 from frappe.utils import add_to_date, cint, get_datetime, now, now_datetime
 
 from crm.scheduling.timeutils import to_system_naive
@@ -521,17 +523,16 @@ def conditions_for(view: str) -> dict:
 	return dict(LIVE)
 
 
-# The same four in SQL, so the numbers above the list can be counted in one pass
-# over the table instead of one query per view.
-COUNTABLE = {
-	"open": "conversation_status = 'Open' and conversation_snoozed_until is null",
-	"unanswered": (
-		"conversation_status = 'Open' and conversation_snoozed_until is null "
-		"and last_conversation_direction = 'Incoming'"
-	),
-	"snoozed": "conversation_snoozed_until is not null",
-	"handled": "conversation_status = 'Handled'",
-}
+def countable(lead) -> dict:
+	"""The same four as conditions on the table, so the numbers above the list are
+	counted in one pass over it instead of one query per view."""
+	live = (lead.conversation_status == OPEN) & lead.conversation_snoozed_until.isnull()
+	return {
+		"open": live,
+		"unanswered": live & (lead.last_conversation_direction == "Incoming"),
+		"snoozed": lead.conversation_snoozed_until.isnotnull(),
+		"handled": lead.conversation_status == HANDLED,
+	}
 
 
 @frappe.whitelist()
@@ -542,16 +543,21 @@ def counts() -> dict:
 	eight questions about the same rows, and asking the table eight times to draw
 	one menu is seven times too many. The unread ones are `<view>_unread`, for the
 	number on the filter that narrows the open view to them.
+
+	And only the rows the list would show. Counted over the whole table, a doctor
+	who sees their own three people read «Aperte 1739» above a list that said
+	there was nothing to read: the numbers are asked with the same permissions as
+	the list (`frappe.get_list`'s), so they always agree with it.
 	"""
 	if not frappe.has_permission("CRM Lead", "read"):
 		return {}
+	lead = frappe.qb.DocType("CRM Lead")
+	unread = lead.conversation_unread == 1
 	sums = []
-	for view, clause in COUNTABLE.items():
-		sums.append(f"sum(case when {clause} then 1 else 0 end) as `{view}`")
-		sums.append(
-			f"sum(case when ({clause}) and conversation_unread = 1 then 1 else 0 end) as `{view}_unread`"
-		)
-	row = frappe.db.sql(f"select {', '.join(sums)} from `tabCRM Lead`", as_dict=True)  # nosemgrep
+	for view, condition in countable(lead).items():
+		sums.append(Sum(Case().when(condition, 1).else_(0)).as_(view))
+		sums.append(Sum(Case().when(condition & unread, 1).else_(0)).as_(f"{view}_unread"))
+	row = frappe.qb.get_query("CRM Lead", fields=sums, ignore_permissions=False).run(as_dict=True)
 	return {key: int(value or 0) for key, value in (row[0] if row else {}).items()}
 
 

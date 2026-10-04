@@ -446,17 +446,17 @@ class TestTheViews(FrappeTestCase):
 		# counted with the view's own filter rather than the length of a page of
 		# it: the list stops at 200 rows, and the database a suite runs on can
 		# hold more open conversations than that
-		from crm.api.conversations import COUNTABLE, conditions_for, counts
+		from crm.api.conversations import VIEWS, conditions_for, counts
 
 		tally = counts()
-		for view in COUNTABLE:
+		for view in VIEWS:
 			self.assertEqual(tally.get(view), frappe.db.count("CRM Lead", conditions_for(view)), view)
 
 	def test_the_unread_numbers_agree_with_the_unread_filter(self):
-		from crm.api.conversations import COUNTABLE, conditions_for, counts
+		from crm.api.conversations import VIEWS, conditions_for, counts
 
 		tally = counts()
-		for view in COUNTABLE:
+		for view in VIEWS:
 			unread = frappe.db.count("CRM Lead", {**conditions_for(view), "conversation_unread": 1})
 			self.assertEqual(tally.get(f"{view}_unread"), unread, view)
 
@@ -466,6 +466,79 @@ class TestTheViews(FrappeTestCase):
 
 		found = [row.name for row in people(search="Risposto", waiting=1, limit=500)]
 		self.assertIn(self.us.name, found)
+
+
+class TestTheNumbersCountWhatTheReaderSees(FrappeTestCase):
+	"""Counted over the whole table, a doctor who sees their own few people read
+	«Aperte 1739» above a list that said there was nothing to read."""
+
+	DOCTOR = "conversations.doctor@example.com"
+
+	def setUp(self):
+		from crm.permissions import livelli, utenti
+		from crm.permissions.test_org_hierarchy import make_user
+
+		frappe.set_user("Administrator")
+		utenti.sincronizza()
+		make_user(self.DOCTOR)
+		utenti.assegna_livelli(self.DOCTOR, ["operatore"])
+		livelli.dimentica_cache()
+		self.theirs = self._person("Sua", self.DOCTOR)
+		self.not_theirs = self._person("Altrui", "Administrator")
+
+	def tearDown(self):
+		from crm.permissions import livelli
+
+		frappe.set_user("Administrator")
+		livelli.dimentica_cache()
+		frappe.db.rollback()
+
+	def _person(self, first_name, owner):
+		name = (
+			frappe.get_doc({"doctype": "CRM Lead", "first_name": first_name, "last_name": "Conteggio"})
+			.insert(ignore_permissions=True)
+			.name
+		)
+		frappe.db.set_value(
+			"CRM Lead",
+			name,
+			{
+				"lead_owner": owner,
+				"conversation_status": "Open",
+				"conversation_snoozed_until": None,
+				"last_conversation_direction": "Incoming",
+				"conversation_unread": 1,
+			},
+			update_modified=False,
+		)
+		return name
+
+	def _seen(self, filters):
+		return frappe.get_list("CRM Lead", filters=filters, pluck="name", limit_page_length=0)
+
+	def test_the_numbers_agree_with_the_list_the_reader_sees(self):
+		from crm.api.conversations import VIEWS, conditions_for, counts
+		from crm.permissions import livelli
+
+		frappe.set_user(self.DOCTOR)
+		livelli.dimentica_cache()
+		tally = counts()
+		for view in VIEWS:
+			self.assertEqual(tally[view], len(self._seen(conditions_for(view))), view)
+			unread = self._seen({**conditions_for(view), "conversation_unread": 1})
+			self.assertEqual(tally[f"{view}_unread"], len(unread), view)
+
+		# the one they look after is counted, somebody else's is not
+		waiting = self._seen({**conditions_for("open"), "conversation_unread": 1})
+		self.assertIn(self.theirs, waiting)
+		self.assertNotIn(self.not_theirs, waiting)
+
+	def test_whoever_sees_everybody_counts_everybody(self):
+		from crm.api.conversations import conditions_for, counts
+
+		tally = counts()
+		unread = frappe.db.count("CRM Lead", {**conditions_for("open"), "conversation_unread": 1})
+		self.assertEqual(tally["open_unread"], unread)
 
 
 class TestTheBlueTicksGoWhenItIsRead(FrappeTestCase):
