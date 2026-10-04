@@ -42400,3 +42400,28 @@ msgstr "Riga {0}: il prezzo non può essere negativo"
 #: crm/preventivi/regole.py
 msgid "Row {0}: the discount is from 0 to 100%"
 msgstr "Riga {0}: lo sconto va da 0 a 100%"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Cancel this appointment?"
+msgstr "Annullare questo appuntamento?"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Its time goes back free for others."
+msgstr "Il suo orario torna libero per altri."
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Why, if you know (they called, ill…)"
+msgstr "Perché, se lo sai (ha chiamato, sta male…)"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgctxt "Appointment"
+msgid "Keep it"
+msgstr "Non annullare"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Cancel the appointment"
+msgstr "Annulla l'appuntamento"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Appointment cancelled"
+msgstr "Appuntamento annullato"

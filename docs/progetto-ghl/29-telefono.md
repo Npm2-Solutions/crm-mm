@@ -570,6 +570,28 @@ Con il tocco, come in un'app:
   si gira, perché finisca sotto il pollice; una fila scritta a mano lo mette
   già per ultimo, e girata finiva a sinistra. Ora si gira solo quando il
   principale viene per primo (`telefono.css`).
+- **Un appuntamento spostato, provato davvero.** Col telefono su un fuso e il
+  centro su un altro, «Salva» senza toccare nulla spostava l'appuntamento
+  (00:00 diventava 03:30). Gli orari liberi, l'ora proposta per un nuovo
+  appuntamento, la linea «adesso» del giorno e l'attesa in accoglienza
+  seguivano l'orologio del telefono. Ora tutto segue l'orologio del centro
+  (`oraDelCentro()`, `sulCentro()`, `adessoDelCentro()` in
+  `utils/scheduler.js`).
+- **Un abbonamento venduto e una trattativa spostata, provati davvero.** Dai
+  Dettagli della persona la segreteria vende un abbonamento e da lì prenota.
+  Dalle Trattative ne apre una e la sposta di fase dal foglio delle fasi.
+  Ogni campo salvato diceva «Documento aggiornato», che si confondeva con i
+  documenti della persona: ora dice «Salvato».
+- **Un appuntamento annullato, provato davvero.** In fondo alla scheda,
+  fisso, c'era «Ripeti questo appuntamento» con i suoi campi: sul telefono
+  occupava il posto del pollice. Ora è una riga che si apre quando serve.
+  Un tocco su «Annullato» nel menu dello stato annullava subito, senza
+  chiedere: l'orario si liberava e la lista d'attesa poteva già offrirlo.
+  Ora la scheda chiede conferma e il motivo, se lo si sa. Il motivo va alle
+  piattaforme da cui l'appuntamento è arrivato e resta scritto sulla scheda.
+  Rimesso «Confermato», l'appuntamento restava senza nessuno: niente
+  promemoria, e nell'agenda solo il servizio. Ora chi era stato annullato
+  torna prenotato, nei posti del servizio (`CRM Appointment.brought_back`).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
