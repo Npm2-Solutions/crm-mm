@@ -324,9 +324,10 @@ def contesto(context) -> dict:
 	dati = context.get("marchio") or per_le_pagine()
 	valori = {"favicon": dati["favicon"], "splash_image": dati["icon"], "marchio": dati}
 	if getattr(frappe.local, "path", None) in PAGINE_DEL_FRAMEWORK:
-		valori["head_html"] = (context.get("head_html") or "") + frappe.render_template(
+		stile = frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 			"templates/includes/marchio_framework.html", {"marchio": dati}
 		)
+		valori["head_html"] = (context.get("head_html") or "") + stile
 	return valori
 
 
