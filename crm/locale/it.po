@@ -30294,8 +30294,8 @@ msgid "Value"
 msgstr "Valore"
 
 #: frontend/src/components/Modals/WhatsappTemplateSelectorModal.vue
-msgid "Value for {0}"
-msgstr "Valore per {0}"
+msgid "Value {0}"
+msgstr "Valore {0}"
 
 #: crm/dashboard/widgets/agenda.py
 msgid "Value of the appointments the client did not turn up to"

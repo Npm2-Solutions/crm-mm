@@ -40,7 +40,7 @@
         <div
           v-for="template in filteredTemplates"
           :key="template.name"
-          class="flex h-56 cursor-pointer flex-col gap-2 rounded-lg border p-3 hover:bg-surface-gray-2"
+          class="flex cursor-pointer flex-col gap-2 rounded-lg border p-3 hover:bg-surface-gray-2 sm:h-56"
           @click="pick(template)"
         >
           <div
@@ -50,11 +50,14 @@
             {{ template.name }}
           </div>
           <!-- content is passed through sanitizeHTML() (DOMPurify) before rendering, so v-html is safe here -->
+          <!-- the places to fill are chips with their number, never «{{1}}»;
+               on a phone, one card under the other, as tall as four lines:
+               224px each left a short template a card mostly empty -->
           <!-- eslint-disable vue/no-v-html -->
           <div
             v-if="template.template"
-            class="prose-f prose-sm max-w-none !text-sm text-ink-gray-5 flex-1 overflow-hidden"
-            v-html="sanitizeHTML(template.template)"
+            class="prose-f prose-sm max-w-none !text-sm text-ink-gray-5 flex-1 overflow-hidden max-md:line-clamp-4"
+            v-html="sanitizeHTML(segnaInHtml(template.template, CHIP))"
           />
           <!-- eslint-enable vue/no-v-html -->
         </div>
@@ -99,10 +102,18 @@
   >
     <template #body-content>
       <div class="flex flex-col gap-3">
+        <!-- the message as it will leave: each place a chip with what was
+             typed for it, or its number while empty -->
         <div
           class="rounded-md bg-surface-gray-1 p-3 text-p-base text-ink-gray-7 whitespace-pre-line"
         >
-          {{ preview }}
+          <template v-for="(pezzo, i) in pezzi(preview)" :key="i">
+            <span
+              v-if="pezzo.posto"
+              :class="variables[pezzo.posto - 1] ? CHIP_PIENO : CHIP"
+              >{{ variables[pezzo.posto - 1] || pezzo.posto }}</span
+            ><template v-else>{{ pezzo.testo }}</template>
+          </template>
         </div>
         <FormControl
           v-for="(value, index) in variables"
@@ -135,6 +146,7 @@ import {
 } from 'frappe-ui'
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { sanitizeHTML } from '@/utils'
+import { pezzi, segnaInHtml } from '@/utils/segnaposti'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 
@@ -207,9 +219,16 @@ const variables = ref([])
 const preview = ref('')
 const pending = ref(null)
 
+// the field of the chip with the same number in the message
 function placeholderLabel(index) {
-  return __('Value for {0}', ['{{' + (index + 1) + '}}'])
+  return __('Value {0}', [index + 1])
 }
+
+// a place to fill, in a card and in the message: its number in a chip
+const CHIP =
+  'inline-block rounded bg-surface-gray-3 px-1.5 font-medium tabular-nums text-ink-gray-7'
+const CHIP_PIENO =
+  'inline-block rounded bg-surface-blue-2 px-1.5 font-medium text-ink-blue-8'
 
 function pick(template) {
   createResource({
