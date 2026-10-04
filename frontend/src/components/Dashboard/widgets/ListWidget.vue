@@ -80,18 +80,25 @@
         </div>
       </li>
     </ul>
+    <!--
+      On a phone the way to the whole list («All deals», «Open the agenda») is
+      the row's full height and 14px: as a 12px line it took a tap on 16px.
+    -->
     <div
       v-if="footer || answer.more"
-      class="flex items-center justify-between gap-2 border-t border-outline-gray-1 px-4 py-2 text-xs"
+      class="flex items-center justify-between gap-2 border-t border-outline-gray-1 px-4 py-2 text-xs max-md:py-0 max-md:text-sm"
     >
       <span class="text-ink-gray-5">{{ footer }}</span>
       <button
         v-if="answer.more"
-        class="inline-flex items-center gap-0.5 font-medium text-ink-gray-7 hover:text-ink-gray-9"
+        class="inline-flex items-center gap-0.5 font-medium text-ink-gray-7 hover:text-ink-gray-9 max-md:-mr-2 max-md:min-h-11 max-md:px-2"
         @click="$emit('navigate', answer.more)"
       >
         {{ answer.more.label }}
-        <span class="lucide-arrow-right size-3" aria-hidden="true" />
+        <span
+          class="lucide-arrow-right size-3 max-md:size-3.5"
+          aria-hidden="true"
+        />
       </button>
     </div>
   </div>

@@ -5,7 +5,8 @@
   One person of an appointment on the desk's day: who, how they stand, the forms
   they owe, how long they have been waiting, and the next outcomes to give. On a
   phone the name has its own line and the outcomes the next, as wide as the
-  screen and as tall as a thumb.
+  screen and as tall as a thumb: 40px, with no ring of their own, which reached
+  over the name and left it 29px to be tapped on.
 -->
 <template>
   <div class="flex items-center gap-3 py-2 max-md:flex-wrap max-md:py-3">
@@ -14,7 +15,7 @@
       <RouterLink
         v-if="participant.party_type === 'CRM Lead' && participant.party"
         :to="{ name: 'Lead', params: { leadId: participant.party } }"
-        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-2 max-md:py-2"
+        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-3 max-md:py-3"
       >
         {{ participant.participant_name || participant.party }}
       </RouterLink>
@@ -78,7 +79,7 @@
         :theme="outcome === 'No Show' ? 'red' : 'gray'"
         :size="isMobileView ? 'lg' : 'sm'"
         :loading="busy === outcome"
-        class="touch-target max-md:flex-1"
+        :class="isMobileView ? 'flex-1' : 'touch-target'"
         @click="mark(outcome)"
       />
     </div>
