@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { appLocale } from '@/utils/locale'
+import { appLocale, inFrase } from '@/utils/locale'
 
 describe('appLocale', () => {
   afterEach(() => {
@@ -32,5 +32,28 @@ describe('appLocale', () => {
     expect(
       () => new Intl.DateTimeFormat(appLocale('not a language!')),
     ).not.toThrow()
+  })
+})
+
+describe('inFrase', () => {
+  it('lowers a name written with a capital, as after «Aggiungi»', () => {
+    expect(inFrase('Codice fiscale')).toBe('codice fiscale')
+    expect(inFrase('Città')).toBe('città')
+    expect(inFrase('Partita IVA')).toBe('partita IVA')
+  })
+
+  it('keeps acronyms, abbreviations and a capital inside as written', () => {
+    for (const comeScritto of [
+      'IVA',
+      'PEC',
+      'CAP',
+      'N. di dipendenti',
+      'WhatsApp',
+      'X',
+      '',
+    ]) {
+      expect(inFrase(comeScritto)).toBe(comeScritto)
+    }
+    expect(inFrase(undefined)).toBe('')
   })
 })

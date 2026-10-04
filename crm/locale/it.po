@@ -24895,7 +24895,7 @@ msgstr "Qualcuno ha scritto e nessuno se n'è ancora occupato"
 
 #: frontend/src/components/RelatedPeopleSection.vue
 msgid "Someone in {brand}"
-msgstr "Una persona già in {brand}"
+msgstr "Già in {brand}"
 
 #: frontend/src/components/RelatedPeopleSection.vue
 msgid "Someone new"

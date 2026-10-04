@@ -106,18 +106,17 @@
     <template #body-content>
       <div class="flex flex-col gap-4">
         <template v-if="!dialog.name">
-          <div class="flex flex-wrap gap-2" role="group">
-            <Button
-              :variant="dialog.newPerson ? 'subtle' : 'solid'"
-              :label="__('Someone in {brand}')"
-              @click="dialog.newPerson = false"
-            />
-            <Button
-              :variant="dialog.newPerson ? 'solid' : 'subtle'"
-              :label="__('Someone new')"
-              @click="dialog.newPerson = true"
-            />
-          </div>
+          <!-- one switch of two halves: as two buttons, the second went
+               under the first on a phone -->
+          <TabButtons
+            class="w-full [&_button>span]:w-full [&_button]:w-full [&_div]:w-full"
+            :options="[
+              { label: __('Someone in {brand}'), value: 'esistente' },
+              { label: __('Someone new'), value: 'nuova' },
+            ]"
+            :modelValue="dialog.newPerson ? 'nuova' : 'esistente'"
+            @update:modelValue="(v) => (dialog.newPerson = v === 'nuova')"
+          />
           <div
             v-if="dialog.newPerson"
             class="grid grid-cols-2 gap-3 max-md:grid-cols-1"
@@ -222,6 +221,7 @@ import {
   Dialog,
   ErrorMessage,
   FormControl,
+  TabButtons,
   createResource,
   call,
   toast,
