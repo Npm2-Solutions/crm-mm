@@ -115,6 +115,44 @@ class GliEsiti(OggiCase):
 		esiti.segna(incontro.name, self.riga(incontro, self.luca).name, "No Show")
 		self.assertEqual(frappe.db.get_value("CRM Appointment", incontro.name, "status"), "Completed")
 
+	def test_un_appuntamento_sovrapposto_si_accoglie(self):
+		# a manager forced it over another of the same doctor's: the desk, who may
+		# not force anything, says all the same that the person arrived
+		self.appuntamento(self.tomorrow(10), self.mario)
+		forzato = self.make_appointment(
+			self.service.name,
+			self.tomorrow(10),
+			[DOCTOR],
+			status="Confirmed",
+			override_conflicts=1,
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": self.luca.name,
+					"participant_name": self.luca.lead_name,
+					"status": "Booked",
+				}
+			],
+		)
+		self.assertTrue(forzato.conflict_note)
+		self.come(DESK)
+		esiti.segna(forzato.name, self.riga(forzato, self.luca).name, "Arrived")
+		self.assertEqual(self.riga(forzato, self.luca).status, "Arrived")
+		# moving it is a new booking, and the clash is asked about again
+		forzato.reload()
+		forzato.starts_on = forzato.starts_on + datetime.timedelta(minutes=5)
+		forzato.ends_on = forzato.ends_on + datetime.timedelta(minutes=5)
+		with self.assertRaises(frappe.ValidationError):
+			forzato.save()
+
+	def test_chi_non_c_e_piu_non_ferma_l_accoglienza(self):
+		# a professional whose account is gone (an old import): the outcome is said
+		incontro = self.appuntamento(self.tomorrow(10), self.mario)
+		frappe.db.set_value("CRM Appointment Staff", incontro.staff[0].name, "user", "andato.via@example.com")
+		self.come(DESK)
+		esiti.segna(incontro.name, self.riga(incontro, self.mario).name, "Arrived")
+		self.assertEqual(self.riga(incontro, self.mario).status, "Arrived")
+
 	def test_nessuno_e_venuto(self):
 		incontro = self.appuntamento(self.ieri(), self.mario)
 		self.come(DESK)

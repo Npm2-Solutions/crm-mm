@@ -70,6 +70,9 @@ def segna(appuntamento: str, riga: str, esito: str) -> None:
 	if esito in APERTI and doc.status in ("Completed", "No Show"):
 		# reopened: somebody took back what they said
 		doc.status = "Confirmed"
+	# how it went is said whatever else the appointment names: a professional
+	# whose account is gone (an old import) does not stop the desk
+	doc.flags.ignore_links = True
 	doc.save(ignore_permissions=True)
 
 
@@ -89,6 +92,7 @@ def presente(appuntamento: str | None, persona: str | None) -> bool:
 			row.status = "Attended"
 			cambiato = True
 	if cambiato:
+		doc.flags.ignore_links = True
 		doc.save(ignore_permissions=True)
 	return cambiato
 
