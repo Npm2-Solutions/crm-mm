@@ -685,8 +685,9 @@ def _formati_numerati() -> dict[str, re.Pattern]:
 	return formati
 
 
-def _ultimo_in_uso(doctype: str, prefisso: str, schema: re.Pattern | None) -> int:
-	"""The highest number ``doctype`` still holds on the series ``prefisso``."""
+def _ultimo_in_uso(doctype: str, prefisso: str, schema: re.Pattern | None, tetto: int) -> int:
+	"""The highest number ``doctype`` still holds on the series ``prefisso``, up to
+	``tetto``, where the series is: a name above it was never one of its numbers."""
 	if schema:
 		nomi = frappe.db.sql_list(f"select name from `tab{doctype}`")
 	else:
@@ -702,7 +703,7 @@ def _ultimo_in_uso(doctype: str, prefisso: str, schema: re.Pattern | None) -> in
 		else:
 			trovato = re.match(r"^(.*?)(\d+)$", str(nome))
 			numero = trovato.group(2) if trovato and trovato.group(1) == prefisso else None
-		if numero:
+		if numero and int(numero) <= tetto:
 			ultimo = max(ultimo, int(numero))
 	return ultimo
 
@@ -731,7 +732,7 @@ def _contatori(via: dict[str, set[str]]) -> None:
 		ultimo = 0
 		for doctype in doctypes:
 			schema = formati.get(doctype) if prefisso == "" else None
-			ultimo = max(ultimo, _ultimo_in_uso(doctype, prefisso, schema))
+			ultimo = max(ultimo, _ultimo_in_uso(doctype, prefisso, schema, serie[prefisso]))
 		if prima is not None and prefisso not in prima and not ultimo:
 			frappe.db.sql("delete from `tabSeries` where name = %s", (prefisso,))
 			continue
