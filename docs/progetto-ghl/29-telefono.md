@@ -852,6 +852,8 @@ nessun browser di prova ha la sua tastiera.
 | `Documents/DocumentsCard.vue` | Un documento si apriva solo dal suo nome, una riga da 16 px: ora da tutta la riga, con «Azioni» sopra |
 | `Modals/WhatsappTemplateSelectorModal.vue`, `utils/segnaposti.js` | Nei modelli WhatsApp ogni scheda era alta 224 px anche sul telefono, una sotto l'altra: un modello di due righe era una scheda quasi vuota. Ora è alta quanto il testo, fino a quattro righe. I posti da riempire si leggevano come codice, «{{1}}», anche nella finestra per riempirli, con i campi «Valore per {{1}}»: ora sono un riquadro con il numero, il campo si chiama «Valore 1», e nel messaggio il riquadro mostra quello che si scrive. Test: `tests/unit/segnaposti.test.js` |
 | `src/index.css` | Il testo guida della casella (l'email, la nota) andava a capo dove non ci stava, e la riga sotto lo tagliava a metà: ora resta su una riga, con «…» dove non entra |
+| `Mobile/MobileAppHeader.vue`, `src/telefono.css` | L'anello invisibile del telefono in alto a destra arriva 8 px alla sua sinistra, e a 4 px di distanza prendeva gli ultimi 7 px dell'ultima icona della pagina: «Ricarica», «Altro», «Giorno dopo», «Giro di chiamate» rispondevano su 27 px. Ora fra i due c'è spazio, e rispondono su 34 × 40. Il nome della persona, che sulla conversazione apre la scheda, rispondeva su 26 px: ha l'anello delle briciole |
+| `Controls/Link.vue` | «Assegnata a» nel pannello della persona mostrava l'indirizzo email del collega finché non se ne apriva l'elenco: ora il suo nome, dagli utenti che l'app ha già, in ogni campo che sceglie un collega |
 
 ## Non incluso
 
