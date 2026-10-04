@@ -42119,3 +42119,8 @@ msgstr "Non ora"
 msgctxt "Free times"
 msgid "{0} more"
 msgstr "altri {0}"
+
+#: frontend/src/components/Clinic/DentalCard.vue
+msgctxt "Tooth condition"
+msgid "Mobile"
+msgstr "Mobile"
