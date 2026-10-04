@@ -137,17 +137,24 @@
               {{ sotto(riga) }}
             </span>
           </span>
+          <!-- a first visit says so and still says how it went: a new patient
+               who did not come read only «First visit» -->
           <span
-            v-if="riga.dati.first_visit"
-            class="shrink-0 self-start rounded bg-[var(--brand-subtle)] px-1.5 py-0.5 text-xs text-[var(--on-brand-subtle)]"
+            v-if="riga.dati.first_visit || statoDaDire(riga)"
+            class="flex shrink-0 flex-col items-end gap-1 self-start"
           >
-            {{ __('First visit') }}
-          </span>
-          <span
-            v-else-if="statoDaDire(riga)"
-            class="shrink-0 self-start rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
-          >
-            {{ __(riga.dati.status) }}
+            <span
+              v-if="riga.dati.first_visit"
+              class="rounded bg-[var(--brand-subtle)] px-1.5 py-0.5 text-xs text-[var(--on-brand-subtle)]"
+            >
+              {{ __('First visit') }}
+            </span>
+            <span
+              v-if="statoDaDire(riga)"
+              class="rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+            >
+              {{ __(riga.dati.status) }}
+            </span>
           </span>
         </button>
       </template>
