@@ -25030,8 +25030,8 @@ msgid "Spreadsheets"
 msgstr "Fogli di calcolo"
 
 #: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
-msgid "Stable identifier used by the engine, e.g. fisioterapista."
-msgstr "Identificativo stabile usato dal motore, es. fisioterapista."
+msgid "A short name that never changes, e.g. fisioterapista: invoicing's rules find the qualification by it."
+msgstr "Un nome breve che non cambia mai, es. fisioterapista: le regole della fatturazione trovano la qualifica con questo."
 
 #: frontend/src/components/Settings/Booking/BookingPlatforms.vue
 msgid "Staff"
