@@ -72,6 +72,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1">
           <Button
+            :aria-label="__('Previous month')"
             variant="ghost"
             icon="lucide-chevron-left"
             @click="shiftMonth(-1)"
@@ -82,6 +83,7 @@
             {{ monthLabel }}
           </span>
           <Button
+            :aria-label="__('Next month')"
             variant="ghost"
             icon="lucide-chevron-right"
             @click="shiftMonth(1)"
@@ -129,11 +131,12 @@
               {{ __('Today') }}
             </span>
           </div>
-          <div class="flex flex-col gap-1.5">
+          <!-- a post is a row a thumb hits: 44px, not the grid's 26px chip -->
+          <div class="flex flex-col gap-2">
             <button
               v-for="post in cell.posts"
               :key="post.name"
-              class="flex min-w-0 items-center gap-2 rounded-md border-l-2 px-2 py-1.5 text-left text-xs leading-tight"
+              class="flex min-h-11 min-w-0 items-center gap-2.5 rounded-lg border-l-2 px-3 py-2 text-left text-sm leading-tight"
               :class="chipClass(post.status)"
               :style="{ borderLeftColor: statusColor(post.status) }"
               @click="openComposer(post)"
@@ -394,7 +397,12 @@
             >
               {{ form.media.split('/').pop() }}
             </a>
-            <Button variant="ghost" icon="lucide-x" @click="form.media = ''" />
+            <Button
+              :aria-label="__('Remove')"
+              variant="ghost"
+              icon="lucide-x"
+              @click="form.media = ''"
+            />
           </template>
         </div>
 
