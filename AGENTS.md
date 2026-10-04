@@ -676,7 +676,11 @@ row, the bar's words beside their icons).
   or `lucide-…`: any other name draws an empty circle.
 - A button that is only an icon says what it does (`:aria-label="__('Close')"`,
   «Opzioni», «Il mese prima»): without it VoiceOver and TalkBack read «pulsante».
-  A tooltip is not its name.
+  A tooltip is not its name. A switch outside a `SettingsRow` (whose words are its
+  `<label>`) takes `:aria-label`: the words beside it, or in a list the name of
+  what its row turns on. frappe-ui's Switch is mended at build
+  (`vite/frappeUi.js`): the name goes to its button, and a check field's 1 from
+  the server is drawn on.
 - While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
   `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
   must stay in sight sits at the bottom of the frame or of a sheet, never

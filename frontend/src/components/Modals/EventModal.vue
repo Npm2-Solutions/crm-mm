@@ -83,7 +83,7 @@
           <div class="shrink-0 text-base text-ink-gray-7 sm:w-3/12">
             {{ __('All Day') }}
           </div>
-          <Switch v-model="_event.isFullDay" />
+          <Switch :aria-label="__('All Day')" v-model="_event.isFullDay" />
         </div>
         <div class="border-t border-outline-gray-1" />
         <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center">

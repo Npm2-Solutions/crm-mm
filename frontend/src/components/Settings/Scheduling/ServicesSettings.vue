@@ -163,6 +163,7 @@
                 @click="openShowcase"
               />
               <Switch
+                :aria-label="__('Publish on the website')"
                 size="sm"
                 :modelValue="publishedOnWebsite"
                 @update:modelValue="toggleWebsite"

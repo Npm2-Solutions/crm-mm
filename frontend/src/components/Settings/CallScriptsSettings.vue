@@ -150,7 +150,11 @@
               class="w-24"
             />
             <div class="flex items-center gap-2 pb-2">
-              <Switch v-model="draft.enabled" size="sm" />
+              <Switch
+                :aria-label="__('Enabled')"
+                v-model="draft.enabled"
+                size="sm"
+              />
               <span class="text-p-base text-ink-gray-7">{{
                 __('Enabled')
               }}</span>

@@ -283,6 +283,7 @@
                 @click="editShowcase(row)"
               />
               <Switch
+                :aria-label="row.title"
                 size="sm"
                 :modelValue="Boolean(row.publish_on_website)"
                 @update:modelValue="(v) => togglePublish(row, v)"

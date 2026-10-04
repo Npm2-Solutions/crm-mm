@@ -97,6 +97,7 @@
               <div class="flex justify-between items-center w-full pr-2">
                 <div>
                   <Switch
+                    :aria-label="sla.name"
                     size="sm"
                     :modelValue="sla.enabled"
                     @update:modelValue="onToggle(sla)"

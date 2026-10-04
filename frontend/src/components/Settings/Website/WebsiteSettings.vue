@@ -83,7 +83,11 @@
               }}
             </span>
           </div>
-          <Switch v-model="form.enabled" size="sm" />
+          <Switch
+            :aria-label="__('Site enabled')"
+            v-model="form.enabled"
+            size="sm"
+          />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -140,7 +144,11 @@
               }}
             </span>
           </div>
-          <Switch v-model="form.serve_at_root" size="sm" />
+          <Switch
+            :aria-label="__('Serve the home page at /')"
+            v-model="form.serve_at_root"
+            size="sm"
+          />
         </div>
       </section>
 
@@ -381,7 +389,11 @@
                 {{ __('Turn off while the site is still being built.') }}
               </span>
             </div>
-            <Switch v-model="form.robots_indexable" size="sm" />
+            <Switch
+              :aria-label="__('Allow search engines')"
+              v-model="form.robots_indexable"
+              size="sm"
+            />
           </div>
         </div>
       </section>
@@ -427,7 +439,11 @@
               }}
             </span>
           </div>
-          <Switch v-model="form.consent_banner" size="sm" />
+          <Switch
+            :aria-label="__('Cookie banner')"
+            v-model="form.consent_banner"
+            size="sm"
+          />
         </div>
         <FormControl
           v-if="form.consent_banner"

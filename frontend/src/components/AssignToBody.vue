@@ -85,7 +85,11 @@
       >
         {{ __('Assign To Me') }}
       </div>
-      <Switch v-model="assignToMe" @click.stop />
+      <Switch
+        v-model="assignToMe"
+        :aria-label="__('Assign To Me')"
+        @click.stop
+      />
     </div>
   </div>
 </template>

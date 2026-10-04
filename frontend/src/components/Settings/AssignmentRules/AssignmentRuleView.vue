@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     v-if="!getAssignmentRuleData.loading"
@@ -30,7 +33,11 @@
           class="flex items-center justify-between gap-2 h-7"
           @click="assignmentRuleData.disabled = !assignmentRuleData.disabled"
         >
-          <Switch size="sm" :model-value="!assignmentRuleData.disabled" />
+          <Switch
+            :aria-label="__('Enabled')"
+            size="sm"
+            :model-value="!assignmentRuleData.disabled"
+          />
           <span class="text-sm text-ink-gray-7">{{ __('Enabled') }}</span>
         </div>
         <Button

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 p-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -111,6 +114,7 @@
             </div>
             <div class="flex items-center justify-between w-1/6">
               <Switch
+                :aria-label="template.name"
                 v-model="template.enabled"
                 size="sm"
                 @update:model-value="

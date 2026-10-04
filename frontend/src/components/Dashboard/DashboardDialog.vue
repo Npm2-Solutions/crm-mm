@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <Dialog
     v-model:open="show"
@@ -101,7 +105,7 @@
                 }}
               </div>
             </div>
-            <Switch v-model="form.only_mine" />
+            <Switch :aria-label="__('Only my work')" v-model="form.only_mine" />
           </div>
         </template>
 

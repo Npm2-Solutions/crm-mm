@@ -286,6 +286,7 @@
               </span>
             </div>
             <Switch
+              :aria-label="page.page_name || page.name"
               size="sm"
               :modelValue="Boolean(page.sync_enabled)"
               :disabled="busyPage === page.name"

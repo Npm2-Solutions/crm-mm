@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="grid py-3.5 px-4 items-center"
@@ -5,7 +8,11 @@
   >
     <div class="text-ink-gray-7 font-medium">{{ __(localData.day) }}</div>
     <div class="flex justify-start">
-      <Switch v-model="localData.active" @update:model-value="toggleDay" />
+      <Switch
+        :aria-label="__(localData.day)"
+        v-model="localData.active"
+        @update:model-value="toggleDay"
+      />
     </div>
   </div>
   <hr v-if="!isLast" />

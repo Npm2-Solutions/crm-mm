@@ -28,7 +28,11 @@
           class="flex items-center justify-between gap-2 cursor-pointer h-7"
           @click="toggleEnabled"
         >
-          <Switch size="sm" :model-value="slaData.enabled" />
+          <Switch
+            :aria-label="__('Enabled')"
+            size="sm"
+            :model-value="slaData.enabled"
+          />
           <span class="text-sm-medium text-ink-gray-7">
             {{ __('Enabled') }}
           </span>

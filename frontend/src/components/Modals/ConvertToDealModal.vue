@@ -36,7 +36,10 @@
       <div class="ml-6 text-ink-gray-9">
         <div class="flex items-center justify-between text-base">
           <div>{{ __('Choose Existing') }}</div>
-          <Switch v-model="existingOrganizationChecked" />
+          <Switch
+            :aria-label="__('Choose Existing')"
+            v-model="existingOrganizationChecked"
+          />
         </div>
         <Link
           v-if="existingOrganizationChecked"

@@ -42,14 +42,20 @@
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
               <div>{{ __('Choose Existing Organization') }}</div>
-              <Switch v-model="chooseExistingOrganization" />
+              <Switch
+                :aria-label="__('Choose Existing Organization')"
+                v-model="chooseExistingOrganization"
+              />
             </div>
             <div
               v-if="hasContactSections"
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
               <div>{{ __('Choose Existing Person') }}</div>
-              <Switch v-model="chooseExistingContact" />
+              <Switch
+                :aria-label="__('Choose Existing Person')"
+                v-model="chooseExistingContact"
+              />
             </div>
           </div>
           <div

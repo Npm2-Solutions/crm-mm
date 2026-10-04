@@ -17,6 +17,7 @@
     <div class="w-3/12">
       <select
         v-model="localData.priority"
+        :aria-label="__('Priority')"
         class="w-full h-7 text-base hover:bg-surface-gray-3 rounded-md p-0 pl-2 pr-5 bg-transparent -ml-2 border-0 text-ink-gray-8 focus-visible:!ring-0 bg-none truncate"
         @update:modelValue="onPriorityChange"
         @change="onPriorityChange"
@@ -32,6 +33,7 @@
     </div>
     <div class="flex justify-between items-center w-2/12">
       <Switch
+        :aria-label="data.name"
         size="sm"
         :modelValue="!data.disabled"
         @update:modelValue="onToggle"

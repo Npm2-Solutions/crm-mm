@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The Social Planner's own settings: where its profiles come from, and which of
   them it offers.
 
@@ -136,6 +139,7 @@
             </div>
           </div>
           <Switch
+            :aria-label="account.account_name"
             :modelValue="Boolean(account.enabled)"
             size="sm"
             :disabled="busyAccount === account.name"
