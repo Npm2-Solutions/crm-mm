@@ -263,6 +263,29 @@ class LaFila(AtteseCase):
 		self.annulla(self.occupato)
 		self.assertEqual(self.voce(giulia).status, R.IN_ATTESA)
 
+	def test_senza_tempo_per_rispondere_non_si_guarda(self):
+		# no notice asked: a place half an hour away still leaves nobody the time to
+		# answer, so the look leaves it out instead of an offer that fails every time
+		self.impostazioni(min_notice_hours=0)
+		voce = self.voce(self.in_lista(self.giulia))
+		adesso = datetime.datetime.now(datetime.UTC)
+
+		def libero(tra):
+			return frappe._dict(
+				start=adesso + tra,
+				end=adesso + tra + datetime.timedelta(hours=1),
+				staff=[CHIARA],
+				join_appointment=None,
+				seats_left=1,
+			)
+
+		vicino, domani = libero(datetime.timedelta(minutes=30)), libero(datetime.timedelta(days=1))
+		conf = A.impostazioni()
+		sguardo = A.Sguardo(conf, A._oggi(), A._oggi() + datetime.timedelta(days=conf.giorni))
+		with mock.patch.object(A.Sguardo, "liberi", return_value=[vicino, domani]):
+			posti = sguardo.posti(voce)
+		self.assertEqual([posto.inizio for posto in posti], [domani.start])
+
 	def test_solo_nei_giorni_che_puo(self):
 		# Giulia can only in the evenings: the place at ten is not for her
 		giulia = self.in_lista(self.giulia, parts=["evening"])
