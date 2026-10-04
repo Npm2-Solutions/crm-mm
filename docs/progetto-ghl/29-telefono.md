@@ -505,6 +505,17 @@ Con il tocco, come in un'app:
   dallo schermo, e sembrava che il pulsante non facesse nulla: ora, aperto,
   viene in vista da sé (`ClinicArea.vue`, dopo il cambio di stato, così il
   `nextTick` aspetta che sia disegnato).
+- **La scheda della persona si raccoglie.** Nome, prossimo appuntamento e i
+  pulsanti per chiamare e scrivere stavano sopra le schede e non se ne
+  andavano mai: le schede scorrono in un riquadro loro, e con la tastiera
+  aperta per una visita restava poco più di una riga. Ora, quando la scheda
+  sotto scorre, la testata si raccoglie (il nome resta in alto, nelle
+  briciole) e torna quando si risale in cima o si cambia scheda. Si raccoglie
+  solo se c'è abbastanza sotto da restare scorsi senza di lei, se no
+  rimbalzerebbe; un salto più lungo di quanto il riquadro mostra è della
+  pagina, non del dito (le attività che si aprono sull'ultima), e non la
+  raccoglie; un campo, un editor o un riquadro piccolo che scorrono dentro
+  la scheda non contano (`composables/testataRaccolta.js`).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
@@ -557,6 +568,7 @@ nessun browser di prova ha la sua tastiera.
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/breakpoints.js` (`isPhoneSize`) + `telefono.css` sezione 10 | Il telefono tenuto di traverso resta un telefono, la scheda e la barra compatte. Testato in `tests/unit/breakpoints.test.js` |
 | `frontend/src/utils/scheduler.js` (`orariPerGiorno`) + `components/Calendar/AppointmentPanel.vue` | Gli orari liberi di un servizio un giorno alla volta, i primi dodici e «altri N». Testato in `tests/unit/scheduler.test.js` |
+| `frontend/src/composables/testataRaccolta.js` + `pages/MobileLead.vue` | La scheda della persona si raccoglie mentre la scheda sotto scorre, e torna in cima (`raccogliereLaTestata`). Testato in `tests/unit/testataRaccolta.test.js` |
 | `frontend/src/composables/scorriGiorni.js` + `components/Mobile/AgendaDelGiorno.vue`, `pages/Today.vue` | Il giorno (e la settimana) dell'agenda e il giorno dell'accoglienza si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
 | `frontend/src/utils/installa.js` + `components/Mobile/InstallaApp.vue` | L'app sulla schermata Home: cosa propone «Altro» (`comeInstallare`), l'offerta del browser tenuta per il pulsante. Testato in `tests/unit/installa.test.js` |
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
