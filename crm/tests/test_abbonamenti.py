@@ -113,8 +113,10 @@ class AbbonamentiCase(SchedulingCase):
 
 	def lunedi(self, settimane=1, giorni=0, ora=10):
 		"""Monday ``settimane`` weeks on (1: the next one), ``giorni`` after it, at
-		``ora``."""
-		oggi = datetime.datetime.now(UTC).date()
+		``ora``. Counted from the site's today, as the server counts its weeks: from
+		the UTC one, on a Sunday evening in UTC it was already Monday where the
+		site is, and «next Monday» fell in the week the server was counting."""
+		oggi = getdate()
 		lunedi = oggi + datetime.timedelta(days=7 - oggi.weekday() + 7 * (settimane - 1) + giorni)
 		return datetime.datetime.combine(lunedi, datetime.time(ora), tzinfo=UTC)
 
