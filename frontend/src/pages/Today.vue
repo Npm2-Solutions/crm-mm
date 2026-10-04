@@ -248,6 +248,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import {
   byDay,
@@ -262,6 +263,8 @@ import { adessoDelCentro } from '@/utils/scheduler'
 import { Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
+const { puo } = usersStore()
+
 // the centre's day, as the server counts it: a browser in another time zone
 // would show tomorrow's arrivals at eleven at night. Null is today.
 const date = ref(null)
@@ -275,13 +278,16 @@ const day = createResource({
 })
 watch(date, () => day.reload())
 
-// what is left to invoice, for whoever issues invoices
+// what is left to invoice, for whoever issues invoices: asked with the day, not
+// after it - who issues invoices comes with the page (the capabilities), and the
+// server answers the same (`can_invoice`)
 const toInvoice = createResource({
   url: 'crm.invoicing.api.appointments_to_invoice',
+  auto: puo('fatture.emetti'),
 })
 watch(
   () => day.data?.can_invoice,
-  (can) => can && !toInvoice.data && toInvoice.fetch(),
+  (can) => can && !toInvoice.data && !toInvoice.loading && toInvoice.fetch(),
 )
 const nonFatturati = computed(
   () => new Set((toInvoice.data || []).map((incontro) => incontro.name)),

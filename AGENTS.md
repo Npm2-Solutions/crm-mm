@@ -728,6 +728,10 @@ row, the bar's words beside their icons).
   each rewrite tested on the pinned frappe-ui: the code block without
   highlight.js, the emoji list fetched at the first ":", no Markdown format.
   A dynamic import preloads only what is not loaded (`vite/precarica.js`).
+- The first page waits on no call in a row: what the router needs comes with
+  the page's boot (`crm_user`, `ask_persona`, the capabilities), and a page asks
+  its calls together - what the server would answer from a capability, the
+  browser asks `puo()` for before the first answer arrives.
 
 ---
 
@@ -739,7 +743,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1137 tests · ~15s** — all must pass before committing
+- **1138 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

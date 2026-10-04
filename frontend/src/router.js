@@ -17,6 +17,9 @@ export const PERSONA_DONE_KEY = 'crm_persona_captured'
 async function shouldCapturePersona() {
   // Client-side flag guards against re-prompting if the server persist failed.
   if (localStorage.getItem(PERSONA_DONE_KEY)) return false
+  // the page says it (crm.www.crm, `ask_persona`): the two calls below waited in
+  // a row before every first page a manager opened
+  if (window.ask_persona != null) return Boolean(window.ask_persona)
   const captured = await call('frappe.client.get_single_value', {
     doctype: 'FCRM Settings',
     field: 'persona_captured',
@@ -349,7 +352,9 @@ router.beforeEach(async (to, from, next) => {
   const store = usersStore()
   const { users, isCrmUser, isAgency, permissions, puoUno } = store
 
-  if (isLoggedIn && !users.fetched) {
+  // whether the session opens DottorCloud comes with the page (`crm_user`): the
+  // list of users arrives meanwhile, the first page does not wait for it
+  if (isLoggedIn && !users.fetched && window.crm_user == null) {
     try {
       await users.promise
     } catch (error) {

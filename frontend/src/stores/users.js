@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { defineStore } from 'pinia'
 import { createResource } from 'frappe-ui'
 import { sessionStore } from './session'
@@ -9,6 +11,12 @@ export const usersStore = defineStore('crm-users', () => {
 
   let usersByName = reactive({})
   const router = useRouter()
+
+  // A user asked for before the first list arrives (the page no longer waits for
+  // it) gets a stand-in, and is asked of the server only if the list does not
+  // bring them: one call, not one for every name on the page.
+  const abbozzi = new Set()
+  const chiestiPrima = new Set()
 
   // Fast initial fetch — returns only the ~few CRM users so the UI is
   // interactive immediately. Non-CRM user profile data is filled in
@@ -24,6 +32,7 @@ export const usersStore = defineStore('crm-users', () => {
       crmUsers = normalizeUsers(crmUsers)
       for (let user of allUsers) {
         usersByName[user.name] = user
+        abbozzi.delete(user.name)
         if (user.name === 'Administrator') {
           usersByName[user.email] = user
         }
@@ -36,6 +45,10 @@ export const usersStore = defineStore('crm-users', () => {
       }
     },
     onSuccess() {
+      // the names asked for while the list was on its way, that it did not bring
+      for (const email of chiestiPrima)
+        if (abbozzi.has(email)) queueResolve(email)
+      chiestiPrima.clear()
       scheduleBackgroundFetch()
     },
   })
@@ -124,10 +137,13 @@ export const usersStore = defineStore('crm-users', () => {
         user_image: null,
         role: null,
       }
+      abbozzi.add(email)
       // Try to upgrade the stub via a batched fetch unless the full list
-      // has already arrived.
+      // has already arrived - or the first list is still on its way, and may
+      // bring them (onSuccess above).
       if (!usersFull.data) {
-        queueResolve(email)
+        if (users.fetched) queueResolve(email)
+        else chiestiPrima.add(email)
       }
     }
     return usersByName[email]
@@ -151,6 +167,10 @@ export const usersStore = defineStore('crm-users', () => {
 
   const isCrmUser = (user) => {
     user = user || session.user
+    // the session's own answer comes with the page, which opens only to whoever
+    // may use DottorCloud (crm.www.crm, `crm_user`): nothing waits for the list
+    if (user === session.user && !users.fetched && window.crm_user != null)
+      return Boolean(window.crm_user)
     return users.data.crmUsers?.find((u) => u.name === user)
   }
 
