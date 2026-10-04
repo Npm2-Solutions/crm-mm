@@ -21,11 +21,16 @@
    would take clicks meant for whatever is next to it. `.touch-target` is for a
    small control with room around it; frappe-ui's switch is always one, and is
    already positioned for the ring; its small and medium buttons get a ring
-   that grows them to 40px, less on the sides where buttons sit in a row. */
+   that grows them to 40px, less on the sides where buttons sit in a row. A
+   button that opens a page (`:route`, `:link`) is drawn as a link with the
+   same classes, and gets the same ring: «Call round» on the calls page took a
+   tap on 24px. */
 @media (pointer: coarse) {
   .touch-target:not(.absolute, .fixed, .sticky),
   button.h-7:not(.absolute, .fixed, .sticky),
-  button.h-8:not(.absolute, .fixed, .sticky) {
+  button.h-8:not(.absolute, .fixed, .sticky),
+  a.h-7.inline-flex.justify-center:not(.absolute, .fixed, .sticky),
+  a.h-8.inline-flex.justify-center:not(.absolute, .fixed, .sticky) {
     position: relative;
   }
   .touch-target::after,
@@ -34,12 +39,14 @@
     position: absolute;
     inset: -10px -8px;
   }
-  button.h-7:not([role='switch'])::after {
+  button.h-7:not([role='switch'])::after,
+  a.h-7.inline-flex.justify-center::after {
     content: '';
     position: absolute;
     inset: -6px -3px;
   }
-  button.h-8:not([role='switch'])::after {
+  button.h-8:not([role='switch'])::after,
+  a.h-8.inline-flex.justify-center::after {
     content: '';
     position: absolute;
     inset: -4px -2px;

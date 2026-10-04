@@ -44,10 +44,12 @@
               }}
             </span>
           </div>
+          <!-- the whole row opens the person (the name's link reaches over
+               it), Edit above it: the name alone was a 16px line to tap -->
           <div
             v-for="person in related.data.people"
             :key="person.name"
-            class="flex items-start gap-2 rounded px-3 py-1.5"
+            class="relative flex items-start gap-2 rounded px-3 py-1.5"
           >
             <Avatar
               class="mt-0.5 shrink-0"
@@ -58,7 +60,7 @@
             <div class="flex min-w-0 flex-1 flex-col">
               <router-link
                 v-if="person.can_open"
-                class="truncate text-base text-ink-gray-8 hover:underline"
+                class="truncate text-base text-ink-gray-8 after:absolute after:inset-0 after:content-[''] hover:underline"
                 :to="{ name: 'Lead', params: { leadId: person.other } }"
               >
                 {{ person.other_name }}
@@ -80,7 +82,7 @@
               v-if="related.data.can_edit"
               size="sm"
               variant="ghost"
-              class="touch-target shrink-0"
+              class="touch-target relative z-[1] shrink-0"
               :label="__('Edit')"
               @click="openEdit(person)"
             />
