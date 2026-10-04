@@ -730,6 +730,8 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/pages/SocialPlanner.vue` (telefono) | I post del mese sono righe da 44px, non le etichette da 26px della griglia |
 | `frontend/src/telefono.css` (2: `[data-slot='tab-button']`), `components/Mobile/ElencoCose.vue` | Gli interruttori a segmenti («Tutte · Da leggere», «Mie · Di tutti», «Appuntamento · Evento», le pagine sorelle) alti 36px e non 26; una cosa da fare si apre toccando tutta la sua riga, non solo la riga di parole |
 | `frontend/src/telefono.css` (2: `[data-slot='fixed-menu'] button`) | I pulsanti della barra di un editor (grassetto, elenchi, collegamento) di 36px sul telefono, non 24 |
+| `frontend/index.html`, `crm/www/book*.html` | La pagina dice la lingua di chi la usa (`boot.lang`), non «en»: VoiceOver e TalkBack leggevano le parole italiane con una voce inglese, e il browser non sapeva dove andare a capo |
+| `frontend/src/components/Dashboard/WidgetFrame.vue` | Il titolo di un numero va a capo dove va a capo l'italiano; la ⓘ che si apre solo passandoci sopra non c'è su un telefono, e lascia il posto al titolo («Appuntamenti di oggi», non «Appuntam…») |
 | `frontend/src/area/area.css` | Nell'area del cliente ogni campo è di 16px sul telefono, come nel resto di DottorCloud: la domanda della chat era di 14px e l'iPhone ingrandiva la pagina toccandola |
 | `frontend/src/components/Conversations/ConversationPicker.vue` | In cima alla chat la vista («Aperte») e il filtro «Da leggere» alti 36px |
 | `frontend/src/components/PersonHeader.vue` | Sotto il nome, «Paziente dal…» e «Ultima visita…» vanno a capo senza che la seconda riga cominci con «·» |
