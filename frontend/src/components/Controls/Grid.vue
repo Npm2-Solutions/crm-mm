@@ -487,7 +487,6 @@ import RatingInput from '@/components/Controls/RatingInput.vue'
 import AttachControl from '@/components/Controls/AttachControl.vue'
 import HtmlControl from '@/components/Controls/HtmlControl.vue'
 import GeolocationControl from '@/components/Controls/GeolocationControl.vue'
-import TextEditorControl from '@/components/Controls/TextEditorControl.vue'
 import ButtonControl, {
   getButtonTheme,
   getButtonVariant,
@@ -524,7 +523,20 @@ import {
   Combobox,
 } from 'frappe-ui'
 import Draggable from 'vuedraggable'
-import { ref, reactive, computed, inject, provide } from 'vue'
+import {
+  ref,
+  reactive,
+  computed,
+  inject,
+  provide,
+  defineAsyncComponent,
+} from 'vue'
+
+// the text editor (TipTap, highlight.js) comes when a field needs it: imported
+// here it was in every page's first download, on a phone too
+const TextEditorControl = defineAsyncComponent(
+  () => import('@/components/Controls/TextEditorControl.vue'),
+)
 
 const props = defineProps({
   label: { type: String, default: '' },

@@ -705,6 +705,9 @@ row, the bar's words beside their icons).
 - Text never wears the palest inks (`ink-*-4`): warnings take the 7th step.
 - A table one writes in (a quote's rows) is a card per row on a phone; a table
   one only reads keeps its columns and scrolls sideways.
+- What a page's first download carries, a phone pays for: a heavy control
+  (the text editor) is imported with `defineAsyncComponent` where a field may
+  draw it, never at the top of a component the layout loads.
 
 ---
 
