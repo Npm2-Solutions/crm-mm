@@ -812,6 +812,7 @@ nessun browser di prova ha la sua tastiera.
 | `Settings/TrackedLinksSettings.vue`, `Automations/MergeFieldInput.vue`, `StepPanel.vue`, `crm_tracked_link` | I link tracciati senza sintassi: nei messaggi di un'automazione «Inserisci un campo» offre anche i link, e la pagina lo dice invece di mostrare `{{ tracked_link("slug") }}`; lo slug è il «nome breve». Nell'editor «I campi sono quelli della persona» (era «I campi vengono da CRM Lead») e «100% in totale» |
 | `Modals/CreateDocumentModal.vue` | Il dialogo che crea un record da un campo collegato si intitola «Crea settore», col nome del DocType nella lingua di chi legge: era «Nuovo Industry» |
 | `crm/invoicing/scelte.py` (`PAESI`, `paesi()`) | Il paese dell'azienda emittente si sceglie per nome («Italia»), nella lingua di chi legge: mostrava «IT», il codice che va in fattura e che resta salvato |
+| `crm/invoicing/install.py` (`parole_di`, `nella_lingua`), `crm/tessera_sanitaria/install.py` | Le qualifiche che DottorCloud porta scrivono nome, note e punti da verificare nella lingua del centro, e li seguono dopo un migrate finché lo studio non li cambia: erano in inglese nel record («Cassa Forense contributo integrativo 4%: mandatory…», «Consulente (non-regulated profession)»). Il codice di una qualifica è «un nome breve che non cambia mai», non «un identificativo usato dal motore» |
 
 ## Non incluso
 

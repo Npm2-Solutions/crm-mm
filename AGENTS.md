@@ -482,7 +482,8 @@ the draft with `modello.accetta`.
 A value a list shows from a choice (status, priority) or from a translated
 DocType (stages, sources, reasons) goes through `__()`: the default ones read in
 the user's language, a name the centre wrote stays as written. What DottorCloud
-writes into a site once (a consent's text, a pipeline's stages, a library's words)
+writes into a site once (a consent's text, a pipeline's stages, a library's words,
+the qualifications' notes)
 is in `lingue.del_centro()`, never the System Settings language read on its own: a
 site installed before anybody chose is in the framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
