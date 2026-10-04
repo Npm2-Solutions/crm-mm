@@ -322,8 +322,8 @@ describe('the pages there are', () => {
     const tutte = pagine()
     expect(new Set(tutte).size).toBe(tutte.length)
     // the 51 pages there were, none lost, the notifications and one's email;
-    // ERPNext gone (02/10/2026)
-    expect(tutte).toHaveLength(52)
+    // ERPNext gone (02/10/2026); the demo data (doc 53)
+    expect(tutte).toHaveLength(53)
   })
 
   it('gives every group, entry and tab a label', () => {
