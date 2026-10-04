@@ -15,11 +15,14 @@
       <Button
         v-if="puo('social.pubblica')"
         variant="ghost"
-        :label="__('Profiles')"
-        iconLeft="settings"
+        :label="isMobileView ? undefined : __('Profiles')"
+        :iconLeft="isMobileView ? undefined : 'settings'"
+        :icon="isMobileView ? 'settings' : undefined"
+        :aria-label="__('Profiles')"
         @click="openSocialSettings"
       />
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('New post')"
         iconLeft="plus"
@@ -27,8 +30,15 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone the page's «+», where the thumb is: in the header the two
+       buttons squeezed the page's name to «Social Pl…» -->
+  <PulsanteAggiungi
+    v-if="isMobileView"
+    :label="__('New post')"
+    @click="openComposer()"
+  />
 
-  <div class="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+  <div class="flex-1 overflow-y-auto px-3 py-4 sm:px-5 max-md:pb-24">
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <!-- connect CTA when no profiles are configured -->
       <div
@@ -497,6 +507,7 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
