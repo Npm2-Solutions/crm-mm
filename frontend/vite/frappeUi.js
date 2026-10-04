@@ -301,6 +301,20 @@ function senzaIlNome(tutti: Record<string, unknown>) {
 }`,
     ],
   ],
+  // the toasts' region and their ×, in the user's language: «Notifications
+  // alt+T» and «Close toast» to a screen reader, in English
+  'Toast/ToastProvider.vue': [
+    [
+      ':visible-toasts="3"',
+      `:visible-toasts="3"
+    :container-aria-label="__('Notifications')"`,
+    ],
+    [
+      'unstyled: true,',
+      `unstyled: true,
+      closeButtonAriaLabel: __('Close'),`,
+    ],
+  ],
   // the dialog, named. One that draws its own body (`#body`, `#body-header`)
   // has no DialogTitle, and VoiceOver read «dialog» and nothing else: its
   // first heading names it, else the title it was given. Its close button
