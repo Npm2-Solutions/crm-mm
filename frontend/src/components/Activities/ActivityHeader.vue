@@ -46,6 +46,7 @@
       <!-- scrolls rather than compresses: a pill squeezed until its count
            touches its label is a pill nobody can read -->
       <div
+        ref="striscia"
         class="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-surface-gray-2 p-0.5 text-p-sm [&::-webkit-scrollbar]:h-0"
         role="tablist"
       >
@@ -208,7 +209,7 @@ import { useSchedulerMeta } from '@/composables/scheduling'
 import { usersStore } from '@/stores/users'
 import { useElementSize } from '@vueuse/core'
 import { Dropdown, Tooltip } from 'frappe-ui'
-import { computed, h, ref } from 'vue'
+import { computed, h, nextTick, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -235,6 +236,20 @@ const azioniNelRecord = computed(() =>
 const emit = defineEmits(['write'])
 
 const channel = defineModel('channel', { type: String, default: 'all' })
+
+// the chosen pill in sight: chosen from elsewhere (the history's calls, after
+// one is logged) it could sit past the strip's edge, its word cut («Chiamat»)
+const striscia = ref(null)
+watch(
+  channel,
+  () =>
+    nextTick(() =>
+      striscia.value
+        ?.querySelector('[aria-selected="true"]')
+        ?.scrollIntoView({ block: 'nearest', inline: 'nearest' }),
+    ),
+  { immediate: true },
+)
 
 // What each channel looks like up here, and what has to be switched on for it
 // to be offered at all: an SMS chip on a CRM with no Twilio is a promise it

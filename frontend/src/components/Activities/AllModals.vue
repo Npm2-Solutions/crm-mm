@@ -26,6 +26,8 @@ const props = defineProps({
 })
 
 const activities = defineModel({ type: Object })
+// which channel of the history to read after a save (Activities.vue)
+const emit = defineEmits(['mostra'])
 
 const { showModal } = useDoctypeModal()
 const { getUser } = usersStore()
@@ -108,7 +110,10 @@ function afterDoctype(d, isInsert = false) {
 
   let redirectHash = name + 's'
   if (d.doctype == 'CRM Call Log') {
-    redirectHash = 'calls'
+    // the calls are the history's own view, not a tab of their own: there,
+    // with the new one in its place among them
+    redirectHash = 'activity'
+    emit('mostra', 'call')
   }
 
   if (isInsert) {

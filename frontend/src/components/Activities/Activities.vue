@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <ActivityHeader
     v-model:showFilesUploader="showFilesUploader"
@@ -585,6 +588,7 @@
     v-model="all_activities"
     :doctype="doctype"
     :doc="doc"
+    @mostra="(quale) => (channel = quale)"
   />
   <FilesUploader
     v-model="showFilesUploader"

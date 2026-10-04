@@ -638,6 +638,17 @@ Con il tocco, come in un'app:
   per chi può eliminarle (lo dice il server), con la domanda prima
   (`DoctypeModal`, `callbacks.afterDelete` di chi apre il foglio), dalle Note,
   dalle Cose da fare e dalla scheda della persona.
+- **Un'email e una chiamata, provate davvero.** Dalla scheda di una persona
+  l'email parte e compare nella sua storia, con il nome del centro come
+  oggetto. «Registra una chiamata» invece non salvava: in uscita chiedeva il
+  «Numero chiamante», cioè la propria linea, che chi non ha un numero in
+  DottorCloud non sa. Ora una chiamata scritta a mano tiene il numero della
+  persona e lascia vuoto quello che non si sa; le chiamate di Twilio portano
+  sempre entrambi (`CRM Call Log.a_providers_call_carries_both_numbers`).
+  Salvata, la scheda apriva «Chiamate», una scheda rimasta solo sul telefono
+  e sempre vuota: le chiamate sono una vista della storia (la pillola
+  «Chiamate»), e ora si apre quella, con la pillola intera in vista. Il giorno
+  di una chiamata si legge «dom 4 ott», non «ott 4, domenica».
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
