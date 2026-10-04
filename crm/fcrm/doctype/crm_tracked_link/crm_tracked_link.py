@@ -26,6 +26,6 @@ class CRMTrackedLink(Document):
 	def validate(self):
 		self.slug = (self.slug or "").strip().lower()
 		if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", self.slug):
-			frappe.throw(_("Slug must contain only lowercase letters, numbers and hyphens"))
+			frappe.throw(_("The short name may hold only lowercase letters, digits and dashes"))
 		if not (self.target_url or "").startswith(("http://", "https://")):
 			frappe.throw(_("Target URL must start with http(s)://"))

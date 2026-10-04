@@ -24313,8 +24313,8 @@ msgid "Short description"
 msgstr "Descrizione breve"
 
 #: crm/fcrm/doctype/crm_tracked_link/crm_tracked_link.json
-msgid "Short identifier used in messages: {{ tracked_link(\"slug\") }}"
-msgstr "Identificativo breve da usare nei messaggi: {{ tracked_link(\"slug\") }}"
+msgid "Lowercase letters, digits and dashes: it is how an automation finds the link."
+msgstr "Lettere minuscole, cifre e trattini: è il nome con cui un'automazione trova il link."
 
 #: frontend/src/components/Settings/TrackedLinksSettings.vue
 msgid "Short links that log clicks on leads and fire automations."
@@ -24778,8 +24778,8 @@ msgid "Slot step (min)"
 msgstr "Intervallo tra gli orari (min)"
 
 #: crm/fcrm/doctype/crm_tracked_link/crm_tracked_link.py
-msgid "Slug must contain only lowercase letters, numbers and hyphens"
-msgstr "Lo slug può contenere solo lettere minuscole, numeri e trattini"
+msgid "The short name may hold only lowercase letters, digits and dashes"
+msgstr "Il nome breve può contenere solo lettere minuscole, cifre e trattini"
 
 #: crm/piani/regole.py
 msgid "Small things to keep up every day: water, a walk, sleep."
@@ -42882,3 +42882,35 @@ msgstr "Rispettato in {0}"
 #: frontend/src/components/SLASection.vue
 msgid "Failed: answered in {0}"
 msgstr "Non rispettato: risposta in {0}"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "In an automation’s message «Insert field» puts one in: each person receives their own."
+msgstr "Nel messaggio di un'automazione li inserisci con «Inserisci un campo»: ogni persona riceve il suo."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "{0} clicks"
+msgstr "{0} clic"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Short name"
+msgstr "Nome breve"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "It cannot be changed later."
+msgstr "Dopo non si può più cambiare."
+
+#: frontend/src/components/Automations/MergeFieldInput.vue
+msgid "Fields"
+msgstr "Campi"
+
+#: frontend/src/components/Automations/StepPanel.vue
+msgid "The fields are the deal’s."
+msgstr "I campi sono quelli della trattativa."
+
+#: frontend/src/components/Automations/StepPanel.vue
+msgid "The fields are the person’s."
+msgstr "I campi sono quelli della persona."
+
+#: frontend/src/components/Automations/StepPanel.vue
+msgid "{0}% in total"
+msgstr "{0}% in totale"

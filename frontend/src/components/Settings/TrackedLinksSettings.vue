@@ -43,7 +43,7 @@
             {{ link.target_url }}
           </span>
           <span class="shrink-0 text-p-sm text-ink-gray-5">
-            {{ link.click_count || 0 }} {{ __('clicks') }}
+            {{ __('{0} clicks', [link.click_count || 0]) }}
           </span>
           <Button
             :aria-label="__('Delete')"
@@ -77,8 +77,15 @@
         <FormControl
           v-model="form.slug"
           type="text"
-          :label="__('Slug')"
+          :label="__('Short name')"
           :placeholder="'promo-estate'"
+          :description="
+            __(
+              'Lowercase letters, digits and dashes: it is how an automation finds the link.',
+            ) +
+            ' ' +
+            __('It cannot be changed later.')
+          "
           :disabled="Boolean(form.name)"
         />
         <FormControl
@@ -119,7 +126,9 @@ import { ref, reactive } from 'vue'
 const subtitle =
   __('Short links that log clicks on leads and fire automations.') +
   ' ' +
-  __('Use {0} in messages.', ['{{ tracked_link("slug") }}'])
+  __(
+    'In an automation’s message «Insert field» puts one in: each person receives their own.',
+  )
 
 const links = createListResource({
   doctype: 'CRM Tracked Link',
