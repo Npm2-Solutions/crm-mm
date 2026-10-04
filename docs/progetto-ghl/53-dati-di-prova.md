@@ -1,7 +1,8 @@
 # 53 · Dati di prova: un centro pieno, tolto senza lasciare traccia
 
-**Stato:** in corso (04/10/2026). Prima parte: il motore, la rimozione, le
-protezioni e la parte base.
+**Stato:** in corso (05/10/2026). Prima parte: il motore, la rimozione, le
+protezioni e la parte base. Seconda parte: cicli, preventivi, abbonamenti, lista
+d'attesa, conversazioni.
 
 ## Il bisogno
 
@@ -51,11 +52,44 @@ protezioni e la parte base.
     passato, chi è in sala d'attesa e chi deve arrivare; qualche giorno recente è
     rimasto da segnare; le prossime tre settimane sono prenotate sempre meno.
     Una mamma prenota e paga per il figlio. Il consenso al marketing c'è o no.
+  - **Cicli e preventivi, alla prima visita**: dopo la prima visita il percorso si
+    concorda come in un centro vero. La segreteria vende un **ciclo di sedute**
+    (cinque o dieci di fisioterapia, cinque di tecar, pagato tutto insieme o seduta
+    per seduta, a volte con una scadenza), oppure il professionista consegna un
+    **preventivo** del percorso, una riga per seduta, con il suo PDF: accettato
+    (subito o il giorno dopo), rifiutato con il motivo, o ancora da decidere se la
+    visita è recente. Il resto lo fa il prodotto: le sedute dopo entrano nel ciclo
+    («seduta 4 di 10», al prezzo del ciclo) o prendono la loro riga del preventivo,
+    fatta quando la persona viene; il preventivo si completa da solo; la pipeline
+    dei preventivi segue (consegnato, accettato, rifiutato). Chi rifiuta non torna
+    per il percorso.
   - **Aziende e convenzioni**: cinque aziende e le loro trattative in fasi
     diverse, una vinta e una persa.
   - **Cose da fare, note, telefonate**: anche per chi carica la demo, con due
     colleghi che lo menzionano.
-- È **sempre la stessa demo**: le scelte vengono da un seme fisso, le date dal
+  - **Abbonamenti** (`crm/demo/abbonati.py`): tre tipi in vendita (Pilates otto
+    ingressi al mese che si rinnova da solo, posturale di tre mesi sospendibile,
+    tutte le lezioni per sei mesi a rate) e gli abituali delle lezioni che li hanno
+    comprati alla prima lezione. Le lezioni già prenotate usano i loro ingressi, il
+    mese finito si rinnova, il promemoria della scadenza parte (verso nessuno), una
+    settimana saltata o le vacanze sono una sospensione che sposta la fine. Per ora
+    un solo abbonato per lezione: una lezione è un appuntamento, e un appuntamento
+    usa l'ingresso di un solo abbonamento (da correggere nel prodotto).
+  - **Lista d'attesa** (`crm/demo/in_attesa.py`): chi aspetta un posto con
+    l'osteopata (una con urgenza), con la dietista, un sabato mattina, con i giorni
+    e le ore che vanno bene; il motore della lista trova un posto libero e lo
+    offre: un'offerta aspetta la risposta, due sono state confermate e prenotate;
+    una persona ha trovato posto altrove, a un'altra sono finiti i giorni. La
+    lezione più piena della settimana si riempie e due persone aspettano un posto.
+  - **Conversazioni** (`crm/demo/conversazioni.py`): email tra il centro e le sue
+    persone (la prima visita, la fattura per la detrazione, la convenzione, il
+    referto, la lezione di prova, una disdetta...), e SMS e WhatsApp dove il centro
+    li ha attivi: un canale spento non mostra nulla, quindi non si scrive. Ogni
+    messaggio al suo momento; le conversazioni sono quasi tutte gestite, alcune
+    aspettano il centro (quelle della segreteria assegnate a chi carica la demo),
+    una è rimandata di due giorni.
+- È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
+  parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
 
 ### Come si crea (`crm/demo/modo.py`)
@@ -73,8 +107,8 @@ protezioni e la parte base.
   doctype, attivo solo durante la creazione. Il registro si scrive man mano,
   prima di ogni commit: un caricamento interrotto resta tutto rimovibile.
 - Quello che è del prodotto e non della demo resta fuori dal registro
-  (`fuori_dal_registro`): la pipeline dei nuovi clienti, fatta come la fa il
-  prodotto quando il centro non ce l'ha.
+  (`fuori_dal_registro`): le pipeline dei nuovi clienti e dei preventivi, fatte
+  come le fa il prodotto quando il centro non le ha.
 - Il caricamento è un lavoro in coda (un paio di minuti a grandezza piena); la
   pagina segue l'avanzamento dal socket.
 
@@ -94,8 +128,10 @@ il resto, in pochi secondi (circa 6.500 record in meno di 4 secondi).
    framework tiene accanto: versioni, commenti, comunicazioni, assegnazioni,
    condivisioni, notifiche, log, la ricerca globale, i documenti eliminati, le
    email in coda verso gli indirizzi della demo; i colleghi della demo con ruoli,
-   impostazioni, sessioni e permessi; i file sul disco; i contatori dei nomi
-   tornano all'ultimo numero ancora usato (mai sotto un record esistente).
+   impostazioni, sessioni e permessi; i file sul disco (i PDF dei preventivi); i
+   contatori dei nomi tornano all'ultimo numero ancora usato, mai sotto un record
+   esistente né sotto dov'erano prima della demo (`crm_demo_data_series`), e quelli
+   che la demo ha cominciato, vuoti, se ne vanno.
 
 I test contano ogni tabella prima e dopo: devono tornare uguali.
 
@@ -110,7 +146,11 @@ Finché i dati di prova ci sono:
 - una **chiamata** a una persona della demo non parte, e lo dice;
 - una **notifica** su un record della demo resta nel pannello, mai per email;
 - la **pagina di prenotazione** non mostra i servizi della demo ai visitatori;
-  chi è entrato in DottorCloud li vede, per provarla.
+  chi è entrato in DottorCloud li vede, per provarla;
+- un **messaggio o una chiamata in arrivo** da un numero che è anche di una
+  persona della demo non viene mai attaccato a lei (`persona_vera`): i numeri della
+  demo sembrano quelli di chiunque, e quello che è attaccato a una persona della
+  demo se ne va con la demo. Va alla persona vera con quel numero, o a una nuova.
 
 ## Dove si usa
 
@@ -123,9 +163,6 @@ Finché i dati di prova ci sono:
 
 ## Prossime parti
 
-- **Conversazioni, lista d'attesa, abbonamenti, cicli, preventivi**: messaggi
-  email, WhatsApp e SMS con le persone, chi aspetta un posto, gli abbonamenti e i
-  cicli in corso, i preventivi in ogni stato.
 - **Fatturazione, moduli e consensi, documenti, area clienti, piani**: le fatture
   di prova, i moduli firmati, i documenti consegnati, l'area di una persona, i
   piani e i programmi.
