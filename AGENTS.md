@@ -668,7 +668,9 @@ row, the bar's words beside their icons).
   unmounted the one left and mounted the next, the conversation and its editor
   with it: half a second a tap on a slow phone. The router view is keyed on the
   page without its hash (`App.vue`): the hash names a tab, or the message a
-  notification opens, never another page.
+  notification opens, never another page. A hash that names no tab is a
+  message: it opens the conversation (`useActiveTabManager`), which lands on it
+  (`target`), an email too (its name is its `id`).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet's or a page's row of actions is one row on a phone: what
