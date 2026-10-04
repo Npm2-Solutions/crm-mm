@@ -51,7 +51,7 @@
             <tr v-if="groups.length > 1">
               <td
                 :colspan="matrix.data.staff.length + 1"
-                class="sticky left-0 bg-surface-gray-1 px-3 py-1.5 text-p-xs font-medium uppercase text-ink-gray-5"
+                class="sticky left-0 z-[1] bg-surface-gray-1 px-3 py-1.5 text-p-xs font-medium uppercase text-ink-gray-5"
               >
                 {{ group.category || __('No category') }}
               </td>
@@ -61,8 +61,10 @@
               :key="service.name"
               class="group hover:bg-surface-gray-1"
             >
+              <!-- above the cells that scroll under it: the assignments are
+                   drawn positioned, and later ones were painted over the name -->
               <td
-                class="sticky left-0 border-b border-outline-elevation-2 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
+                class="sticky left-0 z-[1] border-b border-outline-elevation-2 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
               >
                 <!-- on a phone the column keeps its width and the words wrap
                      in it: a table as wide as its longest warning pushed
