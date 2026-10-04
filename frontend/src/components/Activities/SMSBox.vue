@@ -31,7 +31,7 @@
         :placeholder="__('Write a text message…')"
         @keydown.enter.stop="(e) => sendTextMessage(e)"
       />
-      <div class="flex h-9 shrink-0 items-center">
+      <div class="strumenti-compositore flex h-9 shrink-0 items-center">
         <Button
           variant="solid"
           icon="lucide-send-horizontal"

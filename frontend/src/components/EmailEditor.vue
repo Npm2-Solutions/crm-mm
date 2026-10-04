@@ -152,15 +152,20 @@
         <EditorFixedMenu :items="toolbarFor(isMobileView)" />
       </div>
 
-      <div class="flex items-end gap-1 px-1.5 pb-1.5 pt-0.5">
+      <!-- on a phone the tools, up to five of 40px, go under the words, the
+           send button at the bottom right: beside them they left the words a
+           third of the row -->
+      <div class="flex items-end gap-1 px-1.5 pb-1.5 pt-0.5 max-md:flex-wrap">
         <!-- a reply's quote is folded away, as it is in the email once sent -->
         <!-- the placeholder is drawn, not read: it is the box's name too -->
         <EditorContent
-          class="composer-text min-w-0 flex-1 [&_p.reply-to-content]:hidden"
+          class="composer-text min-w-0 flex-1 max-md:basis-full [&_p.reply-to-content]:hidden"
           :class="showQuote ? '' : '[&_p.reply-to-content~*]:hidden'"
           :aria-label="placeholder || undefined"
         />
-        <div class="flex h-9 shrink-0 items-center">
+        <div
+          class="strumenti-compositore flex h-9 shrink-0 items-center max-md:ml-auto"
+        >
           <Button
             variant="ghost"
             :icon="EmailTemplateIcon"

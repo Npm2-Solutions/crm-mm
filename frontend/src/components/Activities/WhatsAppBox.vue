@@ -129,7 +129,7 @@
       :placeholder="placeholder"
       @keydown.enter.stop="(e) => sendTextMessage(e)"
     />
-    <div class="flex h-9 shrink-0 items-center">
+    <div class="strumenti-compositore flex h-9 shrink-0 items-center">
       <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
            Meta fetches it anonymously; a private Frappe file answers that fetch
            with a login page, so the message fails every time. FileUploader

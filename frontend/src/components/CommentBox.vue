@@ -28,7 +28,7 @@
           class="composer-text min-w-0 flex-1"
           :aria-label="placeholder || undefined"
         />
-        <div class="flex h-9 shrink-0 items-center">
+        <div class="strumenti-compositore flex h-9 shrink-0 items-center">
           <FileUploader
             :upload-args="{
               doctype: doctype,

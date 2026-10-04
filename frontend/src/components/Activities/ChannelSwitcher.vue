@@ -17,8 +17,10 @@
 <template>
   <div class="flex items-center gap-0.5 px-1.5 pt-1.5" role="tablist">
     <Tooltip v-for="option in ways" :key="option.key" :text="__(option.hint)">
+      <!-- where the icons alone carry it, each is a 40px square: as 32px
+           pills 2px apart a thumb picked the channel beside -->
       <button
-        class="flex h-7 items-center gap-1.5 rounded-md px-2 text-p-sm transition-colors"
+        class="flex h-7 items-center gap-1.5 rounded-md px-2 text-p-sm transition-colors max-sm:size-10 max-sm:justify-center max-sm:px-0"
         :class="
           option.key === way
             ? ON[option.key]
