@@ -24,6 +24,8 @@ VOLATILI = {
 }
 
 
+#: The base's parts, in the order they are registered.
+BASE = ("squadra", "agenda", "clienti", "aziende", "lavoro", "abbonamenti", "attese", "conversazioni")
 #: Where the centre says which pipelines are the new clients' and the quotes'.
 IMPOSTAZIONI_DELLE_PIPELINE = ("CRM Client Settings", "CRM Quote Settings")
 
@@ -60,9 +62,11 @@ class TestLePartiInOrdine(IntegrationTestCase):
 
 	def test_the_base_parts_are_registered(self):
 		chiavi = [parte.chiave for parte in registro.tutte_le_parti()]
-		for chiave in ("squadra", "agenda", "clienti", "aziende", "lavoro"):
+		for chiave in BASE:
 			self.assertIn(chiave, chiavi)
 		self.assertLess(chiavi.index("squadra"), chiavi.index("clienti"))
+		self.assertLess(chiavi.index("clienti"), chiavi.index("abbonamenti"))
+		self.assertLess(chiavi.index("attese"), chiavi.index("conversazioni"))
 
 
 class TestDatiDiProva(IntegrationTestCase):
@@ -119,7 +123,7 @@ class TestDatiDiProva(IntegrationTestCase):
 	def test_1_every_part_is_made(self):
 		self.assertEqual(self.esito["failed"], [])
 		self.assertTrue(registro.caricati())
-		self.assertEqual(set(self.esito["made"]), {"squadra", "agenda", "clienti", "aziende", "lavoro"})
+		self.assertEqual(set(self.esito["made"]), set(BASE))
 
 	def test_2_a_centre_full_of_life(self):
 		r = self.registrati
@@ -135,6 +139,20 @@ class TestDatiDiProva(IntegrationTestCase):
 		persone = sorted(r["CRM Lead"])
 		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "client_since": ["is", "set"]}))
 		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "last_visit": ["is", "set"]}))
+		# the course agreed at the first visit, the subscriptions on sale, who waits,
+		# what was written
+		self.assertTrue(r.get("CRM Session Cycle") or r.get("CRM Quote"))
+		self.assertEqual(len(r.get("CRM Subscription Type", ())), 3)
+		self.assertTrue(r.get("CRM Waiting List Entry"))
+		self.assertTrue(r.get("Communication"))
+		if r.get("CRM Quote"):
+			# a quote handed over has its PDF, and moved its deal
+			proposti = frappe.get_all(
+				"CRM Quote",
+				filters={"name": ["in", sorted(r["CRM Quote"])], "status": ["!=", "Draft"]},
+				fields=["quote_pdf", "deal"],
+			)
+			self.assertTrue(all(riga.quote_pdf for riga in proposti))
 		# whoever loads the demo has things to do and somebody mentions them
 		self.assertTrue(
 			frappe.db.count(
@@ -143,8 +161,9 @@ class TestDatiDiProva(IntegrationTestCase):
 		)
 		# every record written down is there
 		for doctype, nomi in r.items():
-			# the framework writes a user's defaults again, under new names
-			if doctype in ("DefaultValue",):
+			# the framework writes a user's defaults again, under new names; a person's
+			# messages add up in one notification, which takes the place of the one before
+			if doctype in ("DefaultValue", "CRM Notification"):
 				continue
 			trovati = frappe.db.count(doctype, {"name": ["in", sorted(nomi)]})
 			self.assertEqual(trovati, len(nomi), doctype)
@@ -192,6 +211,19 @@ class TestDatiDiProva(IntegrationTestCase):
 		)
 		if nome:
 			self.assertFalse(frappe.db.get_value("CRM Notification", nome, "email_due"))
+
+	def test_4b_a_real_message_from_a_demo_number_is_not_the_demos(self):
+		from crm.integrations.api import find_contact_by_phone_number, get_contact_lead_or_deal_from_number
+
+		persona = sorted(self.registrati["CRM Lead"])[0]
+		cellulare = frappe.db.get_value("CRM Lead", persona, "mobile_no")
+		if not cellulare:
+			return
+		# the screens still name it...
+		self.assertTrue(guardie.contatto_della_demo(find_contact_by_phone_number(cellulare)))
+		# ...but a message that comes in from it is not filed on the demo's person
+		self.assertEqual(get_contact_lead_or_deal_from_number(cellulare), (None, None))
+		self.assertIsNone(guardie.persona_vera(cellulare))
 
 	def test_5_visitors_of_the_booking_page_do_not_see_the_demo(self):
 		from crm.api import service_booking
