@@ -5,6 +5,7 @@
   <!-- `data-required`: what a form that opens puts its cursor in first -->
   <div
     v-if="field.visible"
+    ref="scatola"
     class="field"
     :data-required="
       field.reqd ||
@@ -19,6 +20,7 @@
         field.fieldtype != 'Button' &&
         field.fieldtype != 'HTML'
       "
+      ref="etichetta"
       class="mb-2 text-sm text-ink-gray-5"
     >
       {{ __(field.label) }}
@@ -154,13 +156,19 @@
       <template #prefix>
         <UserAvatar
           v-if="data[field.fieldname]"
+          aria-hidden="true"
           class="mr-2"
           :user="data[field.fieldname]"
           size="sm"
         />
       </template>
       <template #item-prefix="{ option }">
-        <UserAvatar class="mr-2" :user="option.value" size="sm" />
+        <UserAvatar
+          aria-hidden="true"
+          class="mr-2"
+          :user="option.value"
+          size="sm"
+        />
       </template>
       <template #item-label="{ option }">
         <Tooltip :text="option.value">
@@ -394,6 +402,7 @@ import {
   DateTimePicker,
   TimePicker,
 } from 'frappe-ui'
+import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
 import { computed, provide, inject, ref } from 'vue'
 
 const props = defineProps({
@@ -424,6 +433,11 @@ let triggerOnChange
 let triggerButton
 let parentDoc
 const formDocument = ref(null)
+
+// the field's words name its control, for VoiceOver and TalkBack
+const scatola = ref(null)
+const etichetta = ref(null)
+useEtichettaDelCampo(scatola, etichetta)
 
 // Standalone mode: context injected from FieldLayout when context prop is set
 const standaloneContext = inject('fieldLayoutContext', null)
