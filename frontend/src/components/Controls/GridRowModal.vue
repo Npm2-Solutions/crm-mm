@@ -13,6 +13,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
+              :aria-label="__('Edit Fields Layout')"
               v-if="puo('viste.configura')"
               :tooltip="__('Edit Fields Layout')"
               variant="ghost"

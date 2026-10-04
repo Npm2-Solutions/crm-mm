@@ -102,6 +102,7 @@
             size="sm"
           />
           <Button
+            :aria-label="__('Sync now')"
             v-if="conn.platform_info?.capabilities?.includes('pull')"
             variant="ghost"
             icon="lucide-refresh-cw"
@@ -422,6 +423,7 @@
                 "
               />
               <Button
+                :aria-label="__('Copy this professional\'s busy feed')"
                 v-if="row.busy_feed_url"
                 variant="ghost"
                 icon="lucide-calendar-x"

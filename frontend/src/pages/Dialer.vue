@@ -58,6 +58,7 @@
                 </span>
               </div>
               <Button
+                :aria-label="__('Refresh')"
                 variant="ghost"
                 icon="refresh-cw"
                 :loading="summary.loading"

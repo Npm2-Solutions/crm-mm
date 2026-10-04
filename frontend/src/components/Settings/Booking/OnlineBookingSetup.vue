@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -58,6 +61,7 @@
         <div v-if="setup.data.open" class="flex items-end gap-2">
           <CopyRow class="flex-1" :label="__('Link')" :value="pageUrl" />
           <Button
+            :aria-label="__('Open', null, 'Action')"
             variant="ghost"
             icon="lucide-external-link"
             :tooltip="__('Open', null, 'Action')"

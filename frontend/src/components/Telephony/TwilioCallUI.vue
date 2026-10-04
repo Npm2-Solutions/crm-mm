@@ -159,6 +159,7 @@
             @click="toggleMute"
           />
           <Button
+            :aria-label="tastiera ? __('Hide the keypad') : __('Keypad')"
             class="rounded-full"
             :variant="tastiera ? 'solid' : 'subtle'"
             :tooltip="tastiera ? __('Hide the keypad') : __('Keypad')"
@@ -167,6 +168,7 @@
             @click="apriLaTastiera"
           />
           <Button
+            :aria-label="__('Add a Note')"
             class="cursor-pointer rounded-full"
             :tooltip="__('Add a Note')"
             :icon="NoteIcon"
@@ -275,6 +277,7 @@
     </div>
     <div v-else class="flex items-center gap-2">
       <Button
+        :aria-label="__('Accept Call')"
         variant="solid"
         theme="green"
         class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-base"

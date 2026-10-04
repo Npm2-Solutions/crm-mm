@@ -104,6 +104,7 @@
                   @click="deleteOrganization()"
                 />
                 <Button
+                  :aria-label="__('Open Website')"
                   :tooltip="__('Open Website')"
                   icon="lucide-link"
                   @click="openWebsite"

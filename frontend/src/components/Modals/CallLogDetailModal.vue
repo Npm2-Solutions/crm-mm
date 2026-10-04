@@ -24,6 +24,7 @@
               </template>
             </Dropdown>
             <Button
+              :aria-label="__('Edit Call Log')"
               v-if="!isMobileView && puo('telefono.chiama')"
               variant="ghost"
               :tooltip="__('Edit Call Log')"

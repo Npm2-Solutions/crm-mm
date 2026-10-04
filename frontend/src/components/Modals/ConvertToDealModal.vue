@@ -12,6 +12,7 @@
         </div>
         <div class="flex items-center gap-1">
           <Button
+            :aria-label="__('Edit deal\'s mandatory fields layout')"
             v-if="puo('viste.configura') && !isMobileView"
             variant="ghost"
             :tooltip="__('Edit deal\'s mandatory fields layout')"

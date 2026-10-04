@@ -63,6 +63,7 @@
             :placeholder="__('Select Medium')"
           />
           <Button
+            :aria-label="__('Clear')"
             v-if="telephonyAgent.doc.default_medium"
             icon="lucide-x"
             :tooltip="__('Clear')"

@@ -15,6 +15,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
+              :aria-label="__('Edit Fields Layout')"
               v-if="puo('viste.configura') && !isMobileView"
               variant="ghost"
               class="w-7"
