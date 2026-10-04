@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :title="__('Bulk Edit')">
     <template #default>
@@ -37,7 +40,6 @@
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
-import TextEditorControl from '@/components/Controls/TextEditorControl.vue'
 import { useTelemetry } from 'frappe-ui/frappe'
 import {
   Combobox,
@@ -46,7 +48,13 @@ import {
   createResource,
   DatePicker,
 } from 'frappe-ui'
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted, h, defineAsyncComponent } from 'vue'
+
+// the text editor comes when a text field is edited: imported here it was in
+// every list's first download (the bulk actions mount this dialog)
+const TextEditorControl = defineAsyncComponent(
+  () => import('@/components/Controls/TextEditorControl.vue'),
+)
 
 const typeCheck = ['Check']
 const typeLink = ['Link', 'Dynamic Link']

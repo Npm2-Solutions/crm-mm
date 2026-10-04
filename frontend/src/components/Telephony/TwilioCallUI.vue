@@ -316,7 +316,6 @@ import {
   numeroIniziale,
   siSceglie,
 } from '@/utils/chiamate'
-import { Device } from '@twilio/voice-sdk'
 import {
   useDraggable,
   useEventListener,
@@ -504,13 +503,16 @@ async function startupClient() {
       return
     }
     log.value = 'Got a token.'
-    intitializeDevice(data.token)
+    await intitializeDevice(data.token)
   } catch (err) {
     log.value = 'An error occurred. ' + err.message
   }
 }
 
-function intitializeDevice(token) {
+async function intitializeDevice(token) {
+  // the voice SDK comes once there is a line to call with: imported at the top
+  // it was in every page's first download, for those without a phone too
+  const { Device } = await import('@twilio/voice-sdk')
   device = new Device(token, {
     codecPreferences: ['opus', 'pcmu'],
     fakeLocalDTMF: true,

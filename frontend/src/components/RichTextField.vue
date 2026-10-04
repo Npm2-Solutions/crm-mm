@@ -1,48 +1,28 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  A field of formatted text. Its editor - TipTap, the menus, highlight.js, the
+  markdown reader - comes when the field is drawn (editor/RichTextEditor.vue),
+  not with every page that could draw one: the agenda's event panel, editing a
+  note in a person's activities, the phone's task panel, where it was most of
+  the page's first download. Until it arrives, the box keeps its place.
 -->
 <template>
-  <div>
-    <Editor
-      v-model="content"
-      :extensions="extensions"
-      :placeholder="placeholder"
-      :editable="editable"
-      :upload-function="(file) => uploadFile(file)"
-      @change="(val) => emit('change', val)"
-    >
-      <EditorFixedMenu
-        v-if="fixedMenu"
-        :items="toolbarFor(isMobileView)"
-        class="w-full overflow-x-auto rounded-t-lg border border-b-0 border-outline-gray-2 p-1"
-      />
-      <EditorBubbleMenu v-if="bubbleMenu" :items="bubbleToolbar" />
-      <!-- the placeholder is drawn, not read: the box's name is its label -->
-      <EditorContent
-        :class="editorClass"
-        :aria-label="label || placeholder || undefined"
-      />
-    </Editor>
+  <component
+    :is="Editore"
+    v-if="Editore"
+    v-bind="$props"
+    @change="(valore) => emit('change', valore)"
+  />
+  <div v-else aria-busy="true">
+    <div :class="['min-h-[3rem]', editorClass]" />
   </div>
 </template>
 
 <script setup>
-import {
-  Editor,
-  EditorContent,
-  EditorFixedMenu,
-  EditorBubbleMenu,
-} from 'frappe-ui/editor'
-import {
-  buildEditorExtensions,
-  toolbarFor,
-  bubbleToolbar,
-  uploadFile,
-} from '@/components/editor/config'
-import { isMobileView } from '@/composables/breakpoints'
-import { ref, watch } from 'vue'
+import { onMounted, shallowRef } from 'vue'
 
-const props = defineProps({
+defineProps({
   content: { type: String, default: '' },
   placeholder: { type: String, default: '' },
   // what a screen reader calls the box, when its label is not tied to it
@@ -55,14 +35,10 @@ const props = defineProps({
 
 const emit = defineEmits(['change'])
 
-const content = ref(props.content ?? '')
-
-watch(
-  () => props.content,
-  (val) => {
-    content.value = val ?? ''
-  },
-)
-
-const extensions = buildEditorExtensions()
+const Editore = shallowRef(null)
+onMounted(async () => {
+  Editore.value = (
+    await import('@/components/editor/RichTextEditor.vue')
+  ).default
+})
 </script>
