@@ -43086,3 +43086,7 @@ msgstr "Una cosa da fare si apre a chi segue la persona o la trattativa di cui p
 #: frontend/src/utils/schedaChiusa.js
 msgid "This task is no longer here"
 msgstr "Questa cosa da fare non c'è più"
+
+#: frappe/contacts/doctype/contact/contact.json
+msgid "Designation"
+msgstr "Ruolo"
