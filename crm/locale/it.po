@@ -42615,3 +42615,167 @@ msgstr "E un'altra condizione"
 #: frontend/vite/frappeUi.js
 msgid "Show the choices"
 msgstr "Mostra le scelte"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "1 entry a month"
+msgstr "1 ingresso al mese"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "1 entry a week"
+msgstr "1 ingresso a settimana"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "1 month"
+msgstr "1 mese"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "A price is not below zero"
+msgstr "Un prezzo non va sotto zero"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "A subscription lasts from 1 to {0} months"
+msgstr "Un abbonamento dura da 1 a {0} mesi"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "Add at least one professional, or nobody can be booked."
+msgstr "Aggiungi almeno un professionista, o non si può prenotare nessuno."
+
+#: frontend/src/utils/programmi.js
+msgid "All stages done"
+msgstr "Tutte le tappe fatte"
+
+#: frontend/src/utils/attese.js
+msgid "Answer by {0}"
+msgstr "Risposta entro {0}"
+
+#: frontend/src/utils/attese.js
+msgid "Any day, any time"
+msgstr "Qualsiasi giorno, a qualsiasi ora"
+
+#: frontend/src/utils/attese.js
+msgid "Any time"
+msgstr "A qualsiasi ora"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "Choose the first day"
+msgstr "Scegli il primo giorno"
+
+#: frontend/src/utils/programmi.js
+msgid "Not started yet"
+msgstr "Non ancora iniziato"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "Say how many entries"
+msgstr "Indica quanti ingressi"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "Seats per online booking exceed the seats of the service ({0})."
+msgstr "I posti per prenotazione online superano i posti del servizio ({0})."
+
+#: frontend/src/utils/programmi.js
+msgid "Stage {0} of {1}"
+msgstr "Tappa {0} di {1}"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "The minimum notice is longer than the booking horizon."
+msgstr "Il preavviso minimo supera l'anticipo massimo della prenotazione."
+
+#: frontend/src/utils/onlineBooking.js
+msgid "The online window closes before it opens."
+msgstr "La finestra online si chiude prima di aprirsi."
+
+#: frontend/src/utils/abbonamenti.js
+msgid "any number of entries"
+msgstr "ingressi illimitati"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "approval"
+msgstr "da approvare"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "cancel {0}h before"
+msgstr "disdetta {0} h prima"
+
+#: frontend/src/utils/piani.js
+msgid "carbohydrates {0} g"
+msgstr "carboidrati {0} g"
+
+#: frontend/src/utils/piani.js
+msgid "fats {0} g"
+msgstr "grassi {0} g"
+
+#: frontend/src/utils/piani.js
+msgid "fibre {0} g"
+msgstr "fibre {0} g"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "max {0} at once"
+msgstr "max {0} insieme"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "new clients"
+msgstr "nuovi clienti"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "no online cancel"
+msgstr "niente disdetta online"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "no online move"
+msgstr "niente spostamento online"
+
+#: frontend/src/utils/piani.js
+msgid "proteins {0} g"
+msgstr "proteine {0} g"
+
+#: frontend/src/utils/piani.js
+msgid "rest {0}"
+msgstr "recupero {0}"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "returning clients"
+msgstr "clienti già venuti"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "same day until {0}"
+msgstr "in giornata fino alle {0}"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "{0} days ahead"
+msgstr "{0} giorni in anticipo"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "{0} days apart"
+msgstr "{0} giorni di distanza"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "{0} entries a month"
+msgstr "{0} ingressi al mese"
+
+#: frontend/src/utils/piani.js
+msgid "{0} g, {1} times"
+msgstr "{0} g, {1} volte"
+
+#: frontend/src/utils/piani.js
+msgid "{0} kcal"
+msgstr "{0} kcal"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "{0} of {1} used this month"
+msgstr "{0} di {1} usati questo mese"
+
+#: frontend/src/utils/piani.js
+msgid "{0} sets"
+msgstr "{0} serie"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "{0} upcoming per client"
+msgstr "{0} in arrivo per cliente"
+
+#: frontend/src/utils/piani.js
+msgid "{0}: {1} portions"
+msgstr "{0}: {1} porzioni"
+
+#: frontend/src/utils/onlineBooking.js
+msgid "{0}h notice"
+msgstr "preavviso {0} h"

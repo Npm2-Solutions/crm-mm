@@ -1,3 +1,4 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
 import { hhmm } from '@/utils/scheduler'
 // Pure helpers behind the online-booking settings of a service and the
 // booking-platform connections. Kept free of Vue so they are unit-tested.
@@ -233,11 +234,6 @@ export function embedSnippet(url, height = 820) {
     ? url
     : `${url}${url.includes('?') ? '&' : '?'}embed=1`
   return `<iframe src="${src.replace(/"/g, '&quot;')}" style="width:100%;height:${height}px;border:0" loading="lazy" title="Prenota"></iframe>`
-}
-
-/** Label for where an online rule's value comes from. */
-export function ruleSourceLabel(source, t = (s) => s) {
-  return source === 'service' ? t('own') : t('default')
 }
 
 /**
