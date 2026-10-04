@@ -99,7 +99,7 @@ def _segna_il_lavoro(**avanzamento) -> None:
 
 def _conti() -> dict:
 	"""How much the demo holds, by what the screens call it."""
-	righe = frappe.db.sql(f"select ref_doctype, count(*) from `tab{registro.REGISTRO}` group by ref_doctype")
+	righe = frappe.db.sql("select ref_doctype, count(*) from `tabCRM Demo Record` group by ref_doctype")
 	per_doctype = dict(righe)
 	return {
 		"people": cint(per_doctype.get("CRM Lead")),
@@ -219,6 +219,4 @@ def clear_demo_data() -> dict | None:
 		return None
 	from crm.demo.togli import togli
 
-	esito = togli()
-	frappe.publish_realtime(EVENTO, {"state": "removed"}, after_commit=True)
-	return esito
+	return togli()

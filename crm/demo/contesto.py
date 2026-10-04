@@ -89,11 +89,13 @@ class Contesto:
 		if not utente or utente == prima:
 			yield
 			return
+		# nosemgrep: frappe-setuser — a demo colleague made by the part, never a request's user; given back below
 		frappe.set_user(utente)
 		livelli.dimentica_cache()
 		try:
 			yield
 		finally:
+			# nosemgrep: frappe-setuser — whoever was acting before
 			frappe.set_user(prima)
 			livelli.dimentica_cache()
 
@@ -113,6 +115,7 @@ class Contesto:
 			("ToDo", "reference_type", "reference_name"),
 			("DocShare", "share_doctype", "share_name"),
 		):
+			# nosemgrep: frappe-sql-format-injection — table and columns from the tuples above; the values bound
 			frappe.db.sql(
 				f"""update `tab{tabella}` set creation=%(quando)s, modified=%(quando)s
 				where `{campo_tipo}`=%(doctype)s and `{campo_nome}`=%(name)s and creation > %(quando)s""",

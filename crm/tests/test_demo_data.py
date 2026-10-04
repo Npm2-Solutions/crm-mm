@@ -194,7 +194,7 @@ class TestDatiDiProva(IntegrationTestCase):
 		self.assertEqual(diversi, {})
 
 		# nothing of theirs left to read, anywhere a name or an address could stay
-		for indirizzo in filter(None, indirizzi):
+		for indirizzo in [indirizzo for indirizzo in indirizzi if indirizzo]:
 			self.assertFalse(frappe.db.exists("Contact Email", {"email_id": indirizzo}))
 			self.assertFalse(frappe.db.exists("Email Queue Recipient", {"recipient": indirizzo}))
 		for utente in self.registrati["User"]:
