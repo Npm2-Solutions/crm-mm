@@ -130,7 +130,8 @@
 <script setup>
 import Icon from '@/components/Icon.vue'
 import { PERIODS, periodLabel } from '@/utils/dashboard'
-import { IconPicker } from 'frappe-ui/icons'
+// frappe-ui's picker, once every icon is in the page
+import IconPicker from '@/components/ScegliIcona.vue'
 import { call, Dialog, ErrorMessage, FormControl, Switch } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 
