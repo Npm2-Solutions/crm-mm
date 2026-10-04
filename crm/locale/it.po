@@ -42914,3 +42914,7 @@ msgstr "I campi sono quelli della persona."
 #: frontend/src/components/Automations/StepPanel.vue
 msgid "{0}% in total"
 msgstr "{0}% in totale"
+
+#: frontend/src/components/Modals/CreateDocumentModal.vue
+msgid "Create {0}"
+msgstr "Crea {0}"
