@@ -18,7 +18,7 @@
     "
   >
     <div
-      class="-mb-0.5 flex items-center justify-between gap-2 truncate text-ink-gray-9"
+      class="-mb-0.5 flex min-w-0 items-center justify-between gap-2 text-ink-gray-9"
     >
       <div class="flex items-center gap-2 truncate">
         <span v-if="!bare">{{ activity.data.sender_full_name }}</span>
