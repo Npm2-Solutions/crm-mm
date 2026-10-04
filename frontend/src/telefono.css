@@ -73,13 +73,16 @@
 
 /* The crumbs at the top of a page are 26px tall, and the one a page came
    from is the way back to it (utils/indietro.js): a ring makes it a thumb's
-   height. */
+   height. So does it for a crumb that does something (a button: a person's
+   name opens their card on the conversation). */
 @media (pointer: coarse) and (max-width: 767px),
   (pointer: coarse) and (max-height: 499px) {
-  #app-header a[href].text-ink-gray-5 {
+  #app-header a[href].text-ink-gray-5,
+  #app-header button.text-lg-medium {
     position: relative;
   }
-  #app-header a[href].text-ink-gray-5::after {
+  #app-header a[href].text-ink-gray-5::after,
+  #app-header button.text-lg-medium::after {
     content: '';
     position: absolute;
     inset: -9px -4px;
