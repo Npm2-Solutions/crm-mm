@@ -661,6 +661,7 @@ import {
   WAYS,
   channelOf,
   countByChannel,
+  hidesTheNew,
   replyChannel,
 } from '@/utils/conversation'
 import { markAnswered } from '@/composables/conversationState'
@@ -668,7 +669,7 @@ import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { useDocument } from '@/data/document'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { Button, createResource, toast } from 'frappe-ui'
+import { Button, createResource, dayjsLocal, toast } from 'frappe-ui'
 import { useConversationScroll } from '@/composables/conversationScroll'
 import {
   ref,
@@ -1221,6 +1222,25 @@ watch(
     if (!ready || !name || channel.value === 'all') return
     const item = conversationItems.value.find((one) => one.name === name)
     if (item && channelOf(item) !== channel.value) channel.value = 'all'
+  },
+  { immediate: true },
+)
+
+// …and when it would hide everything the person sent since the conversation was
+// last read: the conversations screen opened it to show those, and the channel
+// read last on another record, its notes, showed «no notes yet» instead
+watch(
+  [arrived, () => props.newMessages?.since],
+  ([ready]) => {
+    const about = props.newMessages
+    if (!ready || !about || channel.value === 'all') return
+    const localize = (at) =>
+      at ? dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss') : null
+    const since = localize(about.since)
+    if (
+      hidesTheNew(conversationItems.value, channel.value, since, { localize })
+    )
+      channel.value = 'all'
   },
   { immediate: true },
 )

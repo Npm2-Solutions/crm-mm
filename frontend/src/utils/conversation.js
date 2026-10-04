@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 /**
  * One conversation out of four channels, arranged for reading.
  *
@@ -722,4 +725,27 @@ export function newSince(rows = [], since = null, options = {}) {
     count: fresh.length,
     channels: [...new Set(fresh.map((row) => row.channel))],
   }
+}
+
+/**
+ * Whether the channel being read hides every message the person sent since the
+ * conversation was last read - the ones the conversations screen opened it to
+ * show. The channel is remembered from the last record read: left on its notes,
+ * a conversation opened on a new email showed «no notes yet» and nothing else.
+ *
+ * @param {Array} items            what the conversation is made of
+ * @param {string} channel         the channel being read
+ * @param {string|null} since      the cutoff on the reader's clock; null = never read
+ * @param {{localize?: Function}} options  as `buildStream`'s
+ */
+export function hidesTheNew(
+  items = [],
+  channel = 'all',
+  since = null,
+  options = {},
+) {
+  if (!channel || channel === 'all') return false
+  const newIn = (which) =>
+    newSince(buildStream(items, { ...options, channel: which }), since)
+  return Boolean(newIn('all')) && !newIn(channel)
 }
