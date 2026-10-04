@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!-- `h-app` rather than `h-screen`: 100vh on a phone is measured with the
        address bar already hidden, so the shell used to hang the height of that
@@ -11,12 +14,13 @@
       <SenzaRete />
       <!-- The scroll box is this wrapper, not the whole column, so the header
            stays put and the tab bar is never scrolled off the bottom. -->
-      <div
+      <!-- `main`: where a screen reader jumps to the page -->
+      <main
         ref="scroll"
         class="flex min-h-0 flex-1 flex-col overflow-auto bg-surface-base"
       >
         <slot />
-      </div>
+      </main>
       <MobileBottomNav />
     </div>
     <GlobalModals />

@@ -1,11 +1,15 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex h-screen w-screen">
     <AppSidebar />
-    <div class="flex-1 flex flex-col h-full overflow-auto bg-surface-base">
+    <!-- `main`: where a screen reader jumps to the page -->
+    <main class="flex-1 flex flex-col h-full overflow-auto bg-surface-base">
       <AppHeader />
       <SenzaRete />
       <slot />
-    </div>
+    </main>
     <GlobalModals />
   </div>
 </template>
