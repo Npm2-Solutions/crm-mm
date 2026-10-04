@@ -53,7 +53,7 @@
                 v-if="cosa.due_date"
                 :class="gruppo.key === 'late' && 'text-ink-red-6'"
               >
-                {{ scadenzaInBreve(cosa.due_date, lingua) }}
+                {{ scadenzaInBreve(cosa.due_date, lingua, adesso) }}
               </span>
               <span v-if="cosa.reference_title" class="truncate">
                 {{ cosa.reference_title }}
@@ -108,6 +108,7 @@ import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useRitorno } from '@/composables/ritorno'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { cosePerGruppo, scadenzaInBreve } from '@/utils/sulTelefono'
 import {
   Avatar,
@@ -132,9 +133,15 @@ const opzioni = [
 const righe = ref([])
 const carica = createResource({
   url: 'crm.api.sul_telefono.get_tasks',
-  onSuccess: (dati) => (righe.value = dati.rows),
+  onSuccess: (dati) => {
+    adesso.value = adessoDelCentro()
+    righe.value = dati.rows
+  },
 })
-const gruppi = computed(() => cosePerGruppo(righe.value))
+// late, today, tomorrow on the centre's clock, as the Desk reads the due dates;
+// taken again with the tasks
+const adesso = ref(adessoDelCentro())
+const gruppi = computed(() => cosePerGruppo(righe.value, adesso.value))
 
 function ricarica() {
   return carica.submit({ mine: di.value === 'mie' ? 1 : 0 })
