@@ -103,6 +103,7 @@ import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
+import { leggibile } from '@/utils/telefono'
 import { Avatar, LoadingIndicator, TextInput } from 'frappe-ui'
 
 const { puo } = usersStore()
@@ -125,10 +126,11 @@ function numeroDi(contatto) {
 function rigaDi(contatto) {
   return (
     contatto.company_name ||
-    [contatto.mobile_no, contatto.phone, contatto.email_id].find(
-      (valore) => valore && !mascherato(valore),
-    ) ||
-    ''
+    leggibile(
+      [contatto.mobile_no, contatto.phone, contatto.email_id].find(
+        (valore) => valore && !mascherato(valore),
+      ),
+    )
   )
 }
 

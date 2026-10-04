@@ -64,7 +64,7 @@
                   : 'text-ink-gray-9'
               "
             >
-              {{ c.person || c.number || __('Unknown') }}
+              {{ c.person || leggibile(c.number) || __('Unknown') }}
             </span>
             <span class="truncate text-p-sm text-ink-gray-5">
               {{ comeAndata(c) }}
@@ -80,7 +80,7 @@
           v-if="puoChiamare && c.number"
           href="#"
           class="touch-target ml-1 mr-2 flex size-9 shrink-0 items-center justify-center rounded-full text-ink-gray-6 active:bg-surface-gray-3"
-          :aria-label="__('Call back {0}', [c.person || c.number])"
+          :aria-label="__('Call back {0}', [c.person || leggibile(c.number)])"
           @click.prevent="makeCall(c.number)"
         >
           <span class="lucide-phone size-4" aria-hidden="true" />
@@ -115,7 +115,7 @@ import { callEnabled } from '@/composables/telephony'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { durataDellaChiamata, versoDellaChiamata } from '@/utils/sulTelefono'
-import { quandoChiamata } from '@/utils/telefono'
+import { leggibile, quandoChiamata } from '@/utils/telefono'
 import { adessoDelCentro } from '@/utils/scheduler'
 import { LoadingIndicator, TextInput } from 'frappe-ui'
 import { computed } from 'vue'
@@ -151,7 +151,7 @@ function comeAndata(c) {
   ]
   if (verso === 'outgoing' && c.status !== 'Completed' && c.status)
     parti.push(__(c.status))
-  if (c.person && c.number) parti.push(c.number)
+  if (c.person && c.number) parti.push(leggibile(c.number))
   const durata = durataDellaChiamata(c.duration)
   if (durata) parti.push(durata)
   return parti.join(' · ')

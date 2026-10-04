@@ -10,19 +10,17 @@
  */
 
 import { mascherato } from '@/utils/schedaPersona'
+import { leggibile } from '@/utils/telefono'
 
 /**
  * The line under a person's name: how to reach them, else their company. A
  * value that came masked (Marketing reads no email nor phone) says nothing.
  */
 export function contattoDi(persona = {}) {
-  return (
-    [persona.mobile_no, persona.phone, persona.email].find(
-      (valore) => valore && !mascherato(valore),
-    ) ||
-    persona.organization ||
-    ''
+  const contatto = [persona.mobile_no, persona.phone, persona.email].find(
+    (valore) => valore && !mascherato(valore),
   )
+  return contatto ? leggibile(contatto) : persona.organization || ''
 }
 
 function inizioDelGiorno(data) {

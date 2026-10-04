@@ -42,6 +42,25 @@ export function daComporre(testo) {
     : segni.replace(/\+/g, '')
 }
 
+/**
+ * A number written to be read, never dialled nor saved: an Italian mobile in
+ * groups («+39 333 123 4567»), Milan's and Rome's landlines after their prefix
+ * («+39 02 1234 5678»), any other Italian number with its country apart; a
+ * number of another country, a masked one, anything that is not a number, as
+ * it was written. Stored as E.164, a number read «+393331234567».
+ */
+export function leggibile(numero) {
+  const scritto = String(numero || '').trim()
+  const m = scritto.replace(/[\s.\-/()]/g, '').match(/^(\+39|0039)?(\d+)$/)
+  if (!m || (!m[1] && !/^[03]/.test(m[2]))) return scritto
+  const paese = m[1] ? '+39 ' : ''
+  const cellulare = m[2].match(/^(3\d{2})(\d{3})(\d{3,4})$/)
+  if (cellulare) return paese + cellulare.slice(1).join(' ')
+  const fisso = m[2].match(/^(0[26])(\d{4})(\d{2,4})$/)
+  if (fisso) return paese + fisso.slice(1).join(' ')
+  return m[1] ? paese + m[2] : scritto
+}
+
 const GIORNO = 24 * 60 * 60 * 1000
 
 /**
