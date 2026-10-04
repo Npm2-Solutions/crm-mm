@@ -20,10 +20,8 @@
         </p>
       </div>
       <div class="flex items-center space-x-2 justify-end">
-        <Button
+        <AzioneImpostazioni
           v-if="isDirty"
-          :label="__('Update')"
-          variant="solid"
           :loading="settings.save.loading"
           @click="updateSettings"
         />
@@ -235,6 +233,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SettingsRow from '@/components/Settings/SettingsRow.vue'
 import LucideCopy from '~icons/lucide/copy'
 import { copyToClipboard } from '@/utils'

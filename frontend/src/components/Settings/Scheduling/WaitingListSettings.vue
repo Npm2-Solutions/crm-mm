@@ -15,13 +15,7 @@
       </h2>
     </template>
     <template #header-actions>
-      <Button
-        variant="solid"
-        :label="__('Update')"
-        :loading="saving"
-        :disabled="!dirty"
-        @click="save"
-      />
+      <AzioneImpostazioni :loading="saving" :disabled="!dirty" @click="save" />
     </template>
     <template #content>
       <div v-if="settings.data" class="flex flex-col gap-6 pb-6">
@@ -203,6 +197,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import SmsSenderLine from '@/components/Settings/SmsSenderLine.vue'
 import {

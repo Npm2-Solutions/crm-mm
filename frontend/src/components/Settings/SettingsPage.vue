@@ -31,10 +31,8 @@
       <div
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:shrink-0"
       >
-        <Button
+        <AzioneImpostazioni
           :loading="data.save.loading"
-          :label="__('Update')"
-          variant="solid"
           @click="data.save.submit()"
         />
       </div>
@@ -54,6 +52,7 @@
   </div>
 </template>
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import {
   createDocumentResource,

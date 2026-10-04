@@ -28,10 +28,8 @@
         </p>
       </div>
       <div class="flex shrink-0 items-start gap-2">
-        <Button
+        <AzioneImpostazioni
           v-if="document.isDirty"
-          :label="__('Update')"
-          variant="solid"
           :loading="document.save?.loading"
           :disabled="Boolean(errore)"
           @click="updateSettings"
@@ -139,6 +137,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import { showSettings } from '@/composables/settings'
 import { useDocument } from '@/data/document'
 import { safeDropdownRoute } from '@/utils/dropdownItems'

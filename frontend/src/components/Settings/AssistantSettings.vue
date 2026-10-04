@@ -28,9 +28,7 @@
           variant="subtle"
           @click="settings.reload()"
         />
-        <Button
-          variant="solid"
-          :label="__('Update')"
+        <AzioneImpostazioni
           :loading="settings.save.loading"
           :disabled="!isDirty"
           @click="update"
@@ -384,6 +382,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import SettingRow from '@/components/Settings/Telephony/SettingRow.vue'
 import { useDocument } from '@/data/document'

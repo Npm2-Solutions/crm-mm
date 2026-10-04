@@ -31,10 +31,8 @@
       <div
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
-        <Button
+        <AzioneImpostazioni
           v-if="settings.isDirty"
-          :label="__('Update')"
-          variant="solid"
           :loading="settings.loading"
           @click="updateSettings"
         />
@@ -174,6 +172,7 @@
   </div>
 </template>
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import ImageIcon from '~icons/lucide/image'
 import ImageUploader from '@/components/Controls/ImageUploader.vue'
 import CentreTile from '@/components/CentreTile.vue'

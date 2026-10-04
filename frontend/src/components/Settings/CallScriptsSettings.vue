@@ -53,8 +53,7 @@
             :disabled="!draft.name"
             @click="remove"
           />
-          <Button
-            variant="solid"
+          <AzioneImpostazioni
             :label="__('Save')"
             :loading="saving"
             @click="save"
@@ -228,6 +227,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import RichTextField from '@/components/RichTextField.vue'

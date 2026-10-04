@@ -24,12 +24,7 @@
           }}
         </p>
       </div>
-      <Button
-        variant="solid"
-        :label="__('Save')"
-        :loading="saving"
-        @click="save"
-      />
+      <AzioneImpostazioni :label="__('Save')" :loading="saving" @click="save" />
     </div>
 
     <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-2">
@@ -351,6 +346,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
 import ImageUploader from '@/components/Controls/ImageUploader.vue'
 import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'

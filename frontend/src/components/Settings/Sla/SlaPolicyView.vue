@@ -37,10 +37,8 @@
             {{ __('Enabled') }}
           </span>
         </div>
-        <Button
+        <AzioneImpostazioni
           :label="__('Save')"
-          theme="gray"
-          variant="solid"
           :disabled="Boolean(!isDirty && step.data)"
           :loading="
             slaPolicyListResource.setValue.loading ||
@@ -257,6 +255,7 @@
 </template>
 
 <script setup>
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import {
   Badge,
   Button,

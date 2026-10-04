@@ -164,6 +164,14 @@
             <div v-else data-pagina-impostazioni class="contents">
               <component :is="activeTab.component" />
             </div>
+            <!-- a page's «Update» on a phone (AzioneImpostazioni.vue): at the
+                 bottom of the screen, where a thumb is, in sight however far
+                 the page scrolls; nothing while there is nothing to save -->
+            <div
+              v-if="isMobileView"
+              id="barra-impostazioni"
+              class="sticky bottom-0 z-10 mt-auto border-t border-outline-elevation-2 bg-surface-elevation-2 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 empty:hidden"
+            />
           </template>
           <!-- a category: what it is for, and each of its entries with a line
                on what one sets up there -->
