@@ -14,11 +14,11 @@
  ],
  "fields": [
   {
-   "description": "Short identifier used in messages: {{ tracked_link(\"slug\") }}",
+   "description": "Lowercase letters, digits and dashes: it is how an automation finds the link.",
    "fieldname": "slug",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Slug",
+   "label": "Short name",
    "reqd": 1,
    "unique": 1
   },
@@ -48,7 +48,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-04 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Tracked Link",

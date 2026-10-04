@@ -1,3 +1,10 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  A message of an automation, with the person's fields and the tracked links
+  put in where the cursor is.
+-->
 <template>
   <div class="flex flex-col gap-1">
     <div class="flex items-center justify-between">
@@ -42,18 +49,32 @@ const props = defineProps({
   type: { type: String, default: 'text' },
   rows: { type: Number, default: 4 },
   placeholder: { type: String, default: '' },
+  // the tracked links a message to the person may carry: each one gets their
+  // own, so a click lands on their record
+  links: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
 const input = ref(null)
 
-const mergeOptions = computed(() =>
-  MERGE_FIELDS.map((field) => ({
+const mergeOptions = computed(() => {
+  const campi = MERGE_FIELDS.map((field) => ({
     label: `${__(field.label)} · ${field.token}`,
     onClick: () => insert(field.token),
-  })),
-)
+  }))
+  if (!props.links.length) return campi
+  return [
+    { group: __('Fields'), items: campi },
+    {
+      group: __('Tracked links'),
+      items: props.links.map((slug) => ({
+        label: slug,
+        onClick: () => insert(`{{ tracked_link("${slug}") }}`),
+      })),
+    },
+  ]
+})
 
 /** Drops the placeholder where the cursor is, not at the end of the text. */
 function insert(token) {

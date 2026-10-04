@@ -49,6 +49,7 @@
             type="textarea"
             :rows="8"
             :label="__('Message')"
+            :links="trackedLinks"
           />
         </template>
 
@@ -59,6 +60,7 @@
             type="textarea"
             :rows="6"
             :label="__('Message')"
+            :links="step.type === 'send_sms' ? trackedLinks : []"
           />
         </template>
 
@@ -89,6 +91,7 @@
                 :key="index"
                 :modelValue="value"
                 :label="__('{{{0}}}', [index + 1])"
+                :links="trackedLinks"
                 @update:modelValue="
                   (updated) => (step.template_parameters[index] = updated)
                 "
@@ -184,7 +187,11 @@
             />
           </div>
           <p class="text-xs text-ink-gray-5">
-            {{ __('Fields come from {0}.', [editor.recordDoctype.value]) }}
+            {{
+              editor.recordDoctype.value === 'CRM Deal'
+                ? __('The fields are the deal’s.')
+                : __('The fields are the person’s.')
+            }}
           </p>
         </template>
 
@@ -459,7 +466,7 @@
               class="text-xs"
               :class="splitTotal === 100 ? 'text-ink-gray-5' : 'text-ink-red-8'"
             >
-              {{ __('total') }} {{ splitTotal }}%
+              {{ __('{0}% in total', [splitTotal]) }}
             </span>
           </div>
         </template>
@@ -585,6 +592,8 @@ const automationOptions = computed(() => {
   }
   return withEmpty(options)
 })
+
+const trackedLinks = computed(() => editor.meta.data?.tracked_links || [])
 
 const linkOptions = computed(() =>
   withEmpty(
