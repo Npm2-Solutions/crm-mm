@@ -160,6 +160,7 @@ import {
 import { Dropdown, Tooltip, dayjsLocal } from 'frappe-ui'
 import { computed, toRef } from 'vue'
 import { appLocale } from '@/utils/locale'
+import { leggibile } from '@/utils/telefono'
 
 const props = defineProps({
   person: { type: Object, default: () => ({}) },
@@ -199,7 +200,10 @@ const title = computed(
 
 // the company and the number: what somebody checks before answering
 const subtitle = computed(() =>
-  [props.person.lead_name && props.person.organization, props.person.mobile_no]
+  [
+    props.person.lead_name && props.person.organization,
+    leggibile(props.person.mobile_no),
+  ]
     .filter(Boolean)
     .join(' · '),
 )

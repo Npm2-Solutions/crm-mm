@@ -244,7 +244,9 @@
               v-if="row.email || row.phone"
               class="truncate text-p-sm text-ink-gray-5"
             >
-              {{ [row.phone, row.email].filter(Boolean).join(' · ') }}
+              {{
+                [leggibile(row.phone), row.email].filter(Boolean).join(' · ')
+              }}
             </div>
           </div>
           <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
@@ -518,7 +520,9 @@
               v-if="row.party && (row.phone || row.email)"
               class="mt-1 truncate text-p-sm text-ink-gray-5"
             >
-              {{ [row.phone, row.email].filter(Boolean).join(' · ') }}
+              {{
+                [leggibile(row.phone), row.email].filter(Boolean).join(' · ')
+              }}
             </div>
             <button
               v-else-if="!row.party"
@@ -910,6 +914,7 @@ import {
   sulCentro,
 } from '@/utils/scheduler'
 import { tastiera } from '@/utils/tastiera'
+import { leggibile } from '@/utils/telefono'
 import {
   Badge,
   Button,

@@ -8,6 +8,7 @@ import {
   daComporre,
   digita,
   eNumero,
+  leggibile,
   paginaDi,
   quandoChiamata,
 } from '@/utils/telefono'
@@ -102,5 +103,29 @@ describe('paginaDi', () => {
   it('opens nothing for an unknown number', () => {
     expect(paginaDi({})).toBeNull()
     expect(paginaDi(null)).toBeNull()
+  })
+})
+
+describe('leggibile', () => {
+  it('writes an Italian mobile in groups, with its country or without', () => {
+    expect(leggibile('+393331234567')).toBe('+39 333 123 4567')
+    expect(leggibile('+39 351 7861795')).toBe('+39 351 786 1795')
+    expect(leggibile('3331234567')).toBe('333 123 4567')
+    expect(leggibile('0039 333 123 456')).toBe('+39 333 123 456')
+  })
+
+  it('writes Milan and Rome after their prefix, other landlines whole', () => {
+    expect(leggibile('+390212345678')).toBe('+39 02 1234 5678')
+    expect(leggibile('06 1234 5678')).toBe('06 1234 5678')
+    expect(leggibile('+390331123456')).toBe('+39 0331123456')
+    expect(leggibile('0331 123456')).toBe('0331 123456')
+  })
+
+  it('leaves as written what it cannot read', () => {
+    expect(leggibile('+14155552671')).toBe('+14155552671')
+    expect(leggibile('+39XXXXXX')).toBe('+39XXXXXX')
+    expect(leggibile('anna@example.com')).toBe('anna@example.com')
+    expect(leggibile('')).toBe('')
+    expect(leggibile(null)).toBe('')
   })
 })

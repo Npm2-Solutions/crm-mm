@@ -25,10 +25,11 @@ const ADESSO = new Date('2026-10-03T11:00:00')
 
 describe('a person on one line', () => {
   it('says how to reach them, else their company', () => {
+    // the number as one reads it, the stored one in groups
     expect(contattoDi({ mobile_no: '+393401112233', email: 'a@b.it' })).toBe(
-      '+393401112233',
+      '+39 340 111 2233',
     )
-    expect(contattoDi({ phone: '0212345678' })).toBe('0212345678')
+    expect(contattoDi({ phone: '0212345678' })).toBe('02 1234 5678')
     expect(contattoDi({ email: 'a@b.it' })).toBe('a@b.it')
     expect(contattoDi({ organization: 'Studio Verdi' })).toBe('Studio Verdi')
     // masked (Marketing): nothing to reach them on, the company if any

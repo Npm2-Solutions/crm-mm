@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The right column: who you are talking to.
 
   Deliberately short. The record page is one click away and holds everything;
@@ -45,7 +48,9 @@
           class="lucide-phone size-4 shrink-0 text-ink-gray-5"
           aria-hidden="true"
         />
-        <span class="truncate tabular-nums">{{ person.mobile_no }}</span>
+        <span class="truncate tabular-nums">{{
+          leggibile(person.mobile_no)
+        }}</span>
       </a>
       <a
         v-if="person.email"
@@ -84,6 +89,7 @@
 import Link from '@/components/Controls/Link.vue'
 import PersonAvatar from '@/components/Conversations/PersonAvatar.vue'
 import { useConversationState } from '@/composables/conversationState'
+import { leggibile } from '@/utils/telefono'
 import { computed, toRef } from 'vue'
 import { useRouter } from 'vue-router'
 
