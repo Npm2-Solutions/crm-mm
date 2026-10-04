@@ -43376,3 +43376,180 @@ msgstr "Nota per i colleghi…"
 #: frontend/src/components/Activities/Activities.vue
 msgid "Go to the latest message"
 msgstr "Vai all'ultimo messaggio"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Demo data"
+msgstr "Dati di prova"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "A centre full of people, appointments and deals to try {brand} on. Taken away in one tap, without a trace."
+msgstr "Un centro pieno di persone, appuntamenti e trattative su cui provare {brand}. Si tolgono con un tocco, senza lasciare traccia."
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Add the new parts"
+msgstr "Aggiungi le parti nuove"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Load the demo data"
+msgstr "Carica i dati di prova"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Making the demo data…"
+msgstr "Sto preparando i dati di prova…"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "It takes a couple of minutes: you can keep working, {brand} tells you when they are ready."
+msgstr "Ci vogliono un paio di minuti: puoi continuare a lavorare, {brand} ti avvisa quando sono pronti."
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "The demo data are in"
+msgstr "I dati di prova ci sono"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Colleagues"
+msgstr "Colleghi"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "What they hold"
+msgstr "Cosa contengono"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "What you will find"
+msgstr "Cosa troverai"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Each module you switch on adds its own part: load again to add it."
+msgstr "Ogni modulo che attivi aggiunge la sua parte: carica di nuovo per aggiungerla."
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "This part is in"
+msgstr "Questa parte c'è"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "This part is not in yet"
+msgstr "Questa parte non c'è ancora"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Nobody receives anything"
+msgstr "Nessuno riceve nulla"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "The demo's people are made up: their addresses receive no email, and {brand} never writes, messages or calls them. Visitors of your booking page do not see the demo's services."
+msgstr "Le persone della demo sono inventate: i loro indirizzi non ricevono email, e {brand} non scrive, non manda messaggi e non telefona mai a loro. Chi visita la tua pagina di prenotazione non vede i servizi della demo."
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Remove the demo data"
+msgstr "Togli i dati di prova"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Everything the demo made goes, in a few seconds: you start again from an empty centre."
+msgstr "Tutto quello che la demo ha creato se ne va in pochi secondi: ricominci da un centro vuoto."
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgid "Removing…"
+msgstr "Sto togliendo…"
+
+#: frontend/src/components/Settings/DemoDataSettings.vue
+msgctxt "Demo data"
+msgid "Remove"
+msgstr "Togli"
+
+#: frontend/src/composables/demoData.js
+msgid "Some parts could not be made: the others are in."
+msgstr "Alcune parti non si sono potute creare: le altre ci sono."
+
+#: frontend/src/composables/demoData.js
+msgid "The demo data are ready."
+msgstr "I dati di prova sono pronti."
+
+#: frontend/src/composables/demoData.js
+msgid "The demo data could not be made."
+msgstr "Non è stato possibile creare i dati di prova."
+
+#: frontend/src/composables/demoData.js
+msgid "The demo data were removed."
+msgstr "I dati di prova sono stati tolti."
+
+#: frontend/src/composables/demoData.js
+msgid "The demo data could not be removed."
+msgstr "Non è stato possibile togliere i dati di prova."
+
+#: frontend/src/composables/demoData.js
+msgid "Everything the demo made goes, and with it what is about its people, what you wrote too: notes, appointments, messages. The services, rooms and price lists you used for your own clients stay."
+msgstr "Se ne va tutto quello che la demo ha creato e, con esso, quello che riguarda le sue persone, anche ciò che hai scritto tu: note, appuntamenti, messaggi. Restano i servizi, le stanze e i listini che hai usato per i tuoi clienti."
+
+#: frontend/src/utils/impostazioni.js
+msgid "A centre full of people and appointments to try {brand} on, taken away in one tap."
+msgstr "Un centro pieno di persone e appuntamenti su cui provare {brand}, da togliere con un tocco."
+
+#: crm/demo/base.py
+msgid "The team"
+msgstr "La squadra"
+
+#: crm/demo/base.py
+msgid "Six colleagues with their levels: a manager, the front desk, a physiotherapist, an osteopath, a dietitian and a kinesiologist, with their shifts and holidays."
+msgstr "Sei colleghi con il loro livello: un responsabile, la segreteria, una fisioterapista, un osteopata, una dietista e un chinesiologo, con i turni e le festività."
+
+#: crm/demo/base.py
+msgid "Rooms and services"
+msgstr "Stanze e servizi"
+
+#: crm/demo/base.py
+msgid "Four rooms and ten services with their prices, group classes and an agreement's price list."
+msgstr "Quattro stanze e dieci servizi con i loro prezzi, le lezioni di gruppo e il listino di una convenzione."
+
+#: crm/demo/base.py
+msgid "People and appointments"
+msgstr "Persone e appuntamenti"
+
+#: crm/demo/base.py
+msgid "Three months of the centre's life: about two hundred people, their requests, the appointments they came to and the ones booked, today's reception desk."
+msgstr "Tre mesi di vita del centro: alcune centinaia di persone, le loro richieste, gli appuntamenti a cui sono venute e quelli prenotati, l'accoglienza di oggi."
+
+#: crm/demo/base.py
+msgid "Companies and agreements"
+msgstr "Aziende e convenzioni"
+
+#: crm/demo/base.py
+msgid "Five companies and the agreements being discussed with them."
+msgstr "Cinque aziende e le convenzioni in trattativa con loro."
+
+#: crm/demo/base.py
+msgid "Tasks, notes and calls"
+msgstr "Cose da fare, note e telefonate"
+
+#: crm/demo/base.py
+msgid "Things to do for everybody (you too), notes on people, the calls of the last weeks with the ones to call back."
+msgstr "Cose da fare per tutti (anche per te), note sulle persone, le telefonate delle ultime settimane con quelle da richiamare."
+
+#: crm/demo/base.py
+msgid "Things to do"
+msgstr "Cose da fare"
+
+#: crm/demo/simulazione.py
+msgid "Week of {0}"
+msgstr "Settimana del {0}"
+
+#: crm/demo/simulazione.py
+msgid "Requests"
+msgstr "Richieste"
+
+#: crm/demo/api.py
+msgid "The demo data are still being made: try again in a minute."
+msgstr "I dati di prova si stanno ancora creando: riprova tra un minuto."
+
+#: crm/demo/api.py
+msgid "The demo data cannot be made now: try again after the next update."
+msgstr "Ora non è possibile creare i dati di prova: riprova dopo il prossimo aggiornamento."
+
+#: crm/demo/guardie.py
+msgid "This is a person of the demo data: {brand} does not call them."
+msgstr "È una persona dei dati di prova: {brand} non la chiama."
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.js
+msgid "The demo data are being made: it takes a couple of minutes."
+msgstr "I dati di prova si stanno creando: ci vuole un paio di minuti."
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.js
+msgid "Three months of a centre's life are made in a couple of minutes: people, appointments, deals. They are taken away from Settings > The centre > Demo data."
+msgstr "In un paio di minuti si crea la vita di tre mesi di un centro: persone, appuntamenti, trattative. Si tolgono da Impostazioni > Il centro > Dati di prova."

@@ -300,6 +300,9 @@ const PAGINE = {
     () => import('@/components/Settings/Hierarchy/Hierarchy.vue'),
   ),
   Plan: aRichiesta(() => import('@/components/Settings/PlanSettings.vue')),
+  'Demo data': aRichiesta(
+    () => import('@/components/Settings/DemoDataSettings.vue'),
+  ),
   Services: aRichiesta(
     () => import('@/components/Settings/Scheduling/ServicesSettings.vue'),
   ),

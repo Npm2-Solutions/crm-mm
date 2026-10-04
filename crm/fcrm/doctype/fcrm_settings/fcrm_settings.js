@@ -1,4 +1,5 @@
 // Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
 // For license information, please see license.txt
 
 frappe.ui.form.on("FCRM Settings", {
@@ -55,7 +56,7 @@ frappe.ui.form.on("FCRM Settings", {
 			primary_action: () => {
 				frm.call("restore_demo_data", { force: false }, () => {
 					frappe.show_alert({
-						message: __("Demo data restored successfully."),
+						message: __("The demo data are being made: it takes a couple of minutes."),
 						indicator: "green"
 					});
 				});
@@ -65,7 +66,7 @@ frappe.ui.form.on("FCRM Settings", {
 		d.show();
 		d.set_message(
 			__(
-				"This will restore the demo data. Are you sure you want to continue?"
+				"Three months of a centre's life are made in a couple of minutes: people, appointments, deals. They are taken away from Settings > The centre > Demo data."
 			)
 		);
 	}

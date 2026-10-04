@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!-- The notifications panel is absolutely positioned at `left: 100%`, so it
        needs a positioning context that is not the Sidebar itself (Sidebar sets
@@ -151,7 +154,7 @@
           </div>
           <SidebarItem
             v-if="puo('dati_prova.gestisci') && isDemoDataCreated"
-            :label="__('Clear Demo Data')"
+            :label="__('Remove the demo data')"
             class="!text-ink-red-6 hover:!bg-surface-red-2"
             @click="() => clearDemoData()"
           >

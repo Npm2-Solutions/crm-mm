@@ -125,6 +125,15 @@ export const MENU = [
           'What {brand} includes for the centre, and what can be added.',
         condition: puo('piano.vedi'),
       },
+      {
+        // a centre full of life to look around in, taken away in one tap
+        // (doc 53)
+        key: 'Demo data',
+        label: 'Demo data',
+        description:
+          'A centre full of people and appointments to try {brand} on, taken away in one tap.',
+        condition: puo('dati_prova.gestisci'),
+      },
     ],
   },
   {
