@@ -97,6 +97,7 @@
         <Dropdown :options="moreOptions" placement="right">
           <template #default="{ open }">
             <Button
+              :aria-label="__('Options')"
               variant="ghost"
               size="sm"
               icon="lucide-more-horizontal"

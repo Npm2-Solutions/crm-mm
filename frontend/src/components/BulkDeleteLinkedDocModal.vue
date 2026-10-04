@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="'xl'">
     <template #body>
@@ -9,7 +12,12 @@
             </h3>
           </div>
           <div class="flex items-center gap-1">
-            <Button variant="ghost" icon="lucide-x" @click="show = false" />
+            <Button
+              :aria-label="__('Close')"
+              variant="ghost"
+              icon="lucide-x"
+              @click="show = false"
+            />
           </div>
         </div>
         <div>
@@ -50,7 +58,12 @@
             </h3>
           </div>
           <div class="flex items-center gap-1">
-            <Button variant="ghost" icon="lucide-x" @click="show = false" />
+            <Button
+              :aria-label="__('Close')"
+              variant="ghost"
+              icon="lucide-x"
+              @click="show = false"
+            />
           </div>
         </div>
         <div>

@@ -74,6 +74,7 @@
           >
             <template #default>
               <Button
+                :aria-label="__('Options')"
                 variant="ghost"
                 class="view-action-btn !size-5 opacity-0"
                 icon="lucide-more-horizontal"

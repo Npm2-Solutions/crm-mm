@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex gap-2"
@@ -92,7 +95,11 @@
     </div>
     <div :class="'w-max'">
       <Dropdown placement="right" :options="dropdownOptions">
-        <Button variant="ghost" icon="lucide-more-horizontal" />
+        <Button
+          :aria-label="__('Options')"
+          variant="ghost"
+          icon="lucide-more-horizontal"
+        />
       </Dropdown>
     </div>
   </div>

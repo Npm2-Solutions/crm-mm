@@ -46,6 +46,7 @@
             {{ link.click_count || 0 }} {{ __('clicks') }}
           </span>
           <Button
+            :aria-label="__('Delete')"
             variant="ghost"
             icon="lucide-trash-2"
             @click.stop="removeLink(link)"

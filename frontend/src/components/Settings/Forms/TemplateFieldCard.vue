@@ -84,6 +84,7 @@
       </Button>
       <Dropdown :options="menu">
         <Button
+          :aria-label="__('Options')"
           class="touch-target"
           variant="ghost"
           icon="lucide-more-horizontal"

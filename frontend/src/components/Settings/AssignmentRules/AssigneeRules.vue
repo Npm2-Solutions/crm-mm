@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div>
     <div class="flex flex-col gap-1">
@@ -109,6 +112,7 @@
           </div>
         </Tooltip>
         <Button
+          :aria-label="__('Remove')"
           variant="ghost"
           icon="lucide-x"
           @click="removeAssignedUser(user)"

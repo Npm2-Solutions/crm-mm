@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Combobox
     v-if="!sortValues?.size"
@@ -113,7 +116,12 @@
                   </template>
                 </Combobox>
               </div>
-              <Button variant="ghost" icon="lucide-x" @click="removeSort(i)" />
+              <Button
+                :aria-label="__('Remove')"
+                variant="ghost"
+                icon="lucide-x"
+                @click="removeSort(i)"
+              />
             </div>
           </div>
           <div

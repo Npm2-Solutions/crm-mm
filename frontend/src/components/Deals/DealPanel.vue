@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Teleport to="body">
     <Transition
@@ -60,7 +63,12 @@
               :icon="ArrowUpRightIcon"
               @click="openFullPage"
             />
-            <Button variant="ghost" icon="lucide-x" @click="show = false" />
+            <Button
+              :aria-label="__('Close')"
+              variant="ghost"
+              icon="lucide-x"
+              @click="show = false"
+            />
           </div>
         </div>
 

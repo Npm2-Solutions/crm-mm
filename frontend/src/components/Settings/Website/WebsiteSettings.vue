@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 px-6 py-8 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -214,18 +217,21 @@
               :placeholder="targetHint(item.link_type)"
             />
             <Button
+              :aria-label="__('Move up')"
               variant="ghost"
               icon="chevron-up"
               :disabled="index === 0"
               @click="moveNavItem(index, -1)"
             />
             <Button
+              :aria-label="__('Move down')"
               variant="ghost"
               icon="chevron-down"
               :disabled="index === form.nav_items.length - 1"
               @click="moveNavItem(index, 1)"
             />
             <Button
+              :aria-label="__('Remove')"
               variant="ghost"
               icon="lucide-trash-2"
               @click="form.nav_items.splice(index, 1)"
@@ -335,6 +341,7 @@
               placeholder="https://"
             />
             <Button
+              :aria-label="__('Remove')"
               variant="ghost"
               icon="lucide-trash-2"
               @click="form.social_links.splice(index, 1)"

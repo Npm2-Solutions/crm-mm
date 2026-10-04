@@ -65,6 +65,7 @@
               size="sm"
             />
             <Button
+              :aria-label="__('Delete')"
               variant="ghost"
               icon="lucide-trash-2"
               @click.stop="remove(resource)"

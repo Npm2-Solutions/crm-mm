@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex flex-col gap-1">
     <span class="text-xs text-ink-gray-5">{{ label }}</span>
@@ -7,7 +10,12 @@
       >
         {{ value }}
       </code>
-      <Button variant="ghost" icon="lucide-copy" @click="copy" />
+      <Button
+        :aria-label="__('Copy')"
+        variant="ghost"
+        icon="lucide-copy"
+        @click="copy"
+      />
     </div>
   </div>
 </template>

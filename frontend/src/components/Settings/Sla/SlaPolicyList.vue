@@ -34,6 +34,7 @@
           @input="slaSearchQuery = $event"
         />
         <Button
+          :aria-label="__('Clear search')"
           v-if="slaSearchQuery"
           icon="lucide-x"
           variant="ghost"
@@ -104,6 +105,7 @@
                 <div>
                   <Dropdown placement="right" :options="dropdownOptions(sla)">
                     <Button
+                      :aria-label="__('Options')"
                       icon="lucide-more-horizontal"
                       variant="ghost"
                       @click="isConfirmingDelete = false"

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -36,12 +39,14 @@
          tall -->
     <div class="flex flex-wrap items-center gap-2 px-2">
       <Button
+        :aria-label="__('Previous week')"
         variant="ghost"
         icon="lucide-chevron-left"
         @click="shiftWeek(-7)"
       />
       <Button variant="ghost" :label="__('This week')" @click="setWeek('')" />
       <Button
+        :aria-label="__('Next week')"
         variant="ghost"
         icon="lucide-chevron-right"
         @click="shiftWeek(7)"

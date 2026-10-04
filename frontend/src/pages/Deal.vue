@@ -260,6 +260,7 @@
                             :options="contactOptions(contact)"
                           >
                             <Button
+                              :aria-label="__('Options')"
                               icon="lucide-more-horizontal"
                               class="text-ink-gray-5"
                               variant="ghost"
@@ -277,6 +278,9 @@
                             "
                           />
                           <Button
+                            :aria-label="
+                              opened ? __('Hide details') : __('Show details')
+                            "
                             variant="ghost"
                             class="transition-all duration-300 ease-in-out"
                             :class="{ 'rotate-90': opened }"

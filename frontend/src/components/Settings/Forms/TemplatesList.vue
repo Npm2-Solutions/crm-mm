@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 p-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -120,6 +123,7 @@
               </div>
               <Dropdown placement="right" :options="rowOptions(template)">
                 <Button
+                  :aria-label="__('Options')"
                   class="touch-target shrink-0"
                   icon="lucide-more-horizontal"
                   variant="ghost"

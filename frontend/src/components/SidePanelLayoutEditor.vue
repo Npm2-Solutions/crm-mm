@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div>
     <Draggable :list="sections" item-key="name" class="flex flex-col gap-5.5">
@@ -27,6 +30,7 @@
                 />
                 <Button
                   v-if="section.editingLabel"
+                  :aria-label="__('Done')"
                   icon="lucide-check"
                   class="!size-4 rounded-sm"
                   variant="ghost"
@@ -47,6 +51,7 @@
               </Button>
               <Button
                 v-if="section.editable !== false"
+                :aria-label="__('Remove')"
                 class="!size-4 rounded-sm"
                 icon="lucide-x"
                 variant="ghost"
@@ -71,6 +76,7 @@
                     <div>{{ field.label }}</div>
                   </div>
                   <Button
+                    :aria-label="__('Remove')"
                     variant="ghost"
                     icon="lucide-x"
                     class="!size-4 rounded-sm"

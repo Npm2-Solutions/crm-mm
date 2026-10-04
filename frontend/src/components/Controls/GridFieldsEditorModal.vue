@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show">
     <template #title>
@@ -42,6 +45,7 @@
                   class="w-20"
                 />
                 <Button
+                  :aria-label="__('Remove')"
                   variant="ghost"
                   icon="lucide-x"
                   @click="removeField(field)"

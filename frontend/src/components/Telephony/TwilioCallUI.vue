@@ -153,6 +153,7 @@
         </div>
         <div v-if="onCall" class="flex gap-2">
           <Button
+            :aria-label="muted ? __('Unmute') : __('Mute')"
             :icon="muted ? 'mic-off' : 'mic'"
             class="rounded-full"
             @click="toggleMute"

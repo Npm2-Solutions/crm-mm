@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="size" bare>
     <template #default>
@@ -10,6 +13,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
+              :aria-label="__('Close')"
               variant="ghost"
               class="w-7"
               icon="lucide-x"

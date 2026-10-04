@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div :id="activity.name">
     <!--
@@ -54,6 +57,7 @@
           @click="confirmingDelete = false"
         >
           <Button
+            :aria-label="__('Options')"
             icon="lucide-more-horizontal"
             variant="ghost"
             class="!h-6 !w-6"

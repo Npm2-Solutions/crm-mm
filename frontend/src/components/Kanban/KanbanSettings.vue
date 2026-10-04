@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Button
     :label="__('Kanban settings')"
@@ -67,6 +70,7 @@
               </div>
               <div>
                 <Button
+                  :aria-label="__('Remove')"
                   variant="ghost"
                   icon="lucide-x"
                   @click="removeField(field)"

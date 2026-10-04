@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="rounded-md border px-2 border-outline-gray-2 text-sm">
     <div
@@ -72,6 +75,7 @@
         <div class="flex justify-end">
           <Dropdown placement="right" :options="dropdownOptions(row)">
             <Button
+              :aria-label="__('Options')"
               icon="lucide-more-horizontal"
               variant="ghost"
               @click="isConfirmingDelete = false"

@@ -236,7 +236,7 @@
           variant="ghost"
           @click.stop.prevent
         >
-          <Button icon="lucide-plus" variant="ghost" />
+          <Button :aria-label="__('Add')" icon="lucide-plus" variant="ghost" />
         </Dropdown>
       </div>
     </template>

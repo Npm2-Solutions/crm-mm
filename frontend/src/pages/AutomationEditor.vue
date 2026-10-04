@@ -93,7 +93,11 @@
           @click="save"
         />
         <Dropdown :options="moreOptions" placement="right">
-          <Button variant="ghost" icon="lucide-more-horizontal" />
+          <Button
+            :aria-label="__('Options')"
+            variant="ghost"
+            icon="lucide-more-horizontal"
+          />
         </Dropdown>
       </div>
     </template>

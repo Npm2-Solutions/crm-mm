@@ -345,6 +345,11 @@
                 <span>{{ __('changes from') }}</span>
                 <span>{{ activity.owner_name }}</span>
                 <Button
+                  :aria-label="
+                    activity.show_others
+                      ? __('Hide changes')
+                      : __('Show changes')
+                  "
                   class="!size-4"
                   variant="ghost"
                   :icon="SelectIcon"

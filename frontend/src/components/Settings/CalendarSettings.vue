@@ -143,6 +143,7 @@
                 @update:modelValue="() => handleIntervalChange(notification)"
               />
               <Button
+                :aria-label="__('Remove')"
                 icon="lucide-x"
                 variant="ghost"
                 @click="
@@ -241,6 +242,7 @@
                 :placeholder="__('08:00 pm')"
               />
               <Button
+                :aria-label="__('Remove')"
                 icon="lucide-x"
                 variant="ghost"
                 @click="

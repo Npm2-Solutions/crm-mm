@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -199,7 +202,11 @@
                 @click="design(page)"
               />
               <Dropdown :options="pageActions(page)" placement="right">
-                <Button variant="ghost" icon="more-horizontal" />
+                <Button
+                  :aria-label="__('Options')"
+                  variant="ghost"
+                  icon="more-horizontal"
+                />
               </Dropdown>
             </div>
           </div>

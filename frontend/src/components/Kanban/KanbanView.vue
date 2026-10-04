@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     On a phone a column is nearly the width of the screen, and a swipe lands on
@@ -71,6 +74,7 @@
                 </template>
               </Dropdown>
               <Button
+                :aria-label="__('New')"
                 icon="lucide-plus"
                 variant="ghost"
                 @click="options.onNewClick(column)"
@@ -135,6 +139,7 @@
                     <div class="flex gap-2 items-center justify-between">
                       <div></div>
                       <Button
+                        :aria-label="__('Add')"
                         icon="lucide-plus"
                         variant="ghost"
                         @click.stop.prevent

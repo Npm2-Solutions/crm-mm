@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <ListView
     :class="[$attrs.class, { '!w-full': isMobileView }]"
@@ -155,7 +158,11 @@
         <Dropdown
           :options="listBulkActionsRef.bulkActions(selections, unselectAll)"
         >
-          <Button icon="lucide-more-horizontal" variant="ghost" />
+          <Button
+            :aria-label="__('Actions')"
+            icon="lucide-more-horizontal"
+            variant="ghost"
+          />
         </Dropdown>
       </template>
     </ListSelectBanner>

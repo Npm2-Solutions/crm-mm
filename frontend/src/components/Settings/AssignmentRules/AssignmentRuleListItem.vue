@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex p-3 items-center justify-between cursor-pointer hover:bg-surface-gray-1 rounded"
@@ -35,6 +38,7 @@
       />
       <Dropdown placement="right" :options="dropdownOptions">
         <Button
+          :aria-label="__('Options')"
           icon="lucide-more-horizontal"
           variant="ghost"
           @click="isConfirmingDelete = false"

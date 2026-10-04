@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="activity group flex h-48 cursor-pointer flex-col justify-between gap-2 rounded-md bg-surface-gray-1 px-4 py-3 hover:bg-surface-gray-2"
@@ -24,6 +27,7 @@
         @click.stop
       >
         <Button
+          :aria-label="__('Options')"
           icon="lucide-more-horizontal"
           variant="ghost"
           class="!h-6 !w-6 hover:bg-surface-gray-2"
