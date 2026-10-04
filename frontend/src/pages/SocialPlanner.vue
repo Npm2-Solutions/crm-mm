@@ -408,14 +408,18 @@
           </div>
         </details>
 
-        <div class="grid grid-cols-2 gap-3">
+        <!-- one under the other on a phone: side by side, the day and the
+             time were cut at the minutes -->
+        <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
           <!-- frappe-ui's picker, not the browser's: that one wrote
                «mm/dd/yyyy, --:-- --» whatever the language, drew itself in the
                browser's colours, and its value was taken for server time
-               whatever the reader's time zone -->
+               whatever the reader's time zone. It reads the day as the
+               system writes it, not «2026-10-01». -->
           <FormControl
             v-model="form.scheduled_at"
             type="datetime"
+            :format="datetimeFormat()"
             :label="__('Schedule at')"
           />
           <FormControl
@@ -497,6 +501,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
+import { datetimeFormat } from '@/utils'
 import { platformColor } from '@/utils/social'
 import {
   createResource,
