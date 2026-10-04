@@ -42547,3 +42547,11 @@ msgstr "Copia il codice"
 #: frontend/vite/frappeUi.js
 msgid "Copied!"
 msgstr "Copiato!"
+
+#: frontend/vite/frappeUi.js
+msgid "No icons found for \"{0}\""
+msgstr "Nessuna icona per «{0}»"
+
+#: frontend/vite/frappeUi.js
+msgid "No icons available."
+msgstr "Nessuna icona disponibile."

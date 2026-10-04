@@ -555,10 +555,26 @@ const EMOJIS = () =>
   ],
 }
 
+// frappe-ui's lucide icons: the picker a view and a dashboard choose theirs with
+const SOSTITUZIONI_ICONE = {
+  'IconPicker.vue': [
+    [
+      /No icons found for "\{\{ searchTerm \}\}"/,
+      `{{ __('No icons found for "{0}"', [searchTerm]) }}`,
+    ],
+    frase('No icons available.'),
+    [
+      `:placeholder="placeholder || 'Select an icon...'"`,
+      `:placeholder="placeholder || __('Select an icon...')"`,
+    ],
+  ],
+}
+
 const RADICI = {
   '/frappe-ui/src/components/': SOSTITUZIONI,
   '/frappe-ui/src/molecules/': SOSTITUZIONI_MOLECOLE,
   '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
+  '/frappe-ui/icons/': SOSTITUZIONI_ICONE,
 }
 
 /** What the build appends to a file it rewrites, after its own code. */
@@ -575,6 +591,9 @@ export const FILE_FRAPPE = Object.keys(SOSTITUZIONI_FRAPPE)
 
 /** The same, under frappe-ui's molecules. */
 export const FILE_MOLECOLE = Object.keys(SOSTITUZIONI_MOLECOLE)
+
+/** The same, under frappe-ui's icons. */
+export const FILE_ICONE = Object.keys(SOSTITUZIONI_ICONE)
 
 /** The module's code in the user's language, or null when it is not one to rewrite. */
 export function traduciFrappeUi(codice, id) {
