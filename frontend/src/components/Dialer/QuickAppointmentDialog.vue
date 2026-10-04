@@ -21,6 +21,7 @@
           <FormControl
             v-model="form.from"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
             @update:modelValue="loadSlots"
           />
@@ -88,6 +89,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
+import { dateFormat } from '@/utils'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

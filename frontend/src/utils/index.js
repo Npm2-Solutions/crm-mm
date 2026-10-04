@@ -105,6 +105,13 @@ export function datetimeFormat() {
   return getFormat('', '', true, true, false).replace(':ss', '')
 }
 
+// How a Date field shows its value: the system's date format, as `Field.vue`
+// does. A FormControl of type date given none showed «2026-10-04» in every
+// dialog.
+export function dateFormat() {
+  return getFormat('', '', true, false, false)
+}
+
 export function timeAgo(date) {
   return prettyDate(date)
 }

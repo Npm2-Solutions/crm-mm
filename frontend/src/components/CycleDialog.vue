@@ -50,11 +50,13 @@
           <FormControl
             v-model="form.starts_on"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
           />
           <FormControl
             v-model="form.valid_until"
             type="date"
+            :format="dateFormat()"
             :label="__('Valid until')"
           />
         </div>
@@ -233,7 +235,7 @@
 import { useFattura } from '@/composables/fattura'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import {
   INTERO,
   MAX_SEDUTE,

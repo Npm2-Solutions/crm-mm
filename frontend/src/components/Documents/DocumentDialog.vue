@@ -66,6 +66,7 @@
           <FormControl
             v-model="form.document_date"
             type="date"
+            :format="dateFormat()"
             :label="__('Date of the document')"
           />
         </div>
@@ -154,6 +155,7 @@ import {
   createResource,
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
+import { dateFormat } from '@/utils'
 
 const props = defineProps({
   // the person, for a file uploaded here

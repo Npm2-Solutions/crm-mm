@@ -330,6 +330,7 @@
               v-if="!vista.is_note"
               v-model="vista.payment.payment_date"
               type="date"
+              :format="dateFormat()"
               :label="__('Payment date')"
             />
           </div>
@@ -516,6 +517,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
+import { dateFormat } from '@/utils'
 
 const { stato, chiudiFattura } = useFattura()
 

@@ -42,6 +42,7 @@
           <FormControl
             v-model="form.starts_on"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
           />
         </div>
@@ -129,11 +130,13 @@
             <FormControl
               v-model="pause.from_date"
               type="date"
+              :format="dateFormat()"
               :label="__('From')"
             />
             <FormControl
               v-model="pause.to_date"
               type="date"
+              :format="dateFormat()"
               :label="__('To')"
             />
           </div>
@@ -326,7 +329,7 @@
 import { useFattura } from '@/composables/fattura'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import {
   ILLIMITATI,
   MENSILE,

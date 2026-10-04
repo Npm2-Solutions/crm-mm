@@ -30,7 +30,12 @@
         :label="__('Service')"
         :options="serviceOptions"
       />
-      <FormControl v-model="date" type="date" :label="__('Day')" />
+      <FormControl
+        v-model="date"
+        type="date"
+        :format="dateFormat()"
+        :label="__('Day')"
+      />
       <FormControl v-model="time" type="time" :label="__('Time')" />
       <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
         <Switch v-model="online" size="sm" /> {{ __('As a client online') }}
@@ -140,6 +145,7 @@
 import UserAvatar from '@/components/UserAvatar.vue'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, defineComponent, h, ref } from 'vue'
+import { dateFormat } from '@/utils'
 
 defineProps({
   // inside a dialog: the dialog carries the title

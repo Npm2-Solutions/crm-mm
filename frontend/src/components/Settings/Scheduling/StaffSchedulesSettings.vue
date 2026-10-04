@@ -241,6 +241,7 @@
             <FormControl
               v-model="row.date"
               type="date"
+              :format="dateFormat()"
               class="max-md:col-start-1 max-md:row-start-1"
             />
             <FormControl
@@ -360,6 +361,7 @@ import { hhmm } from '@/utils/scheduler'
 import { appLocale } from '@/utils/locale'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
+import { dateFormat } from '@/utils'
 
 // a practitioner reads and changes only their own shifts (the capability's
 // scope): their week, and the editor opens on them

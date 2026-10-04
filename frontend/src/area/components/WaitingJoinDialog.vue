@@ -65,7 +65,12 @@
             {{ __('Nothing chosen: any day, any time.') }}
           </span>
         </div>
-        <FormControl v-model="form.until" type="date" :label="__('Until')" />
+        <FormControl
+          v-model="form.until"
+          type="date"
+          :format="FORMATO_DEL_CAMPO"
+          :label="__('Until')"
+        />
         <FormControl
           v-if="options.channels.length > 1"
           v-model="form.channel"
@@ -103,6 +108,7 @@ import { Button, Dialog, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { area, messageOf } from '../store'
 import { locale } from '../translation'
+import { FORMATO_DEL_CAMPO } from '../dates'
 
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })

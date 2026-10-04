@@ -45,3 +45,7 @@ export function shortDay(value) {
     ? date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric' })
     : ''
 }
+
+// How a date field shows the day it holds: the day first, as the patient
+// writes it (a field given no format showed «2026-11-03»)
+export const FORMATO_DEL_CAMPO = 'DD/MM/YYYY'

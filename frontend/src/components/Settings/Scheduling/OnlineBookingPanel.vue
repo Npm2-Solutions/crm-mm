@@ -136,11 +136,13 @@
       <FormControl
         v-model="form.booking_opens_on"
         type="date"
+        :format="dateFormat()"
         :label="__('Bookable from')"
       />
       <FormControl
         v-model="form.booking_closes_on"
         type="date"
+        :format="dateFormat()"
         :label="__('Bookable until')"
       />
     </div>
@@ -250,6 +252,7 @@ import {
 } from '@/utils/onlineBooking'
 import { FormControl, Switch, toast } from 'frappe-ui'
 import { computed } from 'vue'
+import { dateFormat } from '@/utils'
 
 const form = defineModel({ type: Object, required: true })
 const props = defineProps({

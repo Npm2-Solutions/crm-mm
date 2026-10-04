@@ -143,6 +143,7 @@
         v-else-if="field.type === 'date'"
         class="w-48 max-md:w-full"
         type="date"
+        :format="dateFormat()"
         :model-value="modelValue ?? ''"
         :disabled="readonly"
         @update:model-value="(value) => emit(value || null)"
@@ -371,7 +372,7 @@ import LucidePaperclip from '~icons/lucide/paperclip'
 import LucideSignature from '~icons/lucide/signature'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
 import { answerInWords } from '@/utils/moduli'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import { Badge, Button, Checkbox, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 

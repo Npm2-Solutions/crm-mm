@@ -651,6 +651,7 @@
             v-if="publishDraft.askAgain"
             v-model="publishDraft.askedFrom"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
           />
         </template>
@@ -699,7 +700,7 @@ import {
   tidyAddress,
   useProblems,
 } from '@/utils/moduliSito'
-import { copyToClipboard, formatDate } from '@/utils'
+import { copyToClipboard, dateFormat, formatDate } from '@/utils'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
