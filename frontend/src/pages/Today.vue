@@ -62,11 +62,16 @@
         <div
           class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2 px-4"
         >
+          <!-- what they came for above who they are, as in the day below:
+               under the buttons it read as belonging to the next person -->
           <div
             v-for="{ appointment, participant } in waiting"
             :key="participant.name"
             class="flex flex-col"
           >
+            <div class="-mb-1 pt-3 text-p-sm text-ink-gray-5">
+              {{ appointmentLine(appointment) }}
+            </div>
             <ParticipantRow
               :appointment="appointment"
               :participant="participant"
@@ -75,9 +80,6 @@
               :now="now"
               @changed="day.reload()"
             />
-            <div class="-mt-1 pb-2 text-p-sm text-ink-gray-5">
-              {{ appointmentLine(appointment) }}
-            </div>
           </div>
         </div>
       </section>
