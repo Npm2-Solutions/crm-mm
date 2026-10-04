@@ -45,6 +45,38 @@ class TestCRMCallLog(IntegrationTestCase):
 		self.assertEqual(call.status, "Completed")
 		self.assertEqual(call.caller, "Administrator")
 
+	def test_a_call_logged_by_hand_needs_no_line_of_ones_own(self):
+		"""The desk logs a call it made from a line nobody wrote down: only the
+		person's number is known, and the call is kept all the same."""
+		call = frappe.get_doc(
+			{
+				"doctype": "CRM Call Log",
+				"type": "Outgoing",
+				"status": "Completed",
+				"to": "+393331112233",
+				"telephony_medium": "Manual",
+			}
+		)
+		with patch.object(type(call), "number_of_the_agent", return_value=""):
+			call.insert()
+
+		self.assertFalse(call.get("from"))
+		self.assertEqual(call.to, "+393331112233")
+		self.assertEqual(call.caller, frappe.session.user)
+
+	def test_a_providers_call_still_carries_both_numbers(self):
+		call = frappe.get_doc(
+			{
+				"doctype": "CRM Call Log",
+				"type": "Incoming",
+				"status": "Completed",
+				"to": "+390451234567",
+				"telephony_medium": "Twilio",
+			}
+		)
+		with self.assertRaises(frappe.MandatoryError):
+			call.insert()
+
 	def test_call_log_with_duration(self):
 		"""Test call log with duration field"""
 		call = create_test_call_log(
