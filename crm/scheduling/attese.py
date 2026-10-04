@@ -214,6 +214,9 @@ class Sguardo:
 				continue
 			if slot.start < self.da:
 				continue
+			# nor so close that nobody would have time to answer: `offri` refuses it
+			if not R.scadenza(self.adesso, slot.start, self.conf.ore):
+				continue
 			inizio, fine = _locale(slot.start), _locale(slot.end)
 			if not giorni_voce[0] <= inizio.date() <= giorni_voce[1]:
 				continue
