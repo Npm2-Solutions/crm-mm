@@ -1,6 +1,7 @@
 /* Copyright (c) 2026, NPM2 Solutions Srl and contributors
    For license information, please see license.txt */
 @import 'frappe-ui/style.css';
+@import '../carattere.css';
 @import '../marchio.css';
 @import '../espresso.css';
 @import '../espresso-componenti.css';

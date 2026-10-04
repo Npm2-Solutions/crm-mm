@@ -761,6 +761,7 @@ nessun browser di prova ha la sua tastiera.
 | `utils/ricarica.js`, `main.js` | Uscita una versione nuova con la pagina aperta, un pezzo che non c'è più ricarica la pagina una volta, invece di lasciare un pulsante che non apre niente. Mai senza rete, mai in giro, e mai per un modulo di un altro sito che non arriva (la telemetria del framework bloccata dal browser) |
 | `Activities/EmailArea.vue`, `MessageActions.vue` | Il pulsante che risponde a un'email o a un messaggio dice «Rispondi», non «Risposta» |
 | `crm/www/crm.py` (`traduzioni`), `frontend/index.html` | Le parole dell'italiano (15.000, 1,2 MB, 380 KB compressi) non stanno più dentro la pagina, che nessun browser tiene e che si scarica a ogni apertura dell'app: sono uno script che il browser tiene finché non cambiano (il suo indirizzo porta un'impronta delle parole). La pagina scende da 1266 a 26 KB; dalla seconda apertura le parole costano 0 byte |
+| `src/carattere.css` + `src/assets/fonts/` | Il carattere è Inter come prima (gli stessi assi di peso e di dimensione ottica, le stesse cifre), ridotto agli alfabeti latini e ai segni che le parole usano: 131 KB invece di 264, scaricati la prima volta da ogni telefono e da ogni paziente (l'area scende da 509 a 381 KB compressi). Le facce di frappe-ui lasciavano fuori la punteggiatura: l'apostrofo tipografico (dell’area), le virgolette, le lineette, i puntini e l'euro si disegnavano con il carattere del telefono, ora con Inter. Una lettera greca o cirillica arriva ancora dal file intero |
 
 ## Non incluso
 

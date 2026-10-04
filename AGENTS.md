@@ -720,7 +720,10 @@ row, the bar's words beside their icons).
   `/assets/crm/frontend/` it served no page and downloaded the whole app. The
   page's words are a script the browser keeps (`crm.www.crm.traduzioni`, its
   address carrying `impronta_delle_traduzioni()`), never inside the page, which
-  no browser keeps: they were 380 KB compressed at every opening.
+  no browser keeps: they were 380 KB compressed at every opening. The typeface
+  is Inter cut to the Latin alphabets and the signs the words use
+  (`src/carattere.css`, `src/assets/fonts/README.md`), declared after
+  frappe-ui's whole files, which still draw a Greek or Cyrillic letter.
 
 ---
 
