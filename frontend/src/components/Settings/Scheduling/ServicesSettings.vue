@@ -77,7 +77,9 @@
       >
         <!-- what it is and what it costs -->
         <template v-if="editorTab === 'details'">
-          <div class="grid grid-cols-2 gap-3">
+          <!-- on a phone the name has the row to itself: half of it read
+               «Massaggio decont…» -->
+          <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
             <FormControl
               v-model="form.service_name"
               type="text"
