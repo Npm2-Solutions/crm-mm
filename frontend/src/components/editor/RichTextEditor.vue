@@ -1,0 +1,71 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The editor of a field of formatted text: TipTap with its menus. Drawn by
+  RichTextField.vue, which imports it when the field is drawn.
+-->
+<template>
+  <div>
+    <Editor
+      v-model="content"
+      :extensions="extensions"
+      :placeholder="placeholder"
+      :editable="editable"
+      :upload-function="(file) => uploadFile(file)"
+      @change="(val) => emit('change', val)"
+    >
+      <EditorFixedMenu
+        v-if="fixedMenu"
+        :items="toolbarFor(isMobileView)"
+        class="w-full overflow-x-auto rounded-t-lg border border-b-0 border-outline-gray-2 p-1"
+      />
+      <EditorBubbleMenu v-if="bubbleMenu" :items="bubbleToolbar" />
+      <!-- the placeholder is drawn, not read: the box's name is its label -->
+      <EditorContent
+        :class="editorClass"
+        :aria-label="label || placeholder || undefined"
+      />
+    </Editor>
+  </div>
+</template>
+
+<script setup>
+import {
+  Editor,
+  EditorContent,
+  EditorFixedMenu,
+  EditorBubbleMenu,
+} from 'frappe-ui/editor'
+import {
+  buildEditorExtensions,
+  toolbarFor,
+  bubbleToolbar,
+  uploadFile,
+} from '@/components/editor/config'
+import { isMobileView } from '@/composables/breakpoints'
+import { ref, watch } from 'vue'
+
+const props = defineProps({
+  content: { type: String, default: '' },
+  placeholder: { type: String, default: '' },
+  // what a screen reader calls the box, when its label is not tied to it
+  label: { type: String, default: '' },
+  editable: { type: Boolean, default: true },
+  editorClass: { type: String, default: '' },
+  fixedMenu: { type: Boolean, default: false },
+  bubbleMenu: { type: Boolean, default: true },
+})
+
+const emit = defineEmits(['change'])
+
+const content = ref(props.content ?? '')
+
+watch(
+  () => props.content,
+  (val) => {
+    content.value = val ?? ''
+  },
+)
+
+const extensions = buildEditorExtensions()
+</script>

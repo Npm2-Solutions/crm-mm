@@ -1,9 +1,10 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import LucideCheck from '~icons/lucide/check'
 import TaskStatusIcon from '@/components/Icons/TaskStatusIcon.vue'
 import TaskPriorityIcon from '@/components/Icons/TaskPriorityIcon.vue'
 import { usersStore } from '@/stores/users'
 import { getMeta } from '@/stores/meta'
-import { gemoji } from 'gemoji'
 import DOMPurify from 'dompurify'
 import { toast, dayjsLocal, dayjs, getConfig, FeatherIcon } from 'frappe-ui'
 import { h } from 'vue'
@@ -459,9 +460,13 @@ export function parseColor(color) {
   return textColor
 }
 
+// a pictograph, a flag (two regional indicators) or a keycap: a view's icon
+// when it is not an icon's name. Looked up in the emoji database (gemoji), that
+// came with every page's first download, rebuilt into a list at every call.
+const EMOJI = /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3/u
+
 export function isEmoji(str) {
-  const emojiList = gemoji.map((emoji) => emoji.emoji)
-  return emojiList.includes(str)
+  return typeof str === 'string' && EMOJI.test(str)
 }
 
 export function isTouchScreenDevice() {
