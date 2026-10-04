@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 const NUMBER_FORMAT_INFO = {
   '#,###.##': { decimalStr: '.', groupSep: ',' },
   '#.###,##': { decimalStr: ',', groupSep: '.' },
@@ -88,6 +90,8 @@ function stripNumberGroups(v, numberFormat) {
   if (!numberFormat) numberFormat = getNumberFormat()
   var info = getNumberFormatInfo(numberFormat)
 
+  if (puntoDellaTastiera(v, info)) return v.replace(info.groupSep, '.')
+
   // strip groups (,)
   var groupRegex = new RegExp(
     info.groupSep === '.' ? '\\.' : info.groupSep,
@@ -102,6 +106,20 @@ function stripNumberGroups(v, numberFormat) {
   }
 
   return v
+}
+
+// A phone's decimal pad has only the separator of its language: an Italian one
+// types «12,5» where the site writes 12.5, an English one «12.5» where the site
+// writes 12,5. The site's thousands separator, once, with one or two digits
+// after it and no decimal separator, cannot be a thousands separator (three
+// digits follow one): it is the decimal point the keyboard had. «1,234» keeps
+// the site's reading.
+function puntoDellaTastiera(v, info) {
+  const separatore = info.groupSep
+  if (!['.', ','].includes(separatore)) return false
+  if (info.decimalStr && v.includes(info.decimalStr)) return false
+  if (v.split(separatore).length !== 2) return false
+  return new RegExp(`^-?\\d+\\${separatore}\\d{1,2}$`).test(v.trim())
 }
 
 export function formatNumber(v, format, decimals) {

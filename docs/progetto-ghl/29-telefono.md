@@ -816,6 +816,7 @@ nessun browser di prova ha la sua tastiera.
 | `Settings/Hierarchy/Hierarchy.vue` | «Abilita» e «Disattiva» della gerarchia li vede solo chi può davvero accenderla, l'amministratore di sistema (la regola del server: un responsabile messo nell'albero si toglierebbe il suo limite). Il responsabile premeva «Abilita» e riceveva un errore; ora legge «Solo un amministratore di sistema può attivarla», e l'albero lo gestisce come prima |
 | `Settings/Scheduling/SchedulingDefaults.vue`, `utils/fusiOrari.js` | Il fuso orario dell'agenda: dopo quello del sito, il fuso del dispositivo e «Europe/Rome», ognuno col suo nome («Europe/Rome · Ora dell'Europa centrale»), poi gli altri. Sul telefono era un foglio di quattrocento righe che partiva da «Africa/Abidjan» |
 | `pages/Invoices.vue` | «Comunica» al Sistema TS chiede conferma: sul telefono sta nella scheda che si tocca per aprire la fattura, e un tocco sbagliato mandava subito la spesa |
+| `utils/numberFormat.js` (`flt`) | Un importo scritto con la tastiera decimale del telefono, che ha solo il separatore della sua lingua: su un sito che scrive i numeri all'inglese «12,5» diventava 125, e un prezzo di 12,50 € ne valeva 1250. Ora il separatore delle migliaia preso una volta sola, con una o due cifre dopo, è la virgola dei decimali che la tastiera aveva; «1,234» resta milleduecentotrentaquattro. Test: `tests/unit/numberFormat.test.js` |
 
 ## Non incluso
 

@@ -714,7 +714,9 @@ row, the bar's words beside their icons).
   `'cifre'`, `'cerca'` (a list's search: the key closes the keyboard, a
   surname is never corrected) elsewhere; a whole number on `type="number"` has
   `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
-  keyboard: iPhone's decimal pad has only the comma.
+  keyboard: iPhone's decimal pad has only the comma. A DocType's amount reads
+  the keyboard's separator whatever the site's format (`flt()` in
+  `utils/numberFormat.js`): «12,5» is 12.5 where the site writes 1,234.56.
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
   setting's words above, its field under them as wide as the screen, a switch
   beside its words; a page's save bar is the screen's bar, its button as wide
@@ -784,7 +786,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1176 tests · ~15s** — all must pass before committing
+- **1180 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
