@@ -592,6 +592,11 @@ Con il tocco, come in un'app:
   Rimesso «Confermato», l'appuntamento restava senza nessuno: niente
   promemoria, e nell'agenda solo il servizio. Ora chi era stato annullato
   torna prenotato, nei posti del servizio (`CRM Appointment.brought_back`).
+- **L'accoglienza, provata davvero.** «Accogli» porta la persona in sala
+  d'attesa, e l'attesa si conta sull'orologio del centro. Accanto a
+  «Presente» c'era «Annulla», che in accoglienza si leggeva come annullare
+  l'appuntamento. Ora dice cosa toglie: «Annulla l'arrivo», o «Annulla
+  l'esito» dopo «Presente» o «Assente».
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della

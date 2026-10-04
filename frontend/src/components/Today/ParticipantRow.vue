@@ -73,7 +73,7 @@
       <Button
         v-for="(outcome, i) in prossimiEsiti(participant.status, past)"
         :key="outcome"
-        :label="__(ACTIONS[outcome], null, 'One person')"
+        :label="etichetta(outcome)"
         :variant="i === 0 && outcome !== 'Booked' ? 'solid' : 'subtle'"
         :theme="outcome === 'No Show' ? 'red' : 'gray'"
         :size="isMobileView ? 'lg' : 'sm'"
@@ -113,8 +113,16 @@ const ACTIONS = {
   Arrived: 'Check in',
   Attended: 'Came',
   'No Show': 'Did not come',
-  Booked: 'Undo',
 }
+// going back says what it takes back: a bare «Annulla» beside «Presente», at a
+// reception desk, read as cancelling the appointment
+function etichetta(outcome) {
+  if (outcome !== 'Booked') return __(ACTIONS[outcome], null, 'One person')
+  return props.participant.status === 'Arrived'
+    ? __('Undo the check-in')
+    : __('Undo the outcome')
+}
+
 const STATUS = {
   Booked: { label: 'Expected', theme: 'gray' },
   Arrived: { label: 'Waiting', theme: 'orange' },
