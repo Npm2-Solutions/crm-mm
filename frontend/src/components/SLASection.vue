@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex flex-col gap-1.5 border-b sm:px-6 py-3 px-4">
     <div
@@ -77,7 +80,12 @@ let slaSection = computed(() => {
       }
     }
   } else if (['Fulfilled', 'Failed'].includes(status)) {
-    status = __(status) + ' in ' + formatTime(responseTime)
+    // a whole sentence each, never English glued to the translation
+    status = !responseTime
+      ? __(status, null, 'SLA')
+      : status == 'Fulfilled'
+        ? __('Fulfilled in {0}', [formatTime(responseTime)])
+        : __('Failed: answered in {0}', [formatTime(responseTime)])
     tooltipText = formatDate(respondedOn)
   }
 
@@ -103,10 +111,10 @@ let slaSection = computed(() => {
       },
       {
         label: 'Status',
-        value: data.value.communication_status,
+        value: __(data.value.communication_status || ''),
         type: 'Select',
         options: communicationStatuses.data?.map((status) => ({
-          label: status.name,
+          label: __(status.name),
           value: status.name,
           onClick: () => {
             capture('sla_status_change')

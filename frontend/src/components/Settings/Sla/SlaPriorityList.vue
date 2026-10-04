@@ -157,8 +157,10 @@ createResource({
   onSuccess(data) {
     priorityOptions.push(
       ...data.map((p) => {
+        // the standard ones read in the user's language, a name the
+        // centre wrote stays as written
         return {
-          label: p.name,
+          label: __(p.name),
           value: p.name,
         }
       }),
