@@ -591,6 +591,23 @@ The site promises the finished product as the marketing material does, and shows
 plan and no price. It sets no cookie and loads nothing from other sites. It is not
 the Frappe site's public pages: those belong to each centre.
 
+### The demo data (docs/progetto-ghl/53)
+| File | Role |
+|---|---|
+| `crm/demo/registro.py` | The parts (`Parte`, `registra_parte`: a module's share, its plan module, the parts it needs) and the register (`CRM Demo Record`): every record made while a part runs, written down by the `"*"` `after_insert` (`annota`), with a key a later part finds it by (`ricorda`, `trova`); `fuori_dal_registro` for what is the product's (the new clients pipeline) |
+| `crm/demo/modo.py` | `in_prova(parte)`: the part through the screens' own code, with nothing leaving - no email, job, realtime, automation, calendar mirror, platform push, global search; committed whole, written down as it goes |
+| `crm/demo/base.py`, `simulazione.py`, `dati.py`, `contesto.py` | The base's parts: the team (levels, qualifications, shifts), rooms and services, three months of the centre day by day through the CRM's own rules, companies and agreements, tasks, notes, calls; the Italian words; today in the centre's clock, the same chances every time |
+| `crm/demo/togli.py` | Taking it away by the database: what the centre took over stays, what is about the demo goes with it whoever wrote it, then the framework's traces, the users, the files, the counters - every table counted before and after in `crm/tests/test_demo_data.py` |
+| `crm/demo/guardie.py` + `whatsapp.py` | While the demo is in, nobody is written to: email (`Email Queue` before_insert), WhatsApp, SMS (`api/sms.deliver_via_twilio`), calls (`uscita.perche_no`), notifications by email (`avvisa`), the public booking page (`service_booking`) |
+| `crm/demo/api.py` + `Settings/DemoDataSettings.vue`, `composables/demoData.js` | Settings > The centre > Demo data: the parts, loading in a job with its progress by the socket, the parts a module switched on later adds, removal in one request |
+
+A module adds its share of the demo from its `registra()` with `registra_parte`,
+and makes it through its own code paths, never rows written beside them. A module
+that sends something on its own adds its guard to `crm/demo/guardie.py`; one that
+keeps something by a person outside its records (a file, a cache) makes sure
+`togli` finds it. A demo person has an address at example.com and a number the
+guards know: never a real domain, never a real person's number.
+
 ### The desk's day
 | File | Role |
 |---|---|
@@ -804,7 +821,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1193 tests · ~15s** — all must pass before committing
+- **1195 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
