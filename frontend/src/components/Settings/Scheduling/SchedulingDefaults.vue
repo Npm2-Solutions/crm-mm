@@ -130,6 +130,8 @@
 import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
+import { ITALIA, fusiOrari } from '@/utils/fusiOrari'
+import { appLocale } from '@/utils/locale'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
@@ -234,22 +236,26 @@ const groups = computed(() => [
   },
 ])
 
-// every IANA zone the browser knows, the empty one meaning the site's own
+// every IANA zone the browser knows, the empty one meaning the site's own;
+// the device's and Italy's first, each named in the reader's language
 const timezoneOptions = computed(() => {
   let zones
   try {
     zones = Intl.supportedValuesOf('timeZone')
   } catch {
-    zones = ['Europe/Rome']
+    zones = [ITALIA]
   }
-  if (form.timezone && !zones.includes(form.timezone))
-    zones.unshift(form.timezone)
   return [
     {
       label: __('Site time zone ({0})', [settings.data?.site_timezone || '—']),
       value: '',
     },
-    ...zones.map((zone) => ({ label: zone.replace(/_/g, ' '), value: zone })),
+    ...fusiOrari({
+      zone: zones,
+      scelto: form.timezone,
+      dispositivo: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      lingua: appLocale() || 'it',
+    }),
   ]
 })
 
