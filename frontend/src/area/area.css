@@ -30,6 +30,26 @@
   }
 }
 
+/* A small button of frappe-ui (28px: «Esci» at the top, «Non ora» on a card)
+   is a thumb's to hit: on a touch screen an invisible ring grows it towards
+   40px, its size and the layout unchanged, as in the CRM (telefono.css). */
+@media (pointer: coarse) {
+  button.h-7:not(.absolute, .fixed, .sticky),
+  button.h-8:not(.absolute, .fixed, .sticky) {
+    position: relative;
+  }
+  button.h-7:not([role='switch'])::after {
+    content: '';
+    position: absolute;
+    inset: -6px -3px;
+  }
+  button.h-8:not([role='switch'])::after {
+    content: '';
+    position: absolute;
+    inset: -4px -2px;
+  }
+}
+
 /* The area's register, as the brand draws the patient's phone (the screens of
    the video, the ads and the presentation: brand/presentazione/sorgenti/img/
    telefono-*.png): Espresso's tokens, larger - titles big and tight, labels in
