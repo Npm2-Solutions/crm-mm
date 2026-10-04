@@ -19,6 +19,7 @@
       :disabled="attrs.disabled"
       :placement="attrs.placement"
       :filterable="false"
+      :loading="options.loading"
     >
       <template #target="{ open, togglePopover }">
         <slot name="target" v-bind="{ open, togglePopover }" />
@@ -112,6 +113,21 @@ const value = computed({
 const autocomplete = ref(null)
 const text = ref('')
 
+// The options come the first time the list opens, not with the field: a
+// person's details drew seven links, and each asked the server for its list
+// twice (its doctype, then its filters) before anybody opened one - fourteen
+// requests on the phone's first tap on Details. What the field shows does not
+// need them: a title is asked by itself (`titolo`).
+const aperta = ref(false)
+watch(
+  () => autocomplete.value?.showOptions,
+  (si) => {
+    if (!si || aperta.value) return
+    aperta.value = true
+    reload(text.value, true)
+  },
+)
+
 watchDebounced(
   () => autocomplete.value?.query,
   (val) => {
@@ -165,8 +181,9 @@ const options = createResource({
 })
 
 // A DocType that shows a title in its links shows it here too: a qualification
-// reads "Fisioterapista", not `fisioterapista`, also when the search did not
-// load it - one a filter leaves out stays, named, among the choices.
+// reads "Fisioterapista", not `fisioterapista`, also before the list was opened
+// or when the search did not bring it - one a filter leaves out stays, named,
+// among the choices.
 const attuale = computed(() =>
   valuePropPassed.value ? attrs.value : props.modelValue,
 )
@@ -175,8 +192,8 @@ watch(
   () => [props.doctype, attuale.value, options.data],
   async ([doctype, nome, caricate]) => {
     titolo.value = ''
-    // asked only when the search has loaded and did not bring the value
-    if (!nome || !caricate || caricate.some((o) => o.value === nome)) return
+    // not asked when the search brought the value: its option names it
+    if (!nome || caricate?.some((o) => o.value === nome)) return
     if (!(window.link_title_doctypes || []).includes(doctype)) return
     const trovato = await titoloDi(doctype, nome)
     if (nome === attuale.value) titolo.value = trovato
@@ -216,7 +233,7 @@ function stripHtml(html) {
 }
 
 function reload(val, force = false) {
-  if (!props.doctype) return
+  if (!props.doctype || !aperta.value) return
   if (
     !force &&
     options.data?.length &&
