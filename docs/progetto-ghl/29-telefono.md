@@ -564,6 +564,12 @@ Con il tocco, come in un'app:
   firma) poteva finirci sotto: il dito sulla firma apriva «Vuoi scartare
   questo modulo?». Ora il riquadro che scorre tiene conto della barra
   (`scroll-padding-bottom`), e la firma si fa e si conclude.
+  «In autonomia» apre il foglio dei moduli da mandare: i suoi pulsanti si
+  leggevano «Invia il link | Annulla», al contrario di ogni altro foglio.
+  La fila di frappe-ui mette per primo il pulsante principale e sul telefono
+  si gira, perché finisca sotto il pollice; una fila scritta a mano lo mette
+  già per ultimo, e girata finiva a sinistra. Ora si gira solo quando il
+  principale viene per primo (`telefono.css`).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
