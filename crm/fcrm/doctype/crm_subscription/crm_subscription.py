@@ -15,9 +15,9 @@ class CRMSubscription(Document):
 		abbonamenti.prepara(self)
 
 	def on_trash(self):
-		# its appointments are priced by the price list again
+		# its person's places are priced by the price list again
 		for riga in abbonamenti.ingressi(self.name):
-			abbonamenti._metti(riga["name"], None)
+			abbonamenti._metti(riga["name"], self.lead, None)
 		if self.renewal_of and frappe.db.exists("CRM Subscription", self.renewal_of):
 			frappe.db.set_value(
 				"CRM Subscription", self.renewal_of, "renewed_by", None, update_modified=False

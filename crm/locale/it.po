@@ -27706,8 +27706,8 @@ msgid "The subscription does not comprise this service, or is of somebody else"
 msgstr "L'abbonamento non comprende questo servizio, o è di un'altra persona"
 
 #: crm/fcrm/doctype/crm_appointment/crm_appointment.json
-msgid "The subscription this appointment uses an entry of: set by itself when booked, changed from the appointment's panel"
-msgstr "L'abbonamento di cui questo appuntamento usa un ingresso: si imposta da solo alla prenotazione e si cambia dal pannello dell'appuntamento"
+msgid "The subscription whose entry this person uses: set by itself when booked, changed from the appointment's panel"
+msgstr "L'abbonamento di cui questa persona usa un ingresso: si imposta da solo alla prenotazione e si cambia dal pannello dell'appuntamento"
 
 #: crm/scheduling/abbonamenti.py
 msgid "The suspension ends before it starts"
@@ -43565,3 +43565,35 @@ msgstr "Chi aspetta un posto con l'osteopata, con la dietista o in una lezione a
 #: crm/demo/base.py
 msgid "Emails between the centre and its people, and SMS and WhatsApp messages where they are on: most dealt with, a few waiting for an answer, some for you."
 msgstr "Email tra il centro e le sue persone, e messaggi SMS e WhatsApp dove sono attivi: quasi tutte gestite, qualcuna in attesa di risposta, alcune per te."
+
+#: crm/scheduling/abbonamenti.py
+msgid "One of the {0} people uses their subscription"
+msgstr "Una persona su {0} usa il suo abbonamento"
+
+#: crm/scheduling/abbonamenti.py
+msgid "{0} of the {1} people use their subscription"
+msgstr "{0} persone su {1} usano il loro abbonamento"
+
+#: crm/scheduling/abbonamenti.py
+msgid "Comprised in their subscriptions"
+msgstr "Compreso nei loro abbonamenti"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This person is not booked in this appointment"
+msgstr "Questa persona non è prenotata in questo appuntamento"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "{0} uses an entry of {1}"
+msgstr "{0} usa un ingresso di {1}"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "{0} is not in a subscription"
+msgstr "{0} è fuori da un abbonamento"
+
+#: frontend/src/utils/abbonamenti.js
+msgid "{0} is in a subscription"
+msgstr "{0} è in un abbonamento"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Change the subscription of {0}"
+msgstr "Cambia l'abbonamento di {0}"

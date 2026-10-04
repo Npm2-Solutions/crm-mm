@@ -205,24 +205,34 @@
           </Dropdown>
         </div>
 
-        <!-- the subscription it uses an entry of: in or out by hand -->
+        <!-- each person's subscription whose entry they use: in or out by hand -->
         <div
-          v-if="doc.subscription"
+          v-for="who in doc.subscription?.people || []"
+          :key="who.party"
           class="flex items-center gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
         >
           <span class="lucide-ticket size-4 shrink-0" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate">{{ subscriptionLine }}</span>
+          <span class="min-w-0 flex-1 truncate">{{
+            subscriptionLine(who)
+          }}</span>
           <Dropdown
-            v-if="doc.subscription.can_manage && subscriptionActions.length"
-            :options="subscriptionActions"
+            v-if="
+              doc.subscription.can_manage && subscriptionActions(who).length
+            "
+            :options="subscriptionActions(who)"
           >
             <Button
               size="sm"
               variant="ghost"
               class="touch-target shrink-0"
               :label="__('Change')"
+              :aria-label="
+                manyPeople
+                  ? __('Change the subscription of {0}', [who.participant_name])
+                  : undefined
+              "
               iconRight="chevron-down"
-              :loading="changing"
+              :loading="changing === who.party"
             />
           </Dropdown>
         </div>
@@ -902,6 +912,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { buildEndTimeOptions } from '@/composables/event'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
+import { rigaDelPosto } from '@/utils/abbonamenti'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import {
@@ -1188,39 +1199,38 @@ function moveToCycle(cycle) {
 
 // --- its subscription --------------------------------------------------------
 
-const subscriptionLine = computed(() => {
-  const sub = doc.value?.subscription
-  if (!sub) return ''
-  const mine = (sub.options || []).find((one) => one.name === sub.subscription)
-  if (!sub.subscription) return __('Not in a subscription')
-  return mine ? __('An entry of {0}', [mine.type]) : __('In a subscription')
-})
+// a class: each line says whose place it is
+const manyPeople = computed(
+  () =>
+    (doc.value?.participants || []).filter(
+      (row) => row.party_type === 'CRM Lead',
+    ).length > 1,
+)
 
-const subscriptionActions = computed(() => {
-  const sub = doc.value?.subscription
-  if (!sub) return []
-  const people = new Set((sub.options || []).map((one) => one.lead_name))
-  const actions = (sub.options || [])
-    .filter((one) => one.name !== sub.subscription)
+function subscriptionLine(who) {
+  return rigaDelPosto(who, manyPeople.value, __)
+}
+
+function subscriptionActions(who) {
+  const actions = (who.options || [])
+    .filter((one) => one.name !== who.subscription)
     .map((one) => ({
-      label: __('An entry of {0}', [
-        (people.size > 1 ? `${one.lead_name}, ` : '') + one.type,
-      ]),
-      onClick: () => moveToSubscription(one.name),
+      label: __('An entry of {0}', [one.type]),
+      onClick: () => moveToSubscription(who, one.name),
     }))
-  if (sub.subscription)
+  if (who.subscription)
     actions.push({
       label: __('Out of the subscription'),
-      onClick: () => moveToSubscription(null),
+      onClick: () => moveToSubscription(who, null),
     })
   return actions
-})
+}
 
-function moveToSubscription(subscription) {
-  changing.value = true
+function moveToSubscription(who, subscription) {
+  changing.value = who.party
   createResource({
     url: 'crm.scheduling.abbonamenti.attach',
-    params: { appointment: doc.value.name, subscription },
+    params: { appointment: doc.value.name, subscription, party: who.party },
     auto: true,
     onSuccess: () => {
       changing.value = false

@@ -12,11 +12,13 @@ invoices and the days.
 - **Sold and followed** from the person's page by the desk, the manager, and the
   practitioner for their people (`agenda.abbonamenti`). The type's terms are copied
   on the subscription: a type changed later changes nothing sold.
-- **An appointment uses an entry by itself**: booked for the person, of a comprised
-  service, within the subscription's days and not suspended, while an entry is left
-  in its week or month - after a cycle, which comes first. It costs nothing: the
-  subscription is paid on its own. A new subscription takes the appointments
-  already booked in its days; the appointment's panel moves one in or out by hand.
+- **Each person's place uses an entry by itself**: a person booked into a comprised
+  service, within their subscription's days and not suspended, while an entry is
+  left in its week or month - after a cycle, which comes first. In a class each
+  person uses their own (the participant's ``subscription``), and the ones without
+  one pay. It costs them nothing: the subscription is paid on its own. A new
+  subscription takes the places already booked in its days; the appointment's
+  panel moves one in or out by hand.
 - **Paid at once or by the month**: on each instalment's day an invoice of the
   subscription opens by itself (issued, where the type says so); without a fiscal
   card the instalments are only a schedule.
@@ -103,18 +105,33 @@ def _servizi(doc) -> set[str]:
 # ------------------------------------------------------------------ the entries
 
 
-def _persone(appuntamento, anche_annullati: bool = False) -> list[str]:
+def _righe(appuntamento, anche_annullati: bool = False) -> list:
+	"""The places of the appointment's people, the ones let go too when asked."""
 	return [
-		riga.party
+		riga
 		for riga in appuntamento.get("participants") or []
 		if riga.party_type == "CRM Lead" and riga.party and (anche_annullati or riga.status != "Cancelled")
 	]
 
 
+def _persone(appuntamento, anche_annullati: bool = False) -> list[str]:
+	return [riga.party for riga in _righe(appuntamento, anche_annullati)]
+
+
 def ingressi(nome: str, dal: datetime.date | None = None, al: datetime.date | None = None) -> list[dict]:
 	"""The appointments of a subscription in the order they come, each with what it
-	is for it: done, missed, booked, cancelled - from the subscription's person."""
-	filtri = [["subscription", "=", nome]]
+	is for it: done, missed, booked, cancelled - from its person's place."""
+	stati: dict[str, str] = {}
+	for posto in frappe.get_all(
+		PARTECIPANTE,
+		filters={"parenttype": APPUNTAMENTO, "subscription": nome},
+		fields=["parent", "status"],
+		order_by="idx asc",
+	):
+		stati.setdefault(posto.parent, posto.status)
+	if not stati:
+		return []
+	filtri = [["name", "in", list(stati)]]
 	if dal:
 		filtri.append(["starts_on", ">=", datetime.datetime.combine(dal, datetime.time.min)])
 	if al:
@@ -125,23 +142,23 @@ def ingressi(nome: str, dal: datetime.date | None = None, al: datetime.date | No
 		fields=["name", "starts_on", "ends_on", "status", "service"],
 		order_by="starts_on asc",
 	)
-	if not righe:
-		return []
-	persona = frappe.db.get_value(ABBONAMENTO, nome, "lead")
-	stati = {
-		riga.parent: riga.status
-		for riga in frappe.get_all(
-			PARTECIPANTE,
-			filters={
-				"parenttype": APPUNTAMENTO,
-				"parent": ("in", [r.name for r in righe]),
-				"party_type": "CRM Lead",
-				"party": persona,
-			},
-			fields=["parent", "status"],
-		)
-	}
 	return [{**riga, "state": R.ingresso(riga.status, stati.get(riga.name))} for riga in righe]
+
+
+def coperti(appuntamenti: list[str]) -> set[str]:
+	"""Of ``appuntamenti``, the ones where everybody uses an entry of their
+	subscription: nobody pays for them, the instalments do."""
+	con, senza = set(), set()
+	for posto in frappe.get_all(
+		PARTECIPANTE,
+		filters={"parenttype": APPUNTAMENTO, "parent": ("in", list(appuntamenti) or [""])},
+		fields=["parent", "status", "subscription"],
+	):
+		if posto.subscription:
+			con.add(posto.parent)
+		elif posto.status != "Cancelled":
+			senza.add(posto.parent)
+	return con - senza
 
 
 def usati_nel_periodo(doc, giorno: datetime.date, escluso: str | None = None) -> int | None:
@@ -168,110 +185,121 @@ def entra(doc, giorno: datetime.date, escluso: str | None = None) -> bool:
 	)
 
 
-def _per(persone: list[str], servizio: str, giorno: datetime.date) -> str | None:
-	"""The subscription a new appointment of ``servizio`` on ``giorno`` uses: of its
-	people in their order, the oldest that comprises the service and has an entry
-	left that day."""
-	for persona in persone:
-		for nome in frappe.get_all(
-			ABBONAMENTO,
-			filters={
-				"lead": persona,
-				"status": ("!=", R.CHIUSO),
-				"starts_on": ("<=", giorno),
-				"ends_on": (">=", giorno),
-			},
-			pluck="name",
-			order_by="creation asc",
-		):
-			doc = frappe.get_doc(ABBONAMENTO, nome)
-			if servizio in _servizi(doc) and entra(doc, giorno):
-				return nome
+def _per(persona: str, servizio: str, giorno: datetime.date) -> str | None:
+	"""The subscription ``persona`` uses for a new place in ``servizio`` on ``giorno``:
+	the oldest of theirs that comprises the service and has an entry left that day."""
+	for nome in frappe.get_all(
+		ABBONAMENTO,
+		filters={
+			"lead": persona,
+			"status": ("!=", R.CHIUSO),
+			"starts_on": ("<=", giorno),
+			"ends_on": (">=", giorno),
+		},
+		pluck="name",
+		order_by="creation asc",
+	):
+		doc = frappe.get_doc(ABBONAMENTO, nome)
+		if servizio in _servizi(doc) and entra(doc, giorno):
+			return nome
 	return None
 
 
-def _ci_sta(appuntamento, nome: str) -> bool:
-	"""Whether an appointment still belongs to its subscription: it comprises its
-	service, is of one of its people and lasts that day, not suspended. Closed, it
-	keeps what it had: only nothing new joins it."""
+def _ci_sta(appuntamento, riga, nome: str) -> bool:
+	"""Whether a person's place still belongs to their subscription: it comprises the
+	service, is theirs and lasts that day, not suspended. Closed, it keeps what it
+	had: only nothing new joins it."""
 	if not frappe.db.exists(ABBONAMENTO, nome):
 		return False
 	doc = frappe.get_doc(ABBONAMENTO, nome)
 	giorno = getdate(appuntamento.starts_on) if appuntamento.starts_on else None
 	return bool(
 		appuntamento.service in _servizi(doc)
-		and doc.lead in _persone(appuntamento, anche_annullati=True)
+		and riga.party_type == "CRM Lead"
+		and riga.party == doc.lead
 		and giorno
 		and getdate(doc.starts_on) <= giorno <= getdate(doc.ends_on or ultimo(doc))
 		and not R.sospesa(giorno, _sospensioni(doc))
 	)
 
 
-def _lascia(appuntamento, persona: str | None) -> None:
-	"""Out of its subscription: the price list prices it again."""
-	appuntamento.subscription = None
-	for riga in appuntamento.get("participants") or []:
-		if riga.party_type == "CRM Lead" and riga.party == persona:
-			riga.amount = 0
+def _lascia(riga) -> None:
+	"""A person's place out of their subscription: the price list prices it again."""
+	riga.subscription = None
+	riga.amount = 0
 
 
 def aggancia(appuntamento) -> None:
-	"""`validate` of an appointment, after its cycle and before its price: a new one
-	of a comprised service uses an entry; one that joined a cycle, or whose service,
-	person or day left the subscription, leaves it."""
-	nome = appuntamento.get("subscription")
-	if nome:
-		if appuntamento.get("session_cycle") or not _ci_sta(appuntamento, nome):
-			_lascia(appuntamento, frappe.db.get_value(ABBONAMENTO, nome, "lead"))
-		return
-	if (
-		appuntamento.get("session_cycle")
-		or not appuntamento.is_new()
-		or appuntamento.status == "Cancelled"
-		or not appuntamento.service
-		or not appuntamento.starts_on
-	):
-		return
-	appuntamento.subscription = _per(
-		_persone(appuntamento), appuntamento.service, getdate(appuntamento.starts_on)
-	)
+	"""`validate` of an appointment, after its cycle and before its price: each person
+	newly booked into a comprised service uses an entry of their own subscription; a
+	place in a cycle, or whose service, person or day left the subscription, leaves
+	it."""
+	ciclo = appuntamento.get("session_cycle")
+	giorno = getdate(appuntamento.starts_on) if appuntamento.starts_on else None
+	for riga in _righe(appuntamento, anche_annullati=True):
+		nome = riga.get("subscription")
+		if nome:
+			if ciclo or not _ci_sta(appuntamento, riga, nome):
+				_lascia(riga)
+			continue
+		if (
+			ciclo
+			or riga.status == "Cancelled"
+			or appuntamento.status == "Cancelled"
+			or not appuntamento.service
+			or not giorno
+			# only a new booking takes an entry by itself: a place booked before
+			# moves in by hand
+			or not (appuntamento.is_new() or riga.is_new())
+		):
+			continue
+		riga.subscription = _per(riga.party, appuntamento.service, giorno)
 
 
 def prezzo(appuntamento) -> None:
 	"""`validate` of an appointment, after the price list: an entry of a subscription
-	costs the person nothing - the subscription is paid on its own."""
-	nome = appuntamento.get("subscription")
-	if not nome:
-		return
-	riga = frappe.db.get_value(ABBONAMENTO, nome, ["lead", "subscription_type"], as_dict=True)
-	if not riga:
-		return
+	costs its person nothing - the subscription is paid on its own."""
 	attivi = [r for r in appuntamento.get("participants") or [] if r.status != "Cancelled"]
-	suoi = [r for r in attivi if r.party_type == "CRM Lead" and r.party == riga.lead]
-	if not suoi:
-		# the person let their place go: the others pay as before
+	coperti = [r for r in attivi if r.party_type == "CRM Lead" and r.get("subscription")]
+	if not coperti:
+		# whoever had one let their place go: the others pay as before
 		return
-	for r in suoi:
+	for r in coperti:
 		r.amount = 0
 	if cint(appuntamento.per_participant):
 		appuntamento.total_amount = sum(flt(r.amount) for r in attivi)
 	elif len(attivi) <= 1:
 		appuntamento.unit_price = appuntamento.total_amount = 0
 	else:
-		# one price for a group: the subscription's person does not set it
+		# one price for a group: who has a subscription does not set it
 		return
-	appuntamento.price_source = _("Comprised in the subscription {0}").format(riga.subscription_type)
+	if len(coperti) < len(attivi):
+		appuntamento.price_source = (
+			_("One of the {0} people uses their subscription").format(len(attivi))
+			if len(coperti) == 1
+			else _("{0} of the {1} people use their subscription").format(len(coperti), len(attivi))
+		)
+		return
+	tipi = {frappe.db.get_value(ABBONAMENTO, r.subscription, "subscription_type") for r in coperti}
+	appuntamento.price_source = (
+		_("Comprised in the subscription {0}").format(tipi.pop())
+		if len(tipi) == 1
+		else _("Comprised in their subscriptions")
+	)
 
 
-def _metti(nome: str, abbonamento: str | None) -> None:
-	"""An appointment into a subscription or out of it without saving it again: only
-	the subscription changes, and the price with it."""
+def _metti(nome: str, persona: str, abbonamento: str | None) -> None:
+	"""A person's place into a subscription or out of it without saving the
+	appointment again: only the subscription changes, and the price with it."""
 	from crm.scheduling import cicli
 
 	doc = frappe.get_doc(APPUNTAMENTO, nome)
-	if doc.subscription and doc.subscription != abbonamento:
-		_lascia(doc, frappe.db.get_value(ABBONAMENTO, doc.subscription, "lead"))
-	doc.subscription = abbonamento
+	riga = next((r for r in _righe(doc, anche_annullati=True) if r.party == persona), None)
+	if not riga:
+		return
+	if riga.subscription and riga.subscription != abbonamento:
+		_lascia(riga)
+	riga.subscription = abbonamento
 	pricing.apply_to(doc)
 	cicli.prezzo(doc)
 	prezzo(doc)
@@ -279,7 +307,6 @@ def _metti(nome: str, abbonamento: str | None) -> None:
 		APPUNTAMENTO,
 		nome,
 		{
-			"subscription": abbonamento,
 			"unit_price": doc.unit_price,
 			"total_amount": doc.total_amount,
 			"currency": doc.currency,
@@ -288,14 +315,19 @@ def _metti(nome: str, abbonamento: str | None) -> None:
 		},
 		update_modified=False,
 	)
-	for riga in doc.participants:
-		frappe.db.set_value(PARTECIPANTE, riga.name, "amount", riga.amount, update_modified=False)
+	for r in doc.participants:
+		frappe.db.set_value(
+			PARTECIPANTE,
+			r.name,
+			{"amount": r.amount, "subscription": r.get("subscription")},
+			update_modified=False,
+		)
 
 
 def raccogli(doc) -> int:
-	"""A new subscription takes its person's appointments of its services already
-	booked in its days - not in a cycle nor in another subscription - in the order
-	they come, while their week or month has an entry left."""
+	"""A new subscription takes its person's places in its services already booked in
+	its days - not in a cycle nor in another subscription - in the order they come,
+	while their week or month has an entry left."""
 	prenotati = frappe.get_all(
 		PARTECIPANTE,
 		filters={
@@ -303,6 +335,7 @@ def raccogli(doc) -> int:
 			"party_type": "CRM Lead",
 			"party": doc.lead,
 			"status": ("!=", "Cancelled"),
+			"subscription": ("is", "not set"),
 		},
 		pluck="parent",
 	)
@@ -317,7 +350,6 @@ def raccogli(doc) -> int:
 			["service", "in", list(servizi)],
 			["status", "!=", "Cancelled"],
 			["session_cycle", "is", "not set"],
-			["subscription", "is", "not set"],
 			["starts_on", ">=", datetime.datetime.combine(getdate(doc.starts_on), datetime.time.min)],
 			["starts_on", "<=", datetime.datetime.combine(getdate(doc.ends_on), datetime.time.max)],
 		],
@@ -325,20 +357,20 @@ def raccogli(doc) -> int:
 		order_by="starts_on asc",
 	):
 		if entra(doc, getdate(riga.starts_on)):
-			_metti(riga.name, doc.name)
+			_metti(riga.name, doc.lead, doc.name)
 			presi += 1
 	return presi
 
 
 def _rivedi(doc) -> None:
-	"""After a suspension or the days changed: the appointments now out of its days
-	leave it."""
+	"""After a suspension or the days changed: the places now out of its days leave
+	it."""
 	ultimo_giorno = getdate(doc.ends_on)
 	sospensioni = _sospensioni(doc)
 	for s in ingressi(doc.name):
 		giorno = getdate(s["starts_on"])
 		if giorno < getdate(doc.starts_on) or giorno > ultimo_giorno or R.sospesa(giorno, sospensioni):
-			_metti(s["name"], None)
+			_metti(s["name"], doc.lead, None)
 
 
 # ------------------------------------------------------------------ the instalments
@@ -702,49 +734,55 @@ def della_persona(persona: str) -> list[dict]:
 
 
 def del_appuntamento(appuntamento) -> dict | None:
-	"""For the appointment's panel: the subscription it uses an entry of, and the
-	ones of its people and service it could."""
+	"""For the appointment's panel: each person's place with the subscription whose
+	entry it uses, and the ones of theirs that comprise the service and could."""
 	if not livelli.puo("agenda.vedi") or not appuntamento.service or not appuntamento.starts_on:
 		return None
-	persone = _persone(appuntamento, anche_annullati=True)
-	if not persone:
+	righe = _righe(appuntamento, anche_annullati=True)
+	if not righe:
 		return None
 	giorno = getdate(appuntamento.starts_on)
-	opzioni = []
-	for nome in frappe.get_list(
-		ABBONAMENTO,
-		filters={
-			"lead": ("in", persone),
-			"status": ("!=", R.CHIUSO),
-			"starts_on": ("<=", giorno),
-			"ends_on": (">=", giorno),
-		},
-		pluck="name",
-		order_by="creation asc",
-	):
-		doc = frappe.get_doc(ABBONAMENTO, nome)
-		if appuntamento.service not in _servizi(doc):
-			continue
-		suo = nome == appuntamento.subscription
-		if not suo and not entra(doc, giorno, escluso=appuntamento.name):
-			continue
-		opzioni.append(
-			{
-				"name": nome,
-				"type": doc.subscription_type,
-				"lead_name": doc.lead_name,
-				"entries": doc.entries,
-				"entries_count": cint(doc.entries_count),
-				"used": usati_nel_periodo(doc, giorno),
-			}
-		)
-	if not opzioni and not appuntamento.subscription:
+	persone = []
+	for riga in righe:
+		opzioni = []
+		for nome in frappe.get_list(
+			ABBONAMENTO,
+			filters={
+				"lead": riga.party,
+				"status": ("!=", R.CHIUSO),
+				"starts_on": ("<=", giorno),
+				"ends_on": (">=", giorno),
+			},
+			pluck="name",
+			order_by="creation asc",
+		):
+			doc = frappe.get_doc(ABBONAMENTO, nome)
+			if appuntamento.service not in _servizi(doc):
+				continue
+			suo = nome == riga.subscription
+			if not suo and (riga.status == "Cancelled" or not entra(doc, giorno, escluso=appuntamento.name)):
+				continue
+			opzioni.append(
+				{
+					"name": nome,
+					"type": doc.subscription_type,
+					"entries": doc.entries,
+					"entries_count": cint(doc.entries_count),
+					"used": usati_nel_periodo(doc, giorno),
+				}
+			)
+		if opzioni or riga.subscription:
+			persone.append(
+				{
+					"party": riga.party,
+					"participant_name": riga.participant_name or riga.party,
+					"subscription": riga.subscription,
+					"options": opzioni,
+				}
+			)
+	if not persone:
 		return None
-	return {
-		"subscription": appuntamento.subscription,
-		"options": opzioni,
-		"can_manage": livelli.puo("agenda.abbonamenti"),
-	}
+	return {"people": persone, "can_manage": livelli.puo("agenda.abbonamenti")}
 
 
 # ------------------------------------------------------------------ writing
@@ -919,21 +957,28 @@ def invoice_instalment(name: str, row: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def attach(appointment: str, subscription: str | None = None) -> dict:
-	"""An appointment into a subscription, or out of it (``subscription`` empty), by
-	hand."""
+def attach(appointment: str, subscription: str | None = None, party: str | None = None) -> dict:
+	"""A person's place into one of their subscriptions, or out of it
+	(``subscription`` empty), by hand. ``party`` is whose place: the subscription's
+	person when one is given, else the only person booked."""
 	_gestisce()
 	appuntamento = frappe.get_doc(APPUNTAMENTO, appointment)
 	appuntamento.check_permission("write")
-	if subscription and subscription != appuntamento.subscription:
-		doc = _abbonamento(subscription)
+	doc = _abbonamento(subscription) if subscription else None
+	righe = _righe(appuntamento, anche_annullati=True)
+	if not party:
+		party = doc.lead if doc else (righe[0].party if len(righe) == 1 else None)
+	riga = next((r for r in righe if r.party == party), None)
+	if not riga:
+		frappe.throw(_("This person is not booked in this appointment"))
+	if doc and subscription != riga.subscription:
 		if appuntamento.get("session_cycle"):
 			frappe.throw(_("This appointment is a session of a cycle"))
-		if appuntamento.service not in _servizi(doc) or doc.lead not in _persone(appuntamento):
+		if appuntamento.service not in _servizi(doc) or doc.lead != riga.party or riga.status == "Cancelled":
 			frappe.throw(_("The subscription does not comprise this service, or is of somebody else"))
 		if not entra(doc, getdate(appuntamento.starts_on), escluso=appuntamento.name):
 			frappe.throw(_("No entry is left that day"))
-	_metti(appointment, subscription or None)
+	_metti(appointment, riga.party, subscription or None)
 	return del_appuntamento(frappe.get_doc(APPUNTAMENTO, appointment)) or {}
 
 
