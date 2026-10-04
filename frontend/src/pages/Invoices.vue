@@ -5,7 +5,10 @@
 <template>
   <LayoutHeader>
     <template #left-header>
+      <!-- the page's name stays whole: at 360px it shrank with the company's
+           to «Fatt…» -->
       <Breadcrumbs
+        class="shrink-0"
         :items="[{ label: __('Invoices'), route: { name: 'Invoices' } }]"
       />
       <!-- the company's name gives way on a phone, it does not run under the
