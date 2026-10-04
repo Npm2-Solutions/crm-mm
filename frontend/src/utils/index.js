@@ -247,7 +247,8 @@ export function taskStatusOptions(action, data) {
   return options.map((status) => {
     return {
       icon: () => h(TaskStatusIcon, { status }),
-      label: status,
+      // the stored value is English; what the menu says is the reader's
+      label: __(status),
       onClick: () => action && action(status, data),
     }
   })
@@ -266,7 +267,7 @@ export function taskPriorityOptions(action, data) {
 
   return options.map((priority) => {
     return {
-      label: priority,
+      label: __(priority),
       icon: () => h(TaskPriorityIcon, { priority }),
       onClick: () => action && action(priority, data),
     }
