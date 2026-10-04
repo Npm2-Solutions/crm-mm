@@ -43351,3 +43351,11 @@ msgstr "Simboli"
 msgctxt "Emoji group"
 msgid "Flags"
 msgstr "Bandiere"
+
+#: frontend/src/pages/MobileLead.vue
+msgid "Show the card"
+msgstr "Mostra la scheda della persona"
+
+#: frontend/src/pages/MobileLead.vue
+msgid "Hide the card"
+msgstr "Nascondi la scheda della persona"

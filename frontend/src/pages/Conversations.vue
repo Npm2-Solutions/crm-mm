@@ -154,9 +154,11 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
+import { usersStore } from '@/stores/users'
 import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import { readReceipts } from '@/composables/conversationState'
 import { useRitorno } from '@/composables/ritorno'
+import { useChatAperta } from '@/composables/chatAperta'
 import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
 import { alToccoDellaScheda } from '@/utils/schedaAttiva'
@@ -176,6 +178,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 const { $socket } = globalStore()
+const { puo } = usersStore()
 
 // Which conversation is open lives in the address, so the browser's back button
 // works and a conversation can be linked to — without the page being rebuilt
@@ -320,6 +323,16 @@ const nonSiApre = computed(() =>
   !leggibile.value && person.error
     ? schedaChiusa(person.error, 'CRM Lead')
     : null,
+)
+
+// a chat open on a phone is the screen, as in WhatsApp: the bar at the bottom
+// steps aside for its box to write in (composables/chatAperta.js)
+useChatAperta(
+  () =>
+    isMobileView.value &&
+    Boolean(chosen.value) &&
+    leggibile.value &&
+    puo('conversazioni.usa'),
 )
 
 // On a phone the chat takes the list's place: opening one is a step forward,

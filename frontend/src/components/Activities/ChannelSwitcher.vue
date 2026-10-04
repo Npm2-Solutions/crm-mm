@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The ways of writing: the tabs along the top of the composer.
 
   It used to live inside the collapsed bar, which meant it disappeared the
@@ -15,7 +18,14 @@
   believing it is only a note.
 -->
 <template>
-  <div class="flex items-center gap-0.5 px-1.5 pt-1.5" role="tablist">
+  <!-- data-via-scrivendo: while somebody writes in a chat on a phone the
+       channel is chosen, and the row gives its room to the messages
+       (telefono.css, «11»); the box keeps the channel's colour -->
+  <div
+    class="flex items-center gap-0.5 px-1.5 pt-1.5"
+    role="tablist"
+    data-via-scrivendo
+  >
     <Tooltip v-for="option in ways" :key="option.key" :text="__(option.hint)">
       <!-- where the icons alone carry it, each is a 40px square: as 32px
            pills 2px apart a thumb picked the channel beside -->
