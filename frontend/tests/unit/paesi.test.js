@@ -54,4 +54,11 @@ describe('paesiConIlScelto', () => {
     })
     expect(conVecchio.length).toBe(251)
   })
+
+  it('gives each caller its own copy of the list kept per language', () => {
+    paesiConIlScelto('YU', 'it')
+    const dopo = paesiConIlScelto('IT', 'it')
+    expect(dopo.length).toBe(250)
+    expect(dopo.some((p) => p.value === 'YU')).toBe(false)
+  })
 })

@@ -29,12 +29,21 @@ const NON_PAESI = new Set([
 
 const LETTERE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
+// one list per language: 676 codes asked of Intl each time a field drew it
+const elenchi = new Map()
+
 /**
  * Every country, `{ label, value }` sorted by its name in the reader's
  * language. An old code that became another («SU», «YU») is left out: the
- * country is listed once, by its code of today.
+ * country is listed once, by its code of today. A copy, the caller's to change.
  */
 export function tuttiIPaesi(lingua = 'it') {
+  const chiave = lingua || 'it'
+  if (!elenchi.has(chiave)) elenchi.set(chiave, elencoDeiPaesi(chiave))
+  return [...elenchi.get(chiave)]
+}
+
+function elencoDeiPaesi(lingua) {
   let nomi
   try {
     nomi = new Intl.DisplayNames([lingua || 'it'], {

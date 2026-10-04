@@ -532,6 +532,12 @@ const canWrite = computed(() => permissions?.data?.permissions?.write !== 0)
 
 const doc = computed(() => document.doc || {})
 
+// the users a User field may name, once: every field took the list again at
+// every change of the record
+const nomiUtenti = computed(() =>
+  users.data?.crmUsers?.map((user) => user.name),
+)
+
 const _sections = computed(() => {
   if (!props.sections?.length) return []
   let editButtonAdded = false
@@ -572,7 +578,7 @@ function parsedField(field) {
   if (field.fieldtype === 'Link' && field.options === 'User') {
     field.fieldtype = 'User'
     field.link_filters = JSON.stringify({
-      name: ['in', users.data?.crmUsers?.map((user) => user.name)],
+      name: ['in', nomiUtenti.value],
       ignore_user_type: 1,
       ...(parseLinkFilters(field.link_filters) || {}),
     })
