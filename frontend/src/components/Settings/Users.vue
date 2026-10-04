@@ -94,6 +94,7 @@
         <Select
           v-model="currentLevel"
           class="shrink-0"
+          :aria-label="__('Levels')"
           :options="levelOptions"
         />
       </div>
@@ -149,6 +150,7 @@
                 :options="getMoreOptions(user)"
                 :button="{
                   icon: 'more-horizontal',
+                  'aria-label': __('Options'),
                   onblur: (e) => {
                     e.stopPropagation()
                     confirmRemove = false

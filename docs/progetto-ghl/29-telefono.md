@@ -742,6 +742,7 @@ nessun browser di prova ha la sua tastiera.
 | `FieldLayout/Field.vue`, `SidePanelLayout.vue` + `composables/nomeAlControllo.js` | Le parole di un campo gli danno il nome, nelle finestre («Nuova persona», «Nuova trattativa») e nel pannello della scheda: un menu a tendina («Stato», «Pipeline», «N. di dipendenti») si leggeva senza nome, una data «Scegli la data». Un pulsante o un menu si legge con quello che mostra («Responsabile della trattativa, Sarah Connor»), uno vuoto una volta sola, e l'avatar accanto al nome non si legge più |
 | `CommentBox.vue`, `EmailEditor.vue` | Il riquadro dove si scrive una nota o un'email si chiama come il suo invito («Scrivi un'email…»): il segnaposto si disegna, non si legge |
 | `Activities/ChatBubble.vue`, `HappenedCard.vue` | Quello che le spunte di un messaggio dicono passandoci sopra («Letto», «Consegnato al telefono»), e «Inviato dal telefono», ora si legge anche con VoiceOver e TalkBack: un telefono non ha il passaggio del mouse. Le icone accanto alle parole non si leggono come «immagine» |
+| Impostazioni: Generale, Dashboard, Agenda e promemoria, Utenti, Modelli email, Pagina e regole, La tua email | Ogni campo ha un nome (lo controlla l'albero di accessibilità di Chrome su tutte le 53 pagine): i menu («Ordine delle attività», «Vista predefinita», i promemoria «Tipo», «Quanto prima», «Unità»), il filtro «Livelli», il menu «Opzioni» di un utente o di un modello, i numeri delle regole della prenotazione, la firma |
 
 ## Non incluso
 

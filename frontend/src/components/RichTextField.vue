@@ -17,7 +17,11 @@
         class="w-full overflow-x-auto rounded-t-lg border border-b-0 border-outline-gray-2 p-1"
       />
       <EditorBubbleMenu v-if="bubbleMenu" :items="bubbleToolbar" />
-      <EditorContent :class="editorClass" />
+      <!-- the placeholder is drawn, not read: the box's name is its label -->
+      <EditorContent
+        :class="editorClass"
+        :aria-label="label || placeholder || undefined"
+      />
     </Editor>
   </div>
 </template>
@@ -41,6 +45,8 @@ import { ref, watch } from 'vue'
 const props = defineProps({
   content: { type: String, default: '' },
   placeholder: { type: String, default: '' },
+  // what a screen reader calls the box, when its label is not tied to it
+  label: { type: String, default: '' },
   editable: { type: Boolean, default: true },
   editorClass: { type: String, default: '' },
   fixedMenu: { type: Boolean, default: false },

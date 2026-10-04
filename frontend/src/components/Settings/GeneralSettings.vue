@@ -111,6 +111,7 @@
           <FormControl
             v-model="settings.doc.crm_timeline_timestamp_format"
             type="select"
+            :aria-label="__('Timeline timestamp format')"
             class="w-40"
             :options="timestampFormatOptions"
             :placeholder="__('Relative')"
@@ -136,6 +137,7 @@
           <FormControl
             v-model="settings.doc.crm_timeline_sort_order"
             type="select"
+            :aria-label="__('Timeline sort order')"
             class="w-40"
             :options="sortOrderOptions"
             :placeholder="__('Oldest First')"

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex items-center">
     <Button
@@ -19,6 +22,7 @@
       placement="right"
       :button="{
         icon: 'chevron-down',
+        'aria-label': __('More options'),
         variant: $attrs.variant,
         size: $attrs.size,
         class:

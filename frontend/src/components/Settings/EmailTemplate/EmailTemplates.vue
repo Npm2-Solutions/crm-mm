@@ -128,6 +128,7 @@
                 placement="right"
                 :button="{
                   icon: 'more-horizontal',
+                  'aria-label': __('Options'),
                   variant: 'ghost',
                   onblur: (e) => {
                     e.stopPropagation()
