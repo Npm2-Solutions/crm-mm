@@ -440,7 +440,7 @@ import { usersStore } from '@/stores/users'
 
 // the front desk issues invoices; configuring invoicing is the manager's
 const { puo } = usersStore()
-const { apriFattura, nuovaFattura } = useFattura()
+const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 
 const tab = ref('todo')
 const company = ref('')
@@ -529,26 +529,7 @@ const allAppointments = ref(false)
 async function fatturaIncontro(incontro) {
   emettendo.value = incontro.name
   try {
-    const proposta = await call(
-      'crm.invoicing.api.appointment_invoice_proposal',
-      { appointment: incontro.name },
-    )
-    if (!proposta.items.every((riga) => riga.service_provider)) {
-      // the agenda cannot tell who performed it: the dialog opens with what it
-      // knows and asks only that, instead of an error with nowhere to go
-      nuovaFattura(null, { alCambio: ricarica, bozza: proposta })
-      return
-    }
-    const nome = await call('crm.invoicing.api.issue_from_appointment', {
-      appointment: incontro.name,
-    })
-    ricarica()
-    // the draft the agenda filled in, to check and issue here
-    apriFattura(nome, { alCambio: ricarica })
-  } catch (errore) {
-    // The commonest one is a service with no fiscal card, and saying so is more
-    // use than a generic failure: it names the thing to go and configure.
-    toast.error(errore.messages?.[0] || __('Could not open the invoice'))
+    await fatturaDellIncontro(incontro.name, { alCambio: ricarica })
   } finally {
     emettendo.value = ''
   }
