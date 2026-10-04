@@ -728,6 +728,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/AssignTo.vue`, `AssignToBody.vue`, `MultipleAvatar.vue` | «Assegna a» è un foglio dal basso (si salva chiudendolo, come la scheda sul computer); nella testata solo la faccia di chi segue la persona, così il suo nome resta intero |
 | 72 componenti e pagine (`:aria-label`) | Ogni pulsante fatto solo di un'icona dice cosa fa: chiudere, rimuovere, le opzioni di una riga, il giorno o il mese prima e dopo, il microfono di una chiamata. VoiceOver e TalkBack leggevano «pulsante» |
 | `frontend/src/pages/SocialPlanner.vue` (telefono) | I post del mese sono righe da 44px, non le etichette da 26px della griglia |
+| `frontend/src/telefono.css` (2: `[data-slot='tab-button']`), `components/Mobile/ElencoCose.vue` | Gli interruttori a segmenti («Tutte · Da leggere», «Mie · Di tutti», «Appuntamento · Evento», le pagine sorelle) alti 36px e non 26; una cosa da fare si apre toccando tutta la sua riga, non solo la riga di parole |
 | `frontend/src/components/PersonHeader.vue` | Sotto il nome, «Paziente dal…» e «Ultima visita…» vanno a capo senza che la seconda riga cominci con «·» |
 | `frontend/src/components/RelatedPeopleSection.vue` | Collegare una persona: «Già in DottorCloud» e «Una persona nuova» le due metà di un interruttore solo, non due pulsanti uno sotto l'altro |
 

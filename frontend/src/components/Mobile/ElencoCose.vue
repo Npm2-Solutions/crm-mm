@@ -40,9 +40,11 @@
             class="mt-0.5 size-6 shrink-0 rounded-full border-2 border-outline-gray-2"
             aria-hidden="true"
           />
+          <!-- the whole height of the row opens it: a task with no day nor
+               person was a line of words 16px tall to hit -->
           <button
             type="button"
-            class="flex min-w-0 flex-1 flex-col text-left"
+            class="-my-2.5 flex min-w-0 flex-1 flex-col py-2.5 text-left"
             @click="emit('apri', cosa.name)"
           >
             <span class="text-base text-ink-gray-9">{{ cosa.title }}</span>
