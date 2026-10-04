@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex flex-col flex-1 text-base">
     <div v-if="label" class="mb-1.5 text-sm text-ink-gray-5">
@@ -505,6 +508,7 @@ import { flt } from '@/utils/numberFormat.js'
 import { usersStore } from '@/stores/users'
 import { getMeta } from '@/stores/meta'
 import { parseLinkFilters } from '@/utils/fieldTransforms'
+import { adessoDelCentro, oggiDelCentro, oraDelCentro } from '@/utils/scheduler'
 import { createDocument } from '@/composables/document'
 import { isMobileView } from '@/composables/settings'
 import {
@@ -779,14 +783,15 @@ function getDefaultValue(defaultValue, fieldtype) {
   } else if (fieldtype === 'Int') {
     return parseInt(defaultValue)
   } else if (defaultValue === 'Today' && fieldtype === 'Date') {
-    return dayjs().format('YYYY-MM-DD')
+    // the centre's today and now, not the phone's own zone
+    return oggiDelCentro()
   } else if (
     ['Now', 'now'].includes(defaultValue) &&
     fieldtype === 'Datetime'
   ) {
-    return dayjs().format('YYYY-MM-DD HH:mm:ss')
+    return oraDelCentro(adessoDelCentro())
   } else if (['Now', 'now'].includes(defaultValue) && fieldtype === 'Time') {
-    return dayjs().format('HH:mm:ss')
+    return oraDelCentro(adessoDelCentro()).slice(11)
   } else if (fieldtype === 'Date') {
     return dayjs(defaultValue).format('YYYY-MM-DD')
   } else if (fieldtype === 'Datetime') {

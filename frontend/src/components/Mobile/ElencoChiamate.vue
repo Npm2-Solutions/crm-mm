@@ -71,7 +71,9 @@
             </span>
           </span>
           <span class="shrink-0 text-sm text-ink-gray-5">
-            {{ quandoChiamata(c.when, new Date(), lingua, __('yesterday')) }}
+            {{
+              quandoChiamata(c.when, adessoDelCentro(), lingua, __('yesterday'))
+            }}
           </span>
         </button>
         <a
@@ -114,6 +116,7 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { durataDellaChiamata, versoDellaChiamata } from '@/utils/sulTelefono'
 import { quandoChiamata } from '@/utils/telefono'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { LoadingIndicator, TextInput } from 'frappe-ui'
 import { computed } from 'vue'
 
