@@ -24,6 +24,10 @@ VOLATILI = {
 }
 
 
+#: Where the centre says which pipelines are the new clients' and the quotes'.
+IMPOSTAZIONI_DELLE_PIPELINE = ("CRM Client Settings", "CRM Quote Settings")
+
+
 def _conta() -> dict[str, int]:
 	conti = {}
 	for tabella in frappe.db.get_tables(cached=False):
@@ -68,6 +72,19 @@ class TestDatiDiProva(IntegrationTestCase):
 			from crm.demo.togli import togli
 
 			togli()
+		# the product's own setup the demo makes where the centre has none stays when it
+		# goes: the pipelines of new clients and of quotes, made first so they count as
+		# the site's - and given back as they were when the tests are done
+		from crm.clienti import pipeline as nuovi_clienti
+		from crm.preventivi import pipeline as preventivi
+
+		cls.pipeline_di_prima = set(frappe.get_all("CRM Pipeline", pluck="name"))
+		cls.impostazioni_di_prima = {
+			doctype: frappe.db.sql("select field, value from `tabSingles` where doctype = %s", doctype)
+			for doctype in IMPOSTAZIONI_DELLE_PIPELINE
+		}
+		nuovi_clienti.crea()
+		preventivi.crea()
 		frappe.db.commit()
 		cls.prima = _conta()
 		cls.esito = api.crea(utente="Administrator", scala=0.08)
@@ -79,6 +96,18 @@ class TestDatiDiProva(IntegrationTestCase):
 			from crm.demo.togli import togli
 
 			togli()
+		# the pipelines these tests made, gone; the settings as they were
+		for pipeline in set(frappe.get_all("CRM Pipeline", pluck="name")) - cls.pipeline_di_prima:
+			frappe.db.delete("CRM Deal Status", {"pipeline": pipeline})
+			frappe.db.delete("CRM Pipeline", {"name": pipeline})
+		for doctype, righe in cls.impostazioni_di_prima.items():
+			frappe.db.delete("Singles", {"doctype": doctype})
+			for campo, valore in righe:
+				frappe.db.sql(
+					"insert into `tabSingles` (doctype, field, value) values (%s, %s, %s)",
+					(doctype, campo, valore),
+				)
+			frappe.clear_document_cache(doctype, doctype)
 		frappe.db.commit()
 		super().tearDownClass()
 

@@ -11,12 +11,14 @@ somebody loads. Taking them away is one request (`crm.demo.togli`): a few second
 
 from __future__ import annotations
 
+import random
+
 import frappe
 from frappe import _
 from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.demo import guardie, registro
-from crm.demo.contesto import Contesto
+from crm.demo.contesto import SEME, Contesto
 from crm.demo.modo import in_prova
 
 CAPACITA = "dati_prova.gestisci"
@@ -151,6 +153,11 @@ def crea(utente: str | None = None, scala: float = 1.0) -> dict:
 	utente = utente or frappe.session.user
 	_pronto_a_scrivere(utente)
 	parti = registro.da_fare()
+	if frappe.db.get_default(registro.SERIE) is None:
+		# the counters before the demo's first record: taking it away puts them back
+		frappe.db.set_default(
+			registro.SERIE, frappe.as_json(dict(frappe.db.sql("select name, current from `tabSeries`")))
+		)
 	contesto = Contesto(utente=utente, scala=scala)
 	fatte, fallite = [], []
 	try:
@@ -162,6 +169,8 @@ def crea(utente: str | None = None, scala: float = 1.0) -> dict:
 				_segna_il_lavoro(part=etichetta, step=testo, done=indice, total=len(parti))
 
 			contesto.avanzamento = avanzamento
+			# each part draws its own chances: the same part is the same whichever came before
+			contesto.rng = random.Random(f"{SEME}:{parte.chiave}")
 			avanzamento("")
 			try:
 				with in_prova(parte.chiave):
