@@ -99,6 +99,24 @@ export function fine(inizio, mesi) {
   return giorno.toISOString().slice(0, 10)
 }
 
+// a person's place in an appointment, for its panel: "An entry of Pilates 8"; in a
+// class, whose place it is: "Anna uses an entry of Pilates 8"
+export function rigaDelPosto(posto, inUnaLezione, t = (s, a) => format(s, a)) {
+  if (!posto) return ''
+  const suo = (posto.options || []).find(
+    (uno) => uno.name === posto.subscription,
+  )
+  if (!inUnaLezione) {
+    if (!posto.subscription) return t('Not in a subscription')
+    return suo ? t('An entry of {0}', [suo.type]) : t('In a subscription')
+  }
+  const nome = posto.participant_name
+  if (!posto.subscription) return t('{0} is not in a subscription', [nome])
+  return suo
+    ? t('{0} uses an entry of {1}', [nome, suo.type])
+    : t('{0} is in a subscription', [nome])
+}
+
 // what the sale form says before the server does: the first thing to put right
 export function errore(modulo, t = (s, a) => format(s, a)) {
   if (!modulo.subscription_type) return t('Choose the type of subscription')

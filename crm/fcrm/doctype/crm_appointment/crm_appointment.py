@@ -56,7 +56,6 @@ class CRMAppointment(Document):
 		staff: DF.Table[CRMAppointmentStaff]
 		starts_on: DF.Datetime
 		status: DF.Literal["Scheduled", "Confirmed", "Completed", "Cancelled", "No Show"]
-		subscription: DF.Link | None
 		title: DF.Data | None
 		total_amount: DF.Currency | None
 		unit_price: DF.Currency | None
@@ -75,7 +74,8 @@ class CRMAppointment(Document):
 		self.set_title()
 		self.check_conflicts()
 		# a session of a cycle joins it before the price, and costs its share after;
-		# what no cycle takes uses an entry of a subscription, and costs nothing
+		# what no cycle takes uses an entry of each person's subscription, and costs
+		# them nothing
 		cicli.aggancia(self)
 		abbonamenti.aggancia(self)
 		pricing.apply_to(self)

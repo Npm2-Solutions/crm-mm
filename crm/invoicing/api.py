@@ -276,8 +276,9 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	"""Open a draft invoice from an appointment.
 
 	The agenda proposes: the service from the appointment's service, the provider
-	from whoever is on the staff list, the client from the first participant. All
-	three are proposals - **the provider still has to be confirmed**, because in a
+	from whoever is on the staff list, the client from the first participant who
+	pays (a place of a subscription is paid with its instalments). All three are
+	proposals - **the provider still has to be confirmed**, because in a
 	shared calendar a wrong assignment produces no error, it produces rejected rows
 	in January.
 
@@ -327,7 +328,8 @@ def appointment_invoice_proposal(appointment: str) -> dict:
 def _fattura_da_appuntamento(appointment: str, billable_service: str = "", service_provider: str = ""):
 	"""The draft an appointment proposes, in memory: the service's fiscal card, the
 	professional of whoever is on its staff (or the card's), the first participant
-	as the client - or whoever pays for them. The professional may be missing."""
+	who pays as the client - or whoever pays for them. The professional may be
+	missing."""
 	incontro = frappe.get_doc("CRM Appointment", appointment)
 	incontro.check_permission("read")
 	if (
@@ -335,7 +337,10 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 		and frappe.db.get_value("CRM Session Cycle", incontro.session_cycle, "billing") == CICLO_INTERO
 	):
 		frappe.throw(_("This session is paid with its cycle: invoice the cycle"))
-	if incontro.get("subscription"):
+	paganti = [
+		r for r in incontro.participants or [] if r.status != "Cancelled" and not r.get("subscription")
+	]
+	if not paganti and any(r.get("subscription") for r in incontro.participants or []):
 		frappe.throw(_("This appointment is comprised in a subscription: its instalments are invoiced"))
 
 	if not billable_service and incontro.service:
@@ -359,7 +364,8 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 	fattura = frappe.new_doc("CRM Invoice")
 	fattura.appointment = appointment
 	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
-	partecipante = (incontro.participants or [None])[0]
+	# the first who pays: a place of a subscription is paid with its instalments
+	partecipante = (paganti or incontro.participants or [None])[0]
 	if partecipante and partecipante.party_type and partecipante.party:
 		fattura.party_type = partecipante.party_type
 		fattura.party = partecipante.party
@@ -831,16 +837,18 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			"unit_price",
 			"status",
 			"session_cycle",
-			"subscription",
 		],
 		order_by="starts_on desc",
 		limit_page_length=int(limit),
 	)
+	# where everybody uses an entry of their subscription, the instalments pay for it
+	from crm.scheduling import abbonamenti
+
+	coperti = abbonamenti.coperti([i.name for i in incontri])
 	return [
 		dict(i)
 		for i in incontri
 		if i.name not in fatturati
 		and not (i.session_cycle and i.session_cycle in interi)
-		# an entry of a subscription is paid with its instalments
-		and not i.subscription
+		and i.name not in coperti
 	]

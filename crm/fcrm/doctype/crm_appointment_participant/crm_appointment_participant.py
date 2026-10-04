@@ -21,6 +21,7 @@ class CRMAppointmentParticipant(Document):
 		party_type: DF.Literal["CRM Lead", "Contact", "CRM Deal"]
 		phone: DF.Data | None
 		status: DF.Literal["Booked", "Arrived", "Attended", "No Show", "Cancelled"]
+		subscription: DF.Link | None
 	# end: auto-generated types
 
 	pass

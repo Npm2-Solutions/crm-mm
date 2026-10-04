@@ -43,6 +43,7 @@ Item = DocType("CRM Invoice Item")
 Supplier = DocType("CRM Supplier Invoice")
 Appt = DocType("CRM Appointment")
 Cycle = DocType("CRM Session Cycle")
+Place = DocType("CRM Appointment Participant")
 
 INVOICING = ("invoicing",)
 FROM_THE_AGENDA = ("invoicing", "agenda")
@@ -215,8 +216,8 @@ def sdi_rejected(ctx: Context):
 
 def not_invoiced(ctx: Context):
 	"""Appointments that happened lately and have no document (``api.appointments_to_invoice``);
-	a session of a cycle paid as a whole is invoiced with its cycle, an entry of a
-	subscription with its instalments."""
+	a session of a cycle paid as a whole is invoiced with its cycle, an appointment
+	where everybody uses an entry of their subscription with the instalments."""
 	since = add_days(ctx.now, -int(ctx.option("days", 30)))
 	invoiced = (
 		frappe.qb.from_(Invoice)
@@ -224,13 +225,28 @@ def not_invoiced(ctx: Context):
 		.where(Invoice.appointment.isnotnull() & (Invoice.docstatus < 2))
 	)
 	whole = frappe.qb.from_(Cycle).select(Cycle.name).where(Cycle.billing == "The whole cycle")
+	# somebody in it uses an entry of their subscription; somebody else pays
+	of_a_subscription = (
+		frappe.qb.from_(Place)
+		.select(Place.parent)
+		.where((Place.parenttype == "CRM Appointment") & (IfNull(Place.subscription, "") != ""))
+	)
+	paying = (
+		frappe.qb.from_(Place)
+		.select(Place.parent)
+		.where(
+			(Place.parenttype == "CRM Appointment")
+			& (Place.status != "Cancelled")
+			& (IfNull(Place.subscription, "") == "")
+		)
+	)
 	return (
 		(Appt.starts_on >= since)
 		& (Appt.starts_on <= ctx.now)
 		& Appt.status.notin(("Cancelled", "No Show"))
 		& Appt.name.notin(invoiced)
 		& (Appt.session_cycle.isnull() | Appt.session_cycle.notin(whole))
-		& Appt.subscription.isnull()
+		& (Appt.name.notin(of_a_subscription) | Appt.name.isin(paying))
 	)
 
 

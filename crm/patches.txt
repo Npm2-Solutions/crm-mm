@@ -100,3 +100,4 @@ crm.patches.v1_0.the_qualifications_keep_their_accents
 crm.patches.v1_0.the_login_codes_come_from_the_product
 crm.patches.v1_0.the_person_reads_in_order_on_a_phone
 crm.patches.v1_0.a_person_has_genders_and_titles
+crm.patches.v1_0.each_person_uses_their_own_subscription

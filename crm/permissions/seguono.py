@@ -192,13 +192,16 @@ def subscription_conditions(user: str | None = None):
 	if ambito is None:
 		return S.name.isnull()
 	A = frappe.qb.DocType(APPUNTAMENTO).as_("_subscription_appt")
+	P = frappe.qb.DocType("CRM Appointment Participant").as_("_subscription_place")
 	suoi = (
 		(S.practitioner == user)
 		| (S.owner == user)
 		| S.name.isin(
-			frappe.qb.from_(A)
-			.select(A.subscription)
-			.where(A.subscription.isnotnull())
+			frappe.qb.from_(P)
+			.join(A)
+			.on(A.name == P.parent)
+			.select(P.subscription)
+			.where((P.parenttype == APPUNTAMENTO) & P.subscription.isnotnull())
 			.where(_dello_staff(A, user))
 		)
 	)
