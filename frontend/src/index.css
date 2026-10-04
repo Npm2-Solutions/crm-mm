@@ -218,3 +218,22 @@
 .menu-content {
   z-index: 101;
 }
+
+/* A dialog's title with a long word in it (an email: «Chiudere l'accesso a
+   anna.bianchi@…?»). frappe-ui's title row lets the title grow as wide as its
+   longest word, and on a phone it pushed the close button off the screen. The
+   title wraps inside the word instead, and the button stays beside it. */
+.dialog-content div.mb-6.flex.items-center.justify-between > div.flex-1,
+.dialog-content
+  div.mb-6.flex.items-center.justify-between
+  > div.flex-1
+  > header {
+  min-width: 0;
+}
+.dialog-content
+  div.mb-6.flex.items-center.justify-between
+  > div.flex-1
+  > header
+  h3 {
+  overflow-wrap: anywhere;
+}
