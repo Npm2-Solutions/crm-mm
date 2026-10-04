@@ -239,7 +239,7 @@ const vociDellAccount = computed(() => {
       righe: [
         {
           key: 'dati-prova',
-          etichetta: __('Clear Demo Data'),
+          etichetta: __('Remove the demo data'),
           icona: markRaw(LucideBrushCleaning),
           azione: () => clearDemoData(),
           rossa: true,
