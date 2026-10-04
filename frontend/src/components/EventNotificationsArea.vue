@@ -102,6 +102,7 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useEventNotifications } from '@/data/notifications'
 import { notificationsStore } from '@/stores/notifications'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { dayjs } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -130,26 +131,29 @@ function handleEventClick(e) {
 const computedEvents = computed(() => {
   if (!events.value?.length) return []
 
+  // the centre's now: an event's times are the centre's, and the phone's own
+  // clock, in another time zone, called «starting now» what was hours away
+  const adesso = dayjs(adessoDelCentro())
   let mappedEvents = events.value.map((event) => {
     let type = 'upcoming'
 
     // Starting Now: Event is within [now - 5 min, now + 5 min]
     if (
       dayjs(event.starts_on).isBetween(
-        dayjs().subtract(5, 'minute'),
-        dayjs().add(5, 'minute'),
+        adesso.subtract(5, 'minute'),
+        adesso.add(5, 'minute'),
       )
     ) {
       type = 'startingNow'
     }
     // Upcoming: Event is greater than now + 5 min
-    else if (dayjs(event.starts_on).isAfter(dayjs().add(5, 'minute'))) {
+    else if (dayjs(event.starts_on).isAfter(adesso.add(5, 'minute'))) {
       type = 'upcoming'
     }
     // Ongoing: Event is currently happening (now is between starts_on + 5 min and ends_on)
     else if (
-      dayjs(event.starts_on).isBefore(dayjs().add(5, 'minute')) &&
-      dayjs(event.ends_on).isAfter(dayjs())
+      dayjs(event.starts_on).isBefore(adesso.add(5, 'minute')) &&
+      dayjs(event.ends_on).isAfter(adesso)
     ) {
       type = 'ongoing'
     }
