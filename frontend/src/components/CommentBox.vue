@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     A note for the team, written like every other message: a line that grows,
@@ -17,7 +20,7 @@
         v-if="formatting"
         class="mx-1.5 mt-1.5 overflow-x-auto rounded-md bg-surface-gray-2 px-1 dark:bg-surface-gray-3"
       >
-        <EditorFixedMenu :items="fullToolbar" />
+        <EditorFixedMenu :items="toolbarFor(isMobileView)" />
       </div>
       <div class="flex items-end gap-1 p-1.5">
         <EditorContent class="composer-text min-w-0 flex-1" />
@@ -107,7 +110,7 @@ import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import AttachmentItem from '@/components/AttachmentItem.vue'
 import {
   buildEditorExtensions,
-  fullToolbar,
+  toolbarFor,
   uploadFile,
 } from '@/components/editor/config'
 import { submitShortcutLabel } from '@/utils'
