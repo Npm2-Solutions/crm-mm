@@ -531,6 +531,10 @@ const moreOptions = computed(() => {
 
 // -- opening a dashboard ---------------------------------------------------------
 
+// the dashboard asked for last: the address it writes is not another one to
+// open (`current` is still the one before until its layout comes)
+let inApertura = ''
+
 function openInitial() {
   const wanted = route.query.d || safeStorage('get')
   const found =
@@ -563,6 +567,7 @@ async function openDashboard(name, { replace = false } = {}) {
   }
   editing.value = false
   loadingLayout.value = true
+  inApertura = name
   if (route.query.d !== name) {
     router[replace ? 'replace' : 'push']({
       name: 'Dashboard',
@@ -594,8 +599,7 @@ async function openDashboard(name, { replace = false } = {}) {
 watch(
   () => route.query.d,
   (name) => {
-    if (name && current.value && name !== current.value.name)
-      openDashboard(name)
+    if (name && name !== inApertura) openDashboard(name)
   },
 )
 
