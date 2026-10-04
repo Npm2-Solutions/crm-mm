@@ -240,7 +240,9 @@ const SOSTITUZIONI = {
       "shiftFocus(cell.date.add(6 - cell.date.day(), 'day'), 1)",
       "shiftFocus(dalLunedi(cell.date).add(6, 'day'), 1)",
     ],
-    // what a screen reader says of the arrows and the grid
+    // what a screen reader says of the arrows and the grid; the month and year
+    // over it are named by what they show («ottobre 2026»), not «cycle-calendar-view»
+    [/\s+label="cycle-calendar-view"/, ''],
     [/(\s)label="previous"/g, `$1:label="__('Previous month')"`],
     [/(\s)label="next"/g, `$1:label="__('Next month')"`],
     attributo('aria-label', 'Calendar dates'),
@@ -272,7 +274,17 @@ const SOSTITUZIONI = {
   'Combobox/Combobox.vue': [
     predefinito('placeholder', 'Select option'),
     predefinito('emptyText', 'No results'),
+    // the arrow of every field chosen from a list (a link, a country, a
+    // language): reka names it «Show popup», in English, for a screen reader
+    [
+      /<ComboboxTrigger(\s+):disabled="disabled"/,
+      `<ComboboxTrigger$1:disabled="disabled"$1:aria-label="__('Show the choices')"`,
+    ],
   ],
+  // the cross that closes a message and the circle that turns while something
+  // loads, named for a screen reader in the user's language
+  'Toast/Toast.vue': [attributo('aria-label', 'Close')],
+  'Spinner/Spinner.vue': [attributo('aria-label', 'Loading')],
   'MultiSelect/MultiSelect.vue': [
     predefinito('placeholder', 'Select option'),
     predefinito('emptyText', 'No results'),
