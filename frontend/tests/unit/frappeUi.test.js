@@ -316,6 +316,23 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it('mounts a dialog and a menu’s content at their first opening', () => {
+    const finestra = tradotto('Dialog/Dialog.vue')
+    expect(finestra).toContain(
+      '<DialogRoot v-if="giaAperta" v-model:open="isOpen">',
+    )
+    expect(finestra).toContain('const giaAperta = ref(isOpen.value)')
+    expect(finestra).toContain('useSlots, watch, watchEffect }')
+    const menu = tradotto('Dropdown/Dropdown.vue')
+    expect(menu).toContain(
+      '<DropdownMenuPortal v-if="giaAperto" :to="portalTo">',
+    )
+    expect(menu).toContain('const giaAperto = ref(openModel.value)')
+    expect(menu).toContain(
+      'import { computed, ref, useAttrs, useSlots, watch }',
+    )
+  })
+
   it('draws a tooltip only where a pointer rests over things', () => {
     const suggerimento = tradotto('Tooltip/Tooltip.vue')
     expect(suggerimento).toContain('<slot v-if="disabled || !siPosa" />')

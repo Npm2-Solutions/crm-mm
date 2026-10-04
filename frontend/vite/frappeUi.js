@@ -18,7 +18,8 @@
  * weeks from Monday, the switch's value and name. And it cuts what frappe-ui
  * makes every phone download for nobody: the editor's code colours, its emoji
  * list before anybody asks, a Markdown format nobody uses; and what it mounts
- * on a phone for nobody: tooltips, which a touch never opens.
+ * for nobody: tooltips on a phone, which a touch never opens, and dialogs and
+ * menus before anybody opens them.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -324,6 +325,28 @@ function senzaIlNome(tutti: Record<string, unknown>) {
   // said «Close» in English to a screen reader.
   'Dialog/Dialog.vue': [
     [/label="Close"/g, `:label="__('Close')"`],
+    // A dialog never opened mounts nothing: closed, its root, portal, overlay
+    // and content were seven components that drew nothing, four dialogs on
+    // every page and eleven on a person's details. From its first opening it
+    // stays, and closes with its animation as before.
+    [
+      '<DialogRoot v-model:open="isOpen">',
+      '<DialogRoot v-if="giaAperta" v-model:open="isOpen">',
+    ],
+    [
+      "import { computed, reactive, ref, useSlots, watchEffect } from 'vue'",
+      "import { computed, reactive, ref, useSlots, watch, watchEffect } from 'vue'",
+    ],
+    [
+      'defineExpose({ close } satisfies DialogExposed)',
+      `defineExpose({ close } satisfies DialogExposed)
+
+// DottorCloud (frontend/vite/frappeUi.js): mounted at its first opening
+const giaAperta = ref(isOpen.value)
+watch(isOpen, (aperta) => {
+  if (aperta) giaAperta.value = true
+})`,
+    ],
     [
       'function handleOpenAutoFocus(event: Event) {',
       `// DottorCloud (frontend/vite/frappeUi.js): the dialog's name
@@ -349,6 +372,27 @@ function handleOpenAutoFocus(event: Event) {
   // (reka-ui's trigger leaves it alone): on a screen without one a tooltip is
   // its trigger alone. Each mounted a dozen components that never showed
   // anything, two thirds of a person's page on a phone (src/utils/puntatore.js).
+  // A menu's content, the same: mounted at its first opening, not with its
+  // button (five closed menus on a person's page, six components each).
+  'Dropdown/Dropdown.vue': [
+    [
+      '<DropdownMenuPortal :to="portalTo">',
+      '<DropdownMenuPortal v-if="giaAperto" :to="portalTo">',
+    ],
+    [
+      "import { computed, useAttrs, useSlots } from 'vue'",
+      "import { computed, ref, useAttrs, useSlots, watch } from 'vue'",
+    ],
+    [
+      "const openModel = defineModel<boolean>('open', { default: false })",
+      `const openModel = defineModel<boolean>('open', { default: false })
+// DottorCloud (frontend/vite/frappeUi.js): mounted at its first opening
+const giaAperto = ref(openModel.value)
+watch(openModel, (aperto) => {
+  if (aperto) giaAperto.value = true
+})`,
+    ],
+  ],
   'Tooltip/Tooltip.vue': [
     ['<slot v-if="disabled" />', '<slot v-if="disabled || !siPosa" />'],
     [

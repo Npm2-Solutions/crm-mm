@@ -764,7 +764,8 @@ row, the bar's words beside their icons).
   none does, frappe-ui's Tooltip and a Button's `tooltip` are their trigger alone
   (`utils/puntatore.js`, rewritten in `vite/frappeUi.js`; a dozen components
   each, two thirds of a person's page on a phone). What a tooltip says is never
-  the only place it is said.
+  the only place it is said. A dialog and a menu's content mount at their first
+  opening (`Dialog.vue`, `Dropdown.vue` there), and stay.
 
 ---
 
@@ -776,7 +777,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1152 tests · ~15s** — all must pass before committing
+- **1153 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
