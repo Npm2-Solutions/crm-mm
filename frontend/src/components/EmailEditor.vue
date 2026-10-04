@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     An email, written the way every message here is written: a line that grows
@@ -146,7 +149,7 @@
         v-if="formatting"
         class="mx-1.5 mt-1 overflow-x-auto rounded-md bg-surface-gray-2 px-1 dark:bg-surface-gray-3"
       >
-        <EditorFixedMenu :items="fullToolbar" />
+        <EditorFixedMenu :items="toolbarFor(isMobileView)" />
       </div>
 
       <div class="flex items-end gap-1 px-1.5 pb-1.5 pt-0.5">
@@ -273,7 +276,7 @@ import EmailMultiSelect from '@/components/Controls/EmailMultiSelect.vue'
 import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
 import {
   buildEditorExtensions,
-  fullToolbar,
+  toolbarFor,
   uploadFile,
 } from '@/components/editor/config'
 import {

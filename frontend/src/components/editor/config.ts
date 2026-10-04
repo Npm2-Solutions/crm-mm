@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import {
   RichTextKit,
   Paragraph,
@@ -80,6 +82,25 @@ export const fullToolbar: MenuItem[] = [
   HorizontalRule,
   InsertTable,
 ]
+
+/** The toolbar on a phone: one row of what a thumb writes with. The full one
+ *  took two rows of headings, alignments, colours, video, quotes, code and
+ *  tables above a task's description. */
+export const phoneToolbar: MenuItem[] = [
+  Bold,
+  Italic,
+  Separator,
+  BulletList,
+  OrderedList,
+  Separator,
+  InsertLink,
+  InsertImage,
+]
+
+/** The toolbar for the screen it is drawn on. */
+export function toolbarFor(phone: boolean): MenuItem[] {
+  return phone ? phoneToolbar : fullToolbar
+}
 
 /** Compact toolbar for inline/ghost fields (generic form fields, grid rows) —
  *  shown in a floating bubble on text selection rather than a fixed bar. */

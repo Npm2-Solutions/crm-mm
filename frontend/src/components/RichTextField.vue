@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div>
     <Editor
@@ -10,7 +13,7 @@
     >
       <EditorFixedMenu
         v-if="fixedMenu"
-        :items="fullToolbar"
+        :items="toolbarFor(isMobileView)"
         class="w-full overflow-x-auto rounded-t-lg border border-b-0 border-outline-gray-2 p-1"
       />
       <EditorBubbleMenu v-if="bubbleMenu" :items="bubbleToolbar" />
@@ -28,10 +31,11 @@ import {
 } from 'frappe-ui/editor'
 import {
   buildEditorExtensions,
-  fullToolbar,
+  toolbarFor,
   bubbleToolbar,
   uploadFile,
 } from '@/components/editor/config'
+import { isMobileView } from '@/composables/breakpoints'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
