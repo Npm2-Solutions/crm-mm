@@ -526,6 +526,23 @@ Con il tocco, come in un'app:
   si muove prendeva la parola del framework per il numero di telefono; ora le
   condizioni passano il contesto «Tooth condition» e il catalogo dice
   «Mobile».
+- **Il piano di cura, provato davvero.** Dal telefono il dentista apre
+  Preventivi da «Altro», scrive un preventivo con Igiene sul 36 (superfici
+  OM, che diventano MO), lo salva e lo propone: «Igiene · Dente 36 MO».
+  - **Una riga lasciata vuota** fermava la bozza con «Row 2: choose the
+    service». Ora una riga in cui nessuno ha scritto niente resta fuori
+    (`preventivi.regole.vuota`): un dente scritto basta a farne una riga.
+  - **In inglese.** Il messaggio arrivava in inglese, e con lui altre 68 frasi
+    delle regole: piani, programmi, preventivi, denti, alimenti, il motore
+    dei moduli. Passano per `Problema` ed `Errore` e non per `_()`, quindi
+    l'estrazione del catalogo non le vedeva. Ora sono tutte in `it.po`, e
+    `crm/tests/test_frasi_delle_regole.py` le cerca una per una.
+  - **Il foglio.** La × di un foglio con il titolo su due righe (lo stato e
+    la trattativa sotto) scendeva a metà: ora sta accanto alla prima riga, in
+    tutti i fogli (`telefono.css`). Sopra i pulsanti c'era una riga doppia,
+    perché un `dialog-footer` dentro la fila di frappe-ui ripeteva il bordo:
+    ora la fila è una. «Trattativa: …» è allineata al titolo, e il totale è
+    largo quanto le righe, non un riquadro rientrato a destra.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
