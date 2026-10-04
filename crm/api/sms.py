@@ -123,6 +123,13 @@ def create_sms(
 
 def deliver_via_twilio(doc):
 	"""Push a queued outgoing message to Twilio; failures land on the doc, not the caller."""
+	from crm.demo import guardie
+
+	if guardie.numero_di_prova(doc.to):
+		# a person of the demo data: kept in the conversation as sent, never handed
+		# to Twilio (crm.demo.guardie)
+		doc.db_set({"status": "Sent"})
+		return
 	twilio = Twilio.connect()
 	if not twilio:
 		doc.db_set({"status": "Failed", "error_message": _("Twilio is not enabled")})

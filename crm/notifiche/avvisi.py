@@ -24,6 +24,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint
 
+from crm.demo import guardie
 from crm.notifiche import posta
 from crm.notifiche import regole as R
 
@@ -87,8 +88,11 @@ def avvisa(
 		return None
 
 	quanti = 1
-	# by email too, if it stays unread a few minutes and the person wants this kind
-	per_email = R.vuole_email(R.genere(tipo, doctype_oggetto, frase), posta.preferenze(destinatario))
+	# by email too, if it stays unread a few minutes and the person wants this kind;
+	# never about the demo data (crm.demo.guardie)
+	per_email = R.vuole_email(
+		R.genere(tipo, doctype_oggetto, frase), posta.preferenze(destinatario)
+	) and not guardie.solo_nel_pannello(riguarda or (None, None), oggetto or (None, None))
 	gia_per_email = None
 	if frase_molti and nome_riguarda:
 		# the one about the same person, not yet read, gives its place and its count

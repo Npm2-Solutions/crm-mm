@@ -30,6 +30,7 @@ from frappe.query_builder.functions import IfNull
 from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, flt, get_url
 
+from crm.demo import guardie
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 from crm.scheduling import booking_rules as rules_mod
@@ -105,6 +106,9 @@ def _config():
 
 def _online_service(name: str):
 	if not name or not frappe.db.get_value("CRM Service", {"name": name, "enabled": 1, "bookable_online": 1}):
+		frappe.throw(_("Service not found"), frappe.DoesNotExistError)
+	# the demo's services, only to somebody signed in trying the page out (crm.demo)
+	if guardie.nascosto_al_pubblico("CRM Service", name):
 		frappe.throw(_("Service not found"), frappe.DoesNotExistError)
 	return frappe.get_cached_doc("CRM Service", name)
 
@@ -255,12 +259,16 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 	"""
 	config = _config()
 	wanted = service  # the loops below reuse the name: keep what was asked for
-	names = frappe.get_all(
-		"CRM Service",
-		filters={"enabled": 1, "bookable_online": 1},
-		pluck="name",
-		order_by="website_order asc, service_name asc",
-	)
+	names = [
+		name
+		for name in frappe.get_all(
+			"CRM Service",
+			filters={"enabled": 1, "bookable_online": 1},
+			pluck="name",
+			order_by="website_order asc, service_name asc",
+		)
+		if not guardie.nascosto_al_pubblico("CRM Service", name)
+	]
 	services = []
 	for name in names:
 		services.append(_service_card(frappe.get_cached_doc("CRM Service", name)))
