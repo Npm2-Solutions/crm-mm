@@ -1,3 +1,5 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import functools
 
 import frappe
@@ -17,9 +19,10 @@ def _region_of(country: str | None) -> str:
 		code = frappe.db.get_value("Country", country, "code")
 		if code:
 			return code.upper()
-	# the library's own fallback, kept so a site that never set a country behaves
-	# exactly as it did before
-	return "IN"
+	# a site that never said where it is: DottorCloud's centres are in Italy, the
+	# rule of `lingue.scegli`. India, the library's fallback, left a mobile typed
+	# as `333 123 4567` without its prefix, and WhatsApp, SMS and calls with it
+	return "IT"
 
 
 def default_region() -> str:
@@ -28,7 +31,8 @@ def default_region() -> str:
 	A number typed as `370 340 0189` means nothing on its own: it is Italian in
 	Italy and something else elsewhere. `phonenumbers` used to be asked with a
 	hard-coded `IN`, so on an Italian site every plus-less number was read as
-	Indian. The site's own country is the only sensible answer.
+	Indian. The site's own country is the only sensible answer, Italy where the
+	site never said.
 	"""
 	return _region_of(frappe.db.get_single_value("System Settings", "country"))
 

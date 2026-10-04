@@ -1,7 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The currency the centre counts in, where nobody chose one in Settings."""
+"""What a site that never said where the centre is reads as Italian: the currency
+it counts in, the prefix of a number typed without one."""
 
 from unittest.mock import patch
 
@@ -10,6 +11,7 @@ from frappe.tests import IntegrationTestCase
 
 from crm import lingue
 from crm.dashboard.context import Context
+from crm.utils import _region_of, to_e164
 
 
 class LaValutaDelCentro(IntegrationTestCase):
@@ -57,3 +59,14 @@ class LaValutaDelCentro(IntegrationTestCase):
 			).insert(ignore_permissions=True)
 		cambio.assert_not_called()
 		self.assertEqual(deal.exchange_rate, 1)
+
+	def test_un_cellulare_senza_prefisso_e_italiano(self):
+		# India, the library's fallback, left it as typed: no WhatsApp, SMS or call
+		self.scegli()
+		_region_of.cache_clear()
+		self.assertEqual(to_e164("333 123 4567"), "+393331234567")
+
+	def test_il_paese_detto_vale_per_i_suoi_numeri(self):
+		self.scegli(paese="United Kingdom")
+		_region_of.cache_clear()
+		self.assertEqual(to_e164("020 7946 0018"), "+442079460018")
