@@ -814,6 +814,8 @@ nessun browser di prova ha la sua tastiera.
 | `crm/invoicing/scelte.py` (`PAESI`, `paesi()`) | Il paese dell'azienda emittente si sceglie per nome («Italia»), nella lingua di chi legge: mostrava «IT», il codice che va in fattura e che resta salvato |
 | `crm/invoicing/install.py` (`parole_di`, `nella_lingua`), `crm/tessera_sanitaria/install.py` | Le qualifiche che DottorCloud porta scrivono nome, note e punti da verificare nella lingua del centro, e li seguono dopo un migrate finché lo studio non li cambia: erano in inglese nel record («Cassa Forense contributo integrativo 4%: mandatory…», «Consulente (non-regulated profession)»). Il codice di una qualifica è «un nome breve che non cambia mai», non «un identificativo usato dal motore» |
 | `Settings/Hierarchy/Hierarchy.vue` | «Abilita» e «Disattiva» della gerarchia li vede solo chi può davvero accenderla, l'amministratore di sistema (la regola del server: un responsabile messo nell'albero si toglierebbe il suo limite). Il responsabile premeva «Abilita» e riceveva un errore; ora legge «Solo un amministratore di sistema può attivarla», e l'albero lo gestisce come prima |
+| `Settings/Scheduling/SchedulingDefaults.vue`, `utils/fusiOrari.js` | Il fuso orario dell'agenda: dopo quello del sito, il fuso del dispositivo e «Europe/Rome», ognuno col suo nome («Europe/Rome · Ora dell'Europa centrale»), poi gli altri. Sul telefono era un foglio di quattrocento righe che partiva da «Africa/Abidjan» |
+| `pages/Invoices.vue` | «Comunica» al Sistema TS chiede conferma: sul telefono sta nella scheda che si tocca per aprire la fattura, e un tocco sbagliato mandava subito la spesa |
 
 ## Non incluso
 

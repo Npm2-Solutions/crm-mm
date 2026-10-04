@@ -483,9 +483,9 @@ A value a list shows from a choice (status, priority) or from a translated
 DocType (stages, sources, reasons) goes through `__()`: the default ones read in
 the user's language, a name the centre wrote stays as written. What DottorCloud
 writes into a site once (a consent's text, a pipeline's stages, a library's words,
-the qualifications' notes)
-is in `lingue.del_centro()`, never the System Settings language read on its own: a
-site installed before anybody chose is in the framework's English. Times are the
+the qualifications' notes) is in `lingue.del_centro()`, never the System Settings
+language read on its own: a site installed before anybody chose is in the
+framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 A week starts on Monday, everywhere: the phone's strip, the dashboard's periods, the
 agenda and the date pickers (`frappeUi.js` gives frappe-ui's own the same Monday).
@@ -784,7 +784,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1171 tests · ~15s** — all must pass before committing
+- **1176 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
