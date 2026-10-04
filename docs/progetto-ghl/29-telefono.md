@@ -791,6 +791,11 @@ nessun browser di prova ha la sua tastiera.
 | `Waiting/WaitingDialog.vue`, `crm/locale/it.po` | Le parole del glossario (doc 40): una cosa da fare è «Cosa da fare» (era «Attività», come la scheda della conversazione), un'email «Email» (era «E-mail»). «Proposte via email», «su WhatsApp», «via SMS» sono tre frasi intere, non una parola incollata |
 | `utils/index.js` (`taskStatusOptions`, `taskPriorityOptions`) | Il menu dello stato di una cosa da fare, nella scheda Da fare di una persona e nel pannello di una chiamata, parla italiano: «In sospeso, Da fare, In corso, Fatto, Annullata». Diceva «Backlog, Todo, In Progress, Done, Canceled» |
 | `Waiting/WaitingDialog.vue`, `Settings/Users.vue`, `Settings/EmailTemplate/EmailTemplates.vue` | Frasi intere anche per una proposta inviata («inviata via email», «Proposta inviata su WhatsApp») e per due elenchi vuoti delle impostazioni («Ancora nessun altro utente», «Ancora nessun modello email»): erano «Ancora niente in Utenti» |
+| `crm/api/conversations.py` (`counts`) | I numeri sopra le Conversazioni contano solo le persone che chi legge vede, con gli stessi permessi dell'elenco: un medico che segue tre persone leggeva «Aperte 1739» e «Da leggere 21» sopra un elenco che diceva «Niente da leggere qui» |
+| `Calendar/AppointmentPanel.vue`, `Automations/ConditionBuilder.vue` | «Ripeti questo appuntamento» dice cosa conta il numero («4 volte»); nelle automazioni, «E un'altra condizione» al posto di un «E» da solo |
+| `Activities/ActivityHeader.vue` | Nella scheda Eventi di una persona o di una trattativa il pulsante pieno è «Appuntamento», quello per cui la scheda c'è; «Evento» (una chiamata, una riunione) è l'altro. Il Tracciamento non ha più il «Nuovo» con tutti i messaggi e i documenti della conversazione: si legge, e il suo pulsante (le impostazioni del tracciamento) sta dentro |
+| `Modals/EventModal.vue` | Un evento nuovo, dalla scheda di una persona, comincia al prossimo quarto d'ora sull'orologio del centro, come quelli dell'agenda: prendeva l'ora del telefono al minuto in cui si apriva (14:49 su un telefono in un altro fuso, dove il centro segnava le 20:19) |
+| `src/index.css` | La scelta che svuota un campo facoltativo (Settore, N. di dipendenti…) è un trattino: era una riga bianca, sul telefono una fascia di 48 px sopra la prima scelta |
 
 ## Non incluso
 
