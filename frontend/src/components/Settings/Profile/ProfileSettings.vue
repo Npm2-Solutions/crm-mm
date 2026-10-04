@@ -26,22 +26,32 @@
                   placement="bottom"
                   :text="profileTooltipText"
                 >
-                  <div
+                  <!-- buttons a screen reader reaches and a finger hits:
+                       they were two bare boxes, the × 16px wide -->
+                  <button
+                    type="button"
                     class="z-[1] absolute top-0 left-0 flex h-9 cursor-pointer items-center justify-center rounded-full !size-14"
+                    :aria-label="
+                      user.doc.user_image
+                        ? __('Change Photo')
+                        : __('Upload Photo')
+                    "
                     @click.stop="openFileSelector"
                   />
-                  <div
+                  <button
                     v-if="user.doc.user_image"
-                    class="z-[1] size-4 absolute -top-1 -right-1 flex cursor-pointer items-center justify-center rounded-full bg-surface-base opacity-0 duration-300 ease-in-out group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-surface-gray-2 outline outline-black-overlay-50"
+                    type="button"
+                    class="touch-target z-[1] size-4 absolute -top-1 -right-1 flex cursor-pointer items-center justify-center rounded-full bg-surface-base opacity-0 duration-300 ease-in-out group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-surface-gray-2 outline outline-black-overlay-50"
+                    :aria-label="__('Remove Photo')"
                     @click.stop="updateImage()"
                     @mouseenter="isHoveringRemove = true"
                     @mouseleave="isHoveringRemove = false"
                   >
                     <span
-                      class="lucide-x size-3.5 cursor-pointer text-ink-gray-4"
+                      class="lucide-x size-3.5 cursor-pointer text-ink-gray-6"
                       aria-hidden="true"
                     />
-                  </div>
+                  </button>
                 </Tooltip>
                 <div
                   v-if="uploading"
