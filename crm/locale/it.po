@@ -43102,3 +43102,135 @@ msgstr "Chiudere l'accesso a {0}?"
 #: frontend/src/components/Area/AreaAccessCard.vue
 msgid "From now on they cannot enter the area. Open it again whenever you want with “Open the area”: a new invitation reaches them."
 msgstr "Da adesso non può più entrare nell'area. Puoi riaprirla quando vuoi con «Apri l'area»: riceverà un nuovo invito."
+
+#: frappe/www/login.html
+msgid "jane@example.com"
+msgstr "nome@esempio.it"
+
+#: frappe/www/login.html
+msgid "Forgot password?"
+msgstr "Password dimenticata?"
+
+#: frappe/www/login.html
+msgid "Sign In"
+msgstr "Accedi"
+
+#: frappe/www/login.html
+msgid "Welcome! Please sign in to continue."
+msgstr "Ti diamo il benvenuto! Accedi per continuare."
+
+#: frappe/www/login.html
+msgid "Sign Up"
+msgstr "Registrati"
+
+#: frappe/www/login.html
+msgid "Let's setup your account."
+msgstr "Creiamo il tuo account."
+
+#: frappe/www/login.html
+msgid "Please enter your email, we'll send you password reset link"
+msgstr "Scrivi la tua email: ti mandiamo un link per sceglierne una nuova."
+
+#: frappe/www/login.html
+msgid "Send Link"
+msgstr "Manda il link"
+
+#: frappe/www/login.html
+msgid "Back to sign in"
+msgstr "Torna all'accesso"
+
+#: frappe/www/login.html
+msgid "Please check your email."
+msgstr "Guarda nella tua email."
+
+#: frappe/www/login.html
+msgid "Didn't receive the link?"
+msgstr "Non ti è arrivato il link?"
+
+#: frappe/www/login.html
+msgid "Resend"
+msgstr "Invia di nuovo"
+
+#: frappe/www/login.html
+msgid "Login with password"
+msgstr "Accedi con la password"
+
+#: frappe/www/login.py
+msgid "User with email address {0} does not exist"
+msgstr "Non c'è un utente con l'indirizzo {0}"
+
+#: frappe/www/update-password.html
+msgid "Use strong passwords."
+msgstr "Scegli una password difficile da indovinare."
+
+#: frappe/www/update-password.html
+msgid "Use minimum of 8 characters(case sensitive) with at least one number or special character."
+msgstr "Almeno 8 caratteri (maiuscole e minuscole contano), con almeno un numero o un carattere speciale."
+
+#: frappe/www/update-password.html
+msgid "Your password has expired. Please set a new password."
+msgstr "La tua password è scaduta: scegline una nuova."
+
+#: frappe/www/update-password.html
+msgid "Missing Value"
+msgstr "Manca un valore"
+
+#: frappe/www/update-password.html
+msgid "Password set"
+msgstr "Password impostata"
+
+#: frappe/www/update-password.html
+msgid "Please enter the password"
+msgstr "Scrivi la password"
+
+#: frappe/www/update-password.html
+msgid "Poor!"
+msgstr "Debole!"
+
+#: frappe/www/update-password.html
+msgid "Good"
+msgstr "Buona"
+
+#: frappe/www/update-password.html
+msgid "Great!"
+msgstr "Ottima!"
+
+#: frappe/templates/includes/login/login.js
+msgid "Email is required."
+msgstr "Serve l'email."
+
+#: frappe/templates/includes/login/login.js
+msgid "Please enter a valid email."
+msgstr "Scrivi un'email valida."
+
+#: frappe/templates/includes/login/login.js
+msgid "Full name is required."
+msgstr "Serve il nome e cognome."
+
+#: frappe/templates/includes/login/login.js
+msgid "Create Account"
+msgstr "Crea l'account"
+
+#: frappe/templates/includes/login/login.js
+msgid "Verifying..."
+msgstr "Verifica in corso…"
+
+#: frappe/templates/includes/login/login.js
+msgid "Invalid credentials, try again."
+msgstr "Email o password sbagliate, riprova."
+
+#: frappe/templates/includes/login/login.js
+msgid "Too many requests. Please try again later."
+msgstr "Troppi tentativi: riprova più tardi."
+
+#: frappe/www/me.html
+msgid "Portal"
+msgstr "Portale"
+
+#: frappe/www/login.html
+msgid "Login with Email Link"
+msgstr "Accedi con un link via email"
+
+#: frappe/www/login.html
+msgid "Send login link"
+msgstr "Manda il link per accedere"
