@@ -422,13 +422,24 @@ class CRMDeal(Document):
 	def update_expected_deal_value(self):
 		"""
 		Update the expected deal value based on the net total or total.
+
+		Not where the deal's value comes from its quotes (doc 50): a deal kept from
+		before the products grid went still has a products total, and every save
+		wrote it over the value of the quote proposed or accepted on it.
 		"""
 		if (
 			frappe.db.get_single_value("FCRM Settings", "auto_update_expected_deal_value")
 			and (self.net_total or self.total)
 			and self.expected_deal_value
+			and not self.value_from_quotes()
 		):
 			self.expected_deal_value = self.net_total or self.total
+
+	def value_from_quotes(self) -> bool:
+		"""A quote beyond its draft says what this deal is worth."""
+		return not self.is_new() and bool(
+			frappe.db.exists("CRM Quote", {"deal": self.name, "status": ["!=", "Draft"]})
+		)
 
 	def validate_forecasting_fields(self):
 		self.update_closed_date()
