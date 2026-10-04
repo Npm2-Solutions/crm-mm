@@ -20,6 +20,8 @@ import datetime
 import frappe
 from frappe.utils import add_years, get_datetime, getdate, now_datetime
 
+from crm.demo import guardie
+
 MODULO = "CRM Form"
 MODELLO = "CRM Form Template"
 VERSIONE = "CRM Form Template Version"
@@ -179,6 +181,8 @@ def dovuti(
 		appuntamento = appuntamenti.get(persona)
 		voci = []
 		for modello in modelli:
+			if guardie.solo_per_la_demo(MODELLO, modello["name"], persona):
+				continue
 			motivo = dovuto(modello, firmati.get((persona, modello["name"]), []), appuntamento, oggi)
 			if motivo:
 				voci.append(

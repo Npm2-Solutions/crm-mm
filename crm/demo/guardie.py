@@ -135,6 +135,21 @@ def nascosto_al_pubblico(doctype: str, name: str | None) -> bool:
 	return name in registro.nomi_di_prova(doctype)
 
 
+# -- what the demo set up -----------------------------------------------------------------------
+
+
+def solo_per_la_demo(doctype: str, nome: str | None, persona: str | None) -> bool:
+	"""Whether a piece of the demo's setup that asks something of people by itself (a
+	form owed at a booking) is kept from ``persona``: it is asked of the demo's people
+	only. A real person booked while the demo is in is never sent the demo's privacy
+	notice, nor owes it at the desk; the centre uses it by choosing it."""
+	if not nome or not persona or registro.raccolta() is not None:
+		return False
+	return str(nome) in registro.nomi_di_prova(doctype) and str(persona) not in registro.nomi_di_prova(
+		"CRM Lead"
+	)
+
+
 # -- what comes in ------------------------------------------------------------------------------
 
 
