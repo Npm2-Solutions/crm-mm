@@ -6,13 +6,11 @@ clients do.
 
 Three types are on sale (Settings > Agenda > Services > Subscriptions): eight
 Pilates classes a month renewed by itself, three months of postural gymnastics that
-can be suspended, six months of every class paid by the month. The most faithful
-regular of each weekly class bought one on their first class; the product does the
-rest - the classes already booked use its entries, a month that ends renews, a
-suspension moves the end, the reminder of the end goes (to nobody: `crm.demo.guardie`).
-
-One subscriber per class, for now: a class is one appointment, and an appointment
-uses the entry of one subscription only.
+can be suspended, six months of every class paid by the month. The regulars of the
+weekly classes bought one on their first class; the product does the rest - each
+one's places in the classes already booked use its entries, the others in the class
+pay theirs, a month that ends renews, a suspension moves the end, the reminder of
+the end goes (to nobody: `crm.demo.guardie`).
 """
 
 from __future__ import annotations
@@ -44,18 +42,13 @@ def crea(ctx: Contesto) -> None:
 	tipi = _tipi(ctx)
 	if not tipi:
 		return
-	presi: set = set()
 	venduti = 0
 	for regolare in _regolari(ctx):
-		if venduti >= ctx.quanti(12):
+		if venduti >= ctx.quanti(20):
 			break
-		# one subscriber per class (see above): no class of theirs is somebody else's
-		if regolare["tutte"] & presi:
-			continue
 		tipo = _tipo_per(ctx, regolare["servizi"])
 		if tipo not in tipi:
 			continue
-		presi |= regolare["tutte"]
 		dal = regolare["primo"]
 		with ctx.come(desk):
 			venduto = abbonamenti.sell_subscription(
@@ -151,7 +144,6 @@ def _regolari(ctx: Contesto) -> list[dict]:
 	regolari = []
 	for voce in per_persona.values():
 		voce["lezioni"] = {lezione for lezione, volte in voce["volte"].items() if volte >= VOLTE}
-		voce["tutte"] = set(voce["volte"])
 		ultima = max(voce["giorni"])
 		# still coming: their last class is in the last ten days, or booked ahead
 		if voce["lezioni"] and ultima >= ctx.giorno(-10):
