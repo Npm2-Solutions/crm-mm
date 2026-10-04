@@ -913,3 +913,62 @@ CHIAMATE = (
 	("Incoming", "No Answer", 0, "Done", True, "desk"),
 	("Outgoing", "Completed", 2, None, False, "desk"),
 )
+
+# -- cycles and quotes, agreed at the first visit ----------------------------------------------
+
+#: A cycle of sessions sold at the first visit: the sessions' service key -> the packs
+#: on sale, sessions -> price of the whole cycle.
+CICLI = {
+	"fisio": {5: 230, 10: 440},
+	"tecar": {5: 180},
+}
+
+#: What a cycle is for, as the desk writes it on the cycle.
+NOTE_CICLI = {
+	"fisio": (
+		"Lombalgia: terapia manuale ed esercizio terapeutico.",
+		"Riabilitazione dopo una distorsione di caviglia.",
+		"Cervicalgia, rieducazione posturale.",
+		"Spalla dolorosa, rinforzo della cuffia dei rotatori.",
+		"Ginocchio dopo la ricostruzione del crociato.",
+	),
+	"tecar": (
+		"Tendinopatia rotulea.",
+		"Contrattura al polpaccio.",
+		"Epicondilite al gomito destro.",
+	),
+}
+
+#: The quote a practitioner proposes after the first visit, by path: its title, the
+#: words for the person, the discount on each session (%).
+PREVENTIVI = {
+	"fisio": (
+		"Percorso di fisioterapia",
+		"Sedute settimanali di terapia manuale ed esercizio terapeutico, poi un controllo a un mese.",
+		10,
+	),
+	"osteo": (
+		"Ciclo di trattamenti osteopatici",
+		"Trattamenti a distanza di due o tre settimane, secondo come risponde al primo.",
+		0,
+	),
+	"nutri": (
+		"Percorso nutrizionale",
+		"Piano alimentare personalizzato, con un controllo ogni tre o quattro settimane.",
+		5,
+	),
+}
+
+#: How the person said yes to a quote.
+SI_AL_PREVENTIVO = (
+	"Firmato in studio dopo la visita.",
+	"Confermato per email.",
+	"Accettato al telefono con la segreteria.",
+)
+
+#: Why a quote was declined (CRM Lost Reason), with what the person said.
+NO_AL_PREVENTIVO = (
+	("Pricing", "Preferisce pagare seduta per seduta."),
+	("Other", "Ha scelto un centro più vicino a casa."),
+	("Long Sales Cycle", "Ci pensa e si fa sentire dopo le vacanze."),
+)

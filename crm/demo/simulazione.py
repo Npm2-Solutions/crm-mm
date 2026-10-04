@@ -9,7 +9,10 @@ care or with somebody new; the classes run at their hours with their regulars.
 A person arrives a few days before their first visit, from the website, a friend,
 Instagram; a request opens a deal in the new clients pipeline, the booking moves it,
 the first visit attended wins it and makes a client - the CRM does that itself, as
-it would for a real centre. Past appointments are attended, missed or cancelled;
+it would for a real centre. At the first visit the course is agreed: a cycle of
+sessions sold at the desk, or a quote of the whole path from the practitioner,
+accepted, declined or still to decide; the sessions after it join the cycle and take
+the quote's rows by themselves. Past appointments are attended, missed or cancelled;
 today's are done, in the waiting room or still to come; the next three weeks are
 booked less and less, as a real agenda is.
 """
@@ -135,6 +138,9 @@ class Persona:
 	fino_a: datetime.date | None = None
 	giorni: set = field(default_factory=set)
 	trattativa: str | None = None
+	#: the cycle or the quote agreed at the first visit
+	ciclo: str | None = None
+	preventivo: str | None = None
 	prenotata: datetime.datetime | None = None
 	ultima: datetime.datetime | None = None
 
@@ -145,6 +151,7 @@ class Simulazione:
 		self.rng = ctx.rng
 		self.servizi = {chiave: ctx.trova(f"service.{chiave}") for chiave, *_resto in dati.SERVIZI}
 		self.minuti = {riga[0]: riga[3] for riga in dati.SERVIZI}
+		self.prezzi = {riga[0]: riga[4] for riga in dati.SERVIZI}
 		self.stanza_di = {riga[0]: riga[6] for riga in dati.SERVIZI}
 		self.stanze = {riga[0]: ctx.trova(f"room.{riga[0]}") for riga in dati.STANZE}
 		self.squadra = {riga[0]: ctx.squadra(riga[0]) for riga in dati.SQUADRA}
@@ -158,7 +165,10 @@ class Simulazione:
 		self.indirizzi: set[str] = set()
 		self.contatore = 0
 		self.appuntamenti = 0
+		self.cicli = 0
+		self.preventivi = 0
 		self.stadi = self._stadi_nuovi_clienti()
+		self.pipeline_dei_preventivi = self._pipeline_dei_preventivi()
 		self.famiglia = prossimo(self.inizio + datetime.timedelta(days=45), "Tuesday")
 
 	# -- the run -----------------------------------------------------------------------
@@ -493,7 +503,18 @@ class Simulazione:
 			venuto = riga["status"] in ("Attended", "Arrived", "Booked")
 			if venuto and inizio <= ctx.adesso:
 				persona.ultima = max(persona.ultima or fine, min(fine, ctx.adesso))
+			continua = True
+			if (
+				persona.percorso
+				and not persona.primo_fatto
+				and riga["status"] == "Attended"
+				and servizio == dati.PERCORSI[persona.percorso][0]
+			):
+				continua = self._alla_prima_visita(persona, giorno, fine)
 			self._dopo(persona, giorno, servizio, venuto and not annullato)
+			if not continua:
+				# they said no to the course: they do not come back for it
+				persona.prossima = None
 
 	def _esito(self, giorno, inizio, fine, annullato) -> tuple[str, datetime.datetime | None]:
 		ctx = self.ctx
@@ -555,6 +576,152 @@ class Simulazione:
 			persona.prossima = giorno + datetime.timedelta(days=self.rng.randint(25, 40))
 		else:
 			persona.prossima = None
+
+	# -- the course agreed at the first visit ----------------------------------------------
+
+	def _alla_prima_visita(self, persona: Persona, giorno: datetime.date, fine: datetime.datetime) -> bool:
+		"""After the first visit the course is agreed: a cycle of sessions paid ahead at
+		the desk, a quote of the whole path from the practitioner, or nothing - the person
+		pays session by session. What comes after follows by itself: a session joins the
+		cycle, or takes its row of the quote. False when the person said no."""
+		caso = self.rng.random()
+		con_ciclo = dati.PERCORSI[persona.percorso][1] in dati.CICLI
+		if con_ciclo and caso < 0.4:
+			self._vendi_ciclo(persona, giorno, fine)
+		elif (
+			persona.percorso in dati.PREVENTIVI
+			and self.pipeline_dei_preventivi is not None
+			and caso < (0.65 if con_ciclo else 0.45)
+		):
+			return self._proponi_preventivo(persona, giorno, fine)
+		return True
+
+	def _vendi_ciclo(self, persona: Persona, giorno: datetime.date, fine: datetime.datetime) -> None:
+		"""A pack of sessions sold at the desk after the first visit, for as many as the
+		path needs; the sessions booked after it join it."""
+		from crm.scheduling import cicli
+
+		ctx = self.ctx
+		servizio = dati.PERCORSI[persona.percorso][1]
+		pacchetti = dati.CICLI[servizio]
+		sedute = min((n for n in pacchetti if n >= persona.restanti), default=max(pacchetti))
+		scade = None
+		if ctx.rng.random() < 0.6:
+			scade = giorno + datetime.timedelta(days=60 if sedute <= 5 else 120)
+		with ctx.come(self.desk):
+			ciclo = cicli.save_cycle(
+				persona.lead,
+				{
+					"service": self.servizi[servizio],
+					"sessions": sedute,
+					"starts_on": giorno,
+					"valid_until": scade,
+					"price": pacchetti[sedute],
+					"billing": cicli.INTERO if ctx.rng.random() < 0.6 else cicli.PER_SEDUTA,
+					"missed_count": 1,
+					"practitioner": self.squadra.get(persona.pratico),
+					"notes": ctx.rng.choice(dati.NOTE_CICLI[servizio]),
+				},
+			)
+		venduto = min(fine + datetime.timedelta(minutes=ctx.rng.randint(3, 15)), ctx.adesso)
+		ctx.retrodata(cicli.CICLO, ciclo["name"], venduto, self.desk)
+		persona.ciclo = ciclo["name"]
+		self.cicli += 1
+
+	def _proponi_preventivo(self, persona: Persona, giorno: datetime.date, fine: datetime.datetime) -> bool:
+		"""The practitioner's quote of the whole path, one row a session, handed over
+		after the first visit; the person says yes (the sessions take its rows), no, or
+		has not decided yet when the visit was recent. False when they said no."""
+		from crm.preventivi import api as preventivi
+
+		ctx = self.ctx
+		autore = self.squadra.get(persona.pratico)
+		if not autore:
+			return True
+		titolo, parole, sconto = dati.PREVENTIVI[persona.percorso]
+		servizio = dati.PERCORSI[persona.percorso][1]
+		quante = max(persona.restanti, 1) + (1 if ctx.rng.random() < 0.3 else 0)
+		meta = (quante + 1) // 2 if persona.percorso == "fisio" else quante
+		voci = [
+			{
+				"service": self.servizi[servizio],
+				"qty": 1,
+				"rate": self.prezzi[servizio],
+				"discount": sconto,
+				"phase": 1 if numero < meta else 2,
+			}
+			for numero in range(quante)
+		]
+		proposto = min(
+			fine + datetime.timedelta(minutes=ctx.rng.randint(5, 25)),
+			ctx.adesso - datetime.timedelta(minutes=30),
+		)
+		with ctx.come(autore):
+			bozza = preventivi.save_quote(
+				persona.lead, {"title": titolo, "patient_notes": parole, "items": voci}
+			)
+			preventivi.propose_quote(bozza["name"])
+		nome = bozza["name"]
+		persona.preventivo = nome
+		self.preventivi += 1
+
+		caso = ctx.rng.random()
+		if (ctx.oggi - giorno).days <= 7 and caso < 0.55:
+			esito, quando = None, None
+		elif caso < 0.85:
+			esito = "si"
+			quando = proposto + datetime.timedelta(hours=ctx.rng.choice((0, 0, 2, 20, 26)))
+		else:
+			esito = "no"
+			quando = proposto + datetime.timedelta(days=ctx.rng.randint(1, 5), hours=ctx.rng.randint(0, 6))
+		if quando:
+			quando = min(quando, ctx.adesso - datetime.timedelta(minutes=10))
+		with ctx.come(self.desk):
+			if esito == "si":
+				preventivi.accept_quote(nome, ctx.rng.choice(dati.SI_AL_PREVENTIVO))
+			elif esito == "no":
+				motivo, nota = ctx.rng.choice(dati.NO_AL_PREVENTIVO)
+				preventivi.decline_quote(
+					nome, motivo if frappe.db.exists("CRM Lost Reason", motivo) else None, nota
+				)
+		self._date_del_preventivo(nome, autore, proposto, esito, quando)
+		return esito != "no"
+
+	def _date_del_preventivo(self, nome, autore, proposto, esito, quando) -> None:
+		"""A quote written as "now" while the past was replayed, put back at its moments:
+		written and handed over after the visit, answered when the person did; its PDF
+		and its deal with it."""
+		from crm.preventivi import api as preventivi
+
+		ctx = self.ctx
+		valori = {
+			"proposed_on": proposto,
+			"valid_until": proposto.date() + datetime.timedelta(days=preventivi.giorni_di_validita()),
+		}
+		if esito == "si":
+			valori["accepted_on"] = quando
+		elif esito == "no":
+			valori["declined_on"] = quando
+		ctx.retrodata(preventivi.DOCTYPE, nome, proposto - datetime.timedelta(minutes=8), autore)
+		frappe.db.set_value(
+			preventivi.DOCTYPE, nome, {**valori, "modified": quando or proposto}, update_modified=False
+		)
+		for file in frappe.get_all(
+			"File",
+			filters={"attached_to_doctype": preventivi.DOCTYPE, "attached_to_name": nome},
+			pluck="name",
+		):
+			ctx.retrodata("File", file, proposto, autore)
+		trattativa = frappe.db.get_value(preventivi.DOCTYPE, nome, "deal")
+		if not trattativa:
+			return
+		if get_datetime(frappe.db.get_value("CRM Deal", trattativa, "creation")) > proposto:
+			ctx.retrodata("CRM Deal", trattativa, proposto, self.desk)
+		chiusura = {"modified": quando or proposto}
+		if quando:
+			chiusura["closed_date"] = quando.date()
+		frappe.db.set_value("CRM Deal", trattativa, chiusura, update_modified=False)
+		self._ritempra_il_registro(trattativa, [quando] if quando else [])
 
 	# -- the requests that went nowhere yet ------------------------------------------------
 
@@ -676,6 +843,15 @@ class Simulazione:
 				fields=["parent", "date"],
 			)
 		}
+
+	def _pipeline_dei_preventivi(self) -> str | None:
+		"""The quotes pipeline, made as the product makes it when the centre has none:
+		a quote handed over moves the person's deal in it."""
+		from crm.demo import registro
+		from crm.preventivi import pipeline
+
+		with registro.fuori_dal_registro():
+			return pipeline.crea()
 
 	def _stadi_nuovi_clienti(self) -> dict[str, str]:
 		"""The new clients pipeline's first, contacted, won and lost stages - made as the

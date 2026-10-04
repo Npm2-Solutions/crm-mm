@@ -5,8 +5,9 @@
 
 A centre of physiotherapy, osteopathy, nutrition and movement that opened three
 months ago: its team and their shifts, the rooms and the services with their
-prices, the people who came and keep coming (`crm.demo.simulazione`), the companies
-it has agreements with, and the day-to-day - things to do, notes, calls.
+prices, the people who came and keep coming with their cycles and quotes
+(`crm.demo.simulazione`), the companies it has agreements with, and the day-to-day -
+things to do, notes, calls.
 """
 
 from __future__ import annotations
@@ -48,8 +49,9 @@ def registra() -> None:
 			"People and appointments",
 			simulazione.crea,
 			dopo=("squadra", "agenda"),
-			descrizione="Three months of the centre's life: about two hundred people, their requests, "
-			"the appointments they came to and the ones booked, today's reception desk.",
+			descrizione="Three months of the centre's life: a few hundred people, their requests, the "
+			"appointments they came to and the ones booked, today's reception desk; the cycles of "
+			"sessions and the quotes agreed at the first visit.",
 		)
 	)
 	registra_parte(
