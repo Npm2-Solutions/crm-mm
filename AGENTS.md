@@ -760,6 +760,11 @@ row, the bar's words beside their icons).
   again for it in the middle of the tap. What a record's tab draws a screen
   below the first comes once the tab is drawn (`DopoIlDisegno`: a person's
   sections under the fields, seven calls, a fifth of the first tap on Details).
+- A tooltip opens only where a pointer rests over things, never on a touch: where
+  none does, frappe-ui's Tooltip and a Button's `tooltip` are their trigger alone
+  (`utils/puntatore.js`, rewritten in `vite/frappeUi.js`; a dozen components
+  each, two thirds of a person's page on a phone). What a tooltip says is never
+  the only place it is said.
 
 ---
 
@@ -771,7 +776,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1148 tests · ~15s** — all must pass before committing
+- **1152 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
