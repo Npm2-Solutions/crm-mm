@@ -462,6 +462,23 @@ Con il tocco, come in un'app:
 - **Tenendo premuto non compare il menu del browser.** Sulla barra, sulle
   schede, sui pulsanti e sulle righe non si apre il menu di un link e non si
   seleziona una parola: una riga tenuta premuta si sceglie (`MobileListRows`).
+- **Prenotare dal telefono, provato davvero.** Agenda, «+», il servizio dal
+  foglio, la persona cercata per nome, un orario libero, «Prenota
+  l'appuntamento»: l'appuntamento c'è, col suo prezzo. Strada facendo:
+  - **gli orari liberi, un giorno alla volta**: il giorno una volta («Lunedì 5
+    ottobre») e sotto i suoi orari, come in un'app di prenotazione, non più
+    «dom 4 ott 02:30» su ogni bottone; dodici per giorno con «altri N», cinque
+    giorni (`orariPerGiorno` in `utils/scheduler.js`). Prima i primi 24 orari
+    potevano essere tutti della prima mattina;
+  - **cercando una persona, il cellulare e l'email sotto il nome**: due
+    «Marco Romano» erano due righe uguali. La ricerca trova anche per numero o
+    per email (`search_fields` della Persona), in ogni campo che sceglie una
+    persona;
+  - **i campi allineati**: il pallino del servizio occupa il posto delle icone;
+    un campo di ricerca largo `w-full` finiva 4px prima degli altri (il padding
+    per l'anello del fuoco contato nella larghezza: `box-content` in
+    `Controls/Link.vue`); la persona scelta, una scatola disegnata come un
+    campo, è alta 40px come gli altri (`data-campo`, `telefono.css` sezione 2).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
@@ -513,6 +530,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/breakpoints.js` (`isPhoneSize`) + `telefono.css` sezione 10 | Il telefono tenuto di traverso resta un telefono, la scheda e la barra compatte. Testato in `tests/unit/breakpoints.test.js` |
+| `frontend/src/utils/scheduler.js` (`orariPerGiorno`) + `components/Calendar/AppointmentPanel.vue` | Gli orari liberi di un servizio un giorno alla volta, i primi dodici e «altri N». Testato in `tests/unit/scheduler.test.js` |
 | `frontend/src/composables/scorriGiorni.js` + `components/Mobile/AgendaDelGiorno.vue`, `pages/Today.vue` | Il giorno (e la settimana) dell'agenda e il giorno dell'accoglienza si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
 | `frontend/src/utils/installa.js` + `components/Mobile/InstallaApp.vue` | L'app sulla schermata Home: cosa propone «Altro» (`comeInstallare`), l'offerta del browser tenuta per il pulsante. Testato in `tests/unit/installa.test.js` |
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
