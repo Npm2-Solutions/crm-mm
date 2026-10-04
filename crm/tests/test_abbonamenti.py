@@ -15,13 +15,15 @@ the appointments in it. On each instalment's day an invoice of the subscription
 opens by itself, and the entries leave the appointments to invoice. Before the end
 she is reminded; one that renews by itself starts again the day after. The trainer
 reads the subscriptions of their appointments, marketing does not sell them, and
-the area shows Giulia what is left this week.
+the area shows Giulia what is left this week. In a class each person uses an entry
+of their own subscription, and the one without pays.
 """
 
 import datetime
 import json
 
 import frappe
+from frappe import _
 from frappe.utils import add_days, getdate
 
 from crm.area import api as area_api
@@ -155,8 +157,23 @@ class AbbonamentiCase(SchedulingCase):
 		doc.status = "Cancelled"
 		doc.save()
 
+	def posto(self, appuntamento, persona=None):
+		"""The subscription whose entry the person's place in ``appuntamento`` uses."""
+		return frappe.db.get_value(
+			"CRM Appointment Participant",
+			{
+				"parenttype": "CRM Appointment",
+				"parent": appuntamento.name,
+				"party": (persona or self.giulia).name,
+			},
+			"subscription",
+		)
+
 	def prezzo(self, appuntamento):
-		return frappe.db.get_value("CRM Appointment", appuntamento.name, ["subscription", "total_amount"])
+		return (
+			self.posto(appuntamento),
+			frappe.db.get_value("CRM Appointment", appuntamento.name, "total_amount"),
+		)
 
 	def letto(self, nome):
 		self.come(DESK)
@@ -216,11 +233,10 @@ class GliIngressi(AbbonamentiCase):
 		frappe.set_user("Administrator")
 		lezione = self.lezione(self.lunedi())
 		self.assertEqual(
-			frappe.db.get_value(
-				"CRM Appointment", lezione.name, ["session_cycle", "subscription", "total_amount"]
-			),
-			(ciclo["name"], None, 20),
+			frappe.db.get_value("CRM Appointment", lezione.name, ["session_cycle", "total_amount"]),
+			(ciclo["name"], 20),
 		)
+		self.assertIsNone(self.posto(lezione))
 
 	def test_finito_non_prende_altro(self):
 		fatto = self.vendi(self.open, starts_on=str(add_days(getdate(), -40)))
@@ -243,7 +259,7 @@ class GliIngressi(AbbonamentiCase):
 		self.assertEqual(self.prezzo(lezione), (None, 20))
 		pannello = A.attach(lezione.name, fatto["name"])
 		self.assertEqual(self.prezzo(lezione), (fatto["name"], 0))
-		self.assertEqual(pannello["subscription"], fatto["name"])
+		self.assertEqual(pannello["people"][0]["subscription"], fatto["name"])
 		personal = self.lezione(self.lunedi(giorni=1), servizio=self.personal)
 		self.come(DESK)
 		with self.assertRaises(frappe.ValidationError):
@@ -490,9 +506,173 @@ class ChiLegge(AbbonamentiCase):
 
 		self.come(DESK)
 		scheda = appointments.get_appointment(lezione.name)["subscription"]
-		self.assertEqual((scheda["subscription"], scheda["can_manage"]), (fatto["name"], True))
-		[opzione] = scheda["options"]
+		[posto] = scheda["people"]
+		self.assertEqual(
+			(posto["party"], posto["subscription"], scheda["can_manage"]),
+			(self.giulia.name, fatto["name"], True),
+		)
+		[opzione] = posto["options"]
 		self.assertEqual((opzione["type"], opzione["used"]), (self.due, 1))
+
+
+class UnaLezione(AbbonamentiCase):
+	"""A class of three: Giulia and Marta use an entry each of their own subscription,
+	Paolo pays his place."""
+
+	def setUp(self):
+		super().setUp()
+		self.gruppo = self.make_service(
+			"Lezione di gruppo in abbonamento",
+			[COACH],
+			default_price=15,
+			currency="EUR",
+			max_participants=10,
+			price_per_participant=1,
+		)
+		for nome in (self.due, self.open):
+			tipo = frappe.get_doc(A.TIPO, nome)
+			tipo.append("services", {"service": self.gruppo.name})
+			tipo.save()
+		self.marta, self.paolo = (
+			frappe.get_doc(
+				{"doctype": "CRM Lead", "first_name": nome, "last_name": "In classe", "email": email}
+			).insert(ignore_permissions=True)
+			for nome, email in (
+				("Marta", "marta.inclasse@example.com"),
+				("Paolo", "paolo.inclasse@example.com"),
+			)
+		)
+
+	def vendi_a(self, persona, tipo):
+		self.come(DESK)
+		try:
+			return A.sell_subscription(persona.name, json.dumps({"subscription_type": tipo}))
+		finally:
+			frappe.set_user("Administrator")
+
+	def classe(self, quando, *persone):
+		return self.make_appointment(
+			self.gruppo.name,
+			quando,
+			[COACH],
+			status="Confirmed",
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": persona.name,
+					"participant_name": persona.lead_name,
+					"status": "Booked",
+				}
+				for persona in persone
+			],
+		)
+
+	def posti(self, appuntamento):
+		return {
+			riga.party: (riga.subscription, riga.amount)
+			for riga in frappe.get_doc("CRM Appointment", appuntamento.name).participants
+		}
+
+	def test_ognuno_usa_il_suo_e_chi_non_ce_l_ha_paga(self):
+		di_giulia = self.vendi()
+		di_marta = self.vendi_a(self.marta, self.open)
+		lezione = self.classe(self.lunedi(), self.giulia, self.marta, self.paolo)
+		self.assertEqual(
+			self.posti(lezione),
+			{
+				self.giulia.name: (di_giulia["name"], 0),
+				self.marta.name: (di_marta["name"], 0),
+				self.paolo.name: (None, 15),
+			},
+		)
+		self.assertEqual(
+			frappe.db.get_value("CRM Appointment", lezione.name, ["total_amount", "price_source"]),
+			(15, _("{0} of the {1} people use their subscription").format(2, 3)),
+		)
+		# each subscription counts its own entry
+		for fatto in (di_giulia, di_marta):
+			self.assertEqual(
+				[(a["name"], a["state"]) for a in self.letto(fatto["name"])["appointments"]],
+				[(lezione.name, "booked")],
+			)
+		# Marta lets her place go: her entry comes back, Giulia keeps hers
+		doc = frappe.get_doc("CRM Appointment", lezione.name)
+		next(r for r in doc.participants if r.party == self.marta.name).status = "Cancelled"
+		doc.save()
+		self.assertEqual(self.letto(di_marta["name"])["appointments"][0]["state"], "cancelled")
+		self.assertEqual(self.letto(di_giulia["name"])["appointments"][0]["state"], "booked")
+		self.assertEqual(frappe.db.get_value("CRM Appointment", lezione.name, "total_amount"), 15)
+
+	def test_tutti_abbonati_niente_da_pagare(self):
+		self.vendi()
+		self.vendi_a(self.marta, self.open)
+		lezione = self.classe(self.lunedi(), self.giulia, self.marta)
+		self.assertEqual(
+			frappe.db.get_value("CRM Appointment", lezione.name, ["total_amount", "price_source"]),
+			(0, _("Comprised in their subscriptions")),
+		)
+		self.assertEqual(A.coperti([lezione.name]), {lezione.name})
+
+	def test_chi_si_aggiunge_usa_il_suo(self):
+		di_marta = self.vendi_a(self.marta, self.open)
+		lezione = self.classe(self.lunedi(), self.paolo)
+		doc = frappe.get_doc("CRM Appointment", lezione.name)
+		doc.append(
+			"participants",
+			{
+				"party_type": "CRM Lead",
+				"party": self.marta.name,
+				"participant_name": self.marta.lead_name,
+				"status": "Booked",
+			},
+		)
+		doc.save()
+		self.assertEqual(self.posti(lezione)[self.marta.name], (di_marta["name"], 0))
+		self.assertEqual(self.posti(lezione)[self.paolo.name], (None, 15))
+		# a subscription sold later takes the places already booked
+		di_paolo = self.vendi_a(self.paolo, self.open)
+		self.assertEqual(self.posti(lezione)[self.paolo.name], (di_paolo["name"], 0))
+
+	def test_a_mano_il_posto_di_ognuno(self):
+		di_giulia = self.vendi()
+		di_marta = self.vendi_a(self.marta, self.open)
+		lezione = self.classe(self.lunedi(), self.giulia, self.marta, self.paolo)
+		self.come(DESK)
+		pannello = A.attach(lezione.name, None, party=self.marta.name)
+		frappe.set_user("Administrator")
+		self.assertEqual(self.posti(lezione)[self.marta.name], (None, 15))
+		self.assertEqual(self.posti(lezione)[self.giulia.name], (di_giulia["name"], 0))
+		posti = {p["party"]: p for p in pannello["people"]}
+		# Paolo has nothing to choose: no line for him
+		self.assertEqual(set(posti), {self.giulia.name, self.marta.name})
+		self.assertIsNone(posti[self.marta.name]["subscription"])
+		self.assertEqual([o["name"] for o in posti[self.marta.name]["options"]], [di_marta["name"]])
+		self.come(DESK)
+		A.attach(lezione.name, di_marta["name"])
+		# somebody else's subscription is not for Paolo's place
+		with self.assertRaises(frappe.ValidationError):
+			A.attach(lezione.name, di_marta["name"], party=self.paolo.name)
+		frappe.set_user("Administrator")
+		self.assertEqual(self.posti(lezione)[self.marta.name], (di_marta["name"], 0))
+
+	def test_si_fattura_finche_qualcuno_paga(self):
+		ieri = datetime.datetime.combine(add_days(getdate(), -1), datetime.time(10), tzinfo=UTC)
+		self.vendi(starts_on=str(add_days(getdate(), -3)))
+		con_paolo = self.classe(ieri, self.giulia, self.paolo)
+		da_sola = self.classe(ieri + datetime.timedelta(hours=2), self.giulia)
+		self.assertEqual(A.coperti([con_paolo.name, da_sola.name]), {da_sola.name})
+		da_fatturare = [r["name"] for r in fatture.appointments_to_invoice()]
+		self.assertIn(con_paolo.name, da_fatturare)
+		self.assertNotIn(da_sola.name, da_fatturare)
+		# the invoice of the class is Paolo's: Giulia's place is paid with her instalments
+		bozza = fatture._fattura_da_appuntamento(con_paolo.name, "una scheda", "un erogatore")
+		self.assertEqual(bozza.party, self.paolo.name)
+		with self.assertRaises(frappe.ValidationError) as rifiuto:
+			fatture._fattura_da_appuntamento(da_sola.name, "una scheda", "un erogatore")
+		self.assertIn(
+			_("This appointment is comprised in a subscription: its instalments are invoiced"),
+			str(rifiuto.exception),
+		)
 
 
 class ITipi(AbbonamentiCase):
