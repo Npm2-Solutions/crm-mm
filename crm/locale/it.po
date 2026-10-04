@@ -42603,3 +42603,7 @@ msgstr "Ancora nessun altro utente"
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue
 msgid "No email templates yet"
 msgstr "Ancora nessun modello email"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "times"
+msgstr "volte"

@@ -422,6 +422,10 @@
               min="1"
               :aria-label="__('Times')"
             />
+            <!-- the number said nothing by itself: «4» of what -->
+            <span class="shrink-0 text-p-sm text-ink-gray-6" aria-hidden="true">
+              {{ __('times') }}
+            </span>
             <Button
               size="sm"
               :label="__('Create')"
