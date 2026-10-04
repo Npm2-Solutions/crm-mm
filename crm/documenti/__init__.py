@@ -76,3 +76,17 @@ def registra() -> None:
 		registra_capacita(capacita, concessioni)
 	# "Documents" in the area, to whom the centre gave something online
 	registra_sezione(Sezione("documents", area.documenti_online))
+	# its share of the demo: contracts, certificates, a few given online
+	from crm.demo.registro import Parte, registra_parte
+	from crm.documenti import demo
+
+	registra_parte(
+		Parte(
+			"documenti",
+			"Documents",
+			demo.crea,
+			dopo=("clienti", "abbonamenti"),
+			descrizione="The contract of every subscription, handed over; the certificate the regulars "
+			"of the classes brought; a few given online, one already downloaded.",
+		)
+	)
