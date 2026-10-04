@@ -1,8 +1,19 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
+  <!-- in a sheet (a phone) the sheet is the card, and its title the heading -->
   <div
-    class="my-2 flex w-[calc(100vw_-_2rem)] flex-col gap-2 rounded-lg bg-surface-elevation-2 p-3 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:w-[470px]"
+    class="flex flex-col gap-2"
+    :class="
+      inSheet
+        ? 'pb-2'
+        : 'my-2 w-[calc(100vw_-_2rem)] rounded-lg bg-surface-elevation-2 p-3 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:w-[470px]'
+    "
   >
-    <div class="text-base text-ink-gray-5">{{ __('Assign To') }}</div>
+    <div v-if="!inSheet" class="text-base text-ink-gray-5">
+      {{ __('Assign To') }}
+    </div>
     <Link
       class="form-control"
       value=""
@@ -89,6 +100,7 @@ const props = defineProps({
   docname: { type: String, default: '' },
   open: { type: Boolean, default: false },
   onUpdate: { type: Function, default: null },
+  inSheet: { type: Boolean, default: false },
 })
 
 const { capture } = useTelemetry()

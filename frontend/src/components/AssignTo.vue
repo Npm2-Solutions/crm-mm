@@ -1,5 +1,34 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
-  <Popover v-if="canAssign" placement="bottom-end">
+  <!-- on a phone a sheet from the bottom, as every choice there: the card
+       floated under the header, over the person's name -->
+  <template v-if="canAssign && isMobileView">
+    <div class="flex items-center" @click="nelFoglio = true">
+      <component
+        :is="assignees?.length == 1 ? 'Button' : 'div'"
+        v-if="assignees?.length"
+        :aria-label="__('Assign To')"
+      >
+        <MultipleAvatar :avatars="assignees" :withName="false" />
+      </component>
+      <Button v-else :label="__('Assign To')" />
+    </div>
+    <Dialog v-model="nelFoglio" :options="{ title: __('Assign To') }">
+      <template #body-content>
+        <AssignToBody
+          v-model="assignees"
+          :docname="docname"
+          :doctype="doctype"
+          :open="nelFoglio"
+          :onUpdate="ownerField && saveAssignees"
+          inSheet
+        />
+      </template>
+    </Dialog>
+  </template>
+  <Popover v-else-if="canAssign" placement="bottom-end">
     <template #target="{ togglePopover }">
       <div class="flex items-center" @click="togglePopover">
         <component
@@ -28,10 +57,11 @@
 <script setup>
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import AssignToBody from '@/components/AssignToBody.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
-import { toast, Popover } from 'frappe-ui'
-import { computed } from 'vue'
+import { toast, Dialog, Popover } from 'frappe-ui'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, default: '' },
@@ -51,6 +81,9 @@ const canAssign = computed(
 )
 
 const assignees = defineModel({ type: Array, default: () => [] })
+
+// the sheet open, on a phone: closing it saves, as closing the card does
+const nelFoglio = ref(false)
 
 const ownerField = computed(() => {
   if (props.doctype === 'CRM Lead') {

@@ -725,6 +725,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/Activities/emailContent.css` | Un'email nel tema scuro: il suo riquadro dice anche lui `color-scheme: dark`, o il browser gli mette dietro il bianco |
 | `frontend/src/pages/SocialPlanner.vue` | Il nuovo post è il «+», i profili l'ingranaggio |
 | `frontend/src/components/BillingProfileSection.vue` + `utils/locale.js` (`inFrase`), `utils/paesi.js`, `telefono.css` (2) | I dati di fatturazione: «Aggiungi codice fiscale…» come i campi sopra, il paese per nome («Italia», da cercare) salvato con le sue due lettere, un campo più lungo della sua casella che finisce in «…». Testato in `tests/unit/locale.test.js` e `paesi.test.js` |
+| `frontend/src/components/AssignTo.vue`, `AssignToBody.vue`, `MultipleAvatar.vue` | «Assegna a» è un foglio dal basso (si salva chiudendolo, come la scheda sul computer); nella testata solo la faccia di chi segue la persona, così il suo nome resta intero |
 | `frontend/src/components/RelatedPeopleSection.vue` | Collegare una persona: «Già in DottorCloud» e «Una persona nuova» le due metà di un interruttore solo, non due pulsanti uno sotto l'altro |
 
 ## Non incluso
