@@ -10,6 +10,7 @@ import {
   FILE,
   FILE_FRAPPE,
   FILE_MOLECOLE,
+  FILE_ICONE,
   NOMI,
   SELETTORE,
   traduciFrappeUi,
@@ -26,6 +27,10 @@ const FRAPPE = path.resolve(
 const MOLECOLE = path.resolve(
   import.meta.dirname,
   '../../node_modules/frappe-ui/src/molecules',
+)
+const ICONE = path.resolve(
+  import.meta.dirname,
+  '../../node_modules/frappe-ui/icons',
 )
 
 function tradotto(file, cartella = COMPONENTI) {
@@ -64,6 +69,18 @@ describe('frappe-ui in the user’s language', () => {
       expect(() => tradotto(file, MOLECOLE), file).not.toThrow()
       expect(tradotto(file, MOLECOLE), file).not.toBeNull()
     }
+    for (const file of FILE_ICONE) {
+      expect(() => tradotto(file, ICONE), file).not.toThrow()
+      expect(tradotto(file, ICONE), file).not.toBeNull()
+    }
+  })
+
+  it("takes the icon picker's words through the translator", () => {
+    const codice = tradotto('IconPicker.vue', ICONE)
+    expect(codice).toContain(`__('No icons found for "{0}"', [searchTerm])`)
+    expect(codice).toContain(`{{ __('No icons available.') }}`)
+    expect(codice).toContain(`placeholder || __('Select an icon...')`)
+    expect(codice).not.toMatch(/>\s*No icons/)
   })
 
   it("takes the editor toolbar's labels through the translator", () => {
