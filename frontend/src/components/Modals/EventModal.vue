@@ -17,12 +17,18 @@
           </h3>
         </div>
         <div class="flex gap-1">
-          <Button v-if="mode === 'edit'" variant="ghost" @click="deleteEvent">
+          <Button
+            :aria-label="__('Delete Event')"
+            v-if="mode === 'edit'"
+            variant="ghost"
+            @click="deleteEvent"
+          >
             <template #icon>
               <LucideTrash2 class="h-4 w-4 text-ink-gray-9" />
             </template>
           </Button>
           <Button
+            :aria-label="__('Duplicate Event')"
             v-if="mode === 'edit'"
             variant="ghost"
             @click="duplicateEvent"
@@ -31,7 +37,11 @@
               <LucideCopy class="h-4 w-4 text-ink-gray-9" />
             </template>
           </Button>
-          <Button variant="ghost" @click="show = false">
+          <Button
+            :aria-label="__('Close')"
+            variant="ghost"
+            @click="show = false"
+          >
             <template #icon>
               <LucideX class="h-4 w-4 text-ink-gray-9" />
             </template>

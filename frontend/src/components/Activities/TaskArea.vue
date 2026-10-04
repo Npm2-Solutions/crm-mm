@@ -77,6 +77,7 @@
             :options="taskStatusOptions(modalRef.updateTaskStatus, task)"
           >
             <Button
+              :aria-label="__('Change Status')"
               :tooltip="__('Change Status')"
               variant="ghost"
               class="hover:bg-surface-gray-4"

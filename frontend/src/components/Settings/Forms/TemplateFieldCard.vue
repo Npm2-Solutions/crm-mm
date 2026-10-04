@@ -70,6 +70,7 @@
         />
       </div>
       <Button
+        :aria-label="expanded ? __('Collapse') : __('Edit')"
         class="touch-target"
         variant="ghost"
         :tooltip="expanded ? __('Collapse') : __('Edit')"

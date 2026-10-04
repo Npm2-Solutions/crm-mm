@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Popover placement="bottom-end">
     <template #target="{ togglePopover }">
@@ -32,6 +35,7 @@
                 </div>
                 <div class="flex cursor-pointer items-center gap-0.5">
                   <Button
+                    :aria-label="__('Edit')"
                     variant="ghost"
                     class="!h-5 w-5 !p-1 max-md:!h-7 max-md:!w-7"
                     @click="editColumn(element)"
@@ -41,6 +45,7 @@
                     </template>
                   </Button>
                   <Button
+                    :aria-label="__('Remove')"
                     variant="ghost"
                     class="!h-5 w-5 !p-1 max-md:!h-7 max-md:!w-7"
                     @click="removeColumn(element)"

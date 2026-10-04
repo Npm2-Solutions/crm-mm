@@ -247,6 +247,7 @@
         {{ counterUp?.updatedTime }}
       </div>
       <Button
+        :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
         class="!h-6 !w-6 rounded-full text-ink-base"
@@ -265,6 +266,7 @@
         {{ callStatus == 'ringing' ? __('Ringing...') : __('Calling...') }}
       </div>
       <Button
+        :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
         class="!h-6 !w-6 rounded-full text-ink-base"
