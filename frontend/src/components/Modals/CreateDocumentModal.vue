@@ -91,13 +91,11 @@ const { document: _data, triggerOnBeforeCreate } = useDocument(props.doctype)
 const { doctypeMeta } = getMeta(props.doctype)
 
 const dialogOptions = computed(() => {
-  let doctype = props.doctype
-
-  if (doctype.startsWith('CRM ') || doctype.startsWith('FCRM ')) {
-    doctype = doctype.replace(/^(CRM |FCRM )/, '')
-  }
-
-  let title = __('New {0}', [doctype])
+  // the DocType by its name in the user's language («Settore», never
+  // «Industry»), after a verb that agrees with any noun: «Nuovo Persona» would
+  // not. Untranslated, its name without the technical prefix
+  const nome = __(props.doctype).replace(/^(CRM |FCRM )/, '')
+  let title = __('Create {0}', [nome.toLowerCase()])
   let size = 'xl'
   let actions = [
     {
