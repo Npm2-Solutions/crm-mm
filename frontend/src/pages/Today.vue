@@ -244,13 +244,15 @@ import {
   waitingRoom,
 } from '@/utils/oggi'
 import { formatDate } from '@/utils'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 // the centre's day, as the server counts it: a browser in another time zone
 // would show tomorrow's arrivals at eleven at night. Null is today.
 const date = ref(null)
-const now = ref(new Date())
+// and its now, which the arrivals' times are read against
+const now = ref(adessoDelCentro())
 
 const day = createResource({
   url: 'crm.api.oggi.get_day',
@@ -270,7 +272,7 @@ watch(
 
 // the waiting times move, and a colleague may check somebody in from another desk
 const timer = setInterval(() => {
-  now.value = new Date()
+  now.value = adessoDelCentro()
   if (!day.loading) day.reload()
 }, 60000)
 onBeforeUnmount(() => clearInterval(timer))

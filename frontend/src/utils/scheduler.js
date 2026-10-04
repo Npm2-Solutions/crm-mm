@@ -329,3 +329,28 @@ export function sulCentro(istante, fuso) {
     ora: `${p.hour}:${p.minute}`,
   }
 }
+
+/**
+ * Now on the centre's clock, as a Date whose day and hours read the centre's:
+ * the way the agenda reads the times it keeps («2026-10-04 07:30:00» taken in
+ * the phone's own zone). With the phone's own now, a phone in another time
+ * zone than the centre's - or a site whose own was never set - opened the
+ * agenda on another day, offered a new appointment at the phone's hour and
+ * counted the waiting room hours off.
+ */
+export function adessoDelCentro(
+  fuso = globalThis.window?.timezone?.system,
+  istante = new Date(),
+) {
+  const d = new Date(istante)
+  const c = sulCentro(d, fuso)
+  if (!c) return d
+  const [anno, mese, giorno] = c.giorno.split('-').map(Number)
+  const [ore, minuti] = c.ora.split(':').map(Number)
+  return new Date(anno, mese - 1, giorno, ore, minuti, d.getSeconds())
+}
+
+/** The centre's today, «2026-10-04». */
+export function oggiDelCentro(fuso) {
+  return oraDelCentro(adessoDelCentro(fuso)).slice(0, 10)
+}

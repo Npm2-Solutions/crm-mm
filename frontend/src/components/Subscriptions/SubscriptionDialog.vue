@@ -344,6 +344,7 @@ import {
 } from '@/utils/abbonamenti'
 import { SEDUTA } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
+import { oggiDelCentro } from '@/utils/scheduler'
 import {
   Badge,
   Button,
@@ -386,7 +387,7 @@ const error = ref('')
 function empty() {
   return {
     subscription_type: '',
-    starts_on: dayjs().format('YYYY-MM-DD'),
+    starts_on: oggiDelCentro(),
     price: '',
     payment: '',
     practitioner: '',
@@ -556,7 +557,7 @@ function instalmentLine(row) {
       ? __('Invoiced {0}', [row.number || ''])
       : __('Invoice to issue')
   if (!sub.billable) return ''
-  return row.due_on <= dayjs().format('YYYY-MM-DD')
+  return row.due_on <= oggiDelCentro()
     ? __('To invoice')
     : __('Invoiced on its day')
 }
@@ -580,7 +581,7 @@ const moreOptions = computed(() => {
         icon: 'pause',
         onClick: () => {
           Object.assign(pause, {
-            from_date: dayjs().format('YYYY-MM-DD'),
+            from_date: oggiDelCentro(),
             to_date: '',
             reason: '',
           })

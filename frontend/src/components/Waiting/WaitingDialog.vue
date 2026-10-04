@@ -344,6 +344,7 @@ import {
   scegli,
 } from '@/utils/attese'
 import { appLocale } from '@/utils/locale'
+import { adessoDelCentro } from '@/utils/scheduler'
 import {
   Badge,
   Button,
@@ -392,7 +393,7 @@ function empty() {
     weekdays: [],
     parts: [],
     from_date: '',
-    until: dayjs().add(30, 'day').format('YYYY-MM-DD'),
+    until: dayjs(adessoDelCentro()).add(30, 'day').format('YYYY-MM-DD'),
     channel: entry.channels?.[0] || 'Email',
     urgent: false,
     notes: '',

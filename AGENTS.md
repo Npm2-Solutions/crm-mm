@@ -485,7 +485,9 @@ site installed before anybody chose is in the framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 An appointment's day and hours are the centre's clock (`window.timezone.system`), never
 the phone's own zone: a free slot (UTC) is read with `sulCentro()`, a moment is sent as
-the agenda keeps it with `oraDelCentro()` (`utils/scheduler.js`).
+the agenda keeps it with `oraDelCentro()`, and where the agenda, the reception desk or a
+sale asks for now or today it takes `adessoDelCentro()` / `oggiDelCentro()`
+(`utils/scheduler.js`).
 When one English sentence needs two Italian ones, the rarer place passes a
 context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
 `msgctxt` entry. A short word the framework already translates («Read», «Start»,

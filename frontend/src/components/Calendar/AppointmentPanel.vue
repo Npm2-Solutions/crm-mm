@@ -820,8 +820,10 @@ import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import {
+  adessoDelCentro,
   addMinutes,
   minutesBetween,
+  oggiDelCentro,
   oraDelCentro,
   orariPerGiorno,
   sulCentro,
@@ -1172,7 +1174,7 @@ const emptyForm = () => ({
   name: null,
   service: '',
   status: 'Scheduled',
-  date: dayjs().format('YYYY-MM-DD'),
+  date: oggiDelCentro(),
   time: '09:00',
   end: '09:30',
   staff: [],
@@ -1580,8 +1582,8 @@ function seedForm() {
   const seed = props.seed || {}
   doc.value = null
   Object.assign(form, emptyForm(), {
-    date: seed.date || dayjs().format('YYYY-MM-DD'),
-    time: seed.time || dayjs().format('HH:mm'),
+    date: seed.date || oggiDelCentro(),
+    time: seed.time || dayjs(adessoDelCentro()).format('HH:mm'),
     price_list: props.meta?.settings?.default_price_list || '',
   })
   const preferred =

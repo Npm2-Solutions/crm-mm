@@ -1,4 +1,5 @@
 import {
+  adessoDelCentro,
   addMinutes,
   appointmentColor,
   blockStyle,
@@ -323,6 +324,20 @@ describe("the centre's clock", () => {
     expect(sulCentro('', 'Europe/Rome')).toBe(null)
     // an unknown zone falls back to the phone's clock, never to nothing
     expect(sulCentro('2026-09-28T22:00:00Z', 'Nowhere/Town')).not.toBe(null)
+  })
+
+  it("takes now on the centre's clock", () => {
+    // half past ten at night in Rome is already tomorrow in Kolkata
+    const istante = new Date('2026-10-04T20:30:15Z')
+    const kolkata = adessoDelCentro('Asia/Kolkata', istante)
+    expect(oraDelCentro(kolkata)).toBe('2026-10-05 02:00:15')
+    expect(oraDelCentro(adessoDelCentro('Europe/Rome', istante))).toBe(
+      '2026-10-04 22:30:15',
+    )
+    // an unknown zone is the phone's own now
+    expect(adessoDelCentro('Nowhere/Town', istante).getTime()).toBe(
+      istante.getTime(),
+    )
   })
 
   it("groups the free times by the centre's day", () => {
