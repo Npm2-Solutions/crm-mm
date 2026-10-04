@@ -649,6 +649,13 @@ Con il tocco, come in un'app:
   e sempre vuota: le chiamate sono una vista della storia (la pillola
   «Chiamate»), e ora si apre quella, con la pillola intera in vista. Il giorno
   di una chiamata si legge «dom 4 ott», non «ott 4, domenica».
+- **Una lista d'attesa, provata davvero.** Dai Dettagli della persona, «Metti
+  in lista d'attesa»: servizio, giorni, parte del giorno, «Metti in lista», e
+  «Trova un posto» propone i posti liberi. Sul sito di prova i posti del
+  pomeriggio comparivano la sera: l'agenda leggeva gli orari di lavoro in UTC
+  e mostrava tutto sull'ora del sito. Un centro arriva lì solo scegliendo un
+  fuso diverso in Impostazioni › Agenda; ora quella pagina lo dice, e chiede
+  di tenere il fuso del sito.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
