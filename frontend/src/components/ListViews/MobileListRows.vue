@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- padding, not margin: the checkbox's hit area reaches into it, out to
        the edge of the screen, and a scroll box clips what goes past its own
@@ -11,7 +15,7 @@
           <div>{{ __(group.label) }} -</div>
           <div class="flex items-center gap-1">
             <component :is="group.icon" v-if="group.icon" />
-            <div v-if="group.group == ' '" class="text-ink-gray-4">
+            <div v-if="group.group == ' '" class="text-ink-gray-5">
               {{ __('Empty') }}
             </div>
             <div v-else>{{ group.group }}</div>

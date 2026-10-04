@@ -81,7 +81,7 @@
             </span>
             <span
               v-if="option.count"
-              class="tabular-nums text-ink-gray-4"
+              class="tabular-nums text-ink-gray-5"
               :class="channel === option.key ? 'text-ink-gray-5' : ''"
             >
               {{ option.count }}

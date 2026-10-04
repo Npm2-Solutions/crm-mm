@@ -594,7 +594,7 @@
             }}
           </p>
           <code
-            class="truncate text-xs text-ink-gray-4"
+            class="truncate text-xs text-ink-gray-5"
             :title="version.schema_hash"
           >
             SHA-256 {{ version.schema_hash }}

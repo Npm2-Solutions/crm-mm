@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="grid grid-cols-[1.1fr_0.9fr_1.2fr_28px] items-center gap-2">
     <Autocomplete
@@ -12,7 +16,7 @@
       :options="operatorOptions"
       @update:modelValue="(value) => setOperator(value)"
     />
-    <div v-if="!needsValue(condition.operator)" class="text-sm text-ink-gray-4">
+    <div v-if="!needsValue(condition.operator)" class="text-sm text-ink-gray-5">
       —
     </div>
     <ValueInput

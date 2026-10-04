@@ -33,7 +33,7 @@
         >
           <!-- with nobody assigned the box was an empty grey rectangle that
                looked broken; it says what it is for -->
-          <span v-if="!assignees.length" class="px-1 text-base text-ink-gray-4">
+          <span v-if="!assignees.length" class="px-1 text-base text-ink-gray-5">
             {{ __('Search people…') }}
           </span>
           <Tooltip

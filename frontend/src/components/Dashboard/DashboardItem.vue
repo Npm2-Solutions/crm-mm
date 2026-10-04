@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     v-if="item.name === 'heading'"
@@ -5,7 +8,7 @@
   >
     <h3
       class="shrink-0 text-base font-semibold"
-      :class="item.config?.title ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+      :class="item.config?.title ? 'text-ink-gray-8' : 'text-ink-gray-5'"
     >
       {{ item.config?.title || __('Section title') }}
     </h3>
@@ -17,7 +20,7 @@
     class="h-full w-full rounded-xl"
     :class="
       editing
-        ? 'flex items-center justify-center border border-dashed border-outline-gray-2 text-xs text-ink-gray-4'
+        ? 'flex items-center justify-center border border-dashed border-outline-gray-2 text-xs text-ink-gray-5'
         : ''
     "
   >

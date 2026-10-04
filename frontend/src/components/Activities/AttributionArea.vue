@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Where this person came from, and what they did — as one stream.
 
   It used to be three things stacked on one screen: the ad in a card, the two
@@ -14,7 +17,7 @@
   <div class="h-full overflow-y-auto px-3 pb-5 sm:px-10">
     <div
       v-if="journey.loading"
-      class="flex h-full flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-4"
+      class="flex h-full flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-5"
     >
       <LoadingIndicator class="h-6 w-6" />
       <span>{{ __('Loading...') }}</span>

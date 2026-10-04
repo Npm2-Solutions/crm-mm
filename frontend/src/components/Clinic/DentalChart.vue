@@ -42,7 +42,7 @@
                 class="text-p-xs tabular-nums"
                 :class="
                   mancante(rows, dente)
-                    ? 'text-ink-gray-4 line-through'
+                    ? 'text-ink-gray-5 line-through'
                     : 'text-ink-gray-7'
                 "
               >

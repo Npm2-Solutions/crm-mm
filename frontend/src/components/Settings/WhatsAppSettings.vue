@@ -1,4 +1,7 @@
 <!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
+<!--
   WhatsApp numbers: the ones connected, the one that sends, and the button that
   adds another.
 
@@ -415,7 +418,7 @@
                   <!-- the two values Meta asks for in a support ticket -->
                   <div
                     v-if="row.error_id || row.session_id"
-                    class="text-p-xs text-ink-gray-4"
+                    class="text-p-xs text-ink-gray-5"
                   >
                     {{
                       [

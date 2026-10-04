@@ -153,7 +153,7 @@
                   v-if="
                     section.columns.reduce((n, c) => n + c.fields.length, 0) > 0
                   "
-                  class="text-xs text-ink-gray-4 bg-surface-gray-3 rounded px-1.5 py-0.5 leading-none"
+                  class="text-xs text-ink-gray-5 bg-surface-gray-3 rounded px-1.5 py-0.5 leading-none"
                 >
                   {{ section.columns.reduce((n, c) => n + c.fields.length, 0) }}
                   {{
@@ -238,7 +238,7 @@
                     <template #item-label="{ item }">
                       <div class="flex flex-col gap-1 text-ink-gray-9">
                         <div>{{ item.label }}</div>
-                        <div class="text-ink-gray-4 text-sm">
+                        <div class="text-ink-gray-5 text-sm">
                           {{ `${item.fieldname} - ${item.fieldtype}` }}
                         </div>
                       </div>
@@ -252,7 +252,7 @@
         <template #footer>
           <div
             v-if="tab.sections.length === 0"
-            class="flex items-center justify-center min-h-20 text-sm text-ink-gray-4 pointer-events-none select-none"
+            class="flex items-center justify-center min-h-20 text-sm text-ink-gray-5 pointer-events-none select-none"
           >
             {{ __('Drag a section or a field here to get started') }}
           </div>

@@ -214,7 +214,7 @@ const primario =
   'bg-[var(--brand-action)] text-[var(--on-brand-solid)] group-hover:bg-[var(--brand-action-hover)]'
 const normale =
   'bg-surface-gray-2 text-ink-gray-8 group-hover:bg-surface-gray-3'
-const spento = 'bg-surface-gray-1 text-ink-gray-4'
+const spento = 'bg-surface-gray-1 text-ink-gray-5'
 
 // writing to somebody is the composer's, and the level's (doc 30)
 const scrive = computed(() => puo('conversazioni.usa'))

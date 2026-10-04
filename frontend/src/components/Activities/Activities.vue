@@ -23,7 +23,7 @@
   <div ref="scroller" class="flex h-full flex-col overflow-y-auto">
     <div
       v-if="all_activities?.loading"
-      class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-4"
+      class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-5"
     >
       <LoadingIndicator class="h-6 w-6" />
       <span>{{ __('Loading...') }}</span>

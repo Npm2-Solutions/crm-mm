@@ -35,7 +35,7 @@
       <div
         v-if="readonly && inWords !== null"
         class="whitespace-pre-line rounded-md bg-surface-gray-1 px-3 py-2 text-base"
-        :class="inWords ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+        :class="inWords ? 'text-ink-gray-8' : 'text-ink-gray-5'"
       >
         {{ inWords || '—' }}
       </div>

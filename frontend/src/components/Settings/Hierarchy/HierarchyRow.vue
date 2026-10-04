@@ -44,7 +44,7 @@
       <span class="text-ink-gray-8 truncate">
         {{ node.full_name }}
       </span>
-      <span class="text-ink-gray-4">{{ node.role_label }}</span>
+      <span class="text-ink-gray-5">{{ node.role_label }}</span>
       <Badge
         v-if="!node.enabled"
         :label="__('disabled')"

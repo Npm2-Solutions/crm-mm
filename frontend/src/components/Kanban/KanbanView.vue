@@ -112,7 +112,7 @@
                       <div v-if="fields[titleField]">
                         {{ fields[titleField] }}
                       </div>
-                      <div v-else class="text-ink-gray-4">
+                      <div v-else class="text-ink-gray-5">
                         {{ __('No Title') }}
                       </div>
                     </div>

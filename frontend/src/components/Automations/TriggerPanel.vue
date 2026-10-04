@@ -149,7 +149,7 @@
           v-model="trigger.condition_groups"
           :fields="editor.fields.value"
         />
-        <p class="text-xs text-ink-gray-4">
+        <p class="text-xs text-ink-gray-5">
           {{ __('These conditions belong to this trigger alone.') }}
         </p>
       </div>

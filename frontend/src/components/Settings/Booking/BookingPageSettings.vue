@@ -479,7 +479,7 @@ const RuleField = defineComponent({
             props.rule.type === 'check' ? slots.default?.() : null,
           ]),
           props.rule.type === 'check' ? null : slots.default?.(),
-          hint ? h('span', { class: 'text-p-xs text-ink-gray-4' }, hint) : null,
+          hint ? h('span', { class: 'text-p-xs text-ink-gray-5' }, hint) : null,
         ],
       )
     }

@@ -175,7 +175,7 @@
           class="rounded-lg border border-outline-gray-2 p-3"
         >
           <div class="flex items-start gap-2">
-            <span class="pt-2 text-p-sm text-ink-gray-4">{{ i + 1 }}</span>
+            <span class="pt-2 text-p-sm text-ink-gray-5">{{ i + 1 }}</span>
             <FormControl
               v-model="step.title"
               class="flex-1"

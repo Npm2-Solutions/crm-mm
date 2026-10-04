@@ -71,7 +71,7 @@
           <template #item-label="{ item }">
             <div class="flex flex-col gap-1 text-ink-gray-9">
               <div>{{ item.label }}</div>
-              <div class="text-ink-gray-4 text-sm">
+              <div class="text-ink-gray-5 text-sm">
                 {{ `${item.fieldname} - ${item.fieldtype}` }}
               </div>
             </div>

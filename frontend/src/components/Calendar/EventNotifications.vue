@@ -8,7 +8,7 @@
     <button
       type="button"
       class="inline-flex items-center gap-1.5 cursor-pointer transition-colors focus:outline-none shrink-0 bg-surface-base border border-outline-gray-2 hover:border-outline-gray-3 active:border-outline-gray-3 active:bg-surface-gray-4 focus-visible:ring focus-visible:ring-outline-gray-3 h-7 max-md:h-10 text-base text-left px-2 rounded"
-      :class="notifications?.length ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+      :class="notifications?.length ? 'text-ink-gray-8' : 'text-ink-gray-5'"
       @click="addShowNotifications"
     >
       <span

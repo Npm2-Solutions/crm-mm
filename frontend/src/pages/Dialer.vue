@@ -237,7 +237,7 @@
                   <span class="truncate text-ink-gray-8">{{
                     e.display_name
                   }}</span>
-                  <span class="text-ink-gray-4">{{ e.number }}</span>
+                  <span class="text-ink-gray-5">{{ e.number }}</span>
                 </div>
               </div>
             </div>
