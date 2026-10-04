@@ -1040,7 +1040,9 @@ const events = createListResource({
   filters: buildEventFilters(),
   orFilters: buildEventOrFilters(),
   pageLength: 9999,
-  auto: true,
+  // asked by what shows them: the grid for its range (`handleRangeChange`),
+  // the phone's list for its day (`eventiDelGiorno`). Asked by itself as well,
+  // it brought every open event of the centre, to 9,999, before either
   transform: (data) =>
     data
       // appointments are mirrored into Event for Google sync; showing both would
@@ -1364,7 +1366,9 @@ onMounted(async () => {
   activeEvent.value = ''
   mode.value = ''
   showEventPanel.value = false
-  reloadScheduler()
+  // the grid asks for its range itself as it is drawn (`handleRangeChange`):
+  // asked here as well, the week's appointments came twice
+  if (viewMode.value !== 'calendar') reloadScheduler()
 
   const { eventId, date, appointment } = route.query
   if (date) setAgendaDate(date)
