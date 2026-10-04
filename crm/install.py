@@ -53,7 +53,24 @@ def after_install(force=False):
 	add_consent_types()
 	add_exercise_library()
 	add_brand()
+	add_genders_and_titles()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
+
+
+# the titles a centre in Italy writes before a name: Sig., Sig.ra, Dott., Prof.
+TITOLI = ("Mr", "Mrs", "Dr", "Prof")
+
+
+def add_genders_and_titles():
+	"""The genders and titles a person is given. The framework makes them in its
+	setup wizard: a site set up without it showed an empty «Gender» on every
+	person, and only the titles a test had left behind."""
+	from frappe.desk.page.setup_wizard.install_fixtures import update_genders
+
+	update_genders()
+	for titolo in TITOLI:
+		if not frappe.db.exists("Salutation", titolo):
+			frappe.get_doc({"doctype": "Salutation", "salutation": titolo}).insert(ignore_permissions=True)
 
 
 def add_exercise_library():
