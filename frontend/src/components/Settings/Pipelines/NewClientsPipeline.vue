@@ -46,7 +46,9 @@
     </div>
     <ErrorMessage :message="error" />
     <div class="flex justify-end">
-      <AzioneImpostazioni
+      <Button
+        variant="solid"
+        class="max-md:w-full"
         :label="__('Save')"
         :disabled="!changed"
         :loading="busy"
@@ -57,7 +59,6 @@
 </template>
 
 <script setup>
-import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import { usersStore } from '@/stores/users'
 import {
   Button,

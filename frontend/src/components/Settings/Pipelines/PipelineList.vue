@@ -72,8 +72,10 @@
                 <div class="text-ink-gray-8 text-sm">
                   {{ pipeline.deal_count || 0 }}
                 </div>
+                <!-- the default pipeline has nothing to offer here: a button
+                     that opened an empty menu («No options») is a place -->
                 <Dropdown
-                  v-if="pipeline.name"
+                  v-if="pipeline.name && dropdownOptions(pipeline).length"
                   placement="right"
                   :options="dropdownOptions(pipeline)"
                 >
@@ -84,6 +86,7 @@
                     @click="isConfirmingDelete = false"
                   />
                 </Dropdown>
+                <span v-else class="size-7 shrink-0" aria-hidden="true" />
               </div>
             </div>
             <hr
