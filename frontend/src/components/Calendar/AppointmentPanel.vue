@@ -123,6 +123,54 @@
           </span>
         </div>
 
+        <!-- cancelling asks first, and why: the time goes back free at once
+             (the waiting list may offer it) and the reason reaches the
+             platform it was booked on. One tap in a menu cancelled it -->
+        <div
+          v-if="cancelling.open"
+          class="mx-4.5 mt-3 flex flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+        >
+          <div class="text-p-base font-medium text-ink-gray-8">
+            {{ __('Cancel this appointment?') }}
+          </div>
+          <div class="text-p-sm text-ink-gray-6">
+            {{ __('Its time goes back free for others.') }}
+          </div>
+          <FormControl
+            v-model="cancelling.reason"
+            type="textarea"
+            :rows="2"
+            :placeholder="__('Why, if you know (they called, ill…)')"
+            :aria-label="__('Why')"
+          />
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button
+              :label="__('Keep it', null, 'Appointment')"
+              @click="cancelling.open = false"
+            />
+            <Button
+              variant="solid"
+              theme="red"
+              :label="__('Cancel the appointment')"
+              :loading="changing"
+              @click="cancelIt"
+            />
+          </div>
+        </div>
+        <!-- a cancelled one says why, when somebody said -->
+        <div
+          v-else-if="doc.status === 'Cancelled' && doc.cancellation_reason"
+          class="flex items-start gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
+        >
+          <span
+            class="lucide-circle-x mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 whitespace-pre-line break-words">
+            {{ doc.cancellation_reason }}
+          </span>
+        </div>
+
         <!-- which session of its cycle it is: in or out by hand, when the
              desk booked it before selling the cycle, or the other way round -->
         <div
@@ -321,15 +369,32 @@
           <div class="whitespace-pre-line">{{ doc.conflict_note }}</div>
         </div>
 
-        <!-- a course, a cycle of sessions: the same appointment, repeated -->
+        <!-- a course, a cycle of sessions: the same appointment, repeated.
+             Rarely wanted, it is a row that opens: always open at the foot it
+             took the bottom of a phone's screen, where the hand is -->
         <div
           v-if="doc.can_write && !doc.series && doc.status !== 'Cancelled'"
-          class="mt-auto border-t border-outline-gray-1 px-4.5 py-3"
+          class="mt-auto border-t border-outline-gray-1 px-4.5 py-3 max-md:mt-2"
         >
-          <div class="mb-2 text-p-sm text-ink-gray-6">
+          <button
+            v-if="!repeatOpen"
+            type="button"
+            class="flex min-h-8 w-full items-center gap-3 text-left text-ink-gray-7"
+            @click="repeatOpen = true"
+          >
+            <span class="lucide-repeat size-4 shrink-0" aria-hidden="true" />
+            <span class="min-w-0 flex-1">{{
+              __('Repeat this appointment')
+            }}</span>
+            <span
+              class="lucide-chevron-down size-4 shrink-0 text-ink-gray-5"
+              aria-hidden="true"
+            />
+          </button>
+          <div v-else class="mb-2 text-p-sm text-ink-gray-6">
             {{ __('Repeat this appointment') }}
           </div>
-          <div class="flex items-center gap-2">
+          <div v-if="repeatOpen" class="flex items-center gap-2">
             <FormControl
               v-model="repeat.rule"
               class="min-w-0 flex-1"
@@ -887,6 +952,11 @@ const appointment = createResource({
 
 function load(name) {
   doc.value = null
+  // another appointment, or the series just made: the repeat row closed again,
+  // and no question about cancelling left open
+  repeatOpen.value = false
+  repeat.rule = ''
+  cancelling.open = false
   appointment.submit(
     { name },
     {
@@ -994,13 +1064,38 @@ const statusActions = computed(() =>
   STATUSES.filter((status) => status !== doc.value?.status).map((status) => ({
     label: __(status),
     onClick: () =>
-      apply(
-        'crm.api.appointments.set_status',
-        { name: doc.value.name, status },
-        () => toast.success(__('Marked as {0}', [__(status).toLowerCase()])),
-      ),
+      status === 'Cancelled'
+        ? askToCancel()
+        : apply(
+            'crm.api.appointments.set_status',
+            { name: doc.value.name, status },
+            () =>
+              toast.success(__('Marked as {0}', [__(status).toLowerCase()])),
+          ),
   })),
 )
+
+const cancelling = reactive({ open: false, reason: '' })
+
+function askToCancel() {
+  cancelling.reason = ''
+  cancelling.open = true
+}
+
+function cancelIt() {
+  apply(
+    'crm.api.appointments.set_status',
+    {
+      name: doc.value.name,
+      status: 'Cancelled',
+      reason: cancelling.reason.trim() || null,
+    },
+    () => {
+      cancelling.open = false
+      toast.success(__('Appointment cancelled'))
+    },
+  )
+}
 
 function attendanceActions(row) {
   return ATTENDANCE.filter((status) => status !== (row.status || 'Booked')).map(
@@ -1125,6 +1220,7 @@ function moveToSubscription(subscription) {
 // --- repeating -------------------------------------------------------------
 
 const repeat = reactive({ rule: '', occurrences: 4 })
+const repeatOpen = ref(false)
 const repeating = ref(false)
 const repeatOptions = [
   { label: __('Does not repeat'), value: '' },
@@ -1735,10 +1831,7 @@ function confirmDelete() {
         label: __('Cancel it instead'),
         onClick: (closeDialog) => {
           closeDialog()
-          apply('crm.api.appointments.set_status', {
-            name: doc.value.name,
-            status: 'Cancelled',
-          })
+          askToCancel()
         },
       },
       {
