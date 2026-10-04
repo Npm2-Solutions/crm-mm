@@ -166,6 +166,8 @@ const noteCallbacks = {
     ricarica()
     capture('note_updated')
   },
+  // the sheet's «Delete»: on a phone the list has no menu of its own
+  afterDelete: () => ricarica(),
 }
 
 function createNote() {

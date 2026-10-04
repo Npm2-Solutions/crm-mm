@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <EventModal
     v-if="showEventModal"
@@ -50,6 +53,8 @@ function showTask(task) {
     callbacks: {
       afterInsert: (d) => afterDoctype(d, true),
       afterUpdate: afterDoctype,
+      // the sheet's «Delete», as the list's menu
+      afterDelete: () => activities.value.reload(),
     },
   })
 }
@@ -86,6 +91,7 @@ function showNote(note) {
     callbacks: {
       afterInsert: (d) => afterDoctype(d, true),
       afterUpdate: afterDoctype,
+      afterDelete: () => activities.value.reload(),
     },
   })
 }

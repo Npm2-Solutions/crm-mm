@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :size="'xl'">
     <template #body>
@@ -25,6 +28,15 @@
               :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               @click="openQuickEntryModal"
+            />
+            <Button
+              v-if="puoEliminare"
+              variant="ghost"
+              class="w-7"
+              icon="lucide-trash-2"
+              :label="__('Delete')"
+              :tooltip="__('Delete')"
+              @click="chiediDiEliminare"
             />
             <Button
               variant="ghost"
@@ -79,6 +91,8 @@ const props = defineProps({
   doctype: { type: String, default: '' },
   docname: { type: String, default: '' },
   defaults: { type: Object, default: () => ({}) },
+  /** whoever opened the sheet takes the record away too (doctypeModal.js) */
+  eliminabile: { type: Boolean, default: false },
 })
 
 const show = defineModel({ type: Boolean })
@@ -88,15 +102,20 @@ const show = defineModel({ type: Boolean })
 const fieldsBox = ref(null)
 useFirstFieldFocus(fieldsBox, show)
 
-const emit = defineEmits(['afterInsert', 'afterUpdate'])
+const emit = defineEmits(['afterInsert', 'afterUpdate', 'afterDelete'])
 
 const router = useRouter()
 
 const { puo } = usersStore()
 const { $dialog, $socket } = globalStore()
 
-const { document, scripts, triggerOnRender, triggerOnBeforeCreate } =
-  useDocument(props.doctype, props.docname || null)
+const {
+  document,
+  permissions,
+  scripts,
+  triggerOnRender,
+  triggerOnBeforeCreate,
+} = useDocument(props.doctype, props.docname || null)
 
 const doc = computed(() => document.doc || {})
 
@@ -152,6 +171,59 @@ function update() {
     onError: (err) => {
       error.value = err.messages?.[0] || 'Could not update document'
     },
+  })
+}
+
+// what the sheet asks before taking a record away, a sentence per kind
+const ELIMINA = {
+  'CRM Task': () => ({
+    titolo: __('Delete Task'),
+    domanda: __('Are you sure you want to delete this task?'),
+    fatto: __('Task deleted'),
+  }),
+  'FCRM Note': () => ({
+    titolo: __('Delete the note'),
+    domanda: __('Are you sure you want to delete this note?'),
+    fatto: __('Note deleted'),
+  }),
+}
+
+// a record already saved, of a kind the sheet can name, that the server lets
+// this session delete
+const puoEliminare = computed(
+  () =>
+    editMode.value &&
+    props.eliminabile &&
+    Boolean(ELIMINA[props.doctype]) &&
+    Boolean(permissions?.data?.permissions?.delete),
+)
+
+function chiediDiEliminare() {
+  const frasi = ELIMINA[props.doctype]()
+  const name = document.doc.name
+  $dialog({
+    title: frasi.titolo,
+    message: frasi.domanda,
+    actions: [
+      {
+        label: __('Delete'),
+        theme: 'red',
+        variant: 'solid',
+        async onClick(close) {
+          try {
+            await call('frappe.client.delete', { doctype: props.doctype, name })
+          } catch (err) {
+            close()
+            error.value = err.messages?.[0] || __('Could not delete')
+            return
+          }
+          close()
+          toast.success(frasi.fatto)
+          emit('afterDelete', name)
+          show.value = false
+        },
+      },
+    ],
   })
 }
 

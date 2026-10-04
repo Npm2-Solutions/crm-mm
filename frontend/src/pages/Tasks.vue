@@ -383,6 +383,8 @@ const taskCallbacks = {
     ricaricaLeCose()
     capture('task_updated')
   },
+  // the sheet's «Delete»: on a phone the list has no menu of its own
+  afterDelete: () => ricaricaLeCose(),
 }
 
 function showTask(name) {

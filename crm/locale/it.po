@@ -42457,3 +42457,15 @@ msgstr "Scegli l'anno"
 #: frontend/vite/frappeUi.js
 msgid "Select month"
 msgstr "Scegli il mese"
+
+#: frontend/src/components/Modals/DoctypeModal.vue
+msgid "Delete the note"
+msgstr "Elimina la nota"
+
+#: frontend/src/components/Modals/DoctypeModal.vue
+msgid "Are you sure you want to delete this note?"
+msgstr "Vuoi davvero eliminare questa nota?"
+
+#: frontend/src/components/Modals/DoctypeModal.vue
+msgid "Task deleted"
+msgstr "Cosa da fare eliminata"
