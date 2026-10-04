@@ -13,6 +13,7 @@ import {
   nomeDellaPagina,
   paginaSorelle,
   SORELLE,
+  titoloDellaPagina,
 } from '@/utils/menu'
 
 // what each level may open of the menu, as crm/permissions/catalogo.py gives it
@@ -300,6 +301,23 @@ describe('the pages that live together', () => {
     for (const pagine of SORELLE)
       for (const pagina of pagine)
         expect(router, pagina.key).toContain(`name: '${pagina.key}'`)
+  })
+})
+
+describe("a page's heading, for a screen reader", () => {
+  it('is the page’s name', () => {
+    expect(titoloDellaPagina('Leads')).toBe('People')
+    expect(titoloDellaPagina('Today')).toBe('Reception desk')
+    expect(titoloDellaPagina('Invoices')).toBe('Invoices')
+  })
+
+  it('is nothing for a page headed by its own, or a page with none', () => {
+    expect(titoloDellaPagina('Lead')).toBe('')
+    expect(titoloDellaPagina('More')).toBe('')
+    expect(titoloDellaPagina('Deal')).toBe('')
+    expect(titoloDellaPagina('Contact')).toBe('')
+    expect(titoloDellaPagina('Organization')).toBe('')
+    expect(titoloDellaPagina('Home')).toBe('')
   })
 })
 

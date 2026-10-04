@@ -193,6 +193,24 @@ export function nomeDellaPagina(chiave, menu = MENU, sorelle = SORELLE) {
   return ALTRE_PAGINE[chiave] || ''
 }
 
+// The pages headed by a heading of their own: a record by its name (a person's,
+// a deal's), «Altro» by its title. One with their list's name would come first
+export const CON_UN_TITOLO = new Set([
+  'Lead',
+  'Deal',
+  'Contact',
+  'Organization',
+  'More',
+])
+
+/**
+ * The page's heading for a screen reader (VoiceOver and TalkBack jump between
+ * headings): its name, nothing for a page headed by its own.
+ */
+export function titoloDellaPagina(chiave) {
+  return CON_UN_TITOLO.has(chiave) ? '' : nomeDellaPagina(chiave)
+}
+
 /** The pages a page lives with that the session opens, itself among them. */
 export function paginaSorelle(chiave, c, sorelle = SORELLE) {
   const gruppo = sorelle.find((pagine) => pagine.some((p) => p.key === chiave))

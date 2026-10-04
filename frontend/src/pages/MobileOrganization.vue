@@ -65,9 +65,9 @@
               </component>
             </div>
             <div class="flex flex-col gap-2 truncate">
-              <div class="truncate text-lg-medium text-ink-gray-9">
+              <h1 class="truncate text-lg-medium text-ink-gray-9">
                 {{ organization.doc.name }}
-              </div>
+              </h1>
               <div class="flex items-center gap-1.5">
                 <Button :aria-label="__('Open Website')" @click="openWebsite">
                   <span class="lucide-link h-4 w-4" aria-hidden="true" />

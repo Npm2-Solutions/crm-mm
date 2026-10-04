@@ -685,7 +685,9 @@ row, the bar's words beside their icons).
   in `composables/nomeAlControllo.js`), a button or a select read with what it
   shows; a new list of fields does the same. What a tooltip tells on a mouse
   (a message's ticks) a screen reader reads too: `role="img"` and the same
-  words as `aria-label`.
+  words as `aria-label`. A page's name is its heading for a screen reader:
+  `App.vue` draws it, unseen, from the menu's words (`titoloDellaPagina`); a
+  page headed by a heading of its own (a record's name) is in `CON_UN_TITOLO`.
 - While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
   `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
   must stay in sight sits at the bottom of the frame or of a sheet, never

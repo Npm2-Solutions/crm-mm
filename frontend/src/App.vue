@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <FrappeUIProvider>
     <NotPermitted v-if="$route.name === 'Not Permitted'" />
@@ -8,6 +11,9 @@
       v-else-if="session.isLoggedIn && $route.name === 'WebsitePage'"
     />
     <Layout v-else-if="session.isLoggedIn" class="isolate">
+      <!-- the page's name, for a screen reader's headings: on a phone it is a
+           link or a switch in the header, never a heading -->
+      <h1 v-if="titolo" class="sr-only">{{ __(titolo) }}</h1>
       <router-view :key="$route.fullPath" />
     </Layout>
     <Dialogs />
@@ -23,12 +29,17 @@ import DoctypeModals from '@/components/Modals/DoctypeModals.vue'
 import { Dialogs } from '@/utils/dialogs'
 import { sessionStore } from '@/stores/session'
 import { isMobileView } from '@/composables/breakpoints'
+import { titoloDellaPagina } from '@/utils/menu'
+import { useRoute } from 'vue-router'
 import { FrappeUIProvider, dayjs, setConfig, useTheme } from 'frappe-ui'
 import 'dayjs/esm/locale/it'
 import { computed, defineAsyncComponent, provide } from 'vue'
 
 const session = sessionStore()
 provide('session', session)
+
+const route = useRoute()
+const titolo = computed(() => titoloDellaPagina(route.name))
 
 const { setTheme } = useTheme()
 if (!localStorage.getItem('theme')) {

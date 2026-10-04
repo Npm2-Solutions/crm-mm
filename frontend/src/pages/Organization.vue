@@ -81,9 +81,9 @@
                   </component>
                 </div>
                 <div class="flex flex-col gap-2 truncate">
-                  <div class="truncate text-3xl-medium text-ink-gray-9">
+                  <h1 class="truncate text-3xl-medium text-ink-gray-9">
                     <span>{{ organization.doc.name }}</span>
-                  </div>
+                  </h1>
                   <div
                     v-if="organization.doc.website"
                     class="flex items-center gap-1.5 text-base text-ink-gray-8"

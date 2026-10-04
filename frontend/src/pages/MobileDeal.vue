@@ -18,6 +18,8 @@
       </Breadcrumbs>
     </header>
   </LayoutHeader>
+  <!-- the deal's name is in the crumbs: its heading, for a screen reader -->
+  <h1 v-if="doc.name" class="sr-only">{{ title }}</h1>
   <div
     v-if="doc.name"
     class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
