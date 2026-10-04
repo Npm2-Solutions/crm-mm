@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 /**
  * Where the router's idea of "where am I" and the nav's idea of it are
  * reconciled.
@@ -11,9 +14,16 @@
 // SORELLE), the reception desk and the waiting list behind the agenda. Both
 // the sidebar and the phone's bar keep the section lit there: an entry going
 // dark because you opened a record, or the companies of the people, would read
-// as broken.
+// as broken. A person's form being filled is the person's.
 const DENTRO = {
-  Leads: ['Lead', 'Contacts', 'Contact', 'Organizations', 'Organization'],
+  Leads: [
+    'Lead',
+    'Contacts',
+    'Contact',
+    'Organizations',
+    'Organization',
+    'FormFill',
+  ],
   Deals: ['Deal'],
   Calendar: ['Today', 'Waiting List'],
   Tasks: ['Notes'],
