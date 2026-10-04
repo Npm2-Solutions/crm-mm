@@ -676,7 +676,8 @@ row, the bar's words beside their icons).
   which the lists need (`ViewControls` reads `?view=` once).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
-  phone. A sheet's or a page's row of actions is one row on a phone: what
+  phone. A popover that holds a list of choices (the agenda's filters) marks
+  the list `data-foglio`, and is a sheet of 48px rows as well. A sheet's or a page's row of actions is one row on a phone: what
   does not fit goes under a «⋯» (an icon button, which stays a 44px square),
   as the form's «Discard» and «Other ways to sign» do. A sheet taken by its grabber follows the finger down and closes as
   Escape does (`utils/trascinaFoglio.js`); a dialog that is a screen of its own
@@ -777,7 +778,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1159 tests · ~15s** — all must pass before committing
+- **1163 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
