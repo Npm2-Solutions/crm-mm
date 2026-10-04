@@ -113,6 +113,20 @@ class TestMarchio(IntegrationTestCase):
 		marchio.applica()
 		self.assertEqual(frappe.db.get_single_value("Website Settings", "app_name"), marchio.nome())
 
+	def test_i_codici_d_accesso_vengono_dal_prodotto(self):
+		# an authenticator app shows the issuer beside its codes, the two-step
+		# login's emails say it: never the framework's
+		frappe.db.set_single_value("System Settings", "otp_issuer_name", "Frappe Framework")
+		with con_il_verticale(PROVA.chiave):
+			marchio.applica()
+			self.assertEqual(frappe.db.get_single_value("System Settings", "otp_issuer_name"), PROVA.nome)
+		marchio.applica()
+		self.assertEqual(frappe.db.get_single_value("System Settings", "otp_issuer_name"), marchio.nome())
+		# the centre's own name stays
+		frappe.db.set_single_value("System Settings", "otp_issuer_name", "Centro Aurora")
+		marchio.applica()
+		self.assertEqual(frappe.db.get_single_value("System Settings", "otp_issuer_name"), "Centro Aurora")
+
 	def test_il_piano_che_cambia_riveste_il_framework(self):
 		marchio.applica()
 		with con_il_verticale(PROVA.chiave):

@@ -405,6 +405,11 @@ def _nome_e_piede(marchio: Marchio) -> None:
 	for doctype in ("Website Settings", "System Settings"):
 		frappe.db.set_single_value(doctype, "app_name", marchio.nome)
 	frappe.db.set_single_value("Website Settings", "footer_powered", marchio.nome)
+	# the name an authenticator app shows beside its codes, and the two-step
+	# login's emails' «from»: the framework's own («Frappe Framework») unless the
+	# centre chose one
+	if not nome_scelto(frappe.db.get_single_value("System Settings", "otp_issuer_name")):
+		frappe.db.set_single_value("System Settings", "otp_issuer_name", marchio.nome)
 
 
 def _loghi(marchio: Marchio) -> None:
