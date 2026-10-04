@@ -636,6 +636,10 @@ row, the bar's words beside their icons).
 - A box drawn as a field (what was chosen, with the × that puts the search
   back) carries `data-campo`: `telefono.css` gives it the fields' 40px and
   16px.
+- A record's card above its tabs folds away while the tab below is scrolled
+  and comes back at its top (`useTestataRaccolta`): the tabs scroll in boxes
+  of their own, so the page never takes it off by itself. Something that opens
+  inside a tab (a visit to write) comes into view by itself.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet taken by its grabber follows the finger down and closes as

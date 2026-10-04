@@ -32,20 +32,35 @@
       </div>
     </header>
   </LayoutHeader>
-  <!-- the phone's contact card: who, what comes next, call and write -->
-  <div v-if="doc.name" class="border-b px-3 pb-3 pt-3">
-    <PersonHeader :doc="doc" :title="title" :more="altro" @write="scrivi">
-      <template #avatar>
-        <Avatar
-          size="2xl"
-          class="size-11 shrink-0"
-          :label="title"
-          :image="doc.image || doc.organization_logo"
-        />
-      </template>
-    </PersonHeader>
+  <!-- the phone's contact card: who, what comes next, call and write; while
+       the tab below is scrolled it folds away, the name staying in the header
+       (composables/testataRaccolta.js) -->
+  <div
+    v-if="doc.name"
+    class="grid shrink-0 transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
+    :class="raccolta ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'"
+    :inert="raccolta"
+  >
+    <div class="min-h-0 overflow-hidden">
+      <div ref="testata" class="border-b px-3 pb-3 pt-3">
+        <PersonHeader :doc="doc" :title="title" :more="altro" @write="scrivi">
+          <template #avatar>
+            <Avatar
+              size="2xl"
+              class="size-11 shrink-0"
+              :label="title"
+              :image="doc.image || doc.organization_logo"
+            />
+          </template>
+        </PersonHeader>
+      </div>
+    </div>
   </div>
-  <div v-if="doc.name" class="flex h-full flex-col overflow-hidden">
+  <div
+    v-if="doc.name"
+    ref="schede"
+    class="flex h-full flex-col overflow-hidden"
+  >
     <!-- the tabs one opens every day, the rest behind More -->
     <SchedeDelTelefono
       v-model="tabIndex"
@@ -173,6 +188,7 @@ import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useSelectedTabInView } from '@/composables/selectedTabInView'
+import { useTestataRaccolta } from '@/composables/testataRaccolta'
 import {
   Avatar,
   createResource,
@@ -404,6 +420,11 @@ const tabs = computed(() => {
 const { tabIndex } = useActiveTabManager(tabs, 'lastLeadTab')
 const tabsRef = ref(null)
 useSelectedTabInView(tabsRef, tabIndex)
+
+// the card folds while a tab is scrolled, and opens at its top
+const testata = ref(null)
+const schede = ref(null)
+const raccolta = useTestataRaccolta(schede, testata, tabIndex)
 
 const sections = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',
