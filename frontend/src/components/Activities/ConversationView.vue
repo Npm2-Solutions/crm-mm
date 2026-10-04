@@ -134,7 +134,12 @@
                   : 'border-outline-gray-2'
               "
             >
-              <EmailArea :activity="row.item" :emailBox="emailBox" />
+              <!-- its name as its id: a notification's link lands on it -->
+              <EmailArea
+                :id="row.item.name"
+                :activity="row.item"
+                :emailBox="emailBox"
+              />
             </div>
             <NewMessagesLine
               v-if="lineAt(row, false)"
@@ -213,6 +218,7 @@
                   />
                   <EmailArea
                     v-else
+                    :id="row.item.name"
                     bare
                     :activity="row.item"
                     :emailBox="emailBox"
