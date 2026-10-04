@@ -19,13 +19,24 @@ export function useActiveTabManager(tabs, storageKey) {
     activeTab.value = tabName.toLowerCase()
   }, 300)
 
+  // The address follows the tab once the tab is drawn: the push reads the
+  // page's scroll to keep it in the history, and read in the middle of the tap
+  // it made the browser lay the page out once more before drawing the tab.
   function setActiveTabInUrl(tabName) {
-    let hash = '#' + tabName.toLowerCase()
-    if (route.hash === hash) return
-    // a link to one message keeps its hash while the conversation shows it:
-    // the conversation lands on what it names
-    if (hash === '#activity' && nominaUnMessaggio(route.hash)) return
-    router.push({ ...route, hash })
+    const hash = '#' + tabName.toLowerCase()
+    const pagina = route.path
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        if (route.path !== pagina || route.hash === hash) return
+        // a link to one message keeps its hash while the conversation shows
+        // it: the conversation lands on what it names
+        if (hash === '#activity' && nominaUnMessaggio(route.hash)) return
+        // a tab already left is not written
+        const ora = tabs.value?.[tabIndex.value]?.name?.toLowerCase()
+        if (ora !== tabName.toLowerCase()) return
+        router.push({ ...route, hash })
+      }),
+    )
   }
 
   // A hash that names no tab names a message of the conversation - a

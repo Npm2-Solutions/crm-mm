@@ -741,6 +741,16 @@ row, the bar's words beside their icons).
   the page's boot (`crm_user`, `ask_persona`, the capabilities), and a page asks
   its calls together - what the server would answer from a capability, the
   browser asks `puo()` for before the first answer arrives.
+- A tap is drawn before anything else is asked of the page. A CSS rule finds an
+  element down a path (`body:has(> … > …)`), never through the whole page:
+  `body:has(.x)` was looked for in 9,000 elements at every `data-state` that
+  changed. Tailwind builds no typography size nobody draws (`blocklist` in
+  `tailwind.config.js`): a typography rule is tried on every element. A link
+  field asks for its options when its list opens, never when it is drawn
+  (`Link.vue`: a person's details asked fourteen times before anybody opened
+  one). The address follows a record's tab once the tab is drawn
+  (`useActiveTabManager`): a push reads the scroll, and the page was laid out
+  again for it in the middle of the tap.
 
 ---
 
