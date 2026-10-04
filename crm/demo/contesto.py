@@ -99,6 +99,21 @@ class Contesto:
 			frappe.set_user(prima)
 			livelli.dimentica_cache()
 
+	@contextmanager
+	def nella_lingua_del_centro(self) -> Iterator[None]:
+		"""What the product writes to people by itself - an offer of the waiting list, a
+		reminder - in the centre's language, as its scheduled jobs write it."""
+		from frappe.translate import print_language
+
+		from crm import lingue
+
+		prima = frappe.local.lang
+		try:
+			with print_language(lingue.del_centro()):
+				yield
+		finally:
+			frappe.local.lang = prima
+
 	# -- dates back ----------------------------------------------------------------
 
 	def retrodata(self, doctype: str, name: str, quando, chi: str | None = None) -> None:

@@ -43553,3 +43553,7 @@ msgstr "I dati di prova si stanno creando: ci vuole un paio di minuti."
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.js
 msgid "Three months of a centre's life are made in a couple of minutes: people, appointments, deals. They are taken away from Settings > The centre > Demo data."
 msgstr "In un paio di minuti si crea la vita di tre mesi di un centro: persone, appuntamenti, trattative. Si tolgono da Impostazioni > Il centro > Dati di prova."
+
+#: crm/demo/base.py
+msgid "Three kinds of subscription to the classes and the regulars who bought them: months renewed by themselves, a suspension, the reminders of the end."
+msgstr "Tre tipi di abbonamento alle lezioni e gli abituali che li hanno comprati: mesi che si rinnovano da soli, una sospensione, i promemoria della scadenza."
