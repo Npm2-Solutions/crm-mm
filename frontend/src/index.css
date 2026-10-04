@@ -202,6 +202,16 @@
   max-width: min(32rem, calc(100vw - 2rem));
 }
 
+/* The choice that empties a field (a field nobody has to fill: «N. di
+   dipendenti», «Settore»). frappe-ui draws it with no words, to keep the
+   field's own placeholder when it is chosen: in the list it was a blank row,
+   on a phone's sheet a white band 48px tall over the first choice. A dash
+   says there is nothing there, in every language. */
+[role='option'] [data-slot='item-label'] .truncate:first-child:empty::before {
+  content: '—';
+  color: var(--ink-gray-5);
+}
+
 /* Reka menu content (e.g. the kebab menu inside PrimaryDropdown) portals to
    <body> without a z-index, so it falls behind frappe-ui Popover content
    (z-[100]). Lift menus above popovers so nested menus stay visible. */
