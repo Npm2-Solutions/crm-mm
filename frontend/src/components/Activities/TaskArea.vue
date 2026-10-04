@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div v-if="tasks.length">
     <div v-for="(task, i) in tasks" :key="task.name">
@@ -19,11 +22,31 @@
             </div>
             <div v-if="task.due_date">
               <Tooltip
-                :text="formatDate(task.due_date, 'ddd D MMM YYYY, HH:mm')"
+                :text="
+                  formatDate(
+                    task.due_date,
+                    formatoDellaScadenza(
+                      task.due_date,
+                      'ddd D MMM YYYY, HH:mm',
+                      'ddd D MMM YYYY',
+                    ),
+                  )
+                "
               >
                 <div class="flex gap-2">
                   <CalendarIcon />
-                  <div>{{ formatDate(task.due_date, 'D MMM, HH:mm') }}</div>
+                  <div>
+                    {{
+                      formatDate(
+                        task.due_date,
+                        formatoDellaScadenza(
+                          task.due_date,
+                          'D MMM, HH:mm',
+                          'D MMM',
+                        ),
+                      )
+                    }}
+                  </div>
                 </div>
               </Tooltip>
             </div>
@@ -97,6 +120,7 @@ import TaskPriorityIcon from '@/components/Icons/TaskPriorityIcon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { formatDate, taskStatusOptions } from '@/utils'
+import { formatoDellaScadenza } from '@/utils/quando'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { Tooltip, Dropdown } from 'frappe-ui'

@@ -617,6 +617,17 @@ Con il tocco, come in un'app:
   finiva archiviata come modulo firmato, e il tipo decide chi legge il
   documento. Ora il tipo lo sceglie chi archivia, e finché manca il foglio
   non salva.
+- **Una cosa da fare, provata davvero.** Dal «+» delle Cose da fare: titolo,
+  descrizione, scadenza, «Crea», poi il tondo per segnarla fatta. Il
+  calendario della scadenza scriveva «Oct 2026» e sopra le colonne
+  «S M T W T F S», dalla domenica, mentre la griglia, in italiano, parte dal
+  lunedì: domenica 4 stava sotto la «S» del sabato. Ora mesi e lettere
+  vengono dalla lingua dell'utente e dal giorno da cui parte la griglia
+  («L M M G V S D», «Ott 2026», `frontend/vite/frappeUi.js`), e le frecce si
+  leggono «Mese precedente» e «Mese successivo». Una scadenza scelta senza
+  ora arrivava come la sua mezzanotte: nella lista si leggeva «00:00», e una
+  di oggi era già «In ritardo». Ora vale tutto il giorno e mostra solo il
+  giorno, sul telefono, nella scheda della persona e nell'elenco.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della

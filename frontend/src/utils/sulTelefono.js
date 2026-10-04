@@ -35,6 +35,11 @@ function letta(valore) {
   return Number.isNaN(data.getTime()) ? null : data
 }
 
+// a day chosen without an hour comes as its midnight: due all that day
+function senzaOra(data) {
+  return !data.getHours() && !data.getMinutes() && !data.getSeconds()
+}
+
 /** The groups of the open tasks, in the order they are shown. */
 export const GRUPPI_DI_COSE = [
   { key: 'late', label: 'Late' },
@@ -53,8 +58,16 @@ export function gruppoDi(cosa, adesso = new Date()) {
   domani.setDate(oggi.getDate() + 1)
   const dopodomani = new Date(oggi)
   dopodomani.setDate(oggi.getDate() + 2)
-  // past its hour is late, today's morning too
-  if (scadenza < adesso) return 'late'
+  // past its hour is late, today's morning too; a day without an hour once
+  // it is over
+  const finoA = senzaOra(scadenza)
+    ? new Date(
+        scadenza.getFullYear(),
+        scadenza.getMonth(),
+        scadenza.getDate() + 1,
+      )
+    : scadenza
+  if (finoA <= adesso) return 'late'
   if (scadenza < domani) return 'today'
   if (scadenza < dopodomani) return 'tomorrow'
   return 'later'
@@ -72,12 +85,15 @@ export function cosePerGruppo(cose = [], adesso = new Date()) {
 
 /**
  * When a task is due, said briefly: the hour for today and tomorrow, the day
- * otherwise (the group says which one), nothing without a date.
+ * otherwise (the group says which one), nothing without a date, nor for today
+ * and tomorrow without an hour.
  */
 export function scadenzaInBreve(dueDate, locale, adesso = new Date()) {
   const scadenza = letta(dueDate)
   if (!scadenza) return ''
   const gruppo = gruppoDi({ due_date: dueDate }, adesso)
+  if ((gruppo === 'today' || gruppo === 'tomorrow') && senzaOra(scadenza))
+    return ''
   const ora = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',

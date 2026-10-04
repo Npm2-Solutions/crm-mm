@@ -1,4 +1,7 @@
 <!-- eslint-disable vue/no-v-html -->
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <ListView
     :class="{ '!w-full': isMobileView }"
@@ -45,11 +48,28 @@
       doctype="CRM Task"
     >
       <div v-if="column.key === 'due_date' && item">
-        <Tooltip :text="item && formatDate(item, 'ddd D MMM YYYY, HH:mm')">
+        <Tooltip
+          :text="
+            item &&
+            formatDate(
+              item,
+              formatoDellaScadenza(
+                item,
+                'ddd D MMM YYYY, HH:mm',
+                'ddd D MMM YYYY',
+              ),
+            )
+          "
+        >
           <div class="flex items-center gap-2 truncate text-base">
             <div><CalendarIcon /></div>
             <div class="truncate">
-              {{ formatDate(item, 'D MMM, HH:mm') }}
+              {{
+                formatDate(
+                  item,
+                  formatoDellaScadenza(item, 'D MMM, HH:mm', 'D MMM'),
+                )
+              }}
             </div>
           </div>
         </Tooltip>
@@ -204,6 +224,7 @@ import {
   formatDuration,
   sanitizeHTML,
 } from '@/utils'
+import { formatoDellaScadenza } from '@/utils/quando'
 import {
   Avatar,
   ListView,
