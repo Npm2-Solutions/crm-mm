@@ -181,6 +181,7 @@
                                 />
                               </Dropdown>
                               <Button
+                                :aria-label="__('View Contact')"
                                 variant="ghost"
                                 @click="
                                   router.push({
@@ -191,7 +192,15 @@
                               >
                                 <ArrowUpRightIcon class="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" @click="toggle()">
+                              <Button
+                                :aria-label="
+                                  opened
+                                    ? __('Hide details')
+                                    : __('Show details')
+                                "
+                                variant="ghost"
+                                @click="toggle()"
+                              >
                                 <span
                                   class="lucide-chevron-right h-4 w-4 text-ink-gray-9 transition-all duration-300 ease-in-out"
                                   :class="{ 'rotate-90': opened }"

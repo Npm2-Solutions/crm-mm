@@ -69,7 +69,7 @@
                 {{ organization.doc.name }}
               </div>
               <div class="flex items-center gap-1.5">
-                <Button @click="openWebsite">
+                <Button :aria-label="__('Open Website')" @click="openWebsite">
                   <span class="lucide-link h-4 w-4" aria-hidden="true" />
                 </Button>
                 <Button

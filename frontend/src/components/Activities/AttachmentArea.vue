@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div v-if="attachments.length">
     <div v-for="(attachment, i) in attachments" :key="attachment.name">
@@ -35,6 +38,9 @@
           <TimelineTimestamp :date="attachment.creation" />
           <div class="flex gap-1">
             <Button
+              :aria-label="
+                attachment.is_private ? __('Make Public') : __('Make Private')
+              "
               :tooltip="
                 attachment.is_private ? __('Make Public') : __('Make Private')
               "

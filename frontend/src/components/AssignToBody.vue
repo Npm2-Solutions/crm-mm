@@ -49,6 +49,9 @@
               <UserAvatar :user="assignee.name" size="sm" />
               <div class="ml-1">{{ getUser(assignee.name).full_name }}</div>
               <Button
+                :aria-label="
+                  __('Remove {0}', [getUser(assignee.name).full_name])
+                "
                 variant="ghost"
                 class="rounded-full !size-4 m-1"
                 @click.stop="removeValue(assignee.name)"

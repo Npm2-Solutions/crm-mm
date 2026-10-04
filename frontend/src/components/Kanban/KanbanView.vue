@@ -26,6 +26,7 @@
               <Popover>
                 <template #target="{ togglePopover }">
                   <Button
+                    :aria-label="__('Color')"
                     variant="ghost"
                     size="sm"
                     class="hover:!bg-surface-gray-2"
