@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 /**
  * What an invoice looks like when it is read rather than edited.
  *
@@ -22,6 +25,13 @@ export function invoiceStatusTheme(status) {
   return 'orange'
 }
 
+// The states that are ours rather than the portal's, in the words of what is left
+// to do («Pronto export» was half a code), and an acronym kept as one.
+const PAROLE = {
+  pronto_export: 'Nel file da caricare',
+  esito_pa: 'Esito PA',
+}
+
 /**
  * A state as a word, not as a key: «Da inviare», not «da_inviare».
  *
@@ -30,6 +40,7 @@ export function invoiceStatusTheme(status) {
  * badges as they were.
  */
 export function statusLabel(status) {
+  if (PAROLE[status]) return PAROLE[status]
   const words = String(status || '')
     .replace(/_/g, ' ')
     .trim()
