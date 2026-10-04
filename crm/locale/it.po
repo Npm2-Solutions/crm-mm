@@ -42539,3 +42539,11 @@ msgstr "Quanto prima"
 msgctxt "Answer a message"
 msgid "Reply"
 msgstr "Rispondi"
+
+#: frontend/vite/frappeUi.js
+msgid "Copy code"
+msgstr "Copia il codice"
+
+#: frontend/vite/frappeUi.js
+msgid "Copied!"
+msgstr "Copiato!"
