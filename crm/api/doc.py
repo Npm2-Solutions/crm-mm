@@ -745,9 +745,15 @@ def getCounts(d, doctype):
 	return d
 
 
-#: Documents that belong to the record they point at: deleted with it by its
-#: `on_trash`, never offered for unlinking.
-DELETED_WITH_THEIR_RECORD = {"CRM Billing Profile", "CRM Consent", "CRM Related Person"}
+#: Documents that belong to the record they point at, and the records whose
+#: `on_trash` deletes them: never offered for unlinking when one of those goes.
+DELETED_WITH_THEIR_RECORD = {
+	"CRM Billing Profile": {"CRM Lead", "CRM Organization"},
+	"CRM Consent": {"CRM Lead"},
+	"CRM Related Person": {"CRM Lead"},
+	"CRM Waiting List Entry": {"CRM Lead"},
+	"CRM Automation Enrollment": {"CRM Lead", "CRM Deal"},
+}
 
 
 @frappe.whitelist()
@@ -758,6 +764,8 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 		return []
 
 	frappe.has_permission(doctype, "read", doc, throw=True)
+
+	nome_del_record = doc.get(doc.meta.title_field) if doc.meta.title_field else None
 
 	linked_docs = get_linked_docs(doc)
 	dynamic_linked_docs = get_dynamic_linked_docs(doc)
@@ -779,9 +787,9 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 		if not frappe.has_permission(data.doctype, "read", data):
 			continue
 
-		# part of the record rather than linked to it: it goes with it, there is
-		# nothing to choose about it
-		if data.doctype in DELETED_WITH_THEIR_RECORD:
+		# part of the record rather than linked to it: it goes with it (the
+		# record's own on_trash), there is nothing to choose about it
+		if doctype in DELETED_WITH_THEIR_RECORD.get(data.doctype, ()):
 			continue
 
 		title = data.get("title")
@@ -799,10 +807,17 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 		if data.doctype == "CRM Notification":
 			title = data.get("message")
 
+		if not title and data.meta.title_field:
+			title = data.get(data.meta.title_field)
+			# the record's own name on what is its own says nothing
+			if title and title == nome_del_record:
+				title = None
+
 		docs_data.append(
 			{
 				"doc": data.doctype,
-				"title": title or data.get("name"),
+				# never the record's code: what it is, in words
+				"title": title or _(data.doctype),
 				"reference_docname": doc["reference_docname"],
 				"reference_doctype": doc["reference_doctype"],
 			}

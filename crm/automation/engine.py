@@ -861,6 +861,21 @@ def _advancing() -> set:
 	return frappe.flags.crm_advancing_enrollments
 
 
+def cancella_con_il_riferimento(doc, method=None) -> None:
+	"""`on_trash` of a person or a deal: their enrollments go with them.
+
+	An enrollment is somebody's way through an automation: without them there is
+	nothing to walk, and left behind it stopped the deletion (Frappe refuses to
+	delete what something still points at). The delete dialog listed them one by
+	one, by their code, for almost everybody."""
+	for nome in frappe.get_all(
+		"CRM Automation Enrollment",
+		filters={"reference_doctype": doc.doctype, "reference_name": doc.name},
+		pluck="name",
+	):
+		frappe.delete_doc("CRM Automation Enrollment", nome, ignore_permissions=True, force=True)
+
+
 def _active_enrollments(ref_doctype: str, ref_name: str, status=None) -> list[str]:
 	filters = {
 		"reference_doctype": ref_doctype,
