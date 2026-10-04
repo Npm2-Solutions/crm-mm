@@ -642,7 +642,9 @@ row, the bar's words beside their icons).
   switches already have it. A ring a scrolling strip would cut gets room inside
   the strip (the channels above a conversation); icon buttons side by side, with
   no room for a ring, are 40px on a phone (`strumenti-compositore`, a composer's
-  tools). Long dialogs put `.dialog-footer` on their actions
+  tools; `icone-a-dito` elsewhere, a conversation's decisions). A row a link
+  opens is opened from the whole row (the link's `after:absolute after:inset-0`,
+  the row's other controls above it). Long dialogs put `.dialog-footer` on their actions
   (frappe-ui's own `#actions` row gets the same treatment in `index.css`).
 - Titles have no fixed height; a header stacks title, description, then actions.
 - In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.
@@ -677,7 +679,8 @@ row, the bar's words beside their icons).
   steps aside and the box (`data-compositore`) is the screen's bottom; with
   the keyboard up what carries `data-via-scrivendo` (a record's tabs, the
   channels to read and to write on) steps aside too. On a person's
-  conversation the card waits folded and the name in the header opens it.
+  conversation the card waits folded and the name in the header opens it; a
+  thread of the Chat draws its own header in the page's (`inTestata`).
 - A record's tabs on a phone are two panels, each mounted the first time it
   opens and then kept (`v-show`): Details, and one conversation that draws
   every other tab (`MobileLead.vue`, `MobileDeal.vue`). A panel per tab
@@ -801,7 +804,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1188 tests · ~15s** — all must pass before committing
+- **1193 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
