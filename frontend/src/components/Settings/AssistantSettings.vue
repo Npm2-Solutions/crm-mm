@@ -318,7 +318,7 @@
           <span>{{
             formatDate(detail.event.creation, 'D MMM YYYY, HH:mm')
           }}</span>
-          <span>{{ __('Provider') }}: {{ detail.event.provider }}</span>
+          <span>{{ __('Provider') }}: {{ __(detail.event.provider) }}</span>
           <span>{{ __('Model') }}: {{ detail.event.model }}</span>
           <span>{{ __('Region') }}: {{ detail.event.region || '—' }}</span>
           <span>
