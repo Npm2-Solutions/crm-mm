@@ -21,6 +21,7 @@
         </Button>
         <Button
           v-if="filters?.size"
+          :aria-label="__('Clear All Filters')"
           :tooltip="__('Clear All Filters')"
           class="rounded-l-none border-l"
           icon="lucide-x"

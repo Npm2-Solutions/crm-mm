@@ -74,6 +74,7 @@
               @update:modelValue="(v) => patch(row, { end_time: v })"
             />
             <Button
+              :aria-label="__('Remove')"
               variant="ghost"
               size="sm"
               icon="lucide-x"
@@ -82,6 +83,7 @@
             />
           </div>
           <Button
+            :aria-label="__('Add a time slot (e.g. after lunch)')"
             variant="ghost"
             size="sm"
             icon="lucide-plus"

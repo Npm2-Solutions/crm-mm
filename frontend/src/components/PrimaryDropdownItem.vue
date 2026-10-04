@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div>
     <!-- Tabbable so the popover focuses the row on open, not the first action
@@ -48,12 +51,14 @@
           class="-my-1 flex items-center gap-1 transition-opacity [&:has(:focus-visible)]:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
         >
           <Button
+            :aria-label="__('Edit')"
             variant="ghost"
             icon="lucide-square-pen"
             :tooltip="__('Edit')"
             @click.stop="toggleEditMode"
           />
           <Button
+            :aria-label="__('Delete')"
             variant="ghost"
             theme="red"
             icon="lucide-trash-2"
@@ -72,6 +77,7 @@
             @click.stop="saveOption"
           />
           <Button
+            :aria-label="__('Cancel')"
             variant="outline"
             icon="lucide-x"
             :tooltip="__('Cancel')"

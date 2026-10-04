@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="mb-3 mt-5 flex items-center justify-between text-lg-medium sm:mb-4 sm:mt-6"
@@ -14,6 +17,7 @@
     </div>
     <div class="flex gap-1">
       <Button
+        :aria-label="__('Edit Fields Layout')"
         v-if="puo('viste.configura') && !isMobileView"
         :tooltip="__('Edit Fields Layout')"
         :icon="EditIcon"

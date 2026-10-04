@@ -51,6 +51,7 @@
           </div>
           <div class="flex shrink-0 items-center gap-1">
             <Button
+              :aria-label="__('Open the person')"
               v-if="doc.lead"
               variant="ghost"
               :tooltip="__('Open the person')"
@@ -58,6 +59,7 @@
               @click="openPerson"
             />
             <Button
+              :aria-label="__('Open full page')"
               variant="ghost"
               :tooltip="__('Open full page')"
               :icon="ArrowUpRightIcon"

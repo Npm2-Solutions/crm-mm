@@ -126,6 +126,7 @@
           <div class="flex gap-1.5">
             <Button
               v-if="doc.lead"
+              :aria-label="__('Open the person')"
               :tooltip="__('Open the person')"
               :icon="ContactsIcon"
               @click="
@@ -134,6 +135,7 @@
             />
 
             <Button
+              :aria-label="__('Go to Website')"
               :tooltip="__('Go to Website')"
               :icon="LinkIcon"
               @click="
@@ -145,6 +147,7 @@
 
             <Button
               v-if="canWrite"
+              :aria-label="__('Attach a File')"
               :tooltip="__('Attach a File')"
               :icon="AttachmentIcon"
               @click="showFilesUploader = true"
@@ -152,6 +155,7 @@
 
             <Button
               v-if="canDelete"
+              :aria-label="__('Delete')"
               :tooltip="__('Delete')"
               variant="subtle"
               icon="lucide-trash-2"
@@ -267,6 +271,7 @@
                             />
                           </Dropdown>
                           <Button
+                            :aria-label="__('View Contact')"
                             variant="ghost"
                             :tooltip="__('View Contact')"
                             :icon="ArrowUpRightIcon"

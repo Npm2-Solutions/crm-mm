@@ -501,6 +501,7 @@
               :value="snippet"
             />
             <Button
+              :aria-label="__('Copy')"
               class="absolute right-2 top-2"
               size="sm"
               variant="ghost"

@@ -178,6 +178,7 @@
               :placeholder="__('What the agent does at this point')"
             />
             <Button
+              :aria-label="__('Move up')"
               icon="chevron-up"
               variant="ghost"
               :disabled="i === 0"
@@ -185,6 +186,7 @@
               @click="move(i, -1)"
             />
             <Button
+              :aria-label="__('Move down')"
               icon="chevron-down"
               variant="ghost"
               :disabled="i === draft.steps.length - 1"
@@ -192,6 +194,7 @@
               @click="move(i, 1)"
             />
             <Button
+              :aria-label="__('Remove')"
               icon="x"
               variant="ghost"
               :tooltip="__('Remove')"

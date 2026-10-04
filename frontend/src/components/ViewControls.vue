@@ -26,6 +26,7 @@
 
         <div class="flex gap-2">
           <Button
+            :aria-label="__('Refresh')"
             :tooltip="__('Refresh')"
             icon="lucide-refresh-ccw"
             :loading="isLoading"
@@ -171,6 +172,7 @@
       </div>
       <div class="flex items-center gap-2">
         <Button
+          :aria-label="__('Refresh')"
           :tooltip="__('Refresh')"
           icon="lucide-refresh-ccw"
           :loading="isLoading"
@@ -246,6 +248,7 @@
         >
           <template #default>
             <Button
+              :aria-label="__('More Options')"
               :tooltip="__('More Options')"
               icon="lucide-more-horizontal"
             />

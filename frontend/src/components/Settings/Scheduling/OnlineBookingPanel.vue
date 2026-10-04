@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex flex-col gap-4 rounded-lg border border-outline-gray-2 p-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -15,12 +18,14 @@
       </div>
       <div v-if="link" class="flex items-center gap-1">
         <Button
+          :aria-label="__('Copy booking link')"
           variant="ghost"
           icon="lucide-copy"
           :tooltip="__('Copy booking link')"
           @click="copyLink"
         />
         <Button
+          :aria-label="__('Open booking page')"
           variant="ghost"
           icon="lucide-external-link"
           :tooltip="__('Open booking page')"

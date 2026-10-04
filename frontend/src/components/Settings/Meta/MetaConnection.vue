@@ -228,6 +228,7 @@
         </div>
         <div class="flex shrink-0 gap-2">
           <Button
+            :aria-label="__('Read the Pages again from Facebook')"
             icon="refresh-cw"
             :tooltip="__('Read the Pages again from Facebook')"
             :loading="refreshing || syncing"

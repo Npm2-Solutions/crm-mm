@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex items-start justify-between gap-8 py-3 pl-2 pr-1">
     <div class="flex flex-col min-w-0">
@@ -35,6 +38,7 @@
         </template>
       </FileUploader>
       <Button
+        :aria-label="__('Remove')"
         v-if="url"
         icon="x"
         variant="ghost"
