@@ -177,7 +177,7 @@ def togli(avanza: Callable[[str], None] | None = None) -> dict:
 	_contatori(via)
 
 	frappe.db.delete(registro.REGISTRO)
-	for chiave in (registro.STATO, registro.FATTE, registro.LAVORO):
+	for chiave in (registro.STATO, registro.FATTE, registro.LAVORO, registro.SERIE):
 		frappe.db.set_default(chiave, None)
 	frappe.db.commit()
 
@@ -647,9 +647,11 @@ def _numerato_da_una_serie(doctype: str) -> bool:
 
 def _contatori(via: dict[str, set[str]]) -> None:
 	"""A series the demo numbered goes back to the last number still in use, so the
-	centre's first record is not its two-hundredth. Never raised, never below what is
-	there, in any doctype the series numbers."""
+	centre's first record is not its two-hundredth: never raised, never below what is
+	there in any doctype the series numbers, nor below where it was before the demo
+	came. One the demo started, with nothing left in it, goes."""
 	serie = {riga[0]: riga[1] or 0 for riga in frappe.db.sql("select name, current from `tabSeries`")}
+	prima = frappe.parse_json(frappe.db.get_default(registro.SERIE) or "null")
 	per_prefisso: dict[str, set[str]] = defaultdict(set)
 	for doctype, nomi in via.items():
 		if not _numerato_da_una_serie(doctype):
@@ -667,6 +669,10 @@ def _contatori(via: dict[str, set[str]]) -> None:
 				trovato = re.match(r"^(.*?)(\d+)$", str(nome))
 				if trovato and trovato.group(1) == prefisso:
 					ultimo = max(ultimo, int(trovato.group(2)))
+		if prima is not None and prefisso not in prima and not ultimo:
+			frappe.db.sql("delete from `tabSeries` where name = %s", (prefisso,))
+			continue
+		ultimo = max(ultimo, int((prima or {}).get(prefisso) or 0))
 		if ultimo < serie[prefisso]:
 			frappe.db.sql("update `tabSeries` set current = %s where name = %s", (ultimo, prefisso))
 

@@ -32,6 +32,9 @@ STATO = "crm_demo_data_created"
 FATTE = "crm_demo_data_parts"
 #: While a job makes them: when it started, so a job that died is not waited for.
 LAVORO = "crm_demo_data_job"
+#: The name counters as they were before the demo first came: what it takes away
+#: goes back to them.
+SERIE = "crm_demo_data_series"
 
 #: Never written down: the register itself.
 NON_ANNOTARE = frozenset({REGISTRO})
