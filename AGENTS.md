@@ -711,8 +711,11 @@ row, the bar's words beside their icons).
   `position: fixed` at the bottom of the screen, which the keyboard covers.
 - A field asks for its keyboard (`utils/tastiera.js`): `tastieraDi(field)` for
   a DocType's field, `tastiera('telefono')`, `'email'`, `'url'`, `'codice'`,
-  `'cifre'`, `'cerca'` (a list's search: the key closes the keyboard, a
-  surname is never corrected) elsewhere; a whole number on `type="number"` has
+  `'cifre'`, `'nome'` (a person's name: a capital to each word, never
+  corrected; `tastieraDi` gives it to first, last and full names, and the
+  public pages write the same three attributes), `'cerca'` (a list's search:
+  the key closes the keyboard, a surname is never corrected) elsewhere; a whole
+  number on `type="number"` has
   `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
   keyboard: iPhone's decimal pad has only the comma. A DocType's amount reads
   the keyboard's separator whatever the site's format (`flt()` in
@@ -786,7 +789,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1183 tests · ~15s** — all must pass before committing
+- **1184 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
