@@ -84,6 +84,8 @@ describe('frappe-ui in the user’s language', () => {
     expect(blocco).toContain('CodeBlock.extend({')
     expect(blocco).not.toContain('lowlight')
     expect(blocco).not.toContain('CodeBlockLowlight')
+    // TipTap's own keys (Enter three times, the arrow down) still leave it
+    expect(blocco).toMatch(/return \{\n\s+\.\.\.this\.parent\?\.\(\),\n\s+Tab:/)
     const vista = tradotto(
       'editor/extensions/code-block/CodeBlockComponent.vue',
       MOLECOLE,

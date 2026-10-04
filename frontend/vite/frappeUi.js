@@ -506,6 +506,13 @@ const SOSTITUZIONI_MOLECOLE = {
     ['const lowlight = createLowlight(common)\n', ''],
     ['CodeBlockLowlight.extend({', 'CodeBlock.extend({'],
     ['}).configure({ lowlight })', '})'],
+    // its keys over TipTap's, not instead of them: Enter three times, or the
+    // arrow down at its end, leave the block again (stuck in it before, with
+    // no way out on a phone), Backspace empties it
+    [
+      'addKeyboardShortcuts() {\n    return {\n      Tab: () => {',
+      'addKeyboardShortcuts() {\n    return {\n      ...this.parent?.(),\n      Tab: () => {',
+    ],
   ],
   // The emoji after ":" (":smile", in English): their list, 66 KB, comes
   // the first time somebody types one, not with every editor
