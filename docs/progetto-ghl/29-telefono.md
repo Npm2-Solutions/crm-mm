@@ -576,7 +576,8 @@ Con il tocco, come in un'app:
   appuntamento, la linea «adesso» del giorno e l'attesa in accoglienza
   seguivano l'orologio del telefono. Ora tutto segue l'orologio del centro
   (`oraDelCentro()`, `sulCentro()`, `adessoDelCentro()` in
-  `utils/scheduler.js`).
+  `utils/scheduler.js`): anche le cose da fare in ritardo, di oggi e di
+  domani, e il prossimo appuntamento nella lista delle persone.
 - **Un abbonamento venduto e una trattativa spostata, provati davvero.** Dai
   Dettagli della persona la segreteria vende un abbonamento e da lì prenota.
   Dalle Trattative ne apre una e la sposta di fase dal foglio delle fasi.

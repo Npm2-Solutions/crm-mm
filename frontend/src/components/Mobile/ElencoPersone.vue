@@ -110,6 +110,7 @@ import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { contattoDi, quandoTorna } from '@/utils/sulTelefono'
 import { Avatar, LoadingIndicator, TextInput } from 'frappe-ui'
 import { computed } from 'vue'
@@ -134,7 +135,12 @@ function numeroDi(persona) {
 }
 
 function torna(persona) {
-  const quando = quandoTorna(persona.next_appointment, lingua)
+  // today or tomorrow on the centre's clock, as the agenda keeps it
+  const quando = quandoTorna(
+    persona.next_appointment,
+    lingua,
+    adessoDelCentro(),
+  )
   if (!quando) return ''
   if (quando.quando === 'today') return __('Today {0}', [quando.ora])
   if (quando.quando === 'tomorrow') return __('Tomorrow {0}', [quando.ora])
