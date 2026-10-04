@@ -707,7 +707,17 @@ row, the bar's words beside their icons).
   one only reads keeps its columns and scrolls sideways.
 - What a page's first download carries, a phone pays for: a heavy control
   (the text editor) is imported with `defineAsyncComponent` where a field may
-  draw it, never at the top of a component the layout loads.
+  draw it, never at the top of a component the layout loads. What is always
+  mounted but opened now and then - a settings page, a global dialog, a
+  record's tab - comes with `aRichiesta()` (`utils/aRichiesta.js`), a dialog
+  mounted the first time it opens with `apertoUnaVolta()`; a big library used
+  on a gesture (Twilio's voice SDK, the emoji) is `import()`ed where it is
+  used. A package published only as CommonJS that requires `vue` brings Vue's
+  template compiler along: alias it to its ES sources (`vuedraggable` in
+  `vite.config.js`). A part that does not arrive loads the page again once,
+  only when the version it runs is gone from the server (`utils/ricarica.js`).
+  The PWA plugin's service worker removes itself (`selfDestroying`): on
+  `/assets/crm/frontend/` it served no page and downloaded the whole app.
 
 ---
 
@@ -719,7 +729,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **890 tests · ~15s** — all must pass before committing
+- **1131 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
