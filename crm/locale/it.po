@@ -43234,3 +43234,71 @@ msgstr "Accedi con un link via email"
 #: frappe/www/login.html
 msgid "Send login link"
 msgstr "Manda il link per accedere"
+
+#: crm/www/book.html
+msgid "All services"
+msgstr "Tutti i servizi"
+
+#: crm/www/book.html
+msgid "Reschedule"
+msgstr "Sposta"
+
+#: crm/www/book.html
+msgid "Cancel booking"
+msgstr "Annulla la prenotazione"
+
+#: crm/www/book.html
+msgid "Pick a day"
+msgstr "Scegli il giorno"
+
+#: crm/www/book.html
+msgid "Pick a time"
+msgstr "Scegli l'orario"
+
+#: crm/www/book.html
+msgid "Select a day first"
+msgstr "Prima scegli un giorno"
+
+#: crm/www/book.html
+msgid "Something went wrong. Please retry."
+msgstr "Qualcosa non è andato: riprova."
+
+#: crm/www/book.html
+msgid "No slots available right now"
+msgstr "Nessun orario libero al momento"
+
+#: crm/www/book.html
+msgid "Pick a time slot first."
+msgstr "Prima scegli un orario."
+
+#: crm/www/book.html
+msgid "Booked! {0}: a confirmation email is on its way."
+msgstr "Prenotato! {0}: ti arriva un'email di conferma."
+
+#: crm/www/book.html
+msgid "Your booking: {0}"
+msgstr "La tua prenotazione: {0}"
+
+#: crm/www/book.html
+msgid "Booking cancelled: {0}"
+msgstr "Prenotazione annullata: {0}"
+
+#: crm/www/book.html
+msgid "This booking is no longer active: {0}"
+msgstr "Questa prenotazione non è più attiva: {0}"
+
+#: crm/www/book.html
+msgid "Cancel this booking?"
+msgstr "Annullare la prenotazione?"
+
+#: crm/www/book.html
+msgid "Booking cancelled."
+msgstr "Prenotazione annullata."
+
+#: crm/www/book.html
+msgid "Pick a new time below."
+msgstr "Scegli qui sotto il nuovo orario."
+
+#: crm/www/book.html
+msgid "Rescheduled! A new confirmation email is on its way."
+msgstr "Spostata! Ti arriva una nuova email di conferma."
