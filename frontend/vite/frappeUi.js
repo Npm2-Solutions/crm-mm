@@ -551,6 +551,25 @@ const SOSTITUZIONI_FRAPPE = {
 // frappe-ui/src/molecules: the editor - its toolbar's labels in the tooltips, its
 // code block, its emoji, its Markdown
 const SOSTITUZIONI_MOLECOLE = {
+  // The table's toolbar, hidden outside a table, built its buttons with every
+  // editor: a composer made them for an email nobody puts a table in, 23
+  // components of a person's page. Now the first time the cursor enters a
+  // table, and kept.
+  'editor/EditorTableMenu.vue': [
+    [
+      '<MenuItems v-if="editor" :editor="editor" :items="tableToolbar" />',
+      '<MenuItems v-if="editor && giaVisto" :editor="editor" :items="tableToolbar" />',
+    ],
+    [
+      'const visible = ref(false)',
+      `const visible = ref(false)
+// DottorCloud (frontend/vite/frappeUi.js): its buttons from the first table
+const giaVisto = ref(false)
+watch(visible, (si) => {
+  if (si) giaVisto.value = true
+})`,
+    ],
+  ],
   'editor/MenuItems.vue': [
     [
       'return item.getLabel(props.editor)',
