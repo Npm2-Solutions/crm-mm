@@ -43054,3 +43054,11 @@ msgstr "la categoria del Sistema TS a cui è iscritto, e il tipo di spesa da usa
 #: crm/tessera_sanitaria/engine/professioni.py
 msgid "VAT regime per product type"
 msgstr "il regime IVA per tipo di prodotto"
+
+#: frontend/src/pages/Invoices.vue
+msgid "Report {0} to the Sistema TS?"
+msgstr "Comunicare {0} al Sistema TS?"
+
+#: frontend/src/pages/Invoices.vue
+msgid "The expense of {0} goes to the Sistema TS now, with their tax code."
+msgstr "La spesa di {0} va subito al Sistema TS, con il suo codice fiscale."
