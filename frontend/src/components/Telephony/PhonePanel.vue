@@ -102,7 +102,7 @@
     <router-link
       v-if="dovute"
       :to="{ name: 'Dialer' }"
-      class="flex items-center justify-between gap-2 rounded-md bg-[var(--brand-subtle)] px-3 py-2 text-sm text-[var(--on-brand-subtle)] hover:bg-[var(--brand-subtle-hover)]"
+      class="flex items-center justify-between gap-2 rounded-md bg-[var(--brand-subtle)] px-3 py-2 text-sm text-[var(--on-brand-subtle)] hover:bg-[var(--brand-subtle-hover)] max-md:min-h-11"
       @click="emit('done')"
     >
       <span>{{ __('To call back now') }}</span>
@@ -115,10 +115,12 @@
       >
         {{ __('Last calls') }}
       </div>
+      <!-- on a phone a call is a row a thumb hits, 44px: its name and line
+           were a 29px link, the way to the whole register a 15px one -->
       <div
         v-for="c in chiamate"
         :key="c.name"
-        class="flex items-center gap-2 rounded px-1 py-1.5 hover:bg-surface-gray-2"
+        class="flex items-center gap-2 rounded px-1 py-1.5 hover:bg-surface-gray-2 max-md:py-0"
       >
         <span
           class="size-4 shrink-0"
@@ -134,7 +136,7 @@
         <component
           :is="paginaDi(c) ? 'router-link' : 'span'"
           :to="paginaDi(c) || undefined"
-          class="min-w-0 flex-1"
+          class="min-w-0 flex-1 max-md:flex max-md:min-h-11 max-md:flex-col max-md:justify-center"
           @click="paginaDi(c) && emit('done')"
         >
           <span
@@ -189,7 +191,7 @@
       <router-link
         v-if="puo('telefono.registro')"
         :to="{ name: 'Call Logs' }"
-        class="text-ink-gray-7 hover:text-ink-gray-9"
+        class="text-ink-gray-7 hover:text-ink-gray-9 max-md:inline-flex max-md:min-h-11 max-md:items-center"
         @click="emit('done')"
       >
         {{ __('All calls') }}
@@ -197,7 +199,7 @@
       <router-link
         v-if="puoChiamare"
         :to="{ name: 'Dialer' }"
-        class="text-ink-gray-7 hover:text-ink-gray-9"
+        class="text-ink-gray-7 hover:text-ink-gray-9 max-md:inline-flex max-md:min-h-11 max-md:items-center"
         @click="emit('done')"
       >
         {{ __('Call round') }}
@@ -208,6 +210,7 @@
 
 <script setup>
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { TASTI } from '@/utils/chiamate'
@@ -286,6 +289,8 @@ function richiama(chiamata) {
 onMounted(async () => {
   pannello.reload()
   await nextTick()
-  campo.value?.el?.focus?.()
+  // on a phone the keypad is right there: the field taking the focus opened
+  // the phone's own keyboard over it, and scrolled the sheet as it rose
+  if (!isMobileView.value) campo.value?.el?.focus?.()
 })
 </script>
