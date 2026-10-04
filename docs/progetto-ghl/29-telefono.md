@@ -624,7 +624,10 @@ Con il tocco, come in un'app:
   lunedì: domenica 4 stava sotto la «S» del sabato. Ora mesi e lettere
   vengono dalla lingua dell'utente e dal giorno da cui parte la griglia
   («L M M G V S D», «Ott 2026», `frontend/vite/frappeUi.js`), e le frecce si
-  leggono «Mese precedente» e «Mese successivo». Una scadenza scelta senza
+  leggono «Mese precedente» e «Mese successivo». La settimana parte dal
+  lunedì per tutti, come la striscia dell'agenda sul telefono: anche
+  l'agenda del computer, che partiva dalla domenica nella settimana e nel
+  mese, dove sotto un giorno pieno ora si legge «altri 4» e non «4 more». Una scadenza scelta senza
   ora arrivava come la sua mezzanotte: nella lista si leggeva «00:00», e una
   di oggi era già «In ritardo». Ora vale tutto il giorno e mostra solo il
   giorno, sul telefono, nella scheda della persona e nell'elenco.

@@ -48,10 +48,12 @@ function nomiDeiGiorni(stile) {
 }
 `
 
-// Appended to the date picker's utils.ts. Its grid starts the week where dayjs
-// does, in the language App.vue gave it (Monday in Italian): the letters over
-// the columns are taken from there, never from an English list starting on
-// Sunday, which put «S» (Saturday) over Sunday the 4th.
+// Appended to the date picker's utils.ts. DottorCloud's weeks start on Monday
+// (the phone's week, the dashboard's periods, the agenda): the grid starts
+// there for everybody, and the letters over its columns are read from the
+// same day. frappe-ui's grid followed dayjs's language (Monday in Italian) while
+// its letters were an English list from Sunday, which put «S» (Saturday) over
+// Sunday the 4th.
 export const SELETTORE = `
 // DottorCloud: the picker in the user's language (frontend/vite/frappeUi.js)
 function linguaDelSelettore() {
@@ -72,12 +74,14 @@ function mesiDelSelettore() {
     return nome.charAt(0).toLocaleUpperCase() + nome.slice(1)
   })
 }
+export function dalLunedi(giorno) {
+  return giorno.subtract((giorno.day() + 6) % 7, 'day')
+}
 export function inizialiDeiGiorni() {
-  const primo = dayjs().startOf('week').day()
   const formato = new Intl.DateTimeFormat(linguaDelSelettore(), { weekday: 'narrow' })
-  // 2 January 2000 was a Sunday, day 0 as dayjs counts
+  // 3 January 2000 was a Monday
   return Array.from({ length: 7 }, (_, giorno) =>
-    formato.format(new Date(2000, 0, 2 + ((primo + giorno) % 7))),
+    formato.format(new Date(2000, 0, 3 + giorno)),
   )
 }
 `
@@ -125,6 +129,11 @@ function predefinito(nome, testo) {
 
 const SOSTITUZIONI = {
   'Calendar/calendarUtils.ts': [
+    // the month's grid, and so its weeks, from Monday
+    [
+      'let leftPadding = firstDay.getDay()',
+      'let leftPadding = (firstDay.getDay() + 6) % 7',
+    ],
     [
       /export const monthList = \[[^\]]*\]/,
       'export const monthList = nomiDeiMesi()',
@@ -149,11 +158,44 @@ const SOSTITUZIONI = {
       /class="text-sm text-ink-gray-6 h-\[29px\] inline-flex items-center"\s*>\s*All day\s*</,
       `class="dc-tutto-il-giorno text-sm text-ink-gray-6 h-[29px] inline-flex items-center">{{ __('All day') }}<`,
     ],
+    [
+      `:label="fullDayEvents[parseDate(date)]?.length - 2 + ' more'"`,
+      `:label="__('{0} more', [fullDayEvents[parseDate(date)]?.length - 2])"`,
+    ],
+  ],
+  // the month's header from Monday, as its grid
+  'Calendar/CalendarMonthly.vue': [
+    [
+      'v-for="day in daysList"',
+      'v-for="day in [...daysList.slice(1), daysList[0]]"',
+    ],
+  ],
+  // an event dragged across the week stays in it: Monday to Sunday
+  'Calendar/CalendarWeekDayEvent.vue': [
+    [
+      'const leftBoundary = currentDate.getDay()',
+      'const leftBoundary = (currentDate.getDay() + 6) % 7',
+    ],
+    [
+      'const rightBoundary = 6 - currentDate.getDay()',
+      'const rightBoundary = 6 - ((currentDate.getDay() + 6) % 7)',
+    ],
   ],
   'Calendar/CalendarDaily.vue': [
     [
       /class="text-sm text-ink-gray-6 h-7 inline-flex items-center"\s*>\s*All day\s*</,
       `class="dc-tutto-il-giorno text-sm text-ink-gray-6 h-7 inline-flex items-center">{{ __('All day') }}<`,
+    ],
+    [
+      `:label="dayFullDayEvents.length - 4 + ' more'"`,
+      `:label="__('{0} more', [dayFullDayEvents.length - 4])"`,
+    ],
+  ],
+  // «4 more» under a full day of the month
+  'Calendar/ShowMoreCalendarEvent.vue': [
+    [
+      /\{\{\s*totalEventsCount - 2\s*\}\}\s*more/,
+      "{{ __('{0} more', [totalEventsCount - 2]) }}",
     ],
   ],
   'ListView/ListFooter.vue': [attributo('label', 'Load More'), testo('of')],
@@ -168,24 +210,28 @@ const SOSTITUZIONI = {
       /export const months: string\[\] = \[[^\]]*\]/,
       'export const months: string[] = mesiDelSelettore()',
     ],
+    [
+      "const start = monthStart(year, monthIndex).startOf('week')",
+      'const start = dalLunedi(monthStart(year, monthIndex))',
+    ],
   ],
   'DatePicker/CalendarPanel.vue': [
     [
       "import { months } from './utils'",
-      "import { inizialiDeiGiorni, months } from './utils'",
+      "import { dalLunedi, inizialiDeiGiorni, months } from './utils'",
     ],
     [
       "const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']",
       'const WEEKDAYS = inizialiDeiGiorni()',
     ],
-    // Home and End go to the first and last column, wherever the week starts
+    // Home and End go to the first and last column: Monday and Sunday
     [
       "shiftFocus(cell.date.subtract(cell.date.day(), 'day'), -1)",
-      "shiftFocus(cell.date.startOf('week'), -1)",
+      'shiftFocus(dalLunedi(cell.date), -1)',
     ],
     [
       "shiftFocus(cell.date.add(6 - cell.date.day(), 'day'), 1)",
-      "shiftFocus(cell.date.startOf('week').add(6, 'day'), 1)",
+      "shiftFocus(dalLunedi(cell.date).add(6, 'day'), 1)",
     ],
     // what a screen reader says of the arrows and the grid
     [/(\s)label="previous"/g, `$1:label="__('Previous month')"`],

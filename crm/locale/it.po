@@ -42469,3 +42469,7 @@ msgstr "Vuoi davvero eliminare questa nota?"
 #: frontend/src/components/Modals/DoctypeModal.vue
 msgid "Task deleted"
 msgstr "Cosa da fare eliminata"
+
+#: frontend/vite/frappeUi.js
+msgid "{0} more"
+msgstr "altri {0}"
