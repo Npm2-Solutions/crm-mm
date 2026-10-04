@@ -42,8 +42,8 @@
        but it does not block it: what we know about the window is only as good
        as the incoming messages that reached us. -->
   <div
-    v-if="!windowOpen"
-    class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2 max-md:hidden"
+    v-if="!windowOpen && !isMobileView"
+    class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2"
   >
     <span class="min-w-0 flex-1 text-p-sm text-ink-amber-9">
       {{ windowNotice }}
@@ -54,12 +54,13 @@
       @click="emit('template')"
     />
   </div>
-  <!-- On a phone one line, the whole of it the way to the templates: two lines
-       and a button took a third of the box, over a chat already short -->
+  <!-- On a phone, held either way, one line, the whole of it the way to the
+       templates: two lines and a button took a third of the box, over a chat
+       already short (sideways, they left it 90px) -->
   <button
-    v-if="!windowOpen"
+    v-if="!windowOpen && isMobileView"
     type="button"
-    class="mx-2 mt-1.5 flex min-h-9 w-[calc(100%-1rem)] items-center gap-2 rounded-lg bg-surface-amber-1 px-3 text-left text-p-sm text-ink-amber-9 ring-1 ring-inset ring-outline-amber-2 active:bg-surface-amber-2 md:hidden"
+    class="mx-2 mt-1.5 flex min-h-9 w-[calc(100%-1rem)] items-center gap-2 rounded-lg bg-surface-amber-1 px-3 text-left text-p-sm text-ink-amber-9 ring-1 ring-inset ring-outline-amber-2 active:bg-surface-amber-2"
     @click="emit('template')"
   >
     <span class="lucide-clock size-4 shrink-0" aria-hidden="true" />
