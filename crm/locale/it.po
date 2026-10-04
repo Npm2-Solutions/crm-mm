@@ -42433,3 +42433,27 @@ msgstr "Annulla l'arrivo"
 #: frontend/src/components/Today/ParticipantRow.vue
 msgid "Undo the outcome"
 msgstr "Annulla l'esito"
+
+#: frontend/vite/frappeUi.js
+msgid "Previous month"
+msgstr "Mese precedente"
+
+#: frontend/vite/frappeUi.js
+msgid "Next month"
+msgstr "Mese successivo"
+
+#: frontend/vite/frappeUi.js
+msgid "Calendar dates"
+msgstr "Giorni del calendario"
+
+#: frontend/vite/frappeUi.js
+msgid "Select month and year"
+msgstr "Scegli mese e anno"
+
+#: frontend/vite/frappeUi.js
+msgid "Select year"
+msgstr "Scegli l'anno"
+
+#: frontend/vite/frappeUi.js
+msgid "Select month"
+msgstr "Scegli il mese"

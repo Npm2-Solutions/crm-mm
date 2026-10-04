@@ -474,7 +474,7 @@ the draft with `modello.accetta`.
 | File | Role |
 |---|---|
 | `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
-| `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts, the data import pages, the editor's toolbar), the agenda's calendar named by Intl in the boot's language; each rewrite must match frappe-ui's source — tested |
+| `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts, the data import pages, the editor's toolbar), the agenda's calendar named by Intl in the boot's language, the date picker's months and the letters over its columns from the day its grid starts on (dayjs's week: Monday in Italian); each rewrite must match frappe-ui's source — tested |
 | `frontend/src/area/it.js` | The client area's dictionary: a test reads every `__()` of `src/area` and wants it there |
 | `crm/lingue.py` | The language DottorCloud writes its own words in on a site (`del_centro()`): the site's, Italian where it was left on the framework's English in Italy or nowhere said; the consents' texts, the pipelines' stages, the libraries' words. What DottorCloud wrote in another language follows it at a migrate and after the setup wizard (a consent's text by `registro.testo_da_tradurre`, a new version of the forms frozen on it, the libraries loaded again); the centre's words stay — tested |
 

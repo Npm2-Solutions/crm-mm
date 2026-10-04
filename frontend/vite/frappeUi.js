@@ -48,6 +48,40 @@ function nomiDeiGiorni(stile) {
 }
 `
 
+// Appended to the date picker's utils.ts. Its grid starts the week where dayjs
+// does, in the language App.vue gave it (Monday in Italian): the letters over
+// the columns are taken from there, never from an English list starting on
+// Sunday, which put «S» (Saturday) over Sunday the 4th.
+export const SELETTORE = `
+// DottorCloud: the picker in the user's language (frontend/vite/frappeUi.js)
+function linguaDelSelettore() {
+  const lingua =
+    typeof window === 'undefined' ? '' : String(window.lang || '').replace(/_/g, '-')
+  try {
+    return lingua && Intl.DateTimeFormat.supportedLocalesOf([lingua]).length
+      ? lingua
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+function mesiDelSelettore() {
+  const formato = new Intl.DateTimeFormat(linguaDelSelettore(), { month: 'short' })
+  return Array.from({ length: 12 }, (_, mese) => {
+    const nome = formato.format(new Date(2000, mese, 1))
+    return nome.charAt(0).toLocaleUpperCase() + nome.slice(1)
+  })
+}
+export function inizialiDeiGiorni() {
+  const primo = dayjs().startOf('week').day()
+  const formato = new Intl.DateTimeFormat(linguaDelSelettore(), { weekday: 'narrow' })
+  // 2 January 2000 was a Sunday, day 0 as dayjs counts
+  return Array.from({ length: 7 }, (_, giorno) =>
+    formato.format(new Date(2000, 0, 2 + ((primo + giorno) % 7))),
+  )
+}
+`
+
 /** An attribute of a template, `label="Load More"`, bound to its translation. */
 function attributo(nome, testo) {
   return [`${nome}="${testo}"`, `:${nome}="__('${testo}')"`]
@@ -128,6 +162,42 @@ const SOSTITUZIONI = {
     attributo('label', 'Select All'),
     attributo('label', 'Clear All'),
     attributo('label', 'Clear'),
+  ],
+  'DatePicker/utils.ts': [
+    [
+      /export const months: string\[\] = \[[^\]]*\]/,
+      'export const months: string[] = mesiDelSelettore()',
+    ],
+  ],
+  'DatePicker/CalendarPanel.vue': [
+    [
+      "import { months } from './utils'",
+      "import { inizialiDeiGiorni, months } from './utils'",
+    ],
+    [
+      "const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']",
+      'const WEEKDAYS = inizialiDeiGiorni()',
+    ],
+    // Home and End go to the first and last column, wherever the week starts
+    [
+      "shiftFocus(cell.date.subtract(cell.date.day(), 'day'), -1)",
+      "shiftFocus(cell.date.startOf('week'), -1)",
+    ],
+    [
+      "shiftFocus(cell.date.add(6 - cell.date.day(), 'day'), 1)",
+      "shiftFocus(cell.date.startOf('week').add(6, 'day'), 1)",
+    ],
+    // what a screen reader says of the arrows and the grid
+    [/(\s)label="previous"/g, `$1:label="__('Previous month')"`],
+    [/(\s)label="next"/g, `$1:label="__('Next month')"`],
+    attributo('aria-label', 'Calendar dates'),
+    attributo('aria-label', 'Select month and year'),
+    attributo('aria-label', 'Select year'),
+    attributo('aria-label', 'Select month'),
+    [
+      "(cell.isToday ? ' (Today)' : '')",
+      "(cell.isToday ? ' (' + (globalThis.__ || String)('Today') + ')' : '')",
+    ],
   ],
   'DatePicker/DatePicker.vue': [
     attributo('today-label', 'Today'),
@@ -309,6 +379,12 @@ const RADICI = {
   '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
 }
 
+/** What the build appends to a file it rewrites, after its own code. */
+const CODA = {
+  'Calendar/calendarUtils.ts': NOMI,
+  'DatePicker/utils.ts': SELETTORE,
+}
+
 /** The files the build rewrites, as their path under frappe-ui's components. */
 export const FILE = Object.keys(SOSTITUZIONI)
 
@@ -337,7 +413,7 @@ export function traduciFrappeUi(codice, id) {
     }
     codice = codice.replace(cerca, metti)
   }
-  return file === 'Calendar/calendarUtils.ts' ? codice + NOMI : codice
+  return codice + (CODA[file] || '')
 }
 
 export default function frappeUiNellaLingua() {
