@@ -16,7 +16,11 @@
       <h1 v-if="titolo" id="titolo-pagina" tabindex="-1" class="sr-only">
         {{ __(titolo) }}
       </h1>
-      <router-view :key="$route.fullPath" />
+      <!-- keyed on the page, not on its tab: another record is another page,
+           but the hash only names the tab (or the message a notification
+           opens), and the whole record was unmounted and mounted again at
+           every tab -->
+      <router-view :key="chiaveDellaPagina" />
     </Layout>
     <Dialogs />
     <DoctypeModals />
@@ -42,6 +46,7 @@ provide('session', session)
 
 const route = useRoute()
 const titolo = computed(() => titoloDellaPagina(route.name))
+const chiaveDellaPagina = computed(() => route.fullPath.split('#')[0])
 
 const { setTheme } = useTheme()
 if (!localStorage.getItem('theme')) {

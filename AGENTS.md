@@ -662,6 +662,13 @@ row, the bar's words beside their icons).
   scrolls by itself (the history opening at its newest day) leaves it open.
   Something that opens inside a tab (a visit to write) comes into view by
   itself.
+- A record's tabs on a phone are two panels, each mounted the first time it
+  opens and then kept (`v-show`): Details, and one conversation that draws
+  every other tab (`MobileLead.vue`, `MobileDeal.vue`). A panel per tab
+  unmounted the one left and mounted the next, the conversation and its editor
+  with it: half a second a tap on a slow phone. The router view is keyed on the
+  page without its hash (`App.vue`): the hash names a tab, or the message a
+  notification opens, never another page.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet's or a page's row of actions is one row on a phone: what
