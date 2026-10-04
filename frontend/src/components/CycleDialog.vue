@@ -250,6 +250,7 @@ import {
   quota,
 } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
+import { oggiDelCentro } from '@/utils/scheduler'
 import {
   Badge,
   Button,
@@ -289,7 +290,7 @@ function empty() {
   return {
     service: '',
     sessions: 10,
-    starts_on: dayjs().format('YYYY-MM-DD'),
+    starts_on: oggiDelCentro(),
     valid_until: '',
     price: '',
     billing: PER_SEDUTA,

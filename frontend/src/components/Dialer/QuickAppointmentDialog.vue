@@ -94,7 +94,7 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { dateFormat } from '@/utils'
-import { sulCentro } from '@/utils/scheduler'
+import { oggiDelCentro, sulCentro } from '@/utils/scheduler'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -112,7 +112,7 @@ const show = computed({
 
 const form = reactive({
   service: '',
-  from: dayjs().format('YYYY-MM-DD'),
+  from: oggiDelCentro(),
   notes: '',
 })
 const picked = ref(null)

@@ -171,7 +171,7 @@ import { useScorriGiorni } from '@/composables/scorriGiorni'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
-import { appointmentColor } from '@/utils/scheduler'
+import { adessoDelCentro, appointmentColor } from '@/utils/scheduler'
 import {
   doveAdesso,
   elencoDelGiorno,
@@ -211,9 +211,10 @@ useScorriGiorni(
 const { getUser } = usersStore()
 const lingua = window.navigator?.language || 'it-IT'
 
-// "now" moves on its own while the page stays open
-const adessoOra = ref(new Date())
-const orologio = setInterval(() => (adessoOra.value = new Date()), 60000)
+// "now" moves on its own while the page stays open, on the centre's clock as
+// the day's times are
+const adessoOra = ref(adessoDelCentro())
+const orologio = setInterval(() => (adessoOra.value = adessoDelCentro()), 60000)
 onBeforeUnmount(() => clearInterval(orologio))
 
 const oggi = computed(() => locale(adessoOra.value))

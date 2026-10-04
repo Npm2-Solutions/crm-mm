@@ -431,7 +431,12 @@ import { isMobileView } from '@/composables/breakpoints'
 import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
-import { formatMinutes, oraDelCentro } from '@/utils/scheduler'
+import {
+  adessoDelCentro,
+  formatMinutes,
+  oggiDelCentro,
+  oraDelCentro,
+} from '@/utils/scheduler'
 import {
   NAMED_HEX,
   appointmentCalendarColor,
@@ -661,8 +666,9 @@ const agendaLabel = computed(() =>
   dayjs(agendaDate.value).format('dddd D MMMM YYYY'),
 )
 
+// the centre's today: a phone in another time zone opened another day
 function today() {
-  return dayjs().format('YYYY-MM-DD')
+  return oggiDelCentro()
 }
 
 function shiftDay(days) {
@@ -688,8 +694,8 @@ function schedulerRange() {
     }
   }
   return {
-    start: dayjs().startOf('month').format('YYYY-MM-DD'),
-    end: dayjs().endOf('month').format('YYYY-MM-DD'),
+    start: dayjs(adessoDelCentro()).startOf('month').format('YYYY-MM-DD'),
+    end: dayjs(adessoDelCentro()).endOf('month').format('YYYY-MM-DD'),
   }
 }
 
@@ -841,7 +847,7 @@ function startNew(at = {}) {
   if (!prenota.value) return
   const fromTime = at.time ? getFromToTime(at.time)[0] : nextQuarter()
   newAt = {
-    date: dayjs(at.date || undefined).format('YYYY-MM-DD'),
+    date: at.date ? dayjs(at.date).format('YYYY-MM-DD') : today(),
     time: fromTime,
     isFullDay: Boolean(at.isFullDay),
   }
@@ -853,10 +859,10 @@ function startNew(at = {}) {
   }
 }
 
-// With no slot clicked, the next quarter of an hour: rounding down, as the
-// slot picker does, proposed a time already gone.
+// With no slot clicked, the next quarter of an hour on the centre's clock:
+// rounding down, as the slot picker does, proposed a time already gone.
 function nextQuarter() {
-  const now = dayjs()
+  const now = dayjs(adessoDelCentro())
   return formatMinutes(Math.ceil((now.hour() * 60 + now.minute()) / 15) * 15)
 }
 
@@ -1463,7 +1469,7 @@ function close() {
 // utils
 function getFromToTime(time) {
   const pad = (v) => String(v).padStart(2, '0')
-  let now = dayjs()
+  let now = dayjs(adessoDelCentro())
   let h = now.hour()
   let m = Math.floor(now.minute() / 15) * 15
   let fromHour = h

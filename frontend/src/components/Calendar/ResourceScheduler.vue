@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <!-- column headers -->
@@ -193,6 +197,7 @@
 import UserAvatar from '@/components/UserAvatar.vue'
 import { sourceTag } from '@/utils/onlineBooking'
 import {
+  adessoDelCentro,
   appointmentColor,
   blockStyle,
   buildTimeAxis,
@@ -259,7 +264,8 @@ const gridHeight = computed(
 )
 
 const nowMinutes = computed(() => {
-  const today = new Date()
+  // the centre's now, as the columns' times are
+  const today = adessoDelCentro()
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
     today.getDate(),
   ).padStart(2, '0')}`
