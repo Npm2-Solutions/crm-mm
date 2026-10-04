@@ -215,7 +215,7 @@
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
-                @click.stop="report(row)"
+                @click.stop="chiediSeComunicare(row)"
               />
               <!-- the whole row opens it; on a phone the button would only take room -->
               <Button
@@ -469,10 +469,12 @@ import {
   isMobileView,
   showSettings,
 } from '@/composables/settings'
+import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 
 // the front desk issues invoices; configuring invoicing is the manager's
 const { puo } = usersStore()
+const { $dialog } = globalStore()
 const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 
 const tab = ref('todo')
@@ -649,6 +651,28 @@ async function transmit(row) {
   } finally {
     sending.value = ''
   }
+}
+
+// a report reaches the Sistema TS at once, and on a phone the button sits in
+// the card one taps to open the invoice: it asks first
+function chiediSeComunicare(row) {
+  $dialog({
+    title: __('Report {0} to the Sistema TS?', [row.document_number]),
+    message: __(
+      'The expense of {0} goes to the Sistema TS now, with their tax code.',
+      [row.billing_name],
+    ),
+    actions: [
+      {
+        label: __('Report', null, 'Sistema TS'),
+        variant: 'solid',
+        onClick: ({ close }) => {
+          close()
+          report(row)
+        },
+      },
+    ],
+  })
 }
 
 async function report(row) {
