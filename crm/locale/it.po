@@ -22413,7 +22413,7 @@ msgstr "Recupero"
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:93
 msgid "Restart the SLA each time the customer replies (status changes to Open) and fulfill it when marked as Replied"
-msgstr "Fai ripartire l'SLA ogni volta che la persona risponde (lo stato torna Open) e consideralo rispettato quando è segnato come Replied"
+msgstr "Fai ripartire l'SLA ogni volta che la persona risponde (lo stato torna «Aperto») e consideralo rispettato quando è segnato come «Risposto»"
 
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.js:22
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.js:54
@@ -42779,3 +42779,11 @@ msgstr "{0}: {1} porzioni"
 #: frontend/src/utils/onlineBooking.js
 msgid "{0}h notice"
 msgstr "preavviso {0} h"
+
+#: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue
+msgid "Low-Medium"
+msgstr "Medio-bassa"
+
+#: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue
+msgid "Medium-High"
+msgstr "Medio-alta"

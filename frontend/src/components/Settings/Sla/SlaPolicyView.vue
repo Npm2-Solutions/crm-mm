@@ -79,11 +79,11 @@
               class="w-full"
               :options="[
                 {
-                  label: 'Lead',
+                  label: __('People'),
                   value: 'CRM Lead',
                 },
                 {
-                  label: 'Deal',
+                  label: __('Deals'),
                   value: 'CRM Deal',
                 },
               ]"
