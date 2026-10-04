@@ -29,6 +29,7 @@
         class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
         <Button
+          v-if="canSwitch"
           :label="__('Disable')"
           :loading="fcrmSettings.setValue.loading"
           @click="toggleEnable(true)"
@@ -67,7 +68,7 @@
           </span>
         </div>
         <Button
-          v-if="canEdit"
+          v-if="canSwitch"
           variant="solid"
           :loading="fcrmSettings.setValue.loading"
           @click="toggleEnable(false)"
@@ -273,8 +274,11 @@ import { computed, ref } from 'vue'
 
 const DOCTYPE = 'CRM Sales Hierarchy'
 
-const { users: usersResource, puo } = usersStore()
+const { users: usersResource, puo, isAgency } = usersStore()
 const canEdit = computed(() => puo('gerarchia.gestisci'))
+// switching it on or off is the System Manager's alone (the server's rule in
+// fcrm_settings.py): a manager placed in the tree would lift their own limit
+const canSwitch = computed(() => isAgency())
 
 // People are shown by their levels, not by the roles underneath (doc 30). A
 // Manager sits above everyone else; the agency is not part of the team.
