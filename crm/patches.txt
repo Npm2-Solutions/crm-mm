@@ -98,4 +98,4 @@ crm.patches.v1_0.the_consents_speak_the_centres_language
 crm.patches.v1_0.the_centres_own_pages_are_direct_traffic
 crm.patches.v1_0.the_qualifications_keep_their_accents
 crm.patches.v1_0.the_login_codes_come_from_the_product
-crm.patches.v1_0.the_quick_entry_reads_by_rows
+crm.patches.v1_0.the_person_reads_in_order_on_a_phone

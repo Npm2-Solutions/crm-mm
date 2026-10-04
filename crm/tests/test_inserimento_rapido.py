@@ -1,20 +1,21 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A new person reads by rows on a phone: the shipped quick entries hold each of
-the person's rows as a section of its own, and the patch splits a section still as
-it was shipped, never one the centre changed."""
+"""A person reads in order on a phone: the shipped quick entries hold each of the
+person's rows as a section of its own, the Data tab a column per kind, and the patch
+changes a section still as it was shipped, never one the centre changed."""
 
 import json
 
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from crm.install import DEAL_QUICK_ENTRY, LEAD_QUICK_ENTRY
-from crm.patches.v1_0 import the_quick_entry_reads_by_rows as patch
+from crm.install import DEAL_QUICK_ENTRY, LEAD_DATA_FIELDS, LEAD_QUICK_ENTRY
+from crm.patches.v1_0 import the_person_reads_in_order_on_a_phone as patch
 
 PERSONA = "CRM Lead-Quick Entry"
 TRATTATIVA = "CRM Deal-Quick Entry"
+DATI = "CRM Lead-Data Fields"
 
 
 def come_prima(spedito, sezione, seconda):
@@ -38,7 +39,7 @@ def al_telefono(sezioni):
 
 class TestInserimentoRapido(IntegrationTestCase):
 	def setUp(self):
-		for nome in (PERSONA, TRATTATIVA):
+		for nome in (PERSONA, TRATTATIVA, DATI):
 			if frappe.db.exists("CRM Fields Layout", nome):
 				prima = frappe.db.get_value("CRM Fields Layout", nome, "layout")
 				self.addCleanup(frappe.db.set_value, "CRM Fields Layout", nome, "layout", prima)
@@ -46,8 +47,8 @@ class TestInserimentoRapido(IntegrationTestCase):
 	def metti(self, nome, sezioni):
 		if not frappe.db.exists("CRM Fields Layout", nome):
 			doc = frappe.new_doc("CRM Fields Layout")
-			doc.dt = "CRM Lead" if nome == PERSONA else "CRM Deal"
-			doc.type = "Quick Entry"
+			doc.dt = "CRM Deal" if nome == TRATTATIVA else "CRM Lead"
+			doc.type = "Data Fields" if nome == DATI else "Quick Entry"
 			doc.layout = json.dumps(sezioni)
 			doc.insert(ignore_permissions=True)
 			self.addCleanup(frappe.delete_doc, "CRM Fields Layout", nome, force=True)
@@ -111,3 +112,31 @@ class TestInserimentoRapido(IntegrationTestCase):
 			meta = frappe.get_meta(doctype)
 			for campo in al_telefono(json.loads(spedito)):
 				self.assertTrue(meta.has_field(campo), f"{doctype}.{campo}")
+
+	def test_the_data_tab_reads_like_the_panel(self):
+		campi = al_telefono([s for s in json.loads(LEAD_DATA_FIELDS) if s["name"] == "person_section"])
+		self.assertEqual(
+			campi, ["first_name", "last_name", "mobile_no", "phone", "email", "gender", "salutation"]
+		)
+
+	def test_the_shipped_data_tab_gets_a_column_per_kind(self):
+		spedite = json.loads(LEAD_DATA_FIELDS)
+		prima = json.loads(LEAD_DATA_FIELDS)
+		prima[0]["columns"] = [
+			{"name": f"column_{i}", "fields": list(campi)} for i, campi in enumerate(patch.PRIMA_DATI)
+		]
+		attribuzione = {"label": "First Touch", "name": "first_touch_data_section", "columns": []}
+		self.metti(DATI, [*prima, attribuzione])
+		patch.execute()
+		dopo = self.leggi(DATI)
+		self.assertEqual(dopo[0]["columns"], spedite[0]["columns"])
+		# its label and its state stay, and so does everything after it
+		self.assertEqual((dopo[0]["label"], dopo[0]["opened"]), ("Person", True))
+		self.assertEqual(dopo[1:], [*spedite[1:], attribuzione])
+
+	def test_a_data_tab_the_centre_changed_stays(self):
+		sezioni = json.loads(LEAD_DATA_FIELDS)
+		sezioni[0]["columns"] = [{"name": "c", "fields": ["email", "first_name"]}]
+		self.metti(DATI, sezioni)
+		patch.execute()
+		self.assertEqual(self.leggi(DATI), sezioni)
