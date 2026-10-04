@@ -494,6 +494,22 @@
       :icon="emptyTextIcon"
       :top="top"
     />
+    <!-- Back to the latest message, once somebody has scrolled a screen away
+         from it, as in every messenger: at the scroller's bottom right, over
+         the messages, taking no room of its own -->
+    <div
+      v-if="far && settled"
+      class="pointer-events-none sticky bottom-0 z-10 h-0 shrink-0"
+    >
+      <button
+        type="button"
+        class="pointer-events-auto absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-surface-elevation-2 text-ink-gray-7 shadow-md ring-1 ring-outline-gray-2 dark:bg-surface-gray-3"
+        :aria-label="__('Go to the latest message')"
+        @click="toTheEnd()"
+      >
+        <span class="lucide-arrow-down size-5" aria-hidden="true" />
+      </button>
+    </div>
   </div>
   <!--
     The composer: one box, with the ways of writing as its tabs.
@@ -1207,12 +1223,15 @@ const target = computed(() => {
     return null
   return name
 })
-const { settled, follow, reopen } = useConversationScroll(scroller, {
-  newestFirst: isNewestFirst,
-  readsFromTheEnd,
-  arrived,
-  target,
-})
+const { settled, follow, reopen, far, toTheEnd } = useConversationScroll(
+  scroller,
+  {
+    newestFirst: isNewestFirst,
+    readsFromTheEnd,
+    arrived,
+    target,
+  },
+)
 
 // …even when the channel read last would hide it: a WhatsApp message opened
 // from a notification, on a record left reading emails, shows every channel
