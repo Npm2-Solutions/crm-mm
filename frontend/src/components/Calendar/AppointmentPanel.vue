@@ -139,6 +139,7 @@
           <FormControl
             v-model="cancelling.reason"
             type="textarea"
+            variant="outline"
             :rows="2"
             :placeholder="__('Why, if you know (they called, ill…)')"
             :aria-label="__('Why')"

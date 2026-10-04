@@ -131,6 +131,13 @@
   border-bottom-left-radius: 2px;
 }
 
+/* 4b. A solid red button on the dark (delete, cancel the appointment): frappe-ui
+       writes its words in the base ink, nearly black on the dark theme, on a red
+       that stays mid-dark: 3.3:1. White reads 5.4:1 */
+[data-marchio='dottorcloud'][data-theme='dark'] button.bg-surface-red-7 {
+  color: #ffffff;
+}
+
 /* 5. The ticked box a cloud; the chosen radio the brand's cross */
 [data-marchio='dottorcloud'] input[type='checkbox'] {
   border-radius: 4px 4px 4px 2px;
