@@ -672,6 +672,12 @@ row, the bar's words beside their icons).
   scrolls by itself (the history opening at its newest day) leaves it open.
   Something that opens inside a tab (a visit to write) comes into view by
   itself.
+- A conversation with its box to write in is the screen, as in a phone's own
+  messengers (`useChatAperta`, `telefono.css` «11»): the bar at the bottom
+  steps aside and the box (`data-compositore`) is the screen's bottom; with
+  the keyboard up what carries `data-via-scrivendo` (a record's tabs, the
+  channels to read and to write on) steps aside too. On a person's
+  conversation the card waits folded and the name in the header opens it.
 - A record's tabs on a phone are two panels, each mounted the first time it
   opens and then kept (`v-show`): Details, and one conversation that draws
   every other tab (`MobileLead.vue`, `MobileDeal.vue`). A panel per tab
