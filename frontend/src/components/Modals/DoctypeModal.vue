@@ -50,12 +50,21 @@
         </div>
         <div ref="fieldsBox" autofocus>
           <FieldLayout
-            v-if="layout.data"
+            v-if="layout.data && pronto"
             :tabs="layout.data"
             :data="doc"
             :doctype="doctype"
             :docname="docname"
           />
+          <div v-else-if="chiusa" class="flex flex-col gap-1.5 py-2">
+            <p class="text-base-semibold text-ink-gray-8">
+              {{ chiusa.titolo }}
+            </p>
+            <p class="text-p-base text-ink-gray-6">{{ chiusa.testo }}</p>
+          </div>
+          <div v-else class="flex h-24 items-center justify-center">
+            <LoaderMark />
+          </div>
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
       </div>
@@ -65,6 +74,7 @@
             variant="solid"
             :label="editMode ? __('Update') : __('Create')"
             :loading="editMode ? document.save.loading : create.loading"
+            :disabled="!pronto"
             @click="editMode ? update() : create()"
           />
         </div>
@@ -78,12 +88,14 @@ import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import { useDocument } from '@/data/document'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { isMobileView } from '@/composables/settings'
 import { setupCustomizations } from '@/utils'
+import { schedaChiusa } from '@/utils/schedaChiusa'
 import { call, createResource, toast } from 'frappe-ui'
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -129,7 +141,15 @@ const layout = createResource({
 })
 
 const error = ref(null)
-const editMode = computed(() => Boolean(document.doc?.name))
+// a record named by whoever opened the sheet is being edited from the first
+// moment: while it loaded, the sheet said «New note» and offered «Create»
+const editMode = computed(() => Boolean(props.docname || document.doc?.name))
+// the record being edited has arrived: until then no fields and no button
+const pronto = computed(() => !props.docname || Boolean(document.doc?.name))
+// a record that does not open says why, in words
+const chiusa = computed(() =>
+  props.docname ? schedaChiusa(document.get?.error, props.doctype) : null,
+)
 
 const _create = createResource({
   url: 'frappe.client.insert',

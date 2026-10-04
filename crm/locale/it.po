@@ -43062,3 +43062,27 @@ msgstr "Comunicare {0} al Sistema TS?"
 #: frontend/src/pages/Invoices.vue
 msgid "The expense of {0} goes to the Sistema TS now, with their tax code."
 msgstr "La spesa di {0} va subito al Sistema TS, con il suo codice fiscale."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "You cannot open this note"
+msgstr "Non puoi aprire questa nota"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "A note opens for whoever follows the person or the deal it is about."
+msgstr "Una nota si apre a chi segue la persona o la trattativa di cui parla."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This note is no longer here"
+msgstr "Questa nota non c'è più"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "You cannot open this task"
+msgstr "Non puoi aprire questa cosa da fare"
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "A task opens for whoever follows the person or the deal it is about."
+msgstr "Una cosa da fare si apre a chi segue la persona o la trattativa di cui parla."
+
+#: frontend/src/utils/schedaChiusa.js
+msgid "This task is no longer here"
+msgstr "Questa cosa da fare non c'è più"

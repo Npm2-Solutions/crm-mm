@@ -47,6 +47,27 @@ const PAROLE = {
       'It may have been deleted.',
     ],
   },
+  // the sheet of a note or a task opened from its list (DoctypeModal.vue)
+  'FCRM Note': {
+    PermissionError: [
+      'You cannot open this note',
+      'A note opens for whoever follows the person or the deal it is about.',
+    ],
+    DoesNotExistError: [
+      'This note is no longer here',
+      'It may have been deleted.',
+    ],
+  },
+  'CRM Task': {
+    PermissionError: [
+      'You cannot open this task',
+      'A task opens for whoever follows the person or the deal it is about.',
+    ],
+    DoesNotExistError: [
+      'This task is no longer here',
+      'It may have been deleted.',
+    ],
+  },
 }
 
 // The word that names a record while it is not there to name itself.
