@@ -13,6 +13,7 @@ import {
   minutesFromMidnight,
   oraDelCentro,
   orariPerGiorno,
+  prossimoQuarto,
   snapMinutes,
   sulCentro,
   unassigned,
@@ -338,6 +339,16 @@ describe("the centre's clock", () => {
     expect(adessoDelCentro('Nowhere/Town', istante).getTime()).toBe(
       istante.getTime(),
     )
+  })
+
+  it('proposes the next quarter of an hour, never a time already gone', () => {
+    const quarto = (ora) =>
+      oraDelCentro(prossimoQuarto(new Date(`2026-10-04T${ora}`)))
+    expect(quarto('20:19:00')).toBe('2026-10-04 20:30:00')
+    expect(quarto('20:30:00')).toBe('2026-10-04 20:30:00')
+    expect(quarto('14:49:30')).toBe('2026-10-04 15:00:00')
+    // the last quarter of the day is midnight of the next one
+    expect(quarto('23:50:00')).toBe('2026-10-05 00:00:00')
   })
 
   it("groups the free times by the centre's day", () => {

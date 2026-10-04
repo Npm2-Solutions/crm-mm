@@ -254,6 +254,7 @@ import {
 } from 'frappe-ui'
 import { globalStore } from '@/stores/global'
 import { validateEmail } from '@/utils'
+import { prossimoQuarto } from '@/utils/scheduler'
 import {
   useEvent,
   normalizeParticipants,
@@ -325,9 +326,13 @@ onMounted(() => {
     let start = dayjs(props.event.starts_on)
     let end = dayjs(props.event.ends_on)
 
+    // a new one starts at the next quarter of an hour on the centre's clock,
+    // as the agenda's own does: it took the phone's clock, at the minute it
+    // was opened - 14:49 on a phone in another time zone, where the centre
+    // read 20:19
     if (!props.event.name) {
-      start = dayjs()
-      end = dayjs().add(1, 'hour')
+      start = dayjs(prossimoQuarto())
+      end = start.add(1, 'hour')
     }
 
     _event.value = {
