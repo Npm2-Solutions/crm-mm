@@ -581,7 +581,13 @@ function placeLabel(offer) {
 
 function offerFacts(offer) {
   const parts = []
-  if (offer.channel) parts.push(__('sent by {0}', [__(offer.channel)]))
+  // a sentence per channel, as for the offers above
+  const inviata = {
+    Email: () => __('sent by email'),
+    WhatsApp: () => __('sent on WhatsApp'),
+    SMS: () => __('sent by SMS'),
+  }[offer.channel]
+  if (inviata) parts.push(inviata())
   // why it did not leave, kept in the words of whoever offered it (a job
   // writes English): read in the reader's language
   else if (offer.not_sent) parts.push(__(offer.not_sent))
@@ -662,8 +668,12 @@ async function offer(place) {
     })
     fill(fatto)
     places.value = null
-    if (fatto.sent?.channel)
-      toast.success(__('Offered by {0}', [__(fatto.sent.channel)]))
+    const proposta = {
+      Email: () => __('Offered by email'),
+      WhatsApp: () => __('Offered on WhatsApp'),
+      SMS: () => __('Offered by SMS'),
+    }[fatto.sent?.channel]
+    if (proposta) toast.success(proposta())
     else toast.warning(__('Offered, but nothing could be sent: call them'))
     emit('changed')
   } catch (e) {

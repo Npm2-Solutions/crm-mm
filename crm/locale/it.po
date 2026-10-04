@@ -18366,10 +18366,6 @@ msgid "Offered by"
 msgstr "Proposta da"
 
 #: frontend/src/components/Waiting/WaitingDialog.vue
-msgid "Offered by {0}"
-msgstr "Proposto via {0}"
-
-#: frontend/src/components/Waiting/WaitingDialog.vue
 msgid "Offered, but nothing could be sent: call them"
 msgstr "Proposto, ma non è partito niente: chiamala"
 
@@ -33699,10 +33695,6 @@ msgstr "sandbox non raggiunge nessuno: lo SdI non vede mai il documento e il cli
 msgid "seconds"
 msgstr "secondi"
 
-#: frontend/src/components/Waiting/WaitingDialog.vue
-msgid "sent by {0}"
-msgstr "inviata via {0}"
-
 #: frontend/src/components/Moduli/FormsArea.vue
 msgid "sent {0}"
 msgstr "inviato il {0}"
@@ -42579,3 +42571,35 @@ msgstr "proposte su WhatsApp"
 #: frontend/src/components/Waiting/WaitingDialog.vue
 msgid "offers by SMS"
 msgstr "proposte via SMS"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "sent by email"
+msgstr "inviata via email"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "sent on WhatsApp"
+msgstr "inviata su WhatsApp"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "sent by SMS"
+msgstr "inviata via SMS"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "Offered by email"
+msgstr "Proposta inviata via email"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "Offered on WhatsApp"
+msgstr "Proposta inviata su WhatsApp"
+
+#: frontend/src/components/Waiting/WaitingDialog.vue
+msgid "Offered by SMS"
+msgstr "Proposta inviata via SMS"
+
+#: frontend/src/components/Settings/Users.vue
+msgid "No other users yet"
+msgstr "Ancora nessun altro utente"
+
+#: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue
+msgid "No email templates yet"
+msgstr "Ancora nessun modello email"
