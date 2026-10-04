@@ -151,7 +151,12 @@
                   : c.type === 'Incoming'
                     ? __('Incoming')
                     : __('Outgoing'),
-                quandoChiamata(c.when, new Date(), lingua, __('yesterday')),
+                quandoChiamata(
+                  c.when,
+                  adessoDelCentro(),
+                  lingua,
+                  __('yesterday'),
+                ),
               ].join(' · ')
             }}
           </span>
@@ -215,6 +220,7 @@ import {
   quandoChiamata,
 } from '@/utils/telefono'
 import { usePannelloTelefono } from '@/composables/pannelloTelefono'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { Avatar, TextInput, createResource } from 'frappe-ui'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'

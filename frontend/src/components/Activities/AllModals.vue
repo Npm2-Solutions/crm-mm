@@ -15,8 +15,9 @@ import EventModal from '@/components/Modals/EventModal.vue'
 import { showEventModal, activeEvent } from '@/composables/event'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { call, dayjs } from 'frappe-ui'
+import { call } from 'frappe-ui'
 import { callParties, numberOf } from '@/utils/callLog'
+import { adessoDelCentro, oraDelCentro } from '@/utils/scheduler'
 import { usersStore } from '@/stores/users'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -144,7 +145,9 @@ function createCallLog() {
       type: 'Outgoing',
       telephony_medium: 'Manual',
       status: 'Completed',
-      start_time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      // the centre's clock, as every moment is kept: the phone's own put a
+      // call logged in another zone hours off
+      start_time: oraDelCentro(adessoDelCentro()),
       ...callParties({ direction: 'Outgoing', theirNumber, myNumber: '', me }),
     },
     callbacks: {

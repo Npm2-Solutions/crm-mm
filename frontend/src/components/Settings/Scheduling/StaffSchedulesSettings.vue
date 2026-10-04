@@ -357,7 +357,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
-import { hhmm } from '@/utils/scheduler'
+import { hhmm, oggiDelCentro } from '@/utils/scheduler'
 import { appLocale } from '@/utils/locale'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
@@ -370,7 +370,8 @@ const { ambito } = usersStore()
 const proprio = computed(() => ambito('agenda.turni') !== 'centro')
 
 const weekStart = ref('')
-const todayIso = new Date().toISOString().slice(0, 10)
+// the centre's today: the UTC one is yesterday's before dawn in Italy
+const todayIso = oggiDelCentro()
 
 const rota = createResource({
   url: 'crm.api.booking_admin.get_team_rota',

@@ -1,6 +1,9 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
 import { getSettings } from '@/stores/settings'
 import { laterLabel, momentLabel } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
+import { adessoDelCentro, oraDelCentro } from '@/utils/scheduler'
 import { call, createResource, dayjs, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
@@ -181,8 +184,10 @@ export function useConversationState(person, changed) {
     })
   }
 
+  // on the centre's clock, as the agenda keeps moments: the phone's own zone
+  // put «tomorrow at 9» at another hour
   function at(days, hour) {
-    return dayjs()
+    return dayjs(adessoDelCentro())
       .add(days, 'day')
       .hour(hour)
       .minute(0)
@@ -191,7 +196,7 @@ export function useConversationState(person, changed) {
   }
 
   function whenBack(until) {
-    return laterLabel(until, dayjs().format('YYYY-MM-DD HH:mm:ss'), appLocale())
+    return laterLabel(until, oraDelCentro(adessoDelCentro()), appLocale())
   }
 
   // Tomorrow morning, in three days, next week: the moments somebody actually

@@ -724,6 +724,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { oggiDelCentro } from '@/utils/scheduler'
 
 const props = defineProps({ name: { type: String, required: true } })
 const emit = defineEmits(['back'])
@@ -1052,7 +1053,7 @@ async function openPublish() {
   Object.assign(publishDraft, {
     notes: '',
     askAgain: false,
-    askedFrom: new Date().toISOString().slice(0, 10),
+    askedFrom: oggiDelCentro(),
     error: '',
   })
   showPublish.value = true
