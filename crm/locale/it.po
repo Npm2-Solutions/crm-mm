@@ -43561,3 +43561,7 @@ msgstr "Tre tipi di abbonamento alle lezioni e gli abituali che li hanno comprat
 #: crm/demo/base.py
 msgid "People waiting for a place with the osteopath, the dietitian or in a full class: an offer waiting for its answer, places booked from an offer."
 msgstr "Chi aspetta un posto con l'osteopata, con la dietista o in una lezione al completo: un'offerta che attende risposta, posti prenotati da un'offerta."
+
+#: crm/demo/base.py
+msgid "Emails between the centre and its people, and SMS and WhatsApp messages where they are on: most dealt with, a few waiting for an answer, some for you."
+msgstr "Email tra il centro e le sue persone, e messaggi SMS e WhatsApp dove sono attivi: quasi tutte gestite, qualcuna in attesa di risposta, alcune per te."

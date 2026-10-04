@@ -1087,3 +1087,313 @@ ATTESE = (
 
 #: How many people wait for a seat in the class that is full.
 IN_ATTESA_DELLA_LEZIONE = 2
+
+# -- the conversations ---------------------------------------------------------------------------
+
+#: Emails with the centre: the subject, who writes in the centre ("desk", a
+#: practitioner's key, or "pratico": whoever the person sees), how it ends ("done":
+#: dealt with, "open": waiting for the centre, "later": parked a few days), then the
+#: messages: who writes ("lui" the person, "noi" the centre), the hours after the one
+#: before, the words. {nome} is the person's first name, {firma} who signs.
+EMAIL = (
+	(
+		"Prima visita fisioterapica",
+		"desk",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\nvorrei prenotare una prima visita fisioterapica per un dolore alla spalla "
+				"destra. Avete posto la prossima settimana, possibilmente di pomeriggio?\n\nGrazie,\n{nome}",
+			),
+			(
+				"noi",
+				3,
+				"Buongiorno {nome},\n\ncertamente: la dottoressa Ferri ha posto martedì alle 17:15 oppure "
+				"giovedì alle 15:00. Ci dica quale preferisce e la confermiamo.\n\nUn saluto,\n{firma}",
+			),
+			("lui", 2, "Giovedì alle 15:00 va benissimo, grazie!"),
+			(
+				"noi",
+				1,
+				"Perfetto, è confermata per giovedì alle 15:00. Il giorno prima le arriverà un "
+				"promemoria.\n\nA presto,\n{firma}",
+			),
+		),
+	),
+	(
+		"Fattura per la dichiarazione dei redditi",
+		"desk",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\nmi servirebbero le fatture delle sedute di settembre per la detrazione. "
+				"Il codice fiscale è quello che vi ho lasciato alla prima visita.\n\nGrazie mille,\n{nome}",
+			),
+			(
+				"noi",
+				4,
+				"Buongiorno {nome},\n\nle fatture sono pronte: le trova nella sua area personale, nella "
+				"sezione Fatture. Se preferisce, gliele stampiamo alla prossima seduta.\n\nUn saluto,\n{firma}",
+			),
+			("lui", 5, "Trovate, grazie per la rapidità!"),
+		),
+	),
+	(
+		"Spostare l'appuntamento di giovedì",
+		"desk",
+		"open",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\ngiovedì ho una riunione che si è allungata: si può spostare la seduta a "
+				"venerdì, anche nel tardo pomeriggio?\n\nScusate il preavviso,\n{nome}",
+			),
+		),
+	),
+	(
+		"Referto della risonanza",
+		"giulia",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno dottoressa,\n\nho ritirato il referto della risonanza al ginocchio: parla di una "
+				"lesione parziale del menisco mediale. Devo portarlo alla prossima seduta?\n\n{nome}",
+			),
+			(
+				"noi",
+				6,
+				"Buongiorno {nome},\n\nsì, lo porti pure con le immagini: lo guardiamo insieme e adattiamo "
+				"gli esercizi. Nel frattempo continui con quelli che le ho dato, senza carichi.\n\n{firma}",
+			),
+		),
+	),
+	(
+		"Convenzione Salute+",
+		"desk",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buonasera,\n\nho l'assicurazione Salute+ tramite l'azienda: siete convenzionati? Mi "
+				"interesserebbero dei trattamenti osteopatici.\n\n{nome}",
+			),
+			(
+				"noi",
+				14,
+				"Buongiorno {nome},\n\nsì, siamo convenzionati: con Salute+ un trattamento osteopatico costa "
+				"60 € invece di 70 €. Basta mostrare la tessera alla prima visita.\n\nUn saluto,\n{firma}",
+			),
+			("lui", 3, "Ottimo, allora vi chiamo per fissare. Grazie!"),
+		),
+	),
+	(
+		"Lezione di prova di Pilates",
+		"desk",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Ciao,\n\nvorrei provare il Pilates di gruppo: si può fare una lezione di prova? Lavoro fino "
+				"alle 17, quindi mi andrebbero bene le lezioni serali.\n\n{nome}",
+			),
+			(
+				"noi",
+				2,
+				"Ciao {nome},\n\ncerto! La prova è gratuita: ci sono le lezioni del lunedì e del mercoledì "
+				"alle 18:00. Ti segno per lunedì?\n\n{firma}",
+			),
+			("lui", 1, "Sì, lunedì alle 18:00. Porto il tappetino?"),
+			("noi", 1, "Non serve, li abbiamo noi. Basta un abbigliamento comodo e le calze antiscivolo!"),
+		),
+	),
+	(
+		"Disdetta per influenza",
+		"desk",
+		"later",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\nho la febbre da ieri, purtroppo devo disdire la seduta di domani. Vi "
+				"richiamo io appena sto meglio.\n\n{nome}",
+			),
+			(
+				"noi",
+				2,
+				"Buongiorno {nome},\n\nnessun problema, abbiamo disdetto la seduta. Si riguardi: la "
+				"ricontattiamo noi tra qualche giorno per fissare la prossima.\n\nBuona guarigione,\n{firma}",
+			),
+		),
+	),
+	(
+		"Domanda sul piano alimentare",
+		"elena",
+		"open",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno dottoressa,\n\nnel piano a pranzo c'è il riso integrale: posso sostituirlo con "
+				"il farro o con la pasta integrale? E lo spuntino del pomeriggio si può spostare dopo la "
+				"palestra?\n\nGrazie,\n{nome}",
+			),
+		),
+	),
+	(
+		"Grazie di tutto",
+		"pratico",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\nvolevo solo ringraziarvi: dopo le sedute la schiena va molto meglio e ho "
+				"ripreso a correre. Ci vediamo per il controllo!\n\n{nome}",
+			),
+		),
+	),
+	(
+		"Parcheggio",
+		"desk",
+		"done",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno, c'è un parcheggio vicino al centro? Vengo in auto la prima volta.\n\n{nome}",
+			),
+			(
+				"noi",
+				1,
+				"Buongiorno {nome},\n\nsì, in via Garibaldi c'è un parcheggio pubblico a due minuti a piedi, "
+				"gratuito dopo le 19: è proprio dietro l'angolo.\n\n{firma}",
+			),
+		),
+	),
+	(
+		"Abbonamento alle lezioni",
+		"desk",
+		"open",
+		(
+			(
+				"lui",
+				0,
+				"Ciao,\n\nmi trovo bene con le lezioni di posturale: che abbonamenti avete? Verrei due volte "
+				"a settimana.\n\n{nome}",
+			),
+			(
+				"noi",
+				3,
+				"Ciao {nome},\n\nper due lezioni a settimana c'è l'abbonamento di tre mesi a 130 €, "
+				"sospendibile per le vacanze. Se vuoi lo attiviamo dalla prossima lezione.\n\n{firma}",
+			),
+			("lui", 20, "Perfetto! Si può pagare con il bancomat alla prossima lezione?"),
+		),
+	),
+	(
+		"Come va dopo il percorso?",
+		"pratico",
+		"done",
+		(
+			(
+				"noi",
+				0,
+				"Buongiorno {nome},\n\nè passato un mese dall'ultima seduta: come va? Se le fa piacere "
+				"fissiamo un controllo per vedere come si mantengono i risultati.\n\nUn caro saluto,\n{firma}",
+			),
+			("lui", 26, "Buongiorno! Va molto bene, grazie. Mi faccio sentire a fine mese per il controllo."),
+		),
+	),
+	(
+		"Cosa portare alla prima visita",
+		"desk",
+		"done",
+		(
+			(
+				"noi",
+				0,
+				"Buongiorno {nome},\n\nla aspettiamo per la prima visita. Se ha esami o referti recenti li "
+				"porti con sé, insieme a un abbigliamento comodo.\n\nA presto,\n{firma}",
+			),
+		),
+	),
+	(
+		"Certificato di frequenza",
+		"desk",
+		"open",
+		(
+			(
+				"lui",
+				0,
+				"Buongiorno,\n\nil mio datore di lavoro mi chiede un'attestazione delle sedute fatte nelle "
+				"ultime settimane. Me la potete preparare?\n\n{nome}",
+			),
+		),
+	),
+)
+
+#: SMS with the centre, where the centre sends them: (who, hours after the one before,
+#: words), how it ends. {quando} is the day and time of the person's next appointment.
+SMS = (
+	(
+		(
+			(
+				"noi",
+				0,
+				"Promemoria: {quando} ha appuntamento al centro. Per disdire rispondi NO a questo messaggio.",
+			),
+			("lui", 1, "Ok grazie, ci sarò"),
+		),
+		"done",
+	),
+	(
+		(
+			(
+				"noi",
+				0,
+				"Promemoria: {quando} ha appuntamento al centro. Per disdire rispondi NO a questo messaggio.",
+			),
+			("lui", 2, "Buongiorno, posso arrivare 10 minuti in ritardo?"),
+		),
+		"open",
+	),
+	(
+		(("noi", 0, "Il centro resterà chiuso il 1° novembre. Buona festa da tutto il team!"),),
+		"done",
+	),
+)
+
+#: WhatsApp chats with the centre, where the centre has WhatsApp: the same shape.
+WHATSAPP = (
+	(
+		(
+			("lui", 0, "Buongiorno! Avete posto per un massaggio decontratturante questa settimana?"),
+			("noi", 1, "Buongiorno {nome}! Venerdì alle 16:00 con la dottoressa Ferri, va bene?"),
+			("lui", 1, "Perfetto, grazie mille 🙏"),
+		),
+		"done",
+	),
+	(
+		(
+			("noi", 0, "Ciao {nome}, ti ricordiamo la lezione di {quando}. A presto!"),
+			("lui", 3, "Grazie! Domani però arrivo con 5 minuti di ritardo"),
+		),
+		"open",
+	),
+	(
+		(
+			("lui", 0, "Buonasera, ho dimenticato la borraccia in palestra ieri 😅"),
+			("noi", 12, "Ciao {nome}, l'abbiamo trovata: è all'accoglienza, la puoi ritirare quando vuoi!"),
+		),
+		"done",
+	),
+)
