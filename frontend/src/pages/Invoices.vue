@@ -325,15 +325,17 @@
                 >
                   {{ __('Year {0}', [year]) }}
                 </span>
-                <!-- as wide as a year: on a phone it took the row and the
-                     title went on two lines, «Anno» over «2026» -->
-                <FormControl
-                  class="w-28 shrink-0"
-                  type="select"
-                  :modelValue="String(year)"
-                  :options="yearOptions"
-                  @update:modelValue="(v) => (year = Number(v))"
-                />
+                <!-- as wide as a year: a select fills what holds it, and on a phone
+                     it took the row - the title went on two lines, «Anno»
+                     over «2026» -->
+                <div class="w-28 shrink-0">
+                  <FormControl
+                    type="select"
+                    :modelValue="String(year)"
+                    :options="yearOptions"
+                    @update:modelValue="(v) => (year = Number(v))"
+                  />
+                </div>
               </div>
               <div
                 v-if="tsStatus.data"
