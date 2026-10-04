@@ -3,6 +3,7 @@
 import {
   DOPO_UN_GESTO,
   SOGLIA_TESTATA,
+  muoveLaPagina,
   raccogliereLaTestata,
   useTestataRaccolta,
 } from '@/composables/testataRaccolta'
@@ -109,6 +110,22 @@ describe('raccogliereLaTestata without anybody scrolling', () => {
   })
 })
 
+describe('muoveLaPagina', () => {
+  it('is a finger that moves, a wheel or a key that scrolls', () => {
+    expect(muoveLaPagina({ type: 'touchmove' })).toBe(true)
+    expect(muoveLaPagina({ type: 'wheel' })).toBe(true)
+    for (const key of ['ArrowDown', 'ArrowUp', 'PageDown', 'End', ' ']) {
+      expect(muoveLaPagina({ type: 'keydown', key }), key).toBe(true)
+    }
+  })
+
+  it('is never a tap, nor a key that scrolls nothing', () => {
+    expect(muoveLaPagina({ type: 'touchstart' })).toBe(false)
+    expect(muoveLaPagina({ type: 'keydown', key: 'Escape' })).toBe(false)
+    expect(muoveLaPagina({ type: 'keydown', key: 'a' })).toBe(false)
+  })
+})
+
 describe('useTestataRaccolta', () => {
   function monta() {
     const area = ref(null)
@@ -208,6 +225,30 @@ describe('useTestataRaccolta', () => {
     expect(raccolta.value).toBe(true)
     delete document.documentElement.dataset.tastiera
     vi.useRealTimers()
+    smonta()
+  })
+
+  it('stays open after a tap, while the tab goes to its end by itself', async () => {
+    const { box, daSolo, raccolta, smonta } = monta()
+    await nextTick()
+    // a tap on «Activity», then the conversation at its last message in two
+    // steps: a jump, then a few pixels as what is in it settles
+    box.dispatchEvent(new Event('touchstart', { bubbles: true }))
+    daSolo(box, 483)
+    daSolo(box, 502)
+    expect(raccolta.value).toBe(false)
+    // Escape closing a menu moves nothing either
+    box.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
+    daSolo(box, 520)
+    expect(raccolta.value).toBe(false)
+    // an arrow key does
+    box.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    )
+    daSolo(box, 560)
+    expect(raccolta.value).toBe(true)
     smonta()
   })
 
