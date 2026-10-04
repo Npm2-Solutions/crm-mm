@@ -5,11 +5,14 @@
 // screen.
 import fs from 'node:fs'
 import path from 'node:path'
+import dayjs from 'dayjs/esm'
+import 'dayjs/esm/locale/it'
 import {
   FILE,
   FILE_FRAPPE,
   FILE_MOLECOLE,
   NOMI,
+  SELETTORE,
   traduciFrappeUi,
 } from '../../vite/frappeUi.js'
 
@@ -34,6 +37,16 @@ function tradotto(file, cartella = COMPONENTI) {
 function nomi(lang) {
   window.lang = lang
   return new Function(`${NOMI}; return { nomiDeiMesi, nomiDeiGiorni }`)()
+}
+
+// the date picker's names, with dayjs in the language App.vue gives it
+function selettore(lang, linguaDiDayjs = 'en') {
+  window.lang = lang
+  const conLingua = (...a) => dayjs(...a).locale(linguaDiDayjs)
+  return new Function(
+    'dayjs',
+    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni }`,
+  )(conLingua)
 }
 
 describe('frappe-ui in the user’s language', () => {
@@ -152,6 +165,39 @@ describe('frappe-ui in the user’s language', () => {
     ).toBe(null)
     expect(traduciFrappeUi('x', `${piede}?vue&type=style&index=0`)).toBe(null)
     expect(traduciFrappeUi('x', '/src/pages/Calendar.vue')).toBe(null)
+  })
+
+  it('heads the date picker’s columns with the days its grid starts from', () => {
+    const utils = tradotto('DatePicker/utils.ts')
+    expect(utils).toContain(
+      'export const months: string[] = mesiDelSelettore()',
+    )
+    expect(utils).not.toContain("'Oct'")
+    expect(utils.endsWith(SELETTORE)).toBe(true)
+    const pannello = tradotto('DatePicker/CalendarPanel.vue')
+    expect(pannello).toContain('const WEEKDAYS = inizialiDeiGiorni()')
+    expect(pannello).not.toContain("['S', 'M', 'T'")
+    // Home and End follow the week's first column
+    expect(pannello).toContain("shiftFocus(cell.date.startOf('week'), -1)")
+    expect(pannello).not.toContain('cell.date.day()')
+    // the arrows and the grid are named in the user's language too
+    expect(pannello.match(/:label="__\('Previous month'\)"/g)).toHaveLength(2)
+    expect(pannello.match(/:label="__\('Next month'\)"/g)).toHaveLength(2)
+    expect(pannello).not.toMatch(/\slabel="(previous|next)"/)
+    expect(pannello).toContain(`:aria-label="__('Select month and year')"`)
+    expect(pannello).not.toContain("' (Today)'")
+  })
+
+  it('names the picker’s months and days in Italian, from Monday', () => {
+    const { mesiDelSelettore, inizialiDeiGiorni } = selettore('it', 'it')
+    expect(mesiDelSelettore()[9]).toBe('Ott')
+    expect(inizialiDeiGiorni()).toEqual(['L', 'M', 'M', 'G', 'V', 'S', 'D'])
+  })
+
+  it('keeps the picker as it was for an English user', () => {
+    const { mesiDelSelettore, inizialiDeiGiorni } = selettore('en')
+    expect(mesiDelSelettore()[9]).toBe('Oct')
+    expect(inizialiDeiGiorni()).toEqual(['S', 'M', 'T', 'W', 'T', 'F', 'S'])
   })
 
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
