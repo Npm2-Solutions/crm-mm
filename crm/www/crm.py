@@ -2,13 +2,23 @@
 # Modifications copyright (c) 2026, NPM2 Solutions Srl
 # GNU GPLv3 License. See license.txt
 
+import hashlib
+import json
+from urllib.parse import urlencode
+
 import frappe
 from frappe import _, get_installed_apps
 from frappe.boot import get_link_title_doctypes
 from frappe.integrations.frappe_providers.frappecloud_billing import is_fc_site
-from frappe.translate import get_messages_for_boot, get_translated_doctypes
+from frappe.translate import (
+	MERGED_TRANSLATION_KEY,
+	get_all_translations,
+	get_messages_for_boot,
+	get_translated_doctypes,
+)
 from frappe.utils import cint, get_system_timezone
 from frappe.utils.telemetry import capture
+from werkzeug.wrappers import Response
 
 from crm.marchio import con_nome
 
@@ -66,7 +76,10 @@ def redirect_to_set_password():
 def get_context_for_dev():
 	if not frappe.conf.developer_mode:
 		frappe.throw(_("This method is only meant for developer mode"))
-	return get_boot()
+	boot = get_boot()
+	# the dev server's page has no script for them (traduzioni below)
+	boot.translated_messages = get_translated_messages()
+	return boot
 
 
 def get_boot():
@@ -87,7 +100,9 @@ def get_boot():
 			# the DocTypes whose links show a title, as the Desk's do (a qualification
 			# by its name, not its code)
 			"link_title_doctypes": get_link_title_doctypes(),
-			"translated_messages": get_translated_messages(),
+			# where the words of the session's language are: a script the page loads
+			# and the browser keeps (traduzioni), not 1.2 MB inside every page
+			"traduzioni": indirizzo_delle_traduzioni(),
 			# the language the words above are in, so dates and numbers speak it too
 			"lang": frappe.local.lang,
 			"timezone": {
@@ -124,6 +139,52 @@ def get_translated_messages() -> dict:
 		# never in the way of the page: the base's words are still words
 		pass
 	return messages
+
+
+def impronta_delle_traduzioni() -> str:
+	"""A short mark of the words the page gets in the session's language: it
+	changes when they do, so the address carrying it can be kept for good.
+
+	The framework's merged words are hashed once and kept beside them, under the
+	same key, so they go together when a translation or a migrate clears it; the
+	vertical's words, which follow the plan, are hashed at every page.
+	"""
+	lingua = frappe.local.lang
+
+	def calcola():
+		testo = json.dumps(get_all_translations(lingua), sort_keys=True, ensure_ascii=False)
+		return hashlib.sha256(testo.encode()).hexdigest()
+
+	base = frappe.cache.hget(MERGED_TRANSLATION_KEY, f"{lingua}|impronta", generator=calcola)
+	try:
+		from crm import verticali
+
+		parole = verticali.per_il_boot()["words"]
+	except Exception:
+		parole = {}
+	sopra = json.dumps(parole, sort_keys=True, ensure_ascii=False)
+	return hashlib.sha256(f"{base}|{sopra}".encode()).hexdigest()[:16]
+
+
+def indirizzo_delle_traduzioni() -> str:
+	parametri = urlencode({"lang": frappe.local.lang, "v": impronta_delle_traduzioni()})
+	return f"/api/method/crm.www.crm.traduzioni?{parametri}"
+
+
+@frappe.whitelist(methods=["GET"])
+def traduzioni(lang: str | None = None, v: str | None = None):
+	"""The words of the session's language, as the script the page loads before
+	the app (crm.html). Inside every page they were 1.2 MB (380 KB compressed),
+	downloaded at every opening, on a phone too; here the browser keeps them for as
+	long as the address names the words of today."""
+	corpo = "window.translated_messages=" + json.dumps(
+		get_translated_messages(), ensure_ascii=False, separators=(",", ":")
+	)
+	# application/javascript: the type the bench's nginx compresses (not text/javascript)
+	risposta = Response(corpo + ";", mimetype="application/javascript")
+	if lang == frappe.local.lang and v and v == impronta_delle_traduzioni():
+		risposta.headers["Cache-Control"] = "private, max-age=31536000, immutable"
+	return risposta
 
 
 def get_vertical() -> dict:
