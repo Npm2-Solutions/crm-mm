@@ -841,6 +841,8 @@ nessun browser di prova ha la sua tastiera.
 | `Dashboard/widgets/ListWidget.vue` | Il link in fondo a un riquadro della dashboard («Apri le conversazioni», «Apri l'agenda», «Tutte le trattative»…) era una riga da 12 px che rispondeva su 16: sul telefono è alto quanto la riga, 44 px, a 14 px |
 | `Today/ParticipantRow.vue` | All'accoglienza il nome della persona rispondeva su 29 px: l'anello dei pulsanti dell'esito, già da 40 px sul telefono, ci arrivava sopra. Ora i pulsanti non hanno anello sul telefono, e il nome è alto 44 px |
 | `Mobile/TrattativePerFase.vue` | Le fasi sopra le trattative erano alte 30 px: ora 40 |
+| `src/telefono.css` | Un pulsante di frappe-ui che apre una pagina (`:route`, `:link`) è disegnato come un link con le stesse classi, e restava senza l'anello invisibile: «Giro di chiamate» nella pagina delle chiamate rispondeva su 24 px. Ora ha l'anello come gli altri |
+| `RelatedPeopleSection.vue` | Una persona collegata si apriva solo dal suo nome, una riga da 16 px: ora si apre da tutta la riga, con «Modifica» sopra |
 
 ## Non incluso
 
