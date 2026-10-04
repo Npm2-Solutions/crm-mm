@@ -597,6 +597,13 @@ Con il tocco, come in un'app:
   «Presente» c'era «Annulla», che in accoglienza si leggeva come annullare
   l'appuntamento. Ora dice cosa toglie: «Annulla l'arrivo», o «Annulla
   l'esito» dopo «Presente» o «Assente».
+- **Un documento fotografato, provato davvero.** Dai Documenti della persona,
+  «Aggiungi un documento» apre il foglio, e «Scegli il file» lascia al
+  telefono la scelta tra fotocamera, foto e file. Il tipo partiva da «Modulo
+  firmato», il primo dell'elenco: una carta d'identità fotografata al banco
+  finiva archiviata come modulo firmato, e il tipo decide chi legge il
+  documento. Ora il tipo lo sceglie chi archivia, e finché manca il foglio
+  non salva.
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della
