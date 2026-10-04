@@ -78,6 +78,12 @@
   [contenteditable='true'] {
     font-size: 16px !important;
   }
+  /* at 16px a hint or a value longer than its box ends in «…», not cut in the
+     middle of a word («Aggiungi codice destinatar»); while one writes in it
+     the text scrolls as it always does */
+  input:not(:focus) {
+    text-overflow: ellipsis;
+  }
   input.h-7:not([type='checkbox'], [type='radio']),
   input.h-8:not([type='checkbox'], [type='radio']),
   select.h-7,

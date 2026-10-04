@@ -24,14 +24,30 @@
                 {{ field.label }}
               </div>
               <div class="grid min-h-[28px] min-w-0 flex-1 items-center">
+                <!-- the country by its name, kept as its two letters: the
+                     code was typed as it is stored («IT»). Its hint is the
+                     search's: the profile has Italy from the start -->
+                <Combobox
+                  v-if="field.name === 'country'"
+                  :key="field.name + resets"
+                  class="form-control"
+                  trigger="button"
+                  variant="ghost"
+                  :options="paesi"
+                  :modelValue="values.country || null"
+                  :placeholder="__('Search a country')"
+                  :disabled="!profile.data.can_write || saving === field.name"
+                  @update:modelValue="(v) => v && save(field.name, v)"
+                />
                 <TextInput
+                  v-else
                   :key="field.name + resets"
                   class="form-control"
                   type="text"
                   v-bind="tastieraDi({ fieldname: field.name })"
                   variant="ghost"
                   :modelValue="values[field.name]"
-                  :placeholder="__('Add {0}...', [field.label])"
+                  :placeholder="__('Add {0}...', [inFrase(field.label)])"
                   :disabled="!profile.data.can_write || saving === field.name"
                   @change.stop="save(field.name, $event.target.value)"
                 />
@@ -71,8 +87,10 @@
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
+import { appLocale, inFrase } from '@/utils/locale'
+import { paesiConIlScelto } from '@/utils/paesi'
 import { tastieraDi } from '@/utils/tastiera'
-import { TextInput, createResource, call, toast } from 'frappe-ui'
+import { Combobox, TextInput, createResource, call, toast } from 'frappe-ui'
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
@@ -97,6 +115,10 @@ watch(
 )
 
 const values = computed(() => profile.data?.values || {})
+
+const paesi = computed(() =>
+  paesiConIlScelto(values.value.country, appLocale() || 'it'),
+)
 
 // open when there is something in it, closed on a person with nothing yet: the
 // panel above is what most people come for

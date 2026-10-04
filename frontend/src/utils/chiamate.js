@@ -8,6 +8,10 @@
  * with, the keypad. The words are English, translated where they are drawn.
  */
 
+import { nomeDelPaese } from './paesi'
+
+export { nomeDelPaese }
+
 /** Italy, where a centre calls to start with. */
 export const ITALIA = 'IT'
 
@@ -58,18 +62,6 @@ export function paesiDaAggiungere(scelti, lingua = 'it') {
   return PAESI_PROPOSTI.filter((c) => !gia.has(c))
     .map((c) => ({ label: nomeDelPaese(c, lingua), value: c }))
     .sort((a, b) => a.label.localeCompare(b.label, lingua || 'it'))
-}
-
-/** A country's name in the reader's language; its code when there is none. */
-export function nomeDelPaese(codice, lingua = 'it') {
-  try {
-    return (
-      new Intl.DisplayNames([lingua || 'it'], { type: 'region' }).of(codice) ||
-      codice
-    )
-  } catch {
-    return codice
-  }
 }
 
 /**
