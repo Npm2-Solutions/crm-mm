@@ -78,6 +78,7 @@
 <script setup>
 import Autocomplete from '@/components/frappe-ui/Autocomplete.vue'
 import { isTranslatable } from '@/utils'
+import { usersStore } from '@/stores/users'
 import { watchDebounced } from '@vueuse/core'
 import { call, createResource } from 'frappe-ui'
 import { useAttrs, computed, ref, watch } from 'vue'
@@ -201,12 +202,23 @@ watch(
   { immediate: true },
 )
 
+// A colleague by their name, from the users the app already has: «Assigned
+// to» read «anna.bianchi@centro.it» until its list was opened. Only an
+// address: a field that already hands over the name keeps it
+const { getUser } = usersStore()
+const nomeDelCollega = computed(() =>
+  props.doctype === 'User' && String(attuale.value || '').includes('@')
+    ? getUser(attuale.value)?.full_name || ''
+    : '',
+)
+
 const opzioni = computed(() => {
   const caricate = options.data || []
-  if (!titolo.value || caricate.some((o) => o.value === attuale.value)) {
+  const nome = nomeDelCollega.value || titolo.value
+  if (!nome || caricate.some((o) => o.value === attuale.value)) {
     return caricate
   }
-  return [...caricate, { label: titolo.value, value: attuale.value }]
+  return [...caricate, { label: nome, value: attuale.value }]
 })
 
 // A record shown by its title gets its name under it from the search
