@@ -102,3 +102,28 @@ class LeScelteInParole(IntegrationTestCase):
 		self.assertIn("payment_method", risposta["tables"]["payments"])
 		# what is read only is named too
 		self.assertIn("channel", risposta["fields"])
+
+
+class IProfessionistiInParole(IntegrationTestCase):
+	"""A professional's qualification is stored by its code: the search for one shows
+	the qualification's name, and finds by it."""
+
+	def test_la_qualifica_per_nome_non_per_codice(self):
+		from frappe.desk.search import search_link
+
+		from crm.invoicing.install import semina_qualifiche
+		from crm.tests.test_invoicing import InvoicingBase
+
+		semina_qualifiche()
+		InvoicingBase.crea_erogatore("Studio Ricerca Parole", "societa_servizi")
+		nome = frappe.db.get_value("CRM Professional Qualification", "societa_servizi", "qualification_name")
+		(trovato,) = [
+			r
+			for r in search_link("CRM Service Provider", "Ricerca Parole")
+			if r["value"] == "Studio Ricerca Parole"
+		]
+		self.assertEqual(trovato["description"], nome)
+		self.assertNotIn("societa_servizi", trovato["description"])
+		# by the qualification's own words too
+		per_qualifica = search_link("CRM Service Provider", nome.split()[0])
+		self.assertIn("Studio Ricerca Parole", [r["value"] for r in per_qualifica])
