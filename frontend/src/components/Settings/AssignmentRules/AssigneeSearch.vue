@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Combobox :multiple="true">
     <Popover placement="bottom-end">
@@ -25,6 +28,7 @@
             />
             <button
               class="absolute right-1.5 inline-flex h-7 w-7 items-center justify-center"
+              :aria-label="__('Clear')"
               @click="query = ''"
             >
               <span class="lucide-x w-4" aria-hidden="true" />

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Tooltip :text="tooltipText" placement="right" :hoverDelay="0">
     <div
@@ -10,6 +13,7 @@
         v-for="i in nStars"
         :key="i"
         type="button"
+        :aria-label="__('Rating: {0} of {1}', [i, nStars])"
         class="focus:outline-none leading-none rating-star"
         :class="disabled ? 'cursor-default' : 'cursor-pointer'"
         @mousemove="!disabled && onMouseMove($event, i)"
