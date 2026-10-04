@@ -15,7 +15,9 @@
  * English in silence.
  *
  * The same door mends what frappe-ui draws wrong for everybody: the calendar's
- * weeks from Monday, the switch's value and name.
+ * weeks from Monday, the switch's value and name. And it cuts what frappe-ui
+ * makes every phone download for nobody: the editor's code colours, its emoji
+ * list before anybody asks, a Markdown format nobody uses.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -476,7 +478,8 @@ const SOSTITUZIONI_FRAPPE = {
   ],
 }
 
-// frappe-ui/src/molecules: the editor's toolbar, its labels in the tooltips
+// frappe-ui/src/molecules: the editor - its toolbar's labels in the tooltips, its
+// code block, its emoji, its Markdown
 const SOSTITUZIONI_MOLECOLE = {
   'editor/MenuItems.vue': [
     [
@@ -488,6 +491,60 @@ const SOSTITUZIONI_MOLECOLE = {
     [/\{\{\s*item\.label\s*\}\}/, '{{ __(item.label) }}'],
     [':text="groupItem.label"', ':text="__(groupItem.label)"'],
     [':label="groupItem.label"', ':label="__(groupItem.label)"'],
+  ],
+  // The code block (``` in a note or an email) without highlight.js: its 37
+  // languages and its engine were a third of the editor's download, every time
+  // an editor opened, to colour code nobody writes at a centre. TipTap's own
+  // code block has the same options; its text stays as it was written, and
+  // with no language to choose there is no picker of them.
+  'editor/extensions/code-block/code-block.ts': [
+    ["import { common, createLowlight } from 'lowlight'\n", ''],
+    [
+      "import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'",
+      "import { CodeBlock } from '@tiptap/extension-code-block'",
+    ],
+    ['const lowlight = createLowlight(common)\n', ''],
+    ['CodeBlockLowlight.extend({', 'CodeBlock.extend({'],
+    ['}).configure({ lowlight })', '})'],
+  ],
+  // The emoji after ":" (":smile", in English): their list, 66 KB, comes
+  // the first time somebody types one, not with every editor
+  'editor/extensions/emoji/emoji-extension.ts': [
+    ["import _EMOJIS from './emojis.json'\n", ''],
+    [
+      'const EMOJIS = _EMOJIS as EmojiItem[]',
+      `let elencoDelleEmoji: Promise<EmojiItem[]> | undefined
+const EMOJIS = () =>
+  (elencoDelleEmoji ||= import('./emojis.json').then(
+    (modulo) => modulo.default as EmojiItem[],
+  ))`,
+    ],
+    [
+      "items: ({ query }: { query: string }) => {\n    return filterByQuery(EMOJIS, query, 'name')",
+      "items: async ({ query }: { query: string }) => {\n    return filterByQuery(await EMOJIS(), query, 'name')",
+    ],
+  ],
+  // Markdown as the editor's format (`format: 'markdown'`): nobody here writes
+  // it. Re-exported for whoever imports it, the build kept it all the same, with
+  // the half of marked only it used (58 KB). Markdown pasted is still made into
+  // formatting (content-paste, with the rest of marked).
+  'editor/extensions.ts': [
+    [
+      "export { Markdown, type MarkdownExtensionOptions } from '@tiptap/markdown'",
+      '',
+    ],
+  ],
+  'editor/extensions/code-block/CodeBlockComponent.vue': [
+    [/<Combobox\s+v-if="isEditable"[\s\S]*?<\/span>/, ''],
+    [
+      "import { createLowlight } from 'lowlight'",
+      "import type { createLowlight } from 'lowlight'",
+    ],
+    ['label="Copy code"', ':label="__(\'Copy code\')"'],
+    [
+      ":text=\"copied ? 'Copied!' : 'Copy code'\"",
+      ":text=\"copied ? __('Copied!') : __('Copy code')\"",
+    ],
   ],
 }
 

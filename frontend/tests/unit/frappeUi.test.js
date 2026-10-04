@@ -73,6 +73,43 @@ describe('frappe-ui in the user’s language', () => {
     expect(menu).not.toContain(':label="item.label"')
   })
 
+  it('draws the code block without highlight.js and its picker of languages', () => {
+    const blocco = tradotto(
+      'editor/extensions/code-block/code-block.ts',
+      MOLECOLE,
+    )
+    expect(blocco).toContain(
+      "import { CodeBlock } from '@tiptap/extension-code-block'",
+    )
+    expect(blocco).toContain('CodeBlock.extend({')
+    expect(blocco).not.toContain('lowlight')
+    expect(blocco).not.toContain('CodeBlockLowlight')
+    const vista = tradotto(
+      'editor/extensions/code-block/CodeBlockComponent.vue',
+      MOLECOLE,
+    )
+    expect(vista).not.toMatch(/<Combobox\s/)
+    expect(vista).toContain("import type { createLowlight } from 'lowlight'")
+    expect(vista).not.toContain("props.node.attrs.language || 'auto'")
+    expect(vista).toContain(':label="__(\'Copy code\')"')
+    expect(vista).toContain("__('Copied!')")
+    // the copy button is still there, with its tooltip
+    expect(vista).toContain('@click.stop="copyCode"')
+    expect(vista).toContain('<TooltipBubble')
+  })
+
+  it('brings the emoji list when somebody types one, and no markdown', () => {
+    const emoji = tradotto(
+      'editor/extensions/emoji/emoji-extension.ts',
+      MOLECOLE,
+    )
+    expect(emoji).not.toContain("import _EMOJIS from './emojis.json'")
+    expect(emoji).toContain("import('./emojis.json')")
+    expect(emoji).toContain("filterByQuery(await EMOJIS(), query, 'name')")
+    const estensioni = tradotto('editor/extensions.ts', MOLECOLE)
+    expect(estensioni).not.toContain('@tiptap/markdown')
+  })
+
   it('takes the data import pages through the translator', () => {
     const lista = tradotto('DataImport/DataImportList.vue', FRAPPE)
     expect(lista).toContain(`{{ __('Data Import') }}`)
