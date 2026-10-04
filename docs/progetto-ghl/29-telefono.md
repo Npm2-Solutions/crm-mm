@@ -601,6 +601,14 @@ Con il tocco, come in un'app:
   «Emetti la fattura» sta sull'appuntamento stesso, finché non è fatturato,
   e apre la fattura già compilata (`useFattura().fatturaDellIncontro`, la
   stessa strada della pagina Fatture).
+- **Un appuntamento per una persona nuova, provato davvero.** Dal «+»
+  dell'agenda, «Non è in DottorCloud? Scrivi un nome» apre nome, telefono ed
+  email. Sul telefono telefono ed email stavano affiancati, in 160 punti
+  ciascuno, e un'email si leggeva tagliata: ora sono uno sotto l'altro.
+  Prenotato, l'appuntamento teneva solo il nome, senza una scheda: niente
+  moduli, fattura o cartella. Ora chi è scritto con un contatto viene trovato
+  o creato come in una prenotazione (`appointments._persona_scritta`); un
+  nome da solo resta un nome, perché due Maria Rossi non sono una.
 - **Un documento fotografato, provato davvero.** Dai Documenti della persona,
   «Aggiungi un documento» apre il foglio, e «Scegli il file» lascia al
   telefono la scelta tra fotocamera, foto e file. Il tipo partiva da «Modulo

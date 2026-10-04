@@ -670,11 +670,47 @@ def _normalize(payload: dict) -> dict:
 	return data
 
 
+def _persona_scritta(nome: str | None, email: str | None, telefono: str | None) -> str | None:
+	"""Somebody the desk typed by hand, with a contact: their record, found by the
+	contact and the name the way a booking finds it (a family shares an email), or
+	made. Left as a name, they had no record: no forms, no invoice, no clinical
+	record. A name alone stays a name - two Maria Rossi are not one - and so does
+	somebody whose record the user may not make."""
+	if not nome or not (email or telefono):
+		return None
+	from crm.persone.collegate import persona_per_conto, trova_per_nome
+
+	esistente, titolare = trova_per_nome(nome, email=email, telefono=telefono)
+	if titolare:
+		return esistente or persona_per_conto(titolare, nome)
+	if not frappe.has_permission("CRM Lead", "create"):
+		return None
+	from crm.api.lead import default_status
+	from crm.persone import legami
+
+	nome_proprio, cognome = legami.dividi(nome)
+	persona = frappe.get_doc(
+		{
+			"doctype": "CRM Lead",
+			"first_name": nome_proprio,
+			"last_name": cognome,
+			"email": email or "",
+			"mobile_no": telefono or "",
+			"status": default_status("CRM Lead"),
+		}
+	)
+	persona.insert()
+	return persona.name
+
+
 @frappe.whitelist(methods=["POST"])
 def save_appointment(appointment: str | dict, name: str | None = None) -> dict:
 	"""Create or update an appointment. Conflicts are enforced by the controller."""
 	payload = _loads(appointment)
 	values = _normalize(payload)
+	for row in values["participants"]:
+		if not row["party"]:
+			row["party"] = _persona_scritta(row["participant_name"], row["email"], row["phone"])
 	if name:
 		doc = frappe.get_doc("CRM Appointment", name)
 		doc.check_permission("write")
