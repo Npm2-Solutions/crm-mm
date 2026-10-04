@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The invoice made inside DottorCloud (crm/invoicing/emissione.py).
 
   Who it is for, what was done and by whom, how it was paid - and, before anything
@@ -203,13 +206,14 @@
         </section>
 
         <!-- what was done, and by whom -->
-        <section class="flex flex-col gap-2">
+        <section ref="righe" class="flex flex-col gap-2">
           <h4 class="text-p-base-medium text-ink-gray-8">
             {{ __('What was done') }}
           </h4>
           <div
             v-for="(riga, indice) in vista.items"
             :key="indice"
+            data-riga
             class="grid gap-2 rounded-lg border border-outline-gray-2 px-3 py-2"
             :class="[
               mostraProfessionista
@@ -222,7 +226,7 @@
               <Link
                 class="form-control max-md:col-span-2"
                 doctype="CRM Billable Service"
-                :label="indice === 0 ? __('Service') : ''"
+                :label="indice === 0 || isMobileView ? __('Service') : ''"
                 :value="riga.billable_service"
                 :filters="{ enabled: 1 }"
                 :placeholder="__('Choose the service')"
@@ -232,7 +236,7 @@
                 v-if="mostraProfessionista"
                 class="form-control max-md:col-span-2"
                 doctype="CRM Service Provider"
-                :label="indice === 0 ? __('Professional') : ''"
+                :label="indice === 0 || isMobileView ? __('Professional') : ''"
                 :value="riga.service_provider"
                 :filters="{ enabled: 1 }"
                 :placeholder="__('Who performed it')"
@@ -241,13 +245,13 @@
               <FormControl
                 v-model="riga.qty"
                 type="number"
-                :label="indice === 0 ? __('Quantity') : ''"
+                :label="indice === 0 || isMobileView ? __('Quantity') : ''"
                 min="1"
               />
               <FormControl
                 v-model="riga.rate"
                 type="number"
-                :label="indice === 0 ? __('Unit price') : ''"
+                :label="indice === 0 || isMobileView ? __('Unit price') : ''"
                 step="0.01"
               />
             </template>
@@ -271,28 +275,43 @@
               >
                 {{ riga.provider_label }}
               </span>
-              <span class="text-p-sm text-ink-gray-6">× {{ riga.qty }}</span>
-              <span class="text-p-sm text-ink-gray-6">
+              <span class="text-p-sm text-ink-gray-6 max-md:hidden">
+                × {{ riga.qty }}
+              </span>
+              <span class="text-p-sm text-ink-gray-6 max-md:hidden">
                 {{ formatEuro(riga.rate) }}
               </span>
             </template>
-            <div class="flex flex-col items-end text-right">
-              <span class="text-p-base text-ink-gray-8">
-                {{ formatEuro(riga.amount) }}
+            <!-- two cells of the row on a computer; on a phone, where the line is a
+                 card, one row across it with the amount at its right edge -->
+            <div
+              class="contents max-md:col-span-2 max-md:flex max-md:items-center max-md:justify-end max-md:gap-2"
+            >
+              <!-- read on a phone: how many and at what price, before the amount -->
+              <span
+                v-if="!modificabile"
+                class="mr-auto text-p-sm text-ink-gray-6 md:hidden"
+              >
+                {{ riga.qty }} × {{ formatEuro(riga.rate) }}
               </span>
-              <span v-if="riga.vat" class="text-p-xs text-ink-gray-5">
-                {{ riga.vat }}
-              </span>
+              <div class="flex flex-col items-end text-right">
+                <span class="text-p-base text-ink-gray-8">
+                  {{ formatEuro(riga.amount) }}
+                </span>
+                <span v-if="riga.vat" class="text-p-xs text-ink-gray-5">
+                  {{ riga.vat }}
+                </span>
+              </div>
+              <Button
+                v-if="modificabile"
+                variant="ghost"
+                icon="x"
+                class="touch-target"
+                :aria-label="__('Remove the line')"
+                @click="vista.items.splice(indice, 1)"
+              />
+              <span v-else />
             </div>
-            <Button
-              v-if="modificabile"
-              variant="ghost"
-              icon="x"
-              class="touch-target"
-              :aria-label="__('Remove the line')"
-              @click="vista.items.splice(indice, 1)"
-            />
-            <span v-else />
           </div>
           <Button
             v-if="modificabile"
@@ -300,7 +319,7 @@
             variant="subtle"
             iconLeft="plus"
             :label="__('Add a line')"
-            @click="vista.items.push(rigaVuota(vista.shape?.provider))"
+            @click="aggiungiRiga"
           />
         </section>
 
@@ -380,7 +399,7 @@
           <span
             v-for="problema in vista.errors"
             :key="problema"
-            class="text-p-sm text-ink-red-7"
+            class="text-p-sm text-ink-red-7 first-letter:uppercase"
           >
             {{ problema }}
           </span>
@@ -394,7 +413,7 @@
           <span
             v-for="avviso in vista.warnings"
             :key="avviso"
-            class="text-p-sm text-ink-gray-7"
+            class="text-p-sm text-ink-gray-7 first-letter:uppercase"
           >
             {{ avviso }}
           </span>
@@ -495,6 +514,7 @@
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import {
   datiDaInviare,
@@ -516,7 +536,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { dateFormat } from '@/utils'
 
 const { stato, chiudiFattura } = useFattura()
@@ -526,8 +546,21 @@ const errore = ref('')
 const azione = ref('')
 const inAttesa = ref(false)
 const datiAperti = ref(false)
+const righe = ref(null)
 // the answer to the last question only: an older one that arrives late is dropped
 let domanda = 0
+
+// On a phone a new line lands under the sheet's buttons: it comes into view.
+function aggiungiRiga() {
+  vista.value.items.push(rigaVuota(vista.value.shape?.provider))
+  nextTick(() => {
+    const carte = righe.value?.querySelectorAll('[data-riga]')
+    carte?.[carte.length - 1]?.scrollIntoView({
+      block: 'nearest',
+      behavior: 'smooth',
+    })
+  })
+}
 
 const modificabile = computed(
   () => vista.value?.docstatus === 0 && vista.value?.can?.save,
