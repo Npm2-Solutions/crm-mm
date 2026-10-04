@@ -316,6 +316,17 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it('draws a tooltip only where a pointer rests over things', () => {
+    const suggerimento = tradotto('Tooltip/Tooltip.vue')
+    expect(suggerimento).toContain('<slot v-if="disabled || !siPosa" />')
+    expect(suggerimento).toContain("import { siPosa } from '@/utils/puntatore'")
+    const pulsante = tradotto('Button/Button.vue')
+    expect(pulsante).toContain(
+      'if (!hasTooltip.value || !siPosa.value) return button',
+    )
+    expect(pulsante).toContain("import { siPosa } from '@/utils/puntatore'")
+  })
+
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
     expect(() =>
       traduciFrappeUi(

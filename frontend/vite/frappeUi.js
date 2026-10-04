@@ -17,7 +17,8 @@
  * The same door mends what frappe-ui draws wrong for everybody: the calendar's
  * weeks from Monday, the switch's value and name. And it cuts what frappe-ui
  * makes every phone download for nobody: the editor's code colours, its emoji
- * list before anybody asks, a Markdown format nobody uses.
+ * list before anybody asks, a Markdown format nobody uses; and what it mounts
+ * on a phone for nobody: tooltips, which a touch never opens.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -342,6 +343,31 @@ function nominaLaFinestra(finestra: HTMLElement | null, titolo?: string) {
 
 function handleOpenAutoFocus(event: Event) {
   nominaLaFinestra(event.target as HTMLElement | null, resolved.value.title)`,
+    ],
+  ],
+  // A tooltip opens on a pointer that rests over things, never on a touch
+  // (reka-ui's trigger leaves it alone): on a screen without one a tooltip is
+  // its trigger alone. Each mounted a dozen components that never showed
+  // anything, two thirds of a person's page on a phone (src/utils/puntatore.js).
+  'Tooltip/Tooltip.vue': [
+    ['<slot v-if="disabled" />', '<slot v-if="disabled || !siPosa" />'],
+    [
+      "import { computed, type Component } from 'vue'",
+      `import { computed, type Component } from 'vue'
+// DottorCloud (frontend/vite/frappeUi.js): only where a pointer rests
+import { siPosa } from '@/utils/puntatore'`,
+    ],
+  ],
+  'Button/Button.vue': [
+    [
+      'if (!hasTooltip.value) return button',
+      'if (!hasTooltip.value || !siPosa.value) return button',
+    ],
+    [
+      "import TooltipBubble from '../Tooltip/TooltipBubble.vue'",
+      `import TooltipBubble from '../Tooltip/TooltipBubble.vue'
+// DottorCloud (frontend/vite/frappeUi.js): only where a pointer rests
+import { siPosa } from '@/utils/puntatore'`,
     ],
   ],
 }
