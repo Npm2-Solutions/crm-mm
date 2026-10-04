@@ -671,6 +671,42 @@ class TestPricing(SchedulingCase):
 
 
 class TestAppointmentApi(SchedulingCase):
+	def test_a_cancelled_appointment_brought_back_books_the_person_again(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita ripresa", [anna])
+		booked = self.make_appointment(
+			"Visita ripresa", self.tomorrow(10), [anna], participants=[{"participant_name": "Cliente"}]
+		)
+		cancelled = A.set_status(booked.name, "Cancelled", reason="Ha chiamato per disdire")
+		self.assertEqual(cancelled["cancellation_reason"], "Ha chiamato per disdire")
+		self.assertEqual([p["status"] for p in cancelled["participants"]], ["Cancelled"])
+
+		# with nobody in it, nobody was reminded and the agenda showed only the service
+		back = A.set_status(booked.name, "Confirmed")
+		self.assertEqual([p["status"] for p in back["participants"]], ["Booked"])
+		self.assertFalse(back["cancellation_reason"])
+		self.assertIn("Cliente", back["title"])
+
+	def test_a_class_brought_back_fills_only_its_seats(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Corso ripreso", [anna], max_participants=2)
+		corso = self.make_appointment(
+			"Corso ripreso",
+			self.tomorrow(18),
+			[anna],
+			participants=[
+				{"participant_name": "Marco"},
+				{"participant_name": "Lucia", "status": "Cancelled"},
+				{"participant_name": "Paolo"},
+			],
+		)
+		A.set_status(corso.name, "Cancelled")
+		back = A.set_status(corso.name, "Scheduled")
+		self.assertEqual(
+			[(p["participant_name"], p["status"]) for p in back["participants"]],
+			[("Marco", "Booked"), ("Lucia", "Booked"), ("Paolo", "Cancelled")],
+		)
+
 	def test_save_and_move_an_appointment(self):
 		anna = self.make_user("anna_sched@example.com")
 		self.make_service("Visita API", [anna])

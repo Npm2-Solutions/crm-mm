@@ -67,6 +67,7 @@ class CRMAppointment(Document):
 
 	def validate(self):
 		self.participants_are_people()
+		self.brought_back()
 		self.validate_times()
 		self.validate_participants()
 		self.stamp_arrivals()
@@ -153,6 +154,25 @@ class CRMAppointment(Document):
 					{"last_visit": giorno, "last_service": self.service},
 					update_modified=False,
 				)
+
+	def brought_back(self):
+		"""A cancelled appointment brought back books again whom its cancellation
+		cancelled, as many as the service seats: with nobody in it, nobody was
+		reminded and the agenda showed only the service. A group's own earlier
+		cancellation cannot be told apart from the class's, and the desk takes it
+		out again. The reason it was cancelled for no longer holds."""
+		before = self.get_doc_before_save()
+		if not before or before.status != "Cancelled" or self.status == "Cancelled":
+			return
+		self.cancellation_reason = None
+		posti = len(self.participants)
+		if self.service:
+			posti = cint(frappe.get_cached_value("CRM Service", self.service, "max_participants")) or 1
+		attivi = sum(1 for row in self.participants if row.status != "Cancelled")
+		for row in self.participants:
+			if row.status == "Cancelled" and attivi < posti:
+				row.status = "Booked"
+				attivi += 1
 
 	def stamp_arrivals(self):
 		"""The desk checked somebody in: the waiting room counts from now."""
