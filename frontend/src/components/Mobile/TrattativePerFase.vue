@@ -32,7 +32,7 @@
           type="button"
           role="tab"
           :aria-selected="fase.name === scelta"
-          class="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm"
+          class="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm"
           :class="
             fase.name === scelta
               ? 'border-outline-gray-4 bg-surface-gray-3 text-ink-gray-9'
