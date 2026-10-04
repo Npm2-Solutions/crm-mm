@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A person's document (crm.documenti): a file uploaded here, or one received in
   a conversation (`message`), or an existing document to put right (`document`:
   what it is, when, where it comes from, whom it is for; the file stays).
@@ -61,6 +64,7 @@
             v-model="form.document_type"
             type="select"
             :label="__('Kind')"
+            :placeholder="__('Choose a type')"
             :options="choices.data?.types || []"
           />
           <FormControl
@@ -250,7 +254,10 @@ function fill() {
   Object.assign(form, {
     title:
       doc?.title || props.suggestedTitle || readable(props.messageFileName),
-    document_type: doc?.document_type || choices.data?.types?.[0]?.value || '',
+    // chosen by whoever files it: the kind decides who reads it (health data
+    // has its mark), and the first one, «Signed form», filed an identity card
+    // photographed at the desk as a signed form
+    document_type: doc?.document_type || '',
     document_date: doc?.document_date || '',
     source: doc?.source || '',
     practitioner:
