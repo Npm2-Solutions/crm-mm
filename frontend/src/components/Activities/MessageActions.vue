@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Answer it, react to it: the two things done to a message you are reading.
   Where the clinic is on, a file the person sent can also go to their clinical
   archive (`archivable`).
@@ -11,10 +14,10 @@
 -->
 <template>
   <div class="flex items-center gap-1">
-    <Tooltip :text="__('Reply')">
+    <Tooltip :text="__('Reply', null, 'Answer a message')">
       <button
         class="grid size-7 place-items-center rounded-full bg-surface-elevation-2 text-ink-gray-6 shadow-sm ring-1 ring-outline-gray-1 transition-colors hover:text-ink-gray-9"
-        :aria-label="__('Reply')"
+        :aria-label="__('Reply', null, 'Answer a message')"
         @click="emit('reply')"
       >
         <span class="lucide-reply size-3.5" aria-hidden="true" />

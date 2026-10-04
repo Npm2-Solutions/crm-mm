@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     Bare means this is sitting inside the house bubble, which already draws the
@@ -39,8 +42,8 @@
         <TimelineTimestamp v-if="!bare" :date="activity.communication_date" />
         <div v-if="puo('conversazioni.usa')" class="flex gap-0.5">
           <Button
-            :tooltip="__('Reply')"
-            :aria-label="__('Reply')"
+            :tooltip="__('Reply', null, 'Answer a message')"
+            :aria-label="__('Reply', null, 'Answer a message')"
             variant="ghost"
             class="text-ink-gray-7"
             :icon="ReplyIcon"
