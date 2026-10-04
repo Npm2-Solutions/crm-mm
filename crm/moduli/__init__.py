@@ -70,3 +70,19 @@ def registra() -> None:
 			ordine=50,
 		)
 	)
+	# its share of the demo: the forms published, signed today, sent, from the website
+	from crm.demo.registro import Parte, registra_parte
+	from crm.moduli import demo
+
+	registra_parte(
+		Parte(
+			"moduli",
+			"Forms and consents",
+			demo.crea,
+			dopo=("clienti",),
+			descrizione="The privacy notice with its consents, a welcome questionnaire, a session's "
+			"sheet and the website's request form: sent this morning to who comes in the next days "
+			"and already signed at home by many, signed on the desk's tablet by today's arrivals, "
+			"the physiotherapist's sheets, requests from the website.",
+		)
+	)
