@@ -271,6 +271,23 @@ class TestMarchio(IntegrationTestCase):
 		proprio = marchio.per_le_pagine()
 		self.assertIs(marchio.contesto(frappe._dict(marchio=proprio))["marchio"], proprio)
 
+	def test_l_accesso_del_framework_ha_il_colore_del_marchio(self):
+		# the framework drew its sign-in in its darkest gray, with fields an iPhone
+		# zooms into; DottorCloud's own pages draw themselves
+		accento = marchio.accento()["light"]["--accent"]
+		utente = frappe.session.user
+		frappe.set_user("Guest")
+		try:
+			pagine = {}
+			for pagina in ("login", "prenota"):
+				set_request(method="GET", path=f"/{pagina}")
+				pagine[pagina] = get_response_without_exception_handling(f"/{pagina}").get_data(as_text=True)
+		finally:
+			frappe.set_user(utente)
+		self.assertIn(f"--accent: {accento}", pagine["login"])
+		self.assertIn("font-size: 16px !important", pagine["login"])
+		self.assertNotIn("font-size: 16px !important", pagine["prenota"])
+
 	def test_il_manifest_del_telefono_e_del_marchio(self):
 		with con_il_verticale(PROVA.chiave):
 			marchio.manifest(app="area")

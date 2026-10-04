@@ -310,13 +310,24 @@ def per_le_pagine() -> dict:
 	return dati
 
 
+#: The framework's own pages a person opens without DottorCloud around them: they
+#: get the brand's colour and a phone's sizes (`marchio_framework.html`).
+PAGINE_DEL_FRAMEWORK = frozenset({"login", "update-password", "message"})
+
+
 def contesto(context) -> dict:
 	"""`update_website_context`: every web page - the framework's (the login page,
 	the portal, the errors) and the CRM's public ones - with the brand's favicon and
 	splash, and `marchio` for the pages that draw its marks
-	(`templates/includes/marchio_*.html`)."""
+	(`templates/includes/marchio_*.html`). The framework's sign-in and new password
+	add its colour and a phone's sizes to the website's own head."""
 	dati = context.get("marchio") or per_le_pagine()
-	return {"favicon": dati["favicon"], "splash_image": dati["icon"], "marchio": dati}
+	valori = {"favicon": dati["favicon"], "splash_image": dati["icon"], "marchio": dati}
+	if getattr(frappe.local, "path", None) in PAGINE_DEL_FRAMEWORK:
+		valori["head_html"] = (context.get("head_html") or "") + frappe.render_template(
+			"templates/includes/marchio_framework.html", {"marchio": dati}
+		)
+	return valori
 
 
 # nosemgrep: guest-whitelisted-method — the brand's public manifest, nothing about anybody
