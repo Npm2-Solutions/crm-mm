@@ -543,6 +543,13 @@ Con il tocco, come in un'app:
     perché un `dialog-footer` dentro la fila di frappe-ui ripeteva il bordo:
     ora la fila è una. «Trattativa: …» è allineata al titolo, e il totale è
     largo quanto le righe, non un riquadro rientrato a destra.
+- **Un ciclo venduto e la lista d'attesa, provati davvero.** Dai Dettagli
+  della persona la segreteria vende dieci sedute di fisioterapia e apre la
+  lista d'attesa. Le date dei fogli («Da», «Fino a», «Valido fino al») si
+  leggevano «2026-10-04»: 26 campi data in 17 finestre non dicevano il
+  formato. Ora seguono quello del centro come i campi della scheda
+  (`dateFormat()` in `utils/index.js`); l'area pazienti, che non ha le
+  impostazioni di sistema, scrive il giorno per primo (`FORMATO_DEL_CAMPO`).
 
 La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
 come con la tastiera di un iPhone da 844, e un riquadro al posto della

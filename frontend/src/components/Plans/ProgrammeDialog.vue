@@ -38,6 +38,7 @@
           <FormControl
             v-model="programme.starts_on"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
           />
         </div>
@@ -270,7 +271,7 @@
 
 <script setup>
 import PlanDialog from '@/components/Plans/PlanDialog.vue'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import { RITMO, TEMPO, nuovaTappa, perIlServer } from '@/utils/programmi'
 import {
   Badge,

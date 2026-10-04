@@ -9,7 +9,12 @@
     <template #body-content>
       <div class="flex flex-col gap-4">
         <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
-          <FormControl v-model="from" type="date" :label="__('From')" />
+          <FormControl
+            v-model="from"
+            type="date"
+            :format="dateFormat()"
+            :label="__('From')"
+          />
           <FormControl
             v-model="days"
             type="select"
@@ -107,7 +112,7 @@
 </template>
 
 <script setup>
-import { copyToClipboard, formatDate } from '@/utils'
+import { copyToClipboard, dateFormat, formatDate } from '@/utils'
 import { appLocale } from '@/utils/locale'
 import {
   GIORNI_SPESA,

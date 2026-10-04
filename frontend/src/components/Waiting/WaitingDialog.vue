@@ -113,11 +113,13 @@
             <FormControl
               v-model="form.from_date"
               type="date"
+              :format="dateFormat()"
               :label="__('Not before')"
             />
             <FormControl
               v-model="form.until"
               type="date"
+              :format="dateFormat()"
               :label="__('Until')"
             />
           </div>
@@ -325,7 +327,7 @@
 <script setup>
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import {
   APERTE,
   GIORNI,

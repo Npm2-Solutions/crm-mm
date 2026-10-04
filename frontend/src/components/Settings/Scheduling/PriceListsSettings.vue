@@ -199,11 +199,13 @@
           <FormControl
             v-model="listForm.valid_from"
             type="date"
+            :format="dateFormat()"
             :label="__('Valid from')"
           />
           <FormControl
             v-model="listForm.valid_upto"
             type="date"
+            :format="dateFormat()"
             :label="__('Valid upto')"
           />
         </div>
@@ -331,11 +333,13 @@
             <FormControl
               v-model="ruleForm.valid_from"
               type="date"
+              :format="dateFormat()"
               :label="__('Valid from')"
             />
             <FormControl
               v-model="ruleForm.valid_upto"
               type="date"
+              :format="dateFormat()"
               :label="__('Valid upto')"
             />
           </div>
@@ -370,6 +374,7 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { hhmm } from '@/utils/scheduler'
+import { dateFormat } from '@/utils'
 
 const WEEKDAYS = [
   'Monday',

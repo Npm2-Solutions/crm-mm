@@ -58,6 +58,7 @@
           <FormControl
             v-model="plan.valid_until"
             type="date"
+            :format="dateFormat()"
             :label="__('Quote valid until')"
           />
         </div>
@@ -420,7 +421,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import {
   STATO,
   STATO_VOCE,

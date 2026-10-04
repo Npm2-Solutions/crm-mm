@@ -47,11 +47,13 @@
           <FormControl
             v-model="plan.starts_on"
             type="date"
+            :format="dateFormat()"
             :label="__('From')"
           />
           <FormControl
             v-model="plan.ends_on"
             type="date"
+            :format="dateFormat()"
             :label="__('Until')"
           />
         </div>
@@ -343,7 +345,7 @@ import PlanItemEditor from '@/components/Plans/PlanItemEditor.vue'
 import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
 import ShoppingListDialog from '@/components/Clinic/ShoppingListDialog.vue'
-import { formatDate } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
 import { hhmm } from '@/utils/scheduler'
 import {
   CIBO,
