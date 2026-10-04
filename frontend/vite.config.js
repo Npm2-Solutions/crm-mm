@@ -17,6 +17,13 @@ export default defineConfig(async ({ mode }) => {
       vue(),
       vueJsx(),
       VitePWA({
+        // The service worker this made was registered on /assets/crm/frontend/,
+        // a scope with no page of DottorCloud in it (they are under /crm), so
+        // it answered nothing - and on a phone's first visit, and at every new
+        // version, it downloaded the whole app in the background to keep it
+        // (392 files, 7.6 MB). It now removes itself and what it kept, from the
+        // phones that have it too.
+        selfDestroying: true,
         registerType: 'autoUpdate',
         workbox: {
           maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
