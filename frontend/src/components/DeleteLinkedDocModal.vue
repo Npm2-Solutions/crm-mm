@@ -31,26 +31,20 @@
           <div v-if="linkedDocs?.length > 0">
             <span class="text-ink-gray-5 text-base">
               {{
-                __(
-                  'Delete or unlink these linked documents before deleting this document',
-                )
+                title
+                  ? __(
+                      'Before deleting {0}, delete or unlink these linked documents',
+                      [title],
+                    )
+                  : __(
+                      'Delete or unlink these linked documents before deleting this document',
+                    )
               }}
             </span>
             <LinkedDocsListView
               class="mt-4"
               :rows="linkedDocs"
-              :columns="[
-                {
-                  label: 'Document',
-                  key: 'title',
-                  width: '19rem',
-                },
-                {
-                  label: 'Master',
-                  key: 'reference_doctype',
-                  width: '12rem',
-                },
-              ]"
+              :columns="colonne"
               :linkedDocsResource="linkedDocsResource"
               :unlinkLinkedDoc="unlinkLinkedDoc"
               @selectionsChanged="
@@ -59,12 +53,7 @@
             />
           </div>
           <div v-if="linkedDocs?.length == 0" class="text-ink-gray-5 text-base">
-            {{
-              __('Are you sure you want to delete {0} - {1}?', [
-                props.doctype,
-                props.docname,
-              ])
-            }}
+            {{ domanda }}
           </div>
         </div>
       </div>
@@ -144,6 +133,7 @@
 </template>
 
 <script setup>
+import { isMobileView } from '@/composables/settings'
 import { createResource, call } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
@@ -154,7 +144,38 @@ const props = defineProps({
   name: { type: String, required: true },
   doctype: { type: String, required: true },
   docname: { type: String, required: true },
+  // the record's name, as its page shows it
+  title: { type: String, default: '' },
   reload: { type: Function, default: null },
+})
+
+// on a phone one column, the kind under the name: the second stayed off the
+// screen
+const colonne = computed(() =>
+  isMobileView.value
+    ? [{ label: __('Document'), key: 'title', width: 1 }]
+    : [
+        { label: __('Document'), key: 'title', width: '19rem' },
+        { label: __('Type'), key: 'reference_doctype', width: '12rem' },
+      ],
+)
+
+// named by its name, never «CRM Lead - CRM-LEAD-2026-00096»: one whole
+// sentence per kind where the page has no name to give
+const domanda = computed(() => {
+  if (props.title) return __('Delete {0}?', [props.title])
+  switch (props.doctype) {
+    case 'CRM Lead':
+      return __('Are you sure you want to delete this person?')
+    case 'CRM Deal':
+      return __('Are you sure you want to delete this deal?')
+    case 'Contact':
+      return __('Are you sure you want to delete this contact?')
+    case 'CRM Organization':
+      return __('Are you sure you want to delete this organization?')
+    default:
+      return __('Are you sure you want to delete this document?')
+  }
 })
 const viewControls = ref({
   selections: [],
