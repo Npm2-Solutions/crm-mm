@@ -297,7 +297,20 @@
   .dialog-footer button {
     min-height: 2.75rem;
   }
-  .dialog-content > div.px-4.pb-7.pt-4 > div.flex.justify-end {
+  /* the main action on the right, under the thumb: frappe-ui's own row lists
+     it first and is turned round; a row written by hand already ends with it
+     («Cancel», then «Send the link») and stays as written - turned round too,
+     it put the main action on the left */
+  .dialog-content
+    > div.px-4.pb-7.pt-4
+    > div.flex.justify-end:has(
+      > button:first-child:is(
+          .bg-surface-gray-10,
+          .bg-surface-red-7,
+          .bg-surface-blue-6,
+          .bg-surface-green-7
+        )
+    ) {
     flex-direction: row-reverse;
   }
   /* the buttons share the row, whichever way it is written: frappe-ui's own
