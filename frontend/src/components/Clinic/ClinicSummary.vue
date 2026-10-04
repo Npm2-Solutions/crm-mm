@@ -40,6 +40,7 @@
             <FormControl
               v-model="draft"
               class="min-w-0 flex-1"
+              v-bind="tastiera(TASTIERE[line.key])"
               :placeholder="line.unit"
               @keydown.enter="saveLine(line)"
             />
@@ -123,6 +124,7 @@
 
 <script setup>
 import { formatDate } from '@/utils'
+import { tastiera } from '@/utils/tastiera'
 import {
   Badge,
   Button,
@@ -147,6 +149,14 @@ watch(
 
 const editing = ref(null)
 const draft = ref('')
+
+// the keyboard of a measure on a phone: digits for the weight, the height and
+// the heart rate; the blood pressure keeps the letters', which has the «/»
+const TASTIERE = {
+  weight: 'decimale',
+  height: 'decimale',
+  heart_rate: 'intero',
+}
 
 function edit(line) {
   editing.value = line.key
