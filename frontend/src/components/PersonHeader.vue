@@ -23,14 +23,19 @@
             {{ title }}
           </h1>
         </Tooltip>
+        <!-- every fact after its dot, the row pulled left by one dot: the dot
+             of a fact that starts a line falls outside, so a line never opens
+             on «·» («Paziente dal 4 ott» above «· Ultima visita») -->
         <div
           v-if="fatti.length"
-          class="flex flex-wrap gap-x-2 gap-y-0.5 text-p-sm text-ink-gray-6"
+          class="overflow-hidden text-p-sm text-ink-gray-6"
         >
-          <span v-for="(fatto, i) in fatti" :key="i" class="flex gap-2">
-            <span v-if="i" aria-hidden="true">·</span>
-            <span>{{ fatto }}</span>
-          </span>
+          <div class="-ml-4 flex flex-wrap gap-y-0.5">
+            <span v-for="(fatto, i) in fatti" :key="i" class="flex">
+              <span aria-hidden="true" class="w-4 shrink-0 text-center">·</span>
+              <span>{{ fatto }}</span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
