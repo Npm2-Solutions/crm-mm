@@ -680,7 +680,12 @@ row, the bar's words beside their icons).
   `<label>`) takes `:aria-label`: the words beside it, or in a list the name of
   what its row turns on. frappe-ui's Switch is mended at build
   (`vite/frappeUi.js`): the name goes to its button, and a check field's 1 from
-  the server is drawn on.
+  the server is drawn on. A field's words name its control: a form's `Field` and a
+  record's side panel tie them (`useEtichettaDelCampo`, `useEtichetteDeiCampi`
+  in `composables/nomeAlControllo.js`), a button or a select read with what it
+  shows; a new list of fields does the same. What a tooltip tells on a mouse
+  (a message's ticks) a screen reader reads too: `role="img"` and the same
+  words as `aria-label`.
 - While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
   `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
   must stay in sight sits at the bottom of the frame or of a sheet, never

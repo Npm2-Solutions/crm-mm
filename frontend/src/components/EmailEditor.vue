@@ -154,9 +154,11 @@
 
       <div class="flex items-end gap-1 px-1.5 pb-1.5 pt-0.5">
         <!-- a reply's quote is folded away, as it is in the email once sent -->
+        <!-- the placeholder is drawn, not read: it is the box's name too -->
         <EditorContent
           class="composer-text min-w-0 flex-1 [&_p.reply-to-content]:hidden"
           :class="showQuote ? '' : '[&_p.reply-to-content~*]:hidden'"
+          :aria-label="placeholder || undefined"
         />
         <div class="flex h-9 shrink-0 items-center">
           <Button

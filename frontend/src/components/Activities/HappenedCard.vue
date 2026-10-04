@@ -41,7 +41,12 @@
         class="mb-1 flex items-center gap-2 text-p-xs"
         :class="tone.ink"
       >
-        <component :is="icon" v-if="icon" class="size-3.5 shrink-0" />
+        <component
+          :is="icon"
+          v-if="icon"
+          class="size-3.5 shrink-0"
+          aria-hidden="true"
+        />
         <span class="min-w-0 truncate font-medium">{{ title }}</span>
         <span v-if="when" class="ml-auto shrink-0 tabular-nums text-ink-gray-5">
           {{ when }}
@@ -57,7 +62,12 @@
       class="flex max-w-[min(92%,36rem)] items-center gap-1.5 rounded-lg px-2.5 py-1 text-p-xs shadow-sm"
       :class="[tone.fill, tone.ink, tone.weight]"
     >
-      <component :is="icon" v-if="icon" class="size-3.5 shrink-0" />
+      <component
+        :is="icon"
+        v-if="icon"
+        class="size-3.5 shrink-0"
+        aria-hidden="true"
+      />
       <div class="min-w-0">
         <slot />
       </div>
