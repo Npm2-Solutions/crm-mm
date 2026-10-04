@@ -760,6 +760,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/vite.config.js` (`VitePWA`) | Il service worker registrato su `/assets/crm/frontend/` non serviva nessuna pagina (stanno sotto `/crm`), e alla prima visita e a ogni nuova versione scaricava in sottofondo tutta l'app: 392 file, 7,6 MB. Ora si toglie da solo, con quello che aveva tenuto, anche dai telefoni che lo hanno già |
 | `utils/ricarica.js`, `main.js` | Uscita una versione nuova con la pagina aperta, un pezzo che non c'è più ricarica la pagina una volta, invece di lasciare un pulsante che non apre niente. Mai senza rete, mai in giro, e mai per un modulo di un altro sito che non arriva (la telemetria del framework bloccata dal browser) |
 | `Activities/EmailArea.vue`, `MessageActions.vue` | Il pulsante che risponde a un'email o a un messaggio dice «Rispondi», non «Risposta» |
+| `crm/www/crm.py` (`traduzioni`), `frontend/index.html` | Le parole dell'italiano (15.000, 1,2 MB, 380 KB compressi) non stanno più dentro la pagina, che nessun browser tiene e che si scarica a ogni apertura dell'app: sono uno script che il browser tiene finché non cambiano (il suo indirizzo porta un'impronta delle parole). La pagina scende da 1266 a 26 KB; dalla seconda apertura le parole costano 0 byte |
 
 ## Non incluso
 

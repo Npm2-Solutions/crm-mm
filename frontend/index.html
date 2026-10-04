@@ -201,6 +201,11 @@
   </head>
   <body class="sm:overscroll-y-none no-scrollbar">
     <div id="app" class="h-full"></div>
+    <!-- the words of the user's language: a script the browser keeps until they
+         change (crm.www.crm.traduzioni), run before the app's -->
+    {% if boot.traduzioni %}
+    <script src="{{ boot.traduzioni }}"></script>
+    {% endif %}
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

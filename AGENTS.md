@@ -717,7 +717,10 @@ row, the bar's words beside their icons).
   `vite.config.js`). A part that does not arrive loads the page again once,
   only when the version it runs is gone from the server (`utils/ricarica.js`).
   The PWA plugin's service worker removes itself (`selfDestroying`): on
-  `/assets/crm/frontend/` it served no page and downloaded the whole app.
+  `/assets/crm/frontend/` it served no page and downloaded the whole app. The
+  page's words are a script the browser keeps (`crm.www.crm.traduzioni`, its
+  address carrying `impronta_delle_traduzioni()`), never inside the page, which
+  no browser keeps: they were 380 KB compressed at every opening.
 
 ---
 
