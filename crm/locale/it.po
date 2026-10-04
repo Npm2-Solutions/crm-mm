@@ -42791,3 +42791,64 @@ msgstr "Medio-alta"
 #: frontend/vite/frappeUi.js
 msgid "(required)"
 msgstr "(obbligatorio)"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Utility"
+msgstr "Utilità"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Marketing"
+msgstr "Marketing"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Authentication"
+msgstr "Autenticazione"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Approved"
+msgstr "Approvato"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "In review"
+msgstr "In revisione"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Appeal in progress"
+msgstr "Ricorso in corso"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Paused"
+msgstr "In pausa"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Rejected"
+msgstr "Rifiutato"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Disabled"
+msgstr "Disattivato"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "About something the person asked for or booked: a confirmation, a reminder, a change of time."
+msgstr "Su qualcosa che la persona ha chiesto o prenotato: una conferma, un promemoria, un cambio d'orario."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "Offers, news, an invitation to come back: what the person did not ask for."
+msgstr "Offerte, novità, un invito a tornare: quello che la persona non ha chiesto."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "A code to sign in, and nothing else."
+msgstr "Un codice per entrare, e nient'altro."
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Hi {0}, we look forward to seeing you tomorrow at {1}."
+msgstr "Ciao {0}, ti aspettiamo domani alle {1}."

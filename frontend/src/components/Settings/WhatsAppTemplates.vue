@@ -73,8 +73,8 @@
           </div>
           <Badge
             v-if="template.status"
-            :label="__(template.status)"
-            :theme="statusTheme(template.status)"
+            :label="stato(template.status, __).label"
+            :theme="stato(template.status, __).theme"
             size="sm"
           />
           <Button
@@ -118,14 +118,13 @@
             )
           "
         />
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 items-start gap-3 max-md:grid-cols-1">
           <FormControl
             v-model="form.category"
             type="select"
             :label="__('Category')"
-            :options="
-              (data.categories || []).map((c) => ({ label: c, value: c }))
-            "
+            :options="categorie(data.categories || [], __)"
+            :description="categoria(form.category, __).description"
           />
           <FormControl
             v-model="form.language"
@@ -218,10 +217,14 @@
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, toast } from 'frappe-ui'
+import { categoria, categorie, stato } from '@/utils/modelliWhatsApp'
 import { ref, reactive, computed } from 'vue'
 
 // a literal {{1}} cannot live in the template markup: Vue would parse it
-const bodyPlaceholder = 'Ciao {{1}}, il tuo ordine è pronto.'
+const bodyPlaceholder = __(
+  'Hi {0}, we look forward to seeing you tomorrow at {1}.',
+  ['{{1}}', '{{2}}'],
+)
 const placeholderHint = __(
   'Use {0} for the first variable, {1} for the second, and so on.',
   ['{{1}}', '{{2}}'],
@@ -259,25 +262,13 @@ const samplePlaceholder = computed(() =>
   ).join(', '),
 )
 
-function statusTheme(status) {
-  return (
-    {
-      APPROVED: 'green',
-      Approved: 'green',
-      PENDING: 'orange',
-      Pending: 'orange',
-      REJECTED: 'red',
-      Rejected: 'red',
-    }[status] || 'gray'
-  )
-}
-
 function openTemplate(template = null) {
   form.name = template?.name || null
   form.template_name = template?.template_name || ''
   form.category =
     template?.category || data.value.categories?.[0] || 'MARKETING'
-  form.language = template?.language || data.value.languages?.[0]?.value || 'it'
+  // the centre's language, not the first of the list (Afrikaans)
+  form.language = template?.language || data.value.language || 'it'
   form.header = template?.header || ''
   form.template = template?.template || ''
   form.footer = template?.footer || ''

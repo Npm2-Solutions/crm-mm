@@ -19,6 +19,8 @@ import re
 import frappe
 from frappe import _
 
+from crm import lingue
+
 EDITABLE_FIELDS = (
 	"template_name",
 	"category",
@@ -73,9 +75,12 @@ def _languages() -> list[dict]:
 	mandatory, empty.
 	"""
 	languages = frappe.get_all("Language", fields=["name", "language_name"], order_by="language_name")
+	# the centre's own first: its templates are written in it, and the list
+	# opened on Afrikaans. Each by its name, which is unique: the code is Meta's
+	own = lingue.del_centro()
+	languages.sort(key=lambda language: language.name != own)
 	return [
-		{"value": language.name, "label": f"{language.language_name} ({language.name})"}
-		for language in languages
+		{"value": language.name, "label": language.language_name or language.name} for language in languages
 	]
 
 
@@ -100,6 +105,7 @@ def get_templates() -> dict:
 		),
 		"categories": _categories(),
 		"languages": _languages(),
+		"language": lingue.del_centro(),
 		"fields": sorted(known & set(EDITABLE_FIELDS)),
 	}
 
