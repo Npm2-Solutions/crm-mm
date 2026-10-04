@@ -44,50 +44,57 @@
       class="flex min-w-0 flex-1 items-center justify-between gap-2"
     >
       <!-- scrolls rather than compresses: a pill squeezed until its count
-           touches its label is a pill nobody can read -->
+           touches its label is a pill nobody can read. The strip that scrolls
+           keeps 6px above and below the track: on a touch screen a pill's
+           ring reaches that far (telefono.css), and the scrolling cut it at
+           the track's edge, leaving a 32px strip to aim at. -->
       <div
         ref="striscia"
-        class="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-surface-gray-2 p-0.5 text-p-sm [&::-webkit-scrollbar]:h-0"
-        role="tablist"
+        class="-my-1.5 flex min-w-0 overflow-x-auto py-1.5 [&::-webkit-scrollbar]:h-0"
       >
-        <Tooltip
-          v-for="option in channelOptions"
-          :key="option.key"
-          :text="compact && channel !== option.key ? __(option.label) : ''"
+        <div
+          class="flex shrink-0 items-center gap-0.5 rounded-lg bg-surface-gray-2 p-0.5 text-p-sm"
+          role="tablist"
         >
-          <button
-            class="flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 transition-colors"
-            :class="
-              channel === option.key
-                ? 'bg-surface-elevation-2 text-ink-gray-9 shadow-sm dark:bg-surface-gray-4'
-                : 'text-ink-gray-6 hover:text-ink-gray-9'
-            "
-            role="tab"
-            :aria-selected="channel === option.key"
-            :aria-label="__(option.label)"
-            @click="channel = option.key"
+          <Tooltip
+            v-for="option in channelOptions"
+            :key="option.key"
+            :text="compact && channel !== option.key ? __(option.label) : ''"
           >
-            <component
-              :is="option.icon"
-              v-if="option.icon"
-              class="size-3.5 shrink-0"
-            />
-            <!--
+            <button
+              class="flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 transition-colors"
+              :class="
+                channel === option.key
+                  ? 'bg-surface-elevation-2 text-ink-gray-9 shadow-sm dark:bg-surface-gray-4'
+                  : 'text-ink-gray-6 hover:text-ink-gray-9'
+              "
+              role="tab"
+              :aria-selected="channel === option.key"
+              :aria-label="__(option.label)"
+              @click="channel = option.key"
+            >
+              <component
+                :is="option.icon"
+                v-if="option.icon"
+                class="size-3.5 shrink-0"
+              />
+              <!--
               Narrow, the pills that are not chosen keep their icon and their
               count and lose their word — the chosen one says where you are.
             -->
-            <span v-if="!compact || channel === option.key || !option.icon">
-              {{ __(option.label) }}
-            </span>
-            <span
-              v-if="option.count"
-              class="tabular-nums text-ink-gray-5"
-              :class="channel === option.key ? 'text-ink-gray-5' : ''"
-            >
-              {{ option.count }}
-            </span>
-          </button>
-        </Tooltip>
+              <span v-if="!compact || channel === option.key || !option.icon">
+                {{ __(option.label) }}
+              </span>
+              <span
+                v-if="option.count"
+                class="tabular-nums text-ink-gray-5"
+                :class="channel === option.key ? 'text-ink-gray-5' : ''"
+              >
+                {{ option.count }}
+              </span>
+            </button>
+          </Tooltip>
+        </div>
       </div>
       <!--
         Everything that is not a message starts here, and it is here whatever
