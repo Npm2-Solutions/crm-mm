@@ -1,5 +1,5 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
-import { traQuanto } from '@/utils/quando'
+import { formatoDellaScadenza, traQuanto } from '@/utils/quando'
 
 describe('traQuanto', () => {
   it('says tomorrow for the next day, however late in it', () => {
@@ -22,5 +22,22 @@ describe('traQuanto', () => {
       const [frase, valori] = traQuanto(giorni)
       if (frase.includes('{0}')) expect(valori[0], frase).toBeGreaterThan(1)
     }
+  })
+})
+
+describe('a task’s due date', () => {
+  it('drops the hour of a day chosen without one', () => {
+    expect(
+      formatoDellaScadenza('2026-10-05 00:00:00', 'D MMM, HH:mm', 'D MMM'),
+    ).toBe('D MMM')
+    expect(
+      formatoDellaScadenza('2026-10-05T00:00', 'D MMM, HH:mm', 'D MMM'),
+    ).toBe('D MMM')
+    expect(
+      formatoDellaScadenza('2026-10-05 09:30:00', 'D MMM, HH:mm', 'D MMM'),
+    ).toBe('D MMM, HH:mm')
+    expect(formatoDellaScadenza('', 'D MMM, HH:mm', 'D MMM')).toBe(
+      'D MMM, HH:mm',
+    )
   })
 })

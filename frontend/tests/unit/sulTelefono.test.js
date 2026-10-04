@@ -56,6 +56,21 @@ describe('the open tasks by when they are due', () => {
     expect(gruppoDi({ due_date: null }, ADESSO)).toBe('undated')
   })
 
+  it('keeps a day chosen without an hour due all that day', () => {
+    // its midnight is past, the day is not
+    expect(gruppoDi({ due_date: '2026-10-03 00:00:00' }, ADESSO)).toBe('today')
+    expect(gruppoDi({ due_date: '2026-10-04 00:00:00' }, ADESSO)).toBe(
+      'tomorrow',
+    )
+    expect(gruppoDi({ due_date: '2026-10-02 00:00:00' }, ADESSO)).toBe('late')
+    // no «00:00» under it: the group says the day
+    expect(scadenzaInBreve('2026-10-04 00:00:00', 'it-IT', ADESSO)).toBe('')
+    expect(scadenzaInBreve('2026-10-03 00:00:00', 'it-IT', ADESSO)).toBe('')
+    expect(scadenzaInBreve('2026-10-09 00:00:00', 'it-IT', ADESSO)).toBe(
+      'ven 9 ott',
+    )
+  })
+
   it('leaves out the empty groups and keeps the order', () => {
     const gruppi = cosePerGruppo(
       [

@@ -18,3 +18,14 @@ export function traQuanto(giorni) {
   if (giorni < 730) return ['in 1 year', []]
   return ['in {0} years', [Math.floor(giorni / 365)]]
 }
+
+/**
+ * The format of a task's due date: its day and hour, its day alone when it was
+ * chosen without an hour (the picker gives it as its midnight). «5 ott, 00:00»
+ * read as if it were due at midnight.
+ */
+export function formatoDellaScadenza(scadenza, conOra, soloGiorno) {
+  return /[ T]00:00(:00(\.0+)?)?$/.test(String(scadenza || ''))
+    ? soloGiorno
+    : conOra
+}
