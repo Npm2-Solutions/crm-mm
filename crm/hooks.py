@@ -197,6 +197,11 @@ before_uninstall = "crm.uninstall.before_uninstall"
 # -----------
 # Permissions evaluated in scripted ways
 
+# a link's search in words: a professional's qualification by its name, not its code
+standard_queries = {
+	"CRM Service Provider": "crm.invoicing.ricerche.professionisti",
+}
+
 permission_query_conditions = {
 	"CRM Lead": "crm.permissions.org_hierarchy.get_lead_permission_query_conditions",
 	"CRM Deal": "crm.permissions.org_hierarchy.get_deal_permission_query_conditions",
