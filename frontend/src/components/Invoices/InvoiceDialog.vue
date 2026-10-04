@@ -698,9 +698,11 @@ async function apri() {
   }
 }
 
+// immediate: the dialog is mounted the first time an invoice opens (GlobalModals)
 watch(
   () => stato.richiesta,
   () => stato.aperto && apri(),
+  { immediate: true },
 )
 
 function scegliServizio(riga, servizio) {

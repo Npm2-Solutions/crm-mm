@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <CreateDocumentModal
     v-if="showCreateDocumentModal"
@@ -24,18 +27,17 @@
   <FirstStepsPanel />
   <FieldLayoutDialogContainer />
   <!-- the invoice, made and read inside DottorCloud: from the invoices, the
-       agenda, a cycle, a subscription -->
-  <InvoiceDialog />
+       agenda, a cycle, a subscription. Mounted the first time one opens, then
+       kept, so that closing it plays -->
+  <InvoiceDialog v-if="fatturaAperta" />
 </template>
 <script setup>
 import Settings from '@/components/Settings/Settings.vue'
 import FirstStepsPanel from '@/components/FirstSteps/FirstStepsPanel.vue'
 import FieldLayoutDialogContainer from '@/components/Modals/FieldLayoutDialogContainer.vue'
-import InvoiceDialog from '@/components/Invoices/InvoiceDialog.vue'
-import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
-import CreateDocumentModal from '@/components/Modals/CreateDocumentModal.vue'
-import QuickEntryModal from '@/components/Modals/QuickEntryModal.vue'
 import AboutModal from '@/components/Modals/AboutModal.vue'
+import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
+import { useFattura } from '@/composables/fattura'
 import {
   showCreateDocumentModal,
   createDocumentDoctype,
@@ -49,6 +51,28 @@ import {
   showChangePasswordModal,
 } from '@/composables/modals'
 import { useAscoltoNotifiche } from '@/composables/notifiche'
+
+// the dialogs come when they open: imported here, with the fields of every
+// kind of record, they were in every page's first download
+const CreateDocumentModal = aRichiesta(
+  () => import('@/components/Modals/CreateDocumentModal.vue'),
+  { attesa: false },
+)
+const QuickEntryModal = aRichiesta(
+  () => import('@/components/Modals/QuickEntryModal.vue'),
+  { attesa: false },
+)
+const ChangePasswordModal = aRichiesta(
+  () => import('@/components/Modals/ChangePasswordModal.vue'),
+  { attesa: false },
+)
+const InvoiceDialog = aRichiesta(
+  () => import('@/components/Invoices/InvoiceDialog.vue'),
+  { attesa: false },
+)
+
+const { stato: fattura } = useFattura()
+const fatturaAperta = apertoUnaVolta(() => fattura.aperto)
 
 // the notifications as they arrive, on the computer and on the phone alike
 useAscoltoNotifiche()

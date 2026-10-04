@@ -16,8 +16,15 @@
   />
 </template>
 <script setup>
-import DoctypeModal from '@/components/Modals/DoctypeModal.vue'
 import { useDoctypeModal } from '@/composables/doctypeModal'
+import { aRichiesta } from '@/utils/aRichiesta'
+
+// a record's dialog, with the fields of every kind, comes when it opens: App.vue
+// mounts this on every page
+const DoctypeModal = aRichiesta(
+  () => import('@/components/Modals/DoctypeModal.vue'),
+  { attesa: false },
+)
 
 const doctypeModal = useDoctypeModal()
 </script>
