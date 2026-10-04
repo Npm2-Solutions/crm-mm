@@ -319,11 +319,13 @@
             :options="draftOptions(entry)"
             placement="right"
           >
+            <!-- a verb, not the state: in Italian «Bozza» read as the badge of
+                 the drafts just below -->
             <Button
               size="sm"
               variant="ghost"
               class="touch-target"
-              :label="__('Draft')"
+              :label="__('Draft', null, 'Assistant action')"
               iconLeft="feather"
             />
           </Dropdown>
