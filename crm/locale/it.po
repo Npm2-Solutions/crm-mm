@@ -43372,3 +43372,7 @@ msgstr "Messaggio WhatsApp…"
 #: frontend/src/components/CommunicationArea.vue
 msgid "Note for the team…"
 msgstr "Nota per i colleghi…"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Go to the latest message"
+msgstr "Vai all'ultimo messaggio"

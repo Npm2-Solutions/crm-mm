@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // How close to the end still counts as being at it.
@@ -9,6 +12,15 @@ const NEAR = 80
  */
 export function atTheEnd(scrollTop, scrollHeight, clientHeight, near = NEAR) {
   return scrollHeight - scrollTop - clientHeight < near
+}
+
+/**
+ * Whether somebody reading at `scrollTop` is more than a screen away from the
+ * end of a conversation that reads down: then the way back to its latest
+ * message shows, as in every messenger. Pure, like `atTheEnd`.
+ */
+export function farFromTheEnd(scrollTop, scrollHeight, clientHeight) {
+  return scrollHeight - scrollTop - clientHeight > clientHeight
 }
 
 /**
@@ -44,6 +56,8 @@ export function useConversationScroll(
 ) {
   // placed at least once: until then the conversation is not shown
   const settled = ref(false)
+  // a screen or more away from the latest message: the way back to it shows
+  const far = ref(false)
   // they have scrolled, clicked or keyed in it since it opened
   let moved = false
   // at the end, and to be kept there as the conversation grows
@@ -53,6 +67,13 @@ export function useConversationScroll(
 
   function isAtEnd(el) {
     return atTheEnd(el.scrollTop, el.scrollHeight, el.clientHeight)
+  }
+
+  function measure(el) {
+    far.value =
+      readsFromTheEnd.value &&
+      !newestFirst.value &&
+      farFromTheEnd(el.scrollTop, el.scrollHeight, el.clientHeight)
   }
 
   function toEnd(el, smooth = false) {
@@ -116,6 +137,7 @@ export function useConversationScroll(
         }
         if (!moved || !settled.value) land(el)
         else if (mine || pinned) toEnd(el, true)
+        measure(el)
         if (arrived?.value ?? true) settled.value = true
       }),
     )
@@ -131,7 +153,18 @@ export function useConversationScroll(
 
   function onScroll() {
     const el = scroller.value
-    if (el && moved) pinned = isAtEnd(el)
+    if (!el) return
+    if (moved) pinned = isAtEnd(el)
+    measure(el)
+  }
+
+  // the way back to the latest message: there, and kept there as it grows
+  function toTheEnd() {
+    const el = scroller.value
+    if (!el) return
+    moved = true
+    pinned = true
+    toEnd(el, true)
   }
 
   function onUser() {
@@ -188,5 +221,5 @@ export function useConversationScroll(
     el.removeEventListener('load', keep, true)
   })
 
-  return { settled, follow, reopen }
+  return { settled, follow, reopen, far, toTheEnd }
 }
