@@ -10,10 +10,21 @@
   sat there too, at the far edge from the words they are decisions about. Every
   inbox puts both where the eye already is: the name over the thread, and
   «done» and «later» beside it.
+
+  On a phone, with a chat open, it is the page's header (`inTestata`), beside
+  the phone at the top right: the page's own row, «Conversations» and its
+  refresh, took 42px over a chat that had none to spare. Its buttons are 40px
+  there, side by side, and the person is opened from their name.
 -->
 <template>
+  <!-- icone-a-dito: the icon buttons 40px each on a phone (telefono.css) -->
   <div
-    class="flex h-14 shrink-0 items-center gap-2 border-b bg-surface-base px-2 sm:gap-3 sm:px-4"
+    class="icone-a-dito flex shrink-0 items-center"
+    :class="
+      inTestata
+        ? 'h-12 gap-1'
+        : 'h-14 gap-2 border-b bg-surface-base px-2 sm:gap-3 sm:px-4'
+    "
   >
     <Button
       v-if="back"
@@ -23,8 +34,11 @@
       @click="emit('back')"
     />
     <button
-      class="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left"
-      :class="details ? 'hover:opacity-80' : 'cursor-default'"
+      class="flex min-w-0 flex-1 items-center rounded-lg py-1 text-left"
+      :class="[
+        details ? 'hover:opacity-80' : 'cursor-default',
+        inTestata ? 'gap-2' : 'gap-3',
+      ]"
       :tabindex="details ? 0 : -1"
       @click="details && emit('details')"
     >
@@ -71,7 +85,7 @@
       </span>
     </button>
 
-    <div class="flex shrink-0 items-center gap-1">
+    <div class="flex shrink-0 items-center" :class="inTestata ? '' : 'gap-1'">
       <!--
         Read is a thing somebody says, not a thing that happens when a chat is
         glanced at — so while there is something new, saying so is the first
@@ -136,8 +150,10 @@
         :loading="busy === 'state'"
         @click="decide('Open')"
       />
+      <!-- in the page's header on a phone the name opens the person, as in a
+           phone's messengers: the button would take the name's room -->
       <Button
-        v-if="details"
+        v-if="details && !inTestata"
         variant="ghost"
         icon="lucide-panel-right-open"
         :tooltip="__('About this person')"
@@ -170,6 +186,8 @@ const props = defineProps({
   details: { type: Boolean, default: false },
   // room for words on the buttons, not only icons
   wide: { type: Boolean, default: true },
+  // drawn in the page's header, on a phone with a chat open
+  inTestata: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['back', 'details', 'changed'])
