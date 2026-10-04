@@ -843,6 +843,7 @@ nessun browser di prova ha la sua tastiera.
 | `Mobile/TrattativePerFase.vue` | Le fasi sopra le trattative erano alte 30 px: ora 40 |
 | `src/telefono.css` | Un pulsante di frappe-ui che apre una pagina (`:route`, `:link`) è disegnato come un link con le stesse classi, e restava senza l'anello invisibile: «Giro di chiamate» nella pagina delle chiamate rispondeva su 24 px. Ora ha l'anello come gli altri |
 | `RelatedPeopleSection.vue` | Una persona collegata si apriva solo dal suo nome, una riga da 16 px: ora si apre da tutta la riga, con «Modifica» sopra |
+| `Telephony/PhonePanel.vue` | Nel telefono in alto a destra «Da richiamare adesso» rispondeva su 32 px, una chiamata recente su 30, «Tutte le chiamate» e «Giro di chiamate» su 17: sul telefono sono righe da 44 px. Il campo «Numero o nome» prendeva il fuoco all'apertura: sul telefono apriva la tastiera del telefono sopra il tastierino del pannello e faceva scorrere il foglio mentre saliva. Ora prende il fuoco solo sul computer |
 
 ## Non incluso
 
