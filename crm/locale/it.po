@@ -42124,3 +42124,279 @@ msgstr "altri {0}"
 msgctxt "Tooth condition"
 msgid "Mobile"
 msgstr "Mobile"
+
+#: crm/clinica/cure_regole.py
+msgid "{0} is not a tooth"
+msgstr "{0} non è un dente"
+
+#: crm/clinica/cure_regole.py
+msgid "Unknown condition: {0}"
+msgstr "Condizione sconosciuta: {0}"
+
+#: crm/clinica/cure_regole.py
+msgid "Tooth {0}: {1} are not surfaces"
+msgstr "Dente {0}: {1} non sono superfici"
+
+#: crm/clinica/cure_regole.py
+msgid "Tooth {0} is missing: nothing else goes on it"
+msgstr "Il dente {0} è assente: non ci va nient'altro"
+
+#: crm/clinica/cure_regole.py
+msgid "Row {0}: {1} is not a tooth"
+msgstr "Riga {0}: {1} non è un dente"
+
+#: crm/clinica/cure_regole.py
+msgid "Row {0}: surfaces go with a tooth, as M, O, D, V, L"
+msgstr "Riga {0}: le superfici vanno con un dente, come M, O, D, V, L"
+
+#: crm/clinica/piani_regole.py
+msgid "A food group comes with its portions"
+msgstr "Per un gruppo di alimenti servono le porzioni"
+
+#: crm/clinica/piani_regole.py
+msgid "Choose the food"
+msgstr "Scegli l'alimento"
+
+#: crm/moduli/schema.py
+msgid "{0}: the condition is not valid"
+msgstr "{0}: la condizione non è valida"
+
+#: crm/moduli/schema.py
+msgid "{0}: unknown kind of field {1}"
+msgstr "{0}: tipo di campo sconosciuto {1}"
+
+#: crm/moduli/schema.py
+msgid "A question needs its words ({0})"
+msgstr "Una domanda va scritta ({0})"
+
+#: crm/moduli/schema.py
+msgid "A text to read needs its words ({0})"
+msgstr "Un testo da leggere va scritto ({0})"
+
+#: crm/moduli/schema.py
+msgid "{0}: each side is a number or a text"
+msgstr "{0}: ogni lato dev'essere un numero o un testo"
+
+#: crm/moduli/schema.py
+msgid "{0}: which consent it records"
+msgstr "{0}: scegli quale consenso registra"
+
+#: crm/moduli/schema.py
+msgid "At most {0} sections"
+msgstr "Al massimo {0} sezioni"
+
+#: crm/moduli/schema.py
+msgid "At most {0} fields"
+msgstr "Al massimo {0} campi"
+
+#: crm/moduli/schema.py
+msgid "A form asks something: add a question"
+msgstr "Un modulo chiede qualcosa: aggiungi una domanda"
+
+#: crm/moduli/schema.py
+msgid "{0}: the answer is not valid"
+msgstr "{0}: la risposta non è valida"
+
+#: crm/moduli/schema.py
+msgid "{0}: decimals go from 0 to 6"
+msgstr "{0}: i decimali vanno da 0 a 6"
+
+#: crm/moduli/schema.py
+msgid "{0}: a choice needs its options"
+msgstr "{0}: una scelta ha bisogno delle sue opzioni"
+
+#: crm/moduli/schema.py
+msgid "{0}: a score is a number"
+msgstr "{0}: un punteggio dev'essere un numero"
+
+#: crm/moduli/schema.py
+msgid "{0}: a table needs its columns"
+msgstr "{0}: una tabella ha bisogno delle sue colonne"
+
+#: crm/moduli/schema.py
+msgid "{0}: a score counts some questions"
+msgstr "{0}: un punteggio deve contare almeno una domanda"
+
+#: crm/moduli/schema.py
+msgid "{0}: who signs is not valid"
+msgstr "{0}: chi firma non è valido"
+
+#: crm/moduli/schema.py
+msgid "{0}: the level of the signature is not valid"
+msgstr "{0}: il livello della firma non è valido"
+
+#: crm/moduli/schema.py
+msgid "Every section has its own key ({0})"
+msgstr "Ogni sezione deve avere una chiave sua ({0})"
+
+#: crm/moduli/schema.py
+msgid "{0} is too long"
+msgstr "{0} è troppo lungo"
+
+#: crm/moduli/schema.py
+msgid "{0} is a number"
+msgstr "{0} dev'essere un numero"
+
+#: crm/moduli/schema.py
+msgid "{0} is at least {1}"
+msgstr "{0} dev'essere almeno {1}"
+
+#: crm/moduli/schema.py
+msgid "{0} is at most {1}"
+msgstr "{0} dev'essere al massimo {1}"
+
+#: crm/moduli/schema.py
+msgid "{0}: not one of the choices"
+msgstr "{0}: non è una delle scelte"
+
+#: crm/moduli/schema.py
+msgid "{0} goes from {1} to {2}"
+msgstr "{0} va da {1} a {2}"
+
+#: crm/moduli/schema.py
+msgid "{0}: unknown operator {1}"
+msgstr "{0}: operatore sconosciuto {1}"
+
+#: crm/moduli/schema.py
+msgid "{0}: {1} cannot be asked about"
+msgstr "{0}: non si può chiedere di {1}"
+
+#: crm/moduli/schema.py
+msgid "{0}: a scale goes up in whole steps, at most 100"
+msgstr "{0}: una scala sale di passi interi, fino a 100"
+
+#: crm/moduli/schema.py
+msgid "{0}: the least is above the most"
+msgstr "{0}: il minimo è più alto del massimo"
+
+#: crm/moduli/schema.py
+msgid "{0}: at most {1} options"
+msgstr "{0}: al massimo {1} opzioni"
+
+#: crm/moduli/schema.py
+msgid "{0}: at most {1} columns"
+msgstr "{0}: al massimo {1} colonne"
+
+#: crm/moduli/schema.py
+msgid "{0}: the formula is not valid ({1})"
+msgstr "{0}: la formula non è valida ({1})"
+
+#: crm/moduli/schema.py
+msgid "{0}: a band goes from a number to a bigger one, with a name"
+msgstr "{0}: una fascia va da un numero a uno più grande e ha un nome"
+
+#: crm/moduli/schema.py
+msgid "Every question has its own key: lowercase letters, digits and _ ({0})"
+msgstr "Ogni domanda deve avere una chiave sua: lettere minuscole, cifre e _ ({0})"
+
+#: crm/moduli/schema.py
+msgid "{0}: of {1} one can only ask whether it was given"
+msgstr "{0}: di {1} si può chiedere solo se è stato dato"
+
+#: crm/moduli/schema.py
+msgid "{0}: every option has its own words"
+msgstr "{0}: ogni opzione va scritta"
+
+#: crm/moduli/schema.py
+msgid "{0}: a column is not valid"
+msgstr "{0}: una colonna non è valida"
+
+#: crm/moduli/schema.py
+msgid "{0}: {1} is not a number"
+msgstr "{0}: {1} non è un numero"
+
+#: crm/moduli/schema.py
+msgid "{0}: a score counts choices, yes or no, scales and numbers before it ({1})"
+msgstr "{0}: un punteggio conta scelte, sì o no, scale e numeri che vengono prima ({1})"
+
+#: crm/piani/programmi_regole.py
+msgid "{0} is not a way a programme goes on"
+msgstr "{0} non è un modo di andare avanti per un programma"
+
+#: crm/piani/programmi_regole.py
+msgid "A programme has at least one stage"
+msgstr "Un programma deve avere almeno una tappa"
+
+#: crm/piani/programmi_regole.py
+msgid "At most {0} stages"
+msgstr "Al massimo {0} tappe"
+
+#: crm/piani/programmi_regole.py
+msgid "Every stage has its own key ({0})"
+msgstr "Ogni tappa deve avere una chiave sua ({0})"
+
+#: crm/piani/programmi_regole.py
+msgid "Every stage has a title"
+msgstr "Ogni tappa deve avere un titolo"
+
+#: crm/piani/programmi_regole.py
+msgid "Stage {0} lasts from 1 to {1} days"
+msgstr "La tappa {0} dura da 1 a {1} giorni"
+
+#: crm/piani/regole.py
+msgid "Choose the exercise"
+msgstr "Scegli l'esercizio"
+
+#: crm/piani/regole.py
+msgid "Write the habit"
+msgstr "Scrivi l'abitudine"
+
+#: crm/piani/regole.py
+msgid "{0} is not a kind of plan"
+msgstr "{0} non è un tipo di piano"
+
+#: crm/piani/regole.py
+msgid "At most {0} moments"
+msgstr "Al massimo {0} momenti"
+
+#: crm/piani/regole.py
+msgid "At most {0} items"
+msgstr "Al massimo {0} voci"
+
+#: crm/piani/regole.py
+msgid "Every moment has its own key ({0})"
+msgstr "Ogni momento deve avere una chiave sua ({0})"
+
+#: crm/piani/regole.py
+msgid "Every moment has a name"
+msgstr "Ogni momento deve avere un nome"
+
+#: crm/piani/regole.py
+msgid "{0} is not a day"
+msgstr "{0} non è un giorno"
+
+#: crm/piani/regole.py
+msgid "A plan of this kind does not hold {0}"
+msgstr "Un piano di questo tipo non può contenere {0}"
+
+#: crm/piani/regole.py
+msgid "An item belongs to a moment of the plan"
+msgstr "Ogni voce deve stare in un momento del piano"
+
+#: crm/piani/regole.py
+msgid "A week has at most seven days"
+msgstr "Una settimana ha al massimo sette giorni"
+
+#: crm/preventivi/regole.py
+msgid "A quote has at least one service"
+msgstr "Un preventivo deve avere almeno un servizio"
+
+#: crm/preventivi/regole.py
+msgid "A quote has at most {0} services"
+msgstr "Un preventivo può avere al massimo {0} servizi"
+
+#: crm/preventivi/regole.py
+msgid "Row {0}: choose the service"
+msgstr "Riga {0}: scegli il servizio"
+
+#: crm/preventivi/regole.py
+msgid "Row {0}: the quantity is more than zero"
+msgstr "Riga {0}: la quantità dev'essere più di zero"
+
+#: crm/preventivi/regole.py
+msgid "Row {0}: the price is not negative"
+msgstr "Riga {0}: il prezzo non può essere negativo"
+
+#: crm/preventivi/regole.py
+msgid "Row {0}: the discount is from 0 to 100%"
+msgstr "Riga {0}: lo sconto va da 0 a 100%"

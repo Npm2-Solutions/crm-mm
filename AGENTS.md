@@ -502,6 +502,11 @@ language, what the centre wrote stays as written. A DocType's description or lab
 never calls the product "the CRM", and a changed one moves the JSON's `modified`, or
 migrate keeps the old words.
 
+What a rule without a site says is wrong - a `Problema` (plans, programmes,
+quotes, teeth, foods) or an `Errore` (the forms' schema) - is English translated
+when it is said (`testo(_)`); the catalog's extraction never sees it, so its
+Italian goes in `it.po` by hand: `crm/tests/test_frasi_delle_regole.py` checks.
+
 ### The brand
 | File | Role |
 |---|---|
