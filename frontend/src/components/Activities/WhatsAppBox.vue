@@ -43,12 +43,10 @@
        as the incoming messages that reached us. -->
   <div
     v-if="!windowOpen"
-    class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2"
+    class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2 max-md:hidden"
   >
-    <!-- on a phone in a line, beside its button: the composer keeps its room -->
     <span class="min-w-0 flex-1 text-p-sm text-ink-amber-9">
-      <span class="max-md:hidden">{{ windowNotice }}</span>
-      <span class="md:hidden">{{ windowNoticeShort }}</span>
+      {{ windowNotice }}
     </span>
     <Button
       size="sm"
@@ -56,6 +54,20 @@
       @click="emit('template')"
     />
   </div>
+  <!-- On a phone one line, the whole of it the way to the templates: two lines
+       and a button took a third of the box, over a chat already short -->
+  <button
+    v-if="!windowOpen"
+    type="button"
+    class="mx-2 mt-1.5 flex min-h-9 w-[calc(100%-1rem)] items-center gap-2 rounded-lg bg-surface-amber-1 px-3 text-left text-p-sm text-ink-amber-9 ring-1 ring-inset ring-outline-amber-2 active:bg-surface-amber-2 md:hidden"
+    @click="emit('template')"
+  >
+    <span class="lucide-clock size-4 shrink-0" aria-hidden="true" />
+    <span class="min-w-0 flex-1 truncate">{{ windowNoticeShort }}</span>
+    <span class="shrink-0 font-medium">
+      {{ __('Choose', null, 'WhatsApp template') }}
+    </span>
+  </button>
   <!--
     Recording takes over the composer instead of hiding in it.
 
@@ -254,10 +266,14 @@ const content = useDraft('whatsappDraft', props.doctype, doc.value.name)
 // As tall as what is in it: one line for «ok», six at most, because past that
 // the composer would be eating the conversation it belongs to.
 const { fit } = useGrowingTextarea(textareaRef, content)
+// on a phone the line has three keys beside it: the long words went on two
+// lines and doubled the box
 const placeholder = computed(() =>
   reply.value?.message
     ? __('Write your reply…')
-    : __('Write a WhatsApp message…'),
+    : isMobileView.value
+      ? __('WhatsApp message…')
+      : __('Write a WhatsApp message…'),
 )
 const fileType = ref('')
 
@@ -289,8 +305,8 @@ const windowNotice = computed(() =>
 
 const windowNoticeShort = computed(() =>
   lastIncomingAt.value
-    ? __('Over 24 hours: WhatsApp takes only a template')
-    : __('Never written here: WhatsApp takes only a template'),
+    ? __('Over 24 hours: only a template')
+    : __('Never written here: only a template'),
 )
 
 // What WhatsApp actually accepts, from Meta's media reference. A file outside
