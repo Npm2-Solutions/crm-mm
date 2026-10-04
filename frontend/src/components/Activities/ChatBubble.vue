@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   One message in the mixed chat: a speech balloon, on the side it came from.
 
   The rule from before stays, because it was right: **the bubble owns the
@@ -101,8 +104,15 @@
               {{ retrying ? __('Sending…') : __('Retry') }}
             </button>
           </span>
+          <!-- what a tooltip says on a mouse, a screen reader reads (a phone has no hover) -->
           <Tooltip v-if="icon && label" :text="label">
-            <component :is="icon" class="size-3 shrink-0" :class="ink" />
+            <component
+              :is="icon"
+              role="img"
+              :aria-label="label"
+              class="size-3 shrink-0"
+              :class="ink"
+            />
           </Tooltip>
           <!--
           Typed on somebody's phone rather than in here. The same number is used
@@ -113,7 +123,8 @@
           <Tooltip v-if="phone" :text="__('Sent from the phone')">
             <span
               class="lucide-smartphone size-3 shrink-0"
-              aria-hidden="true"
+              role="img"
+              :aria-label="__('Sent from the phone')"
             />
           </Tooltip>
           <Tooltip :text="moment">
@@ -121,7 +132,11 @@
           </Tooltip>
           <!-- what the ticks mean, for whoever has never had to learn it -->
           <Tooltip v-if="tick" :text="tickLabel(tick)">
-            <span class="inline-flex shrink-0">
+            <span
+              class="inline-flex shrink-0"
+              role="img"
+              :aria-label="tickLabel(tick)"
+            >
               <CheckIcon v-if="tick === 'one'" class="size-3.5" />
               <DoubleCheckIcon
                 v-else

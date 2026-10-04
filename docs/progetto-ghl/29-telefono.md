@@ -739,6 +739,9 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/vite/frappeUi.js` (`Switch/Switch.vue`) | Un interruttore legato a un campo sì/no del server (0 o 1) si accendeva solo per `true`: «Aggiorna la data di modifica», salvato acceso, si vedeva spento. Ora 1 è acceso. E il nome dato all'interruttore va al suo pulsante, dove VoiceOver e TalkBack lo leggono, non al contenitore |
 | `Settings/SettingsRow.vue`, `Telephony/SettingRow.vue` + `composables/nomeAlControllo.js` | Le parole di una riga delle impostazioni sono l'etichetta del suo interruttore (o campo): lo nominano, e toccarle lo accende o lo spegne |
 | 31 pagine e finestre (Generale, Dashboard, Sito, Regole di assegnazione, SLA, Modelli email, Meta, profili social, prenotazione online, agenda…) | Ogni interruttore ha un nome: le parole che ha accanto, o in un elenco il nome della riga («Pagina Studio», «Dottoressa Verdi»), mai solo «interruttore» |
+| `FieldLayout/Field.vue`, `SidePanelLayout.vue` + `composables/nomeAlControllo.js` | Le parole di un campo gli danno il nome, nelle finestre («Nuova persona», «Nuova trattativa») e nel pannello della scheda: un menu a tendina («Stato», «Pipeline», «N. di dipendenti») si leggeva senza nome, una data «Scegli la data». Un pulsante o un menu si legge con quello che mostra («Responsabile della trattativa, Sarah Connor»), uno vuoto una volta sola, e l'avatar accanto al nome non si legge più |
+| `CommentBox.vue`, `EmailEditor.vue` | Il riquadro dove si scrive una nota o un'email si chiama come il suo invito («Scrivi un'email…»): il segnaposto si disegna, non si legge |
+| `Activities/ChatBubble.vue`, `HappenedCard.vue` | Quello che le spunte di un messaggio dicono passandoci sopra («Letto», «Consegnato al telefono»), e «Inviato dal telefono», ora si legge anche con VoiceOver e TalkBack: un telefono non ha il passaggio del mouse. Le icone accanto alle parole non si leggono come «immagine» |
 
 ## Non incluso
 

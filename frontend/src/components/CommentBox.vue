@@ -23,7 +23,11 @@
         <EditorFixedMenu :items="toolbarFor(isMobileView)" />
       </div>
       <div class="flex items-end gap-1 p-1.5">
-        <EditorContent class="composer-text min-w-0 flex-1" />
+        <!-- the placeholder is drawn, not read: it is the box's name too -->
+        <EditorContent
+          class="composer-text min-w-0 flex-1"
+          :aria-label="placeholder || undefined"
+        />
         <div class="flex h-9 shrink-0 items-center">
           <FileUploader
             :upload-args="{
