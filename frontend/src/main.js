@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import './index.css'
 
 import { createApp } from 'vue'
@@ -8,6 +10,7 @@ import router from './router'
 import translationPlugin from './translation'
 import { indossa } from './utils/marchio'
 import { ascoltaLInstallazione } from './utils/installa'
+import { ricaricaSeManca } from './utils/ricarica'
 import App from './App.vue'
 
 import {
@@ -48,6 +51,9 @@ indossa()
 // the browser's offer to put the app on the home screen, kept for the More
 // page (utils/installa.js)
 ascoltaLInstallazione()
+// a part that no longer exists on the server (a new version came out while the
+// page was open): the page loads again, once (utils/ricarica.js)
+ricaricaSeManca()
 
 // create a pinia instance
 let pinia = createPinia()
