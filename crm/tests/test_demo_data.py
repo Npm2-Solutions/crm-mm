@@ -1,129 +1,208 @@
-import json
-import os
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+# For license information, please see license.txt
+
+"""The demo data (doc 53): made through the product's own rules, nobody written to
+while they are in, and taken away without leaving anything behind - every table
+counted before and after."""
 
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from crm.demo import api, guardie, registro
+from crm.demo.registro import Parte
 
-class TestDemoData(IntegrationTestCase):
+#: What other things write while the demo comes and goes: logs, the search the
+#: scheduler syncs, sessions.
+VOLATILI = {
+	"tabError Log",
+	"tabScheduled Job Log",
+	"__global_search",
+	"tabAccess Log",
+	"tabActivity Log",
+	"tabSessions",
+	"tabRoute History",
+}
+
+
+def _conta() -> dict[str, int]:
+	conti = {}
+	for tabella in frappe.db.get_tables(cached=False):
+		if tabella in VOLATILI:
+			continue
+		conti[tabella] = frappe.db.sql(f"select count(*) from `{tabella}`")[0][0]
+	return conti
+
+
+class TestLePartiInOrdine(IntegrationTestCase):
+	def test_each_part_after_the_ones_it_needs(self):
+		niente = lambda ctx: None  # noqa: E731
+		parti = [
+			Parte("c", "C", niente, dopo=("b",)),
+			Parte("a", "A", niente),
+			Parte("b", "B", niente, dopo=("a",)),
+			# needs a part that is not there: made anyway, without it
+			Parte("d", "D", niente, dopo=("assente",)),
+		]
+		self.assertEqual([p.chiave for p in registro.in_ordine(parti)], ["a", "b", "c", "d"])
+
+	def test_parts_that_need_each_other_are_refused(self):
+		niente = lambda ctx: None  # noqa: E731
+		with self.assertRaises(ValueError):
+			registro.in_ordine([Parte("a", "A", niente, dopo=("b",)), Parte("b", "B", niente, dopo=("a",))])
+
+	def test_the_base_parts_are_registered(self):
+		chiavi = [parte.chiave for parte in registro.tutte_le_parti()]
+		for chiave in ("squadra", "agenda", "clienti", "aziende", "lavoro"):
+			self.assertIn(chiave, chiavi)
+		self.assertLess(chiavi.index("squadra"), chiavi.index("clienti"))
+
+
+class TestDatiDiProva(IntegrationTestCase):
+	"""One demo, small, made and taken away: what it holds, what it never sends,
+	and the database as it was."""
+
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		from crm.demo.api import clear_demo_data
+		if registro.caricati() or frappe.db.count(registro.REGISTRO):
+			from crm.demo.togli import togli
 
-		clear_demo_data()
+			togli()
+		frappe.db.commit()
+		cls.prima = _conta()
+		cls.esito = api.crea(utente="Administrator", scala=0.08)
+		cls.registrati = registro.registrati()
 
-	def _check_demo_records_exist(self, doctype, record_names):
-		"""Helper method to check if specific demo records exist"""
-		if not record_names:
-			return False
-		for name in record_names:
-			if frappe.db.exists(doctype, name):
-				return True
-		return False
+	@classmethod
+	def tearDownClass(cls):
+		if registro.caricati() or frappe.db.count(registro.REGISTRO):
+			from crm.demo.togli import togli
 
-	def test_demo_data_lifecycle(self):
-		from crm.demo.api import clear_demo_data, create_demo_data
-		from crm.demo.users import DEMO_USERS
+			togli()
+		frappe.db.commit()
+		super().tearDownClass()
 
-		DEMO_STATE_KEY = "crm_demo_data_created"
-		DEMO_LEADS_KEY = "crm_demo_leads"
-		DEMO_NOTES_KEY = "crm_demo_notes"
-		DEMO_TASKS_KEY = "crm_demo_tasks"
-		DEMO_CALL_LOGS_KEY = "crm_demo_call_logs"
-		DEMO_ACTIVITIES_KEY = "crm_demo_activities"
-		DEMO_DEALS_KEY = "crm_demo_deals"
+	def test_1_every_part_is_made(self):
+		self.assertEqual(self.esito["failed"], [])
+		self.assertTrue(registro.caricati())
+		self.assertEqual(set(self.esito["made"]), {"squadra", "agenda", "clienti", "aziende", "lavoro"})
 
-		# 1. Before creation: nothing should exist
-		for user in DEMO_USERS:
-			self.assertFalse(frappe.db.exists("User", user["email"]))
-
-		# Check that demo data defaults are not set
-		self.assertIsNone(frappe.db.get_default(DEMO_LEADS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_NOTES_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_TASKS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_CALL_LOGS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_DEALS_KEY))
-
-		# 2. Create demo data
-		create_demo_data()
-
-		# Users
-		for user in DEMO_USERS:
-			doc = frappe.get_doc("User", user["email"])
-			self.assertIsNotNone(doc)
-			self.assertEqual(doc.user_image, user["avatar"])
-			self.assertTrue(doc.enabled)
-			self.assertEqual(doc.first_name, user["first_name"])
-			self.assertEqual(doc.last_name, user["last_name"])
-
-		# Leads - check that demo leads were created
-		demo_lead_names = json.loads(frappe.db.get_default(DEMO_LEADS_KEY) or "[]")
-		self.assertEqual(len(demo_lead_names), 12)
-		for lead_name in demo_lead_names:
-			lead = frappe.get_doc("CRM Lead", lead_name)
-			self.assertTrue(lead.first_name)
-			self.assertTrue(lead.organization)
-
-		# Notes, Tasks, Call Logs, Activities, Deals - check that demo data was created
-		demo_note_names = json.loads(frappe.db.get_default(DEMO_NOTES_KEY) or "[]")
-		demo_task_names = json.loads(frappe.db.get_default(DEMO_TASKS_KEY) or "[]")
-		demo_call_log_names = json.loads(frappe.db.get_default(DEMO_CALL_LOGS_KEY) or "[]")
-		demo_deal_data = json.loads(frappe.db.get_default(DEMO_DEALS_KEY) or "{}")
-
-		self.assertGreater(len(demo_note_names), 0)
-		self.assertGreater(len(demo_task_names), 0)
-		self.assertGreater(len(demo_call_log_names), 0)
-		if isinstance(demo_deal_data, dict):
-			self.assertGreater(len(demo_deal_data.get("deals", [])), 0)
-
-		# Avatars exist
-		avatar_dir = os.path.abspath(
-			os.path.join(os.path.dirname(__file__), "..", "..", "crm", "public", "images", "demo")
+	def test_2_a_centre_full_of_life(self):
+		r = self.registrati
+		self.assertEqual(len(r.get("User", ())), 6)
+		self.assertEqual(len(r.get("CRM Service", ())), 10)
+		self.assertGreater(len(r.get("CRM Lead", ())), 10)
+		self.assertGreater(len(r.get("CRM Appointment", ())), 20)
+		self.assertGreater(len(r.get("CRM Deal", ())), 5)
+		self.assertTrue(r.get("CRM Task"))
+		self.assertTrue(r.get("FCRM Note"))
+		self.assertTrue(r.get("CRM Call Log"))
+		# the CRM's own rules ran: people came, became clients, their deals were won
+		persone = sorted(r["CRM Lead"])
+		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "client_since": ["is", "set"]}))
+		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "last_visit": ["is", "set"]}))
+		# whoever loads the demo has things to do and somebody mentions them
+		self.assertTrue(
+			frappe.db.count(
+				"CRM Task", {"name": ["in", sorted(r["CRM Task"])], "assigned_to": "Administrator"}
+			)
 		)
-		for user in DEMO_USERS:
-			filename = user["avatar"].split("/")[-1]
-			path = os.path.join(avatar_dir, filename)
-			self.assertTrue(os.path.exists(path), f"Missing avatar: {path}")
+		# every record written down is there
+		for doctype, nomi in r.items():
+			# the framework writes a user's defaults again, under new names
+			if doctype in ("DefaultValue",):
+				continue
+			trovati = frappe.db.count(doctype, {"name": ["in", sorted(nomi)]})
+			self.assertEqual(trovati, len(nomi), doctype)
 
-		# Site defaults set
-		self.assertEqual(frappe.db.get_default(DEMO_STATE_KEY), "1")
-		self.assertTrue(frappe.db.get_default(DEMO_LEADS_KEY))
-		self.assertTrue(frappe.db.get_default(DEMO_NOTES_KEY))
-		self.assertTrue(frappe.db.get_default(DEMO_TASKS_KEY))
-		self.assertTrue(frappe.db.get_default(DEMO_CALL_LOGS_KEY))
-		self.assertTrue(frappe.db.get_default(DEMO_ACTIVITIES_KEY))
-		self.assertTrue(frappe.db.get_default(DEMO_DEALS_KEY))
+	def test_3_the_team_has_its_levels_and_no_password(self):
+		for utente in self.registrati["User"]:
+			self.assertTrue(frappe.get_all("Has Role", filters={"parent": utente}, pluck="role"))
+			self.assertFalse(
+				frappe.db.sql("select 1 from `__Auth` where doctype='User' and name=%s", utente),
+				"a demo colleague cannot sign in",
+			)
 
-		# 3. Capture demo record names before clearing
-		lead_names = json.loads(frappe.db.get_default(DEMO_LEADS_KEY) or "[]")
-		note_names = json.loads(frappe.db.get_default(DEMO_NOTES_KEY) or "[]")
-		task_names = json.loads(frappe.db.get_default(DEMO_TASKS_KEY) or "[]")
-		call_log_names = json.loads(frappe.db.get_default(DEMO_CALL_LOGS_KEY) or "[]")
-		deal_data = json.loads(frappe.db.get_default(DEMO_DEALS_KEY) or "{}")
+	def test_4_nobody_receives_anything(self):
+		persona = sorted(self.registrati["CRM Lead"])[0]
+		email, cellulare = frappe.db.get_value("CRM Lead", persona, ["email", "mobile_no"])
+		# a number of the demo's is known, one of somebody else's is not
+		self.assertTrue(guardie.numero_di_prova(cellulare))
+		self.assertFalse(guardie.numero_di_prova("+39 02 1234 5678"))
+		# a call does not leave
+		from crm.telephony.uscita import perche_no
 
-		# Clear demo data
-		clear_demo_data()
+		self.assertTrue(perche_no(cellulare))
+		# an email leaves the queue unsent
+		if email:
+			frappe.sendmail(recipients=[email], subject="Promemoria", message="Ciao", now=False)
+			coda = frappe.get_all(
+				"Email Queue",
+				filters={"status": "Error"},
+				fields=["name", "error"],
+				order_by="creation desc",
+				limit=1,
+			)
+			self.assertTrue(coda and "demo" in (coda[0].error or ""))
+		# a notification about a demo person stays in the panel
+		from crm.notifiche import regole as R
+		from crm.notifiche.avvisi import avvisa
 
-		# All demo data should be gone - check using the tracked record names
+		nome = avvisa(
+			"Administrator",
+			"Mention",
+			R.MENZIONE,
+			["Paolo", "Mario"],
+			da=None,
+			riguarda=("CRM Lead", persona),
+		)
+		if nome:
+			self.assertFalse(frappe.db.get_value("CRM Notification", nome, "email_due"))
 
-		# Users should be deleted
-		for user in DEMO_USERS:
-			self.assertFalse(frappe.db.exists("User", user["email"]))
+	def test_5_visitors_of_the_booking_page_do_not_see_the_demo(self):
+		from crm.api import service_booking
 
-		# Demo records should not exist
-		self.assertFalse(self._check_demo_records_exist("CRM Lead", lead_names))
-		self.assertFalse(self._check_demo_records_exist("FCRM Note", note_names))
-		self.assertFalse(self._check_demo_records_exist("CRM Task", task_names))
-		self.assertFalse(self._check_demo_records_exist("CRM Call Log", call_log_names))
-		if isinstance(deal_data, dict) and deal_data.get("deals"):
-			self.assertFalse(self._check_demo_records_exist("CRM Deal", deal_data.get("deals", [])))
+		servizi = self.registrati["CRM Service"]
+		frappe.set_user("Guest")
+		try:
+			try:
+				catalogo = service_booking.get_catalog()
+			except frappe.PermissionError:
+				return  # online booking switched off on this site
+			nomi = {card.get("name") for card in catalogo.get("services", [])}
+			self.assertFalse(nomi & servizi)
+		finally:
+			frappe.set_user("Administrator")
 
-		# Site defaults cleared
-		self.assertIsNone(frappe.db.get_default(DEMO_STATE_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_LEADS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_NOTES_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_TASKS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_CALL_LOGS_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_ACTIVITIES_KEY))
-		self.assertIsNone(frappe.db.get_default(DEMO_DEALS_KEY))
+	def test_6_taking_them_away_leaves_the_database_as_it_was(self):
+		from crm.demo.togli import togli
+
+		indirizzi = frappe.get_all(
+			"CRM Lead", filters={"name": ["in", sorted(self.registrati["CRM Lead"])]}, pluck="email"
+		)
+		esito = togli()
+		self.assertTrue(esito["removed"])
+		self.assertFalse(registro.caricati())
+		self.assertEqual(frappe.db.count(registro.REGISTRO), 0)
+
+		dopo = _conta()
+		diversi = {
+			tabella: (self.prima.get(tabella), dopo.get(tabella))
+			for tabella in set(self.prima) | set(dopo)
+			if self.prima.get(tabella) != dopo.get(tabella)
+		}
+		self.assertEqual(diversi, {})
+
+		# nothing of theirs left to read, anywhere a name or an address could stay
+		for indirizzo in filter(None, indirizzi):
+			self.assertFalse(frappe.db.exists("Contact Email", {"email_id": indirizzo}))
+			self.assertFalse(frappe.db.exists("Email Queue Recipient", {"recipient": indirizzo}))
+		for utente in self.registrati["User"]:
+			self.assertFalse(frappe.db.exists("User", utente))
+			self.assertFalse(frappe.db.sql("select 1 from tabDefaultValue where parent=%s", utente))
+		self.assertFalse(
+			frappe.db.sql(
+				"select 1 from `tabDeleted Document` where deleted_doctype in ('CRM Lead', 'CRM Appointment', 'CRM Deal') and deleted_name in %(nomi)s",
+				{"nomi": sorted(self.registrati["CRM Lead"] | self.registrati["CRM Appointment"])},
+			)
+		)
