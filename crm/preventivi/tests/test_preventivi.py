@@ -267,6 +267,24 @@ class LaTrattativa(PreventiviCase):
 		# the number the dashboards add up for what was won
 		self.assertEqual((deal.deal_value, deal.expected_deal_value), (240, 240))
 
+	def test_il_totale_dei_prodotti_non_scrive_sopra_il_preventivo(self):
+		"""A deal kept from before the products grid went still has a products
+		total: with the expected value kept up to date from the products, every
+		save wrote it over the value of the quote proposed on the deal (doc 50)."""
+		prima = frappe.db.get_single_value("FCRM Settings", "auto_update_expected_deal_value")
+		self.addCleanup(frappe.db.set_single_value, "FCRM Settings", "auto_update_expected_deal_value", prima)
+		frappe.db.set_single_value("FCRM Settings", "auto_update_expected_deal_value", 1)
+		deal = self.trattativa(pipeline.quale())
+		frappe.db.set_value("CRM Deal", deal, {"total": 500, "net_total": 500, "expected_deal_value": 500})
+		self.proponi(self.scrive_nella(deal)["name"])
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal, "expected_deal_value"), 60)
+		# saved again afterwards, it keeps the quote's value
+		frappe.set_user("Administrator")
+		doc = frappe.get_doc("CRM Deal", deal)
+		doc.flags.from_inquiry = True
+		doc.save(ignore_permissions=True)
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal, "expected_deal_value"), 60)
+
 	def test_dalla_trattativa_i_suoi_preventivi(self):
 		primo = self.scrive()
 		deal = self.proponi(primo["name"])["deal"]
