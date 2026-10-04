@@ -263,6 +263,7 @@ def _chi_punta(campi: list[Campo], bersagli: dict[str, set[str]], tabelle: set[s
 			if not nomi:
 				continue
 			for pezzo in _a_pezzi(nomi):
+				# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 				for riga in frappe.db.sql(
 					f"""select {_di_chi(campo)}, `{campo.fieldname}` as bersaglio
 					from `{tabella}` where `{campo.fieldname}` in %(nomi)s""",
@@ -274,6 +275,7 @@ def _chi_punta(campi: list[Campo], bersagli: dict[str, set[str]], tabelle: set[s
 			if not campo.opzioni:
 				continue
 			for pezzo in _a_pezzi(tutti):
+				# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 				for riga in frappe.db.sql(
 					f"""select {_di_chi(campo)}, `{campo.opzioni}` as tipo,
 						`{campo.fieldname}` as bersaglio
@@ -402,11 +404,13 @@ def _cancella(doctype: str, nomi: set[str], tabelle: set[str]) -> int:
 		for campo in meta.get_table_fields():
 			tabella_figlia = _tabella(campo.options)
 			if tabella_figlia in tabelle:
+				# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 				frappe.db.sql(
 					f"""delete from `{tabella_figlia}`
 					where parenttype = %(doctype)s and parent in %(nomi)s""",
 					{"doctype": doctype, "nomi": pezzo},
 				)
+		# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 		frappe.db.sql(f"delete from `tab{doctype}` where name in %(nomi)s", {"nomi": pezzo})
 		cancellati += len(pezzo)
 	return cancellati
@@ -414,6 +418,7 @@ def _cancella(doctype: str, nomi: set[str], tabelle: set[str]) -> int:
 
 def _cancella_righe(doctype: str, nomi: set[str]) -> None:
 	for pezzo in _a_pezzi(nomi):
+		# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 		frappe.db.sql(f"delete from `tab{doctype}` where name in %(nomi)s", {"nomi": pezzo})
 
 
@@ -439,6 +444,7 @@ def _svuota_i_riferimenti(
 					{"doctype": campo.doctype, "campo": campo.fieldname, "nomi": pezzo},
 				)
 			else:
+				# nosemgrep: frappe-sql-format-injection — tables and columns from the DocTypes' metadata, the names bound
 				frappe.db.sql(
 					f"""update `tab{campo.doctype}` set `{campo.fieldname}` = null
 					where `{campo.fieldname}` in %(nomi)s""",
@@ -456,6 +462,7 @@ def _assegnazioni(utenti: set[str], tabelle: set[str]) -> None:
 	):
 		if tabella not in tabelle:
 			continue
+		# nosemgrep: frappe-sql-format-injection — a table the database itself lists, the pattern bound
 		for nome, valore in frappe.db.sql(
 			f"select name, `_assign` from `{tabella}` where `_assign` like %(dominio)s",
 			{"dominio": "%@%"},
@@ -466,6 +473,7 @@ def _assegnazioni(utenti: set[str], tabelle: set[str]) -> None:
 				continue
 			restano = [utente for utente in assegnati if utente not in utenti]
 			if len(restano) != len(assegnati):
+				# nosemgrep: frappe-sql-format-injection — a table the database itself lists, the values bound
 				frappe.db.sql(
 					f"update `{tabella}` set `_assign` = %(valore)s where name = %(nome)s",
 					{"valore": json.dumps(restano) if restano else None, "nome": nome},
@@ -490,6 +498,7 @@ def _utenti(utenti: set[str], tabelle: set[str]) -> None:
 			("tabRoute History", "user"),
 		):
 			if tabella in tabelle:
+				# nosemgrep: frappe-sql-format-injection — table and column from the tuples above, the names bound
 				frappe.db.sql(f"delete from `{tabella}` where `{colonna}` in %(nomi)s", {"nomi": pezzo})
 		if "__Auth" in tabelle:
 			frappe.db.sql("delete from `__Auth` where doctype = 'User' and name in %(nomi)s", {"nomi": pezzo})
@@ -672,6 +681,7 @@ def _autoincrementi(via: dict[str, set[str]], tabelle: set[str]) -> None:
 				continue
 		except frappe.DoesNotExistError:
 			continue
+		# nosemgrep: frappe-sql-format-injection — a DocType of the register, numbered by the database
 		ultimo = frappe.db.sql(f"select max(name) from `tab{doctype}`")[0][0] or 0
 		try:
 			frappe.db.sql_ddl(f"alter table `tab{doctype}` auto_increment = {int(ultimo) + 1}")
