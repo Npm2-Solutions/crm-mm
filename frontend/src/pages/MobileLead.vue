@@ -74,15 +74,19 @@
         'Notes',
       ]"
     />
-    <Tabs
-      ref="tabsRef"
-      v-model="tabIndex"
-      as="div"
-      :tabs="tabs"
-      class="flex min-h-0 flex-1 overflow-auto flex-col [&>[role='tablist']]:hidden [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-3 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
-    >
-      <template #tab-panel="{ tab }">
-        <div v-if="tab.name == 'Details'">
+    <!-- The tabs' content, under the bar above: Details, mounted the first time
+         it opens, and one conversation for every other tab - it draws the tab
+         chosen. Both stay once opened. A tab per panel unmounted the one left and
+         mounted the next, the conversation and its editor with it: half a second
+         a tap on a slow phone, and what one was reading back at its top -->
+    <div class="flex min-h-0 flex-1 flex-col overflow-auto">
+      <div
+        v-if="dettagliMontati"
+        v-show="inDettagli"
+        role="tabpanel"
+        class="flex grow flex-col overflow-auto"
+      >
+        <div>
           <SLASection
             v-if="doc.sla_status"
             v-model="doc"
@@ -112,19 +116,26 @@
             </SidePanelLayout>
           </div>
         </div>
+      </div>
+      <div
+        v-if="attivitaMontate"
+        v-show="!inDettagli"
+        role="tabpanel"
+        class="flex grow flex-col overflow-auto"
+      >
         <Activities
-          v-else
           ref="activities"
           v-model:reload="reload"
-          v-model:tabIndex="tabIndex"
+          :tabIndex="schedaAttivita"
           doctype="CRM Lead"
           :docname="leadId"
           :tabs="tabs"
+          @update:tabIndex="(indice) => (tabIndex = indice)"
           @beforeSave="saveChange"
           @afterSave="reloadAssignees"
         />
-      </template>
-    </Tabs>
+      </div>
+    </div>
   </div>
   <ErrorPage
     v-else-if="errorTitle"
@@ -187,12 +198,11 @@ import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
-import { useSelectedTabInView } from '@/composables/selectedTabInView'
 import { useTestataRaccolta } from '@/composables/testataRaccolta'
+import { apertoUnaVolta } from '@/utils/aRichiesta'
 import {
   Avatar,
   createResource,
-  Tabs,
   Breadcrumbs,
   call,
   usePageMeta,
@@ -412,8 +422,23 @@ const tabs = computed(() => {
 })
 
 const { tabIndex } = useActiveTabManager(tabs, 'lastLeadTab')
-const tabsRef = ref(null)
-useSelectedTabInView(tabsRef, tabIndex)
+
+// Details is a tab of its own; every other one is the conversation, which draws
+// the tab chosen - and while Details is shown stays on the one it drew, hidden
+// as it was. Each is mounted the first time it opens, then kept
+const inDettagli = computed(
+  () => tabs.value[tabIndex.value]?.name === 'Details',
+)
+const schedaAttivita = ref(tabIndex.value)
+watch(
+  tabIndex,
+  (indice) => {
+    if (!inDettagli.value) schedaAttivita.value = indice
+  },
+  { immediate: true },
+)
+const dettagliMontati = apertoUnaVolta(inDettagli)
+const attivitaMontate = apertoUnaVolta(() => !inDettagli.value)
 
 // the card folds while a tab is scrolled, and opens at its top
 const testata = ref(null)

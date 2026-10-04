@@ -505,9 +505,12 @@
     the box is free, and it opens where you were last written to.
   -->
   <!-- writing to a person is conversing: Marketing, Accounting and the medical
-       director read the stream without a box to write in (doc 30) -->
+       director read the stream without a box to write in (doc 30). Mounted the
+       first time the conversation shows, then hidden on the other tabs: their
+       editor was made again at every return, half a second on a slow phone -->
   <ComposerShell
-    v-if="title == 'Activity' && puo('conversazioni.usa')"
+    v-if="scritturaMontata && puo('conversazioni.usa')"
+    v-show="title == 'Activity'"
     :way="way"
   >
     <ChannelSwitcher :way="way" :drafts="drafted" @pick="pickWay" />
@@ -552,7 +555,7 @@
   <!-- a channel's own tab: the same box, without the strip — the tab has
        already said which channel it is -->
   <ComposerShell
-    v-else-if="WRITES_ON[title] && puo('conversazioni.usa')"
+    v-if="title != 'Activity' && WRITES_ON[title] && puo('conversazioni.usa')"
     :way="WRITES_ON[title]"
   >
     <CommunicationArea
@@ -752,6 +755,7 @@ const fieldLayoutTabIndex = ref(0)
 const fieldLayoutTabName = ref('')
 
 const title = computed(() => props.tabs?.[tabIndex.value]?.name || 'Activity')
+const scritturaMontata = apertoUnaVolta(() => title.value == 'Activity')
 
 const changeTabTo = (tabName) => {
   const tabNames = props.tabs?.map((tab) => tab.name?.toLowerCase())
@@ -1233,8 +1237,11 @@ watch(
   () => follow(),
 )
 
-// another tab or another channel is another list, opened where it is read
+// another tab or another channel is another list, opened where it is read; a
+// link to one message, followed with the record already open (the page is not
+// mounted again for a hash), lands on it
 watch([title, channel], () => reopen())
+watch(target, (nome) => nome && reopen())
 
 // a link to one message is landed on by the conversation itself (`target`)
 function scroll() {
