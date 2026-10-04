@@ -1,6 +1,7 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // A record's card folds away on a phone while its tab is scrolled.
 import {
+  DOPO_UN_GESTO,
   SOGLIA_TESTATA,
   raccogliereLaTestata,
   useTestataRaccolta,
@@ -82,6 +83,32 @@ describe('raccogliereLaTestata', () => {
   })
 })
 
+describe('raccogliereLaTestata without anybody scrolling', () => {
+  const lunga = { altezza: 2000, visibile: 500, testata: 300 }
+
+  it('leaves the card as it is, and opens it at the top', () => {
+    expect(
+      raccogliereLaTestata({
+        ...lunga,
+        cima: 300,
+        raccolta: false,
+        gesto: false,
+      }),
+    ).toBe(false)
+    expect(
+      raccogliereLaTestata({
+        ...lunga,
+        cima: 300,
+        raccolta: true,
+        gesto: false,
+      }),
+    ).toBe(true)
+    expect(
+      raccogliereLaTestata({ ...lunga, cima: 0, raccolta: true, gesto: false }),
+    ).toBe(false)
+  })
+})
+
 describe('useTestataRaccolta', () => {
   function monta() {
     const area = ref(null)
@@ -109,7 +136,13 @@ describe('useTestataRaccolta', () => {
     misura(area.value, { clientHeight: 500 })
     misura(testata.value, { offsetHeight: 300 })
     misura(box, { clientHeight: 500, scrollHeight: 2000 })
+    // a finger moves the box
     function scorri(el, cima) {
+      el.dispatchEvent(new Event('touchmove', { bubbles: true }))
+      daSolo(el, cima)
+    }
+    // the page moves it
+    function daSolo(el, cima) {
       el.scrollTop = cima
       el.dispatchEvent(new Event('scroll'))
     }
@@ -117,6 +150,7 @@ describe('useTestataRaccolta', () => {
       box,
       misura,
       scorri,
+      daSolo,
       scheda,
       raccolta,
       smonta: () => app.unmount(),
@@ -151,6 +185,29 @@ describe('useTestataRaccolta', () => {
     scorri(box, 200)
     for (const el of [piccolo, campo, editor]) scorri(el, 0)
     expect(raccolta.value).toBe(true)
+    smonta()
+  })
+
+  it('stays open while the tab scrolls by itself, not with the keyboard up', async () => {
+    const { box, scorri, daSolo, raccolta, smonta } = monta()
+    await nextTick()
+    // the history opening at its newest day, in steps as it loads
+    daSolo(box, 200)
+    daSolo(box, 488)
+    expect(raccolta.value).toBe(false)
+    // a finger, then the momentum after it
+    scorri(box, 520)
+    expect(raccolta.value).toBe(true)
+    daSolo(box, 0)
+    expect(raccolta.value).toBe(false)
+    // writing, the box follows the words
+    vi.useFakeTimers()
+    vi.advanceTimersByTime(DOPO_UN_GESTO + 1)
+    document.documentElement.dataset.tastiera = 'aperta'
+    daSolo(box, 200)
+    expect(raccolta.value).toBe(true)
+    delete document.documentElement.dataset.tastiera
+    vi.useRealTimers()
     smonta()
   })
 

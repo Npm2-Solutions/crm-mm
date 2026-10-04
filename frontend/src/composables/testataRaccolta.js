@@ -16,15 +16,23 @@ export const SOGLIA_TESTATA = 24
 // a box shorter than this is something inside a tab, not the tab
 const ALTEZZA_MINIMA = 120
 const CAMPI = 'textarea, input, select, [contenteditable]'
+// what somebody moves a box with
+const GESTI = ['touchstart', 'touchmove', 'wheel', 'keydown']
+
+// how long after a finger, a wheel or a key a box's scrolling is theirs
+export const DOPO_UN_GESTO = 1500
 
 /**
  * Whether the card is folded once a tab's box went from `prima` to `cima`, of
  * `altezza`, with `visibile` of it shown, under a card `testata` tall. It
  * folds past the threshold only when what is below stays scrolled with the card
  * gone - else the box would spring back to its top, the card open, and again -
- * and folded it stays so until the tab is back at its top. A jump longer than
- * what the box shows is the page's own (a conversation opening at its last
- * message), not a finger's: it changes nothing.
+ * and folded it stays so until the tab is back at its top. Only somebody's
+ * scrolling folds it (`gesto`): a box that scrolls by itself - the history
+ * opening at its newest day, a conversation at its last message - leaves the
+ * card as it is, or a person's page opened with their card already gone. A
+ * jump longer than what the box shows is the page's own too: it changes
+ * nothing.
  */
 export function raccogliereLaTestata({
   prima = 0,
@@ -33,8 +41,10 @@ export function raccogliereLaTestata({
   visibile,
   testata,
   raccolta,
+  gesto = true,
 }) {
   if (cima <= 0) return false
+  if (!gesto) return raccolta
   if (Math.abs(cima - prima) > visibile) return raccolta
   if (raccolta) return true
   return cima > SOGLIA_TESTATA && altezza - visibile > testata + SOGLIA_TESTATA
@@ -50,6 +60,9 @@ export function useTestataRaccolta(area, testata, scheda) {
   const raccolta = ref(false)
   // where each box was: one moved sideways keeps its top, and says nothing
   const cime = new WeakMap()
+  // when somebody last moved something in the tabs
+  let ultimoGesto = 0
+  const gesto = () => (ultimoGesto = Date.now())
 
   function scorre(evento) {
     const box = evento.target
@@ -67,12 +80,20 @@ export function useTestataRaccolta(area, testata, scheda) {
       visibile: box.clientHeight,
       testata: testata.value?.offsetHeight || 0,
       raccolta: raccolta.value,
+      // with the keyboard up the box follows the words one writes: theirs too
+      gesto:
+        Date.now() - ultimoGesto < DOPO_UN_GESTO ||
+        document.documentElement.dataset.tastiera === 'aperta',
     })
   }
 
   function ascolta(nuova, vecchia) {
     vecchia?.removeEventListener('scroll', scorre, true)
     nuova?.addEventListener('scroll', scorre, { capture: true, passive: true })
+    for (const tipo of GESTI) {
+      vecchia?.removeEventListener(tipo, gesto, true)
+      nuova?.addEventListener(tipo, gesto, { capture: true, passive: true })
+    }
   }
 
   watch(area, ascolta, { immediate: true, flush: 'post' })
