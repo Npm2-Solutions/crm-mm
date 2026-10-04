@@ -52,7 +52,7 @@
    "label": "Professional qualification"
   },
   {
-   "description": "Stable identifier used by the engine, e.g. fisioterapista.",
+   "description": "A short name that never changes, e.g. fisioterapista: invoicing's rules find the qualification by it.",
    "fieldname": "code",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -270,7 +270,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 12:00:00.000000",
+ "modified": "2026-10-04 16:30:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Professional Qualification",
