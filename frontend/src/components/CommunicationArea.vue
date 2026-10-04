@@ -79,7 +79,11 @@
       }"
       :discardButtonProps="{ onClick: () => discard('comment') }"
       :doctype="doctype"
-      :placeholder="__('Write a note for the team…')"
+      :placeholder="
+        isMobileView
+          ? __('Note for the team…')
+          : __('Write a note for the team…')
+      "
     />
   </div>
 </template>
@@ -88,6 +92,7 @@
 import EmailEditor from '@/components/EmailEditor.vue'
 import CommentBox from '@/components/CommentBox.vue'
 import { isContentEmpty } from '@/utils'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   replyAddresses,
   replyDraft,

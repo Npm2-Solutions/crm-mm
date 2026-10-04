@@ -41141,14 +41141,6 @@ msgstr "Manda un SMS."
 msgid "Mobile No"
 msgstr "Cellulare"
 
-#: frontend/src/components/Activities/WhatsAppBox.vue
-msgid "Over 24 hours: WhatsApp takes only a template"
-msgstr "Oltre le 24 ore: WhatsApp accetta solo un modello"
-
-#: frontend/src/components/Activities/WhatsAppBox.vue
-msgid "Never written here: WhatsApp takes only a template"
-msgstr "Non ha mai scritto: WhatsApp accetta solo un modello"
-
 #: crm/api/tracking.py
 msgid "Booking page"
 msgstr "Pagina di prenotazione"
@@ -43359,3 +43351,24 @@ msgstr "Mostra la scheda della persona"
 #: frontend/src/pages/MobileLead.vue
 msgid "Hide the card"
 msgstr "Nascondi la scheda della persona"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgid "Over 24 hours: only a template"
+msgstr "Oltre le 24 ore: solo un modello"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgid "Never written here: only a template"
+msgstr "Non ha mai scritto: solo un modello"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgctxt "WhatsApp template"
+msgid "Choose"
+msgstr "Scegli"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgid "WhatsApp message…"
+msgstr "Messaggio WhatsApp…"
+
+#: frontend/src/components/CommunicationArea.vue
+msgid "Note for the team…"
+msgstr "Nota per i colleghi…"
