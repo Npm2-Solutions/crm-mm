@@ -287,6 +287,47 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	and a documented impact assessment. Here there is nothing to declare, because
 	nothing crosses a border.
 	"""
+	fattura = _fattura_da_appuntamento(appointment, billable_service, service_provider)
+	if not fattura.items[0].service_provider:
+		frappe.throw(
+			_(
+				"No provider for this appointment: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+			)
+		)
+	fattura.insert()
+	return fattura.name
+
+
+@frappe.whitelist()
+def appointment_invoice_proposal(appointment: str) -> dict:
+	"""The invoice an appointment proposes, saved nowhere, for the invoice dialog to
+	open with: who it is for, the service, its price, the appointment it closes. When
+	the agenda cannot tell who performed it, the line has no professional and the
+	dialog asks for one - before, the desk got an error and nowhere to go."""
+	frappe.has_permission("CRM Invoice", "create", throw=True)
+	fattura = _fattura_da_appuntamento(appointment)
+	return {
+		"appointment": fattura.appointment,
+		"recipient_type": fattura.recipient_type,
+		"party_type": fattura.party_type,
+		"party": fattura.party,
+		"billing_name": fattura.billing_name,
+		"items": [
+			{
+				"billable_service": riga.billable_service,
+				"service_provider": riga.service_provider or "",
+				"qty": riga.qty,
+				"rate": riga.rate,
+			}
+			for riga in fattura.items
+		],
+	}
+
+
+def _fattura_da_appuntamento(appointment: str, billable_service: str = "", service_provider: str = ""):
+	"""The draft an appointment proposes, in memory: the service's fiscal card, the
+	professional of whoever is on its staff (or the card's), the first participant
+	as the client - or whoever pays for them. The professional may be missing."""
 	incontro = frappe.get_doc("CRM Appointment", appointment)
 	incontro.check_permission("read")
 	if (
@@ -314,12 +355,6 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 				break
 	if not service_provider:
 		service_provider = frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
-	if not service_provider:
-		frappe.throw(
-			_(
-				"No provider for this appointment: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
-			)
-		)
 
 	fattura = frappe.new_doc("CRM Invoice")
 	fattura.appointment = appointment
@@ -336,13 +371,12 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 		"items",
 		{
 			"billable_service": billable_service,
-			"service_provider": service_provider,
+			"service_provider": service_provider or "",
 			"qty": 1,
 			"rate": incontro.unit_price or 0,
 		},
 	)
-	fattura.insert()
-	return fattura.name
+	return fattura
 
 
 @frappe.whitelist(methods=["POST"])

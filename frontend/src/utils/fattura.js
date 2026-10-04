@@ -40,9 +40,11 @@ function scegli(oggetto, campi) {
   return scelti
 }
 
-/** What the dialog sends: the client, how it was paid, the lines that have a service. */
+/** What the dialog sends: the client, how it was paid, the lines that have a service,
+ *  and the appointment a new invoice comes from (the server keeps it on a new one). */
 export function datiDaInviare(vista) {
   return {
+    ...(vista?.appointment ? { appointment: vista.appointment } : {}),
     ...scegli(vista?.client, CAMPI_CLIENTE),
     ...scegli(vista?.payment, CAMPI_PAGAMENTO),
     items: (vista?.items || [])

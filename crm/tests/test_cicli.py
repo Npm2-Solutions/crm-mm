@@ -21,6 +21,7 @@ from frappe.utils import add_days, getdate
 
 from crm.api import oggi
 from crm.invoicing import api as fatture
+from crm.invoicing import emissione
 from crm.invoicing.install import semina_qualifiche
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
@@ -271,6 +272,27 @@ class IlPagamento(CicliCase):
 		self.assertEqual(frappe.get_doc("CRM Invoice", nome).items[0].rate, 45)
 		with self.assertRaises(frappe.ValidationError):
 			fatture.issue_from_cycle(fatto["name"])
+
+	def test_senza_professionista_la_fattura_si_apre_e_lo_chiede(self):
+		# the agenda cannot tell who did it: no professional of the staff's, no
+		# default on the card. The desk got an error; now the dialog asks
+		frappe.db.set_value(
+			"CRM Billable Service", {"crm_service": self.fisio.name}, "default_provider", None
+		)
+		seduta = self.seduta(self.giorno(-2))
+		self.esito(seduta, "Attended")
+		with self.assertRaises(frappe.ValidationError):
+			fatture.issue_from_appointment(seduta.name)
+		proposta = fatture.appointment_invoice_proposal(seduta.name)
+		self.assertEqual((proposta["appointment"], proposta["party"]), (seduta.name, self.mario.name))
+		self.assertEqual(proposta["items"][0]["service_provider"], "")
+		vista = emissione.preview(proposta)
+		self.assertEqual(vista["appointment"], seduta.name)
+		self.assertTrue(vista["errors"])
+		# chosen in the dialog, it is saved with its appointment
+		proposta["items"][0]["service_provider"] = frappe.db.get_value("CRM Service Provider", {}, "name")
+		salvata = emissione.save(proposta)
+		self.assertEqual(frappe.db.get_value("CRM Invoice", salvata["name"], "appointment"), seduta.name)
 
 	def test_pagato_intero_vuole_il_prezzo(self):
 		with self.assertRaises(frappe.ValidationError):

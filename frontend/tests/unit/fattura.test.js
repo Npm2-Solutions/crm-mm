@@ -49,6 +49,22 @@ describe('the invoice dialog', () => {
       },
     ])
     expect(dati.totals).toBeUndefined()
+    expect(dati.appointment).toBeUndefined()
+  })
+
+  it('keeps the appointment a new invoice comes from', () => {
+    const vista = {
+      appointment: 'APPT-1',
+      client: { party_type: 'CRM Lead', party: 'L-1' },
+      payment: {},
+      items: [
+        { billable_service: 'Seduta', service_provider: '', qty: 1, rate: 50 },
+      ],
+    }
+    const dati = datiDaInviare(vista)
+    expect(dati.appointment).toBe('APPT-1')
+    // the professional still to choose goes as it is: the server says it is missing
+    expect(dati.items[0].service_provider).toBe('')
   })
 
   it('shows the totals worth a line', () => {
