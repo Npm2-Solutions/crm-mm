@@ -87,7 +87,10 @@
           size="md"
           :label="__('Content Type')"
           default="Rich Text"
-          :options="['Rich Text', 'HTML']"
+          :options="[
+            { label: __('Rich Text'), value: 'Rich Text' },
+            { label: 'HTML', value: 'HTML' },
+          ]"
           :placeholder="__('Rich Text')"
         />
       </div>
