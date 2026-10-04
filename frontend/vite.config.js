@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
@@ -31,6 +33,14 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, 'src'),
+        // vuedraggable is published as a UMD bundle that does `require("vue")`:
+        // that brought Vue's CommonJS build, template compiler and all, into the
+        // first download of every page. Its own ES sources (in the package) take
+        // the runtime the rest of the app uses, and nothing compiles templates.
+        vuedraggable: path.resolve(
+          import.meta.dirname,
+          'node_modules/vuedraggable/src/vuedraggable.js',
+        ),
         // point at the package src dir (not index.ts) so subpath imports like
         // `@framework/ui/components/Notifications` resolve. Importing subpaths avoids the
         // barrel, which `export *`s components (Grid/Phone/FormLayout) that need a newer
@@ -61,6 +71,10 @@ export default defineConfig(async ({ mode }) => {
         'prosemirror-state',
         'prosemirror-view',
         'prosemirror-transform',
+        // one Sortable for vuedraggable and @vueuse's useSortable (a list's sort
+        // order): vuedraggable pins 1.14.0 in its own node_modules, so a list page
+        // downloaded two
+        'sortablejs',
       ],
     },
     optimizeDeps: {
