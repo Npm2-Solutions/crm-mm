@@ -70,11 +70,10 @@ d'attesa, conversazioni.
   - **Abbonamenti** (`crm/demo/abbonati.py`): tre tipi in vendita (Pilates otto
     ingressi al mese che si rinnova da solo, posturale di tre mesi sospendibile,
     tutte le lezioni per sei mesi a rate) e gli abituali delle lezioni che li hanno
-    comprati alla prima lezione. Le lezioni già prenotate usano i loro ingressi, il
-    mese finito si rinnova, il promemoria della scadenza parte (verso nessuno), una
-    settimana saltata o le vacanze sono una sospensione che sposta la fine. Per ora
-    un solo abbonato per lezione: una lezione è un appuntamento, e un appuntamento
-    usa l'ingresso di un solo abbonamento (da correggere nel prodotto).
+    comprati alla prima lezione. Nelle lezioni già prenotate ognuno usa gli ingressi
+    del suo e gli altri pagano il loro posto, il mese finito si rinnova, il
+    promemoria della scadenza parte (verso nessuno), una settimana saltata o le
+    vacanze sono una sospensione che sposta la fine.
   - **Lista d'attesa** (`crm/demo/in_attesa.py`): chi aspetta un posto con
     l'osteopata (una con urgenza), con la dietista, un sabato mattina, con i giorni
     e le ore che vanno bene; il motore della lista trova un posto libero e lo
