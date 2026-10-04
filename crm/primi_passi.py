@@ -96,8 +96,17 @@ def get_first_steps() -> dict:
 
 
 def c_e(doctype: str, filtri: dict | None = None) -> bool:
-	"""Whether the centre has at least one, whoever may read it."""
-	return bool(frappe.get_all(doctype, filters=filtri or {}, limit=1, pluck="name"))
+	"""Whether the centre has at least one of its own, whoever may read it: what the
+	demo data made does not take a step for the centre."""
+	from crm.demo import registro
+
+	condizioni = [
+		[campo, *valore] if isinstance(valore, list | tuple) else [campo, "=", valore]
+		for campo, valore in (filtri or {}).items()
+	]
+	if della_demo := registro.nomi_di_prova(doctype):
+		condizioni.append(["name", "not in", sorted(della_demo)])
+	return bool(frappe.get_all(doctype, filters=condizioni, limit=1, pluck="name"))
 
 
 def _ha_un_nome() -> bool:
@@ -126,7 +135,9 @@ def _ha_dei_colleghi() -> bool:
 			distinct=True,
 		)
 	)
-	utenti -= {"Administrator", "Guest"}
+	from crm.demo import registro
+
+	utenti -= {"Administrator", "Guest"} | registro.nomi_di_prova("User")
 	attivi = frappe.get_all(
 		"User", filters={"name": ["in", list(utenti) or [""]], "enabled": 1}, pluck="name"
 	)
