@@ -26,6 +26,8 @@ VOLATILI = {
 
 #: The base's parts, in the order they are registered.
 BASE = ("squadra", "agenda", "clienti", "aziende", "lavoro", "abbonamenti", "attese", "conversazioni")
+#: The parts the CRM's own modules add, whatever the plan.
+DEI_MODULI = ("moduli", "documenti")
 #: Where the centre says which pipelines are the new clients' and the quotes'.
 IMPOSTAZIONI_DELLE_PIPELINE = ("CRM Client Settings", "CRM Quote Settings")
 
@@ -67,6 +69,10 @@ class TestLePartiInOrdine(IntegrationTestCase):
 		self.assertLess(chiavi.index("squadra"), chiavi.index("clienti"))
 		self.assertLess(chiavi.index("clienti"), chiavi.index("abbonamenti"))
 		self.assertLess(chiavi.index("attese"), chiavi.index("conversazioni"))
+		for chiave in DEI_MODULI:
+			self.assertIn(chiave, chiavi)
+		# the forms are signed by people who came
+		self.assertIn("clienti", registro.tutte_le_parti()[chiavi.index("moduli")].dopo)
 
 
 class TestDatiDiProva(IntegrationTestCase):
@@ -123,7 +129,10 @@ class TestDatiDiProva(IntegrationTestCase):
 	def test_1_every_part_is_made(self):
 		self.assertEqual(self.esito["failed"], [])
 		self.assertTrue(registro.caricati())
-		self.assertEqual(set(self.esito["made"]), set(BASE))
+		# every part of the modules that are on, the base's and the CRM's own first
+		accese = {parte.chiave for parte in registro.tutte_le_parti() if registro.accesa(parte)}
+		self.assertEqual(set(self.esito["made"]), accese)
+		self.assertLessEqual(set(BASE) | set(DEI_MODULI), accese)
 
 	def test_2_a_centre_full_of_life(self):
 		r = self.registrati
@@ -153,6 +162,39 @@ class TestDatiDiProva(IntegrationTestCase):
 				fields=["quote_pdf", "deal"],
 			)
 			self.assertTrue(all(riga.quote_pdf for riga in proposti))
+		# the forms published, signed with their PDF and the consents they gave, sent
+		# to who comes in the next days, the sheets written in today's sessions
+		self.assertGreaterEqual(len(r.get("CRM Form Template", ())), 3)
+		firmati = frappe.get_all(
+			"CRM Form",
+			filters={"name": ["in", sorted(r.get("CRM Form", ()))], "docstatus": 1},
+			fields=["name", "lead", "pdf_file"],
+		)
+		if firmati:
+			self.assertTrue(all(riga.pdf_file for riga in firmati))
+			self.assertTrue(
+				frappe.db.count("CRM Consent", {"lead": ["in", sorted({riga.lead for riga in firmati})]})
+			)
+			# every signature has its evidence, chained
+			from crm.moduli import traccia
+
+			for riga in firmati[:3]:
+				self.assertTrue(traccia.verifica_catena("CRM Form", riga.name)["integra"])
+		# every subscription's contract filed and handed over; a few online
+		documenti = frappe.get_all(
+			"CRM Document",
+			filters={"name": ["in", sorted(r.get("CRM Document", ()))]},
+			fields=["name", "document_type", "file", "file_hash"],
+		)
+		self.assertTrue(documenti)
+		self.assertTrue(all(riga.file and riga.file_hash for riga in documenti))
+		if r.get("CRM Subscription"):
+			self.assertIn("Contract", {riga.document_type for riga in documenti})
+			self.assertTrue(
+				frappe.db.count(
+					"CRM Document Delivery", {"document": ["in", [riga.name for riga in documenti]]}
+				)
+			)
 		# whoever loads the demo has things to do and somebody mentions them
 		self.assertTrue(
 			frappe.db.count(
@@ -224,6 +266,30 @@ class TestDatiDiProva(IntegrationTestCase):
 		# ...but a message that comes in from it is not filed on the demo's person
 		self.assertEqual(get_contact_lead_or_deal_from_number(cellulare), (None, None))
 		self.assertIsNone(guardie.persona_vera(cellulare))
+
+	def test_4c_the_demos_forms_are_asked_of_the_demos_people_only(self):
+		from crm.moduli import dovuti
+
+		modelli = self.registrati.get("CRM Form Template", set())
+		if not modelli:
+			return
+		# somebody real, booked while the demo is in: not one of the demo's forms
+		vera = "una-persona-vera-del-centro"
+		chiesti = dovuti.dovuti([vera], {vera: None}, clinici=True)[vera]
+		self.assertFalse({voce["template"] for voce in chiesti} & modelli)
+		# the demo's people still owe them, until they sign
+		persone = sorted(self.registrati["CRM Lead"])
+		chiesti = dovuti.dovuti(persone, dict.fromkeys(persone), clinici=True)
+		self.assertTrue({voce["template"] for voci in chiesti.values() for voce in voci} & modelli)
+
+	def test_4d_what_the_demo_made_takes_no_first_step(self):
+		from crm import primi_passi
+
+		# the demo's services, people and colleagues are not the centre's: its first
+		# steps still show what the centre itself has to set up
+		for doctype in ("CRM Service", "CRM Lead", "CRM Appointment"):
+			nomi = sorted(self.registrati[doctype])
+			self.assertFalse(primi_passi.c_e(doctype, {"name": ["in", nomi]}), doctype)
 
 	def test_5_visitors_of_the_booking_page_do_not_see_the_demo(self):
 		from crm.api import service_booking
