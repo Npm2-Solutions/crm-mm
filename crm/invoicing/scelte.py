@@ -79,6 +79,15 @@ CAMPI: dict[tuple[str, str], str] = {
 #: number's format is a template a centre would get wrong, offered as examples.
 COME_ELENCO = {"payment_reason", "number_format"}
 
+#: A country kept as its two letters (the SdI's IdPaese), chosen by its name in the
+#: reader's language, as the billing details' is: «IT» is no word for a centre.
+PAESI = {("CRM Invoicing Company", "country")}
+
+#: What Babel names that is no country of ISO 3166-1: groupings, the codes only
+#: reserved (Ascension, the Canaries...), the test ones. The browser's list leaves
+#: out the same (`frontend/src/utils/paesi.js`); Kosovo («XK») stays.
+NON_PAESI = frozenset({"AC", "CP", "CQ", "DG", "EA", "EU", "EZ", "IC", "QO", "TA", "UN", "XA", "XB", "ZZ"})
+
 #: In the healthcare profile a practice picks a qualification among the health
 #: professions: a lawyer's, an engineer's or a developer's are not a medical
 #: centre's. One already given stays, as any stored value does.
@@ -146,6 +155,12 @@ def adatta_campi(doctype: str, campi: list) -> list:
 	sanitario = profilo() == voci.SANITARIO
 	adattati = []
 	for campo in campi:
+		if (doctype, campo.get("fieldname")) in PAESI:
+			nuovo = campo.as_dict() if hasattr(campo, "as_dict") else dict(campo)
+			nuovo["fieldtype"] = "Select"
+			nuovo["options"] = paesi()
+			adattati.append(nuovo)
+			continue
 		filtro = FILTRI_SANITARI.get((doctype, campo.get("fieldname"))) if sanitario else None
 		if filtro:
 			adattati.append(_con_filtro(campo, filtro))
@@ -171,6 +186,25 @@ def adatta_campi(doctype: str, campi: list) -> list:
 		nuovo["options"] = scelte
 		adattati.append(nuovo)
 	return adattati
+
+
+def paesi(lingua: str | None = None) -> list[dict]:
+	"""Every country by its name in the reader's language, kept as its two letters,
+	in the order of their names. The names are Babel's, which the framework ships."""
+	import unicodedata
+
+	from babel import Locale
+
+	try:
+		nomi = Locale.parse((lingua or frappe.local.lang or "it").replace("-", "_")).territories
+	except Exception:
+		nomi = Locale("it").territories
+	scelte = [
+		{"value": codice, "label": nome}
+		for codice, nome in nomi.items()
+		if len(codice) == 2 and codice.isalpha() and codice not in NON_PAESI
+	]
+	return sorted(scelte, key=lambda scelta: unicodedata.normalize("NFKD", scelta["label"]).casefold())
 
 
 def _con_filtro(campo, filtro: dict) -> dict:

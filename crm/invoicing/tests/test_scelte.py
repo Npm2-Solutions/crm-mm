@@ -69,6 +69,20 @@ class LeScelteInParole(IntegrationTestCase):
 		# it starts with a value: nothing to leave empty
 		self.assertEqual([s["value"] for s in causale["options"]], ["A", "M", "M2"])
 
+	def test_il_paese_per_nome(self):
+		paese = _campo(get_fields("CRM Invoicing Company"), "country")
+		self.assertEqual(paese["fieldtype"], "Select")
+		valori = {scelta["value"] for scelta in paese["options"]}
+		self.assertIn("IT", valori)
+		# no grouping nor reserved code is a country to issue from
+		self.assertFalse(valori & scelte.NON_PAESI)
+		italiani = {scelta["value"]: scelta["label"] for scelta in scelte.paesi("it")}
+		self.assertEqual(italiani["IT"], "Italia")
+		self.assertEqual(italiani["DE"], "Germania")
+		# in the order of the names, an accent where it falls
+		nomi = [scelta["label"] for scelta in scelte.paesi("it")]
+		self.assertLess(nomi.index("Austria"), nomi.index("Italia"))
+
 	def test_le_qualifiche_di_un_centro_medico_sono_sanitarie(self):
 		with _sanitario():
 			qualifica = _campo(get_fields("CRM Service Provider"), "qualification")

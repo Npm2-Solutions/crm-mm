@@ -276,7 +276,8 @@ centre's or the caller's own line: never one the browser made up.
 | `crm/invoicing/connessione.py` + `sdi/itala.py` (doc 49) | Itala, the one intermediary offered: its test and production doors by environment (a document's: `ambiente_del_documento`), the agency's account (`CRM Invoicing Settings`, permlevel 1, else `itala_client_id`/`itala_client_secret` in `common_site_config.json`) or a company's own; the company registered under it once per environment (`registra_azienda`, `/aziende`); Itala's file name and id kept on the invoice; the token harvested from Basic calls. The SdI's outcomes asked every ten minutes, only when something waits (`riconciliazione.da_chiedere`); every update kept before it is applied (`CRM SdI Update`: Itala gives each once) and tried again, an invoice silent for a day asked by name; each notice applied once by its own name; only the site that registered the company reads its updates (`itala_site`); the XML leaves unsigned (Itala signs a PA's) and the one transmitted is kept (`sdi_sent_file`); a send whose answer was lost asks Itala first; the webhook's `Authorization: Bearer` taken away before Frappe reads it (`webhook.prima_della_richiesta`) |
 
 A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
-with its family, every value its DocType admits gets a name and a line in the
+with its family (a country kept as its two letters in `scelte.PAESI`, named by
+Babel), every value its DocType admits gets a name and a line in the
 vocabulary (and in `it.po`), and the ones a medical centre meets carry `sanita`.
 Labels and descriptions say what a field is for in plain words, never a list of
 codes nor the tracciato's names (`tipoSpesa`). What is stored stays the code.

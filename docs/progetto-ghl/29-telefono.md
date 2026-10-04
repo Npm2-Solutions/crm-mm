@@ -811,6 +811,7 @@ nessun browser di prova ha la sua tastiera.
 | `Settings/CallScriptsSettings.vue` | Un nuovo script delle chiamate sul telefono: nome, servizio e «quando si usa» uno sotto l'altro (in due colonne i testi si tagliavano); «Elimina» solo su uno script salvato |
 | `Settings/TrackedLinksSettings.vue`, `Automations/MergeFieldInput.vue`, `StepPanel.vue`, `crm_tracked_link` | I link tracciati senza sintassi: nei messaggi di un'automazione «Inserisci un campo» offre anche i link, e la pagina lo dice invece di mostrare `{{ tracked_link("slug") }}`; lo slug è il «nome breve». Nell'editor «I campi sono quelli della persona» (era «I campi vengono da CRM Lead») e «100% in totale» |
 | `Modals/CreateDocumentModal.vue` | Il dialogo che crea un record da un campo collegato si intitola «Crea settore», col nome del DocType nella lingua di chi legge: era «Nuovo Industry» |
+| `crm/invoicing/scelte.py` (`PAESI`, `paesi()`) | Il paese dell'azienda emittente si sceglie per nome («Italia»), nella lingua di chi legge: mostrava «IT», il codice che va in fattura e che resta salvato |
 
 ## Non incluso
 
