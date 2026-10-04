@@ -197,7 +197,8 @@ watch(
           section.hidden = organization
         } else if (section.name === 'contact_section') {
           section.hidden = !contact
-        } else if (section.name === 'contact_details_section') {
+        } else if (section.name.startsWith('contact_details')) {
+          // the person's two rows (crm.install.DEAL_QUICK_ENTRY)
           section.hidden = contact
         }
       })
@@ -222,9 +223,8 @@ const tabs = createResource({
           ) {
             hasOrganizationSections.value = true
           } else if (
-            ['contact_section', 'contact_details_section'].includes(
-              section.name,
-            )
+            section.name === 'contact_section' ||
+            section.name.startsWith('contact_details')
           ) {
             hasContactSections.value = true
           }
