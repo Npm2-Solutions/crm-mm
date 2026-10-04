@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The person's client area, from DottorCloud: who enters it and since when, and
   the invitation that opens it - to the person, or to a parent or somebody who
   follows them. The area itself is /area, with a code by email each time. The
@@ -68,8 +71,8 @@
         variant="ghost"
         theme="red"
         class="touch-target shrink-0"
-        :label="__('Close')"
-        @click="revoke(access)"
+        :label="__('Close access')"
+        @click="askToRevoke(access)"
       />
     </div>
   </section>
@@ -121,6 +124,7 @@
 </template>
 
 <script setup>
+import { globalStore } from '@/stores/global'
 import { formatDate } from '@/utils'
 import {
   Badge,
@@ -135,6 +139,7 @@ import {
 import { reactive, ref, watch } from 'vue'
 
 const props = defineProps({ lead: { type: String, required: true } })
+const { $dialog } = globalStore()
 
 const relations = [
   { label: __('The person'), value: 'Self' },
@@ -209,6 +214,28 @@ async function preview() {
   } finally {
     previewing.value = false
   }
+}
+
+// closing takes the person out at their next tap: asked first, and said how
+// it opens again
+function askToRevoke(access) {
+  $dialog({
+    title: __('Close access for {0}?', [access.user]),
+    message: __(
+      'From now on they cannot enter the area. Open it again whenever you want with “Open the area”: a new invitation reaches them.',
+    ),
+    actions: [
+      {
+        label: __('Close access'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (closeDialog) => {
+          closeDialog()
+          revoke(access)
+        },
+      },
+    ],
+  })
 }
 
 async function revoke(access) {

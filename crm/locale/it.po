@@ -43090,3 +43090,15 @@ msgstr "Questa cosa da fare non c'è più"
 #: frappe/contacts/doctype/contact/contact.json
 msgid "Designation"
 msgstr "Ruolo"
+
+#: frontend/src/components/Area/AreaAccessCard.vue
+msgid "Close access"
+msgstr "Chiudi l'accesso"
+
+#: frontend/src/components/Area/AreaAccessCard.vue
+msgid "Close access for {0}?"
+msgstr "Chiudere l'accesso a {0}?"
+
+#: frontend/src/components/Area/AreaAccessCard.vue
+msgid "From now on they cannot enter the area. Open it again whenever you want with “Open the area”: a new invitation reaches them."
+msgstr "Da adesso non può più entrare nell'area. Puoi riaprirla quando vuoi con «Apri l'area»: riceverà un nuovo invito."
