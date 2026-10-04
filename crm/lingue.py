@@ -1,8 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The language DottorCloud writes its own words in on a site, and the currency
-it counts in.
+"""The language DottorCloud writes its own words in on a site, the currency it
+counts in, and the framework's Italian switched on for the visitors.
 
 What DottorCloud puts in a site once - the consents' texts, the pipelines'
 stages, the libraries' instructions and names - is data written in one language,
@@ -34,6 +34,21 @@ def del_centro() -> str:
 		frappe.db.get_single_value("System Settings", "language"),
 		frappe.db.get_single_value("System Settings", "country"),
 	)
+
+
+def accendi_l_italiano() -> None:
+	"""The framework's Italian switched on, at install and at every migrate.
+
+	The framework ships it switched off (`frappe/geo/languages.csv`), and a
+	visitor reads only a language the site has on: every page a patient opens
+	without signing in - /prenota, the area's door, a form sent to fill, the
+	sign-in - came in English to a phone set in Italian, and the setup wizard did
+	not offer Italian. DottorCloud's words are Italian first (`crm/locale/it.po`).
+	The Language's own save empties the framework's cache of the languages on."""
+	if frappe.db.get_value("Language", "it", "enabled") == 0:
+		lingua = frappe.get_doc("Language", "it")
+		lingua.enabled = 1
+		lingua.save(ignore_permissions=True)
 
 
 def valuta() -> str:

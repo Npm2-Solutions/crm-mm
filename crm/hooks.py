@@ -161,6 +161,8 @@ setup_wizard_complete = [
 before_install = "crm.install.before_install"
 after_install = [
 	"crm.install.after_install",
+	# a phone set in Italian reads the public pages in Italian: the framework ships it off
+	"crm.lingue.accendi_l_italiano",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
 ]
@@ -756,6 +758,8 @@ after_migrate = [
 	"crm.install.add_email_account_custom_field",
 	# DottorCloud's own emails leave through the agency's sending service
 	"crm.posta.servizio.assicura",
+	# the framework's Italian on, for the visitors of the public pages
+	"crm.lingue.accendi_l_italiano",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)
