@@ -1,3 +1,5 @@
+/* Copyright (c) 2026, NPM2 Solutions Srl and contributors
+   For license information, please see license.txt */
 @import 'frappe-ui/style.css';
 @import '../marchio.css';
 @import '../espresso.css';
@@ -6,6 +8,25 @@
 @layer utilities {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* A field the patient types in is 16px on a phone, or iOS zooms the whole page
+   in when it is tapped and leaves it zoomed: the chat's question was 14px. The
+   same rule as the CRM's (telefono.css), which the area does not load. */
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  input:not(
+      [type='checkbox'],
+      [type='radio'],
+      [type='range'],
+      [type='color'],
+      [type='file'],
+      [type='button'],
+      [type='submit']
+    ),
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 }
 
