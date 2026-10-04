@@ -114,8 +114,11 @@
       v-else-if="title == 'Events'"
       class="flex items-center gap-2 max-md:w-full"
     >
+      <!-- booking for the person is what this tab is for; an event (a call,
+           a meeting) is the other thing it offers -->
       <Button
         v-if="canBook && puo('agenda.prenota')"
+        variant="solid"
         class="max-md:flex-1"
         @click="bookAppointment"
       >
@@ -128,7 +131,7 @@
       </Button>
       <Button
         v-if="puo('agenda.prenota')"
-        variant="solid"
+        :variant="canBook ? 'subtle' : 'solid'"
         class="max-md:flex-1"
         @click="modalRef.showEvent()"
       >
@@ -225,10 +228,19 @@ const props = defineProps({
 const { puo, solaLettura } = usersStore()
 
 // the tabs whose buttons are in the record they show
+// the tracking tab too: what the person did on the website is read, not
+// added to, and its one button (the tracking's settings) is in it. The «New»
+// it fell to offered every message and record of the Activity tab
 const azioniNelRecord = computed(() =>
-  ['Clinic', 'Forms', 'Area', 'Documents', 'Quotes', 'Plans'].includes(
-    props.title,
-  ),
+  [
+    'Clinic',
+    'Forms',
+    'Area',
+    'Documents',
+    'Quotes',
+    'Plans',
+    'Tracking',
+  ].includes(props.title),
 )
 
 // «write in this channel»: the composer is below, and it decides what opening
