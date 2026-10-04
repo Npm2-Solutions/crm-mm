@@ -33,11 +33,33 @@
 
 /* A small button of frappe-ui (28px: «Esci» at the top, «Non ora» on a card)
    is a thumb's to hit: on a touch screen an invisible ring grows it towards
-   40px, its size and the layout unchanged, as in the CRM (telefono.css). */
+   40px, its size and the layout unchanged, as in the CRM (telefono.css). So do
+   a small control with room around it (`.touch-target`: a plan item's tick, a
+   box of the shopping list, leaving a waiting list), a switch (news also by
+   SMS) and the way back at the top of a page: the class was written on them,
+   and nothing in the area drew it. The two answers under an item sit in a row
+   6px apart: theirs grows up and down only, or each would take the other's
+   edge. */
 @media (pointer: coarse) {
   button.h-7:not(.absolute, .fixed, .sticky),
-  button.h-8:not(.absolute, .fixed, .sticky) {
+  button.h-8:not(.absolute, .fixed, .sticky),
+  .touch-target:not(.absolute, .fixed, .sticky),
+  .area-back {
     position: relative;
+  }
+  .touch-target::after,
+  button[role='switch']::after,
+  .area-back::after {
+    content: '';
+    position: absolute;
+    inset: -10px -8px;
+  }
+  .area-answer.touch-target::after {
+    inset: -6px 0;
+  }
+  /* a switch's ring starts inside its 2px border: 14px makes it 40 */
+  button[role='switch']::after {
+    inset: -14px -10px;
   }
   button.h-7:not([role='switch'])::after {
     content: '';
