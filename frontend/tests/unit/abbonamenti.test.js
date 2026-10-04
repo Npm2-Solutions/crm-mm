@@ -14,6 +14,7 @@ import {
   quantiIngressi,
   questoPeriodo,
   rate,
+  rigaDelPosto,
   rimasti,
 } from '@/utils/abbonamenti'
 
@@ -121,5 +122,39 @@ describe('what a form says before the server', () => {
     expect(erroreDelTipo({ ...tipo, entries: AL_MESE, entries_count: 8 })).toBe(
       '',
     )
+  })
+})
+
+describe("a person's place in the appointment's panel", () => {
+  const opzioni = [{ name: 'SUB-1', type: 'Pilates 8' }]
+
+  it('alone, it says the subscription', () => {
+    expect(
+      rigaDelPosto({ subscription: 'SUB-1', options: opzioni }, false),
+    ).toBe('An entry of Pilates 8')
+    expect(rigaDelPosto({ subscription: null, options: opzioni }, false)).toBe(
+      'Not in a subscription',
+    )
+    // one the reader may not open: only that it is in one
+    expect(rigaDelPosto({ subscription: 'SUB-9', options: [] }, false)).toBe(
+      'In a subscription',
+    )
+  })
+
+  it('in a class, whose place it is', () => {
+    const posto = { participant_name: 'Anna', options: opzioni }
+    expect(rigaDelPosto({ ...posto, subscription: 'SUB-1' }, true)).toBe(
+      'Anna uses an entry of Pilates 8',
+    )
+    expect(rigaDelPosto({ ...posto, subscription: null }, true)).toBe(
+      'Anna is not in a subscription',
+    )
+    expect(rigaDelPosto({ ...posto, subscription: 'SUB-9' }, true)).toBe(
+      'Anna is in a subscription',
+    )
+  })
+
+  it('nothing to say for nobody', () => {
+    expect(rigaDelPosto(null, true)).toBe('')
   })
 })
