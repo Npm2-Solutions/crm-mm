@@ -49,10 +49,12 @@ export function h(tag, attrs, ...children) {
 
 // a question that stands for one of the person's fields, on a form of the
 // website: the browser may fill it, and a phone shows the right keyboard
+// a person's name: a capital to each word, never corrected into a word
+const NOME = { autocapitalize: 'words', autocorrect: 'off', spellcheck: 'false' }
 const PERSON_INPUT = {
-  full_name: { autocomplete: 'name' },
-  first_name: { autocomplete: 'given-name' },
-  last_name: { autocomplete: 'family-name' },
+  full_name: { autocomplete: 'name', ...NOME },
+  first_name: { autocomplete: 'given-name', ...NOME },
+  last_name: { autocomplete: 'family-name', ...NOME },
   email: { type: 'email', autocomplete: 'email', inputmode: 'email' },
   mobile_no: { type: 'tel', autocomplete: 'tel', inputmode: 'tel' },
   organization: { autocomplete: 'organization' },

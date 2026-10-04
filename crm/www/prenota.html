@@ -682,6 +682,8 @@
         return wrap;
       }
 
+      // a person's name: a capital to each word, never corrected into a word
+      const NOME = { autocapitalize: "words", autocorrect: "off", spellcheck: "false" };
       function field(key, label, attrs = {}, required = false) {
         const input = h(attrs.tag || "input", { id: "f-" + key, name: key, ...attrs, tag: null, required: required || null });
         input.value = S.form[key] || "";
@@ -717,10 +719,10 @@
               h("option", { value, selected: S.form.for_relation === value || null }, T(key))));
           relation.addEventListener("change", (e) => (S.form.for_relation = e.target.value));
           form.append(h("div", { class: "grid2" },
-            field("for_name", T("otherName"), { autocomplete: "off" }, true),
+            field("for_name", T("otherName"), { autocomplete: "off", ...NOME }, true),
             h("div", {}, h("label", { for: "f-for_relation" }, T("youAre")), relation)));
         }
-        form.append(field("full_name", other ? T("yourName") : T("name"), { autocomplete: "name" }, true));
+        form.append(field("full_name", other ? T("yourName") : T("name"), { autocomplete: "name", ...NOME }, true));
         if (other) form.append(h("p", { class: "hint" }, T("otherHint")));
         form.append(h("div", { class: "grid2" },
           field("email", T("email"), { type: "email", autocomplete: "email", inputmode: "email" }, true),
