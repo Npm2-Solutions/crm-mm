@@ -2,7 +2,10 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
-  <div class="space-y-1.5 p-[2px] !-m-[2px]">
+  <!-- 2px around the field for its focus ring, taken back by the margin; the
+       width a caller gives (w-full) is the field's: with the padding counted
+       in it, a w-full field ended 4px short of the ones beside it -->
+  <div class="box-content space-y-1.5 p-[2px] !-m-[2px]">
     <label v-if="attrs.label" class="block" :class="labelClasses">
       {{ __(attrs.label) }}
     </label>
