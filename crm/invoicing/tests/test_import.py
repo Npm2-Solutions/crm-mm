@@ -207,18 +207,23 @@ def _e_astratta(nodo: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
 	)
 
 
+def _propri(nodo):
+	"""The nodes that belong to this function and not to a nested one."""
+	for figlio in ast.iter_child_nodes(nodo):
+		if isinstance(figlio, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+			continue
+		yield figlio
+		yield from _propri(figlio)
+
+
 def _restituisce_qualcosa(nodo) -> bool:
-	"""A `return <value>` that belongs to this function and not to a nested one."""
-
-	def propri(n):
-		for figlio in ast.iter_child_nodes(n):
-			if isinstance(figlio, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
-				continue
-			if isinstance(figlio, ast.Return) and figlio.value is not None:
-				yield figlio
-			yield from propri(figlio)
-
-	return any(True for _ in propri(nodo))
+	"""A `return <value>` of its own, or a `yield`: a generator, called, gives back
+	the generator whatever it yields - a context manager's `-> Iterator[None]` too."""
+	return any(
+		(isinstance(figlio, ast.Return) and figlio.value is not None)
+		or isinstance(figlio, ast.Yield | ast.YieldFrom)
+		for figlio in _propri(nodo)
+	)
 
 
 class PromesseDiRitornoTest(UnitTestCase):
