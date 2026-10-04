@@ -1,6 +1,6 @@
 <!doctype html>
 {%- set solo_logo = true %}
-<html lang="en">
+<html lang="{{ (boot and boot.lang) or 'en' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
