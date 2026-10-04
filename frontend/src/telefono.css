@@ -132,6 +132,12 @@
   [data-slot='fixed-menu'] {
     flex-wrap: wrap;
   }
+  /* and its buttons (bold, a list, a link) 36px, not the 24px of a mouse */
+  [data-slot='fixed-menu'] button {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    justify-content: center;
+  }
 }
 
 /* 3. The settings on a phone: a screen of their own, not a card floating over
