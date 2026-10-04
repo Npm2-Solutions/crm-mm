@@ -360,7 +360,6 @@ import DurationInput from '@/components/Controls/DurationInput.vue'
 import RatingInput from '@/components/Controls/RatingInput.vue'
 import AttachControl from '@/components/Controls/AttachControl.vue'
 import HtmlControl from '@/components/Controls/HtmlControl.vue'
-import TextEditorControl from '@/components/Controls/TextEditorControl.vue'
 import GeolocationControl from '@/components/Controls/GeolocationControl.vue'
 import ButtonControl, {
   getButtonTheme,
@@ -403,7 +402,13 @@ import {
   TimePicker,
 } from 'frappe-ui'
 import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
-import { computed, provide, inject, ref } from 'vue'
+import { computed, provide, inject, ref, defineAsyncComponent } from 'vue'
+
+// the text editor (TipTap, highlight.js) comes when a field needs it: imported
+// here it was in every page's first download, on a phone too
+const TextEditorControl = defineAsyncComponent(
+  () => import('@/components/Controls/TextEditorControl.vue'),
+)
 
 const props = defineProps({
   field: { type: Object, required: true },
