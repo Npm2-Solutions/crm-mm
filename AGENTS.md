@@ -757,7 +757,9 @@ row, the bar's words beside their icons).
   (`Link.vue`: a person's details asked fourteen times before anybody opened
   one). The address follows a record's tab once the tab is drawn
   (`useActiveTabManager`): a push reads the scroll, and the page was laid out
-  again for it in the middle of the tap.
+  again for it in the middle of the tap. What a record's tab draws a screen
+  below the first comes once the tab is drawn (`DopoIlDisegno`: a person's
+  sections under the fields, seven calls, a fifth of the first tap on Details).
 
 ---
 

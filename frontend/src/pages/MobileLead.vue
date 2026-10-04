@@ -104,14 +104,20 @@
               @beforeFieldChange="saveChange"
               @afterFieldChange="reloadAssignees"
             >
+              <!-- below the fields, a screen and more down: they come once the
+                   fields are drawn, not in the first tap on Details (seven
+                   calls and their sections, a fifth of its time on a slow
+                   phone) -->
               <template #after>
-                <BillingProfileSection partyType="CRM Lead" :party="leadId" />
-                <RelatedPeopleSection :lead="leadId" />
-                <PatientSection :lead="leadId" />
-                <CyclesSection :lead="leadId" />
-                <SubscriptionsSection :lead="leadId" />
-                <WaitingSection :lead="leadId" />
-                <ConsentsSection :lead="leadId" />
+                <DopoIlDisegno>
+                  <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+                  <RelatedPeopleSection :lead="leadId" />
+                  <PatientSection :lead="leadId" />
+                  <CyclesSection :lead="leadId" />
+                  <SubscriptionsSection :lead="leadId" />
+                  <WaitingSection :lead="leadId" />
+                  <ConsentsSection :lead="leadId" />
+                </DopoIlDisegno>
               </template>
             </SidePanelLayout>
           </div>
@@ -200,6 +206,7 @@ import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useTestataRaccolta } from '@/composables/testataRaccolta'
 import { apertoUnaVolta } from '@/utils/aRichiesta'
+import DopoIlDisegno from '@/components/DopoIlDisegno.vue'
 import {
   Avatar,
   createResource,
