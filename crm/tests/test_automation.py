@@ -86,6 +86,25 @@ class TestAutomation(IntegrationTestCase):
 		)
 		self.assertTrue(any("Auto" in c for c in comment))
 
+	def test_le_iscrizioni_se_ne_vanno_con_la_persona(self):
+		# an enrollment is the person's way through an automation: deleting them
+		# takes it away, and the delete dialog never offers it, nor anything by
+		# its code
+		from crm.api.doc import get_linked_docs_of_document
+
+		auto = make_automation("goodbye-flow", [{"type": "wait", "hours": 2}])
+		lead = make_lead(email="goodbye@example.com")
+		self.assertEqual(get_enrollment(auto.name, lead.name).status, "Waiting")
+		collegati = get_linked_docs_of_document("CRM Lead", lead.name)
+		self.assertNotIn("CRM Automation Enrollment", [d["doc"] for d in collegati])
+		self.assertFalse([d for d in collegati if d["title"] == d["reference_docname"]])
+		frappe.delete_doc("CRM Lead", lead.name)
+		self.assertFalse(
+			frappe.db.exists(
+				"CRM Automation Enrollment", {"reference_doctype": "CRM Lead", "reference_name": lead.name}
+			)
+		)
+
 	def test_wait_pauses_enrollment_and_scheduler_resumes(self):
 		auto = make_automation(
 			"drip-flow",

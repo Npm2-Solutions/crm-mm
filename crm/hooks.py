@@ -446,6 +446,8 @@ doc_events = {
 			"crm.persone.collegate.cancella_con_la_persona",
 			# and what they waited for
 			"crm.scheduling.attese.cancella_con_la_persona",
+			# and their way through the automations
+			"crm.automation.engine.cancella_con_il_riferimento",
 		],
 	},
 	"CRM Organization": {
@@ -464,6 +466,7 @@ doc_events = {
 			"crm.integrations.meta.conversions.on_deal_updated",
 		],
 		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_deal_created"],
+		"on_trash": ["crm.automation.engine.cancella_con_il_riferimento"],
 	},
 	"CRM Booking": {
 		"after_insert": ["crm.automation.engine.on_booking_created"],
