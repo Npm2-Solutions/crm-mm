@@ -37,6 +37,10 @@ def _conta() -> dict[str, int]:
 	return conti
 
 
+def _serie() -> dict[str, int]:
+	return {nome: corrente or 0 for nome, corrente in frappe.db.sql("select name, current from `tabSeries`")}
+
+
 class TestLePartiInOrdine(IntegrationTestCase):
 	def test_each_part_after_the_ones_it_needs(self):
 		niente = lambda ctx: None  # noqa: E731
@@ -87,6 +91,7 @@ class TestDatiDiProva(IntegrationTestCase):
 		preventivi.crea()
 		frappe.db.commit()
 		cls.prima = _conta()
+		cls.serie_di_prima = _serie()
 		cls.esito = api.crea(utente="Administrator", scala=0.08)
 		cls.registrati = registro.registrati()
 
@@ -221,6 +226,9 @@ class TestDatiDiProva(IntegrationTestCase):
 			if self.prima.get(tabella) != dopo.get(tabella)
 		}
 		self.assertEqual(diversi, {})
+		# the numbers go on from where they were: the series with no name too, which every
+		# "format:APPT-{#####}" doctype shares
+		self.assertEqual(_serie(), self.serie_di_prima)
 
 		# nothing of theirs left to read, anywhere a name or an address could stay
 		for indirizzo in [indirizzo for indirizzo in indirizzi if indirizzo]:

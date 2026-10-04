@@ -645,6 +645,68 @@ def _numerato_da_una_serie(doctype: str) -> bool:
 	)
 
 
+def _schema_del_formato(autoname: str) -> re.Pattern | None:
+	"""The names a "format:APPT-{#####}" rule makes, with the number as their group;
+	None for a rule that numbers nothing that way."""
+	if not autoname.startswith("format:") or "{#" not in autoname:
+		return None
+	schema, numerato = "", False
+	for testo, parametro in re.findall(r"([^{]*)(?:\{([^}]*)\})?", autoname[len("format:") :]):
+		schema += re.escape(testo)
+		if parametro.startswith("#"):
+			schema += r"\d+" if numerato else r"(\d+)"
+			numerato = True
+		elif parametro:
+			schema += ".*?"
+	return re.compile(f"^{schema}$")
+
+
+def _formati_numerati() -> dict[str, re.Pattern]:
+	"""Every doctype with a table named by a "format:…{#####}" rule. The framework numbers
+	each braced part on its own, from nothing before it: they all share the series with
+	no name, whatever their prefix ("APPT-", "SMS-", "BOOK-")."""
+	doctypes = set(
+		frappe.db.sql_list("select name from `tabDocType` where autoname like %s", ("format:%{#%",))
+	) | set(
+		frappe.db.sql_list(
+			"select doc_type from `tabProperty Setter` where property = 'autoname' and value like %s",
+			("format:%{#%",),
+		)
+	)
+	formati = {}
+	for doctype in sorted(doctypes):
+		try:
+			meta = frappe.get_meta(doctype)
+		except frappe.DoesNotExistError:
+			continue
+		schema = _schema_del_formato((meta.autoname or "").strip())
+		if schema and not meta.is_virtual and frappe.db.table_exists(doctype):
+			formati[doctype] = schema
+	return formati
+
+
+def _ultimo_in_uso(doctype: str, prefisso: str, schema: re.Pattern | None) -> int:
+	"""The highest number ``doctype`` still holds on the series ``prefisso``."""
+	if schema:
+		nomi = frappe.db.sql_list(f"select name from `tab{doctype}`")
+	else:
+		nomi = frappe.db.sql_list(
+			f"select name from `tab{doctype}` where name like %(prefisso)s",
+			{"prefisso": f"{prefisso}%"},
+		)
+	ultimo = 0
+	for nome in nomi:
+		if schema:
+			trovato = schema.match(str(nome))
+			numero = trovato.group(1) if trovato else None
+		else:
+			trovato = re.match(r"^(.*?)(\d+)$", str(nome))
+			numero = trovato.group(2) if trovato and trovato.group(1) == prefisso else None
+		if numero:
+			ultimo = max(ultimo, int(numero))
+	return ultimo
+
+
 def _contatori(via: dict[str, set[str]]) -> None:
 	"""A series the demo numbered goes back to the last number still in use, so the
 	centre's first record is not its two-hundredth: never raised, never below what is
@@ -652,8 +714,14 @@ def _contatori(via: dict[str, set[str]]) -> None:
 	came. One the demo started, with nothing left in it, goes."""
 	serie = {riga[0]: riga[1] or 0 for riga in frappe.db.sql("select name, current from `tabSeries`")}
 	prima = frappe.parse_json(frappe.db.get_default(registro.SERIE) or "null")
+	formati = _formati_numerati()
 	per_prefisso: dict[str, set[str]] = defaultdict(set)
 	for doctype, nomi in via.items():
+		if doctype in formati:
+			# the series with no name: every doctype that shares it holds its numbers
+			if nomi and "" in serie:
+				per_prefisso[""].update(formati)
+			continue
 		if not _numerato_da_una_serie(doctype):
 			continue
 		for prefisso in {_serie(nome) for nome in nomi} - {None}:
@@ -662,13 +730,8 @@ def _contatori(via: dict[str, set[str]]) -> None:
 	for prefisso, doctypes in per_prefisso.items():
 		ultimo = 0
 		for doctype in doctypes:
-			for nome in frappe.db.sql_list(
-				f"select name from `tab{doctype}` where name like %(prefisso)s",
-				{"prefisso": f"{prefisso}%"},
-			):
-				trovato = re.match(r"^(.*?)(\d+)$", str(nome))
-				if trovato and trovato.group(1) == prefisso:
-					ultimo = max(ultimo, int(trovato.group(2)))
+			schema = formati.get(doctype) if prefisso == "" else None
+			ultimo = max(ultimo, _ultimo_in_uso(doctype, prefisso, schema))
 		if prima is not None and prefisso not in prima and not ultimo:
 			frappe.db.sql("delete from `tabSeries` where name = %s", (prefisso,))
 			continue
