@@ -50,23 +50,51 @@ def get_demo_state() -> dict:
 		}
 		for parte in registro.tutte_le_parti()
 	]
+	al_lavoro = _al_lavoro()
+	lavoro = _lavoro() if al_lavoro else None
 	return {
 		"demo_data_created": registro.caricati(),
-		"working": _al_lavoro(),
+		"working": al_lavoro,
+		"progress": {
+			"part": lavoro.get("part"),
+			"step": lavoro.get("step"),
+			"done": lavoro.get("done") or 0,
+			"total": lavoro.get("total") or 0,
+		}
+		if lavoro
+		else None,
 		"parts": parti,
 		"to_make": [parte["key"] for parte in parti if parte["available"] and not parte["made"]],
 		"counts": _conti() if registro.caricati() else {},
 	}
 
 
+def _lavoro() -> dict | None:
+	"""What the job last said: when, the part, its step, how many parts are made."""
+	valore = frappe.db.get_default(registro.LAVORO)
+	if not valore:
+		return None
+	try:
+		lavoro = frappe.parse_json(valore)
+	except Exception:
+		lavoro = None
+	return lavoro if isinstance(lavoro, dict) else {"at": valore}
+
+
 def _al_lavoro() -> bool:
-	inizio = frappe.db.get_default(registro.LAVORO)
-	if not inizio:
+	lavoro = _lavoro()
+	if not lavoro:
 		return False
 	try:
-		return (now_datetime() - get_datetime(inizio)).total_seconds() < MINUTI_SENZA_NOTIZIE * 60
+		return (now_datetime() - get_datetime(lavoro.get("at"))).total_seconds() < MINUTI_SENZA_NOTIZIE * 60
 	except Exception:
 		return False
+
+
+def _segna_il_lavoro(**avanzamento) -> None:
+	"""The job is alive, and where it is: the page reads it when the socket is not
+	there to tell it."""
+	frappe.db.set_default(registro.LAVORO, frappe.as_json({"at": str(now_datetime()), **avanzamento}))
 
 
 def _conti() -> dict:
@@ -106,7 +134,7 @@ def create_demo_data(_args: dict | None = None) -> None:
 
 
 def _accoda(utente: str) -> None:
-	frappe.db.set_default(registro.LAVORO, str(now_datetime()))
+	_segna_il_lavoro()
 	frappe.enqueue(
 		"crm.demo.api.crea",
 		queue="long",
@@ -129,10 +157,9 @@ def crea(utente: str | None = None, scala: float = 1.0) -> dict:
 		for indice, parte in enumerate(parti):
 
 			def avanzamento(testo: str, parte=parte, indice=indice) -> None:
-				_annuncia(
-					utente, "progress", parte=_(parte.etichetta), step=testo, done=indice, total=len(parti)
-				)
-				frappe.db.set_default(registro.LAVORO, str(now_datetime()))
+				etichetta = _(parte.etichetta)
+				_annuncia(utente, "progress", parte=etichetta, step=testo, done=indice, total=len(parti))
+				_segna_il_lavoro(part=etichetta, step=testo, done=indice, total=len(parti))
 
 			contesto.avanzamento = avanzamento
 			avanzamento("")
