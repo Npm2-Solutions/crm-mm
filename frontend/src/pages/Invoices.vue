@@ -180,7 +180,11 @@
           <div
             v-for="row in pending.data || []"
             :key="row.action + row.name"
-            class="flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+            role="button"
+            tabindex="0"
+            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+            @click="apriFattura(row.name, { alCambio: ricarica })"
+            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
           >
             <div class="flex min-w-0 flex-col">
               <span class="truncate text-p-base-medium text-ink-gray-8">
@@ -208,12 +212,14 @@
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
-                @click="report(row)"
+                @click.stop="report(row)"
               />
+              <!-- the whole row opens it; on a phone the button would only take room -->
               <Button
+                class="max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
-                @click="apriFattura(row.name, { alCambio: ricarica })"
+                @click.stop="apriFattura(row.name, { alCambio: ricarica })"
               />
             </div>
           </div>
@@ -224,7 +230,11 @@
           <div
             v-for="row in invoices.data || []"
             :key="row.name"
-            class="flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+            role="button"
+            tabindex="0"
+            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+            @click="apriFattura(row.name, { alCambio: ricarica })"
+            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
           >
             <div class="flex min-w-0 flex-col">
               <span class="truncate text-p-base-medium text-ink-gray-8">
@@ -234,7 +244,8 @@
               <span class="text-p-sm text-ink-gray-5">
                 {{ dayjs(row.posting_date).format('DD/MM/YYYY') }} ·
                 {{ formatEuro(row.grand_total) }}
-                <template v-if="row.channel">
+                <!-- a draft says where it will go in its badge, once -->
+                <template v-if="row.channel && row.docstatus !== 0">
                   · {{ channelLabel(row.channel) }}
                 </template>
               </span>
@@ -271,12 +282,13 @@
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Transmit')"
-                @click="transmit(row)"
+                @click.stop="transmit(row)"
               />
               <Button
+                class="max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
-                @click="apriFattura(row.name, { alCambio: ricarica })"
+                @click.stop="apriFattura(row.name, { alCambio: ricarica })"
               />
             </div>
           </div>

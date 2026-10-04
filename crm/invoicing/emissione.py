@@ -170,8 +170,10 @@ def _vista(doc) -> dict:
 		totali = _totali(doc)
 	else:
 		totali = _totali(doc)
-		# what was found when it was issued: the Sistema TS's report, the engine's notes
-		avvisi = [riga for riga in (doc.warnings or "").splitlines() if riga.strip()]
+		# what was found when it was issued: the Sistema TS's report, the engine's notes.
+		# Kept in the words of whoever issued it: one in English reads in the reader's
+		# language when the catalog has it (a sentence with values stays as written).
+		avvisi = [_(riga) for riga in (doc.warnings or "").splitlines() if riga.strip()]
 
 	scelte_fattura = scelte.get_options(FATTURA, doc.as_dict())
 	return {
