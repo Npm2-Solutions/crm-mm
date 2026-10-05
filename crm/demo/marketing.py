@@ -153,9 +153,10 @@ def _storia(ctx: Contesto, automazioni: dict[str, str], desk: str) -> None:
 			fields=["name", "last_visit"],
 			as_list=True,
 		):
-			passaggi.append(
-				(ctx.alle(giorno + datetime.timedelta(days=60), "09:15"), automazioni["richiamo"], persona)
-			)
+			# who last came before the three months the demo lives through is
+			# recalled as they begin, not the day the centre had no DottorCloud yet
+			quando = max(giorno + datetime.timedelta(days=60), ctx.giorno(-GIORNI_INDIETRO))
+			passaggi.append((ctx.alle(quando, "09:15"), automazioni["richiamo"], persona))
 	if automazioni.get("richiesta"):
 		for persona, creata in _da_un_modulo(ctx, persone):
 			passaggi.append((creata + datetime.timedelta(minutes=1), automazioni["richiesta"], persona))
