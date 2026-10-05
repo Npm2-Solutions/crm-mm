@@ -4,6 +4,8 @@
 """A visitor whose phone is set in Italian reads the public pages in Italian: the
 framework ships Italian switched off, and DottorCloud switches it on."""
 
+from unittest.mock import patch
+
 import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.translate import get_all_languages, get_language
@@ -44,8 +46,11 @@ class LaLinguaDeiVisitatori(IntegrationTestCase):
 		self.assertEqual(frappe.db.get_value("Language", "it", "enabled"), 1)
 
 	def test_spento_un_telefono_in_italiano_leggeva_inglese(self):
-		self.visitatore("it-IT,it;q=0.9")
-		self.assertNotEqual(get_language(), "it")
+		# on a site left in the framework's English: one in Italian answers in Italian
+		# anyway (`lingue.italia_dove_nessuno_ha_scelto`)
+		with patch("frappe.get_system_settings", return_value=None):
+			self.visitatore("it-IT,it;q=0.9")
+			self.assertEqual(get_language(), "en")
 
 	def test_un_telefono_in_italiano_legge_italiano(self):
 		lingue.accendi_l_italiano()
