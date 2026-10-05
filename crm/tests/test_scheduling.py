@@ -2,6 +2,8 @@
 # See license.txt
 
 import datetime
+import pathlib
+from unittest import mock
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -664,6 +666,61 @@ class TestPricing(SchedulingCase):
 		self.assertEqual(appointment.unit_price, 25)
 		self.assertEqual(appointment.total_amount, 75)
 		self.assertIn("A testa", appointment.price_source)
+
+
+class LaFonteDelPrezzoInParole(IntegrationTestCase):
+	"""Where a price came from is stored in the language of whoever saved the
+	appointment: the panel reads it in its reader's."""
+
+	ITALIANO = {
+		"Service default": "Prezzo predefinito del servizio",
+		"Professional's price": "Prezzo del professionista",
+		"As agreed in the quote": "Come concordato nel preventivo",
+		"A cycle of {0} sessions for {1}": "Ciclo di {0} sedute per {1}",
+		"One of the {0} people uses their subscription": "Una persona su {0} usa il suo abbonamento",
+		"{0} of the {1} people use their subscription": "{0} persone su {1} usano il loro abbonamento",
+		"Comprised in the subscription {0}": "Compreso nell'abbonamento {0}",
+		"Comprised in their subscriptions": "Compreso nei loro abbonamenti",
+	}
+
+	def test_le_frasi_inglesi_si_leggono_tradotte_con_i_loro_valori(self):
+		with mock.patch.object(pricing, "_", side_effect=lambda testo: self.ITALIANO.get(testo, testo)):
+			self.assertEqual(pricing.in_parole("Service default"), "Prezzo predefinito del servizio")
+			self.assertEqual(
+				pricing.in_parole("A cycle of 10 sessions for € 450.00"), "Ciclo di 10 sedute per € 450.00"
+			)
+			self.assertEqual(
+				pricing.in_parole("2 of the 3 people use their subscription"),
+				"2 persone su 3 usano il loro abbonamento",
+			)
+			self.assertEqual(
+				pricing.in_parole("One of the 4 people uses their subscription"),
+				"Una persona su 4 usa il suo abbonamento",
+			)
+			self.assertEqual(
+				pricing.in_parole("Comprised in the subscription Pilates 2x"),
+				"Compreso nell'abbonamento Pilates 2x",
+			)
+			# already in another language, or a price list's name: as it was
+			for com_era in ("Prezzo predefinito del servizio", "Convenzione Salute+ · A testa"):
+				self.assertEqual(pricing.in_parole(com_era), com_era)
+		self.assertEqual(pricing.in_parole(None), "")
+
+	def test_ogni_frase_e_quella_che_il_codice_scrive(self):
+		# the list holds the sentences by their English words: one changed where
+		# it is written, and the panel would show it in English again
+		radice = pathlib.Path(frappe.get_app_path("crm"))
+		codice = "".join(
+			(radice / percorso).read_text()
+			for percorso in (
+				"scheduling/pricing.py",
+				"scheduling/cicli.py",
+				"scheduling/abbonamenti.py",
+				"preventivi/appuntamenti.py",
+			)
+		)
+		for modello in pricing.FONTI:
+			self.assertIn(f'_("{modello}")', codice, modello)
 
 
 # ---------------------------------------------------------------------------
