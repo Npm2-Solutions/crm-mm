@@ -11,8 +11,8 @@
           :key="status"
           size="sm"
           :variant="filter === status ? 'solid' : 'outline'"
-          :label="__(status)"
-          @click="(filter = status), enrollments.reload()"
+          :label="FILTRI[status]"
+          @click="((filter = status), enrollments.reload())"
         />
       </div>
       <Button
@@ -45,7 +45,7 @@
           <Badge
             size="sm"
             :theme="THEMES[row.status]"
-            :label="__(row.status)"
+            :label="STATI[row.status] || __(row.status)"
           />
         </button>
 
@@ -111,6 +111,26 @@ const STATUSES = [
   'Skipped',
   'Failed',
 ]
+
+// an enrolment is feminine in Italian: the filters and the states agree with it
+const FILTRI = {
+  All: __('All', null, 'Enrolments filter'),
+  Active: __('Active', null, 'Enrolments filter'),
+  Waiting: __('Waiting', null, 'Enrolments filter'),
+  Completed: __('Completed', null, 'Enrolments filter'),
+  Exited: __('Exited', null, 'Enrolments filter'),
+  Skipped: __('Skipped', null, 'Enrolments filter'),
+  Failed: __('Failed', null, 'Enrolments filter'),
+}
+
+const STATI = {
+  Active: __('Active', null, 'Enrolment state'),
+  Waiting: __('Waiting', null, 'Enrolment state'),
+  Completed: __('Completed', null, 'Enrolment state'),
+  Exited: __('Exited', null, 'Enrolment state'),
+  Skipped: __('Skipped', null, 'Enrolment state'),
+  Failed: __('Failed', null, 'Enrolment state'),
+}
 
 const THEMES = {
   Active: 'blue',

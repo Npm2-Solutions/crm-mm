@@ -56,7 +56,7 @@
           :key="entry.name"
           size="sm"
           :variant="filter === entry.name ? 'subtle' : 'ghost'"
-          :label="__(entry.label)"
+          :label="entry.label"
           @click="filter = entry.name"
         />
         <div class="flex-1" />
@@ -97,19 +97,24 @@
               </span>
               <Badge
                 size="sm"
-                :label="row.enabled ? __('Active') : __('Draft')"
-                :theme="row.enabled ? 'green' : 'gray'"
+                :label="statoDi(row).label"
+                :theme="statoDi(row).theme"
               />
             </div>
             <div class="mt-0.5 truncate text-sm text-ink-gray-5">
               {{ triggerLabels(row)
               }}<span v-if="row.description"> · {{ row.description }}</span>
             </div>
+            <!-- on a phone the counts go under the words: there is no room beside them -->
+            <div
+              v-if="row.enrolled_count"
+              class="mt-0.5 text-sm text-ink-gray-5 sm:hidden"
+            >
+              {{ conteggi(row) }}
+            </div>
           </div>
           <div class="hidden shrink-0 text-sm text-ink-gray-5 sm:block">
-            {{ row.active_count }} {{ __('running') }} ·
-            {{ row.enrolled_count }}
-            {{ __('total') }}
+            {{ conteggi(row) }}
           </div>
           <Dropdown
             v-if="gestisce"
@@ -226,11 +231,30 @@ const router = useRouter()
 const { puo } = usersStore()
 const gestisce = computed(() => puo('automazioni.gestisci'))
 
+// an automation is feminine in Italian: the filters and its state agree with it
 const FILTERS = [
-  { name: 'all', label: 'All' },
-  { name: 'active', label: 'Active' },
-  { name: 'draft', label: 'Draft' },
+  { name: 'all', label: __('All', null, 'Automations filter') },
+  { name: 'active', label: __('Active', null, 'Automations filter') },
+  { name: 'draft', label: __('Off', null, 'Automations filter') },
 ]
+
+/** On, off after it worked (paused), or never switched on (a draft). */
+function statoDi(row) {
+  if (row.enabled) {
+    return { label: __('Active', null, 'Automation state'), theme: 'green' }
+  }
+  if (row.enrolled_count) {
+    return { label: __('Paused', null, 'Automation state'), theme: 'orange' }
+  }
+  return { label: __('Draft', null, 'Automation state'), theme: 'gray' }
+}
+
+function conteggi(row) {
+  return __('{0} running · {1} in all', [
+    row.active_count || 0,
+    row.enrolled_count || 0,
+  ])
+}
 
 const query = ref('')
 const filter = ref('all')
