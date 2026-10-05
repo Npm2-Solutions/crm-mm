@@ -5,6 +5,7 @@ import { createResource } from 'frappe-ui'
 import { sessionStore } from './session'
 import { computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { nomeDiUnUtente } from '@/utils/marchio'
 
 export const usersStore = defineStore('crm-users', () => {
   const session = sessionStore()
@@ -134,7 +135,10 @@ export const usersStore = defineStore('crm-users', () => {
       usersByName[email] = {
         name: email,
         email: email,
-        full_name: email.split('@')[0],
+        full_name: nomeDiUnUtente({
+          name: email,
+          full_name: email.split('@')[0],
+        }),
         first_name: email.split('@')[0],
         last_name: '',
         user_image: null,
@@ -252,6 +256,6 @@ function normalizeUser(user) {
     ...user,
     name,
     email,
-    full_name: user.full_name?.trim() || fallbackName,
+    full_name: nomeDiUnUtente({ ...user, name }) || fallbackName,
   }
 }

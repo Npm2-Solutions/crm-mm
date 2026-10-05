@@ -13,6 +13,7 @@ import {
   misuraIlLogo,
   misureSvg,
   nomeDelCentro,
+  nomeDiUnUtente,
   variabili,
 } from '@/utils/marchio'
 
@@ -238,5 +239,39 @@ describe('nomeDelCentro', () => {
       expect(nomeDelCentro(nome, 'Marchio di Prova')).toBe('')
     }
     expect(nomeDelCentro(null)).toBe('')
+  })
+})
+
+describe("the system's account", () => {
+  it('signs as the product, never as «Administrator»', () => {
+    expect(
+      nomeDiUnUtente(
+        { name: 'Administrator', full_name: 'Administrator' },
+        'DottorCloud',
+      ),
+    ).toBe('DottorCloud')
+    // whatever name a site gave it
+    expect(
+      nomeDiUnUtente(
+        { name: 'Administrator', full_name: 'Marco' },
+        'DottorCloud',
+      ),
+    ).toBe('DottorCloud')
+  })
+
+  it('leaves a colleague their own name, or their address without one', () => {
+    expect(
+      nomeDiUnUtente(
+        { name: 'anna@example.com', full_name: ' Anna Bianchi ' },
+        'DottorCloud',
+      ),
+    ).toBe('Anna Bianchi')
+    expect(
+      nomeDiUnUtente(
+        { name: 'anna@example.com', full_name: '' },
+        'DottorCloud',
+      ),
+    ).toBe('anna@example.com')
+    expect(nomeDiUnUtente(null, 'DottorCloud')).toBe('')
   })
 })
