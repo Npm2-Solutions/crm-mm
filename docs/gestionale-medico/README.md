@@ -90,9 +90,10 @@ sua prima riga è "è già paziente? allora esci". La prima regola che arriva cr
 scheda paziente e scrive quale regola è scattata, quando e per mano di chi
 ("paziente dal 12/10/2026: primo dato clinico, allergia inserita dalla
 dott.ssa Rossi"); le altre, dopo, non fanno più niente. Nello stesso momento la
-funzione chiude come vinto il deal aperto della pipeline "Nuovi pazienti" e lancia
-l'evento "Diventato paziente" per le automazioni (benvenuto, richiesta di
-recensione dopo una settimana…).
+funzione lancia l'evento "Diventato paziente" per le automazioni (benvenuto,
+richiesta di recensione dopo una settimana…). Il deal aperto della pipeline "Nuovi
+pazienti" lo vince la prima volta che la persona viene, con le regole dei clienti
+del CRM (dal 05/10/2026, più sotto).
 
 **La stessa lista vale anche all'indietro.** Quando si accende il modulo su un
 sito che ha già mesi di appuntamenti e fatture, un lavoro una tantum scorre le
@@ -1596,6 +1597,30 @@ sono del CRM (`crm/clienti`), e la clinica ci mette le sue regole.
   widget "New patients" e "Cost per new patient" delle dashboard salvate diventano
   quelli del CRM, e i pazienti di prima sono clienti dal giorno in cui sono
   diventati pazienti.
+
+Dal 05/10/2026 **contatto, cliente, paziente sono tre gradini**, e nessuno è
+l'altro con un nome diverso:
+
+- **Le regole del CRM decidono sempre chi è cliente**, anche con la clinica
+  accesa: chi è venuto o ha comprato, una lezione di Pilates come una visita. Un
+  corso fa un cliente, non un paziente.
+- **La clinica aggiunge il paziente**, il gradino sopra: una prestazione sanitaria,
+  o dati sanitari che il centro conserva. Scrive "Paziente dal" sulla persona
+  (`patient_since`) e il gradino "Paziente", che un fatto da cliente dopo non
+  riporta giù; lancia il suo evento, "Diventato paziente" (`patient_created`).
+- **La persona lo dice**: nella testata della scheda («Contatto», «Cliente dal 4
+  ott», «Paziente dal 4 ott»), nella colonna «Rapporto» dell'elenco delle persone,
+  che si filtra, e accanto al nome sul telefono.
+- **La trattativa dei nuovi pazienti si vince la prima volta che la persona
+  viene**, per qualunque cosa: è il gradino "Venuto". Chi diventa paziente per i
+  dati sanitari prima di venire (l'anamnesi firmata a casa) non la vince ancora.
+- **I numeri**: "Nuovi clienti" e "Costo per nuovo cliente" restano clienti;
+  "Nuovi pazienti" e "Costo per nuovo paziente" sono della clinica
+  (`crm/clinica/cruscotto.py`), e la dashboard del centro medico li mostra tutti.
+- **Le patch** ritrovano i clienti di prima dove la clinica li nascondeva (chi
+  veniva ai corsi) e segnano i pazienti sulla loro scheda. Le automazioni passate
+  da "Became Patient" a "Became Client" il 30/09 restano lì: scattano la prima
+  volta che la persona viene.
 
 ### La scheda passa al CRM: quella clinica è la scheda col marchio
 
