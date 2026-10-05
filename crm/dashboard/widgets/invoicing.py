@@ -732,7 +732,7 @@ def to_collect_by_age(ctx: Context):
 	colors = ("green", "amber", "orange", "red")
 	return with_money(
 		charts.donut(
-			[(_(label), sums[index], colors[index]) for index, (_limit, label) in enumerate(AGES)],
+			[(str(label), sums[index], colors[index]) for index, (_limit, label) in enumerate(AGES)],
 			format="currency",
 		)
 	)
@@ -763,7 +763,12 @@ def to_collect_list(ctx: Context):
 				"value": float(row.amount or 0),
 				"format": "currency",
 				"time": str(row.posting_date),
-				"badge": {"label": _(label), "color": ("green", "orange", "orange", "red")[age_bucket(days)]},
+				# a lazy word (`_lt`) says itself in the reader's language only as a
+				# string: `_()` gave it back as it was, and JSON could not carry it
+				"badge": {
+					"label": str(label),
+					"color": ("green", "orange", "orange", "red")[age_bucket(days)],
+				},
 				"icon": "wallet",
 				"route": INVOICES,
 			}
