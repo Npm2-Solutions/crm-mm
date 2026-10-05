@@ -29,6 +29,75 @@ class LaLinguaDelCentro(UnitTestCase):
 		self.assertEqual(lingue.scegli("fr", "Italy"), "fr")
 
 
+# what the framework leaves on a site before anybody chose
+MAI_IMPOSTATO = {
+	"country": "",
+	"language": None,
+	"time_zone": None,
+	"currency": None,
+	"date_format": "yyyy-mm-dd",
+	"number_format": "#,###.##",
+	"first_day_of_the_week": "Sunday",
+}
+
+
+class UnSitoCheNessunoHaImpostato(UnitTestCase):
+	"""Where the setup wizard never ran: Rome's clock and Italy's formats, never
+	over what somebody chose."""
+
+	def test_dove_nessuno_ha_detto_il_paese_e_l_italia(self):
+		self.assertEqual(
+			lingue.per_l_italia(MAI_IMPOSTATO),
+			{
+				"country": "Italy",
+				"language": "it",
+				"time_zone": "Europe/Rome",
+				"currency": "EUR",
+				"date_format": "dd/mm/yyyy",
+				"number_format": "#.###,##",
+				"first_day_of_the_week": "Monday",
+			},
+		)
+
+	def test_quello_che_qualcuno_ha_scelto_resta(self):
+		scelti = {
+			**MAI_IMPOSTATO,
+			"language": "en",
+			"time_zone": "Europe/Zurich",
+			"date_format": "dd.mm.yyyy",
+			"number_format": "#'###.##",
+		}
+		self.assertEqual(
+			lingue.per_l_italia(scelti),
+			{
+				"country": "Italy",
+				"currency": "EUR",
+				"first_day_of_the_week": "Monday",
+			},
+		)
+
+	def test_in_italia_solo_quello_che_e_vuoto(self):
+		# the wizard ran with Italy: its formats and Sunday are the centre's
+		italia = {
+			"country": "Italy",
+			"language": "en",
+			"time_zone": None,
+			"currency": "EUR",
+			"date_format": "yyyy-mm-dd",
+			"number_format": "#,###.##",
+			"first_day_of_the_week": "Sunday",
+		}
+		self.assertEqual(lingue.per_l_italia(italia), {"time_zone": "Europe/Rome"})
+		# nothing left to write: nothing written, at every migrate
+		self.assertEqual(lingue.per_l_italia({**italia, "time_zone": "Europe/Rome"}), {})
+		self.assertEqual(
+			lingue.per_l_italia({**MAI_IMPOSTATO, **lingue.ITALIA, "country": "Italy", "language": "it"}), {}
+		)
+
+	def test_un_altro_paese_tiene_tutto(self):
+		self.assertEqual(lingue.per_l_italia({**MAI_IMPOSTATO, "country": "Switzerland"}), {})
+
+
 class LApostrofoDavantiAUnaData(UnitTestCase):
 	"""«fino all'11 ottobre»: the server's filled sentences elide as the SPA's do
 	(`conLApostrofo`, utils/locale.js)."""

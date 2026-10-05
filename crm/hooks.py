@@ -770,6 +770,8 @@ after_migrate = [
 	"crm.install.add_email_account_custom_field",
 	# DottorCloud's own emails leave through the agency's sending service
 	"crm.posta.servizio.assicura",
+	# a site nobody set up reads as a centre in Italy: Rome's clock, its formats
+	"crm.lingue.italia_dove_nessuno_ha_scelto",
 	# the framework's Italian on, for the visitors of the public pages
 	"crm.lingue.accendi_l_italiano",
 ]
