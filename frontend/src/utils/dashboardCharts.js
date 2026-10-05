@@ -159,6 +159,27 @@ function tooltipRow(color, shape, name, value) {
   )
 }
 
+/**
+ * How many lines a legend of these names takes at ``width``: ECharts wraps it,
+ * and the grid under the axis left room for one - on a phone a second line was
+ * drawn over the axis' days. The mark, its gap, the words at about 6.6px a
+ * letter, the gap to the next.
+ */
+export function righeDellaLegenda(nomi, width) {
+  if (!width) return 1
+  let righe = 1
+  let riga = 0
+  for (const nome of nomi) {
+    const voce = 10 + 5 + String(nome ?? '').length * 6.6
+    if (riga && riga + voce > width) {
+      righe += 1
+      riga = 0
+    }
+    riga += voce + 14
+  }
+  return righe
+}
+
 export function axisOptions(
   payload,
   { dark = false, locale, currency, width = 0 } = {},
@@ -174,6 +195,18 @@ export function axisOptions(
     formatValue(value, format, { locale, currency: money, compact })
   const bars = series.every((item) => item.type === 'bar')
   const legend = series.length > 1
+  const righe = legend
+    ? righeDellaLegenda(
+        series.map((item) => item.label),
+        width,
+      )
+    : 0
+  // people, deals, calls are counted in whole ones: no 0.3 on their axis
+  const interi = series.every((item) =>
+    (item.values || []).every(
+      (value) => value == null || Number.isInteger(Number(value)),
+    ),
+  )
   const lastBar = series.map((item) => item.type).lastIndexOf('bar')
   const labelEnds = bars && series.length === 1 && labels.length <= 15
   // under vertical bars, category names wrap to their bar's room instead of
@@ -207,6 +240,7 @@ export function axisOptions(
   const valueAxis = {
     type: 'value',
     splitNumber: 4,
+    minInterval: interi ? 1 : undefined,
     axisLabel: {
       color: INK_MUTED,
       fontSize: 11,
@@ -223,7 +257,7 @@ export function axisOptions(
       left: 4,
       right: horizontal && labelEnds ? 56 : 12,
       top: 12,
-      bottom: legend ? 34 : 4,
+      bottom: legend ? 10 + 24 * righe : 4,
       containLabel: true,
     },
     legend: {

@@ -91,9 +91,9 @@ const options = computed(() => {
     currency: props.answer.currency,
   }
   if (props.answer.kind === 'donut') return donutOptions(props.answer, settings)
-  // names under vertical bars wrap to the room each bar has
-  if (props.answer.x?.type === 'category' && !props.answer.horizontal)
-    settings.width = width.value
+  // names under vertical bars wrap to the room each bar has, and the legend
+  // takes the lines it needs at this width
+  settings.width = width.value
   return axisOptions(props.answer, settings)
 })
 
