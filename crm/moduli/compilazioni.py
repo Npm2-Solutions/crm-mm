@@ -39,7 +39,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_datetime, get_fullname, now_datetime
 
-from crm.moduli import modelli, traccia
+from crm.moduli import modelli, sigillo, traccia
 from crm.moduli import schema as S
 from crm.permissions import livelli, org_hierarchy
 
@@ -123,6 +123,14 @@ def eventi_del_modulo(doc) -> list[dict]:
 		capo = frappe.db.get_value(RICHIESTA, doc.request, "via") or doc.request
 		eventi += [evento for evento in traccia.eventi(RICHIESTA, capo) if evento.event in ACCESSI]
 	return sorted(eventi, key=lambda evento: get_datetime(evento.occurred_on))
+
+
+def _detto(evento: dict) -> dict:
+	"""An event as the page says it: a PDF made keeps the engine's English words
+	(«PDF/A-3b (structure verified)») in the register, read here in the reader's."""
+	if evento.get("event") == "pdf_generated":
+		return {**evento, "detail": sigillo.in_parole(evento.get("detail"))}
+	return evento
 
 
 def riconoscimento(doc) -> str:
@@ -252,7 +260,8 @@ def get_form(name: str) -> dict:
 		"answers": _risposte(doc),
 		"answers_hash": doc.answers_hash,
 		"pdf_hash": doc.pdf_hash,
-		"pdf_conformance": doc.pdf_conformance,
+		# in the reader's words; the stored ones stay, being evidence
+		"pdf_conformance": sigillo.in_parole(doc.pdf_conformance),
 		"signatures": [
 			{
 				"field": riga.field,
@@ -265,7 +274,7 @@ def get_form(name: str) -> dict:
 			}
 			for riga in doc.signatures
 		],
-		"events": eventi_del_modulo(doc) if doc.docstatus else [],
+		"events": [_detto(evento) for evento in eventi_del_modulo(doc)] if doc.docstatus else [],
 		"recognised": riconoscimento(doc),
 		"provider": _fornitore_per_la_pagina(),
 		"provider_name": doc.get("provider"),

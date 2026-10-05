@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -37,6 +38,37 @@ CAMPO_FIRMA = "CentreSeal"
 
 #: What the register writes next to "sealed" when the authority stamped the file.
 CON_MARCA = "with a time stamp"
+
+
+#: How a sealed file's description ends, as `Sigillato.descrizione` writes it in English
+CON_MARCA = ", sealed by the centre with a time stamp"
+SIGILLATO = ", sealed by the centre"
+FIRMATO_DA = re.compile(r"^Signed by (?P<chi>.+) \(PAdES\)$")
+
+
+def in_parole(conformita: str | None) -> str:
+	"""A kept file's conformance as a screen says it, in the reader's language. What is
+	stored stays as it was written, being evidence: the engine's words in English
+	(«PDF/A-3b (structure verified)»), the seal's and a provider's in the language of
+	whoever signed - English where the demo or a job wrote them."""
+	if not conformita:
+		return ""
+	if conformita.endswith(CON_MARCA):
+		return _("{0}, sealed by the centre with a time stamp").format(
+			in_parole(conformita[: -len(CON_MARCA)])
+		)
+	if conformita.endswith(SIGILLATO):
+		return _("{0}, sealed by the centre").format(in_parole(conformita[: -len(SIGILLATO)]))
+	if firmato := FIRMATO_DA.match(conformita):
+		return _("Signed by {0} (PAdES)").format(firmato.group("chi"))
+	from crm.invoicing.engine import pdfa
+
+	parole = {
+		pdfa.Conformita.PDFA_3B: _("PDF/A-3b (structure verified)"),
+		pdfa.Conformita.PDF_SEMPLICE: _("PDF (neutral metadata, not PDF/A)"),
+		pdfa.Conformita.NON_VERIFICATO: _("PDF (not verified)"),
+	}
+	return parole.get(conformita, conformita)
 
 
 @dataclass
