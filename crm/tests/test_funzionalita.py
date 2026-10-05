@@ -36,8 +36,11 @@ class CosaComprendeIlProdotto(TestCase):
 		self.assertEqual(plan.compresi(MODULI, "verticale"), {"base", "verticale", "area"})
 
 	def test_senza_verticale_il_prodotto_e_la_base(self):
-		# the area is an extra then, as any other
 		self.assertEqual(plan.compresi(MODULI, None), {"base"})
+
+	def test_la_base_comprende_quello_che_comprende(self):
+		moduli = (ModuloPiano("base", "Base", comprende=("area",)), *MODULI[1:])
+		self.assertEqual(plan.compresi(moduli, None), {"base", "area"})
 
 	def test_un_verticale_che_nessuno_ha_registrato_non_aggiunge_niente(self):
 		self.assertEqual(plan.compresi(MODULI, "altro"), {"base"})
@@ -87,6 +90,19 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		for chiave in compresi:
 			self.assertEqual(moduli[chiave]["state"], "active")
 			self.assertFalse(moduli[chiave]["can_start_trial"])
+
+	def test_senza_la_clinica_l_area_c_e_lo_stesso(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.set("modules", [{"module": "area", "status": "Off"}])
+		piano.save()
+		livelli.dimentica_cache()
+		frappe.set_user(MANAGER)
+		area = self.moduli()["area"]
+		# the base comprises it: a plan that says off does not take it away
+		self.assertTrue(area["included"])
+		self.assertEqual(area["state"], "active")
+		self.assertIn("Base", area["comprised_by"])
 
 	def test_gli_extra_si_provano(self):
 		moduli = self.moduli()

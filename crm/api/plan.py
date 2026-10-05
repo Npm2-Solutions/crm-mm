@@ -46,9 +46,9 @@ STATO = {
 
 
 def compresi(moduli: Iterable[ModuloPiano], verticale: str | None) -> set[str]:
-	"""What the product the centre signed up for comprises: the base, the module of
-	its vertical - the clinic, for DottorCloud - and what that comprises (the patient
-	area). The other modules are extras, which the centre adds when it needs them."""
+	"""What the product the centre signed up for comprises: the base and what it
+	comprises (the client area), the module of its vertical - the clinic, for
+	DottorCloud - and what that comprises. The other modules are extras, which the centre adds when it needs them."""
 	per_chiave = {modulo.chiave: modulo for modulo in moduli}
 	dentro: set[str] = set()
 	da_vedere = [BASE, *([verticale] if verticale else [])]

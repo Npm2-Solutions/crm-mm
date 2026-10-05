@@ -62,8 +62,10 @@ MODULI = (
 		"Base",
 		descrizione="People and agenda with rooms, cycles, subscriptions and waiting lists; online "
 		"booking and platforms, reminders; conversations; quotes; forms with a simple signature, "
-		"consents and documents; dashboards, users and levels",
+		"consents and documents; the client area; dashboards, users and levels",
 		ordine=1,
+		# every centre gives its people their area: the documents are everybody's
+		comprende=("area",),
 		impostazioni=("Services", "Hours & shifts", "Online booking", "Users"),
 	),
 	ModuloPiano(

@@ -17,7 +17,7 @@ parent signs for her, who only follows her does not. The desk writes on her boar
 the email says only that there is news, and opening the board reads what was new.
 
 Documents and plans show to who has some, and the words are the CRM's own without
-the clinic; with the area off in the plan nobody opens one.
+the clinic; the base comprises the area, so only a plan without the base closes it.
 """
 
 import datetime
@@ -152,8 +152,14 @@ class LInvito(AreaCase):
 		with self.assertRaises(frappe.PermissionError):
 			accesso.invite(self.anna.name)
 
-	def test_senza_l_area_nel_piano_nessuno_la_apre(self):
-		self.piano()
+	def test_la_base_comprende_l_area_anche_se_il_piano_la_spegne(self):
+		# every centre has it (05/10/2026): the plan's word on the area alone does
+		# not take it away
+		self.piano({"module": "area", "status": "Off"})
+		self.assertEqual(self.invita()["email"], ANNA)
+
+	def test_senza_la_base_nessuno_la_apre(self):
+		self.piano({"module": "base", "status": "Off"}, {"module": "area", "status": "Off"})
 		self.come(DESK)
 		with self.assertRaises(frappe.PermissionError):
 			accesso.invite(self.anna.name)
