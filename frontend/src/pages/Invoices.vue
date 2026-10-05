@@ -107,10 +107,12 @@
           />
         </div>
 
-        <div class="flex items-center gap-1">
+        <!-- four tabs scroll sideways on a phone rather than wrap -->
+        <div class="flex items-center gap-1 overflow-x-auto">
           <Button
             v-for="entry in tabs"
             :key="entry.value"
+            class="shrink-0"
             :variant="tab === entry.value ? 'subtle' : 'ghost'"
             :label="entry.label"
             @click="tab = entry.value"
@@ -328,6 +330,9 @@
           </div>
         </div>
 
+        <!-- ------------------------------------------- from the suppliers -->
+        <ReceivedInvoices v-else-if="tab === 'received'" :company="company" />
+
         <!-- -------------------------------------------------- sistema ts -->
         <div v-else class="flex flex-col gap-4">
           <div
@@ -471,6 +476,7 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import ReceivedInvoices from '@/components/Invoices/ReceivedInvoices.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
@@ -489,6 +495,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useFattura } from '@/composables/fattura'
 import {
   activeSettingsPage,
@@ -503,7 +510,9 @@ const { puo } = usersStore()
 const { $dialog } = globalStore()
 const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 
-const tab = ref('todo')
+// a notification about a supplier's invoice opens it, in its tab (`?ricevuta=`)
+const route = useRoute()
+const tab = ref(route.query.ricevuta ? 'received' : 'todo')
 const company = ref('')
 const year = ref(new Date().getFullYear())
 const sending = ref('')
@@ -513,6 +522,7 @@ const lastPrepared = ref(null)
 const tabs = computed(() => [
   { value: 'todo', label: __('To do') },
   { value: 'invoices', label: __('Invoices') },
+  { value: 'received', label: __('Received', null, 'Supplier invoices') },
   { value: 'ts', label: __('Sistema TS') },
 ])
 
