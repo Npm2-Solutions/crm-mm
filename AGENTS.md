@@ -668,6 +668,12 @@ CSS asks `(max-width: 767px), (max-height: 499px) and (pointer: coarse)`, as
 `telefono.css` does; sideways, what stays put is compact (a record's card in one
 row, the bar's words beside their icons).
 
+- A tablet keeps the desk's layout, touched by a finger: a tap's size asks
+  `(pointer: coarse)` (`[@media(pointer:coarse)]:`), never `max-md:` alone;
+  held upright the menu folds to its icons until its button chooses
+  (`AppSidebar.vue`, `menuPiegato`), the dashboard stacks below
+  `GRIGLIA_MINIMA` as on a phone (`data-impilata`), and a row's chips wrap
+  under a name rather than squeezing it (doc 29, eighth part).
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its
