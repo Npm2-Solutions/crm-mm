@@ -43812,3 +43812,15 @@ msgstr "Hai una nuova cosa da fare: {0}"
 #: crm/notifiche/regole.py
 msgid "A task is no longer yours: {0}"
 msgstr "Una cosa da fare non è più tua: {0}"
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "Its rules go with it, and the services go back to their own prices. This cannot be undone."
+msgstr "Con il listino se ne vanno anche le sue regole, e i servizi tornano ai loro prezzi. Non si può annullare."
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "Delete this rule?"
+msgstr "Vuoi eliminare questa regola?"
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "{0} goes back to the price the service or the list’s other rules give it. This cannot be undone."
+msgstr "{0} torna al prezzo del servizio o delle altre regole del listino. Non si può annullare."

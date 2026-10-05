@@ -135,7 +135,7 @@
                 </div>
               </div>
               <span class="shrink-0 text-p-base-medium text-ink-gray-8">
-                {{ rule.price }} {{ rule.currency || '' }}
+                {{ money(rule.price, rule.currency || listCurrency) }}
                 <span
                   v-if="rule.per_participant"
                   class="text-p-xs text-ink-gray-5"
@@ -376,7 +376,11 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { hhmm } from '@/utils/scheduler'
+import { appLocale } from '@/utils/locale'
+import { globalStore } from '@/stores/global'
 import { dateFormat } from '@/utils'
+
+const { $dialog } = globalStore()
 
 const WEEKDAYS = [
   'Monday',
@@ -469,6 +473,23 @@ function conditionsOf(rule) {
   return parts.length ? parts.join(' · ') : __('Always')
 }
 
+// a price as the rest of DottorCloud writes it, «65,00 €», never «65 EUR»; a
+// rule without a currency of its own counts in its list's
+const listCurrency = computed(
+  () => priceLists.data?.find((list) => list.name === selected.value)?.currency,
+)
+
+function money(amount, currency) {
+  try {
+    return new Intl.NumberFormat(appLocale(), {
+      style: 'currency',
+      currency: currency || window.sysdefaults?.currency || 'EUR',
+    }).format(amount || 0)
+  } catch {
+    return `${amount} ${currency || ''}`.trim()
+  }
+}
+
 // --- price list editor ---------------------------------------------------
 
 const showListEditor = ref(false)
@@ -528,16 +549,37 @@ function saveList() {
   })
 }
 
+// a list goes with all its rules: asked first, as a service is - one tap beside
+// «New rule» took it away
 function removeList() {
-  createResource({
-    url: 'crm.api.appointments.delete_price_list',
-    params: { name: selected.value },
-    auto: true,
-    onSuccess: () => {
-      selected.value = ''
-      priceLists.reload()
-    },
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+  const name = selected.value
+  const list = priceLists.data?.find((l) => l.name === name)
+  $dialog({
+    title: __('Delete {0}?', [list?.price_list_name || name]),
+    message: __(
+      'Its rules go with it, and the services go back to their own prices. This cannot be undone.',
+    ),
+    actions: [
+      {
+        label: __('Delete'),
+        theme: 'red',
+        variant: 'solid',
+        onClick: (close) => {
+          close()
+          createResource({
+            url: 'crm.api.appointments.delete_price_list',
+            params: { name },
+            auto: true,
+            onSuccess: () => {
+              selected.value = ''
+              priceLists.reload()
+            },
+            onError: (e) =>
+              toast.error(e.messages?.[0] || __('Failed to delete')),
+          })
+        },
+      },
+    ],
   })
 }
 
@@ -617,15 +659,33 @@ function saveRule() {
 }
 
 function removeRule(rule) {
-  createResource({
-    url: 'crm.api.appointments.delete_price',
-    params: { name: rule.name },
-    auto: true,
-    onSuccess: () => {
-      prices.submit({ price_list: selected.value })
-      priceLists.reload()
-    },
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+  $dialog({
+    title: __('Delete this rule?'),
+    message: __(
+      '{0} goes back to the price the service or the list’s other rules give it. This cannot be undone.',
+      [serviceName(rule.service)],
+    ),
+    actions: [
+      {
+        label: __('Delete'),
+        theme: 'red',
+        variant: 'solid',
+        onClick: (close) => {
+          close()
+          createResource({
+            url: 'crm.api.appointments.delete_price',
+            params: { name: rule.name },
+            auto: true,
+            onSuccess: () => {
+              prices.submit({ price_list: selected.value })
+              priceLists.reload()
+            },
+            onError: (e) =>
+              toast.error(e.messages?.[0] || __('Failed to delete')),
+          })
+        },
+      },
+    ],
   })
 }
 </script>
