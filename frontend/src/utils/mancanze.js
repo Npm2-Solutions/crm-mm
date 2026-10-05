@@ -4,7 +4,8 @@
 /**
  * What invoicing still misses (crm.invoicing.prova.mancanze), and where each gap
  * is filled: a row names the company's field that fills it, or the records that
- * do. The settings page that opens is the one the menu has for them.
+ * do (one record, opened on its field). The settings page that opens is the one
+ * the menu has for them.
  */
 
 /** The records a row may point at, and the page that keeps them. */

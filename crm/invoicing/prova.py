@@ -77,7 +77,8 @@ def _riga(
 	doctype: str = "",
 ) -> dict:
 	"""One gap. `field` is the company's field that fills it, `link` the records
-	that do: the screen takes whoever reads it there."""
+	that do (with a `name`, the one record, opened on its `field`): the screen takes
+	whoever reads it there."""
 	riga = {
 		"title": titolo,
 		"consequence": conseguenza,

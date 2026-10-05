@@ -14,6 +14,10 @@ export const activeSettingsPage = ref('')
 // on the tab that holds it and brings it into view, not on the record's first tab.
 export const campoDaAprire = ref('')
 
+// The record a list of them opens: «Set up» beside a qualification to verify opens
+// that qualification, not the register it is in. `{ doctype, name }`.
+export const recordDaAprire = ref(null)
+
 // Which website the Website settings open on. The Site section sets it before opening the
 // modal so you land on the site you were looking at, not on whichever one is the default.
 export const activeSettingsSite = ref('')

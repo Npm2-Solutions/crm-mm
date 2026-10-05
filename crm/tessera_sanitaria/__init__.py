@@ -142,11 +142,21 @@ def controlli(emittente: dict) -> list[dict]:
 		)
 
 	for qualifica in registro.da_verificare(emittente.get("name")):
+		# the register keeps its open points as phrases, one a line ("the ENPAP
+		# reform…"): said bare they began in lower case and ran into each other
+		punti = "; ".join(
+			punto.strip().rstrip(".;")
+			for punto in (qualifica["needs_verification"] or "").splitlines()
+			if punto.strip()
+		)
 		voci.append(
 			{
 				"title": _("Verify {0}").format(qualifica["qualification_name"]),
-				"consequence": qualifica["needs_verification"],
-				"field": "",
+				"consequence": _(
+					"Open points for the accountant: {0}. Once they are confirmed, tick Verified by the accountant."
+				).format(punti),
+				# the qualification opened on the tick that closes the row
+				"field": "verified",
 				"link": {
 					"doctype": "CRM Professional Qualification",
 					"name": qualifica["name"],

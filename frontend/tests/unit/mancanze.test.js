@@ -39,6 +39,15 @@ describe('the page a missing row opens', () => {
     ).toBe('Qualification register')
   })
 
+  it("a record's field opens the record's list, not the company", () => {
+    expect(
+      paginaDellaMancanza({
+        field: 'verified',
+        link: { doctype: 'CRM Professional Qualification', name: 'psicologo' },
+      }),
+    ).toBe('Qualification register')
+  })
+
   it('a row with nowhere to go opens nothing', () => {
     expect(paginaDellaMancanza({ field: '' })).toBe('')
     expect(paginaDellaMancanza({ link: { doctype: 'User' } })).toBe('')
