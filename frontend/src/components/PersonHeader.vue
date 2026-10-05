@@ -73,7 +73,7 @@
          each key drawn. Six columns for five keys (no SMS) left each word
          a column narrower than itself, «Chiama» touching «WhatsApp» -->
     <div
-      class="grid gap-1"
+      class="grid gap-0.5"
       :style="{ gridTemplateColumns: `repeat(${tasti}, minmax(0, 1fr))` }"
       role="toolbar"
       :aria-label="title"
@@ -209,8 +209,8 @@ const scheduling = useSchedulerMeta()
 const lingua = window.navigator?.language || 'it-IT'
 
 // a round key and its word: what the phone's own contact card looks like.
-// No padding beside the word: in a side panel 352px wide «WhatsApp» needs
-// the whole of its column
+// No padding beside the word, and 2px between the keys: in a side panel 352px
+// wide «WhatsApp» needs the whole of its column (60px, one more than it had)
 const tasto =
   'touch-target group flex min-w-0 flex-col items-center gap-1.5 rounded-md py-1 text-xs font-medium text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3 disabled:cursor-not-allowed'
 const tondo =

@@ -10,10 +10,13 @@
 -->
 <template>
   <div class="flex flex-col gap-4 px-8 py-6 max-md:px-4 max-md:py-4">
+    <!-- the words keep 15rem: in a record's column on a tablet held upright
+         the buttons beside them left them a word to a line, so the buttons
+         go under them there -->
     <div
-      class="flex items-start justify-between gap-3 max-md:flex-col max-md:items-stretch"
+      class="flex flex-wrap items-start justify-between gap-3 max-md:flex-col max-md:items-stretch"
     >
-      <DescrizioneRipiegata>
+      <DescrizioneRipiegata class="min-w-[15rem] flex-1">
         {{
           __(
             "Privacy, consents, questionnaires: filled with the person and signed on the screen, or on their own from a link or the desk's tablet. The sheets are written by the operator during the appointment. What is signed is kept as it was, with its PDF.",

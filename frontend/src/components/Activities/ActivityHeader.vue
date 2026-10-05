@@ -135,9 +135,11 @@
         <template #prefix>
           <span class="lucide-calendar-plus size-4" aria-hidden="true" />
         </template>
-        <!-- half a phone wide: the thing it makes, not the whole sentence -->
-        <span class="max-md:hidden">{{ __('Book an appointment') }}</span>
-        <span class="md:hidden">{{ __('Appointment') }}</span>
+        <!-- half a phone wide, or in a record's column on a tablet held
+             upright (narrower than 1024px), where «Programma un evento» was
+             cut: the thing it makes, not the whole sentence -->
+        <span class="max-lg:hidden">{{ __('Book an appointment') }}</span>
+        <span class="lg:hidden">{{ __('Appointment') }}</span>
       </Button>
       <Button
         v-if="puo('agenda.prenota')"
@@ -148,8 +150,8 @@
         <template #prefix>
           <EventIcon class="h-4 w-4" />
         </template>
-        <span class="max-md:hidden">{{ __('Schedule an Event') }}</span>
-        <span class="md:hidden">{{ __('Event') }}</span>
+        <span class="max-lg:hidden">{{ __('Schedule an Event') }}</span>
+        <span class="lg:hidden">{{ __('Event') }}</span>
       </Button>
     </div>
     <!-- each tab offers to add only what the level may add (doc 30) -->
