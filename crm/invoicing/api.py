@@ -88,11 +88,17 @@ def send_to_sdi(invoice: str) -> dict:
 	accredited provider. Which one is configuration; the XML is the same file either
 	way, and it was built and checked here.
 	"""
-	from crm.invoicing import sdi
-
 	fattura = _fattura(invoice)
 	fattura.check_permission("submit")
 	_verifica_invio()
+	return trasmetti(fattura)
+
+
+def trasmetti(fattura) -> dict:
+	"""The send itself, once whoever asked may: the screen's button, or the switch
+	that sends an invoice as it is issued (`crm.invoicing.automatico`)."""
+	from crm.invoicing import sdi
+
 	if fattura.docstatus != 1:
 		frappe.throw(_("Only an issued invoice can be transmitted"))
 

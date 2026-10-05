@@ -23,7 +23,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, getdate
 
-from crm.invoicing import anagrafica, documento, estensioni, pdf, prova, xml_sdi
+from crm.invoicing import anagrafica, automatico, documento, estensioni, pdf, prova, xml_sdi
 from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
@@ -95,6 +95,9 @@ class CRMInvoice(Document):
 		# what was confirmed here fills the client's profile where it is empty, so
 		# the next invoice asks nothing. It never raises.
 		anagrafica.completa_da_fattura(self)
+		# where the centre switched it on, it leaves for the SdI once the issue is
+		# committed (Settings > Invoicing > Advanced). It never raises.
+		automatico.dopo_emissione(self)
 
 	def before_cancel(self):
 		"""An issued document that has already left is corrected, not cancelled."""
