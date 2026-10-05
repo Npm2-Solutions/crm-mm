@@ -370,6 +370,13 @@ class TestDatiDiProva(IntegrationTestCase):
 				frappe.db.sql("select 1 from `__Auth` where doctype='User' and name=%s", utente),
 				"a demo colleague cannot sign in",
 			)
+		# the page counts the colleagues, not the people a client area lets in
+		colleghi = [
+			utente
+			for utente in self.registrati["User"]
+			if frappe.db.get_value("User", utente, "user_type") == "System User"
+		]
+		self.assertEqual(api.get_demo_state()["counts"]["team"], len(colleghi))
 
 	def test_4_nobody_receives_anything(self):
 		persona = sorted(self.registrati["CRM Lead"])[0]
