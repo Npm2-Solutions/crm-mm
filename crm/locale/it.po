@@ -18969,8 +18969,8 @@ msgid "Only somebody waiting gets an offer: one is waiting for an answer already
 msgstr "Si propone un posto solo a chi aspetta: una proposta aspetta già la risposta"
 
 #: frontend/src/components/Activities/ConversationView.vue
-msgid "Only the care team reads it"
-msgstr "La legge solo l'équipe di cura"
+msgid "Protected health data: only the care team reads it"
+msgstr "Dati sanitari protetti: la legge solo l'équipe di cura"
 
 #: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
 msgid "Only the first invoice goes to sdi01@. The delivery receipt names the address to use from then on, and this is updated when it does."
@@ -44062,25 +44062,25 @@ msgid "Who issues the invoices: details, tax regime, numbering."
 msgstr "Chi emette le fatture: i dati, il regime fiscale, la numerazione."
 
 #: frontend/src/components/Documents/DocumentsCard.vue
-msgid "One document with health data you cannot read"
-msgstr "Un documento con dati sanitari che non puoi leggere"
+msgid "One document with protected health data"
+msgstr "Un documento con dati sanitari protetti"
 
 #: frontend/src/components/Documents/DocumentsCard.vue
-msgid "{0} documents with health data you cannot read"
-msgstr "{0} documenti con dati sanitari che non puoi leggere"
+msgid "{0} documents with protected health data"
+msgstr "{0} documenti con dati sanitari protetti"
 
 #: frontend/src/components/Plans/PlansCard.vue
-msgid "One plan with health data you cannot read"
-msgstr "Un piano con dati sanitari che non puoi leggere"
+msgid "One plan with protected health data"
+msgstr "Un piano con dati sanitari protetti"
 
 #: frontend/src/components/Plans/PlansCard.vue
-msgid "{0} plans with health data you cannot read"
-msgstr "{0} piani con dati sanitari che non puoi leggere"
+msgid "{0} plans with protected health data"
+msgstr "{0} piani con dati sanitari protetti"
 
 #: frontend/src/components/Plans/PlansCard.vue
-msgid "One programme with health data you cannot read"
-msgstr "Un programma con dati sanitari che non puoi leggere"
+msgid "One programme with protected health data"
+msgstr "Un programma con dati sanitari protetti"
 
 #: frontend/src/components/Plans/PlansCard.vue
-msgid "{0} programmes with health data you cannot read"
-msgstr "{0} programmi con dati sanitari che non puoi leggere"
+msgid "{0} programmes with protected health data"
+msgstr "{0} programmi con dati sanitari protetti"

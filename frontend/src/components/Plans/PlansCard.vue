@@ -292,11 +292,11 @@ const nascosti = computed(() => {
   const piani = plans.data?.hidden || 0
   const programmi = programmes.data?.hidden || 0
   return [
-    piani === 1 && __('One plan with health data you cannot read'),
-    piani > 1 && __('{0} plans with health data you cannot read', [piani]),
-    programmi === 1 && __('One programme with health data you cannot read'),
+    piani === 1 && __('One plan with protected health data'),
+    piani > 1 && __('{0} plans with protected health data', [piani]),
+    programmi === 1 && __('One programme with protected health data'),
     programmi > 1 &&
-      __('{0} programmes with health data you cannot read', [programmi]),
+      __('{0} programmes with protected health data', [programmi]),
   ].filter(Boolean)
 })
 
