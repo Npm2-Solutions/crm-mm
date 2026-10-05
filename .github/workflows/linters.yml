@@ -1,7 +1,12 @@
 name: Linters
 
+# Not on every pull request: NPM2 runs the checks when they are needed
+# (05/10/2026, a pull request waited eleven minutes on them). Every night on
+# develop, and by hand from Actions > Run workflow, on develop or on a branch.
 on:
-    pull_request:
+    schedule:
+        # every night at midnight UTC
+        - cron: "0 0 * * *"
     workflow_dispatch:
 
 permissions:
