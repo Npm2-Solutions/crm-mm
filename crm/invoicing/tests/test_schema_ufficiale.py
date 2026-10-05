@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The XML against the Agenzia's own schema, FatturaPA v1.2.2.
+"""The XML against the Agenzia's own schema, FatturaPA v1.2.3 (from 01/04/2025).
 
 `valida()` says the SdI's content checks in words; the schema is what the SdI (and
 Itala before it) reads first, and a file it refuses comes back as 00200 with no
@@ -40,7 +40,7 @@ try:
 except ImportError:  # no bench: plain Python has no lxml
 	etree = None
 
-SCHEMA = Path(__file__).parent / "xsd" / "Schema_del_file_xml_FatturaPA_v1.2.2.xsd"
+SCHEMA = Path(__file__).parent / "xsd" / "Schema_VFPR12_v1.2.3.xsd"
 
 
 @skipUnless(etree, "lxml is the framework's: run on a bench")
@@ -90,6 +90,29 @@ class SchemaUfficialeTest(UnitTestCase):
 		)
 		self.assertValida(documento)
 		self.assertEqual(documento.elemento().find(".//Quantita").text, "0.125")
+
+	def test_una_riga_scontata_porta_il_suo_sconto(self):
+		# 3 sessions at 33.33 with 9.99 off: before, the total did not follow the price
+		# and the SdI refused it (00423)
+		from crm.invoicing.engine.fatturapa import _sconto_della_riga
+
+		sconti = _sconto_della_riga(Decimal("33.33"), Decimal("3"), Decimal("90.00"))
+		documento = fattura(
+			linee=[
+				Linea(
+					numero=1,
+					descrizione="Ciclo di sedute",
+					quantita=Decimal("3"),
+					prezzo_unitario=Decimal("33.33"),
+					sconti=sconti,
+					prezzo_totale=Decimal("90.00"),
+					aliquota_iva=Decimal("22.00"),
+				)
+			]
+		)
+		self.assertValida(documento)
+		self.assertEqual(documento.elemento().find(".//ScontoMaggiorazione/Tipo").text, "SC")
+		self.assertEqual(documento.elemento().find(".//ScontoMaggiorazione/Importo").text, "3.33")
 
 	def test_ritenuta_bollo_cassa_e_pagamento(self):
 		self.assertValida(

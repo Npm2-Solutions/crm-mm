@@ -534,3 +534,48 @@ class DimensioniTest(UnitTestCase):
 		# The PEC message can carry a zip of several invoices, so its cap is the
 		# larger of the two and lives on the channel, not on the document.
 		self.assertGreater(DIMENSIONE_MASSIMA_MESSAGGIO_PEC, DIMENSIONE_MASSIMA_FILE)
+
+
+class ScontoDiRigaTest(UnitTestCase):
+	"""Check 00423: PrezzoTotale = (PrezzoUnitario - sconto per unita) x Quantita."""
+
+	def test_lo_sconto_per_unita_torna_col_totale(self):
+		from crm.invoicing.engine.fatturapa import _sconto_della_riga, _totale_atteso
+
+		for prezzo, quantita, totale in (
+			("80.00", "1", "72.00"),
+			("33.33", "3", "90.00"),
+			("10.00", "7", "65.00"),
+		):
+			sconti = _sconto_della_riga(Decimal(prezzo), Decimal(quantita), Decimal(totale))
+			linea = Linea(
+				numero=1,
+				descrizione="x",
+				quantita=Decimal(quantita),
+				prezzo_unitario=Decimal(prezzo),
+				sconti=sconti,
+				prezzo_totale=Decimal(totale),
+			)
+			self.assertLess(abs(_totale_atteso(linea) - Decimal(totale)), Decimal("0.01"))
+
+	def test_senza_sconto_nessun_blocco(self):
+		from crm.invoicing.engine.fatturapa import _sconto_della_riga
+
+		self.assertEqual(_sconto_della_riga(Decimal("80.00"), Decimal("2"), Decimal("160.00")), [])
+
+	def test_un_totale_che_non_segue_il_prezzo_e_00423(self):
+		from crm.invoicing.engine.fatturapa import valida
+
+		documento = fattura(
+			linee=[
+				Linea(
+					numero=1,
+					descrizione="x",
+					quantita=Decimal("1"),
+					prezzo_unitario=Decimal("80.00"),
+					prezzo_totale=Decimal("72.00"),
+					aliquota_iva=Decimal("22.00"),
+				)
+			]
+		)
+		self.assertTrue(any(getattr(r, "codice", "") == "00423" for r in valida(documento)))

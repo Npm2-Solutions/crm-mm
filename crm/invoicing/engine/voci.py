@@ -84,6 +84,7 @@ REGIME_FISCALE = (
 	_v("RF14", "Second-hand goods, art and antiques", "Art. 36 D.L. 41/95."),
 	_v("RF15", "Art auctions", "Art. 40-bis D.L. 41/95."),
 	_v("RF18", "Another special regime", "A regime that is not in this list."),
+	_v("RF20", "Cross-border VAT franchise", "Directive (EU) 2020/285, for who is enrolled in it."),
 )
 
 SOCIO_UNICO = (
@@ -142,7 +143,7 @@ NATURA = (
 	),
 	_v("N5", "Margin regime", "Second-hand goods, art and travel agencies: VAT is not shown on the invoice."),
 	_v("N6.1", "Reverse charge: scrap and recovered materials", "The client pays the VAT, not who invoices."),
-	_v("N6.2", "Reverse charge: gold and pure silver", "The client pays the VAT, not who invoices."),
+	_v("N6.2", "Reverse charge: gold and silver, used jewellery", "Gold and silver under L. 7/2000 and used jewellery sold to dealers: the client pays the VAT, not who invoices."),
 	_v("N6.3", "Reverse charge: building subcontracting", "The client pays the VAT, not who invoices."),
 	_v("N6.4", "Reverse charge: sale of buildings", "The client pays the VAT, not who invoices."),
 	_v("N6.5", "Reverse charge: mobile phones", "The client pays the VAT, not who invoices."),
@@ -177,22 +178,28 @@ TIPO_DOCUMENTO = (
 		sanita=True,
 	),
 	_v("TD03", "Advance on a professional fee note", "", sanita=True),
-	_v("TD07", "Simplified invoice", "For amounts up to EUR 400."),
-	_v("TD08", "Simplified credit note", ""),
-	_v("TD09", "Simplified debit note", ""),
 	_v("TD24", "Deferred invoice", "Groups the deliveries or services of a month, with their documents."),
 	_v("TD25", "Deferred invoice, triangular sale", "Art. 21, c. 4, third period, lett. b)."),
 	_v("TD16", "Reverse charge supplement", "Not issued to a client: it completes a purchase invoice."),
 	_v("TD17", "Self-invoice: services bought abroad", "Not issued to a client: it completes a purchase."),
 	_v("TD18", "Supplement: goods bought within the EU", "Not issued to a client: it completes a purchase."),
 	_v("TD19", "Self-invoice: goods under art. 17, c. 2", "Not issued to a client: it completes a purchase."),
-	_v("TD20", "Self-invoice to regularise a purchase", ""),
+	_v(
+		"TD20",
+		"Self-invoice to regularise a purchase",
+		"Art. 6, c. 9-bis, D.Lgs. 471/97 or art. 46, c. 5, D.L. 331/93. A supplier's missing invoice is TD29.",
+	),
 	_v("TD21", "Self-invoice for exceeding the ceiling", ""),
 	_v("TD22", "Goods taken out of a VAT warehouse", ""),
 	_v("TD23", "Goods taken out of a VAT warehouse, VAT paid", ""),
 	_v("TD26", "Sale of depreciable assets", ""),
 	_v("TD27", "Self-consumption or free supplies", ""),
 	_v("TD28", "Purchases from San Marino with VAT", ""),
+	_v(
+		"TD29",
+		"Report of a missing or irregular invoice",
+		"Art. 6, c. 8, D.Lgs. 471/97: what the client tells the Agenzia when the supplier did not invoice.",
+	),
 )
 
 # ------------------------------------------------------------------ payment
@@ -279,8 +286,8 @@ CASSA = (
 	_v("TC06", "Bookkeepers' fund", ""),
 	_v("TC07", "ENASARCO: sales agents", ""),
 	_v("TC08", "ENPACL: labour consultants", ""),
-	_v("TC12", "ENPAIA: agricultural technicians", ""),
-	_v("TC13", "Maritime agencies' fund", ""),
+	_v("TC12", "ENPAIA: agriculture employees", "Agrotecnici and periti agrari have their own funds inside it."),
+	_v("TC13", "Fund of forwarding and maritime agencies' employees", ""),
 	_v("TC14", "INPGI: journalists", ""),
 	_v("TC15", "ONAOSI: orphans of healthcare workers", ""),
 	_v("TC16", "CASAGIT: journalists' health fund", ""),
@@ -350,7 +357,7 @@ CAUSALE_PAGAMENTO = (
 	_v("U", "Commissions to a business finder", ""),
 	_v("V", "Door-to-door sales commissions", ""),
 	_v("V1", "Occasional commercial activity", ""),
-	_v("V2", "Occasional door-to-door selling", ""),
+	_v("W", "Contract work for a condominium", "Art. 25-ter DPR 600/73: the 4% withholding."),
 	_v("ZO", "Another reason", "A reason that is not in this list."),
 )
 

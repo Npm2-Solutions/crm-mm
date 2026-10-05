@@ -44780,3 +44780,42 @@ msgstr "chi emette la fattura («{0}») non ha tipi di spesa del Sistema TS: ind
 
 msgid "the VAT number of whoever issues is missing or is not eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
 msgstr "la partita IVA di chi emette manca o non ha undici cifre (un professionista che non ce l'ha usa il codice di undici cifre rilasciato dal Sistema TS)"
+
+msgid "Art. 6, c. 9-bis, D.Lgs. 471/97 or art. 46, c. 5, D.L. 331/93. A supplier's missing invoice is TD29."
+msgstr "Art. 6, c. 9-bis, D.Lgs. 471/97 o art. 46, c. 5, D.L. 331/93. La fattura che il fornitore non ha emesso è TD29."
+
+msgid "Report of a missing or irregular invoice"
+msgstr "Comunicazione di fattura omessa o irregolare"
+
+msgid "Art. 6, c. 8, D.Lgs. 471/97: what the client tells the Agenzia when the supplier did not invoice."
+msgstr "Art. 6, c. 8, D.Lgs. 471/97: quello che il cliente comunica all'Agenzia quando il fornitore non ha fatturato."
+
+msgid "Cross-border VAT franchise"
+msgstr "Franchigia IVA transfrontaliera"
+
+msgid "Directive (EU) 2020/285, for who is enrolled in it."
+msgstr "Direttiva (UE) 2020/285, per chi vi ha aderito."
+
+msgid "Reverse charge: gold and silver, used jewellery"
+msgstr "Inversione contabile: oro e argento, oreficeria usata"
+
+msgid "Gold and silver under L. 7/2000 and used jewellery sold to dealers: the client pays the VAT, not who invoices."
+msgstr "Oro e argento ai sensi della L. 7/2000 e oreficeria usata ceduta agli operatori: l'IVA la paga il cliente, non chi fattura."
+
+msgid "ENPAIA: agriculture employees"
+msgstr "ENPAIA: impiegati dell'agricoltura"
+
+msgid "Agrotecnici and periti agrari have their own funds inside it."
+msgstr "Agrotecnici e periti agrari hanno al suo interno le loro gestioni."
+
+msgid "Fund of forwarding and maritime agencies' employees"
+msgstr "Fondo previdenza impiegati imprese di spedizione e agenzie marittime"
+
+msgid "Contract work for a condominium"
+msgstr "Appalti per un condominio"
+
+msgid "Art. 25-ter DPR 600/73: the 4% withholding."
+msgstr "Art. 25-ter DPR 600/73: la ritenuta del 4%."
+
+msgid "line {0}: its total is not its unit price, less its discounts, times its quantity"
+msgstr "riga {0}: il totale non è il prezzo unitario, meno gli sconti, per la quantità"

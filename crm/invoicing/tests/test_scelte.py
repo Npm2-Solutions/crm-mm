@@ -86,10 +86,16 @@ class LeScelteInParole(IntegrationTestCase):
 	def test_le_qualifiche_di_un_centro_medico_sono_sanitarie(self):
 		with _sanitario():
 			qualifica = _campo(get_fields("CRM Service Provider"), "qualification")
-		self.assertEqual(frappe.parse_json(qualifica["link_filters"]), {"category": "sanitaria"})
+		# health professions only, and never who issues (a facility, a pharmacy)
+		filtro = frappe.parse_json(qualifica.get("link_filters"))
+		self.assertEqual(filtro["category"], "sanitaria")
+		self.assertEqual(filtro["sender_category"][0], "not in")
+		self.assertIn("farmacia", filtro["sender_category"][1])
 		with _generale():
 			qualifica = _campo(get_fields("CRM Service Provider"), "qualification")
-		self.assertFalse(qualifica.get("link_filters"))
+		filtro = frappe.parse_json(qualifica.get("link_filters"))
+		self.assertNotIn("category", filtro)
+		self.assertIn("struttura_autorizzata", filtro["sender_category"][1])
 
 	def test_gli_altri_doctype_non_cambiano(self):
 		with _sanitario():

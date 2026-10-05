@@ -1,4 +1,4 @@
-"""Code tables: FatturaPA 1.2.2 and Sistema TS 730.
+"""Code tables: FatturaPA 1.2.3 and Sistema TS 730.
 
 Two standards, one file, because they are consulted together and disagreeing
 copies of the same table are how a January full of rejected rows starts.
@@ -8,7 +8,9 @@ The rule this module exists to enforce, and the one everybody gets wrong:
 issues the document.** The same session is `SR` when the doctor invoices it and
 `SP` when the physiotherapist in the same practice does.
 
-Sources: FatturaPA specifiche tecniche v1.9 (tracciato 1.2.2), Sistema TS kit
+Sources: FatturaPA schema 1.2.3 and its "Rappresentazione tabellare" (in force from
+01/04/2025, read on 05/10/2026: TD07-TD09 belong to the simplified format only, TD29
+and RF20 are new), Sistema TS kit
 `kit730P_ver_20240214`, WS Sincrono v1.3 / WS Asincrono v2.5 del 20/12/2020,
 DM 19 ottobre 2020, DM 31 luglio 2015.
 """
@@ -83,6 +85,7 @@ class RegimeFiscale(StrEnum):
 	IVA_PER_CASSA = "RF17"
 	ALTRO = "RF18"
 	FORFETTARIO = "RF19"
+	FRANCHIGIA_TRANSFRONTALIERA = "RF20"
 
 
 DESCRIZIONE_REGIME: dict[str, str] = {
@@ -116,9 +119,6 @@ class TipoDocumento(StrEnum):
 	NOTA_CREDITO = "TD04"
 	NOTA_DEBITO = "TD05"
 	PARCELLA = "TD06"
-	FATTURA_SEMPLIFICATA = "TD07"
-	NOTA_CREDITO_SEMPLIFICATA = "TD08"
-	NOTA_DEBITO_SEMPLIFICATA = "TD09"
 	INTEGRAZIONE_REVERSE_CHARGE_INTERNO = "TD16"
 	AUTOFATTURA_SERVIZI_ESTERO = "TD17"
 	INTEGRAZIONE_BENI_INTRA = "TD18"
@@ -132,6 +132,7 @@ class TipoDocumento(StrEnum):
 	CESSIONE_BENI_AMMORTIZZABILI = "TD26"
 	AUTOCONSUMO = "TD27"
 	ACQUISTI_SAN_MARINO = "TD28"
+	COMUNICAZIONE_OMESSA_FATTURAZIONE = "TD29"
 
 
 DESCRIZIONE_TIPO_DOCUMENTO: dict[str, str] = {
@@ -141,22 +142,20 @@ DESCRIZIONE_TIPO_DOCUMENTO: dict[str, str] = {
 	"TD04": "Nota di credito",
 	"TD05": "Nota di debito",
 	"TD06": "Parcella",
-	"TD07": "Fattura semplificata",
-	"TD08": "Nota di credito semplificata",
-	"TD09": "Nota di debito semplificata",
 	"TD16": "Integrazione fattura reverse charge interno",
 	"TD17": "Integrazione / autofattura per acquisto servizi dall'estero",
 	"TD18": "Integrazione per acquisto di beni intracomunitari",
 	"TD19": "Integrazione / autofattura per acquisto di beni ex art. 17, c. 2, DPR 633/72",
-	"TD20": "Autofattura per regolarizzazione e integrazione delle fatture",
+	"TD20": "Autofattura per regolarizzazione e integrazione delle fatture (art. 6 c. 9-bis D.Lgs. 471/97 o art. 46 c. 5 D.L. 331/93)",
 	"TD21": "Autofattura per splafonamento",
 	"TD22": "Estrazione beni da Deposito IVA",
 	"TD23": "Estrazione beni da Deposito IVA con versamento dell'IVA",
-	"TD24": "Fattura differita (art. 21, c. 4, lett. a)",
+	"TD24": "Fattura differita (art. 21, c. 4, terzo periodo lett. a)",
 	"TD25": "Fattura differita (art. 21, c. 4, terzo periodo lett. b)",
 	"TD26": "Cessione di beni ammortizzabili e passaggi interni",
 	"TD27": "Fattura per autoconsumo o cessioni gratuite senza rivalsa",
 	"TD28": "Acquisti da San Marino con IVA (fattura cartacea)",
+	"TD29": "Comunicazione per omessa o irregolare fatturazione (art. 6, c. 8, D.Lgs. 471/97)",
 }
 
 #: Documents that reverse the sign of the original: the total is a credit.
@@ -205,7 +204,7 @@ DESCRIZIONE_NATURA: dict[str, str] = {
 	"N4": "Esenti",
 	"N5": "Regime del margine / IVA non esposta in fattura",
 	"N6.1": "Inversione contabile - rottami e altri materiali di recupero",
-	"N6.2": "Inversione contabile - oro e argento puro",
+	"N6.2": "Inversione contabile - cessione di oro e argento ai sensi della L. 7/2000 e di oreficeria usata ad OPO",
 	"N6.3": "Inversione contabile - subappalto nel settore edile",
 	"N6.4": "Inversione contabile - cessione di fabbricati",
 	"N6.5": "Inversione contabile - cessione di telefoni cellulari",
@@ -216,7 +215,7 @@ DESCRIZIONE_NATURA: dict[str, str] = {
 	"N7": "IVA assolta in altro stato UE",
 }
 
-#: `N2` and `N3` and `N6` without a sub-code were retired with tracciato 1.2.2.
+#: `N2` and `N3` and `N6` without a sub-code were retired on 01/01/2021 (tracciato 1.2.2).
 NATURE_RITIRATE: frozenset[str] = frozenset({"N2", "N3", "N6"})
 
 #: Reverse charge: the recipient settles the VAT, the issuer charges none.
@@ -357,16 +356,25 @@ class CausalePagamento(StrEnum):
 	LEVATA_PROTESTI = "E"
 	INDENNITA_CESSAZIONE = "G"
 	INDENNITA_AGENTI = "H"
+	INDENNITA_CESSAZIONE_NOTAI = "I"
 	PROVVIGIONI = "L"
+	OPERE_INGEGNO_ACQUISTATE = "L1"
 	AUTONOMO_OCCASIONALE = "M"
 	OBBLIGHI_FARE_NON_FARE = "M1"
-	INDENNITA_TRASFERTA = "N"
+	AUTONOMO_OCCASIONALE_ENPAPI = "M2"
+	SPORTIVI_DILETTANTI = "N"
 	AUTONOMO_OCCASIONALE_SENZA_INPS = "O"
-	PRESTAZIONI_SPORTIVE = "N1"
+	OBBLIGHI_FARE_SENZA_INPS = "O1"
 	REDDITI_DIVERSI = "P"
 	PROVVIGIONI_MONOMANDATARIO = "Q"
 	PROVVIGIONI_PLURIMANDATARIO = "R"
-	ALTRO = "Z"
+	PROVVIGIONI_COMMISSIONARIO = "S"
+	PROVVIGIONI_MEDIATORE = "T"
+	PROVVIGIONI_PROCACCIATORE = "U"
+	PROVVIGIONI_VENDITA_DOMICILIO = "V"
+	COMMERCIALE_OCCASIONALE = "V1"
+	CORRISPETTIVI_APPALTO_CONDOMINIO = "W"
+	ALTRO = "ZO"
 
 
 class TipoCassa(StrEnum):
@@ -408,8 +416,8 @@ DESCRIZIONE_CASSA: dict[str, str] = {
 	"TC09": "ENPAM - Medici",
 	"TC10": "ENPAF - Farmacisti",
 	"TC11": "ENPAV - Veterinari",
-	"TC12": "ENPAIA - Agrotecnici",
-	"TC13": "Fondo Previdenza Impiegati Agenzie Marittime Raccomandatarie",
+	"TC12": "ENPAIA - Ente nazionale previdenza e assistenza impiegati dell'agricoltura",
+	"TC13": "Fondo previdenza impiegati imprese di spedizione e agenzie marittime",
 	"TC14": "INPGI - Giornalisti",
 	"TC15": "ONAOSI - Orfani Sanitari Italiani",
 	"TC16": "CASAGIT - Giornalisti Italiani",
