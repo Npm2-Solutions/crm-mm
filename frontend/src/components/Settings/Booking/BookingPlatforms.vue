@@ -51,7 +51,7 @@
               {{ conn.connection_name }}
             </div>
             <div class="truncate text-p-sm text-ink-gray-5">
-              {{ conn.platform }}
+              {{ __(conn.platform) }}
               <span v-if="conn.last_sync || conn.last_webhook">
                 · {{ __('last activity') }}
                 {{ timeAgo(latest(conn.last_sync, conn.last_webhook)) }}
@@ -159,7 +159,7 @@
                 class="flex w-full flex-wrap items-center justify-between gap-x-2 gap-y-1"
               >
                 <span class="min-w-0 text-p-base-medium text-ink-gray-8">
-                  {{ platform.label }}
+                  {{ __(platform.label) }}
                 </span>
                 <div class="flex gap-1">
                   <Badge
@@ -661,7 +661,8 @@ const pickerGroups = computed(() => {
   const q = pickerQuery.value.trim().toLowerCase()
   return groupPlatforms(
     (platforms.data || []).filter(
-      (p) => !q || p.label.toLowerCase().includes(q),
+      // found by its name in either language: «webhook generico» too
+      (p) => !q || `${p.label} ${__(p.label)}`.toLowerCase().includes(q),
     ),
   )
 })
@@ -741,7 +742,9 @@ const usesWebhook = computed(() =>
   info.value?.capabilities?.includes('webhook'),
 )
 const usesEmail = computed(() => info.value?.capabilities?.includes('email'))
-const editorTitle = computed(() => form.platform || __('Booking platform'))
+const editorTitle = computed(() =>
+  form.platform ? __(form.platform) : __('Booking platform'),
+)
 
 function isRequired(field) {
   return (info.value?.required_fields || []).includes(field)
@@ -778,7 +781,8 @@ function startNew(platform) {
   reset()
   editingName.value = null
   form.platform = platform.label
-  form.connection_name = platform.label
+  // the connection's name, which the centre may change, in its words
+  form.connection_name = __(platform.label)
   showPicker.value = false
   showEditor.value = true
 }
