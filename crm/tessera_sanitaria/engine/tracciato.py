@@ -335,7 +335,7 @@ def valida_documento(documento: DocumentoSpesa) -> RisultatoValidazione:
 	# ------------------------------------------------------------- identifier
 	if not cf.identificativo_ts_valido(id_spesa.p_iva):
 		esito.errori.append(
-			"the VAT number of whoever issues has eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
+			"the VAT number of whoever issues is missing or is not eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
 		)
 	if id_spesa.data_emissione < DATA_MINIMA_EMISSIONE:
 		esito.errori.append(
