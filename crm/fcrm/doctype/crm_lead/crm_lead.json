@@ -223,7 +223,7 @@
    "fieldname": "no_of_employees",
    "fieldtype": "Select",
    "label": "No. of Employees",
-   "options": "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+   "options": "\n1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
   },
   {
    "fieldname": "annual_revenue",
@@ -842,7 +842,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-04 00:30:00.000000",
+ "modified": "2026-10-05 06:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

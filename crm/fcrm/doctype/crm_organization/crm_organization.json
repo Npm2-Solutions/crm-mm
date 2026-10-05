@@ -46,7 +46,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "No. of Employees",
-   "options": "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+   "options": "\n1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
   },
   {
    "fieldname": "column_break_pnpp",
@@ -123,7 +123,7 @@
  "image_field": "organization_logo",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-05 06:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Organization",
