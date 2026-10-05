@@ -129,7 +129,7 @@ class CRMLead(Document):
 		mobile_no: DF.Data | None
 		naming_series: DF.Literal["CRM-LEAD-.YYYY.-"]
 		net_total: DF.Currency
-		no_of_employees: DF.Literal["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"]
+		no_of_employees: DF.Literal["", "1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"]
 		organization: DF.Link | None
 		phone: DF.Data | None
 		products: DF.Table[CRMProducts]

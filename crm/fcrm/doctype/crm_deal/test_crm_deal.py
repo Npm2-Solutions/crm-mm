@@ -32,6 +32,13 @@ class TestCRMDeal(IntegrationTestCase):
 		self.assertTrue(deal.organization)
 		self.assertEqual(deal.annual_revenue, 1000000)
 
+	def test_a_deal_without_a_company_counts_no_employees(self):
+		# the framework gives a choice its first option: a person's deal said «1-10»
+		deal = create_test_deal(status="Qualification")
+		self.assertFalse(deal.no_of_employees)
+		lead = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Senza", "last_name": "Azienda"}).insert()
+		self.assertFalse(lead.no_of_employees)
+
 	def test_set_primary_contact(self):
 		"""Test setting primary contact from contacts table"""
 		# Create contacts
