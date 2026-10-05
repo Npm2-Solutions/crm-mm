@@ -103,11 +103,17 @@ def _conti() -> dict:
 	"""How much the demo holds, by what the screens call it."""
 	righe = frappe.db.sql("select ref_doctype, count(*) from `tabCRM Demo Record` group by ref_doctype")
 	per_doctype = dict(righe)
+	# the colleagues: the people a client area lets in are users too, and the
+	# page counted nineteen colleagues where the team was eight
+	colleghi = frappe.db.sql(
+		"""select count(*) from `tabCRM Demo Record` r join `tabUser` u on u.name = r.ref_name
+		where r.ref_doctype = 'User' and u.user_type = 'System User'"""
+	)
 	return {
 		"people": cint(per_doctype.get("CRM Lead")),
 		"appointments": cint(per_doctype.get("CRM Appointment")),
 		"deals": cint(per_doctype.get("CRM Deal")),
-		"team": cint(per_doctype.get("User")),
+		"team": cint(colleghi[0][0]),
 		"records": cint(sum(per_doctype.values())),
 	}
 
