@@ -7,6 +7,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import appointments as A
+from crm.api.activities import appointments_on
 from crm.scheduling import intervals as iv
 from crm.scheduling import pricing
 from crm.scheduling.availability import find_conflicts, get_slots
@@ -911,6 +912,37 @@ class TestAppointmentApi(SchedulingCase):
 		rows = A.get_person_appointments("CRM Lead", giulia.name)
 		self.assertEqual([row["name"] for row in rows], [later.name, earlier.name])
 		self.assertEqual(rows[0]["service"], "Visita persona")
+
+	def test_in_a_class_a_place_given_up_is_cancelled_for_that_person(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Lezione di gruppo", [anna], max_participants=8)
+		giulia = self._person("Giulia")
+		marta = self._person("Marta")
+		self.make_appointment(
+			"Lezione di gruppo",
+			self.tomorrow(18),
+			[anna],
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": giulia.name,
+					"participant_name": "Giulia",
+					"status": "Cancelled",
+				},
+				{"party_type": "CRM Lead", "party": marta.name, "participant_name": "Marta"},
+			],
+		)
+		# the class goes on, Giulia's page says she is not coming
+		self.assertEqual(A.get_person_appointments("CRM Lead", giulia.name)[0]["status"], "Cancelled")
+		self.assertEqual(A.get_person_appointments("CRM Lead", marta.name)[0]["status"], "Scheduled")
+		self.assertEqual(appointments_on("CRM Lead", giulia.name)[0]["data"]["status"], "Cancelled")
+
+	def test_a_place_says_how_it_went_for_that_person(self):
+		self.assertEqual(A.per_la_persona("Completed", "No Show"), "No Show")
+		# came, while the class is still open at the desk
+		self.assertEqual(A.per_la_persona("Confirmed", "Attended"), "Completed")
+		self.assertEqual(A.per_la_persona("Confirmed", "Booked"), "Confirmed")
+		self.assertEqual(A.per_la_persona("Cancelled", None), "Cancelled")
 
 	def test_a_deal_answers_for_the_person_behind_it(self):
 		anna = self.make_user("anna_sched@example.com")

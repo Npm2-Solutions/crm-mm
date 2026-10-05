@@ -418,17 +418,12 @@ def get_person_appointments(doctype: str, name: str) -> list[dict]:
 	person = name if doctype == "CRM Lead" else frappe.db.get_value("CRM Deal", name, "lead")
 	if not person:
 		return []
-	booked = frappe.get_all(
-		"CRM Appointment Participant",
-		filters={"parenttype": "CRM Appointment", "party_type": "CRM Lead", "party": person},
-		pluck="parent",
-		limit_page_length=0,
-	)
-	if not booked:
+	posti = posti_della_persona("CRM Lead", person)
+	if not posti:
 		return []
 	rows = frappe.get_list(
 		"CRM Appointment",
-		filters={"name": ["in", list(set(booked))]},
+		filters={"name": ["in", list(posti)]},
 		fields=[
 			"name",
 			"title",
@@ -451,7 +446,37 @@ def get_person_appointments(doctype: str, name: str) -> list[dict]:
 		row["starts_on"] = str(row["starts_on"])
 		row["ends_on"] = str(row["ends_on"])
 		row["cycle"] = sedute.get(row.name)
+		row["status"] = per_la_persona(row["status"], posti.get(row.name))
 	return rows
+
+
+#: How somebody's own place reads on their page, whatever the appointment says: in a
+#: class one gives up one's place or does not come while the others have the lesson,
+#: or came while the class is still open at the desk.
+DEL_POSTO = {"Cancelled": "Cancelled", "No Show": "No Show", "Attended": "Completed"}
+#: A place that is no appointment of theirs any more.
+POSTO_LASCIATO = ("Cancelled", "No Show")
+
+
+def posti_della_persona(party_type: str, party: str) -> dict[str, str | None]:
+	"""The appointments somebody has a place in, each with how their place is."""
+	return {
+		riga.parent: riga.status
+		for riga in frappe.get_all(
+			"CRM Appointment Participant",
+			filters={"parenttype": "CRM Appointment", "party_type": party_type, "party": party},
+			fields=["parent", "status"],
+			limit_page_length=0,
+		)
+	}
+
+
+def per_la_persona(stato: str | None, posto: str | None) -> str | None:
+	"""An appointment as it is for one of its people: how their own place went says
+	it, whatever the class does. Their page said they were coming to a class they had
+	cancelled, and that they had done one they never came to - the area already said
+	it as it was."""
+	return DEL_POSTO.get(posto or "") or stato
 
 
 # --------------------------------------------------------------------------
