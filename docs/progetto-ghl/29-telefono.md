@@ -900,6 +900,36 @@ che scorre anche quello che al dito non risponde.
   stavano in alto, e la fascia della voce scelta le lasciava sopra, sbilanciate.
   Ora la riga interna è alta quanto quella del foglio (`telefono.css`, «5»).
 
+## Undicesima parte: il foglio è un foglio (05/10/2026)
+
+«I fogli dal basso non funzionano ancora.» Erano le finestre di frappe-ui,
+fatte per il computer, ridisegnate da `telefono.css`; due cose le tenevano
+lontane dai fogli di un telefono.
+
+- **Scorreva la scatola dietro, non il foglio.** frappe-ui fa scorrere
+  `.dialog-scroll-container`, la scatola grande quanto lo schermo che tiene la
+  finestra; il foglio la seguiva (`overflow: clip`). Mentre una finestra è
+  aperta reka-ui blocca la pagina e le mette `pointer-events: none`, che la
+  scatola eredita: il dito tocca il foglio, e a scorrere deve essere una
+  scatola che il tocco non prende. Chromium la scorre lo stesso (le prove
+  passavano), un iPhone non è tenuto a farlo. Ora il foglio scorre da sé, alto
+  al più quanto lo schermo, il titolo di frappe-ui in cima e i pulsanti in
+  fondo dentro di lui; la scatola resta ferma (`telefono.css`, «4»). Anche
+  l'altezza: la scatola era alta `min-h-screen`, `100vh`, che su un iPhone è
+  più di quanto si vede.
+- **Si chiude tirandolo giù da ogni punto.** Solo la maniglia e il titolo lo
+  prendevano; altrove, in cima a un modulo, un dito che scende non trovava
+  niente da scorrere e il foglio restava fermo. Ora, in cima, lo segue da
+  qualunque punto, come i fogli di un telefono; un dito che sale scorre il
+  modulo, uno di lato una striscia, e il campo in cui si scrive, una firma,
+  la presa di una lista o una scatola già scorsa tengono il dito per sé (un
+  campo dove nessuno scrive no: in un modulo il dito cade quasi sempre su uno)
+  (`utils/trascinaFoglio.js`, provato).
+- **In Accoglienza la riga del servizio va a capo.** «Pacchetto completo ·
+  seduta 3 di 10 · chi lo fa» si fermava coi puntini a 320 punti; sul telefono
+  va a capo, il pallino sulla prima riga (`Today.vue`). Il riepilogo del
+  compositore («A … · oggetto») resta su una riga: toccato, si apre coi campi.
+
 ## File
 
 | File | Cosa cambia |

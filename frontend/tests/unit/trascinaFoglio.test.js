@@ -28,8 +28,8 @@ describe('trascinaIFogli', () => {
   let adesso = 0
   let smetti = () => {}
 
-  // a dialog as frappe-ui draws it: the dimmed screen, then the box that
-  // scrolls holding the sheet, its top 100 pixels down
+  // a dialog as frappe-ui draws it: the dimmed screen, then the box holding
+  // the sheet, its top 100 pixels down; on a phone the sheet scrolls itself
   function foglio() {
     const sfondo = document.createElement('div')
     sfondo.className = 'dialog-overlay'
@@ -50,18 +50,23 @@ describe('trascinaIFogli', () => {
     return { f, sfondo, titolo, campo, scatola }
   }
 
-  function tocco(dove, tipo, y) {
+  function tocco(dove, tipo, y, x = 50) {
     const evento = new Event(tipo, { bubbles: true })
-    evento.touches = y === undefined ? [] : [{ clientY: y }]
+    evento.touches = y === undefined ? [] : [{ clientX: x, clientY: y }]
     dove.dispatchEvent(evento)
   }
 
-  // the finger from y0 to y1 in steps of 16 milliseconds
-  function trascina(dove, y0, y1, passi = 10) {
-    tocco(dove, 'touchstart', y0)
+  // the finger from y0 to y1 (and x0 to x1) in steps of 16 milliseconds
+  function trascina(dove, y0, y1, passi = 10, x0 = 50, x1 = x0) {
+    tocco(dove, 'touchstart', y0, x0)
     for (let i = 1; i <= passi; i++) {
       adesso += 16
-      tocco(dove, 'touchmove', y0 + ((y1 - y0) * i) / passi)
+      tocco(
+        dove,
+        'touchmove',
+        y0 + ((y1 - y0) * i) / passi,
+        x0 + ((x1 - x0) * i) / passi,
+      )
     }
   }
 
@@ -108,16 +113,58 @@ describe('trascinaIFogli', () => {
     expect(f.style.transform).toBe('')
   })
 
-  it('is not taken below its top, from a field, or scrolled', () => {
-    const { f, titolo, campo, scatola } = foglio()
-    trascina(titolo, 100 + ZONA_MANIGLIA + 20, 500)
-    expect(f.style.transform).toBe('')
-    tocco(titolo, 'touchend')
-    trascina(campo, 120, 400)
+  it('is taken anywhere at its top when the finger goes down, as a phone’s own sheets', () => {
+    const { f, titolo } = foglio()
+    const sotto = 100 + ZONA_MANIGLIA + 120
+    trascina(titolo, sotto, sotto + 200, 40)
+    expect(f.style.transform).toBe('translateY(200px)')
+  })
+
+  it('leaves the finger to the field one writes in, a drawing, a grip, a scrolled box or a scrolled sheet', () => {
+    const { f, titolo, campo } = foglio()
+    // a field nobody writes in is the sheet's, as any other place
+    trascina(campo, 300, 500)
+    expect(f.style.transform).toBe('translateY(200px)')
+    tocco(campo, 'touchend')
+    vi.advanceTimersByTime(500)
+    campo.focus()
+    trascina(campo, 300, 500)
     expect(f.style.transform).toBe('')
     tocco(campo, 'touchend')
-    scatola.scrollTop = 50
+    campo.blur()
+    const firma = document.createElement('canvas')
+    f.append(firma)
+    trascina(firma, 300, 500)
+    expect(f.style.transform).toBe('')
+    tocco(firma, 'touchend')
+    const presa = document.createElement('span')
+    presa.className = 'drag-handle'
+    const lista = document.createElement('div')
+    const riga = document.createElement('div')
+    lista.append(riga)
+    f.append(presa, lista)
+    trascina(presa, 300, 500)
+    expect(f.style.transform).toBe('')
+    tocco(presa, 'touchend')
+    lista.scrollTop = 30
+    trascina(riga, 300, 500)
+    expect(f.style.transform).toBe('')
+    tocco(riga, 'touchend')
+    f.scrollTop = 50
     trascina(titolo, 120, 400)
+    expect(f.style.transform).toBe('')
+  })
+
+  it('leaves the form to a finger going up, and a strip to one going sideways', () => {
+    const { f, titolo } = foglio()
+    const sotto = 100 + ZONA_MANIGLIA + 120
+    // up first, then down: the form's scroll, not the sheet
+    trascina(titolo, sotto, sotto - 40, 5)
+    for (let i = 1; i <= 10; i++)
+      tocco(titolo, 'touchmove', sotto - 40 + i * 30)
+    expect(f.style.transform).toBe('')
+    tocco(titolo, 'touchend')
+    trascina(titolo, sotto, sotto + 30, 10, 50, 250)
     expect(f.style.transform).toBe('')
   })
 

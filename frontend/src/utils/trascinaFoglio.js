@@ -9,9 +9,14 @@
  * slides back up. A dialog that may not close yet (a page of the settings with
  * changes not saved) slides back up as well.
  *
- * Only by its top - the grabber, the title - and only while the sheet is at
- * rest, not scrolled: a finger in the form scrolls it, writes in it, signs. A
- * screen of its own (the settings) shows no grabber and is not dragged.
+ * By its top - the grabber, the title - while the sheet is not scrolled;
+ * anywhere else in it, as a phone's own sheets, when it is at its top and the
+ * finger goes down: there it had nothing left to scroll, and the sheet did not
+ * move at all, which read as a sheet that does not work. A finger that goes up
+ * scrolls the form, one that goes sideways a strip; in a box of the sheet
+ * scrolled down, in the field one writes in, a drawing or a list's grip it
+ * scrolls, writes, signs or reorders. A screen of its own (the settings) shows no grabber and
+ * is not dragged.
  */
 
 // how far from the sheet's top a finger takes it: the grabber and the title
@@ -21,7 +26,14 @@ export const ZONA_MANIGLIA = 64
 export const PASSO_MINIMO = 8
 
 const APERTO = ".dialog-content[data-state='open']"
-const CAMPI = 'input, textarea, select, [contenteditable="true"], canvas'
+// a drawing (a signature) and an editor keep the finger; a field only while
+// one writes in it: a finger that moves on it writes nothing, and in a form
+// it lands on one nearly everywhere
+const SEMPRE = '[contenteditable="true"], canvas'
+const CAMPI = 'input, textarea, select'
+// a list's grip that reorders it (vuedraggable's `handle`)
+const PRESE =
+  '[class*="handle"], [class*="grip"], .maniglia, .cursor-grab, [draggable="true"]'
 const SCIVOLA_VIA = 180
 const TORNA_SU = 220
 
@@ -120,16 +132,57 @@ export function trascinaIFogli(
     const foglio = aperti[aperti.length - 1]
     if (!foglio || !foglio.contains(evento.target)) return
     if (!haManiglia(win, foglio)) return
-    if (evento.target.closest?.(CAMPI)) return
-    if (foglio.closest('.dialog-scroll-container')?.scrollTop > 0) return
-    const y = evento.touches[0].clientY
-    if (y - foglio.getBoundingClientRect().top > ZONA_MANIGLIA) return
-    gesto = { foglio, y0: y, y, t: ora(), dy: 0, velocita: 0, mosso: false }
+    if (evento.target.closest?.(SEMPRE)) return
+    const campo = evento.target.closest?.(CAMPI)
+    if (campo && campo === doc.activeElement) return
+    // the sheet scrolls itself (telefono.css): scrolled, a finger scrolls it
+    if (foglio.scrollTop > 0) return
+    const { clientX: x, clientY: y } = evento.touches[0]
+    const dallaCima = y - foglio.getBoundingClientRect().top <= ZONA_MANIGLIA
+    if (
+      !dallaCima &&
+      (evento.target.closest?.(PRESE) || scorsa(evento.target, foglio))
+    )
+      return
+    gesto = {
+      foglio,
+      dallaCima,
+      x0: x,
+      y0: y,
+      y,
+      t: ora(),
+      dy: 0,
+      velocita: 0,
+      mosso: false,
+    }
+  }
+
+  // a box between the finger and the sheet scrolled down: the finger scrolls it
+  // back up first
+  function scorsa(el, foglio) {
+    for (let box = el; box && box !== foglio; box = box.parentElement) {
+      if (box.scrollTop > 0) return true
+    }
+    return false
   }
 
   function muovi(evento) {
     if (!gesto) return
-    const y = evento.touches[0].clientY
+    const { clientX: x, clientY: y } = evento.touches[0]
+    if (!gesto.mosso && !gesto.dallaCima) {
+      const giu = y - gesto.y0
+      const lato = Math.abs(x - gesto.x0)
+      // sideways (a strip), up (the form), or the sheet scrolled after all:
+      // the finger is not the sheet's
+      if (
+        (lato > PASSO_MINIMO && lato > Math.abs(giu)) ||
+        giu < -PASSO_MINIMO ||
+        gesto.foglio.scrollTop > 0
+      ) {
+        gesto = null
+        return
+      }
+    }
     const t = ora()
     if (t > gesto.t) gesto.velocita = (y - gesto.y) / (t - gesto.t)
     gesto.y = y
