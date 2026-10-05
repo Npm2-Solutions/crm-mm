@@ -6,19 +6,20 @@
   <div class="flex h-full flex-col text-ink-gray-8">
     <!-- header: back with the title, where it stands, preview, save, publish -->
     <div
-      class="flex items-center justify-between gap-3 px-6 pb-3 pt-8 max-md:flex-col max-md:items-start max-md:px-3 max-md:pt-5"
+      class="flex items-center justify-between gap-3 px-6 pb-3 pt-8 impostazioni-strette:flex-col impostazioni-strette:items-start max-md:px-3 max-md:pt-5"
     >
-      <!-- on a phone the title takes the row and where it stands goes under
-           it: beside a long title the badge ran off the screen -->
+      <!-- where the page is narrow (a phone, a tablet held upright) the
+           title takes the row and where it stands goes under it: beside a
+           long title the badge ran off the screen -->
       <div
-        class="flex min-w-0 items-center gap-2 max-md:w-full max-md:flex-wrap"
+        class="flex min-w-0 items-center gap-2 impostazioni-strette:w-full impostazioni-strette:flex-wrap"
       >
         <Button
           variant="ghost"
           icon-left="lucide-chevron-left"
           :label="tpl.title || __('Untitled')"
           size="md"
-          class="-ml-4 !max-w-96 !justify-start !pr-0 text-lg-semibold text-ink-gray-7 hover:bg-transparent hover:opacity-70 max-md:-ml-2 max-md:!max-w-full"
+          class="-ml-4 !max-w-96 !justify-start !pr-0 text-lg-semibold text-ink-gray-7 hover:bg-transparent hover:opacity-70 max-md:-ml-2 impostazioni-strette:!max-w-full"
           @click="goBack"
         />
         <Badge
@@ -48,7 +49,7 @@
         />
       </div>
       <div
-        class="flex shrink-0 items-center gap-2 max-md:w-full max-md:flex-wrap"
+        class="flex shrink-0 items-center gap-2 impostazioni-strette:w-full impostazioni-strette:flex-wrap"
       >
         <Button
           v-if="tab === 'build'"

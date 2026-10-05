@@ -27,7 +27,7 @@
         </p>
       </div>
       <div
-        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+        class="flex items-start space-x-2 w-3/12 justify-end impostazioni-strette:w-auto impostazioni-strette:justify-start"
       >
         <Dropdown
           :options="[
