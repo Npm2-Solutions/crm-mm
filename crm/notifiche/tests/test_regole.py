@@ -193,6 +193,20 @@ class ChiTipoE(UnitTestCase):
 			self.assertEqual(R.genere(tipo), genere)
 
 
+class SenzaChi(UnitTestCase):
+	def test_la_stessa_notizia_senza_chi_la_da(self):
+		# one place less, the one in front: the name of whoever gave it
+		for con, senza in R.SENZA_CHI.items():
+			self.assertEqual(len(re.findall(r"\{\d\}", senza)), len(re.findall(r"\{\d\}", con)) - 1, senza)
+			self.assertIn(senza, R.FRASI)
+			self.assertEqual(con in R.TOLTE, senza in R.TOLTE, senza)
+
+	def test_il_pannello_le_disegna_come_le_altre(self):
+		self.assertEqual(R.genere("Assignment", "CRM Task", R.COMPITO_PER_TE), "task")
+		self.assertEqual(R.genere("Assignment", "CRM Task", R.COMPITO_NON_PIU), "task_removed")
+		self.assertEqual(R.genere("Assignment", "CRM Deal", R.NON_SEGUI_PIU_TRATTATIVA), "unassigned")
+
+
 class IlCatalogo(UnitTestCase):
 	"""Every sentence is read in Italian, with the same places as the English: a
 	place lost or added would print the wrong name, or none."""

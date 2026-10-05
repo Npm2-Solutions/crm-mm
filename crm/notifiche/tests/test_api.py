@@ -184,7 +184,7 @@ class DoveSiApre(NotificheCase):
 		riga = self.pannello()["rows"][0]
 		self.assertEqual(riga["kind"], "task")
 		self.assertEqual(
-			riga["text"], "<b>Anna Notifiche</b> ti ha assegnato l'attività <b>Richiamare Laura</b>"
+			riga["text"], "<b>Anna Notifiche</b> ti ha assegnato una cosa da fare: <b>Richiamare Laura</b>"
 		)
 		self.assertEqual(riga["route"]["hash"], "#tasks")
 		# taken back, the notification of the task no longer opens the tasks
@@ -194,6 +194,24 @@ class DoveSiApre(NotificheCase):
 		righe = {r["kind"]: r for r in self.pannello()["rows"]}
 		self.assertEqual(righe["task_removed"]["route"]["hash"], "")
 		self.assertEqual(righe["task"]["route"]["hash"], "")
+
+	def test_data_da_nessuno_del_centro_non_ha_un_nome_davanti(self):
+		# an automation, an assignment rule, a job: never «Administrator assigned you»
+		compito = frappe.get_doc(
+			{
+				"doctype": "CRM Task",
+				"title": "Richiamare Laura",
+				"reference_doctype": "CRM Lead",
+				"reference_docname": self.laura.name,
+			}
+		).insert(ignore_permissions=True)
+		assign_to.add({"doctype": "CRM Lead", "name": self.laura.name, "assign_to": [BRUNO]})
+		assign_to.add({"doctype": "CRM Task", "name": compito.name, "assign_to": [BRUNO]})
+		self.come(BRUNO, "it")
+		righe = {r["kind"]: r for r in self.pannello()["rows"]}
+		self.assertEqual(righe["task"]["text"], "Hai una nuova cosa da fare: <b>Richiamare Laura</b>")
+		self.assertEqual(righe["assigned"]["text"], "Ora segui tu <b>Laura Notifica</b>")
+		self.assertIsNone(righe["task"]["from"])
 
 	def test_l_agenda_e_la_fatturazione(self):
 		avvisa(BRUNO, "Agenda", R.ESITI_OGGI, [3], oggetto=("CRM Appointment", "APP-1"))

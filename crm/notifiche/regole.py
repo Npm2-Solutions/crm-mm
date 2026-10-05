@@ -32,6 +32,26 @@ TOLTA_TRATTATIVA = "{0} removed your assignment on the deal {1}"
 COMPITO = "{0} assigned you the task {1}"
 COMPITO_TOLTO = "{0} removed your assignment on the task {1}"
 
+# The same news when nobody of the centre gave it - an automation, an assignment
+# rule, a job: no name in front of it, where «Administrator assigned you…» stood,
+# or «Guest» for a person who wrote from the website.
+ORA_SEGUI = "You now follow {0}"
+ORA_SEGUI_TRATTATIVA = "You now follow the deal {0}"
+NON_SEGUI_PIU = "You no longer follow {0}"
+NON_SEGUI_PIU_TRATTATIVA = "You no longer follow the deal {0}"
+COMPITO_PER_TE = "You have a new task: {0}"
+COMPITO_NON_PIU = "A task is no longer yours: {0}"
+
+#: Each sentence with who gave the news in front, and the same news without them.
+SENZA_CHI = {
+	ASSEGNATA: ORA_SEGUI,
+	ASSEGNATA_TRATTATIVA: ORA_SEGUI_TRATTATIVA,
+	TOLTA: NON_SEGUI_PIU,
+	TOLTA_TRATTATIVA: NON_SEGUI_PIU_TRATTATIVA,
+	COMPITO: COMPITO_PER_TE,
+	COMPITO_TOLTO: COMPITO_NON_PIU,
+}
+
 WHATSAPP = "You received a WhatsApp message from {0}"
 WHATSAPP_MOLTI = "You received {1} WhatsApp messages from {0}"
 WHATSAPP_TRATTATIVA = "You received a WhatsApp message on the deal {0}"
@@ -68,6 +88,12 @@ FRASI = (
 	TOLTA_TRATTATIVA,
 	COMPITO,
 	COMPITO_TOLTO,
+	ORA_SEGUI,
+	ORA_SEGUI_TRATTATIVA,
+	NON_SEGUI_PIU,
+	NON_SEGUI_PIU_TRATTATIVA,
+	COMPITO_PER_TE,
+	COMPITO_NON_PIU,
 	WHATSAPP,
 	WHATSAPP_MOLTI,
 	WHATSAPP_TRATTATIVA,
@@ -92,7 +118,9 @@ FRASI = (
 )
 
 #: The sentences that take something away: the panel draws them apart.
-TOLTE = frozenset({TOLTA, TOLTA_TRATTATIVA, COMPITO_TOLTO})
+TOLTE = frozenset(
+	{TOLTA, TOLTA_TRATTATIVA, COMPITO_TOLTO, NON_SEGUI_PIU, NON_SEGUI_PIU_TRATTATIVA, COMPITO_NON_PIU}
+)
 
 # ------------------------------------------------------------------ what kind it is
 
