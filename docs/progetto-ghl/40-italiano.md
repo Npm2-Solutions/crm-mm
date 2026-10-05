@@ -134,6 +134,15 @@ che al momento dell'installazione era ancora l'inglese del framework.
   nuova versione del testo, `registro.testo_da_tradurre`); un testo riscritto dal
   centro non si tocca. Lo stesso per le librerie: si ricaricano quando cambia la
   lingua, e solo le parole della libreria cambiano.
+- **Il migrate scrive con il catalogo del suo rilascio** (05/10/2026): `bench
+  update` fa il migrate prima della build, ed è la build che compila il catalogo
+  (`it.po` in `.mo`). Il migrate traduceva con quello del rilascio prima, e le
+  parole nuove che scrive nel sito restavano in inglese fino al migrate dopo: il
+  punto da verificare dello psicologo («ENPAP's reform to 4%…») si leggeva così
+  in «Prova e attivazione». Ora, prima del migrate, `crm/migrazione.py`
+  (`il_catalogo_del_rilascio`) compila il catalogo di DottorCloud dove il `.po` è
+  più nuovo; se non può (una cartella in sola lettura), lo annota e il migrate va
+  avanti come prima.
 - **I moduli già pubblicati** con i consensi congelati in inglese hanno una nuova
   versione con le parole di oggi (`modelli.consensi_nella_lingua_del_centro`, la
   patch `the_consents_speak_the_centres_language`): non è richiesta a nessuno che

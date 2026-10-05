@@ -690,7 +690,10 @@ DocTypes are renamed (`*_are_the_crms`), after it what they held is put back
 (`*_keep_their_health_data`, which reloads its DocTypes first and never skips in
 silence). Before a migrate syncs anything, `crm/migrazione.py` rebuilds the map of
 the modules from `modules.txt`: the cache may hold the previous release's, and a
-new module would not sync.
+new module would not sync. It compiles DottorCloud's catalogue too, where its `.po`
+is newer (`il_catalogo_del_rilascio`): `bench update` migrates before it builds, and
+the words a migrate writes in the centre's language (a qualification's points to
+check, a consent's text) came out in English until the migrate after.
 
 ## Mobile
 
