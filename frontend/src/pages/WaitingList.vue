@@ -165,8 +165,14 @@ import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
-import { STATO, comeStaLOfferta, quandoPuo } from '@/utils/attese'
+import {
+  STATO,
+  comeStaLOfferta,
+  formatoDellaScadenza,
+  quandoPuo,
+} from '@/utils/attese'
 import { appLocale } from '@/utils/locale'
+import { oggiDelCentro } from '@/utils/scheduler'
 import {
   Badge,
   FormControl,
@@ -251,7 +257,7 @@ function offerLine(offer) {
   return `${formatDate(offer.starts_on, 'ddd D MMM, HH:mm')} · ${comeStaLOfferta(
     offer,
     t,
-    (value) => formatDate(value, 'HH:mm'),
+    (value) => formatDate(value, formatoDellaScadenza(value, oggiDelCentro())),
   )}`
 }
 

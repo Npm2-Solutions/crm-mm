@@ -4,6 +4,7 @@ import {
   PARTI,
   comeStaLOfferta,
   errore,
+  formatoDellaScadenza,
   giornoBreve,
   inFila,
   perIlServer,
@@ -156,5 +157,18 @@ describe('the line', () => {
       { name: 'c', urgent: 1, since: '2026-10-03 09:00:00' },
     ]
     expect(inFila(voci).map((v) => v.name)).toEqual(['c', 'a', 'b'])
+  })
+})
+
+describe('when an offer is to be answered', () => {
+  it('says the hour today, the day too otherwise', () => {
+    expect(formatoDellaScadenza('2026-10-05 13:35:00', '2026-10-05')).toBe(
+      'HH:mm',
+    )
+    // tomorrow morning: «05:00» alone read as already gone
+    expect(formatoDellaScadenza('2026-10-06 05:00:00', '2026-10-05')).toBe(
+      'ddd D MMM, HH:mm',
+    )
+    expect(formatoDellaScadenza('', '2026-10-05')).toBe('ddd D MMM, HH:mm')
   })
 })

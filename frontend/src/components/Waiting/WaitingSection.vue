@@ -85,8 +85,15 @@ import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
-import { APERTE, STATO, comeStaLOfferta, quandoPuo } from '@/utils/attese'
+import {
+  APERTE,
+  STATO,
+  comeStaLOfferta,
+  formatoDellaScadenza,
+  quandoPuo,
+} from '@/utils/attese'
 import { appLocale } from '@/utils/locale'
+import { oggiDelCentro } from '@/utils/scheduler'
 import { Badge, Button, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
 
@@ -138,7 +145,7 @@ function offerLine(offer) {
   return `${formatDate(offer.starts_on, 'ddd D MMM, HH:mm')} · ${comeStaLOfferta(
     offer,
     t,
-    (value) => formatDate(value, 'HH:mm'),
+    (value) => formatDate(value, formatoDellaScadenza(value, oggiDelCentro())),
   )}`
 }
 
