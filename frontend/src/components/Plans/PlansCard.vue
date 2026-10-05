@@ -12,10 +12,10 @@
 <template>
   <section v-if="plans.data" class="flex flex-col gap-5">
     <div
-      class="flex items-start justify-between gap-4 max-md:flex-col max-md:gap-3"
+      class="flex flex-wrap items-start justify-between gap-4 max-md:flex-col max-md:gap-3"
     >
       <!-- the tab's header names it: here, what a plan is -->
-      <div class="flex min-w-0 max-w-2xl flex-col gap-1">
+      <div class="flex min-w-[15rem] max-w-2xl flex-1 flex-col gap-1">
         <DescrizioneRipiegata>
           {{
             __(
@@ -49,7 +49,9 @@
 
     <!-- none yet: how it goes, and what one may write -->
     <template v-if="vuoto">
-      <ol class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
+      <!-- side by side where each has 12rem: three in a record's column on a
+           tablet held upright were 70px, a word to a line -->
+      <ol class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3">
         <li
           v-for="(passo, i) in COME_FUNZIONA"
           :key="passo"

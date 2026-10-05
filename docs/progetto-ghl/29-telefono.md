@@ -700,6 +700,18 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   come «Tratt…» uno sopra l'altro; la settimana è a un tocco. Nell'intestazione
   «Collega Google Calendar» è la sua icona sotto i 1024 punti: con le sue parole
   spingeva fuori «Lista d'attesa» (`pages/Calendar.vue`).
+- **La colonna di una scheda è larga come un telefono**, in piedi: 368 punti
+  accanto al pannello della persona. Quello che guardava lo schermo e non la
+  colonna si schiacciava: i campi dei Dati su tre colonne da 90 punti
+  («rita.deang» per l'email), la riga di Moduli con una parola per riga accanto
+  ai suoi pulsanti, i tre passi dei Piani da 70 punti, un preventivo su quattro
+  righe accanto ai suoi segni, «Programma un evento» tagliato. Ora le colonne di
+  campi stanno affiancate dove ognuna ha 11rem (`FieldLayout/Section.vue`,
+  `Column.vue`), le parole di una scheda tengono 15rem e i pulsanti vanno sotto
+  (`Moduli/FormsArea.vue`, `Plans/PlansCard.vue`), i passi dove ognuno ha 12rem,
+  i segni di un preventivo sotto le sue parole (`Quotes/QuotesCard.vue`), e sotto
+  i 1024 punti gli Eventi offrono «Appuntamento» ed «Evento»
+  (`Activities/ActivityHeader.vue`). Sul computer non cambia niente.
 - **Le note sono quattro per riga dove ci stanno**, meno dove una scheda
   sarebbe più stretta di 13rem: in piedi erano 155 punti, il titolo «Nota di
   pr…» e l'autore e il giorno su tre righe (`pages/Notes.vue`).
