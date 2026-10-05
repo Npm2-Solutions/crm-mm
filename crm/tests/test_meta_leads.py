@@ -108,6 +108,17 @@ class TestMetaLeads(IntegrationTestCase):
 		)
 		self.assertTrue(any("risposta" in (c or "") for c in comments))
 
+	def test_a_question_keeps_its_own_mark_in_the_note(self):
+		from crm.integrations.meta.leads import _risposta
+
+		self.assertEqual(
+			_risposta("Quando preferisci essere richiamato?", "Dopo le 18"),
+			"<li><b>Quando preferisci essere richiamato?</b> Dopo le 18</li>",
+		)
+		self.assertEqual(_risposta("Motivo", "Mal di schiena"), "<li><b>Motivo</b>: Mal di schiena</li>")
+		# what Meta sends is written as text, never as markup
+		self.assertIn("&lt;b&gt;", _risposta("Nota", "<b>sì</b>"))
+
 	def test_a_second_form_is_a_submission_not_a_second_person(self):
 		"""The same human being answering two ads is one person with two
 		submissions — in every CRM the person is deduplicated on email/phone."""
