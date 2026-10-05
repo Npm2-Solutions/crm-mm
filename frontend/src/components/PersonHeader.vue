@@ -69,10 +69,12 @@
       </span>
     </router-link>
 
-    <!-- the actions, as round keys with their word under them -->
+    <!-- the actions, as round keys with their word under them: a column for
+         each key drawn. Six columns for five keys (no SMS) left each word
+         a column narrower than itself, «Chiama» touching «WhatsApp» -->
     <div
       class="grid gap-1"
-      :class="puoPrenotare ? 'grid-cols-6' : 'grid-cols-5'"
+      :style="{ gridTemplateColumns: `repeat(${tasti}, minmax(0, 1fr))` }"
       role="toolbar"
       :aria-label="title"
     >
@@ -83,7 +85,7 @@
               <span :class="[tondo, primario]">
                 <PhoneIcon class="size-[18px]" />
               </span>
-              <span class="truncate">{{ __('Call') }}</span>
+              <span class="max-w-full truncate">{{ __('Call') }}</span>
             </button>
           </template>
         </Dropdown>
@@ -98,7 +100,7 @@
           <span :class="[tondo, modi.length ? primario : spento]">
             <PhoneIcon class="size-[18px]" />
           </span>
-          <span class="truncate">{{ __('Call') }}</span>
+          <span class="max-w-full truncate">{{ __('Call') }}</span>
         </button>
       </template>
 
@@ -112,7 +114,7 @@
         <span :class="[tondo, numeri.length ? normale : spento]">
           <WhatsAppIcon class="size-[18px]" />
         </span>
-        <span class="truncate">WhatsApp</span>
+        <span class="max-w-full truncate">WhatsApp</span>
       </button>
 
       <button
@@ -125,7 +127,7 @@
         <span :class="[tondo, numeri.length ? normale : spento]">
           <SMSIcon class="size-[18px]" />
         </span>
-        <span class="truncate">SMS</span>
+        <span class="max-w-full truncate">SMS</span>
       </button>
 
       <button
@@ -139,14 +141,14 @@
         <span :class="[tondo, doc.email ? normale : spento]">
           <Email2Icon class="size-[18px]" />
         </span>
-        <span class="truncate">{{ __('Email') }}</span>
+        <span class="max-w-full truncate">{{ __('Email') }}</span>
       </button>
 
       <button v-if="puoPrenotare" type="button" :class="tasto" @click="prenota">
         <span :class="[tondo, normale]">
           <span class="lucide-calendar-plus size-[18px]" aria-hidden="true" />
         </span>
-        <span class="truncate">{{ __('Book') }}</span>
+        <span class="max-w-full truncate">{{ __('Book') }}</span>
       </button>
 
       <Dropdown v-if="altro.length" :options="altro">
@@ -155,7 +157,7 @@
             <span :class="[tondo, normale]">
               <span class="lucide-ellipsis size-[18px]" aria-hidden="true" />
             </span>
-            <span class="truncate">{{ __('More') }}</span>
+            <span class="max-w-full truncate">{{ __('More') }}</span>
           </button>
         </template>
       </Dropdown>
@@ -206,9 +208,11 @@ const scheduling = useSchedulerMeta()
 
 const lingua = window.navigator?.language || 'it-IT'
 
-// a round key and its word: what the phone's own contact card looks like
+// a round key and its word: what the phone's own contact card looks like.
+// No padding beside the word: in a side panel 352px wide «WhatsApp» needs
+// the whole of its column
 const tasto =
-  'touch-target group flex min-w-0 flex-col items-center gap-1.5 rounded-md px-0.5 py-1 text-xs font-medium text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3 disabled:cursor-not-allowed'
+  'touch-target group flex min-w-0 flex-col items-center gap-1.5 rounded-md py-1 text-xs font-medium text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3 disabled:cursor-not-allowed'
 const tondo =
   'grid size-10 place-items-center rounded-full transition-colors [border-bottom-left-radius:6px]'
 const primario =
@@ -298,6 +302,19 @@ const fatti = computed(() => {
 })
 
 const altro = computed(() => props.more.filter(Boolean))
+
+// how many keys the row draws, as the template decides each one
+const tasti = computed(
+  () =>
+    [
+      !soloMascherati.value,
+      whatsappEnabled.value && scrive.value,
+      smsEnabled.value && scrive.value,
+      scrive.value,
+      puoPrenotare.value,
+      altro.value.length > 0,
+    ].filter(Boolean).length || 1,
+)
 
 defineExpose({ reload: () => appuntamenti.reload() })
 </script>
