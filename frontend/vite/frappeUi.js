@@ -270,6 +270,23 @@ const SOSTITUZIONI = {
   'Select/Select.vue': [
     predefinito('placeholder', 'Select option'),
     predefinito('emptyText', 'No options'),
+    // On a phone a select's list is a sheet from the bottom (telefono.css).
+    // Set over its trigger (`item-aligned`), reka-ui grows the list as it is
+    // scrolled and gives the scroll back while it grows: under a finger,
+    // which scrolls a few points at a time, the list never moved (a time
+    // zone, 400 of them; the wheel moved it a third). There it is placed as a
+    // popper, which the sheet takes as it is - and, where there is no sheet
+    // (the client area), under its field and as wide as it.
+    [
+      'props.offset !== undefined,\n)',
+      'props.offset !== undefined ||\n    isMobileView.value,\n)',
+    ],
+    [
+      "import { computed, useAttrs, useSlots, useTemplateRef } from 'vue'",
+      `import { computed, useAttrs, useSlots, useTemplateRef } from 'vue'
+// DottorCloud (frontend/vite/frappeUi.js): on a phone, a sheet that scrolls
+import { isMobileView } from '@/composables/breakpoints'`,
+    ],
   ],
   'Combobox/Combobox.vue': [
     predefinito('placeholder', 'Select option'),

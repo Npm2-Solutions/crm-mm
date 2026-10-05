@@ -373,6 +373,20 @@ describe('frappe-ui in the user’s language', () => {
     expect(pulsante).toContain("import { siPosa } from '@/utils/puntatore'")
   })
 
+  it('places a select’s list on a phone as the sheet takes it, where a finger scrolls it', () => {
+    const selettore = tradotto('Select/Select.vue')
+    expect(selettore).toContain(
+      'props.offset !== undefined ||\n    isMobileView.value,\n)',
+    )
+    // the list placed and sized by that one condition
+    expect(selettore).toContain(
+      `:position="usesPopperPosition ? 'popper' : 'item-aligned'"`,
+    )
+    expect(selettore).toContain(
+      "import { isMobileView } from '@/composables/breakpoints'",
+    )
+  })
+
   it('stops the build when frappe-ui no longer writes what it replaces', () => {
     expect(() =>
       traduciFrappeUi(
