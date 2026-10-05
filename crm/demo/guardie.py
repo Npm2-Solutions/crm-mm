@@ -14,6 +14,10 @@ So, while the demo data are in (or being made):
   any while a part of the demo is being made;
 - a call to one does not leave (`crm.telephony.uscita.perche_no`);
 - a notification about a demo record stays in the panel, never by email;
+- no outside service hears of a demo record (`mai_fuori`): Meta's conversions are
+  never told of a demo person, a demo ad's preview is never asked of Meta, and a demo
+  post is marked published at its time, never handed to a network - as a demo SMS
+  is kept as sent;
 - the public booking page offers the demo's services only to somebody signed in,
   who is trying the page out: never to a visitor;
 - a message or a call that comes in from a number a demo person has too is never
@@ -130,6 +134,17 @@ def solo_nel_pannello(*riferimenti: tuple[str | None, str | None]) -> bool:
 	if not attiva():
 		return False
 	return any(doctype and name and registro.di_prova(doctype, name) for doctype, name in riferimenti)
+
+
+# -- outside services ---------------------------------------------------------------------------
+
+
+def mai_fuori(doctype: str, nome: str | None) -> bool:
+	"""Whether a record is the demo's, which no outside service hears about (Meta,
+	the social networks). While a part is made, everything is."""
+	if not nome:
+		return False
+	return registro.raccolta() is not None or str(nome) in registro.nomi_di_prova(doctype)
 
 
 # -- the public pages -------------------------------------------------------------------------
