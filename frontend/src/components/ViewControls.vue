@@ -76,9 +76,12 @@
         class="flex overflow-x-auto -ml-1"
         orientation="horizontal"
       >
+        <!-- on a touch screen a filter moves after a short press: a swipe
+             along the row scrolls it -->
         <Draggable
           class="flex w-full gap-2 items-center"
           :list="newQuickFilters"
+          :delay="isTouchScreenDevice() ? 200 : 0"
           group="filters"
           item-key="fieldname"
         >
@@ -343,7 +346,7 @@ import { viewsStore } from '@/stores/views'
 import { usersStore } from '@/stores/users'
 import { organizationsStore } from '@/stores/organizations'
 import { getMeta } from '@/stores/meta'
-import { isEmoji } from '@/utils'
+import { isEmoji, isTouchScreenDevice } from '@/utils'
 import { nomeDellaPagina } from '@/utils/menu'
 import {
   Combobox,

@@ -775,6 +775,18 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   sono di 28 punti (`Dashboard/DashboardGrid.vue`). Col mouse non cambia
   niente: si trascina da tutto il riquadro.
 
+- **Un elenco che si riordina non ruba lo scorrimento.** La kanban parte già
+  dopo una breve pressione al tocco; i filtri rapidi, le colonne della kanban,
+  i campi di una griglia e gli editor del layout (schede, colonne, sezioni del
+  pannello) no, e un dito che scorreva la riga dei filtri o un elenco in un
+  dialogo spostava una voce. Ora anche loro aspettano 200 millisecondi al tocco
+  (`ViewControls.vue`, `Kanban/KanbanSettings.vue`,
+  `Controls/GridFieldsEditorModal.vue`, `FieldLayoutEditor.vue`,
+  `SidePanelLayoutEditor.vue`); gli elenchi con una maniglia (fasi della
+  pipeline, domande di un modulo) già si prendevano solo da lì. Un
+  appuntamento dell'agenda col dito non si sposta: lo scorrimento resta
+  dell'agenda, e l'orario si cambia nel suo pannello.
+
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la

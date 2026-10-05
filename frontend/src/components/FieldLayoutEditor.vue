@@ -6,9 +6,12 @@
     <div
       class="flex items-center justify-between gap-2 text-base bg-surface-gray-2 rounded py-2 px-2.5 overflow-x-auto max-w-full"
     >
+      <!-- on a touch screen a tab, a column moves after a short press: a
+           swipe scrolls -->
       <Draggable
         v-if="tabs.length && tabs[tabIndex].label"
         :list="tabs"
+        :delay="isTouchScreenDevice() ? 200 : 0"
         item-key="name"
         class="flex items-center gap-2 w-full overflow-auto py-1 [&::-webkit-scrollbar]:h-0"
         @end="(e) => (tabIndex = e.newIndex)"
@@ -178,6 +181,7 @@
             <Draggable
               class="flex gap-2"
               :list="section.columns"
+              :delay="isTouchScreenDevice() ? 200 : 0"
               group="columns"
               item-key="name"
               @start="isDragging = true"
@@ -280,7 +284,7 @@
 <script setup>
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import Draggable from 'vuedraggable'
-import { getRandom } from '@/utils'
+import { getRandom, isTouchScreenDevice } from '@/utils'
 import { getMeta } from '@/stores/meta'
 import { globalStore } from '@/stores/global'
 import { Combobox, Dropdown } from 'frappe-ui'
