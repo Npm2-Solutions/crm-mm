@@ -44318,3 +44318,7 @@ msgstr "L'ora su cui leggi gli orari. L'agenda tiene quella del centro."
 #: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
 msgid "The centre’s time zone ({0})"
 msgstr "Fuso orario del centro ({0})"
+
+#: crm/benvenuto.py
+msgid "Write the centre's name"
+msgstr "Scrivi il nome del centro"

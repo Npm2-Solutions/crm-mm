@@ -19,6 +19,7 @@ from frappe.translate import (
 from frappe.utils import cint, get_system_timezone
 from werkzeug.wrappers import Response
 
+from crm.benvenuto import per_il_boot
 from crm.lingue import del_centro
 from crm.marchio import con_nome
 
@@ -115,9 +116,10 @@ def get_boot():
 			# whether the session opens DottorCloud, as the page decided (get_context):
 			# the router needs nothing more to let it in, not the list of users
 			"crm_user": session_opens_the_crm(),
-			# whether the first-run questions are to be asked, decided here and not by
-			# two calls in a row before every first page (router.js)
-			"ask_persona": ask_persona(),
+			# whether the session is welcomed first: the centre's language, name and
+			# clock (crm.benvenuto), decided here and not by a call before every first
+			# page (router.js)
+			"benvenuto": per_il_boot(),
 			"vertical": get_vertical(),
 			# the product's brand - the vertical's - and the centre's mark, which leads
 			# at the top of the sidebar
@@ -130,18 +132,6 @@ def session_opens_the_crm() -> bool:
 	from crm.api import check_app_permission
 
 	return frappe.session.user != "Guest" and bool(check_app_permission())
-
-
-def ask_persona() -> bool:
-	"""The first-run questions only feed the framework's telemetry: asked until the
-	centre answered, and only where telemetry is on to read the answers."""
-	try:
-		from frappe.utils.telemetry.pulse.client import is_enabled
-
-		return bool(not frappe.db.get_single_value("FCRM Settings", "persona_captured") and is_enabled())
-	except Exception:
-		# never in the way of the page: the questions are not essential
-		return False
 
 
 def get_brand() -> dict:

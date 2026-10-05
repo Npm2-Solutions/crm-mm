@@ -2,15 +2,16 @@
 # For license information, please see license.txt
 
 """What the page says at the start, so that the first page waits on no call in a
-row: whether the session opens DottorCloud, whether the first-run questions are
-to be asked (crm.www.crm)."""
+row: whether the session opens DottorCloud, whether it is welcomed first
+(crm.www.crm, crm.benvenuto)."""
 
 from unittest.mock import patch
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from crm.www.crm import ask_persona, get_boot, session_opens_the_crm
+from crm import benvenuto
+from crm.www.crm import get_boot, session_opens_the_crm
 
 
 class TestAvvio(FrappeTestCase):
@@ -22,27 +23,22 @@ class TestAvvio(FrappeTestCase):
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
+		frappe.db.rollback()
 
 	def test_the_page_says_the_session_opens_dottorcloud(self):
 		boot = get_boot()
 		self.assertIs(boot.crm_user, True)
-		self.assertIn("ask_persona", boot)
+		self.assertIn("benvenuto", boot)
 
 	def test_a_guest_does_not(self):
 		frappe.set_user("Guest")
 		self.assertFalse(session_opens_the_crm())
+		self.assertFalse(benvenuto.per_il_boot())
 
-	def test_the_questions_only_where_telemetry_reads_them(self):
-		with patch("frappe.utils.telemetry.pulse.client.is_enabled", return_value=False):
-			self.assertFalse(ask_persona())
-		with (
-			patch("frappe.utils.telemetry.pulse.client.is_enabled", return_value=True),
-			patch("frappe.db.get_single_value", return_value=0),
-		):
-			self.assertTrue(ask_persona())
-		# answered once: not asked again
-		with (
-			patch("frappe.utils.telemetry.pulse.client.is_enabled", return_value=True),
-			patch("frappe.db.get_single_value", return_value=1),
-		):
-			self.assertFalse(ask_persona())
+	def test_welcomed_while_the_centre_has_no_name(self):
+		frappe.defaults.clear_default(benvenuto.FATTO)
+		with patch("crm.moduli.richieste.nome_del_centro", return_value=""):
+			self.assertTrue(benvenuto.per_il_boot())
+		# a centre that already works has its name
+		with patch("crm.moduli.richieste.nome_del_centro", return_value="Studio Rossi"):
+			self.assertFalse(benvenuto.per_il_boot())
