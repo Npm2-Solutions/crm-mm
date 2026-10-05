@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The clinic's foods, the library its diets are written with: the library
   DottorCloud ships, all there on every site with its names in Italian
   (`crm.clinica.librerie.carica_libreria`), and the centre's own. The centre
@@ -35,11 +38,13 @@
 <script setup>
 import FoodEditDialog from '@/components/Settings/Clinic/FoodEditDialog.vue'
 import LibraryPage from '@/components/Settings/Plans/LibraryPage.vue'
-import { FONTI } from '@/utils/librerie'
+import { FONTI, numeroDelCibo } from '@/utils/librerie'
+import { appLocale } from '@/utils/locale'
 import { GRUPPI } from '@/utils/piani'
 import { reactive } from 'vue'
 
 const editing = reactive({ show: false, row: null })
+const lingua = appLocale() || 'it'
 
 const library = {
   title: __('Foods'),
@@ -60,12 +65,12 @@ const library = {
   searchPlaceholder: __('Search a food'),
   newLabel: __('New food'),
   empty: __('No foods yet: add the centre’s own with New food.'),
+  // its group and energy, in the reader's numbers; the table's own name (in
+  // CIQUAL's English) is in the food's window, not in the row
   describe: (row) => {
     const parts = [__(row.food_group)]
     if (row.kcal !== null && row.kcal !== undefined)
-      parts.push(__('{0} kcal/100 g', [row.kcal]))
-    if (row.name_in_source && row.name_in_source !== row.food_name)
-      parts.push(row.name_in_source)
+      parts.push(__('{0} kcal/100 g', [numeroDelCibo(row.kcal, lingua)]))
     return parts.join(' · ')
   },
 }

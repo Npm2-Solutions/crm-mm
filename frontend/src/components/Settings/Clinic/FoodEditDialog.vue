@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A food of the library, to read and to switch off or on: its numbers for 100 g
   and where they come from, never changed by the centre. One of the centre's
   own, written here: its name, its group, its portion, its numbers, on or off.
@@ -17,7 +20,9 @@
           <span class="font-medium text-ink-gray-8">
             {{ __('Per 100 g, from {0}', [food.source]) }}
           </span>
-          <span>{{ rigaValori(food, (text, args) => __(text, args)) }}</span>
+          <span>{{
+            rigaValori(food, (text, args) => __(text, args), lingua)
+          }}</span>
           <span v-if="food.kcal_computed" class="text-ink-gray-6">
             {{
               __(
@@ -25,8 +30,10 @@
               )
             }}
           </span>
+          <!-- the table's own words for it, and its code there: where to
+               find it, in the table's language -->
           <span class="text-ink-gray-5">
-            {{ food.name_in_source }}
+            {{ __('In {0}: {1}', [food.source, food.name_in_source]) }}
             <template v-if="food.source_code">
               · {{ __('code {0}', [food.source_code]) }}
             </template>
@@ -121,6 +128,7 @@
 <script setup>
 import SettingsRow from '@/components/Settings/SettingsRow.vue'
 import { rigaValori } from '@/utils/librerie'
+import { appLocale } from '@/utils/locale'
 import { GRUPPI } from '@/utils/piani'
 import {
   Button,
@@ -146,6 +154,8 @@ const acceso = ref(false)
 const error = ref('')
 
 const own = computed(() => (props.food?.source || 'Centre') === 'Centre')
+// the numbers as the reader writes them («27,1» in Italian)
+const lingua = appLocale() || 'it'
 const title = computed(() => {
   if (!props.food) return __('New food')
   return own.value ? __('Food') : props.food.food_name

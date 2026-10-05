@@ -44882,3 +44882,7 @@ msgstr "manca il riepilogo IVA per \"{0}\""
 
 msgid "the VAT summary has a block for \"{0}\" that no line carries"
 msgstr "il riepilogo IVA ha un blocco per \"{0}\" che nessuna riga porta"
+
+#: frontend/src/components/Settings/Clinic/FoodEditDialog.vue
+msgid "In {0}: {1}"
+msgstr "In {0}: {1}"
