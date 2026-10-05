@@ -62,10 +62,11 @@
             </template>
           </Button>
         </Dropdown>
-        <!-- on a phone the stats and the test run are in the ⋯ menu: beside
-             Save they left the title three words -->
+        <!-- on a phone, and on a tablet held upright, the stats and the test
+             run are in the ⋯ menu: beside Save they left the title three
+             words («Recupero no…», the way back «Aut…») -->
         <Button
-          v-if="draft.name && !isMobileView"
+          v-if="draft.name && !stretto"
           :variant="showStats ? 'subtle' : 'ghost'"
           :label="__('Stats')"
           @click="toggleStats"
@@ -75,7 +76,7 @@
           </template>
         </Button>
         <Button
-          v-if="!isMobileView && gestisce"
+          v-if="!stretto && gestisce"
           :label="__('Test run')"
           @click="showPreview = true"
         >
@@ -302,7 +303,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import RunPreviewDialog from '@/components/Automations/RunPreviewDialog.vue'
 import StepPanel from '@/components/Automations/StepPanel.vue'
 import TriggerPanel from '@/components/Automations/TriggerPanel.vue'
-import { isMobileView } from '@/composables/breakpoints'
+import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import {
   Badge,
   Breadcrumbs,
@@ -491,17 +492,20 @@ const paletteEntries = computed(() =>
     : PALETTE,
 )
 
+// a header narrower than a desk's: a phone, a tablet held upright
+const stretto = computed(() => isMobileView.value || viewportWidth.value < 1024)
+
 const moreOptions = computed(() => [
   {
     label: __('Test run'),
     icon: 'play',
-    condition: () => isMobileView.value && gestisce.value,
+    condition: () => stretto.value && gestisce.value,
     onClick: () => (showPreview.value = true),
   },
   {
     label: showStats.value ? __('Hide stats') : __('Stats'),
     icon: 'bar-chart-2',
-    condition: () => isMobileView.value && Boolean(draft.name),
+    condition: () => stretto.value && Boolean(draft.name),
     onClick: toggleStats,
   },
   {
