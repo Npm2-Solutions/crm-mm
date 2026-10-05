@@ -1126,14 +1126,30 @@ class Esito:
 			return f"The Sistema TS answered with a SOAP fault: {self.fault}"
 		if self.accolto:
 			testo = f"Accepted, protocol {self.protocollo}"
-			avvisi = [m for m in self.messaggi if m.tipo == TipoMessaggioTS.WARNING]
+			# a remark is the service's own sentence (W014: the same patient on the same
+			# day), worth reading: said with its words
+			avvisi = [
+				f"Codice {m.codice}: {m.descrizione.strip().capitalize()}"
+				if m.descrizione
+				else f"Codice {m.codice}"
+				for m in self.messaggi
+				if m.tipo == TipoMessaggioTS.WARNING
+			]
 			if avvisi:
-				testo += f" (with {len(avvisi)} remark(s))"
+				testo += ". " + " - ".join(dict.fromkeys(avvisi))
 			return testo
 		if self.errori:
 			from .codici import descrivi_esito
 
-			return " - ".join(descrivi_esito(m.codice) for m in self.errori)
+			righe: list[str] = []
+			for m in self.errori:
+				nota = descrivi_esito(m.codice)
+				# a code we do not describe is said with the service's own words
+				if nota == f"Codice {m.codice}" and m.descrizione:
+					nota = f"Codice {m.codice}: {m.descrizione.strip().capitalize()}"
+				if nota not in righe:
+					righe.append(nota)
+			return " - ".join(righe)
 		return "Not accepted by the Sistema TS, with no diagnostic message"
 
 
@@ -1175,7 +1191,11 @@ def analizza_risposta(corpo: bytes) -> Esito:
 	esito.esito_chiamata = _primo_testo(radice, "esitoChiamata", "esito")
 	esito.protocollo = _primo_testo(radice, "protocollo", "protocolloTelematico")
 
-	for nodo in _tutti(radice, "messaggio") + _tutti(radice, "listaMessaggi"):
+	# The service writes `listaMessaggi` holding one `messaggio` each (the test door,
+	# 05/10/2026); a list with its fields straight inside is read too. Never both:
+	# the list holding a message would give its code twice.
+	nodi = _tutti(radice, "messaggio") or _tutti(radice, "listaMessaggi")
+	for nodo in nodi:
 		tipo = _primo_testo(nodo, "tipoMessaggio", "tipo") or ""
 		codice = _primo_testo(nodo, "codiceEsito", "codice", "codiceMessaggio") or ""
 		descrizione = _primo_testo(nodo, "descrizione", "descrizioneMessaggio", "testo") or ""

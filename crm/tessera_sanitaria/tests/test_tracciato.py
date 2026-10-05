@@ -482,6 +482,34 @@ class EsitoTest(UnitTestCase):
 		self.assertEqual(esito.codici_errore, ["105"])
 		self.assertIn("delega", esito.riassunto())
 
+	def test_la_risposta_vera_un_messaggio_per_codice(self):
+		# as the test door answered (05/10/2026): each message in its own element
+		# inside the list, the code read once, the service's words where we have none
+		esito = self._analizza(
+			b"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body>
+			<inserimentoDocumentoSpesaResponse xmlns="http://documentospesap730.sanita.finanze.it">
+			<esitoChiamata>1</esitoChiamata><listaMessaggi><messaggio><codice>S035</codice>
+			<descrizione>DOCUMENTO FISCALE TRASMESSO OLTRE IL TERMINE PREVISTO</descrizione>
+			<tipo>E</tipo></messaggio></listaMessaggi></inserimentoDocumentoSpesaResponse>
+			</soapenv:Body></soapenv:Envelope>"""
+		)
+		self.assertFalse(esito.accolto)
+		self.assertEqual(esito.codici_errore, ["S035"])
+		self.assertEqual(
+			esito.riassunto(), "Codice S035: Documento fiscale trasmesso oltre il termine previsto"
+		)
+
+	def test_la_segnalazione_si_legge_con_le_sue_parole(self):
+		esito = self._analizza(
+			b"""<r><esitoChiamata>2</esitoChiamata><protocollo>99261005001868778</protocollo>
+			<listaMessaggi><messaggio><codice>W014</codice><descrizione>DOCUMENTO GIA' INSERITO PER LO
+			STESSO PAZIENTE</descrizione><tipo>W</tipo></messaggio><messaggio><codice>0</codice>
+			<descrizione>Operazione eseguita correttamente</descrizione><tipo/></messaggio></listaMessaggi></r>"""
+		)
+		self.assertTrue(esito.accolto)
+		self.assertIn("Codice W014: Documento gia' inserito", esito.riassunto())
+		self.assertNotIn("eseguita correttamente", esito.riassunto())
+
 	def test_un_warning_non_rende_lo_scarto(self):
 		esito = self._analizza(
 			b"""<esito><esitoChiamata>2</esitoChiamata><protocollo>12345678901234567</protocollo>
