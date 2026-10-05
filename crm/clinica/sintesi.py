@@ -111,6 +111,16 @@ def _legge() -> bool:
 	return livelli.puo("clinica.vedi") or livelli.puo("clinica.scrivi")
 
 
+def _fonte(valore) -> str:
+	"""Where a line comes from, in the reader's language: written by hand, or the
+	title of the visit or form it came from (DottorCloud's own words translated,
+	the centre's as written). It was kept translated in the language of who wrote
+	it: a line the demo wrote said «By hand» to an Italian reader."""
+	if not valore.source_doctype:
+		return _("By hand")
+	return _(valore.source_title) if valore.source_title else ""
+
+
 def _riga(valore) -> dict:
 	voce = _PER_CHIAVE.get(valore.key)
 	return {
@@ -122,7 +132,7 @@ def _riga(valore) -> dict:
 		"status": valore.status,
 		"source_doctype": valore.source_doctype,
 		"source_name": valore.source_name,
-		"source_title": valore.source_title,
+		"source_title": _fonte(valore),
 		"proposed_on": valore.proposed_on,
 		"decided_by": get_fullname(valore.decided_by) if valore.decided_by else None,
 		"decided_on": valore.decided_on,
@@ -217,7 +227,8 @@ def set_value(lead: str, key: str, value: str) -> dict:
 			"key": key,
 			"value": (value or "").strip(),
 			"status": CONFERMATO,
-			"source_title": _("By hand"),
+			# kept in no language: the reader's is given when it is read (_fonte)
+			"source_title": "By hand",
 			"proposed_on": adesso,
 			"decided_by": frappe.session.user,
 			"decided_on": adesso,
