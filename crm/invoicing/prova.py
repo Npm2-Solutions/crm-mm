@@ -69,15 +69,25 @@ def fuori_dalla_prova(doc, emittente: dict) -> None:
 
 
 def _riga(
-	titolo: str, conseguenza: str, campo: str = "", blocca: bool = False, agenzia: bool = False
+	titolo: str,
+	conseguenza: str,
+	campo: str = "",
+	blocca: bool = False,
+	agenzia: bool = False,
+	doctype: str = "",
 ) -> dict:
-	return {
+	"""One gap. `field` is the company's field that fills it, `link` the records
+	that do: the screen takes whoever reads it there."""
+	riga = {
 		"title": titolo,
 		"consequence": conseguenza,
 		"field": campo,
 		"blocking": blocca,
 		"agency": agenzia,
 	}
+	if doctype:
+		riga["link"] = {"doctype": doctype}
+	return riga
 
 
 def mancanze(emittente: dict, agenzia: bool | None = None) -> list[dict]:
@@ -121,12 +131,14 @@ def mancanze(emittente: dict, agenzia: bool | None = None) -> list[dict]:
 		_("At least one provider"),
 		_("Nothing can be billed: the line has no qualification and therefore no VAT regime."),
 		blocca=True,
+		doctype="CRM Service Provider",
 	)
 	manca(
 		not frappe.db.count("CRM Billable Service", {"enabled": 1}),
 		_("At least one service card"),
 		_("A service without a card is not billable."),
 		blocca=True,
+		doctype="CRM Billable Service",
 	)
 
 	modo = emittente.get("sdi_mode") or itala.CODICE
@@ -221,6 +233,8 @@ def get_status(company: str | None = None) -> dict:
 		"itala": (emittente.get("sdi_mode") or itala.CODICE) == itala.CODICE and itala.pronta(emittente),
 		# how its expenses reach the Sistema TS: the invoices page offers to send them
 		"ts_mode": emittente.get("ts_mode") or "export",
+		# whether it reports healthcare expenses: the Sistema TS is said only then
+		"healthcare": emittente.get("sender_category") not in (None, "", "non_sanitario"),
 		"can": {
 			"go_live": not dal_vivo and puo("fatture.configura"),
 			"back_to_test": dal_vivo and agenzia and not reali,

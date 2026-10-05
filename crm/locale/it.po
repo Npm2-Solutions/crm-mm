@@ -44008,3 +44008,55 @@ msgstr "Altre schede"
 #: frontend/src/components/Modals/AboutModal.vue
 msgid "The names of the emoji in Italian are Unicode CLDR data, © Unicode, Inc., under the Unicode License v3."
 msgstr "I nomi delle emoji in italiano sono dati Unicode CLDR, © Unicode, Inc., con la licenza Unicode v3."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Start here: what is still missing, a test invoice, then go live."
+msgstr "Si parte da qui: cosa manca ancora, una fattura di prova, poi l'attivazione."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What is billed, and who performs it."
+msgstr "Cosa si fattura, e chi lo esegue."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Advanced"
+msgstr "Avanzate"
+
+#: frontend/src/utils/impostazioni.js
+msgid "The switches over all invoicing, and what each qualification means for VAT."
+msgstr "Le opzioni che valgono per tutta la fatturazione, e cosa vuol dire ogni qualifica per l'IVA."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Try invoicing before the first real invoice: in test the invoices are numbered PROVA and reach nobody."
+msgstr "Prova la fatturazione prima della prima fattura vera: in prova le fatture hanno il numero PROVA e non arrivano a nessuno."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The invoices issued now are test invoices: numbered PROVA, with a band on the PDF, and they reach nobody."
+msgstr "Le fatture emesse ora sono di prova: numerate PROVA, con una fascia sul PDF, e non arrivano a nessuno."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Every invoice reaches the SdI through Itala, an intermediary accredited by the Agenzia delle Entrate, and the client gets it as a PDF too. Connected."
+msgstr "Ogni fattura arriva allo SdI tramite Itala, intermediario accreditato dall'Agenzia delle Entrate, e il cliente la riceve anche in PDF. Collegata."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Every invoice reaches the SdI through Itala, an intermediary accredited by the Agenzia delle Entrate, and the client gets it as a PDF too. {brand} connects it."
+msgstr "Ogni fattura arriva allo SdI tramite Itala, intermediario accreditato dall'Agenzia delle Entrate, e il cliente la riceve anche in PDF. La collega {brand}."
+
+#: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
+msgid "One thing is still to set up."
+msgstr "Manca ancora una cosa da impostare."
+
+#: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
+msgid "{0} things are still to set up."
+msgstr "Mancano ancora {0} cose da impostare."
+
+#: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
+msgid "See what"
+msgstr "Vedi cosa"
+
+#: crm/tessera_sanitaria/__init__.py
+msgid "Three questions: who issues, the tax regime and, for a professional, the profession. Until they are answered no service is exempt and nothing reaches the Sistema TS."
+msgstr "Tre domande: chi emette, il regime fiscale e, per un professionista, la professione. Finché non hanno risposta nessuna prestazione è esente e al Sistema TS non arriva niente."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who issues the invoices: details, tax regime, numbering."
+msgstr "Chi emette le fatture: i dati, il regime fiscale, la numerazione."
