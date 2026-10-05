@@ -39,7 +39,7 @@
          which saving would then keep. -->
     <GridLayout
       v-else-if="items.length && (larghezza || editing)"
-      class="h-fit w-full"
+      class="griglia-dashboard h-fit w-full"
       :class="editing ? 'mb-[20rem] select-none' : ''"
       :cols="GRID_COLUMNS"
       :rowHeight="ROW_HEIGHT"
@@ -81,9 +81,19 @@
             v-if="editing"
             class="absolute right-3.5 top-3.5 z-10 flex items-center gap-0.5 rounded-lg border border-outline-gray-2 bg-surface-elevation-2 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
           >
+            <!-- a finger moves a widget from here: the rest of it scrolls the
+                 page, as a touch screen expects. The grid takes a drag only
+                 where the page does not pan (grid-layout-plus says so only on
+                 Android), and never from a button -->
+            <span
+              class="hidden size-7 cursor-move place-items-center rounded-md text-ink-gray-6 [touch-action:none] [@media(pointer:coarse)]:grid"
+              aria-hidden="true"
+            >
+              <span class="lucide-move size-3.5" />
+            </span>
             <Tooltip v-if="configurable(byKey[i])" :text="__('Settings')">
               <button
-                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
+                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9 [@media(pointer:coarse)]:size-7"
                 :aria-label="__('Settings')"
                 @click="$emit('configure', byKey[i])"
               >
@@ -92,7 +102,7 @@
             </Tooltip>
             <Tooltip :text="__('Duplicate')">
               <button
-                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
+                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9 [@media(pointer:coarse)]:size-7"
                 :aria-label="__('Duplicate')"
                 @click="$emit('duplicate', byKey[i])"
               >
@@ -101,7 +111,7 @@
             </Tooltip>
             <Tooltip :text="__('Remove')">
               <button
-                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-red-2 hover:text-ink-red-8"
+                class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-red-2 hover:text-ink-red-8 [@media(pointer:coarse)]:size-7"
                 :aria-label="__('Remove')"
                 @click="$emit('remove', byKey[i])"
               >
@@ -211,3 +221,14 @@ function updatePositions(positions) {
   }
 }
 </script>
+
+<style scoped>
+/* On a touch screen the corner that resizes a widget is a finger's size and
+   does not scroll the page: 10px, and panning, it took no drag on an iPad */
+@media (pointer: coarse) {
+  .griglia-dashboard :deep(.vgl-item__resizer) {
+    --vgl-resizer-size: 28px;
+    touch-action: none;
+  }
+}
+</style>
