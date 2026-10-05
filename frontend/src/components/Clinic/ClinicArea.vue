@@ -11,7 +11,7 @@
     why the record is read only here and not in the history, where a visit is a
     padlock.
   -->
-  <div class="flex flex-col gap-4 px-3 pb-6 pt-1 sm:px-10">
+  <div ref="radice" class="flex flex-col gap-4 px-3 pb-6 pt-1 sm:px-10">
     <!-- opened out of the care team: until when, and the reason given -->
     <div
       v-if="record.data?.out_of_care"
@@ -477,6 +477,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
+import { useElementSize } from '@vueuse/core'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -632,8 +633,17 @@ const altreAzioni = computed(() =>
     },
   ].filter(Boolean),
 )
+// on a phone, and in a record's column on a tablet held upright (368px), where
+// three buttons in a row ran out of the column («Chi l'ha ap…»); the tab's
+// own width, its padding included, read the same at mount and after
+const radice = ref(null)
+const { width: larghezza } = useElementSize(radice, undefined, {
+  box: 'border-box',
+})
 const sottoAltro = computed(
-  () => isMobileView.value && altreAzioni.value.length > 1,
+  () =>
+    (isMobileView.value || (larghezza.value > 0 && larghezza.value < 560)) &&
+    altreAzioni.value.length > 1,
 )
 
 function draftOptions(entry) {

@@ -70,7 +70,9 @@
         <h4 class="text-base-medium text-ink-gray-8">
           {{ __('What do you want to write?') }}
         </h4>
-        <ul class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+        <!-- two to a row where each has 14rem, one under the other in a
+             record's column on a tablet held upright (125px each before) -->
+        <ul class="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3">
           <li v-for="kind in plans.data.kinds" :key="kind.key">
             <button
               type="button"
