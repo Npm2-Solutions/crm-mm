@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The language DottorCloud writes its own words in on a site, the currency it
-counts in, and the framework's Italian switched on for the visitors.
+counts in, and the two languages it speaks: Italian and English, nothing else.
 
 What DottorCloud puts in a site once - the consents' texts, the pipelines'
 stages, the libraries' instructions and names - is data written in one language,
@@ -12,14 +12,18 @@ Italy, or nowhere said, was set up in English before anybody chose, and its peop
 read Italian. English is for a site that chose it and is not in Italy.
 
 Words DottorCloud wrote in another language follow this one (a migrate, the setup
-wizard); words a centre wrote stay as they are.
+wizard, the centre choosing another in Settings > The centre > General > Language
+& time); words a centre wrote stay as they are. The language a centre chose there
+is its own whatever its country (`SCELTA`): an English-speaking centre in Italy.
 """
 
 from __future__ import annotations
 
 import re
+import zoneinfo
 
 import frappe
+from frappe import _
 
 # In Italian an article, or a preposition with its article, drops its vowel
 # before a day read with one: «l'1 ottobre», «dall'8/3», «fino all'11 settembre».
@@ -56,34 +60,163 @@ def con_l_apostrofo(testo, lingua: str | None = None):
 
 
 def scegli(lingua: str | None, paese: str | None) -> str:
-	"""The rule, without a site: ``lingua`` and ``paese`` as System Settings keep them."""
+	"""The rule, without a site: ``lingua`` and ``paese`` as System Settings keep
+	them. One of the two DottorCloud speaks: English for a centre out of Italy
+	that chose it, or chose a language DottorCloud has no words in; Italian
+	everywhere else."""
 	lingua = (lingua or "")[:2]
-	if not lingua or (lingua == "en" and paese in (None, "", "Italy")):
-		return "it"
-	return lingua
+	if lingua and lingua != "it" and paese not in (None, "", "Italy"):
+		return "en"
+	return "it"
+
+
+#: The languages DottorCloud speaks: its words are in these two (`it.po`, and the
+#: English they are written in), and so every screen, page and email.
+LINGUE = ("it", "en")
+#: Each in its own words, as a choice of language names it to its readers.
+NOMI = {"it": "Italiano", "en": "English"}
+#: The language the centre chose in Settings, whatever its country (a default).
+SCELTA = "crm_lingua_del_centro"
 
 
 def del_centro() -> str:
-	"""This site's: its System Settings' language and country."""
+	"""This site's: the one the centre chose, else its System Settings' language
+	and country."""
+	scelta = frappe.db.get_default(SCELTA)
+	if scelta in LINGUE:
+		return scelta
 	return scegli(
 		frappe.db.get_single_value("System Settings", "language"),
 		frappe.db.get_single_value("System Settings", "country"),
 	)
 
 
-def accendi_l_italiano() -> None:
-	"""The framework's Italian switched on, at install and at every migrate.
+def solo_italiano_e_inglese() -> None:
+	"""At install and at every migrate: Italian and English on, every other
+	language off, and the centre's the language of whoever has not chosen their
+	own.
 
-	The framework ships it switched off (`frappe/geo/languages.csv`), and a
+	The framework ships Italian switched off (`frappe/geo/languages.csv`), and a
 	visitor reads only a language the site has on: every page a patient opens
 	without signing in - /prenota, the area's door, a form sent to fill, the
-	sign-in - came in English to a phone set in Italian, and the setup wizard did
-	not offer Italian. DottorCloud's words are Italian first (`crm/locale/it.po`).
-	The Language's own save empties the framework's cache of the languages on."""
-	if frappe.db.get_value("Language", "it", "enabled") == 0:
-		lingua = frappe.get_doc("Language", "it")
-		lingua.enabled = 1
-		lingua.save(ignore_permissions=True)
+	sign-in - came in English to a phone set in Italian. And it ships sixteen
+	others on, in which DottorCloud has no words: a phone set in German read the
+	framework's German around DottorCloud's English. Now it reads English where
+	it accepts it too, else the centre's language; the choices of language offer
+	these two.
+
+	The language System Settings keep is the one a user without their own reads
+	(the framework's "lang"): the centre's (`del_centro`), never English left by
+	the framework on a centre in Italy while DottorCloud wrote its words in
+	Italian, nor a language it has no words in."""
+	accese = set(frappe.get_all("Language", filters={"enabled": 1}, pluck="name"))
+	cambiate = False
+	for codice in LINGUE:
+		if codice not in accese and frappe.db.exists("Language", codice):
+			frappe.db.set_value("Language", codice, "enabled", 1)
+			cambiate = True
+	altre = sorted(accese - set(LINGUE))
+	if altre:
+		frappe.db.set_value("Language", {"name": ("in", altre)}, "enabled", 0)
+		cambiate = True
+	if cambiate:
+		# what the Language's own save empties: the framework's lists of those on
+		frappe.cache.delete_value("languages_with_name")
+		frappe.client_cache.delete_value("languages")
+	centro = del_centro()
+	if frappe.db.get_single_value("System Settings", "language") != centro:
+		from frappe.translate import set_default_language
+
+		# what the settings' own save writes: the field, its default, "lang"
+		frappe.db.set_single_value("System Settings", "language", centro)
+		frappe.db.set_default("language", centro)
+		set_default_language(centro)
+
+
+def utenti_in_italiano_o_inglese() -> int:
+	"""Whoever had chosen another language reads the centre's (the patch, once):
+	DottorCloud has no words in it. How many."""
+	utenti = frappe.get_all("User", filters={"language": ("not in", ["", *LINGUE])}, pluck="name")
+	if utenti:
+		frappe.db.set_value("User", {"name": ("in", utenti)}, "language", "", update_modified=False)
+		frappe.clear_cache()
+	return len(utenti)
+
+
+# ------------------------------------------------------------------ the centre's, in Settings
+
+
+def fusi_europei() -> list[str]:
+	"""The time zones a centre in Europe keeps its clock on: the continent's, the
+	Canaries', Madeira's and the Azores'."""
+	return sorted(
+		zona
+		for zona in zoneinfo.available_timezones()
+		if zona.startswith("Europe/") or zona in ("Atlantic/Canary", "Atlantic/Madeira", "Atlantic/Azores")
+	)
+
+
+@frappe.whitelist()
+def get_centre_language() -> dict:
+	"""The centre's language and clock, as Settings shows them."""
+	from crm.permissions import livelli
+
+	livelli.verifica("impostazioni.generali")
+	fuso = frappe.db.get_single_value("System Settings", "time_zone") or ITALIA["time_zone"]
+	zone = fusi_europei()
+	return {
+		"language": del_centro(),
+		"languages": [{"value": codice, "label": NOMI[codice]} for codice in LINGUE],
+		"time_zone": fuso,
+		"time_zones": zone if fuso in zone else [fuso, *zone],
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_centre_language(language: str, time_zone: str | None = None) -> dict:
+	"""The centre's language - the one DottorCloud writes in for it, and the one of
+	whoever has not chosen their own - and its clock. DottorCloud's words follow
+	the new language in the background; whoever kept the centre's clock follows
+	the new one."""
+	from crm.permissions import livelli
+
+	livelli.verifica("impostazioni.generali")
+	impostazioni = frappe.get_single("System Settings")
+	fuso_prima = impostazioni.time_zone
+	if language not in LINGUE:
+		frappe.throw(_("Choose Italian or English"))
+	# the zone it had stays a choice, wherever it is: only a new one is Europe's
+	if time_zone and time_zone != fuso_prima and time_zone not in fusi_europei():
+		frappe.throw(_("Choose a time zone of Europe"))
+	prima = del_centro()
+	impostazioni.language = language
+	if time_zone:
+		impostazioni.time_zone = time_zone
+	impostazioni.flags.ignore_permissions = True
+	impostazioni.save()
+	frappe.db.set_default(SCELTA, language)
+	if time_zone and fuso_prima and time_zone != fuso_prima:
+		utenti_sul_fuso_del_centro(time_zone, da=fuso_prima)
+	if language != prima:
+		frappe.enqueue(
+			"crm.lingue.dopo_il_cambio",
+			queue="long",
+			job_id="crm-lingua-del-centro",
+			deduplicate=True,
+			enqueue_after_commit=True,
+		)
+	return get_centre_language()
+
+
+def dopo_il_cambio() -> None:
+	"""The centre chose another language: DottorCloud's own words follow it - the
+	consents', the libraries', the qualifications' - as after the setup wizard
+	(`crm_lingua_del_centro` in hooks.py); the centre's own stay."""
+	for metodo in frappe.get_hooks("crm_lingua_del_centro"):
+		try:
+			frappe.get_attr(metodo)()
+		except Exception:
+			frappe.log_error(title=f"DottorCloud: the centre's language, {metodo}")
 
 
 # What the setup wizard writes for a centre in Italy (the Country's formats),
@@ -171,17 +304,18 @@ def italia_dove_nessuno_ha_scelto() -> None:
 		utenti_sul_fuso_del_centro(cambi["time_zone"])
 
 
-def utenti_sul_fuso_del_centro(fuso: str) -> int:
+def utenti_sul_fuso_del_centro(fuso: str, da: str = FUSO_DEL_FRAMEWORK) -> int:
 	"""Whoever was made while the site had no zone took the framework's fallback as
 	their own, and the screens showed them its hours: they follow the centre's, which
-	they never chose. How many did."""
-	utenti = frappe.get_all("User", filters={"time_zone": FUSO_DEL_FRAMEWORK}, pluck="name")
+	they never chose. The same for whoever kept the centre's clock when it moves
+	(`da`, the one before). How many did."""
+	utenti = frappe.get_all("User", filters={"time_zone": da}, pluck="name")
 	if not utenti:
 		return 0
 	frappe.db.set_value("User", {"name": ("in", utenti)}, "time_zone", fuso, update_modified=False)
 	frappe.db.set_value(
 		"DefaultValue",
-		{"parent": ("in", utenti), "defkey": "time_zone", "defvalue": FUSO_DEL_FRAMEWORK},
+		{"parent": ("in", utenti), "defkey": "time_zone", "defvalue": da},
 		"defvalue",
 		fuso,
 		update_modified=False,
