@@ -117,6 +117,35 @@ class SigilloCase(IntegrationTestCase):
 		imposta(**valori)
 
 
+class LaConformitaInParole(IntegrationTestCase):
+	"""What is stored stays English, being evidence; a screen reads it in its words."""
+
+	def test_le_parole_conservate_si_leggono_tradotte(self):
+		italiano = {
+			"PDF/A-3b (structure verified)": "PDF/A-3b (struttura verificata)",
+			"{0}, sealed by the centre": "{0}, sigillato dal centro",
+			"{0}, sealed by the centre with a time stamp": "{0}, sigillato dal centro con marca temporale",
+			"Signed by {0} (PAdES)": "Firmato da {0} (PAdES)",
+		}
+		with mock.patch.object(sigillo, "_", side_effect=lambda testo: italiano.get(testo, testo)):
+			self.assertEqual(
+				sigillo.in_parole("PDF/A-3b (structure verified)"), "PDF/A-3b (struttura verificata)"
+			)
+			self.assertEqual(
+				sigillo.in_parole("PDF/A-3b (structure verified), sealed by the centre"),
+				"PDF/A-3b (struttura verificata), sigillato dal centro",
+			)
+			self.assertEqual(
+				sigillo.in_parole("PDF/A-3b (structure verified), sealed by the centre with a time stamp"),
+				"PDF/A-3b (struttura verificata), sigillato dal centro con marca temporale",
+			)
+			self.assertEqual(sigillo.in_parole("Signed by Namirial (PAdES)"), "Firmato da Namirial (PAdES)")
+			# written in another language already, or unknown: as it was
+			gia = "PDF/A-3b (struttura verificata), sigillato dal centro"
+			self.assertEqual(sigillo.in_parole(gia), gia)
+		self.assertEqual(sigillo.in_parole(None), "")
+
+
 class IlSigillo(SigilloCase):
 	def test_senza_certificato_il_pdf_resta_com_e(self):
 		self.imposta(seal_enabled=0)

@@ -35002,6 +35002,18 @@ msgid "{0}, by {1}"
 msgstr "{0}, tramite {1}"
 
 #: crm/moduli/sigillo.py
+msgid "PDF/A-3b (structure verified)"
+msgstr "PDF/A-3b (struttura verificata)"
+
+#: crm/moduli/sigillo.py
+msgid "PDF (neutral metadata, not PDF/A)"
+msgstr "PDF (metadati neutri, non PDF/A)"
+
+#: crm/moduli/sigillo.py
+msgid "PDF (not verified)"
+msgstr "PDF (non verificato)"
+
+#: crm/moduli/sigillo.py
 msgid "{0}, sealed by the centre"
 msgstr "{0}, sigillato dal centro"
 
