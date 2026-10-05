@@ -35249,6 +35249,105 @@ msgctxt "Automation editor tab"
 msgid "Enrolments"
 msgstr "Iscrizioni"
 
+#: frontend/src/pages/Automations.vue
+msgctxt "Automations filter"
+msgid "All"
+msgstr "Tutte"
+
+#: frontend/src/pages/Automations.vue
+msgctxt "Automations filter"
+msgid "Active"
+msgstr "Attive"
+
+#: frontend/src/pages/Automations.vue
+msgctxt "Automations filter"
+msgid "Off"
+msgstr "Spente"
+
+#: frontend/src/pages/Automations.vue
+msgctxt "Automation state"
+msgid "Active"
+msgstr "Attiva"
+
+#: frontend/src/pages/Automations.vue
+msgctxt "Automation state"
+msgid "Paused"
+msgstr "In pausa"
+
+#: frontend/src/pages/Automations.vue
+msgctxt "Automation state"
+msgid "Draft"
+msgstr "Bozza"
+
+#: frontend/src/pages/Automations.vue
+msgid "{0} running · {1} in all"
+msgstr "{0} in corso · {1} in tutto"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "All"
+msgstr "Tutte"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Active"
+msgstr "Attive"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Waiting"
+msgstr "In attesa"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Completed"
+msgstr "Completate"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Exited"
+msgstr "Uscite"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Skipped"
+msgstr "Saltate"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolments filter"
+msgid "Failed"
+msgstr "Fallite"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Active"
+msgstr "Attiva"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Waiting"
+msgstr "In attesa"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Completed"
+msgstr "Completata"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Exited"
+msgstr "Uscita"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Skipped"
+msgstr "Saltata"
+
+#: frontend/src/components/Automations/EnrollmentsPanel.vue
+msgctxt "Enrolment state"
+msgid "Failed"
+msgstr "Fallita"
+
 #: frontend/vite/frappeUi.js
 msgctxt "Data import"
 msgid "Device"
