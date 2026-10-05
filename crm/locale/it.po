@@ -30345,6 +30345,10 @@ msgstr "Controlla i dati prima di avviare l'importazione"
 msgid "Verify {0}"
 msgstr "Verifica {0}"
 
+#: crm/tessera_sanitaria/__init__.py
+msgid "Open points for the accountant: {0}. Once they are confirmed, tick Verified by the accountant."
+msgstr "Punti aperti per il commercialista: {0}. Una volta confermati, spunta Verificato dal commercialista."
+
 #: frontend/src/components/Settings/Clinic/FoodImportDialog.vue
 msgid "Version and attribution"
 msgstr "Versione e attribuzione"

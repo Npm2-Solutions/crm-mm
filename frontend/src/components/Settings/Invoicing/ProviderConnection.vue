@@ -373,7 +373,11 @@ import {
   Dropdown,
   toast,
 } from 'frappe-ui'
-import { activeSettingsPage, campoDaAprire } from '@/composables/settings'
+import {
+  activeSettingsPage,
+  campoDaAprire,
+  recordDaAprire,
+} from '@/composables/settings'
 import { inOrdine, paginaDellaMancanza } from '@/utils/mancanze'
 import LucideFileText from '~icons/lucide/file-text'
 import LucideSend from '~icons/lucide/send'
@@ -452,10 +456,11 @@ watch(
   },
 )
 
-// where a missing row is filled, on the field that fills it: the company's page
-// opened on its first tab, and the person looked at a name and a surname
+// where a missing row is filled: the company's page on the tab of the field that
+// fills it, or the record it names opened (a qualification to verify)
 function imposta(voce) {
   campoDaAprire.value = voce.field || ''
+  recordDaAprire.value = voce.link?.name ? { ...voce.link } : null
   activeSettingsPage.value = paginaDellaMancanza(voce)
 }
 

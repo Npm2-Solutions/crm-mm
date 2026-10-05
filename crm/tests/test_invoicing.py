@@ -582,6 +582,28 @@ class DueRamiTest(InvoicingBase):
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "conservation_joined", 1)
 		self.assertNotIn("Preservation of the SdI documents", self._checklist())
 
+	def test_una_qualifica_da_verificare_lo_dice_in_una_frase(self):
+		# the register keeps its open points as phrases, one a line: the row says
+		# them in a sentence, and «Set up» opens the qualification it names
+		da_verificare = [
+			{
+				"name": "infermiere",
+				"qualification_name": "Infermiere",
+				"needs_verification": "the title that qualifies\nthe decree that adds them.\n",
+				"category": "sanitaria",
+			}
+		]
+		with patch("crm.invoicing.registro.da_verificare", return_value=da_verificare):
+			voce = self._checklist().get("Verify Infermiere")
+		self.assertIsNotNone(voce)
+		self.assertEqual(
+			voce["consequence"],
+			"Open points for the accountant: the title that qualifies; the decree that adds them. "
+			"Once they are confirmed, tick Verified by the accountant.",
+		)
+		self.assertEqual(voce["link"], {"doctype": "CRM Professional Qualification", "name": "infermiere"})
+		self.assertEqual(voce["field"], "verified")
+
 
 class LErogatoreEUnaPersona(InvoicingBase):
 	def test_una_struttura_non_e_la_qualifica_di_chi_esegue(self):

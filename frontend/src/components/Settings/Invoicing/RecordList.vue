@@ -88,7 +88,10 @@
 
   <Dialog
     v-model="mostraEditor"
-    :options="{ title: inModifica ? title : addLabel, size: '3xl' }"
+    :options="{
+      title: inModifica ? titoloDi(inModifica) : addLabel,
+      size: '3xl',
+    }"
   >
     <template #body-content>
       <div class="min-h-[24rem]">
@@ -117,6 +120,7 @@
 
 <script setup>
 import DocFields from '@/components/Settings/Invoicing/DocFields.vue'
+import { recordDaAprire } from '@/composables/settings'
 import {
   createListResource,
   Badge,
@@ -126,7 +130,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -176,6 +180,24 @@ function apri(name = null) {
   inModifica.value = name
   mostraEditor.value = true
 }
+
+// a record's editor is headed by its name («Psicologo / psicoterapeuta»), not by
+// the list's («Qualification register»)
+function titoloDi(name) {
+  const riga = (rows.data || []).find((r) => r.name === name)
+  return riga?.[props.titleField] || name
+}
+
+// a record «Set up» named (a qualification to verify): opened, then forgotten
+watch(
+  recordDaAprire,
+  (record) => {
+    if (!record?.name || record.doctype !== props.doctype) return
+    recordDaAprire.value = null
+    apri(record.name)
+  },
+  { immediate: true },
+)
 
 function salvato() {
   mostraEditor.value = false

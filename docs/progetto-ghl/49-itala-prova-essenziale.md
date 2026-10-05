@@ -56,6 +56,11 @@ Com'era:
   - quello che manca e impedisce di attivarla porta la croce rossa del marchio: la
     partita IVA, la sede, un professionista e una scheda di servizio, l'autorizzazione
     del bollo virtuale se si usa; il resto si dice e non ferma;
+  - «Imposta» porta dove si riempie (05/10/2026): la pagina dell'azienda sulla scheda
+    del campo, il campo tenuto al centro mentre la pagina finisce di disegnarsi (sul
+    telefono restava dietro «Aggiorna») e colorato un momento con la tinta del
+    marchio; una qualifica da verificare si apre lei, sulla spunta «Verificato dal
+    commercialista», con i punti aperti detti in una frase;
   - attivando, le fatture di prova vengono tolte (con quello che le indicava: la
     rata di un abbonamento torna da fatturare), e da quel momento ogni fattura è
     vera;
