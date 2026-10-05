@@ -184,6 +184,48 @@ d'attesa, conversazioni.
     casa scelti per il motivo della prima visita. All'ultima seduta, con quella
     data; chi è nell'area li spunta lì. Scritti da un professionista sanitario,
     sono dati sanitari, letti come la cartella.
+  - **Inserzioni Meta** (`crm/demo/meta.py`, con il modulo «marketing»), solo dove
+    il centro non ha una sua pagina Facebook né un suo account pubblicitario: i
+    contatti e la spesa del centro non si mescolano mai con quelli della demo.
+    - La pagina del centro («… (dati di prova)», senza token: non si sincronizza
+      nulla), i due moduli Lead Ads («Prenota la prima visita», «Chiedi
+      informazioni»), l'account pubblicitario in euro e tre campagne con le loro
+      inserzioni (la schiena in autunno, la prima visita nutrizionale, il Pilates
+      in piccoli gruppi), ognuna con i giorni in cui è girata e quello che ha speso
+      giorno per giorno fino a ieri. Salvati come la connessione salva quello che
+      Meta manda (`oauth.upsert_page`, `insights._store_insight`, la cache delle
+      inserzioni), mai chiesti a Meta.
+    - Si fa prima delle persone: chi la storia porta da Instagram o da Facebook
+      mentre girava un'inserzione per quello che gli serve arriva dal suo modulo,
+      come Meta consegna un contatto (`leads.store_lead`: la persona con le sue
+      risposte, il registro delle importazioni, il canale a pagamento, la
+      trattativa), e poi prenota, viene e paga come tutti. Così il cruscotto conta
+      la spesa, il costo per contatto e quello per nuovo cliente. Gli arrivi da
+      Meta hanno le loro probabilità: la storia delle persone è la stessa con
+      questa parte o senza, cambia solo come arrivano alcune di loro.
+  - **Automazioni e social** (`crm/demo/marketing.py`, con il modulo «marketing»):
+    - Quattro automazioni, scritte dal responsabile con la chiamata del costruttore
+      (`save_automation`) e lasciate **spente**: accese, ascolterebbero tutto
+      quello che il centro fa e scriverebbero alle sue persone vere; il centro
+      accende quelle che tiene. Quello che hanno fatto nella storia c'è, al suo
+      momento, passato dal motore (`enroll`, `advance_enrollment`): il benvenuto a
+      ogni nuovo cliente con l'etichetta «Nuovo cliente», il richiamo di chi non
+      torna da due mesi se ha detto sì al marketing, la richiamata a chi ha
+      compilato un modulo (di Meta o del sito), l'email dopo un appuntamento
+      mancato. Le cose da fare che hanno lasciato le ha fatte la segreteria, tranne
+      quelle degli ultimi giorni.
+    - I profili Instagram e Facebook del centro, solo dove il centro non ne ha di
+      suoi, con i post delle ultime settimane pubblicati, i prossimi programmati e
+      una bozza.
+    - Due link tracciati (la prenotazione nella bio di Instagram, il volantino del
+      Pilates) e i loro clic.
+    - Una parte rifatta dopo essersi fermata a metà riprende quello che aveva già
+      fatto: mai due automazioni uguali.
+- Il **telefono** non ha una parte sua: le telefonate delle ultime settimane, le
+  richiamate e i messaggi lasciati sono nella parte di base «Cose da fare, note,
+  telefonate», e il resto delle sue schermate chiede una telefonia collegata.
+  L'**assistente** e la **firma avanzata** non ne hanno: la loro strada chiede
+  qualcosa a un modello o a un fornitore, e la demo non chiede niente a nessuno.
 - È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
   parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
@@ -262,6 +304,11 @@ Finché i dati di prova ci sono:
 - i **primi passi** contano solo quello che è del centro (`primi_passi.c_e`): i
   servizi, i colleghi, le persone e gli appuntamenti della demo non fanno un passo
   al posto suo, e la scheda continua a dire cosa resta da preparare;
+- **nessun servizio di fuori sente parlare della demo** (`mai_fuori`): Meta non
+  riceve le conversioni di una persona della demo, l'anteprima di un'inserzione
+  della demo non si chiede a Meta, e un post della demo, alla sua ora, si segna
+  pubblicato senza arrivare a nessun social, come un SMS della demo si tiene come
+  inviato;
 - un **messaggio o una chiamata in arrivo** da un numero che è anche di una
   persona della demo non viene mai attaccato a lei (`persona_vera`): i numeri della
   demo sembrano quelli di chiunque, e quello che è attaccato a una persona della
