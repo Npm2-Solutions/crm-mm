@@ -140,6 +140,17 @@ export function comeStaLOfferta(offerta, t = format, ora = (v) => v) {
   return t(OFFERTA[offerta.status]?.label || offerta.status)
 }
 
+/**
+ * How an offer's answer time is written: its hour when it falls today, its day
+ * too otherwise - «Risposta entro 05:00» for tomorrow morning read as already
+ * gone. ``scadenza`` as the agenda keeps it, ``oggi`` the centre's day.
+ */
+export function formatoDellaScadenza(scadenza, oggi) {
+  return String(scadenza || '').slice(0, 10) === oggi
+    ? 'HH:mm'
+    : 'ddd D MMM, HH:mm'
+}
+
 /** The entries in the line's order: the urgent first, then who joined first. */
 export function inFila(voci) {
   return [...(voci || [])].sort(
