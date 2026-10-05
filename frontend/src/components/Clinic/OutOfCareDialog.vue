@@ -25,6 +25,7 @@
             class="min-w-0 flex-1"
             :label="__('Name and surname, or tax code')"
             :placeholder="__('As they are written')"
+            v-bind="{ ...tastiera('nome'), enterkeyhint: 'search' }"
             @keydown.enter="search"
           />
           <Button
@@ -46,7 +47,7 @@
           <button
             v-for="person in found"
             :key="person.name"
-            class="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-base hover:bg-surface-gray-2"
+            class="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-base hover:bg-surface-gray-2 max-md:min-h-11"
             :class="
               chosen?.name === person.name ? 'bg-surface-gray-2' : undefined
             "
@@ -106,6 +107,7 @@ import {
   FormControl,
   call,
 } from 'frappe-ui'
+import { tastiera } from '@/utils/tastiera'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
