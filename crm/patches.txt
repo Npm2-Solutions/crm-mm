@@ -106,3 +106,4 @@ crm.patches.v1_0.the_kinesiologist_is_not_a_health_profession
 crm.patches.v1_0.whoever_came_is_a_client
 crm.clinica.patches.patients_say_so_on_their_page
 crm.patches.v1_0.everybody_reads_italian_or_english
+crm.patches.v1_0.the_register_follows_the_agenzia

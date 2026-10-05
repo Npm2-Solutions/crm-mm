@@ -44750,3 +44750,21 @@ msgstr "Usato il"
 
 msgid "The Sistema TS did not answer in time: the document may have arrived. Check it on the Sistema TS before sending it again."
 msgstr "Il Sistema TS non ha risposto in tempo: il documento potrebbe essere arrivato. Controlla sul Sistema TS prima di mandarlo di nuovo."
+
+msgid "Massaggiatore capo bagnino degli stabilimenti idroterapici (massoterapista)"
+msgstr "Massaggiatore capo bagnino degli stabilimenti idroterapici (massoterapista)"
+
+msgid "the title that qualifies for the activity, which the exemption requires"
+msgstr "il titolo che abilita all'attività, che l'esenzione richiede"
+
+msgid "the decree that will add them to the Sistema TS, and from when"
+msgstr "il decreto che li aggiungerà al Sistema TS, e da quando"
+
+msgid "Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 n. 18 when a suitable title attests the qualification, and the electronic invoice through the SdI is FORBIDDEN (Ris. AdE 9/2026). The Sistema TS report cannot be sent yet: the Agenzia's FAQ of 11 March 2026 waits for a decree that adds them, so the invoice is a paper or PDF one, outside the SdI."
+msgstr "Arte ausiliaria ex art. 99 R.D. 1265/1934: la prestazione è ESENTE ai sensi dell'art. 10 n. 18 se un titolo idoneo attesta la qualifica, e la fattura elettronica allo SdI è VIETATA (Ris. AdE 9/2026). Al Sistema TS non si può ancora inviare: la FAQ dell'Agenzia dell'11 marzo 2026 aspetta un decreto che li aggiunga, quindi la fattura è cartacea o PDF, fuori dallo SdI."
+
+msgid "Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. invoicing the patient is a bound subject ONLY if accredited or authorised under art. 8-ter; otherwise it is not one at all. Its visits are exempt under n. 18, performed by qualified professionals (Ris. 39/E/2004): n. 19 is hospital care only."
+msgstr "Serve il codice proprietario codiceRegione-codiceAsl-codiceSSA. Una S.r.l. che fattura al paziente è soggetto obbligato SOLO se accreditata o autorizzata ex art. 8-ter; altrimenti non lo è affatto. Le sue visite sono esenti ai sensi del n. 18, se rese da professionisti abilitati (Ris. 39/E/2004): il n. 19 vale solo per il ricovero e cura."
+
+msgid "For public or accredited private facilities, payment traceability may not be required. Its visits are exempt under n. 18 (Ris. 39/E/2004); n. 19 only for hospital care in a clinic with an agreement."
+msgstr "Per le strutture pubbliche o private accreditate la tracciabilità del pagamento può non essere richiesta. Le sue visite sono esenti ai sensi del n. 18 (Ris. 39/E/2004); il n. 19 solo per il ricovero e cura in una clinica convenzionata."
