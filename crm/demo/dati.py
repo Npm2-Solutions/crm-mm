@@ -1503,12 +1503,13 @@ META_QUANDO = ("La mattina", "In pausa pranzo", "Dopo le 18")
 #: The demo's automations, switched off - so that they never write to the centre's
 #: own people: the centre switches on the ones it keeps. Key, title, what it does,
 #: the trigger and its settings, whether it asks for the marketing consent, its steps.
+#: «{cliente}» and «{area}» are the vertical's words, a clinic's patient and area.
 AUTOMAZIONI = (
 	(
 		"benvenuto",
-		"Benvenuto a chi diventa cliente",
+		"Benvenuto a chi diventa {cliente}",
 		"Dopo la prima visita un'email di benvenuto, con dove trovare appuntamenti, moduli e "
-		"documenti, e il segno «Nuovo cliente».",
+		"documenti, e il segno «Nuovo {cliente}».",
 		"Became Client",
 		None,
 		False,
@@ -1516,10 +1517,10 @@ AUTOMAZIONI = (
 			{
 				"type": "send_email",
 				"subject": "Benvenuto, {{ first_name }}!",
-				"message": "Ciao {{ first_name }}, grazie per averci scelto. Nell'area clienti trovi i tuoi "
+				"message": "Ciao {{ first_name }}, grazie per averci scelto. Nell'{area} trovi i tuoi "
 				"appuntamenti, i moduli da compilare e i tuoi documenti. A presto!",
 			},
-			{"type": "add_tag", "tag": "Nuovo cliente"},
+			{"type": "add_tag", "tag": "Nuovo {cliente}"},
 		),
 	),
 	(

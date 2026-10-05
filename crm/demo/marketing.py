@@ -84,20 +84,45 @@ def _automazione(
 	if fatta:
 		# made again after a try that stopped half-way: the same automation goes on
 		return fatta
+	parole = _parole_del_verticale()
 	esito = automation.save_automation(
 		{
-			"title": nome_libero(AUTOMAZIONE, titolo),
-			"description": descrizione,
+			"title": nome_libero(AUTOMAZIONE, _nel_verticale(titolo, parole)),
+			"description": _nel_verticale(descrizione, parole),
 			"trigger_event": evento,
 			"trigger_config": impostazioni,
 			"marketing_consent": consenso,
-			"steps": [dict(passo) for passo in passi],
+			"steps": [_nel_verticale(dict(passo), parole) for passo in passi],
 		}
 	)
 	nome = esito.get("name")
 	ctx.ricorda(AUTOMAZIONE, nome, f"automation.{chiave}")
 	ctx.retrodata(AUTOMAZIONE, nome, ctx.alle(ctx.giorno(-GIORNI_INDIETRO - 10), "11:00"), manager)
 	return nome
+
+
+def _parole_del_verticale() -> dict[str, str]:
+	"""A client and their area in the demo's Italian, in the words of the vertical
+	that is on: a clinic's automations speak of patients, as the product does."""
+	from crm import verticali
+
+	sue = verticali.parole()
+
+	def italiano(testo: str) -> str:
+		return _(sue.get(testo, testo), lang="it")
+
+	return {"{cliente}": italiano("Client").lower(), "{area}": italiano("Client area").lower()}
+
+
+def _nel_verticale(valore, parole: dict[str, str]):
+	"""``valore`` - a text or a step - with the vertical's words in place."""
+	if isinstance(valore, str):
+		for segnaposto, parola in parole.items():
+			valore = valore.replace(segnaposto, parola)
+		return valore
+	if isinstance(valore, dict):
+		return {chiave: _nel_verticale(dentro, parole) for chiave, dentro in valore.items()}
+	return valore
 
 
 def _storia(ctx: Contesto, automazioni: dict[str, str], desk: str) -> None:

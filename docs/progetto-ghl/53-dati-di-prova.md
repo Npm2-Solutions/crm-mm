@@ -209,7 +209,8 @@ d'attesa, conversazioni.
       quello che il centro fa e scriverebbero alle sue persone vere; il centro
       accende quelle che tiene. Quello che hanno fatto nella storia c'è, al suo
       momento, passato dal motore (`enroll`, `advance_enrollment`): il benvenuto a
-      ogni nuovo cliente con l'etichetta «Nuovo cliente», il richiamo di chi non
+      ogni nuovo cliente con l'etichetta «Nuovo cliente» (con la clinica, nelle
+      parole del verticale: «paziente», «area pazienti»), il richiamo di chi non
       torna da due mesi se ha detto sì al marketing, la richiamata a chi ha
       compilato un modulo (di Meta o del sito), l'email dopo un appuntamento
       mancato. Le cose da fare che hanno lasciato le ha fatte la segreteria, tranne

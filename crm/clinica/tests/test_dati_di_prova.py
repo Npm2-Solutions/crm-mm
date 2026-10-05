@@ -18,6 +18,8 @@ class TestDatiDiProvaConLaClinica(test_demo_data.TestDatiDiProva):
 	# the medical director and the dentist join the team, with the dentist's services
 	SQUADRA = test_demo_data.TestDatiDiProva.SQUADRA + 2
 	SERVIZI = test_demo_data.TestDatiDiProva.SERVIZI + 6
+	# the clinic's words: a client is a patient
+	CLIENTE = "paziente"
 
 	@classmethod
 	def prima_della_demo(cls):
