@@ -43773,3 +43773,7 @@ msgstr "Cambia l'abbonamento di {0}"
 #: frontend/src/components/Quotes/QuotesCard.vue
 msgid "{0} of {1} services done"
 msgstr "{0} di {1} servizi fatti"
+
+#: frontend/src/components/Area/AreaAccessCard.vue
+msgid "Add somebody"
+msgstr "Aggiungi qualcuno"
