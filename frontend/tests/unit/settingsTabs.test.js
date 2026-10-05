@@ -1,4 +1,8 @@
-import { buildTabs, valorePredefinito } from '@/utils/settingsTabs'
+import {
+  buildTabs,
+  schedaDelCampo,
+  valorePredefinito,
+} from '@/utils/settingsTabs'
 
 // The settings screens render a DocType's own layout, so the sections, the order
 // and above all the field descriptions come from the DocType. This is the shape
@@ -169,5 +173,26 @@ describe('valorePredefinito', () => {
     expect(valorePredefinito({ fieldtype: 'Link', default: '__user' })).toBe(
       undefined,
     )
+  })
+})
+
+describe('schedaDelCampo', () => {
+  const campi = [
+    { fieldname: 'tab_azienda', fieldtype: 'Tab Break', label: 'Company' },
+    { fieldname: 'company_name', fieldtype: 'Data' },
+    { fieldname: 'tab_ts', fieldtype: 'Tab Break', label: 'Sistema TS' },
+    { fieldname: 'sec', fieldtype: 'Section Break' },
+    { fieldname: 'ts_username', fieldtype: 'Data' },
+  ]
+
+  it('finds the tab that holds a field, so «Set up» opens on it', () => {
+    expect(schedaDelCampo(buildTabs(campi), 'ts_username')).toBe('tab_ts')
+    expect(schedaDelCampo(buildTabs(campi), 'company_name')).toBe('tab_azienda')
+  })
+
+  it('says nothing for a field no tab holds', () => {
+    expect(schedaDelCampo(buildTabs(campi), 'nessuno')).toBe('')
+    expect(schedaDelCampo(buildTabs(campi), '')).toBe('')
+    expect(schedaDelCampo(null, 'ts_username')).toBe('')
   })
 })

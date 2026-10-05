@@ -20,9 +20,10 @@
       <LoadingIndicator class="size-6" />
     </div>
     <template v-else>
-      <div :class="scroll ? 'flex-1 overflow-y-auto' : ''">
+      <div ref="campi" :class="scroll ? 'flex-1 overflow-y-auto' : ''">
         <FieldLayout
           v-if="tabs.length"
+          v-model:tabName="scheda"
           :tabs="tabs"
           :data="local"
           :doctype="doctype"
@@ -59,7 +60,12 @@
 
 <script setup>
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
-import { buildTabs, valorePredefinito } from '@/utils/settingsTabs'
+import { campoDaAprire } from '@/composables/settings'
+import {
+  buildTabs,
+  schedaDelCampo,
+  valorePredefinito,
+} from '@/utils/settingsTabs'
 import {
   createDocumentResource,
   createResource,
@@ -69,7 +75,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -98,6 +104,32 @@ const fields = createResource({
 })
 
 const tabs = computed(() => buildTabs(fields.data))
+
+// opened from what is still missing: on the tab that holds the field, the field in
+// view and marked for a moment; asked once, then forgotten
+const scheda = ref('')
+const campi = ref(null)
+watch(
+  [tabs, campoDaAprire],
+  async ([schede, campo]) => {
+    const dove = schedaDelCampo(schede, campo)
+    if (!dove) return
+    scheda.value = dove
+    campoDaAprire.value = ''
+    // the tab draws its fields a moment after it is chosen: wait for this one
+    let elemento = null
+    for (let volta = 0; volta < 20 && !elemento; volta++) {
+      await nextTick()
+      await new Promise((fatto) => setTimeout(fatto, 50))
+      elemento = campi.value?.querySelector(`[data-name="${campo}"]`)
+    }
+    if (!elemento) return
+    elemento.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    elemento.classList.add('dc-campo-cercato')
+    setTimeout(() => elemento.classList.remove('dc-campo-cercato'), 2400)
+  },
+  { immediate: true },
+)
 
 const doc = props.docname
   ? createDocumentResource({
@@ -160,3 +192,12 @@ function stripHtml(text) {
     .replace(/<[^>]*>/g, '')
 }
 </script>
+
+<style scoped>
+/* the field a «Set up» brought here, marked while the eye finds it */
+:deep(.dc-campo-cercato) {
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 3px var(--brand-action, #0f766e);
+  transition: box-shadow 0.4s;
+}
+</style>

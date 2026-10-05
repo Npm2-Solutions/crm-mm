@@ -30785,8 +30785,8 @@ msgid "What an invoice issued in the period is worth, on average"
 msgstr "Quanto vale in media una fattura emessa nel periodo"
 
 #: frontend/src/components/Settings/Invoicing/InvoicingDefaults.vue
-msgid "What applies to every document: what gets attached, how long a link stays open, and when silence becomes an alert."
-msgstr "Cosa vale per ogni documento: cosa si allega, quanto resta aperto un link e quando il silenzio diventa un avviso."
+msgid "What applies to every document: what gets attached, what leaves by itself, and when silence becomes an alert."
+msgstr "Cosa vale per ogni documento: cosa si allega, cosa parte da solo e quando il silenzio diventa un avviso."
 
 #: crm/assistente/doctype/crm_ai_event/crm_ai_event.json
 msgid "What came out (SHA-256)"

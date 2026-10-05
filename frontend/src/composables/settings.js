@@ -10,6 +10,10 @@ export const disableSettingModalOutsideClick = ref(false)
 
 export const activeSettingsPage = ref('')
 
+// The field a settings page opens on: «Set up» beside what is still missing lands
+// on the tab that holds it and brings it into view, not on the record's first tab.
+export const campoDaAprire = ref('')
+
 // Which website the Website settings open on. The Site section sets it before opening the
 // modal so you land on the site you were looking at, not on whichever one is the default.
 export const activeSettingsSite = ref('')
