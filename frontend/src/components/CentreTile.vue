@@ -9,7 +9,11 @@
   would read as a line.
 -->
 <template>
-  <span class="grid shrink-0 place-items-center overflow-hidden rounded-md">
+  <!-- flex, not a grid: a grid's row grows with the logo, and a logo taller
+       than wide came out of the tile's size, cut at the bottom -->
+  <span
+    class="flex shrink-0 items-center justify-center overflow-hidden rounded-md"
+  >
     <img
       v-if="logo && forma !== 'wide'"
       :src="logo"
