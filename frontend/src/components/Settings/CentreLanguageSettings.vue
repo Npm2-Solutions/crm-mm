@@ -56,7 +56,7 @@
           <FormControl
             v-model="scelte.time_zone"
             type="select"
-            class="w-80 max-md:w-full"
+            class="dc-valore-intero w-80 max-md:w-full"
             :options="fusi"
           />
         </SettingsRow>

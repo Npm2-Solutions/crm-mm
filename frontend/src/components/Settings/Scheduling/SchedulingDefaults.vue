@@ -69,6 +69,7 @@
           <FormControl
             v-model="form.timezone"
             type="select"
+            class="dc-valore-intero"
             :label="__('Time zone')"
             :options="timezoneOptions"
           />

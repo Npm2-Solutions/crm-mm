@@ -101,6 +101,7 @@
             <FormControl
               v-model="user.doc.time_zone"
               type="select"
+              class="dc-valore-intero"
               :options="fusi"
               :aria-label="__('Timezone')"
             />
