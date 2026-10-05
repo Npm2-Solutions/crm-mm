@@ -185,7 +185,10 @@ function pick(option) {
 }
 
 const groupOptions = GRUPPI.map((g) => ({ label: __(g), value: g }))
-const partOptions = PARTI.map((p) => ({ label: __(p), value: p }))
+const partOptions = PARTI.map((p) => ({
+  label: __(p, null, 'Body part'),
+  value: p,
+}))
 
 // grams per 100 g, as the table says: what a menu's totals are made of
 const macros = [

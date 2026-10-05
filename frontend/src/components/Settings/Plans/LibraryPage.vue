@@ -145,7 +145,7 @@ import { Badge, Button, FormControl, call, debounce, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
-  // title, description, endpoint, nameField, groups, everyGroup, groupLabel,
+  // title, description, endpoint, nameField, groups, groupContext, everyGroup, groupLabel,
   // sources (a name, or its value and label), searchPlaceholder, newLabel,
   // empty, describe(row), thumbnail(row)
   library: { type: Object, required: true },
@@ -165,7 +165,11 @@ const anyFilter = computed(() =>
 
 const groupOptions = computed(() => [
   { label: props.library.everyGroup, value: '' },
-  ...props.library.groups.map((g) => ({ label: __(g), value: g })),
+  // a group's word read in its sense: «Back» is a body part, «Schiena», not «Indietro»
+  ...props.library.groups.map((g) => ({
+    label: __(g, null, props.library.groupContext),
+    value: g,
+  })),
 ])
 
 // a source is a table's own name ("CIQUAL"), or a value with the words the
