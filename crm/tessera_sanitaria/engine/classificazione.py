@@ -43,6 +43,15 @@ def risolvi_tipo_spesa(
 	"""
 	ammessi = tipi_spesa_ammessi(emittente)
 	problemi: list[str] = []
+	if not ammessi:
+		# no list to choose from: "who can only use ." helps nobody
+		problemi.append(
+			Messaggio(
+				'whoever issues the invoice ("{0}") has no expense type of the Sistema TS: say who issues in Settings > Invoicing > Issuing company',
+				nome(SOGGETTO_INVIANTE, emittente),
+			)
+		)
+		return None, problemi
 
 	if riga.quota_non_a_carico and riga.quota_non_a_carico > 0 and "AA" in ammessi:
 		return "AA", problemi

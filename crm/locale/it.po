@@ -44768,3 +44768,15 @@ msgstr "Serve il codice proprietario codiceRegione-codiceAsl-codiceSSA. Una S.r.
 
 msgid "For public or accredited private facilities, payment traceability may not be required. Its visits are exempt under n. 18 (Ris. 39/E/2004); n. 19 only for hospital care in a clinic with an agreement."
 msgstr "Per le strutture pubbliche o private accreditate la tracciabilità del pagamento può non essere richiesta. Le sue visite sono esenti ai sensi del n. 18 (Ris. 39/E/2004); il n. 19 solo per il ricovero e cura in una clinica convenzionata."
+
+msgid "line {0}: {1}"
+msgstr "riga {0}: {1}"
+
+msgid "performed by \"{0}\", but whoever issues the invoice is not set up as a subject of the Sistema TS: nothing is reported. If the professional invoices in their own name, or the centre is an authorised facility, say so in Settings > Invoicing > Issuing company"
+msgstr "la esegue «{0}», ma chi emette la fattura non è impostato come soggetto del Sistema TS: non si comunica niente. Se il professionista fattura a suo nome, o il centro è una struttura autorizzata, dillo in Impostazioni > Fatturazione > Azienda emittente"
+
+msgid "whoever issues the invoice (\"{0}\") has no expense type of the Sistema TS: say who issues in Settings > Invoicing > Issuing company"
+msgstr "chi emette la fattura («{0}») non ha tipi di spesa del Sistema TS: indica chi emette in Impostazioni > Fatturazione > Azienda emittente"
+
+msgid "the VAT number of whoever issues is missing or is not eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
+msgstr "la partita IVA di chi emette manca o non ha undici cifre (un professionista che non ce l'ha usa il codice di undici cifre rilasciato dal Sistema TS)"

@@ -35,7 +35,10 @@ from .codici import (
 	RegolaSdI,
 	TipoDestinatario,
 )
-from .messaggi import Messaggio
+from .messaggi import Messaggio, Nome
+
+#: The issuer's category when it is no subject of the Sistema TS (the default).
+NON_SANITARIO = "non_sanitario"
 from .qualifica import Risolutore
 
 
@@ -69,6 +72,12 @@ class GuardiaSdI(PermissionError):
 		self.motivo = motivo
 		self.righe = righe or []
 		super().__init__(motivo)
+
+
+def _della_riga(indice: int, testo: str) -> Messaggio:
+	"""What a line says, with its number, translatable whole: an f-string turned the
+	line's sentence into English before any screen could translate it."""
+	return Messaggio("line {0}: {1}", indice, testo if isinstance(testo, Messaggio) else Nome(testo))
 
 
 @dataclass
@@ -138,14 +147,14 @@ class EsitoClassificazione:
 	def tutti_errori(self) -> list[str]:
 		elenco = list(self.errori)
 		for indice, riga in enumerate(self.righe, start=1):
-			elenco.extend(f"line {indice}: {e}" for e in riga.errori)
+			elenco.extend(_della_riga(indice, e) for e in riga.errori)
 		return elenco
 
 	@property
 	def tutti_avvisi(self) -> list[str]:
 		elenco = list(self.avvisi)
 		for indice, riga in enumerate(self.righe, start=1):
-			elenco.extend(f"line {indice}: {a}" for a in riga.avvisi)
+			elenco.extend(_della_riga(indice, a) for a in riga.avvisi)
 		return elenco
 
 	@property
@@ -296,6 +305,18 @@ def classifica_riga(
 		regola = prof.regola_sdi
 		va_al_ts = prof.comunicazione_esterna and regola == RegolaSdI.VIETATO
 		obbligo_esplicito = regola == RegolaSdI.OBBLIGATORIO
+		if va_al_ts and soggetto_emittente == NON_SANITARIO:
+			# The report is the duty of whoever issues, never of whoever performs: a
+			# company that is not a healthcare subject (an S.r.l. not authorised under
+			# art. 8-ter) reports nothing. The SdI stays forbidden all the same
+			# (art. 9-bis D.L. 135/2018): the invoice is a PDF, and the exemption holds.
+			va_al_ts = False
+			avvisi.append(
+				Messaggio(
+					'performed by "{0}", but whoever issues the invoice is not set up as a subject of the Sistema TS: nothing is reported. If the professional invoices in their own name, or the centre is an authorised facility, say so in Settings > Invoicing > Issuing company',
+					Nome(prof.etichetta),
+				)
+			)
 
 	if (
 		destinatario == TipoDestinatario.PERSONA_FISICA

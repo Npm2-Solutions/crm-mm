@@ -50,6 +50,24 @@ class RisoluzioneNoveTest(UnitTestCase):
 		self.assertFalse(esito.ts_richiesto)
 		self.assertEqual(esito.righe[0].natura_iva, "N4")
 
+	def test_chi_emette_non_sanitario_non_comunica_niente(self):
+		# the report is whoever issues's duty: a company that is no subject of the
+		# Sistema TS reports nothing, the SdI stays forbidden, and one warning says why
+		esito = self._paziente(riga("psicologo"), emittente="non_sanitario")
+		self.assertEqual(esito.canale, Canale.PDF_SOLO)
+		self.assertFalse(esito.ts_richiesto)
+		self.assertFalse(esito.sdi_consentito)
+		self.assertEqual(esito.tutti_errori, [])
+		[avviso] = esito.tutti_avvisi
+		self.assertIn("not set up as a subject of the Sistema TS", avviso)
+
+	def test_i_messaggi_di_riga_restano_traducibili(self):
+		# an f-string made them English before the screen could translate them
+		esito = self._paziente(riga("psicologo"), emittente="non_sanitario")
+		[avviso] = esito.tutti_avvisi
+		self.assertEqual(avviso.modello, "line {0}: {1}")
+		self.assertEqual(avviso.argomenti[0], 1)
+
 	def test_l_osteopata_e_imponibile_e_deve_passare_da_sdi(self):
 		esito = self._paziente(riga("osteopata", esente=False))
 		self.assertEqual(esito.canale, Canale.SDI)
