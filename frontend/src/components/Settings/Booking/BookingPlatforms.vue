@@ -209,7 +209,9 @@
         <div
           class="rounded-lg bg-surface-gray-1 px-3 py-2 text-p-sm text-ink-gray-7"
         >
-          <div class="whitespace-pre-line">{{ __(info.setup_help) }}</div>
+          <!-- a paragraph at a time: a platform's own note comes before the
+               help of the way it connects, each in the catalogue -->
+          <div class="whitespace-pre-line">{{ aiuto(info.setup_help) }}</div>
           <a
             v-if="info.docs_url"
             :href="info.docs_url"
@@ -565,6 +567,14 @@ const inboxOptions = computed(() => [
 ])
 
 // -- list ---------------------------------------------------------------------
+
+// how a platform connects, in the reader's words: its paragraphs one by one
+function aiuto(testo) {
+  return String(testo || '')
+    .split('\n\n')
+    .map((parte) => __(parte))
+    .join('\n\n')
+}
 
 function initials(label) {
   return (label || '?')

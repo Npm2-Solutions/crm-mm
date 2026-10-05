@@ -40,8 +40,8 @@ from crm.booking_platforms.schedulers import (
 )
 
 _BUSY_FEED = (
-	"To block on the platform the hours already booked in the CRM, paste each "
-	"professional's CRM busy-feed address in the platform's external calendar setting."
+	"To block on the platform the hours already booked in {brand}, paste each "
+	"professional's busy-feed address from {brand} in the platform's external calendar setting."
 )
 
 Treatwell = email_preset(
@@ -51,8 +51,8 @@ Treatwell = email_preset(
 	"https://www.treatwell.it",
 	("treatwell.it", "treatwell.com", "uala.it"),
 	"Treatwell (which absorbed Uala) has no public API. In Treatwell Connect → Team → "
-	"staff member → 'Calendario esterno' paste the CRM busy-feed address of that "
-	"professional: CRM appointments then block Treatwell slots. Bookings reach the CRM "
+	"staff member → 'Calendario esterno' paste that professional's busy-feed address from "
+	"{brand}: {brand} appointments then block Treatwell slots. Bookings reach {brand} "
 	"through the notification emails.",
 )
 Fresha = email_preset(
@@ -61,7 +61,7 @@ Fresha = email_preset(
 	"beauty",
 	"https://www.fresha.com/it",
 	("fresha.com",),
-	"Fresha has no merchant API. Calendar → Sync lets each team member import the CRM "
+	"Fresha has no merchant API. Calendar → Sync lets each team member import the {brand} "
 	"busy feed as blocked time; bookings come in through the notification emails (or the "
 	"export link, if your workspace shows one).",
 )
@@ -72,7 +72,7 @@ Elty = email_preset(
 	"https://elty.it",
 	("elty.it",),
 	"Elty integrates only with selected practice software (AlfaDocs, MEG). Until a direct "
-	"partnership exists, bookings arrive from Elty's notification emails. " + _BUSY_FEED,
+	"partnership exists, bookings arrive from Elty's notification emails.\n\n" + _BUSY_FEED,
 )
 IDoctors = email_preset(
 	"idoctors",
@@ -81,7 +81,7 @@ IDoctors = email_preset(
 	"https://www.idoctors.it",
 	("idoctors.it",),
 	"iDoctors syncs its agenda with Google Calendar: connect the same Google Calendar to "
-	"the CRM (Settings → Google Calendar) for two-way availability, and use this "
+	"{brand} (Settings → Google Calendar) for two-way availability, and use this "
 	"connection for its notification emails.",
 )
 Doctolib = email_preset(

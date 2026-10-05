@@ -316,7 +316,7 @@ class NotificationEmail(ICalFeed):
 	authoritative_window = False
 	sender_domains: tuple = ()
 	setup_help = (
-		"Create an Email Account in the CRM for a dedicated mailbox (e.g. prenotazioni@…), "
+		"Add a dedicated mailbox in Settings → Email → Accounts (e.g. prenotazioni@…), "
 		"pick it here, and add that address as a notification (or secondary) email on the "
 		"platform, or set up a forward. Booking, change and cancellation emails become "
 		"appointments. Alternatively send the email as JSON {from, subject, text|html} to the "
@@ -392,6 +392,7 @@ def email_preset(key: str, label: str, sector: str, website: str, domains: tuple
 			"website": website,
 			"api_access": "partner",
 			"sender_domains": domains,
-			"setup_help": (note + " " if note else "") + NotificationEmail.setup_help,
+			# a paragraph each, as the screen translates them (BookingPlatforms.vue)
+			"setup_help": (note + "\n\n" if note else "") + NotificationEmail.setup_help,
 		},
 	)

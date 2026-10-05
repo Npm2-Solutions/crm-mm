@@ -464,7 +464,8 @@ def _cancel_on_platform(doc):
 	if _dalla_piattaforma(reason, conn.platform):
 		return  # it came from the platform: nothing to send back
 	try:
-		get_provider(conn).cancel_booking(doc.external_id, reason)
+		# what the platform's people read beside the cancellation, in the product's name
+		get_provider(conn).cancel_booking(doc.external_id, reason or con_nome(_("Cancelled in {brand}")))
 	except NotSupported:
 		pass
 	except Exception:
