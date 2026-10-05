@@ -15,12 +15,15 @@ CRM's (`crm.piani.librerie`), and so is what every library shares.
   brings a new version of the file. The centre never imports a table: an Italian
   one (BDA-IEO with the licence for software, CREA with the written permission)
   NPM2 adds to the library in the code.
-- **Loaded again**, the library brings its numbers; the words the centre changed -
-  a name, a group, a portion - stay the centre's, and a name the centre never
+- **The centre** changes nothing of the library's, nor of a table it imported
+  before: it switches off the foods it does not use (`switch_food`) and adds its
+  own, with their numbers (`save_food`), which it puts right as it likes. A food
+  is switched off, not deleted: a plan may point to it.
+- **Loaded again**, the library brings its numbers; what a centre wrote on one of
+  its foods before - a name, a group, a portion - stays, and a name nobody
   touched follows the library's (`library_name` keeps the one it gave), in the
   centre's language (`crm.lingue`): a site loaded in English before it said it is
-  in Italy loads it again, and its foods' names take Italian. The centre adds its
-  own foods. A food is switched off, not deleted: a plan may point to it.
+  in Italy loads it again, and its foods' names take Italian.
 - **A number the table does not give** counts as nothing: the site keeps a number.
   A food without its energy is not in the library.
 """
@@ -88,17 +91,19 @@ def get_foods(
 	)
 
 
-# ------------------------------------------------------------------ correcting, adding
+# ------------------------------------------------------------------ adding, switching off
 
 
 @frappe.whitelist(methods=["POST"])
 def save_food(name: str | None = None, data: dict | str | None = None) -> dict:
-	"""A food of the library put right, or a new one of the centre's: its name in
-	the centre's words, its group, its portion, on or off. The library's numbers
-	stay the library's; the centre's own food has its numbers written here."""
+	"""A new food of the centre's, or one of its own put right: its name, its
+	group, its portion, its numbers for 100 g, on or off. The library's are
+	DottorCloud's: switched off or on (`switch_food`), never changed."""
 	livelli.verifica("piani.librerie")
 	dati = frappe.parse_json(data) if isinstance(data, str) else (data or {})
 	doc = frappe.get_doc(CIBO, name) if name else frappe.new_doc(CIBO)
+	if name and (doc.source or CENTRO) != CENTRO:
+		frappe.throw(_("The library's foods are switched off, not changed: add the centre's own"))
 	nome = (dati.get("food_name") or "").strip()
 	if not nome:
 		frappe.throw(_("A food has a name"))
@@ -108,19 +113,24 @@ def save_food(name: str | None = None, data: dict | str | None = None) -> dict:
 	doc.food_group = dati["food_group"]
 	doc.portion_g = flt(dati.get("portion_g")) or None
 	doc.enabled = 1 if cint(dati.get("enabled", 1)) else 0
-	if not name:
-		doc.source = CENTRO
-	if (doc.source or CENTRO) == CENTRO:
-		for campo in T.VALORI:
-			valore = dati.get(campo)
-			doc.set(campo, flt(valore) if valore not in (None, "") else None)
-		doc.kcal_computed = 0
-		doc.source_note = (dati.get("source_note") or "").strip()[:140] or None
+	doc.source = CENTRO
+	for campo in T.VALORI:
+		valore = dati.get(campo)
+		doc.set(campo, flt(valore) if valore not in (None, "") else None)
+	doc.kcal_computed = 0
+	doc.source_note = (dati.get("source_note") or "").strip()[:140] or None
 	if name:
 		doc.save(ignore_permissions=True)
 	else:
 		doc.insert(ignore_permissions=True)
 	return frappe.get_all(CIBO, filters={"name": doc.name}, fields=CAMPI_CIBO)[0]
+
+
+@frappe.whitelist(methods=["POST"])
+def switch_food(name: str, enabled: int | str = 1) -> dict:
+	"""A food switched off, or on again."""
+	livelli.verifica("piani.librerie")
+	return L.accendi(CIBO, name, enabled)
 
 
 # ------------------------------------------------------------------ the library DottorCloud ships

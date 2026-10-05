@@ -624,6 +624,8 @@ scheduler_events = {
 		"crm.telephony.collegamento.assicura",
 		# what Twilio decided of the documents of a new number
 		"crm.telephony.numeri.aggiorna_le_richieste",
+		# the exercises' pictures on this server, the missing ones fetched by themselves
+		"crm.piani.immagini.assicura",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
