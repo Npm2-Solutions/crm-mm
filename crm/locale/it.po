@@ -44060,3 +44060,27 @@ msgstr "Tre domande: chi emette, il regime fiscale e, per un professionista, la 
 #: frontend/src/utils/impostazioni.js
 msgid "Who issues the invoices: details, tax regime, numbering."
 msgstr "Chi emette le fatture: i dati, il regime fiscale, la numerazione."
+
+#: frontend/src/components/Documents/DocumentsCard.vue
+msgid "One document with health data you cannot read"
+msgstr "Un documento con dati sanitari che non puoi leggere"
+
+#: frontend/src/components/Documents/DocumentsCard.vue
+msgid "{0} documents with health data you cannot read"
+msgstr "{0} documenti con dati sanitari che non puoi leggere"
+
+#: frontend/src/components/Plans/PlansCard.vue
+msgid "One plan with health data you cannot read"
+msgstr "Un piano con dati sanitari che non puoi leggere"
+
+#: frontend/src/components/Plans/PlansCard.vue
+msgid "{0} plans with health data you cannot read"
+msgstr "{0} piani con dati sanitari che non puoi leggere"
+
+#: frontend/src/components/Plans/PlansCard.vue
+msgid "One programme with health data you cannot read"
+msgstr "Un programma con dati sanitari che non puoi leggere"
+
+#: frontend/src/components/Plans/PlansCard.vue
+msgid "{0} programmes with health data you cannot read"
+msgstr "{0} programmi con dati sanitari che non puoi leggere"

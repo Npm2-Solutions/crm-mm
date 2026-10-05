@@ -88,10 +88,12 @@ class LOscuramento(DossierCase):
 		self.come(DOC2)
 		self.assertEqual(archivio.get_documents(self.anna.name)["documents"], [])
 		self.assertEqual(cartella.get_record(self.anna.name)["records"], [])
-		# not even as a padlock, for the desk or a colleague
+		# not even as a padlock, for the desk or a colleague: in the history, nor
+		# in the person's documents
 		for user in (DESK, DOC2):
 			self.come(user)
 			self.assertEqual(cartella.visite_su("CRM Lead", self.anna.name), [], user)
+			self.assertEqual(archivio.get_documents(self.anna.name)["hidden"], 0, user)
 		self.come(DOC1)
 		self.assertEqual(len(cartella.visite_su("CRM Lead", self.anna.name)), 2)
 		self.come(DIRECTOR)
@@ -103,6 +105,18 @@ class LOscuramento(DossierCase):
 		self.assertEqual(
 			[e.event for e in traccia.eventi("Clinic Record", visita["name"])], ["obscured", "revealed"]
 		)
+
+	def test_chi_non_legge_vede_il_lucchetto_non_il_vuoto(self):
+		"""The desk knows the visit's report is there, as it knows the visit happened:
+		a padlock among the documents, never «Nothing yet»."""
+		self.scrive(sign=1)
+		self.come(DESK)
+		pagina = archivio.get_documents(self.anna.name)
+		self.assertEqual((pagina["documents"], pagina["hidden"]), ([], 1))
+		# whoever reads it lists it, and has no padlock for it
+		self.come(DOC1)
+		pagina = archivio.get_documents(self.anna.name)
+		self.assertEqual((len(pagina["documents"]), pagina["hidden"]), (1, 0))
 
 	def test_solo_la_direzione_e_solo_un_episodio_firmato(self):
 		firmata = self.scrive(sign=1)
