@@ -12,7 +12,7 @@
           size="sm"
           :variant="filter === status ? 'solid' : 'outline'"
           :label="FILTRI[status]"
-          @click="((filter = status), enrollments.reload())"
+          @click="(filter = status), enrollments.reload()"
         />
       </div>
       <Button
