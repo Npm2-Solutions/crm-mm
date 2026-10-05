@@ -675,19 +675,18 @@ class LaFonteDelPrezzoInParole(IntegrationTestCase):
 	"""Where a price came from is stored in the language of whoever saved the
 	appointment: the panel reads it in its reader's."""
 
-	ITALIANO = {
-		"Service default": "Prezzo predefinito del servizio",
-		"Professional's price": "Prezzo del professionista",
-		"As agreed in the quote": "Come concordato nel preventivo",
-		"A cycle of {0} sessions for {1}": "Ciclo di {0} sedute per {1}",
-		"One of the {0} people uses their subscription": "Una persona su {0} usa il suo abbonamento",
-		"{0} of the {1} people use their subscription": "{0} persone su {1} usano il loro abbonamento",
-		"Comprised in the subscription {0}": "Compreso nell'abbonamento {0}",
-		"Comprised in their subscriptions": "Compreso nei loro abbonamenti",
-	}
-
 	def test_le_frasi_inglesi_si_leggono_tradotte_con_i_loro_valori(self):
-		with mock.patch.object(pricing, "_", side_effect=lambda testo: self.ITALIANO.get(testo, testo)):
+		italiano = {
+			"Service default": "Prezzo predefinito del servizio",
+			"Professional's price": "Prezzo del professionista",
+			"As agreed in the quote": "Come concordato nel preventivo",
+			"A cycle of {0} sessions for {1}": "Ciclo di {0} sedute per {1}",
+			"One of the {0} people uses their subscription": "Una persona su {0} usa il suo abbonamento",
+			"{0} of the {1} people use their subscription": "{0} persone su {1} usano il loro abbonamento",
+			"Comprised in the subscription {0}": "Compreso nell'abbonamento {0}",
+			"Comprised in their subscriptions": "Compreso nei loro abbonamenti",
+		}
+		with mock.patch.object(pricing, "_", side_effect=lambda testo: italiano.get(testo, testo)):
 			self.assertEqual(pricing.in_parole("Service default"), "Prezzo predefinito del servizio")
 			self.assertEqual(
 				pricing.in_parole("A cycle of 10 sessions for € 450.00"), "Ciclo di 10 sedute per € 450.00"
