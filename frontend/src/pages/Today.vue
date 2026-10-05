@@ -127,14 +127,21 @@
               }}
             </div>
             <div class="flex min-w-0 flex-1 flex-col">
-              <div class="flex items-center gap-2 text-p-sm text-ink-gray-5">
+              <!-- on a phone the service, the session and who does it wrap
+                   rather than stopping half-way, the dot on the first line -->
+              <div
+                class="flex items-center gap-2 text-p-sm text-ink-gray-5 max-md:items-start"
+              >
                 <span
-                  class="size-2 shrink-0 rounded-full"
+                  class="size-2 shrink-0 rounded-full max-md:mt-1.5"
                   :style="{
                     background: appointment.color || 'var(--surface-gray-4)',
                   }"
                 />
-                <span class="truncate">{{ appointmentLine(appointment) }}</span>
+                <span
+                  class="truncate max-md:whitespace-normal max-md:[overflow-wrap:anywhere]"
+                  >{{ appointmentLine(appointment) }}</span
+                >
               </div>
               <ParticipantRow
                 v-for="participant in appointment.participants"
