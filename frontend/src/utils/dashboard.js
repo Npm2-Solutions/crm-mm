@@ -315,6 +315,26 @@ export function mobileOrder(items) {
     )
 }
 
+// The grid gives way to the widgets one under another where it is narrower than
+// this (its box, padding included): twenty columns beside the menu on a tablet
+// held upright, 545px, left a number four columns wide 93px - «66,…» for the
+// revenue, «R…» for its title - and a list one letter of each name.
+export const GRIGLIA_MINIMA = 900
+
+// How many to a row once stacked, by the width there is: the numbers two on a
+// phone, three on a tablet held upright, four where there is room; the other
+// widgets the whole width, two to a row from 760px. A heading is a row of its own.
+export function perRiga(larghezza) {
+  if (larghezza >= 760) return { numeri: 4, altri: 2 }
+  if (larghezza >= 520) return { numeri: 3, altri: 1 }
+  return { numeri: 2, altri: 1 }
+}
+
+// The width of one of `n` to a row, `spazio` apart, for CSS's flex-basis
+export function larghezzaDiUno(n, spazio = '0.75rem') {
+  return n > 1 ? `calc((100% - ${n - 1} * ${spazio}) / ${n})` : '100%'
+}
+
 // The numbers drawn as the design system's StatTile: the first of each row of
 // the grid - the leftmost number among the widgets that start on that row - is
 // the deep block, one a row. A row is the grid's `y`; on a phone the same ones

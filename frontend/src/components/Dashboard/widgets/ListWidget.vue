@@ -82,16 +82,17 @@
     </ul>
     <!--
       On a phone the way to the whole list («All deals», «Open the agenda») is
-      the row's full height and 14px: as a 12px line it took a tap on 16px.
+      14px; with a finger, on a tablet too, it is the row's full height: as a
+      12px line it took a tap on 14px.
     -->
     <div
       v-if="footer || answer.more"
-      class="flex items-center justify-between gap-2 border-t border-outline-gray-1 px-4 py-2 text-xs max-md:py-0 max-md:text-sm"
+      class="flex items-center justify-between gap-2 border-t border-outline-gray-1 px-4 py-2 text-xs max-md:text-sm [@media(pointer:coarse)]:py-0"
     >
       <span class="text-ink-gray-5">{{ footer }}</span>
       <button
         v-if="answer.more"
-        class="inline-flex items-center gap-0.5 font-medium text-ink-gray-7 hover:text-ink-gray-9 max-md:-mr-2 max-md:min-h-11 max-md:px-2"
+        class="inline-flex items-center gap-0.5 font-medium text-ink-gray-7 hover:text-ink-gray-9 [@media(pointer:coarse)]:-mr-2 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:px-2"
         @click="$emit('navigate', answer.more)"
       >
         {{ answer.more.label }}
