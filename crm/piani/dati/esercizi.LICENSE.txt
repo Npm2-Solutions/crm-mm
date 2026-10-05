@@ -44,3 +44,11 @@ ITALIAN NAMES
 The dataset names its exercises in English. The Italian names in this file
 (each record's `names.it`) are NPM2 Solutions Srl's translation of those names,
 released under the same MIT License as the data above.
+
+------------------------------------------------------------------------------
+MEASURES
+------------------------------------------------------------------------------
+
+Two measures of the English instructions are written in centimetres instead of
+inches ("a few centimetres above the ground", "about 15 centimetres"), by NPM2
+Solutions Srl, under the same MIT License: DottorCloud uses the metric system.
