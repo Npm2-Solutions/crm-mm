@@ -758,10 +758,13 @@
               @click="form.resources.splice(i, 1)"
             />
           </div>
+          <!-- never wider than the panel: beside the agenda on a tablet held
+               upright its words ran past the panel's edge; cut there, its
+               name stays whole for who does not see -->
           <Button
             variant="ghost"
             size="sm"
-            class="self-start"
+            class="max-w-full self-start"
             iconLeft="plus"
             :label="__('Add a room or equipment')"
             @click="form.resources.push({ resource: '', quantity: 1 })"
