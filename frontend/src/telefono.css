@@ -524,6 +524,13 @@
     white-space: normal;
     overflow-wrap: break-word;
   }
+  /* frappe-ui's row inside the 48px one is 30px: its words sat at the top,
+     under the chosen one's band too. As tall as the row, they are in its
+     middle */
+  [role='menu'] [role='menuitem'] [data-slot='item-list-row'],
+  [role='listbox'] [role='option'] [data-slot='item-list-row'] {
+    min-height: 3rem;
+  }
 }
 /* frappe-ui's Autocomplete, the list of a link field: a popover holding a
    search and a listbox one level deeper than the rules above reach. It opened

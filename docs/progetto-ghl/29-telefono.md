@@ -889,7 +889,16 @@ che scorre anche quello che al dito non risponde.
   apre sotto il campo, larga quanto lui.
 - **Gli altri fogli scorrevano già**: una finestra lunga (nuova persona, nuova
   fattura, una qualifica), la lista di un campo collegato, i filtri
-  dell'agenda, il pannello di un appuntamento, le schede in «Altro».
+  dell'agenda, il pannello di un appuntamento, le schede in «Altro». Il giro
+  del telefono ora trascina un dito in ogni foglio che apre (dove una scatola
+  è già in fondo, il dito torna indietro): 352 prove su pagine, schede,
+  finestre e 52 pagine delle impostazioni, nessun foglio fermo; le strisce
+  che scorrono di lato (le schede delle impostazioni, le fasi della bacheca,
+  i filtri dell'agenda) si muovono anche loro.
+- **Le parole di una voce stanno a metà della sua riga.** Nei fogli le righe
+  sono alte 48 punti, ma la riga di frappe-ui dentro ne era alta 30: le parole
+  stavano in alto, e la fascia della voce scelta le lasciava sopra, sbilanciate.
+  Ora la riga interna è alta quanto quella del foglio (`telefono.css`, «5»).
 
 ## File
 
