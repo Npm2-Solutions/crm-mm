@@ -29,7 +29,10 @@
         />
         {{ delta.text }}
       </span>
-      <span class="truncate text-ink-gray-5" :title="comparison">
+      <span
+        class="truncate text-ink-gray-5 max-md:whitespace-normal [[data-impilata]_&]:whitespace-normal"
+        :title="comparison"
+      >
         {{ comparison }}
       </span>
     </div>

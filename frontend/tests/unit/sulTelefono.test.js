@@ -12,6 +12,7 @@ import {
   elencoDelGiorno,
   faseIniziale,
   gruppoDi,
+  partiDellIndirizzo,
   quandoTorna,
   quanteNellaBarra,
   rigaDellAzienda,
@@ -395,5 +396,19 @@ describe("a record's tabs in the phone's bar", () => {
     expect(quanteNellaBarra(sei, 180, 60)).toBe(1)
     // one tab at least, however narrow
     expect(quanteNellaBarra(sei, 90, 60)).toBe(1)
+  })
+})
+
+describe('an address on a narrow screen', () => {
+  it('goes on under itself after the «@», never inside its domain', () => {
+    expect(partiDellIndirizzo('crm.manager@example.com')).toEqual([
+      'crm.manager@',
+      'example.com',
+    ])
+  })
+
+  it('leaves what is not an address whole', () => {
+    expect(partiDellIndirizzo('Administrator')).toEqual(['Administrator', ''])
+    expect(partiDellIndirizzo(null)).toEqual(['', ''])
   })
 })

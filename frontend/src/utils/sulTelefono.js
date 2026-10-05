@@ -296,6 +296,19 @@ export function doveAdesso(righe = [], giorno, adesso = new Date()) {
   return righe.findIndex((riga) => !riga.intero && riga.inizio > adesso)
 }
 
+/**
+ * An address in two, where it may go on under itself on a narrow screen: up to
+ * the «@», and its domain. Broken anywhere it read «crm.manager@example.co /
+ * m»; between the two, «crm.manager@ / example.com».
+ */
+export function partiDellIndirizzo(indirizzo) {
+  const testo = String(indirizzo || '')
+  const chiocciola = testo.indexOf('@')
+  return chiocciola < 0
+    ? [testo, '']
+    : [testo.slice(0, chiocciola + 1), testo.slice(chiocciola + 1)]
+}
+
 // ------------------------------------------------------------------ companies
 
 /** A website as one reads it: `https://www.acme.it/chi-siamo` is `acme.it`. */

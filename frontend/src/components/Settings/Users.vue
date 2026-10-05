@@ -117,8 +117,12 @@
               <div class="truncate text-p-base text-ink-gray-8">
                 {{ user.full_name }}
               </div>
-              <div class="truncate text-p-sm text-ink-gray-5">
-                {{ user.name }}
+              <!-- an address is read whole, on under itself after its «@»:
+                   «…@example.c…» at 320 -->
+              <div class="text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]">
+                {{ partiDellIndirizzo(user.name)[0] }}<wbr />{{
+                  partiDellIndirizzo(user.name)[1]
+                }}
               </div>
             </div>
             <div
@@ -193,6 +197,7 @@ import {
   Tooltip,
   Select,
 } from 'frappe-ui'
+import { partiDellIndirizzo } from '@/utils/sulTelefono'
 import { ref, computed, onMounted } from 'vue'
 import { ConfirmDelete } from '../../utils'
 
