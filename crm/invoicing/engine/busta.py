@@ -22,6 +22,7 @@ from __future__ import annotations
 import base64
 import binascii
 import hmac
+import json
 import re
 from datetime import datetime
 from urllib.parse import unquote
@@ -273,6 +274,54 @@ def nome_da_disposizione(valore: str | None) -> str | None:
 	if not nome or "/" in nome or "\\" in nome or nome.startswith("."):
 		return None
 	return nome[:140]
+
+
+def _campo(dati, *nomi) -> str | None:
+	"""The first of these keys that holds something, whatever its case: Itala writes
+	`PartitaIVA` and `Denominazione`, as the FatturaPA does."""
+	if not isinstance(dati, dict):
+		return None
+	per_nome = {str(chiave).lower(): valore for chiave, valore in dati.items()}
+	for nome in nomi:
+		valore = per_nome.get(nome.lower())
+		if isinstance(valore, (str, int, float)) and str(valore).strip():
+			return str(valore).strip()
+	return None
+
+
+def fattura_ricevuta(voce) -> dict:
+	"""What a supplier's invoice says of itself, out of Itala's row: the row's own
+	fields first, then its `dati_documento` (`mittente`, `documento`), read by
+	FatturaPA's names. A missing field is left empty: the XML is the record."""
+	if not isinstance(voce, dict):
+		return {}
+	dati = voce.get("dati_documento")
+	if isinstance(dati, str):
+		try:
+			dati = json.loads(dati)
+		except ValueError:
+			dati = {}
+	dati = dati if isinstance(dati, dict) else {}
+	mittente = dati.get("mittente") or dati.get("cedente") or {}
+	documento = dati.get("documento") or {}
+
+	nome = _campo(mittente, "Denominazione")
+	if not nome:
+		nome = " ".join(p for p in (_campo(mittente, "Nome"), _campo(mittente, "Cognome")) if p) or None
+	partita_iva = _campo(mittente, "PartitaIVA", "partita_iva", "piva")
+	if partita_iva and partita_iva.upper().startswith("IT"):
+		partita_iva = _partita_iva(partita_iva)
+	return {
+		"supplier_name": nome[:140] if nome else None,
+		"supplier_tax_id": partita_iva,
+		"supplier_fiscal_code": _campo(mittente, "CodiceFiscale", "codice_fiscale"),
+		"document_type": _campo(voce, "tipo_documento") or _campo(documento, "TipoDocumento", "Tipo"),
+		"document_number": _campo(voce, "numero_documento") or _campo(documento, "Numero"),
+		"document_date": _campo(voce, "data_documento") or _campo(documento, "Data"),
+		"total_amount": _campo(documento, "ImportoTotaleDocumento", "Totale", "importo_totale"),
+		"currency": _campo(documento, "Divisa") or "EUR",
+		"received_on": _campo(voce, "sdi_data_aggiornamento", "data"),
+	}
 
 
 def della_partita_iva(voce, partita_iva: str | None) -> bool:
