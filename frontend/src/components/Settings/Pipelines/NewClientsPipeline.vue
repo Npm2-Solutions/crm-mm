@@ -106,7 +106,7 @@ const stageOptions = computed(() => [
     (pipelines.data || []).find(
       (pipeline) => pipeline.name === form.new_clients_pipeline,
     )?.stages || []
-  ).map((stage) => ({ label: stage.name, value: stage.name })),
+  ).map((stage) => ({ label: __(stage.name), value: stage.name })),
 ])
 
 async function run(method, args = {}) {

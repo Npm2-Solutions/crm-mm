@@ -237,7 +237,7 @@ const deletedColumns = computed(() => {
   return _columns
     ?.filter((col) => col['delete'])
     .map((col) => {
-      return { label: col.name, value: col.name }
+      return { label: __(col.name), value: col.name }
     })
 })
 
