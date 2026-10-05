@@ -26,17 +26,18 @@ import frappe
 # A sentence's date is known only once it is filled, so the rule is applied to
 # the filled sentence, and only before the day of a date: the same as the SPA's
 # translator (`conLApostrofo`, utils/locale.js), and a date written 11-10 or
-# 11.10 too, as the site's format may write it.
+# 11.10 too, as the site's format may write it, with its day's zero too
+# («dall'08/10/2026»: Italy's format writes it).
 _ELISIONI = {"il": "l'", "dal": "dall'", "al": "all'", "del": "dell'", "nel": "nell'", "sul": "sull'"}
 _MESI = "gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic"
 _DAVANTI_A_UNA_DATA = re.compile(
-	rf"(^|[^\w'’])(il|dal|al|del|nel|sul) (1|8|11)(?= (?:{_MESI})|[/.-]\d)", re.IGNORECASE
+	rf"(^|[^\w'’])(il|dal|al|del|nel|sul) (0?1|0?8|11)(?= (?:{_MESI})|[/.-]\d)", re.IGNORECASE
 )
 
 
 def con_l_apostrofo(testo, lingua: str | None = None):
 	"""``testo``, a sentence already filled, with the article before a date's 1, 8
-	or 11 elided in Italian (``lingua``, else the session's); anything else as it is."""
+	or 11 (01, 08) elided in Italian (``lingua``, else the session's); anything else as it is."""
 	if not isinstance(testo, str):
 		return testo
 	if lingua is None:

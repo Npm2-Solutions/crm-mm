@@ -51,7 +51,9 @@ export function inFrase(label) {
 // before a number read with one: «l'1 ottobre», «dall'8 marzo», «all'11
 // settembre». A sentence that puts a date after «il {0}» or «dal {0}» read «dal
 // 11 set»: the date is known only once the sentence is filled, so it is put
-// right here, for every sentence, and only before a day of a date.
+// right here, for every sentence, and only before a day of a date: written
+// 11/10, 11-10 or 11.10 as the site's format may write it, with its zero too
+// («dall'08/10/2026»: Italy's format writes it).
 const ELISIONI = {
   il: "l'",
   dal: "dall'",
@@ -62,7 +64,7 @@ const ELISIONI = {
 }
 const MESI = 'gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic'
 const DAVANTI_A_UNA_DATA = new RegExp(
-  `(^|[^\\p{L}'])(il|dal|al|del|nel|sul) (1|8|11)(?= (?:${MESI})|/)`,
+  `(^|[^\\p{L}'])(il|dal|al|del|nel|sul) (0?1|0?8|11)(?= (?:${MESI})|[/.-]\\d)`,
   'giu',
 )
 
