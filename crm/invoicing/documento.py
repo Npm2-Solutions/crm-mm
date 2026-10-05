@@ -242,7 +242,7 @@ def _riferimenti(doc, emittente: dict) -> dict[str, str]:
 	riferimenti = {
 		"N4": diciture.esenzione(data),
 		"N2.2": diciture.forfettario(includi_ritenuta=False)[0],
-		"N2.1": diciture.fuori_campo_territoriale(data),
+		"N2.1": diciture.fuori_campo_territoriale(data, cf.e_intracomunitario(doc.country)),
 		"N1": diciture.anticipazione(data),
 	}
 	for natura in NATURE_REVERSE_CHARGE:
@@ -339,7 +339,7 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 	if nature & NATURE_REVERSE_CHARGE:
 		testi.append(diciture.inversione_contabile(sorted(nature & NATURE_REVERSE_CHARGE)[0]))
 	if "N2.1" in nature:
-		testi.append(diciture.fuori_campo_territoriale(data))
+		testi.append(diciture.fuori_campo_territoriale(data, cf.e_intracomunitario(doc.country)))
 	if "N1" in nature:
 		testi.append(diciture.anticipazione(data))
 	if doc.split_payment:

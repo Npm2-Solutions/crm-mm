@@ -211,9 +211,17 @@ def scissione_pagamenti(data_documento: date) -> str:
 	return f"Scissione dei pagamenti ai sensi dell'{SPLIT_PAYMENT.testo(data_documento)}: IVA versata dal committente."
 
 
-def fuori_campo_territoriale(data_documento: date) -> str:
-	"""Cross-border B2B service: outside the scope of Italian VAT."""
-	return f"Operazione non soggetta ad IVA ai sensi dell'{FUORI_CAMPO_TERRITORIALE.testo(data_documento)} - inversione contabile a carico del committente."
+def fuori_campo_territoriale(data_documento: date, cliente_ue: bool = True) -> str:
+	"""Cross-border B2B service: outside the scope of Italian VAT.
+
+	The wording art. 21, c. 6-bis DPR 633/72 asks for depends on the client: a
+	taxable person in another member state accounts for the VAT, so «inversione
+	contabile»; outside the Union it is «operazione non soggetta» alone.
+	"""
+	base = f"Operazione non soggetta ad IVA ai sensi dell'{FUORI_CAMPO_TERRITORIALE.testo(data_documento)}"
+	if cliente_ue:
+		return f"{base} - inversione contabile a carico del committente."
+	return f"{base}."
 
 
 def anticipazione(data_documento: date) -> str:
