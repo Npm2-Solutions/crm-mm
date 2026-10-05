@@ -13,6 +13,11 @@ framework's screens (login, desk, public pages, emails) or a document, and never
 "the CRM" for the product ("CRM" stays for the category and in technical names).
 The framework's name stays where only code sees it (imports, API paths).
 
+DottorCloud sends nothing about its use to anybody: frappe-ui's telemetry plugin
+is not installed (the `capture()` calls the original project left in components
+do nothing) and the framework's is switched off at install and every migrate
+(`crm/telemetria.py`). Nothing new calls `capture`.
+
 A new file starts `Copyright (c) <year>, NPM2 Solutions Srl and contributors`. A
 file that came from the original project keeps its authors' copyright line, as
 the AGPL asks, and when NPM2 changes it for the first time it gets

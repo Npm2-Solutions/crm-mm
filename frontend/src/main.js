@@ -28,7 +28,6 @@ import {
   FeatherIcon,
 } from 'frappe-ui'
 
-import { telemetryPlugin } from 'frappe-ui/frappe'
 // the lucide icons drawn by name come into the page one by one, and the
 // sprite's text when the app is idle - not the whole sprite at the start
 import { caricaQuandoLibero } from '@/utils/icone'
@@ -61,6 +60,8 @@ let pinia = createPinia()
 let app = createApp(App)
 
 setConfig('resourceFetcher', frappeRequest)
+// no telemetry plugin: DottorCloud sends nothing about its use to anybody
+// (crm/telemetria.py); the capture() calls left in the components do nothing
 app.use(FrappeUI)
 app.use(pinia)
 app.use(router)
@@ -68,7 +69,6 @@ app.use(translationPlugin)
 for (let key in globalComponents) {
   app.component(key, globalComponents[key])
 }
-app.use(telemetryPlugin, { app_name: 'crm' })
 
 app.config.globalProperties.$dialog = createDialog
 

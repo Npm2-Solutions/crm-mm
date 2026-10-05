@@ -16,7 +16,6 @@ reported over realtime.
 from __future__ import annotations
 
 import frappe
-from frappe.utils.telemetry import capture
 
 from .config import _setting, auto_enrich_enabled_for, get_config, get_settings
 from .mapper import apply_to_document
@@ -217,15 +216,6 @@ def run_enrichment(
 			},
 			user=user,
 		)
-		capture(
-			"enrichment_run_completed",
-			"crm",
-			properties={
-				"doctype": reference_doctype,
-				"trigger": trigger,
-				"status": "success",
-			},
-		)
 	except Exception:
 		# Discard any partial writes (e.g. a doc.save() that fired side effects before a
 		# later step threw). execute_job commits when this function returns normally, so
@@ -253,13 +243,4 @@ def run_enrichment(
 			message=frappe._("Enrichment failed. Check the error log."),
 			step=0,
 			user=user,
-		)
-		capture(
-			"enrichment_run_completed",
-			"crm",
-			properties={
-				"doctype": reference_doctype,
-				"trigger": trigger,
-				"status": "failure",
-			},
 		)
