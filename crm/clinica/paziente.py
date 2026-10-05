@@ -8,6 +8,12 @@ Every rule calls `assicura_paziente`, and its first line is "already a patient?
 then leave": the first rule to arrive writes the card, which rule it was, when and
 by whose hand; the ones after do nothing. With the clinic off in the plan no rule
 converts anybody: it is a module the centre does not have.
+
+A patient is a step above a client, not the same thing: the CRM's rules make a
+client of whoever came or bought (a Pilates class too, `crm.clienti`), the clinic's
+a patient of whoever had a health service or whose health data the centre keeps.
+The person carries both (`CRM Lead.relationship`, `patient_since`), and the
+automations hear each on its own: "Became Client", "Became Patient".
 """
 
 from __future__ import annotations
@@ -25,6 +31,13 @@ from crm.clinica import PIANO, regole
 from crm.permissions import livelli
 
 DOCTYPE = "Clinic Patient"
+#: On the person, besides the card: when, and the step of their relationship with
+#: the centre above the client's (`crm.clienti.cliente.RAPPORTO`).
+CAMPO = "patient_since"
+PAZIENTE = "Patient"
+#: The event, and the trigger the automations listen to it by (`crm.automation.engine`).
+EVENTO = "patient_created"
+TRIGGER = "Became Patient"
 
 #: Set once the patients already in the agenda and the invoices have been found.
 RECUPERO_FATTO = "crm_clinica_recupero"
@@ -79,11 +92,12 @@ def assicura_paziente(
 ) -> str | None:
 	"""Make ``lead`` a patient because of ``regola``; the card's name when it did.
 
-	None when nothing happened: already a patient, or the clinic is off. A patient
-	is a client of the centre from the same moment (`crm.clienti`): with
-	``annuncia`` the sales side hears it, the new clients deal - the new patients'
-	with the clinic - is won and the automations hear "Became Client". The patients
-	found in the data already there are not news, and are not announced.
+	None when nothing happened: already a patient, or the clinic is off. The person
+	reads "Patient" from now on, whatever they were; with ``annuncia`` the
+	automations hear "Became Patient". Whether they are a client is the CRM's
+	rules' to say - the first time they come, or their first invoice - and so is
+	the new patients deal, won when they come. The patients found in the data
+	already there are not news, and are not announced.
 	"""
 	if not lead or not clinica_accesa() or e_paziente(lead):
 		return None
@@ -111,7 +125,16 @@ def assicura_paziente(
 		return None
 	from crm.clienti import cliente
 
-	cliente.diventa_cliente(lead, regola, quando=scheda.patient_since, annuncia=annuncia)
+	frappe.db.set_value(
+		"CRM Lead",
+		lead,
+		{CAMPO: scheda.patient_since, cliente.RAPPORTO: PAZIENTE},
+		update_modified=False,
+	)
+	if annuncia:
+		from crm.automation import engine
+
+		engine.process_event(EVENTO, frappe.get_doc("CRM Lead", lead), {"rule": regola.valore})
 	return scheda.name
 
 

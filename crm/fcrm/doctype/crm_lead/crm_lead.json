@@ -32,6 +32,7 @@
   "job_title",
   "source",
   "lead_owner",
+  "relationship",
   "last_visit",
   "last_service",
   "client_since",
@@ -236,6 +237,17 @@
    "fieldtype": "Link",
    "label": "Lead Owner",
    "options": "User"
+  },
+  {
+   "default": "Contact",
+   "description": "Who they are to the centre: a contact until the first time they come or buy, then a client. Written by the rules, never by hand.",
+   "fieldname": "relationship",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Relationship",
+   "options": "Contact\nClient",
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "description": "The last appointment they came to. Recalls pick people by it, never by the clinical record.",
@@ -842,7 +854,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-05 06:00:00.000000",
+ "modified": "2026-10-05 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

@@ -317,12 +317,20 @@ export const TRIGGER_CATALOG = {
     doctype: 'CRM Lead',
     hint: 'The person moves to another status.',
   },
-  // the first time the person comes (crm.clienti); with the clinic, a patient
+  // the first time the person comes, or buys (crm.clienti): a Pilates class too
   'Became Client': {
     category: 'lead',
     icon: 'user-check',
     doctype: 'CRM Lead',
     hint: 'The person becomes a client of the centre: the first time they come, or their first invoice.',
+  },
+  // with the clinic: a health service, or health data the centre keeps
+  // (crm.clinica.paziente); offered only where the clinic is on
+  'Became Patient': {
+    category: 'lead',
+    icon: 'heart',
+    doctype: 'CRM Lead',
+    hint: 'The person becomes a patient of the centre: a health service, or health data the centre keeps.',
   },
   'Deal Created': {
     category: 'deal',

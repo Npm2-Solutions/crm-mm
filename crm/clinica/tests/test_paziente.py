@@ -186,12 +186,16 @@ class LeRegole(ClinicCase):
 			],
 		)
 		self.assertFalse(paziente.e_paziente(self.mario.name))
+		# whoever came is a client, as in any centre
+		self.assertIsNotNone(frappe.db.get_value("CRM Lead", self.mario.name, "client_since"))
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.mario.name, "relationship"), "Client")
 		# the same class with a physiotherapist beside him is the clinic's
 		fisioterapista = self.make_user("clinic.physio@example.com")
 		self.professionista(fisioterapista, sanitaria=True)
 		incontro.append("staff", {"user": fisioterapista})
 		incontro.save()
 		self.assertTrue(paziente.e_paziente(self.mario.name))
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.mario.name, "relationship"), "Patient")
 
 	def test_l_importazione(self):
 		frappe.flags.in_import = True
@@ -258,6 +262,8 @@ class LaFattura(ClinicCase):
 	def test_un_corso_o_un_abbonamento_no(self):
 		self.fattura(self.mario, self.corso)
 		self.assertFalse(paziente.e_paziente(self.mario.name))
+		# a client, who bought something
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.mario.name, "relationship"), "Client")
 
 	def test_il_recupero_trova_i_pazienti_di_prima(self):
 		"""Switched on over old data: the earliest fact of each person converts, with its date."""

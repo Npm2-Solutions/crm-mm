@@ -5,17 +5,18 @@
 
 Every rule calls `diventa_cliente`, and its first line is "already a client? then
 leave": the first fact writes `CRM Lead.client_since`, when it happened and never
-in the future; the ones after do nothing. Written straight to the table, as the
-agenda writes the last visit: nobody edited the person.
+in the future, and the person's relationship with the centre becomes "Client"; the
+ones after do nothing. Written straight to the table, as the agenda writes the
+last visit: nobody edited the person.
 
-Where a module with rules of its own is on (`registra_regole`: the clinic), the
-CRM's rules give way, and the module calls `diventa_cliente` from its own.
+The CRM's rules decide in every centre, whatever its trade: whoever came, or
+bought, is a client - the Pilates class as much as the visit. A module adds a step
+above (the clinic: a patient, `RAPPORTO`) and the door never takes it back down.
 """
 
 from __future__ import annotations
 
 import datetime
-from collections.abc import Callable
 
 import frappe
 from frappe import _
@@ -30,23 +31,12 @@ CAMPO = "client_since"
 EVENTO = "client_created"
 TRIGGER = "Became Client"
 
-#: For each module with rules of its own, whether it is on here.
-_regole_proprie: list[Callable[[], bool]] = []
-
-
-def registra_regole(accese: Callable[[], bool]) -> None:
-	"""A module that says itself who becomes a client (the clinic: whoever becomes a
-	patient). Where it is on, the CRM's rules give way."""
-	if accese not in _regole_proprie:
-		_regole_proprie.append(accese)
-
-
-def regole_del_crm() -> bool:
-	"""Whether the CRM's own rules decide here: no module with its own is on."""
-	from crm.permissions import livelli
-
-	livelli.carica()
-	return not any(accese() for accese in _regole_proprie)
+#: Who the person is to the centre (`CRM Lead.relationship`): a contact until the
+#: first fact, then a client. A module writes a step of its own above them (the
+#: clinic's "Patient"), which nothing here takes back down.
+RAPPORTO = "relationship"
+CONTATTO = "Contact"
+CLIENTE = "Client"
 
 
 def cliente_da(lead: str | None) -> datetime.datetime | None:
@@ -71,17 +61,17 @@ def diventa_cliente(
 		return False
 	# the row held until the end of the transaction: of two facts at the same
 	# moment, from two requests, the second finds the first one's date
-	if frappe.db.get_value("CRM Lead", lead, CAMPO, for_update=True):
+	gia, rapporto = frappe.db.get_value("CRM Lead", lead, [CAMPO, RAPPORTO], for_update=True)
+	if gia:
 		return False
 	adesso = now_datetime()
-	frappe.db.set_value(
-		"CRM Lead",
-		lead,
-		CAMPO,
+	valori = {
 		# when it happened, not when somebody noticed; never in the future
-		min(get_datetime(quando), adesso) if quando else adesso,
-		update_modified=False,
-	)
+		CAMPO: min(get_datetime(quando), adesso) if quando else adesso,
+	}
+	if rapporto in (None, "", CONTATTO):
+		valori[RAPPORTO] = CLIENTE
+	frappe.db.set_value("CRM Lead", lead, valori, update_modified=False)
 	if annuncia:
 		_annuncia(lead, regola)
 	return True
@@ -178,10 +168,7 @@ def primi_fatti() -> dict[str, tuple[datetime.datetime, regole.Regola]]:
 def recupera() -> int:
 	"""The clients already there: for everybody, the first time they came or their
 	first invoice is when they became a client. Announces nothing: last year's
-	clients are not news, and close no deal. Where a module's own rules decide, it
-	finds its clients itself."""
-	if not regole_del_crm():
-		return 0
+	clients are not news, and close no deal."""
 	return sum(
 		diventa_cliente(lead, regola, quando=quando, annuncia=False)
 		for lead, (quando, regola) in primi_fatti().items()

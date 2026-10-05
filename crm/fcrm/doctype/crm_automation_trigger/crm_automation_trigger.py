@@ -48,6 +48,7 @@ class CRMAutomationTrigger(Document):
 			"Date Reminder",
 			"Inbound Webhook",
 			"Became Client",
+			"Became Patient",
 		]
 	# end: auto-generated types
 

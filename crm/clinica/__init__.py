@@ -327,16 +327,16 @@ FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE)
 
 
 def registra() -> None:
-	from crm.clienti import cliente
+	from crm.automation import engine
 	from crm.clienti import pipeline as clienti
-	from crm.clinica import pipeline
+	from crm.clinica import paziente, pipeline
 	from crm.clinica.paziente import clinica_accesa
 
 	registra_modulo_piano(MODULO)
-	# who becomes a client is who becomes a patient, by the clinic's rules; the new
-	# clients pipeline is the new patients' one
-	cliente.registra_regole(clinica_accesa)
+	# the CRM's rules say who is a client, the clinic's who is a patient besides: the
+	# new clients pipeline, in its words, is the one to the first visit
 	clienti.registra_nomi(PIANO, pipeline.NUOVI_PAZIENTI)
+	engine.registra_evento(paziente.EVENTO, paziente.TRIGGER, disponibile=clinica_accesa)
 	_registra_dashboard(clinica_accesa)
 	registra_ruolo(
 		"Medical Director",
@@ -449,14 +449,21 @@ def _cruscotto():
 			section(
 				Line.of(
 					KPI,
-					# the CRM's, in the clinic's words: new patients, what one costs
-					"new_clients",
-					"meta_cost_per_client",
+					# the clinic's own (`cruscotto`): new patients, what one costs
+					"new_patients",
+					"meta_cost_per_patient",
 					"appointments_today",
 					"appointments_no_show_rate",
 					"recall_due",
 				),
-				Line.of(KPI, "invoiced_revenue", "appointments_to_invoice", "appointments_to_confirm"),
+				Line.of(
+					KPI,
+					# whoever came or bought: the Pilates class too
+					"new_clients",
+					"invoiced_revenue",
+					"appointments_to_invoice",
+					"appointments_to_confirm",
+				),
 				Line.of(CHART, "appointments_trend", "appointments_by_service"),
 				Line.of(
 					LIST,
@@ -485,6 +492,8 @@ def _registra_dashboard(clinica_accesa) -> None:
 			clinica_accesa,
 		),
 	)
+	# the clinic's widgets register when their module is imported
+	from crm.clinica import cruscotto
 	from crm.dashboard import templates as modelli
 
 	modelli.registra(_cruscotto())

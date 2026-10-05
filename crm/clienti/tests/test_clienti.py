@@ -7,9 +7,10 @@ Giulia fills in a form from an ad, and her deal opens in the new clients pipelin
 She books a facial: the deal says "appointment booked". The desk checks her in:
 she is a client from that moment, the deal is won and the automations hear "Became
 Client", once. A client is not one again. An invoice makes one too; a credit note
-does not. Last year's clients are found and announce nothing. Where a module with
-rules of its own is on, the CRM's give way. The manager chooses the pipeline and
-the stage after a booking. The dashboard counts the new clients and what one costs.
+does not. Last year's clients are found and announce nothing. The person reads
+"Client" from then on, and a step a module put above it stays. The manager chooses
+the pipeline and the stage after a booking. The dashboard counts the new clients
+and what one costs.
 """
 
 import datetime
@@ -260,10 +261,8 @@ class IClientiDiPrima(ClientiCase):
 	def test_si_trovano_e_non_si_annunciano(self):
 		deal = self.richiesta(self.giulia)
 		incontro = self.appuntamento(self.giulia, self.ieri())
-		# as it went before the CRM knew who its clients were
-		with patch.object(cliente, "regole_del_crm", return_value=False):
-			incontro.status = "Completed"
-			incontro.save()
+		# as it went before the CRM knew who its clients were: nobody listened
+		frappe.db.set_value("CRM Appointment", incontro.name, "status", "Completed")
 		self.assertIsNone(self.da(self.giulia))
 		with patch("crm.automation.engine.process_event") as evento:
 			self.assertGreaterEqual(cliente.recupera(), 1)
@@ -272,20 +271,25 @@ class IClientiDiPrima(ClientiCase):
 		self.assertEqual(self.annunci(evento), [])
 
 
-class LeRegoleDiUnModulo(ClientiCase):
-	def test_dove_un_modulo_decide_quelle_del_crm_si_fanno_da_parte(self):
-		acceso = {"si": True}
-		with patch.object(cliente, "_regole_proprie", [lambda: acceso["si"]]):
-			self.assertFalse(cliente.regole_del_crm())
-			incontro = self.appuntamento(self.giulia, self.ieri())
-			incontro.status = "Completed"
-			incontro.save()
-			self.assertIsNone(self.da(self.giulia))
-			self.assertEqual(cliente.recupera(), 0)
-			# the module calls the door itself, from its own rules
-			self.assertTrue(cliente.diventa_cliente(self.giulia.name, regole.ACCETTAZIONE))
-			acceso["si"] = False
-			self.assertTrue(cliente.regole_del_crm())
+class ChiE(ClientiCase):
+	"""Who the person is to the centre: a contact, then a client."""
+
+	def rapporto(self, persona):
+		return frappe.db.get_value("CRM Lead", persona.name, cliente.RAPPORTO)
+
+	def test_un_contatto_poi_un_cliente(self):
+		self.assertEqual(self.rapporto(self.giulia), cliente.CONTATTO)
+		incontro = self.appuntamento(self.giulia, self.ieri())
+		incontro.status = "Completed"
+		incontro.save()
+		self.assertEqual(self.rapporto(self.giulia), cliente.CLIENTE)
+
+	def test_un_gradino_sopra_resta(self):
+		"""A module's step above the client (the clinic's patient) is never taken down."""
+		frappe.db.set_value("CRM Lead", self.giulia.name, cliente.RAPPORTO, "Patient")
+		self.assertTrue(cliente.diventa_cliente(self.giulia.name, regole.ACCETTAZIONE))
+		self.assertIsNotNone(self.da(self.giulia))
+		self.assertEqual(self.rapporto(self.giulia), "Patient")
 
 
 class IlCruscotto(ClientiCase):
