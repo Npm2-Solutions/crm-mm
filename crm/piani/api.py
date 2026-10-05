@@ -669,7 +669,7 @@ def delete_draft(name: str) -> None:
 
 def _esercizi(nomi: set[str]) -> dict[str, dict]:
 	"""The exercises of a plan, with their pictures: the centre's own, or the
-	library's from where the agency hosts them (`librerie.media`)."""
+	library's (`librerie.media`)."""
 	from crm.piani.librerie import media
 
 	return {
@@ -794,13 +794,31 @@ def cerca(doctype: str, campo: str, testo: str | None, filtri: dict, campi: list
 
 @frappe.whitelist()
 def search_exercises(text: str | None = None, body_part: str | None = None) -> list[dict]:
-	return cerca(
-		ESERCIZIO,
-		"exercise_name",
-		text,
-		{"body_part": body_part},
-		["name", "exercise_name", "body_part", "equipment", "image", "video_url"],
-	)
+	"""The exercises with these words, each with its picture as the editor shows it
+	(`librerie.media`): the centre's own, else the library's, and whose it is."""
+	from crm.piani.librerie import media
+
+	return [
+		{**riga, **media(riga)}
+		for riga in cerca(
+			ESERCIZIO,
+			"exercise_name",
+			text,
+			{"body_part": body_part},
+			[
+				"name",
+				"exercise_name",
+				"body_part",
+				"equipment",
+				"image",
+				"video_url",
+				"attribution",
+				"source",
+				"media_path",
+				"animation_path",
+			],
+		)
+	]
 
 
 @frappe.whitelist(methods=["POST"])

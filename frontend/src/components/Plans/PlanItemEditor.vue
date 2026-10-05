@@ -49,12 +49,23 @@
     </div>
 
     <template v-else-if="item.kind === ESERCIZIO">
+      <!-- the chosen exercise's picture is the picker's own, its credit under it -->
       <LibraryPicker
         v-model="item.exercise"
         kind="exercise"
         :label="item.exercise_name"
-        @picked="(row) => (item.exercise_name = row.exercise_name)"
+        :picture="item.exercise_detail?.picture || ''"
+        @picked="scelto"
       />
+      <p
+        v-if="
+          item.exercise_detail?.picture &&
+          item.exercise_detail?.media_attribution
+        "
+        class="text-p-xs text-ink-gray-5"
+      >
+        {{ item.exercise_detail.media_attribution }}
+      </p>
       <div class="grid grid-cols-5 gap-2 max-md:grid-cols-2">
         <FormControl
           v-model="item.sets"
@@ -108,6 +119,12 @@ import { Badge, Button, FormControl } from 'frappe-ui'
 
 defineEmits(['remove'])
 const item = defineModel({ type: Object, required: true })
+
+// an exercise picked from the library brings its picture and whose it is
+function scelto(row) {
+  item.value.exercise_name = row.exercise_name
+  item.value.exercise_detail = row
+}
 
 const groups = GRUPPI.map((g) => ({ label: __(g), value: g }))
 
