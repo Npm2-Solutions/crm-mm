@@ -285,23 +285,26 @@
       screen, its top corners round and a grabber on top, the screen behind it
       still there above. A form taller than the screen scrolls; its title and
       its row of actions (`.dialog-footer`, or frappe-ui's own `#actions` row,
-      found by the classes frappe-ui gives it) stay where the thumb is. frappe-ui
-      clips the dialog with `overflow: hidden`, which makes it a scroll box of
-      its own and keeps anything sticky inside it from sticking; `clip` cuts the
-      same corners without that. */
+      found by the classes frappe-ui gives it) stay where the thumb is.
+      The sheet scrolls itself, as a phone's own sheets do: never the box
+      behind it. frappe-ui scrolls that box, `.dialog-scroll-container`, which
+      takes `pointer-events: none` from the body while a dialog is open (reka-ui
+      locks the page so); Chromium scrolled it under a finger on the sheet, an
+      iPhone does not have to. The sheet takes the finger (reka-ui gives it
+      `pointer-events: auto`) and is as tall as the screen at most. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   /* the sheet sits at the bottom by its own top margin, not by the row's
-     alignment: a sheet taller than the screen then grows downwards, where the
-     container scrolls. Pushed down by `flex-end`, it overflowed upwards, out
-     of reach, its title and close button with it (an event at 360px). */
+     alignment; the box is the screen's height, not frappe-ui's
+     `min-h-screen` (on an iPhone 100vh is taller than what one sees), so a
+     sheet taller than the screen is cut to it and scrolls inside */
   /* the sheet moves with the finger that drags it by its grabber
      (utils/trascinaFoglio.js): its box does not bounce on its own as well */
   .dialog-scroll-container {
     overscroll-behavior-y: none;
   }
   .dialog-scroll-container > div[data-position] {
-    min-height: 100%;
-    min-height: 100dvh;
+    height: 100%;
+    min-height: 0;
     justify-content: flex-start;
     padding: max(2.75rem, env(safe-area-inset-top, 0px)) 0 0;
   }
@@ -309,7 +312,10 @@
     margin: auto 0 0 !important;
     width: 100%;
     max-width: none !important;
-    overflow: clip;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: none;
     border-radius: 1.25rem 1.25rem 0 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -703,7 +709,6 @@
   }
   /* the screen behind needs no room above the sheet: the keyboard took it */
   :root[data-tastiera='aperta'] .dialog-scroll-container > div[data-position] {
-    min-height: 100%;
     padding-top: 0.5rem;
   }
   :root[data-tastiera='aperta'] .dialog-content {
