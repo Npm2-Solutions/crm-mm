@@ -405,12 +405,23 @@
     min-width: max-content;
   }
   /* a button that is only an icon (a «⋯») stays a square for the thumb, not
-     a share of the row as wide as «Firma e concludi» */
+     a share of the row as wide as «Firma e concludi»; a footer written in
+     frappe-ui's own row of actions too, whose rule above weighs more (an
+     invoice's «⋯», as wide as «Salva la bozza») */
   .dialog-footer.flex:not(.flex-col) > button:is(.w-7, .w-8),
   .dialog-footer > div.flex:not(.flex-col) > button:is(.w-7, .w-8),
   .dialog-footer > div.flex:not(.flex-col) > div > button:is(.w-7, .w-8),
   .dialog-footer.flex:not(.flex-col)
     > div:has(> button)
+    > button:is(.w-7, .w-8),
+  .dialog-content
+    > div.px-4.pb-7.pt-4
+    > div.flex:not(.flex-col)
+    > button:is(.w-7, .w-8),
+  .dialog-content
+    > div.px-4.pb-7.pt-4
+    > div.flex:not(.flex-col)
+    > div
     > button:is(.w-7, .w-8) {
     flex: 0 0 2.75rem;
     min-width: 2.75rem;
