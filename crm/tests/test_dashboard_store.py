@@ -66,6 +66,29 @@ class TestDashboardStore(IntegrationTestCase):
 		features.forget()
 		self.assertIn("appointments_today", overview())
 
+	def test_one_record_is_enough_to_use_a_feature(self):
+		# an automation or a tracked link, whatever its state: the framework's `exists`
+		# given a doctype alone never found one (rolled back in tearDown)
+		for doctype in ("CRM Automation", "CRM Tracked Link"):
+			frappe.db.delete(doctype)
+		features.forget()
+		self.assertFalse({"automations", "tracked_links"} & features.active())
+
+		frappe.get_doc(
+			{
+				"doctype": "CRM Automation",
+				"title": "Funzioni del cruscotto",
+				"enabled": 0,
+				"trigger_event": "Lead Created",
+				"steps": json.dumps([{"type": "add_tag", "tag": "Prova"}]),
+			}
+		).insert(ignore_permissions=True)
+		frappe.get_doc(
+			{"doctype": "CRM Tracked Link", "slug": "funzioni-cruscotto", "target_url": "https://example.com"}
+		).insert(ignore_permissions=True)
+		features.forget()
+		self.assertLessEqual({"automations", "tracked_links"}, features.active())
+
 	def test_what_the_site_cannot_answer_yet_is_offered_to_managers(self):
 		# a site that does not invoice (rolled back in tearDown)
 		for doctype in ("CRM Invoice", "CRM Invoicing Company"):

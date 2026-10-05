@@ -52,8 +52,14 @@ def _calls() -> bool:
 	return bool(enabled())
 
 
+def _c_e(doctype: str) -> bool:
+	"""Whether ``doctype`` has any record. The framework's ``exists`` given a doctype
+	alone reads it as a single's settings, and never finds a record."""
+	return bool(frappe.db.exists(doctype, {}))
+
+
 def _agenda() -> bool:
-	return bool(frappe.db.exists("CRM Service", {"enabled": 1}) or frappe.db.exists("CRM Appointment"))
+	return bool(frappe.db.exists("CRM Service", {"enabled": 1}) or _c_e("CRM Appointment"))
 
 
 def _online_booking() -> bool:
@@ -79,10 +85,7 @@ def _meta_leads() -> bool:
 
 
 def _meta_ads() -> bool:
-	return bool(
-		frappe.db.exists("Facebook Ad Account", {"sync_enabled": 1})
-		or frappe.db.exists("Facebook Ad Insight")
-	)
+	return bool(frappe.db.exists("Facebook Ad Account", {"sync_enabled": 1}) or _c_e("Facebook Ad Insight"))
 
 
 def _meta_conversions() -> bool:
@@ -92,7 +95,7 @@ def _meta_conversions() -> bool:
 
 
 def _automations() -> bool:
-	return bool(frappe.db.exists("CRM Automation"))
+	return _c_e("CRM Automation")
 
 
 def _social() -> bool:
@@ -100,7 +103,7 @@ def _social() -> bool:
 
 
 def _tracked_links() -> bool:
-	return bool(frappe.db.exists("CRM Tracked Link"))
+	return _c_e("CRM Tracked Link")
 
 
 def _web_forms() -> bool:
@@ -147,7 +150,7 @@ def _centre() -> bool:
 def _supplier_invoices() -> bool:
 	return bool(
 		frappe.db.exists("CRM Invoicing Company", {"enabled": 1, "sdi_flow": "entrambi"})
-		or frappe.db.exists("CRM Supplier Invoice")
+		or _c_e("CRM Supplier Invoice")
 	)
 
 
