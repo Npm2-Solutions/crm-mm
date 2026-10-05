@@ -403,13 +403,14 @@ export function dayLabel(day, today, locale) {
   )
 }
 
-/** The clock on a message: «14:05», or «2:05 PM» where that is how it is said. */
+/** The clock on a message: «14:05», the 24-hour clock in every language. */
 export function clockOf(at, locale) {
   const date = wallClock(at)
   if (!date || !/\d{2}:\d{2}/.test(String(at))) return ''
   return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
   }).format(date)
 }
 

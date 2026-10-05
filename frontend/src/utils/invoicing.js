@@ -1,6 +1,8 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // For license information, please see license.txt
 
+import { appLocale } from '@/utils/locale'
+
 /**
  * What an invoice looks like when it is read rather than edited.
  *
@@ -78,9 +80,9 @@ export function isCreditNote(documentType) {
   return CREDIT_NOTES.includes(documentType)
 }
 
-/** Euros, the way Italy writes them. */
+/** Euros, the way the user's language writes them (Italian when it says none). */
 export function formatEuro(value) {
-  return new Intl.NumberFormat('it-IT', {
+  return new Intl.NumberFormat(appLocale() || 'it-IT', {
     style: 'currency',
     currency: 'EUR',
   }).format(value || 0)

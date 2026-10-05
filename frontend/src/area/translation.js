@@ -12,7 +12,8 @@ const words = lang === 'it' ? it : {}
 const vertical = window.AREA?.words || {}
 const brand = marchio(window.AREA?.brand).name
 
-export const locale = lang === 'it' ? 'it-IT' : lang
+// English the European way: the day first, the 24-hour clock
+export const locale = lang === 'it' ? 'it-IT' : 'en-GB'
 
 export function translate(message, replace) {
   const values = Array.isArray(replace)

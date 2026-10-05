@@ -106,6 +106,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
@@ -131,7 +132,8 @@ const { pipelines, getStages } = pipelineStore
 // a computed read off the store stays a ref only through storeToRefs
 const { defaultPipeline } = storeToRefs(pipelineStore)
 const { getUser, puo } = usersStore()
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 
 const pipeline = ref('')
 const scelta = ref('')

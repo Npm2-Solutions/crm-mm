@@ -305,7 +305,7 @@ const formatTime = (time) => {
   return date.toLocaleTimeString(appLocale(), {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true,
+    hourCycle: 'h23',
   })
 }
 </script>

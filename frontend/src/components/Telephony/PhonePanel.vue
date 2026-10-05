@@ -209,6 +209,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { globalStore } from '@/stores/global'
@@ -234,7 +235,8 @@ const { makeCall } = globalStore()
 const { puo } = usersStore()
 const { pannello, dovute } = usePannelloTelefono()
 
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 const puoChiamare = computed(() => puo('telefono.chiama'))
 
 const testo = ref('')

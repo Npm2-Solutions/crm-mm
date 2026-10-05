@@ -17,8 +17,27 @@ describe('appLocale', () => {
   })
 
   it('takes a region too, and the POSIX spelling of it', () => {
-    expect(appLocale('en-US')).toBe('en-US')
     expect(appLocale('pt_BR')).toBe('pt-BR')
+    expect(appLocale('it_IT')).toBe('it-IT')
+  })
+
+  it('writes English the way Europe does: the day first, the 24-hour clock', () => {
+    expect(appLocale('en')).toBe('en-GB')
+    expect(appLocale('en-US')).toBe('en-GB')
+    const giorno = new Date(2026, 9, 5, 14, 30)
+    expect(
+      new Intl.DateTimeFormat(appLocale('en'), {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(giorno),
+    ).toBe('05/10/2026')
+    expect(
+      new Intl.DateTimeFormat(appLocale('en'), {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(giorno),
+    ).toBe('14:30')
   })
 
   it('leaves it to the browser when there is nothing to go on', () => {
