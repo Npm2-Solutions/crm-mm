@@ -35596,10 +35596,6 @@ msgstr "Quello che ti dice un'automazione del centro."
 msgid "The choice was not saved"
 msgstr "La scelta non è stata salvata"
 
-#: frontend/src/components/Settings/NotificationsSettings.vue
-msgid "What reaches your email too, when you have not read it in {brand} within {0} minutes. Several at once come in one email."
-msgstr "Cosa ti arriva anche per email, quando non l'hai letto in {brand} entro {0} minuti. Più notifiche insieme arrivano in un'email sola."
-
 #: frontend/src/utils/impostazioni.js
 msgid "What reaches your email too, when you have not read it."
 msgstr "Cosa ti arriva anche per email, quando non l'hai letto."
@@ -44118,3 +44114,159 @@ msgstr "Gli esercizi della libreria si spengono, non si cambiano: aggiungi quell
 #: crm/clinica/librerie.py
 msgid "The library's foods are switched off, not changed: add the centre's own"
 msgstr "Gli alimenti della libreria si spengono, non si cambiano: aggiungi quelli del centro"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "What reaches you outside the panel: on your phone and computer at once, where you turn them on, and by email when you have not read it in {brand} within {0} minutes."
+msgstr "Cosa ti raggiunge fuori dal pannello: sul telefono e sul computer subito, dove le attivi, e per email se non l'hai letto in {brand} entro {0} minuti."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "On this device"
+msgstr "Su questo dispositivo"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Turn on notifications here"
+msgstr "Attiva le notifiche qui"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Send me a test"
+msgstr "Mandami una prova"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Turn off here"
+msgstr "Disattiva qui"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Receiving notifications"
+msgstr "Ricevono le notifiche"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "This one"
+msgstr "Questo"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Devices"
+msgstr "Dispositivi"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "{0} by email"
+msgstr "{0} per email"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "{0} on your devices"
+msgstr "{0} sui tuoi dispositivi"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "On an iPhone or iPad notifications reach the app on the home screen: in Safari tap Share, then “Add to Home Screen”, open {brand} from there and come back here."
+msgstr "Su iPhone e iPad le notifiche arrivano all'app sulla schermata Home: in Safari tocca Condividi, poi «Aggiungi alla schermata Home», apri {brand} da lì e torna qui."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "{brand}’s notifications are blocked in this browser: allow them in the browser’s or the phone’s settings, then come back here."
+msgstr "Le notifiche di {brand} sono bloccate in questo browser: consentile nelle impostazioni del browser o del telefono, poi torna qui."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "This browser does not receive notifications: use an up-to-date Chrome, Edge, Firefox or Safari, or the app on the home screen."
+msgstr "Questo browser non riceve notifiche: usa Chrome, Edge, Firefox o Safari aggiornati, oppure l'app sulla schermata Home."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Notifications arrive here. Touching one opens it in {brand}."
+msgstr "Le notifiche arrivano qui: toccane una e si apre in {brand}."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Notifications reach this phone or computer even when {brand} is closed."
+msgstr "Le notifiche arrivano su questo telefono o computer anche quando {brand} è chiuso."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Notifications were not allowed on this device"
+msgstr "Le notifiche non sono state consentite su questo dispositivo"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Notifications could not be turned on here"
+msgstr "Non è stato possibile attivare le notifiche qui"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Test sent: it arrives in a few seconds."
+msgstr "Prova mandata: arriva tra pochi secondi."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "The browser’s service did not take the test: turn notifications off and on again here."
+msgstr "Il servizio del browser non ha accettato la prova: disattiva e riattiva le notifiche qui."
+
+#: crm/notifiche/spinta.py
+msgid "This browser does not receive notifications"
+msgstr "Questo browser non riceve notifiche"
+
+#: crm/notifiche/spinta.py
+msgid "Which device?"
+msgstr "Quale dispositivo?"
+
+#: crm/notifiche/spinta.py
+msgid "Choose what reaches your devices"
+msgstr "Scegli cosa arriva sui tuoi dispositivi"
+
+#: crm/notifiche/spinta.py
+msgid "No device of yours receives notifications yet"
+msgstr "Nessun tuo dispositivo riceve ancora le notifiche"
+
+#: crm/notifiche/spinta.py
+msgid "Notifications reach this device."
+msgstr "Le notifiche arrivano su questo dispositivo."
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Push notifications key"
+msgstr "Chiave delle notifiche push"
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Push notifications signing key"
+msgstr "Chiave di firma delle notifiche push"
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Given to the browsers that receive the notifications; made once, by itself."
+msgstr "Data ai browser che ricevono le notifiche; creata una volta, da sola."
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "CRM Push Subscription"
+msgstr "Dispositivo per le notifiche"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "A browser or an installed app where somebody of the centre receives their notifications: what its maker's push service needs to reach it."
+msgstr "Un browser o un'app installata dove qualcuno del centro riceve le sue notifiche: quello che serve al servizio push di chi lo fa per raggiungerlo."
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "The device and the browser, as they said who they are: \"iPhone · app\", \"Windows · Edge\"."
+msgstr "Il dispositivo e il browser, come si sono presentati: «iPhone · app», «Windows · Edge»."
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Address of the push service"
+msgstr "Indirizzo del servizio push"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Address fingerprint"
+msgstr "Impronta dell'indirizzo"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Browser key"
+msgstr "Chiave del browser"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Browser secret"
+msgstr "Segreto del browser"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Last notification"
+msgstr "Ultima notifica"
+
+#: crm/fcrm/doctype/crm_push_subscription/crm_push_subscription.json
+msgid "Failures in a row"
+msgstr "Errori di fila"
+
+#: frontend/src/components/Mobile/NotificheSulTelefono.vue
+msgid "Get notifications on this phone"
+msgstr "Ricevi le notifiche su questo telefono"
+
+#: frontend/src/components/Mobile/NotificheSulTelefono.vue
+msgid "They arrive even when {brand} is closed."
+msgstr "Arrivano anche quando {brand} è chiuso."
+
+#: frontend/src/components/Mobile/NotificheSulTelefono.vue
+msgid "Notifications are on: they arrive on this phone."
+msgstr "Notifiche attive: arrivano su questo telefono."

@@ -36,7 +36,9 @@
   "all_day_event_notifications",
   "dropdown_items_tab",
   "dropdown_items",
-  "persona_captured"
+  "persona_captured",
+  "push_public_key",
+  "push_private_key"
  ],
  "fields": [
   {
@@ -236,12 +238,28 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Persona Captured"
+  },
+  {
+   "description": "Given to the browsers that receive the notifications; made once, by itself.",
+   "fieldname": "push_public_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Push notifications key",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "push_private_key",
+   "fieldtype": "Password",
+   "hidden": 1,
+   "label": "Push notifications signing key",
+   "permlevel": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 18:00:00.000000",
+ "modified": "2026-10-05 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",

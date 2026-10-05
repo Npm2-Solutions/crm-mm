@@ -12,7 +12,8 @@ and the text it carries.
 A notification already there and not yet read is not written twice. A message of
 the same person, while the one before is unread, takes that one's place with how
 many there are ("3 WhatsApp messages from Laura"): a conversation is one line of
-the panel, not twenty.
+the panel, not twenty. Once written, it reaches the person's phone and computer
+where they turned notifications on (`spinta`).
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ from frappe import _
 from frappe.utils import cint
 
 from crm.demo import guardie
-from crm.notifiche import posta
+from crm.notifiche import posta, spinta
 from crm.notifiche import regole as R
 
 NOTIFICA = "CRM Notification"
@@ -88,11 +89,13 @@ def avvisa(
 		return None
 
 	quanti = 1
-	# by email too, if it stays unread a few minutes and the person wants this kind;
-	# never about the demo data (crm.demo.guardie)
-	per_email = R.vuole_email(
-		R.genere(tipo, doctype_oggetto, frase), posta.preferenze(destinatario)
-	) and not guardie.solo_nel_pannello(riguarda or (None, None), oggetto or (None, None))
+	# never about the demo data, neither by email nor on a phone (crm.demo.guardie)
+	solo_nel_pannello = guardie.solo_nel_pannello(riguarda or (None, None), oggetto or (None, None))
+	# by email too, if it stays unread a few minutes and the person wants this kind
+	per_email = (
+		R.vuole_email(R.genere(tipo, doctype_oggetto, frase), posta.preferenze(destinatario))
+		and not solo_nel_pannello
+	)
 	gia_per_email = None
 	if frase_molti and nome_riguarda:
 		# the one about the same person, not yet read, gives its place and its count
@@ -141,6 +144,8 @@ def avvisa(
 	# the panel opens nothing where nothing is left
 	doc.flags.ignore_links = True
 	doc.insert(ignore_permissions=True)
+	# on the person's phone and computer at once, where they turned it on
+	spinta.accoda(doc, solo_nel_pannello)
 	return doc.name
 
 

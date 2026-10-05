@@ -137,8 +137,8 @@ def manda_le_email() -> None:
 
 
 @contextmanager
-def _nella_lingua_di(utente: str):
-	"""The words of an email in the language of whoever it goes to."""
+def nella_lingua_di(utente: str):
+	"""The words of an email, or a push, in the language of whoever it goes to."""
 	from frappe.translate import get_user_lang
 
 	prima = getattr(frappe.local, "lang", None)
@@ -155,7 +155,7 @@ def _manda(utente: str, righe: list) -> None:
 	persona = frappe.db.get_value("User", utente, ["email", "enabled"], as_dict=True)
 	if not persona or not persona.enabled or not persona.email:
 		return
-	with _nella_lingua_di(utente):
+	with nella_lingua_di(utente):
 		# newest first, as the panel shows them
 		pannello = api.righe_del_pannello(sorted(righe, key=lambda r: r.creation, reverse=True), utente)
 		if len(pannello) == 1:
