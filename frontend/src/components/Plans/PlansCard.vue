@@ -125,17 +125,27 @@
           <span class="truncate text-base text-ink-gray-8">
             {{ programme.title }}
           </span>
-          <span class="text-p-sm text-ink-gray-5">
-            {{ __('Programme') }} ·
-            {{
-              programme.open_stage === null
-                ? __('{0} stages', [programme.stages])
-                : __('stage {0} of {1}', [
-                    programme.open_stage + 1,
-                    programme.stages,
-                  ])
-            }}
-            · {{ programme.practitioner_name }}
+          <span
+            class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-p-sm text-ink-gray-5"
+          >
+            <span>
+              {{ __('Programme') }} ·
+              {{
+                programme.open_stage === null
+                  ? __('{0} stages', [programme.stages])
+                  : __('stage {0} of {1}', [
+                      programme.open_stage + 1,
+                      programme.stages,
+                    ])
+              }}
+              · {{ programme.practitioner_name }}
+            </span>
+            <!-- read like the clinical record, as a quote or a document is -->
+            <CategoryTag
+              v-if="programme.clinical"
+              color="rose"
+              :label="__('Health data')"
+            />
           </span>
         </span>
         <Badge
@@ -156,14 +166,23 @@
           <span class="truncate text-base text-ink-gray-8">{{
             plan.title
           }}</span>
+          <!-- the line wraps rather than cut the name: a plan with health
+               data has two marks before it -->
           <span
-            class="flex min-w-0 items-center gap-1.5 text-p-sm text-ink-gray-5"
+            class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-p-sm text-ink-gray-5"
           >
             <CategoryTag
               :label="__(plan.plan_type)"
               :color="KIND_COLOR[plan.plan_type]"
             />
-            <span class="truncate">{{ plan.practitioner_name }}</span>
+            <span class="max-w-full shrink-0 truncate">{{
+              plan.practitioner_name
+            }}</span>
+            <CategoryTag
+              v-if="plan.clinical"
+              color="rose"
+              :label="__('Health data')"
+            />
           </span>
         </span>
         <span class="flex shrink-0 items-center gap-2">

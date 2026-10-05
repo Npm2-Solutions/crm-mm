@@ -58,10 +58,9 @@
              the amount and who is doing it onto two short lines -->
         <span class="flex shrink-0 items-center gap-2 max-md:w-full">
           <!-- read like the clinical record: the dossier's rules, the access log -->
-          <Badge
+          <CategoryTag
             v-if="quote.clinical"
-            size="sm"
-            theme="gray"
+            color="rose"
             :label="__('Health data')"
           />
           <Badge
@@ -87,6 +86,7 @@
 
 <script setup>
 import QuoteDialog from '@/components/Quotes/QuoteDialog.vue'
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
 import { appLocale } from '@/utils/locale'
 import { STATO } from '@/utils/preventivi'
 import { Badge, Button, createResource } from 'frappe-ui'
