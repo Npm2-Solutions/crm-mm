@@ -419,19 +419,26 @@ the clinic is on. DottorCloud connects to no ERP: the ERPNext integration went o
 | File | Role |
 |---|---|
 | `crm/clienti/regole.py` | Who came, without a site: checked in, an appointment attended, an invoice that sold something (not a credit note), the first fact in time — tested with plain `unittest`; the clinic's rules are built on it |
-| `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future; the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing; `registra_regole`: a module with rules of its own (the clinic) takes the CRM's place where it is on |
+| `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future, and `relationship` from "Contact" to "Client" (never down from a step above it); the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing. Its rules decide in every centre, the clinic's too |
 | `crm/clienti/eventi.py` | `CRM Appointment` and `CRM Invoice` doc_events: a booking moves the deal, a check-in, an attended appointment or an invoice makes a client |
 | `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Deals > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
 | `crm/dashboard/widgets/people.py`, `marketing.py` | "New clients" counts `client_since`, "Cost per new client" divides the ads' spend by the clients they brought; the dashboard's titles in the vertical's words (`verticali.traduttore()`) |
+| `frontend/src/utils/rapporto.js` | Who a person is to the centre, on their page's head (`PersonHeader.vue`: «Cliente dal…», «Paziente dal…», «Contatto»), in the People list's «Rapporto» column and on the phone's line: the step, its tag's tone, the fact with its date — tested |
 
-With the clinic on, a client is a patient: its rules decide, `assicura_paziente`
-calls `diventa_cliente` from the same moment, and the CRM's words read "New
-patients", "Became Patient", "Patient since". Only a health service makes a
-patient (`regole.servizio_sanitario`): its card does not say otherwise and, where
-the professionals' qualifications are known, one of them is a health profession -
-a Pilates class with the kinesiologist makes clients, not patients. The
-kinesiologist is no health profession (Ris. AdE 9/2026): invoicing's ordinary
-register has it, and what one writes is no health data by its author.
+Three steps, never one renamed as another: a contact (`CRM Lead.relationship`
+"Contact"), a client (whoever came or bought, by the CRM's rules, in every centre:
+a Pilates class too) and, with the clinic, a patient (`assicura_paziente`: a health
+service, or health data the centre keeps), the step above, which a later client
+fact never takes down. The clinic writes `CRM Lead.patient_since` and "Patient"
+(its custom field and the option it adds, `crm/clinica/custom/crm_lead.json`),
+announces "Became Patient" (`patient_created`, offered where the clinic is on)
+and counts "New patients" and "Cost per new patient" (`crm/clinica/cruscotto.py`);
+the new clients deal is won the first time the person comes, whatever for. Only a
+health service makes a patient (`regole.servizio_sanitario`): its card does not say
+otherwise and, where the professionals' qualifications are known, one of them is a
+health profession - a Pilates class with the kinesiologist makes clients, not
+patients. The kinesiologist is no health profession (Ris. AdE 9/2026): invoicing's
+ordinary register has it, and what one writes is no health data by its author.
 
 ### Verticals (`crm/verticali.py`)
 A module of the plan that makes the CRM the software of a trade registers a
@@ -653,7 +660,7 @@ dashboard template with `crm.dashboard.templates.registra` (`requires` features)
 
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
 (`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
-and the registries (`clienti.registra_regole`, dashboard features and templates).
+and the registries (`engine.registra_evento`, dashboard features, widgets and templates).
 
 `crm/clinica` keeps only what exists for health data or medical practice: the
 patient, the record and reports, dossier and obscuring, the summary, the dental
