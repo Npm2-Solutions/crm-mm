@@ -3,7 +3,7 @@
   For license information, please see license.txt
 -->
 <template>
-  <div class="flex flex-col gap-2" :data-field="field.id">
+  <div ref="scatola" class="flex flex-col gap-2" :data-field="field.id">
     <!-- a text to read is not a question: its words are the whole of it -->
     <div
       v-if="field.type === 'paragraph'"
@@ -14,10 +14,15 @@
 
     <template v-else>
       <div class="flex min-w-0 flex-col gap-0.5">
-        <span class="text-base font-medium text-ink-gray-8">
+        <span
+          :id="idDomanda"
+          ref="etichetta"
+          class="text-base font-medium text-ink-gray-8"
+        >
           {{ field.label }}
+          <!-- once signed, required says nothing any more -->
           <span
-            v-if="required"
+            v-if="required && !readonly"
             class="segno-obbligatorio text-ink-red-7"
             aria-hidden="true"
             >*</span
@@ -88,11 +93,18 @@
           :disabled="readonly"
           @update:model-value="(value) => emit(value || null)"
         />
-        <div v-else class="flex flex-col gap-1.5">
+        <div
+          v-else
+          class="flex flex-col gap-1.5"
+          :role="field.multiple ? 'group' : 'radiogroup'"
+          :aria-labelledby="idDomanda"
+        >
           <button
             v-for="option in options"
             :key="option.value"
             type="button"
+            :role="field.multiple ? 'checkbox' : 'radio'"
+            :aria-checked="picked(option.value)"
             class="touch-target flex w-full min-w-0 items-center gap-2.5 rounded-md border px-3 py-2 text-left text-base"
             :class="
               picked(option.value)
@@ -122,10 +134,16 @@
         </div>
       </template>
 
-      <div v-else-if="field.type === 'yesno'" class="flex gap-2">
+      <div
+        v-else-if="field.type === 'yesno'"
+        class="flex gap-2"
+        role="group"
+        :aria-labelledby="idDomanda"
+      >
         <Button
           class="touch-target min-w-20"
           :variant="modelValue === true ? 'solid' : 'outline'"
+          :aria-pressed="modelValue === true"
           :label="__('Yes')"
           :disabled="readonly"
           @click="emit(modelValue === true ? null : true)"
@@ -133,6 +151,7 @@
         <Button
           class="touch-target min-w-20"
           :variant="modelValue === false ? 'solid' : 'outline'"
+          :aria-pressed="modelValue === false"
           :label="__('No')"
           :disabled="readonly"
           @click="emit(modelValue === false ? null : false)"
@@ -150,12 +169,18 @@
       />
 
       <div v-else-if="field.type === 'scale'" class="flex flex-col gap-1.5">
-        <div v-if="steps.length <= 11" class="flex flex-wrap gap-1.5">
+        <div
+          v-if="steps.length <= 11"
+          class="flex flex-wrap gap-1.5"
+          role="group"
+          :aria-labelledby="idDomanda"
+        >
           <Button
             v-for="step in steps"
             :key="step"
             class="touch-target min-w-9"
             :variant="modelValue === step ? 'solid' : 'outline'"
+            :aria-pressed="modelValue === step"
             :label="String(step)"
             :disabled="readonly"
             @click="emit(modelValue === step ? null : step)"
@@ -186,6 +211,8 @@
 
       <TableInput
         v-else-if="field.type === 'table'"
+        role="group"
+        :aria-labelledby="idDomanda"
         :columns="field.columns || []"
         :model-value="modelValue || []"
         :readonly="readonly"
@@ -195,6 +222,8 @@
       <div
         v-else-if="field.type === 'sides'"
         class="grid max-w-md grid-cols-2 gap-3 max-md:max-w-none"
+        role="group"
+        :aria-labelledby="idDomanda"
       >
         <label
           v-for="side in ['left', 'right']"
@@ -265,6 +294,8 @@
       <div
         v-else-if="field.type === 'consent'"
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 px-4 py-3"
+        role="group"
+        :aria-labelledby="idDomanda"
       >
         <p
           class="whitespace-pre-line text-p-base leading-relaxed text-ink-gray-7"
@@ -371,10 +402,11 @@ import TableInput from '@/components/Moduli/TableInput.vue'
 import LucidePaperclip from '~icons/lucide/paperclip'
 import LucideSignature from '~icons/lucide/signature'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
+import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
 import { answerInWords } from '@/utils/moduli'
 import { dateFormat, formatDate } from '@/utils'
 import { Badge, Button, Checkbox, FormControl } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 
 const props = defineProps({
   field: { type: Object, required: true },
@@ -392,6 +424,25 @@ const props = defineProps({
 
 const emits = defineEmits(['update:modelValue'])
 const emit = (value) => emits('update:modelValue', value)
+
+// The question's words name what answers it: the one control one writes or
+// picks in, else the group of buttons (a choice, a scale, yes or no), whose
+// buttons say whether they are chosen. VoiceOver read «campo di testo» and
+// «pulsante, 6» without the question, and nothing could find a field by it.
+const scatola = ref(null)
+const etichetta = ref(null)
+const idDomanda = `domanda-${getCurrentInstance()?.uid}-${props.field.id}`
+const unControllo = computed(() => {
+  const tipo = props.field.type
+  if (['text', 'number', 'date'].includes(tipo)) return true
+  if (tipo === 'choice')
+    return props.field.display === 'dropdown' && !props.field.multiple
+  return tipo === 'scale' && steps.value.length > 11
+})
+useEtichettaDelCampo(
+  scatola,
+  computed(() => (unControllo.value ? etichetta.value : null)),
+)
 
 // the kinds a signed form shows as words; the others show themselves
 const IN_WORDS = [
