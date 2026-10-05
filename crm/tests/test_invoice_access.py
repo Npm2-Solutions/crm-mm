@@ -17,6 +17,7 @@ from frappe.tests import IntegrationTestCase
 from crm.api.activities import invoices_on
 from crm.invoicing import permessi
 from crm.invoicing.api import _verifica_invio
+from crm.invoicing.doctype.crm_service_provider.crm_service_provider import DI_CHI_EMETTE
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
 
@@ -54,7 +55,13 @@ class InvoiceAccessCase(IntegrationTestCase):
 		name = frappe.db.get_value("CRM Service Provider", {"user": user})
 		if name:
 			return name
-		qualification = frappe.get_all("CRM Professional Qualification", pluck="name", limit=1)[0]
+		# what a person does, never the facility or pharmacy that issues the invoice
+		qualification = frappe.get_all(
+			"CRM Professional Qualification",
+			filters={"sender_category": ["not in", sorted(DI_CHI_EMETTE)]},
+			pluck="name",
+			limit=1,
+		)[0]
 		return (
 			frappe.get_doc(
 				{

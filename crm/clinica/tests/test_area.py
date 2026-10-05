@@ -68,10 +68,11 @@ class LaClinicaComprendeLArea(AreaCase):
 	def test_con_la_sola_clinica_nel_piano_l_area_c_e(self):
 		fatto = self.invita()
 		self.assertEqual(fatto["email"], ANNA)
-		# the manager reads the plan: the area is there, as part of the clinic
+		# the manager reads the plan: the area is there, comprised by the base as in
+		# every centre, and by the clinic
 		self.come(MANAGER)
 		[area] = [m for m in plan.get_plan()["modules"] if m["key"] == "area"]
-		self.assertEqual((area["state"], area["comprised_by"]), ("active", ["Clinic"]))
+		self.assertEqual((area["state"], area["comprised_by"]), ("active", ["Base", "Clinic"]))
 
 
 class IDocumenti(AreaCase):
