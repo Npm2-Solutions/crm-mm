@@ -43,6 +43,7 @@ from crm.scheduling.timeutils import (
 	scheduling_tz,
 	to_system_naive,
 )
+from crm.verticali import parola
 
 MAX_RANGE_DAYS = 31
 ONLINE_SOURCE = "Online booking"
@@ -70,8 +71,9 @@ def limit_message(code: str) -> str:
 		),
 		rules_mod.LIMIT_CLIENT_DAY: _("You already have the maximum number of bookings for that day."),
 		rules_mod.LIMIT_CLIENT_SPACING: _("This service needs more time between two of your bookings."),
-		rules_mod.LIMIT_NEW_ONLY: _("This service can be booked online by new clients only."),
-		rules_mod.LIMIT_RETURNING_ONLY: _(
+		# who books is a client, or a patient where the clinic is on
+		rules_mod.LIMIT_NEW_ONLY: parola("This service can be booked online by new clients only."),
+		rules_mod.LIMIT_RETURNING_ONLY: parola(
 			"This service can be booked online by existing clients only. Please contact us."
 		),
 		rules_mod.LIMIT_CANCEL_DISABLED: _("This booking cannot be cancelled online. Please contact us."),
@@ -932,7 +934,7 @@ def cancel(token: str, reason: str | None = None) -> dict:
 def _cancel_rows(appointment, token: str, reason: str | None):
 	mine = _my_rows(appointment, token)
 	others = [r for r in appointment.participants if r.status != "Cancelled" and r.access_token != token]
-	reason = (reason or "").strip() or _("Cancelled online by the client")
+	reason = (reason or "").strip() or parola("Cancelled online by the client")
 	if others:
 		# a seat in a group session: free the seat, the session goes on
 		for row in mine:
