@@ -236,6 +236,24 @@
     :is(.w-32, .w-36, .w-40, .w-44, .w-48, .w-52, .w-56, .w-60, .w-64) {
     width: 100%;
   }
+  /* the words' width beside the field (SettingsRow's `basis-60`) is no
+     height for them over it: 240px of nothing between the two */
+  .settings-modal
+    div.flex.items-center.justify-between:has(> div.flex-col:first-child):has(
+      > div:last-child
+        :is(
+          select,
+          input,
+          textarea,
+          [data-slot='trigger'],
+          [role='combobox'],
+          [aria-haspopup='listbox'],
+          .form-control
+        )
+    ):not(:has([role='switch']))
+    > div.flex-col:first-child {
+    flex-basis: auto;
+  }
 }
 
 /* A settings page on a phone scrolls as one, its title and actions with the
