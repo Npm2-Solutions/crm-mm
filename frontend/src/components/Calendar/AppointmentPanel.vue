@@ -245,45 +245,55 @@
 
         <div class="mx-4.5 my-3 border-t border-outline-gray-1" />
 
-        <!-- the clients, and whether they came -->
+        <!-- the clients, and whether they came. The name is read whole: where
+             the panel is narrow (a phone of 320 points, «Laura Conse…») the
+             status and the way to the person go under it, on the right -->
         <div
           v-for="row in doc.participants || []"
           :key="row.name"
-          class="flex items-center gap-3 px-4.5 py-1.5 text-ink-gray-7"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 px-4.5 py-1.5 text-ink-gray-7"
         >
           <span class="lucide-user size-4 shrink-0" aria-hidden="true" />
-          <div class="min-w-0 flex-1">
-            <div class="truncate text-ink-gray-8">
+          <div class="min-w-[9rem] flex-1 basis-0">
+            <div class="break-words text-ink-gray-8">
               {{ row.participant_name || row.party }}
             </div>
             <div
               v-if="row.email || row.phone"
-              class="truncate text-p-sm text-ink-gray-5"
+              class="break-words text-p-sm text-ink-gray-5"
             >
-              {{
-                [leggibile(row.phone), row.email].filter(Boolean).join(' · ')
-              }}
+              <span v-if="row.phone" class="whitespace-nowrap">{{
+                leggibile(row.phone)
+              }}</span
+              ><template v-if="row.phone && row.email"> · </template
+              ><template v-if="row.email"
+                >{{ partiDellIndirizzo(row.email)[0] }}<wbr />{{
+                  partiDellIndirizzo(row.email)[1]
+                }}</template
+              >
             </div>
           </div>
-          <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
+          <div class="ms-auto flex shrink-0 items-center gap-3">
+            <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
+              <Button
+                size="sm"
+                variant="ghost"
+                :label="__(row.status || 'Booked')"
+                iconRight="chevron-down"
+              />
+            </Dropdown>
+            <span v-else class="text-p-sm text-ink-gray-6">
+              {{ __(row.status || 'Booked') }}
+            </span>
             <Button
-              size="sm"
+              v-if="row.party"
               variant="ghost"
-              :label="__(row.status || 'Booked')"
-              iconRight="chevron-down"
+              :tooltip="__('Open the person')"
+              :aria-label="__('Open the person')"
+              icon="lucide-arrow-up-right"
+              @click="openPerson(row.party)"
             />
-          </Dropdown>
-          <span v-else class="shrink-0 text-p-sm text-ink-gray-6">
-            {{ __(row.status || 'Booked') }}
-          </span>
-          <Button
-            v-if="row.party"
-            variant="ghost"
-            :tooltip="__('Open the person')"
-            :aria-label="__('Open the person')"
-            icon="lucide-arrow-up-right"
-            @click="openPerson(row.party)"
-          />
+          </div>
         </div>
 
         <div
@@ -760,11 +770,12 @@
           </div>
           <!-- never wider than the panel: beside the agenda on a tablet held
                upright its words ran past the panel's edge; cut there, its
-               name stays whole for who does not see -->
+               name stays whole for who does not see. On a phone the words go
+               on a second line («Aggiungi un ambulatorio o un'…» at 320) -->
           <Button
             variant="ghost"
             size="sm"
-            class="max-w-full self-start"
+            class="max-w-full self-start max-md:h-auto max-md:min-h-7 max-md:py-1 max-md:[&>span]:whitespace-normal max-md:[&>span]:text-start"
             iconLeft="plus"
             :label="__('Add a room or equipment')"
             @click="form.resources.push({ resource: '', quantity: 1 })"
@@ -933,6 +944,7 @@ import {
   orariPerGiorno,
   sulCentro,
 } from '@/utils/scheduler'
+import { partiDellIndirizzo } from '@/utils/sulTelefono'
 import { tastiera } from '@/utils/tastiera'
 import { leggibile } from '@/utils/telefono'
 import {
