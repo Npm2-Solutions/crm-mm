@@ -49,18 +49,24 @@
         />
       </div>
       <div class="flex shrink-0 gap-2 max-md:justify-end">
-        <Button
-          v-if="record.data?.assistant?.summary"
-          :label="__('Summary before the visit')"
-          iconLeft="book-open"
-          @click="summarising = true"
-        />
-        <Button
-          v-if="record.data?.can_see_log"
-          :label="__('Who opened it')"
-          iconLeft="eye"
-          @click="openLog"
-        />
+        <!-- on a phone two of them go under one button: three in a row pushed
+             «New visit» off the screen -->
+        <Dropdown v-if="sottoAltro" :options="altreAzioni" placement="left">
+          <Button
+            class="shrink-0"
+            icon="more-horizontal"
+            :aria-label="__('More')"
+          />
+        </Dropdown>
+        <template v-else>
+          <Button
+            v-for="azione in altreAzioni"
+            :key="azione.label"
+            :label="azione.label"
+            :iconLeft="azione.icon"
+            @click="azione.onClick"
+          />
+        </template>
         <!-- a free visit, or one on the specialty's clinical sheet -->
         <Dropdown
           v-if="
@@ -458,6 +464,7 @@ import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
   Dialog,
@@ -591,6 +598,25 @@ async function startSheet(template) {
 const drafting = reactive({ show: false, record: null, kind: 'letter' })
 const dictating = ref({ show: false, record: null })
 const summarising = ref(false)
+
+// the record's actions beside «New visit»
+const altreAzioni = computed(() =>
+  [
+    record.data?.assistant?.summary && {
+      label: __('Summary before the visit'),
+      icon: 'book-open',
+      onClick: () => (summarising.value = true),
+    },
+    record.data?.can_see_log && {
+      label: __('Who opened it'),
+      icon: 'eye',
+      onClick: openLog,
+    },
+  ].filter(Boolean),
+)
+const sottoAltro = computed(
+  () => isMobileView.value && altreAzioni.value.length > 1,
+)
 
 function draftOptions(entry) {
   const open = (kind) =>
