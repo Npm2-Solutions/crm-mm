@@ -215,7 +215,7 @@ DESCRIZIONE_NATURA: dict[str, str] = {
 	"N7": "IVA assolta in altro stato UE",
 }
 
-#: `N2` and `N3` and `N6` without a sub-code were retired on 01/01/2021 (tracciato 1.2.2).
+#: `N2` and `N3` and `N6` without a sub-code were retired on 01/01/2021 (specifiche 1.6, schema 1.2.1).
 NATURE_RITIRATE: frozenset[str] = frozenset({"N2", "N3", "N6"})
 
 #: Reverse charge: the recipient settles the VAT, the issuer charges none.

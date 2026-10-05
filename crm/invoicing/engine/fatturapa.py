@@ -20,6 +20,7 @@ instead of clever.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
@@ -94,10 +95,50 @@ def _quantita(valore: Decimal | None) -> str:
 	return f"{intero}.{decimali.ljust(2, '0')}"
 
 
+#: What a text field of FatturaPA may hold: the schema's `String…LatinType` admit
+#: only the Unicode blocks Basic Latin and Latin-1 Supplement, and the SdI rejects
+#: the file (00200) for a «€» or a curly quote typed in a service's name.
+_FUORI_DAL_LATINO = re.compile(r"[^\x00-\xff]")
+_SOSTITUTI = {
+	"€": "EUR",
+	"‘": "'",
+	"’": "'",
+	"‚": "'",
+	"“": '"',
+	"”": '"',
+	"„": '"',
+	"–": "-",
+	"—": "-",
+	"‐": "-",
+	"−": "-",
+	"…": "...",
+	"•": "-",
+	"\u00a0": " ",
+	"\u2009": " ",
+	"\u202f": " ",
+}
+
+
+def latino(testo: str) -> str:
+	"""The text as the schema admits it: the usual typographic signs in their plain
+	form, a letter with a mark the Latin-1 does not have without it, the rest left out."""
+	if not _FUORI_DAL_LATINO.search(testo):
+		return testo
+
+	def sostituisci(trovato: re.Match) -> str:
+		carattere = trovato.group(0)
+		if carattere in _SOSTITUTI:
+			return _SOSTITUTI[carattere]
+		scomposto = unicodedata.normalize("NFKD", carattere)
+		return "".join(c for c in scomposto if c <= "\xff" and not unicodedata.combining(c))
+
+	return _FUORI_DAL_LATINO.sub(sostituisci, testo)
+
+
 def _sub(parent: ET.Element, tag: str, testo: str | None = None) -> ET.Element:
 	elemento = ET.SubElement(parent, tag)
 	if testo is not None:
-		elemento.text = testo
+		elemento.text = latino(testo)
 	return elemento
 
 
@@ -114,6 +155,10 @@ def _sub_se(parent: ET.Element, tag: str, testo: str | None) -> None:
 		_sub(parent, tag, pulito)
 
 
+#: The postal code of an address abroad: CAPType is five digits whatever the country.
+CAP_ESTERO = "00000"
+
+
 @dataclass
 class Sede:
 	indirizzo: str
@@ -127,8 +172,15 @@ class Sede:
 		blocco = _sub(parent, tag)
 		_sub(blocco, "Indirizzo", (self.indirizzo or "").strip()[:60])
 		_sub_se(blocco, "NumeroCivico", self.numero_civico)
-		_sub(blocco, "CAP", re.sub(r"\s", "", self.cap or ""))
-		_sub(blocco, "Comune", (self.comune or "").strip()[:60])
+		cap = re.sub(r"\s", "", self.cap or "")
+		comune = (self.comune or "").strip()
+		if (self.nazione or "IT").strip().upper() != "IT" and not re.fullmatch(r"\d{5}", cap):
+			# abroad the schema still wants five digits: «00000», and the
+			# postal code the client's post office reads goes with the town
+			comune = f"{self.cap.strip()} {comune}".strip() if cap else comune
+			cap = CAP_ESTERO
+		_sub(blocco, "CAP", cap)
+		_sub(blocco, "Comune", comune[:60])
 		_sub_se(blocco, "Provincia", (self.provincia or "").strip().upper()[:2] or None)
 		_sub(blocco, "Nazione", (self.nazione or "IT").strip().upper())
 		return blocco
@@ -677,7 +729,7 @@ def valida(fattura: FatturaElettronica) -> list[str]:
 	Rejection is not free: the invoice counts as not issued, and the five days to
 	resubmit run from the notice, not from when somebody notices. Every check the SdI
 	makes says the code it would answer with, from its "Elenco dei controlli"
-	(v1.8): `00200` for a file the schema refuses, the content checks by number.
+	(v2.0): `00200` for a file the schema refuses, the content checks by number.
 	"""
 	problemi: list[str] = []
 	problemi.extend(_valida_trasmissione(fattura))
@@ -730,6 +782,16 @@ def _valida_trasmissione(fattura: FatturaElettronica) -> list[str]:
 			"the client has neither a recipient code nor a PEC: the invoice reaches the SdI and stops "
 			"there. It is valid, but the client never receives it"
 		)
+	if codice == CODICE_DESTINATARIO_ESTERO:
+		cliente = fattura.cessionario.anagrafica
+		if not cliente.id_codice or (cliente.id_paese or "IT").strip().upper() == "IT":
+			problemi.append(
+				Rilievo(
+					"00313",
+					'the recipient code "XXXXXXX" is for a client abroad, with the VAT identifier of '
+					"their country",
+				)
+			)
 	if not re.fullmatch(r"[A-Za-z0-9]{1,10}", fattura.progressivo_invio or ""):
 		problemi.append(Rilievo("00001", "the transmission number is letters and digits, at most ten"))
 	return problemi
@@ -868,7 +930,7 @@ def _percento(aliquota) -> str:
 
 
 def _valida_importi(fattura: FatturaElettronica) -> list[str]:
-	"""The SdI's arithmetic, as its "Elenco dei controlli" (v1.8) states it."""
+	"""The SdI's arithmetic, as its "Elenco dei controlli" (v2.0) states it."""
 	problemi: list[str] = []
 
 	# 00419 and 00422: for every distinct VAT rate, of the lines and of the fund's
@@ -915,6 +977,27 @@ def _valida_importi(fattura: FatturaElettronica) -> list[str]:
 					differenza,
 				)
 			)
+
+	# 00443: a summary at a rate no line and no contribution has
+	for aliquota in dichiarati:
+		if aliquota not in attesi:
+			problemi.append(
+				Rilievo(
+					"00443", "the VAT summary has a block at {0}% that no line carries", _percento(aliquota)
+				)
+			)
+
+	# 00444: the reasons for no VAT of the lines and contributions, and the summary's
+	nature_righe = {linea.natura for linea in fattura.linee if linea.natura} | {
+		cassa.natura for cassa in fattura.dati_cassa if cassa.natura
+	}
+	nature_riepilogo = {riepilogo.natura for riepilogo in fattura.riepiloghi if riepilogo.natura}
+	for natura in sorted(nature_righe - nature_riepilogo):
+		problemi.append(Rilievo("00444", 'there is no VAT summary for "{0}"', _natura(natura)))
+	for natura in sorted(nature_riepilogo - nature_righe):
+		problemi.append(
+			Rilievo("00444", 'the VAT summary has a block for "{0}" that no line carries', _natura(natura))
+		)
 
 	# 00421 - each block's tax on its own taxable amount, rounded half up.
 	for riepilogo in fattura.riepiloghi:
@@ -1004,7 +1087,7 @@ def _valida_importi(fattura: FatturaElettronica) -> list[str]:
 #: only when both are placed exactly here.
 #:
 #: * the **fund levy** does not sit on a line. It travels in
-#:   `DatiCassaPrevidenziale`, and check 00423 counts it towards the summary block,
+#:   `DatiCassaPrevidenziale`, and check 00422 counts it towards the summary block,
 #:   so lines plus levy blocks equal the summary;
 #: * the **re-charged stamp duty** does get a line, because it is part of the
 #:   compensation (Risposta AdE 428/2022) and follows the VAT regime of the service.

@@ -31,10 +31,13 @@ from crm.invoicing.engine.fatturapa import (
 	bloccanti,
 	codice_destinatario,
 	codice_di,
+	latino,
 	progressivo_alfanumerico,
 	valida,
 )
 from crm.invoicing.tests.base import UnitTestCase
+
+ZERO = Decimal("0.00")
 
 
 def codici(problemi) -> set[str]:
@@ -579,3 +582,69 @@ class ScontoDiRigaTest(UnitTestCase):
 			]
 		)
 		self.assertTrue(any(getattr(r, "codice", "") == "00423" for r in valida(documento)))
+
+
+class ControlliDelloSdiTest(UnitTestCase):
+	"""The checks of the «Elenco dei controlli» v2.0 the builder could still miss."""
+
+	def test_xxxxxxx_vuole_un_cliente_estero(self):
+		# 00313: an Italian client with the code for clients abroad
+		self.assertIn("00313", codici(valida(fattura(codice_destinatario="XXXXXXX"))))
+
+	def test_un_riepilogo_senza_righe_e_00443(self):
+		documento = fattura(
+			riepiloghi=[
+				Riepilogo(
+					aliquota_iva=Decimal("22.00"),
+					imponibile_importo=Decimal("1000.00"),
+					imposta=Decimal("220.00"),
+				),
+				Riepilogo(aliquota_iva=Decimal("10.00"), imponibile_importo=ZERO, imposta=ZERO),
+			]
+		)
+		self.assertIn("00443", codici(valida(documento)))
+
+	def test_una_natura_senza_riepilogo_e_00444(self):
+		linea = Linea(
+			numero=1,
+			descrizione="Visita",
+			prezzo_unitario=Decimal("100.00"),
+			prezzo_totale=Decimal("100.00"),
+			aliquota_iva=ZERO,
+			natura="N4",
+		)
+		documento = fattura(
+			linee=[linea],
+			riepiloghi=[
+				Riepilogo(
+					aliquota_iva=ZERO, imponibile_importo=Decimal("100.00"), imposta=ZERO, natura="N2.2"
+				)
+			],
+			importo_totale=Decimal("100.00"),
+		)
+		self.assertIn("00444", codici(valida(documento)))
+
+	def test_il_cap_estero_diventa_cinque_zeri(self):
+		sede = Sede(indirizzo="Rue de Rivoli 1", cap="75001", comune="Paris", nazione="FR")
+		self.assertEqual(sede.xml(ET.Element("x")).find("CAP").text, "75001")
+		sede = Sede(indirizzo="Baker Street 221B", cap="NW1 6XE", comune="London", nazione="GB")
+		blocco = sede.xml(ET.Element("x"))
+		self.assertEqual(blocco.find("CAP").text, "00000")
+		self.assertEqual(blocco.find("Comune").text, "NW1 6XE London")
+
+	def test_il_testo_resta_nel_latino(self):
+		self.assertEqual(latino("Visita “prima” – 50 €…"), 'Visita "prima" - 50 EUR...')
+		self.assertEqual(latino("Łódź Dvořák"), "ódz Dvorák")
+		self.assertEqual(latino("Perché è già così"), "Perché è già così")
+		radice = fattura(
+			linee=[
+				Linea(
+					numero=1,
+					descrizione="Seduta – 1ª",
+					prezzo_unitario=Decimal("1000.00"),
+					prezzo_totale=Decimal("1000.00"),
+					aliquota_iva=Decimal("22.00"),
+				)
+			]
+		).xml()
+		self.assertIn("Seduta - 1ª", radice)
