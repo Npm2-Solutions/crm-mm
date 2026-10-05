@@ -11,7 +11,7 @@ from crm.demo import guardie
 
 class MessaggioWhatsApp(WhatsAppMessage):
 	def send_outgoing(self):
-		if self.type == "Outgoing" and guardie.numero_di_prova(self.to):
+		if self.type == "Outgoing" and guardie.trattenuto(self.to):
 			# kept as sent in the conversation, as the demo shows it; nobody receives it
 			self.status = "Success"
 			return

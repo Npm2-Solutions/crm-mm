@@ -10,7 +10,8 @@ So, while the demo data are in (or being made):
 
 - an email to a demo address leaves the queue before it is sent (`posta_in_coda`);
 - a WhatsApp or an SMS to a demo person's number is kept in the conversation and
-  never handed to Meta or Twilio (`numero_di_prova`, read where they are sent);
+  never handed to Meta or Twilio (`trattenuto`, read where they are sent), and so is
+  any while a part of the demo is being made;
 - a call to one does not leave (`crm.telephony.uscita.perche_no`);
 - a notification about a demo record stays in the panel, never by email;
 - the public booking page offers the demo's services only to somebody signed in,
@@ -63,6 +64,13 @@ def numero_di_prova(numero: str | None) -> bool:
 		return False
 	cifre = _cifre(numero)
 	return len(cifre) == 9 and cifre in _numeri_della_demo()
+
+
+def trattenuto(numero: str | None) -> bool:
+	"""Whether a WhatsApp or an SMS to ``numero`` stays in the conversation: anything
+	while a part of the demo is being made - its people are written down as it goes,
+	after the numbers were read - and a demo person's or colleague's after."""
+	return registro.raccolta() is not None or numero_di_prova(numero)
 
 
 def _numeri_della_demo() -> frozenset[str]:
