@@ -2,15 +2,16 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The price lists and, beside the one chosen, its rules; on a phone the rules
-  come under the lists.
+  The price lists and, beside the one chosen, its rules; where the page is
+  narrow (a phone, a tablet held upright) the rules come under the lists, and
+  the page scrolls as one.
 -->
 <template>
   <div
-    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5 impostazioni-strette:h-auto"
   >
     <div
-      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex items-start justify-between gap-4 px-2 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1">
         <h2
@@ -34,9 +35,11 @@
       />
     </div>
 
-    <div class="flex flex-1 gap-4 overflow-hidden px-2 max-md:flex-col">
+    <div
+      class="flex flex-1 gap-4 overflow-hidden px-2 impostazioni-strette:flex-col"
+    >
       <!-- price lists -->
-      <div class="w-64 shrink-0 overflow-y-auto max-md:w-full">
+      <div class="w-64 shrink-0 overflow-y-auto impostazioni-strette:w-full">
         <!-- an empty bordered list drew a stray hairline over the empty state -->
         <div
           v-if="priceLists.data?.length"
@@ -93,7 +96,7 @@
       <div class="flex flex-1 flex-col overflow-hidden">
         <div
           v-if="selected"
-          class="mb-2 flex items-center justify-between gap-2 max-md:flex-wrap"
+          class="mb-2 flex flex-wrap items-center justify-between gap-2"
         >
           <span class="text-p-base-medium text-ink-gray-8">
             {{ __('Rules of {0}', [selected]) }}
@@ -172,10 +175,12 @@
             v-else-if="!selected && priceLists.data?.length"
             class="px-1 text-p-sm text-ink-gray-5"
           >
-            <span class="max-md:hidden">{{
+            <span class="impostazioni-strette:hidden">{{
               __('Pick a price list on the left.')
             }}</span>
-            <span class="md:hidden">{{ __('Pick a price list above.') }}</span>
+            <span class="hidden impostazioni-strette:inline">{{
+              __('Pick a price list above.')
+            }}</span>
           </div>
         </div>
       </div>

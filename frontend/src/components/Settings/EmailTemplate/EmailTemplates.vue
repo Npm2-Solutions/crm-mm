@@ -7,7 +7,7 @@
   >
     <!-- Header -->
     <div
-      class="flex justify-between px-2 pt-2 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex justify-between px-2 pt-2 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1 w-9/12 max-md:w-full">
         <h2

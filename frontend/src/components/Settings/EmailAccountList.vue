@@ -2,7 +2,7 @@
   <div class="flex min-h-0 flex-1 flex-col gap-6 text-ink-gray-8">
     <!-- header -->
     <div
-      class="flex justify-between gap-4 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex justify-between gap-4 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex min-w-0 flex-col gap-1">
         <h2

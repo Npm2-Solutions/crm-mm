@@ -719,6 +719,25 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
 - **Le note sono quattro per riga dove ci stanno**, meno dove una scheda
   sarebbe più stretta di 13rem: in piedi erano 155 punti, il titolo «Nota di
   pr…» e l'autore e il giorno su tre righe (`pages/Notes.vue`).
+- **Una pagina delle Impostazioni segue il suo riquadro, non lo schermo.** In
+  piedi, accanto al menu delle Impostazioni, il riquadro è largo 504 punti: un
+  telefono, su uno schermo che per `max-md:` è un computer. Su 53 pagine dieci
+  si schiacciavano: la descrizione di «Servizi» in una colonna di 108 punti
+  accanto ai suoi due pulsanti, le regole di un listino tagliate a «Co…» accanto
+  ai listini, l'anteprima di «Pagina e regole» fuori dal riquadro, «Massaggio
+  decont…» accanto a «Nessun professionista prenotabile», il titolo «Modelli
+  WhatsApp» su due righe sopra la sua descrizione, due campi
+  dell'Assistente da 94 punti. Il riquadro ora è una container query
+  (`Settings.vue`) e la variante `impostazioni-strette:` (`tailwind.config.js`,
+  sotto 40rem) mette in colonna quello che il telefono mette in colonna:
+  l'intestazione di ogni pagina con le sue azioni sotto (le 27 pagine che lo
+  facevano sul telefono e `Layouts/SettingsLayoutBase.vue`), i listini sopra le
+  loro regole con la pagina che scorre tutta insieme, l'anteprima sotto i campi,
+  chi può prenotare un servizio sotto il suo nome, gli extra del piano e i campi
+  dell'Assistente su una colonna. Il nome di un professionista e il suo titolo
+  vanno a capo invece di tagliarsi a vicenda (`Booking/OnlineBookingSetup.vue`).
+  Sul telefono il riquadro è lo schermo, e non cambia niente; di traverso e sul
+  computer (760 punti e più) le colonne restano affiancate.
 
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più

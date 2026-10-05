@@ -2,7 +2,7 @@
   <div class="flex flex-col h-full w-full text-ink-gray-8">
     <!-- Header -->
     <div
-      class="flex justify-between items-start p-8 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3 max-md:px-5 max-md:py-5"
+      class="flex justify-between items-start p-8 text-ink-gray-8 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3 max-md:px-5 max-md:py-5"
     >
       <div class="flex flex-col gap-1">
         <slot name="title">

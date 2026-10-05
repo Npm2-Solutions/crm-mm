@@ -6,7 +6,7 @@
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div
-      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex items-start justify-between gap-4 px-2 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1">
         <h2
@@ -95,17 +95,20 @@
               class="size-2.5 shrink-0 rounded-full"
               :style="{ backgroundColor: service.color || '#4C7EFF' }"
             />
-            <!-- on a phone who can take it goes under the name: beside it,
-                 «Nobody bookable for it» left the name «Contro…» -->
+            <!-- where the page is narrow (a phone, a tablet held upright) who
+                 can take it goes under the name: beside it, «Nobody bookable
+                 for it» left the name «Contro…» -->
             <span
-              class="flex min-w-0 flex-1 flex-col md:flex-row md:items-center md:gap-3"
+              class="flex min-w-0 flex-1 items-center gap-3 impostazioni-strette:flex-col impostazioni-strette:items-stretch impostazioni-strette:gap-0"
             >
-              <span class="truncate text-p-base text-ink-gray-8 md:flex-1">
+              <span
+                class="flex-1 truncate text-p-base text-ink-gray-8 impostazioni-strette:flex-none"
+              >
                 {{ service.service_name }}
               </span>
               <span
                 v-if="service.bookable_online"
-                class="text-p-sm md:shrink-0"
+                class="shrink-0 text-p-sm"
                 :class="
                   service.online_staff ? 'text-ink-gray-6' : 'text-ink-amber-8'
                 "
@@ -161,13 +164,17 @@
             <div class="flex items-center gap-3">
               <UserAvatar :user="person.user" size="md" class="shrink-0" />
               <div class="min-w-0 flex-1">
-                <div class="flex items-baseline gap-2">
-                  <span class="truncate text-p-base-medium text-ink-gray-8">
+                <!-- the title goes under the name when both do not fit: side
+                     by side they were cut to «Elena G…» and «Fisiot…» -->
+                <div class="flex flex-wrap items-baseline gap-x-2">
+                  <span
+                    class="max-w-full truncate text-p-base-medium text-ink-gray-8"
+                  >
                     {{ person.full_name }}
                   </span>
                   <span
                     v-if="person.public_title"
-                    class="truncate text-p-sm text-ink-gray-5"
+                    class="max-w-full truncate text-p-sm text-ink-gray-5"
                   >
                     {{ person.public_title }}
                   </span>
