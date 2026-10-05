@@ -32,6 +32,20 @@ DEI_MODULI = ("moduli", "documenti")
 IMPOSTAZIONI_DELLE_PIPELINE = ("CRM Client Settings", "CRM Quote Settings")
 
 
+#: The plan's rows: none, and every module is at its default.
+PIANO, RIGA = "CRM Plan", "CRM Plan Module"
+
+
+def piano_cambiato() -> None:
+	"""Who reads the plan reads it again, as after its own save."""
+	from crm.dashboard import features
+	from crm.permissions import livelli
+
+	frappe.clear_document_cache(PIANO, PIANO)
+	livelli.dimentica_cache()
+	features.forget()
+
+
 def _conta() -> dict[str, int]:
 	conti = {}
 	for tabella in frappe.db.get_tables(cached=False):
@@ -91,9 +105,16 @@ class TestDatiDiProva(IntegrationTestCase):
 	"""One demo, small, made and taken away: what it holds, what it never sends,
 	and the database as it was."""
 
+	#: Small: what each part does, not how much of it.
+	SCALA = 0.08
+	#: The base's colleagues and services; a module that adds its own says so.
+	SQUADRA = 6
+	SERVIZI = 10
+
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
+		cls.prima_della_demo()
 		if registro.caricati() or frappe.db.count(registro.REGISTRO):
 			from crm.demo.togli import togli
 
@@ -122,7 +143,7 @@ class TestDatiDiProva(IntegrationTestCase):
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the site's own before the demo, which commits part by part
 		cls.prima = _conta()
 		cls.serie_di_prima = _serie()
-		cls.esito = api.crea(utente="Administrator", scala=0.08)
+		cls.esito = api.crea(utente="Administrator", scala=cls.SCALA)
 		cls.registrati = registro.registrati()
 
 	@classmethod
@@ -145,8 +166,26 @@ class TestDatiDiProva(IntegrationTestCase):
 			frappe.clear_document_cache(doctype, doctype)
 		for nome in cls.aziende:
 			frappe.db.set_value("CRM Invoicing Company", nome, "enabled", 1, update_modified=False)
+		cls.dopo_la_demo()
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the demo's parts committed what this undoes
 		super().tearDownClass()
+
+	@classmethod
+	def prima_della_demo(cls):
+		"""The plan as it comes, every module at its default, before anything is
+		counted: the CRM's demo, whatever the site switched on. A module's own run of
+		these tests switches its module on after this."""
+		cls.piano_di_prima = frappe.get_all(RIGA, filters={"parent": PIANO}, fields=["*"])
+		frappe.db.delete(RIGA, {"parent": PIANO})
+		piano_cambiato()
+
+	@classmethod
+	def dopo_la_demo(cls):
+		"""The plan as it was, once the demo is gone."""
+		frappe.db.delete(RIGA, {"parent": PIANO})
+		for riga in cls.piano_di_prima:
+			frappe.get_doc({**riga, "doctype": RIGA}).db_insert()
+		piano_cambiato()
 
 	def test_1_every_part_is_made(self):
 		self.assertEqual(self.esito["failed"], [])
@@ -162,8 +201,8 @@ class TestDatiDiProva(IntegrationTestCase):
 		squadra = frappe.get_all(
 			"User", filters={"name": ["in", sorted(r["User"])], "user_type": "System User"}, pluck="name"
 		)
-		self.assertEqual(len(squadra), 6)
-		self.assertEqual(len(r.get("CRM Service", ())), 10)
+		self.assertEqual(len(squadra), self.SQUADRA)
+		self.assertEqual(len(r.get("CRM Service", ())), self.SERVIZI)
 		self.assertGreater(len(r.get("CRM Lead", ())), 10)
 		self.assertGreater(len(r.get("CRM Appointment", ())), 20)
 		self.assertGreater(len(r.get("CRM Deal", ())), 5)
