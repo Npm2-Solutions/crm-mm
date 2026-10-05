@@ -83,6 +83,11 @@ class EconomiaTest(InvoicingBase):
 		# as many rows as it gives: the site may hold older ones waiting
 		elenco = self.numero("to_collect_list", limit=20)
 		self.assertIn("Acme Srl", [voce["title"] for voce in elenco["items"]])
+		# what the page receives: the bands' words travel as JSON (a lazy one
+		# failed the whole dashboard's request)
+		frappe.as_json(torta)
+		frappe.as_json(elenco)
+		self.assertTrue(all(isinstance(voce["badge"]["label"], str) for voce in elenco["items"]))
 
 	def test_costi_margine_e_iva(self):
 		fattura = frappe.get_doc(

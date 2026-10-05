@@ -5,7 +5,7 @@
 
 The first test is the net under all the others: every widget in the catalogue is
 asked for its answer, for the whole team and for one salesperson, and must give
-back a payload of the kind it promises. A query that only breaks on MariaDB, a
+back a payload of the kind it promises, one that travels to the page as JSON. A query that only breaks on MariaDB, a
 column renamed under a widget, a join that no longer exists — they all fail
 here, by name, instead of as a blank tile on somebody's dashboard.
 """
@@ -89,6 +89,9 @@ class TestDashboardWidgets(IntegrationTestCase):
 					self.assertIn(data["kind"], registry.KINDS)
 					if not widget.retired:
 						self.assertEqual(data["kind"], widget.kind)
+					# what the page receives: a word left lazy (`_lt`) cannot travel
+					# as JSON, and failed the whole dashboard's request with it
+					frappe.as_json(data)
 
 	def test_every_widget_survives_an_empty_period(self):
 		far = add_days(nowdate(), 3650)
@@ -96,6 +99,7 @@ class TestDashboardWidgets(IntegrationTestCase):
 			with self.subTest(widget=widget.id):
 				data = self.answer(widget.id, from_date=far, to_date=add_days(far, 30))
 				self.assertIn(data["kind"], registry.KINDS)
+				frappe.as_json(data)
 
 	def test_catalogue_is_consistent(self):
 		for widget in registry.all_widgets():
