@@ -99,7 +99,7 @@ class TestDatiDiProva(IntegrationTestCase):
 		}
 		nuovi_clienti.crea()
 		preventivi.crea()
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the site's own before the demo, which commits part by part
 		cls.prima = _conta()
 		cls.serie_di_prima = _serie()
 		cls.esito = api.crea(utente="Administrator", scala=0.08)
@@ -123,7 +123,7 @@ class TestDatiDiProva(IntegrationTestCase):
 					(doctype, campo, valore),
 				)
 			frappe.clear_document_cache(doctype, doctype)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the demo's parts committed what this undoes
 		super().tearDownClass()
 
 	def test_1_every_part_is_made(self):

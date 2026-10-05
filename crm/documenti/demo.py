@@ -109,12 +109,13 @@ def _contratto(centro: str, abbonamento) -> str:
 	ingressi = INGRESSI.get(abbonamento.entries or "Unlimited", INGRESSI["Unlimited"]).format(
 		abbonamento.entries_count or ""
 	)
+	dal, al = (formatdate(giorno, "dd/MM/yyyy") for giorno in (abbonamento.starts_on, abbonamento.ends_on))
+	prezzo = fmt_money(abbonamento.price, currency=abbonamento.currency or "EUR")
+	pagamento = PAGAMENTO.get(abbonamento.payment, PAGAMENTO["Upfront"])
 	clausole = [
-		f"Validità: dal {formatdate(abbonamento.starts_on, 'dd/MM/yyyy')} "
-		f"al {formatdate(abbonamento.ends_on, 'dd/MM/yyyy')}.",
+		f"Validità: dal {dal} al {al}.",
 		f"Comprende {ingressi}, nelle lezioni e nei servizi dell'abbonamento.",
-		f"Prezzo: {fmt_money(abbonamento.price, currency=abbonamento.currency or 'EUR')}, "
-		f"{PAGAMENTO.get(abbonamento.payment, PAGAMENTO['Upfront'])}.",
+		f"Prezzo: {prezzo}, {pagamento}.",
 	]
 	if abbonamento.can_suspend:
 		clausole.append(
