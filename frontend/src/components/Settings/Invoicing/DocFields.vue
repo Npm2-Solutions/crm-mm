@@ -61,6 +61,7 @@
 <script setup>
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { campoDaAprire } from '@/composables/settings'
+import { tieniInVista } from '@/utils/inVista'
 import {
   buildTabs,
   schedaDelCampo,
@@ -75,7 +76,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -109,6 +110,8 @@ const tabs = computed(() => buildTabs(fields.data))
 // view and marked for a moment; asked once, then forgotten
 const scheda = ref('')
 const campi = ref(null)
+let smettiDiSeguire = () => {}
+onBeforeUnmount(() => smettiDiSeguire())
 watch(
   [tabs, campoDaAprire],
   async ([schede, campo]) => {
@@ -124,7 +127,8 @@ watch(
       elemento = campi.value?.querySelector(`[data-name="${campo}"]`)
     }
     if (!elemento) return
-    elemento.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    // the cards around the form are still coming: followed until they are in
+    smettiDiSeguire = tieniInVista(elemento)
     elemento.classList.add('dc-campo-cercato')
     setTimeout(() => elemento.classList.remove('dc-campo-cercato'), 2400)
   },
@@ -194,10 +198,17 @@ function stripHtml(text) {
 </script>
 
 <style scoped>
-/* the field a «Set up» brought here, marked while the eye finds it */
+/* the field a «Set up» brought here, marked while the eye finds it: the
+   brand's tint around it, which a box that scrolls does not cut as it cut a
+   ring, and which never touches its words */
+:deep([data-name]) {
+  transition:
+    background-color 0.6s,
+    box-shadow 0.6s;
+}
 :deep(.dc-campo-cercato) {
   border-radius: 0.5rem;
-  box-shadow: 0 0 0 3px var(--brand-action, #0f766e);
-  transition: box-shadow 0.4s;
+  background-color: var(--brand-subtle);
+  box-shadow: 0 0 0 0.5rem var(--brand-subtle);
 }
 </style>
