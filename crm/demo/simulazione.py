@@ -92,6 +92,23 @@ def clienti_recenti(ctx: Contesto, quanti: int) -> list[str]:
 	)
 
 
+def visti_da(ctx: Contesto, utente: str | None, giorni: int) -> list[tuple[str, datetime.datetime]]:
+	"""The people ``utente`` saw in the last ``giorni`` days - they came - each with
+	the end of their last session, the most recent first."""
+	persone = persone_della_demo(ctx)
+	if not (utente and persone):
+		return []
+	return frappe.db.sql(
+		"""select p.party, max(a.ends_on) from `tabCRM Appointment` a
+		join `tabCRM Appointment Staff` s on s.parent = a.name
+		join `tabCRM Appointment Participant` p on p.parent = a.name
+		where s.user = %(utente)s and p.party_type = 'CRM Lead' and p.party in %(persone)s
+		and p.status = 'Attended' and a.ends_on between %(da)s and %(adesso)s
+		group by p.party order by max(a.ends_on) desc, p.party""",
+		{"utente": utente, "persone": persone, "da": ctx.giorno(-giorni), "adesso": ctx.adesso},
+	)
+
+
 def persone_per_lavoro(ctx: Contesto) -> dict[str, list[str]]:
 	"""The people each colleague would write about: their own clients."""
 	persone = persone_della_demo(ctx)
