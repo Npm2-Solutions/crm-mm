@@ -36,14 +36,18 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 impostazioni-strette:grid-cols-1">
+        <!-- three in a row while they fit, the amounts whole: in three fixed
+             columns «12.345,67 €» ran out of its box on a narrow phone -->
+        <div class="flex flex-wrap gap-3">
           <div
             v-for="voce in importi"
             :key="voce.label"
-            class="rounded-lg bg-surface-gray-2 px-3 py-2"
+            class="flex-auto rounded-lg bg-surface-gray-2 px-3 py-2"
           >
             <div class="text-p-sm text-ink-gray-6">{{ voce.label }}</div>
-            <div class="text-base-semibold text-ink-gray-8">
+            <div
+              class="whitespace-nowrap text-base-semibold tabular-nums text-ink-gray-8"
+            >
               {{ formatEuro(voce.value) }}
             </div>
           </div>
