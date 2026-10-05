@@ -11,6 +11,7 @@
   "document_type",
   "posting_date",
   "payment_date",
+  "collected_on",
   "column_document",
   "document_number",
   "test_document",
@@ -172,6 +173,14 @@
    "fieldname": "payment_date",
    "fieldtype": "Date",
    "label": "Payment date"
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "When the money reached the centre. Empty, the invoice is still to collect. An invoice to a person issued at the desk takes the payment date written in it; one to a company, or issued by itself (a subscription's instalment), waits for somebody to mark it.",
+   "fieldname": "collected_on",
+   "fieldtype": "Date",
+   "label": "Collected on",
+   "no_copy": 1
   },
   {
    "fieldname": "column_document",
@@ -901,7 +910,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-05 12:00:00.000000",
+ "modified": "2026-10-05 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

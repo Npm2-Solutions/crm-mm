@@ -20,7 +20,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate
 
-from crm.invoicing import documento, prova, scelte
+from crm.invoicing import documento, incassi, prova, scelte
 from crm.invoicing.engine import voci
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.permissions.livelli import puo
@@ -221,6 +221,9 @@ def _vista(doc) -> dict:
 			"ts": _stato(doc.ts_status) if not bozza else "",
 		},
 		"pdf": doc.pdf_file,
+		# when its money reached the centre: empty, still to collect (`incassi`)
+		"collected_on": str(doc.collected_on) if doc.collected_on else None,
+		"collectable": incassi.da_incassare(doc),
 		# what the SdI said when it refused it: the thing to correct
 		"rejection": doc.sdi_message if doc.sdi_status == "scartata" else None,
 		# what the SdI's own checks found in the file before it leaves, each with its code
@@ -291,6 +294,7 @@ def _puo(doc) -> dict:
 		and frappe.has_permission(FATTURA, "create"),
 		"pdf": emessa and bool(doc.pdf_file),
 		"make_pdf": emessa and not doc.pdf_file,
+		"collect": incassi.da_incassare(doc) and puo("fatture.incassi"),
 	}
 
 
@@ -369,6 +373,8 @@ def issue(data: str | dict, invoice: str | None = None) -> dict:
 	if not invoice:
 		doc.insert()
 	doc.submit()
+	# issued at the desk to a person: paid there, on the day the desk wrote
+	incassi.alla_cassa(doc)
 	doc.reload()
 	return _vista(doc)
 
