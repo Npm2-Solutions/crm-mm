@@ -663,6 +663,11 @@ scheduler_events = {
 	"hourly_long": [
 		"crm.integrations.meta.leads.reconcile_synced_pages",
 	],
+	"daily_long": [
+		# where the centre switched it on, the night's reports to the Sistema TS: one
+		# synchronous call per expense, so the long queue
+		"crm.tessera_sanitaria.automatico.ogni_notte",
+	],
 	"cron": {
 		"* * * * *": ["crm.automation.engine.process_due_enrollments"],
 		"*/10 * * * *": [

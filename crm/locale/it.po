@@ -44362,3 +44362,38 @@ msgstr "Non è stato possibile salvare il centro: riprova."
 #: crm/benvenuto.py
 msgid "Write the centre's name"
 msgstr "Scrivi il nome del centro"
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Automatic sending"
+msgstr "Invio automatico"
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Off, every invoice waits for somebody to press «Send to the SdI». On, an electronic invoice leaves through Itala as soon as it is issued; one the SdI would reject waits, and whoever manages invoicing is told."
+msgstr "Spento, ogni fattura aspetta che qualcuno prema «Invia allo SdI». Acceso, la fattura elettronica parte tramite Itala appena è emessa; una che lo SdI scarterebbe aspetta, e chi gestisce la fatturazione viene avvisato."
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Send electronic invoices to the SdI when issued"
+msgstr "Invia allo SdI le fatture elettroniche appena emesse"
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "An invoice to a company or a public body leaves for the SdI when it is issued. A test invoice goes to Itala's test door and reaches nobody."
+msgstr "Una fattura a un'azienda o a un ente pubblico parte per lo SdI quando viene emessa. Una fattura di prova va all'ambiente di prova di Itala e non arriva a nessuno."
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Report healthcare expenses to the Sistema TS every night"
+msgstr "Comunica ogni notte le spese sanitarie al Sistema TS"
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Every night the healthcare expenses issued and not yet reported leave for the Sistema TS, with the centre's credentials. A rejected one is not sent again by itself: it is corrected, and whoever manages invoicing is told."
+msgstr "Ogni notte le spese sanitarie emesse e non ancora comunicate partono per il Sistema TS, con le credenziali del centro. Una scartata non viene rimandata da sola: si corregge, e chi gestisce la fatturazione viene avvisato."
+
+#: crm/invoicing/automatico.py
+msgid "An invoice did not leave for the SdI by itself"
+msgstr "Una fattura non è partita da sola per lo SdI"
+
+#: crm/invoicing/automatico.py
+msgid "{0}: {1} It waits for «Send to the SdI»."
+msgstr "{0}: {1} Aspetta «Invia allo SdI»."
+
+#: crm/tessera_sanitaria/automatico.py
+msgid "Expenses the Sistema TS did not take tonight"
+msgstr "Spese che stanotte il Sistema TS non ha accolto"
