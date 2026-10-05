@@ -113,14 +113,14 @@
               v-if="item.data?.old_value"
               class="max-w-40 truncate text-ink-gray-8"
             >
-              {{ item.data.old_value }}
+              {{ valoreDi(item, item.data.old_value) }}
             </span>
             <span v-if="item.to">{{ __(item.to) }}</span>
             <span
               v-if="item.data?.value"
               class="max-w-40 truncate text-ink-gray-8"
             >
-              {{ item.data.value }}
+              {{ valoreDi(item, item.data.value) }}
             </span>
             <span
               v-if="item.data?.file_name"
@@ -739,6 +739,12 @@ const FilesUploader = aRichiesta(
 
 const { $socket } = globalStore()
 const { getUser, puo, solaLettura } = usersStore()
+
+// a colleague in a change is named by their name, never by their address:
+// «Responsabile della persona» was set to «chiara.romano@example.c…»
+function valoreDi(item, valore) {
+  return item.options === 'User' ? getUser(valore)?.full_name || valore : valore
+}
 const { capture } = useTelemetry()
 const { isNewestFirst } = useTimelinePreferences()
 
