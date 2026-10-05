@@ -925,6 +925,10 @@ lontane dai fogli di un telefono.
   la presa di una lista o una scatola già scorsa tengono il dito per sé (un
   campo dove nessuno scrive no: in un modulo il dito cade quasi sempre su uno)
   (`utils/trascinaFoglio.js`, provato).
+- **Il titolo resta in cima anche nei fogli disegnati a mano.** Una nuova
+  persona, trattativa, azienda o un nuovo contatto disegnano da sé la riga
+  del titolo (`#body`), e il titolo se ne andava col modulo: ora resta in
+  cima con la ✕, come nei fogli di frappe-ui (`telefono.css`, «4»).
 - **In Accoglienza la riga del servizio va a capo.** «Pacchetto completo ·
   seduta 3 di 10 · chi lo fa» si fermava coi puntini a 320 punti; sul telefono
   va a capo, il pallino sulla prima riga (`Today.vue`). Il riepilogo del
