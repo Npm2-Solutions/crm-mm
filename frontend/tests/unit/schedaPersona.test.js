@@ -7,6 +7,7 @@ import {
   indirizzoTel,
   mascherato,
   modiDiChiamare,
+  nomeDellAppuntamento,
   numeriDi,
   prossimoAppuntamento,
   quandoInBreve,
@@ -179,5 +180,29 @@ describe('titoloSenzaPersona', () => {
       'Pilates di gruppo',
     )
     expect(titoloSenzaPersona('Visita', '')).toBe('Visita')
+  })
+})
+
+describe('nomeDellAppuntamento', () => {
+  it('names an appointment by its service, never by the others in a class', () => {
+    expect(
+      nomeDellAppuntamento(
+        {
+          service: 'Pilates di gruppo',
+          title: 'Pilates di gruppo — Sofia Pellegrini, Marco Conti +3',
+        },
+        'Francesca Marchetti',
+      ),
+    ).toBe('Pilates di gruppo')
+  })
+
+  it('without a service, the title without the person', () => {
+    expect(
+      nomeDellAppuntamento(
+        { title: 'Fisioterapia — Laura Consenso' },
+        'Laura Consenso',
+      ),
+    ).toBe('Fisioterapia')
+    expect(nomeDellAppuntamento(null, 'Laura')).toBe('')
   })
 })

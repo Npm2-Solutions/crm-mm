@@ -60,7 +60,7 @@
           {{
             [
               quandoInBreve(prossimo.starts_on, lingua),
-              titoloSenzaPersona(prossimo.title, title),
+              nomeDellAppuntamento(prossimo, title),
             ]
               .filter(Boolean)
               .join(' · ')
@@ -180,10 +180,10 @@ import {
   indirizzoTel,
   mascherato,
   modiDiChiamare,
+  nomeDellAppuntamento,
   numeriDi,
   prossimoAppuntamento,
   quandoInBreve,
-  titoloSenzaPersona,
 } from '@/utils/schedaPersona'
 import { Dropdown, Tooltip, createResource } from 'frappe-ui'
 import { computed } from 'vue'
