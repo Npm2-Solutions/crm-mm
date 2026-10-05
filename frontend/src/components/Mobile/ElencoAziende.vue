@@ -54,10 +54,10 @@
             {{ azienda.organization_name || azienda.name }}
           </span>
           <span
-            v-if="rigaDellAzienda(azienda)"
+            v-if="rigaDellAzienda(azienda, __)"
             class="truncate text-p-sm text-ink-gray-5"
           >
-            {{ rigaDellAzienda(azienda) }}
+            {{ rigaDellAzienda(azienda, __) }}
           </span>
         </span>
         <span

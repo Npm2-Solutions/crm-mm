@@ -280,8 +280,10 @@ export function dominioDi(sito) {
 }
 
 /** The line under a company's name: what it does and where it is online. */
-export function rigaDellAzienda(azienda = {}) {
-  return [azienda.industry, dominioDi(azienda.website)]
+export function rigaDellAzienda(azienda = {}, t = (testo) => testo) {
+  // the sectors are a translated DocType: the shipped ones in the reader's
+  // language («Trasporti»), one the centre wrote as written
+  return [azienda.industry && t(azienda.industry), dominioDi(azienda.website)]
     .filter(Boolean)
     .join(' · ')
 }
