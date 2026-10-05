@@ -705,40 +705,7 @@ class Simulazione:
 		return esito != "no"
 
 	def _date_del_preventivo(self, nome, autore, proposto, esito, quando) -> None:
-		"""A quote written as "now" while the past was replayed, put back at its moments:
-		written and handed over after the visit, answered when the person did; its PDF
-		and its deal with it."""
-		from crm.preventivi import api as preventivi
-
-		ctx = self.ctx
-		valori = {
-			"proposed_on": proposto,
-			"valid_until": proposto.date() + datetime.timedelta(days=preventivi.giorni_di_validita()),
-		}
-		if esito == "si":
-			valori["accepted_on"] = quando
-		elif esito == "no":
-			valori["declined_on"] = quando
-		ctx.retrodata(preventivi.DOCTYPE, nome, proposto - datetime.timedelta(minutes=8), autore)
-		frappe.db.set_value(
-			preventivi.DOCTYPE, nome, {**valori, "modified": quando or proposto}, update_modified=False
-		)
-		for file in frappe.get_all(
-			"File",
-			filters={"attached_to_doctype": preventivi.DOCTYPE, "attached_to_name": nome},
-			pluck="name",
-		):
-			ctx.retrodata("File", file, proposto, autore)
-		trattativa = frappe.db.get_value(preventivi.DOCTYPE, nome, "deal")
-		if not trattativa:
-			return
-		if get_datetime(frappe.db.get_value("CRM Deal", trattativa, "creation")) > proposto:
-			ctx.retrodata("CRM Deal", trattativa, proposto, self.desk)
-		chiusura = {"modified": quando or proposto}
-		if quando:
-			chiusura["closed_date"] = quando.date()
-		frappe.db.set_value("CRM Deal", trattativa, chiusura, update_modified=False)
-		self._ritempra_il_registro(trattativa, [quando] if quando else [])
+		date_del_preventivo(self.ctx, nome, autore, proposto, esito, quando, self.desk)
 
 	# -- the requests that went nowhere yet ------------------------------------------------
 
@@ -811,22 +778,7 @@ class Simulazione:
 				self._ritempra_il_registro(persona.trattativa, tappe)
 
 	def _ritempra_il_registro(self, trattativa: str, tappe: list[datetime.datetime]) -> None:
-		"""The deal's stage log, at the moments it really moved."""
-		creata = frappe.db.get_value("CRM Deal", trattativa, "creation")
-		momenti = [get_datetime(creata), *sorted(get_datetime(t) for t in tappe)]
-		righe = frappe.get_all(
-			"CRM Status Change Log",
-			filters={"parent": trattativa, "parenttype": "CRM Deal"},
-			fields=["name"],
-			order_by="idx asc",
-		)
-		for indice, riga in enumerate(righe):
-			dal = momenti[min(indice, len(momenti) - 1)]
-			al = momenti[indice + 1] if indice + 1 < len(momenti) and indice + 1 < len(righe) else None
-			valori = {"from_date": dal}
-			if al:
-				valori.update({"to_date": al, "duration": max(0, int((al - dal).total_seconds()))})
-			frappe.db.set_value("CRM Status Change Log", riga.name, valori, update_modified=False)
+		ritempra_il_registro(trattativa, tappe)
 
 	def _ultime_attivita(self) -> None:
 		"""A person's record was last touched when they last came, as the lists sort."""
@@ -899,6 +851,64 @@ class Simulazione:
 				frappe.get_doc({"doctype": "CRM Lead Source", "source_name": fonte}).insert(
 					ignore_permissions=True
 				)
+
+
+def date_del_preventivo(
+	ctx: Contesto, nome: str, autore: str, proposto, esito: str | None, quando, desk: str
+) -> None:
+	"""A quote written as "now" while the past was replayed, put back at its moments:
+	written and handed over after the visit, answered when the person did (``esito``
+	"si" or "no"); its PDF and its deal with it. A module's part dates its quotes so
+	too - the clinic's dentist."""
+	from crm.preventivi import api as preventivi
+
+	valori = {
+		"proposed_on": proposto,
+		"valid_until": proposto.date() + datetime.timedelta(days=preventivi.giorni_di_validita()),
+	}
+	if esito == "si":
+		valori["accepted_on"] = quando
+	elif esito == "no":
+		valori["declined_on"] = quando
+	ctx.retrodata(preventivi.DOCTYPE, nome, proposto - datetime.timedelta(minutes=8), autore)
+	frappe.db.set_value(
+		preventivi.DOCTYPE, nome, {**valori, "modified": quando or proposto}, update_modified=False
+	)
+	for file in frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": preventivi.DOCTYPE, "attached_to_name": nome},
+		pluck="name",
+	):
+		ctx.retrodata("File", file, proposto, autore)
+	trattativa = frappe.db.get_value(preventivi.DOCTYPE, nome, "deal")
+	if not trattativa:
+		return
+	if get_datetime(frappe.db.get_value("CRM Deal", trattativa, "creation")) > proposto:
+		ctx.retrodata("CRM Deal", trattativa, proposto, desk)
+	chiusura = {"modified": quando or proposto}
+	if quando:
+		chiusura["closed_date"] = quando.date()
+	frappe.db.set_value("CRM Deal", trattativa, chiusura, update_modified=False)
+	ritempra_il_registro(trattativa, [quando] if quando else [])
+
+
+def ritempra_il_registro(trattativa: str, tappe: list[datetime.datetime]) -> None:
+	"""The deal's stage log, at the moments it really moved."""
+	creata = frappe.db.get_value("CRM Deal", trattativa, "creation")
+	momenti = [get_datetime(creata), *sorted(get_datetime(t) for t in tappe)]
+	righe = frappe.get_all(
+		"CRM Status Change Log",
+		filters={"parent": trattativa, "parenttype": "CRM Deal"},
+		fields=["name"],
+		order_by="idx asc",
+	)
+	for indice, riga in enumerate(righe):
+		dal = momenti[min(indice, len(momenti) - 1)]
+		al = momenti[indice + 1] if indice + 1 < len(momenti) and indice + 1 < len(righe) else None
+		valori = {"from_date": dal}
+		if al:
+			valori.update({"to_date": al, "duration": max(0, int((al - dal).total_seconds()))})
+		frappe.db.set_value("CRM Status Change Log", riga.name, valori, update_modified=False)
 
 
 def _contatti(lead: str) -> list[dict]:

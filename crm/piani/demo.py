@@ -181,7 +181,7 @@ def crea(ctx: Contesto) -> None:
 	)
 	dati = []
 	if davide:
-		allievi, corridori = _divisi(ctx, visti_da(ctx, davide, 21), nell_area, ctx.quanti(10), ctx.quanti(2))
+		allievi, corridori = divisi(ctx, visti_da(ctx, davide, 21), nell_area, ctx.quanti(10), ctx.quanti(2))
 		for posizione, (persona, fine) in enumerate(allievi):
 			titolo, istruzioni, del_piano = ALLENAMENTI[posizione % len(ALLENAMENTI)]
 			momenti, voci = _allenamento(esercizi, del_piano, MOVIMENTO)
@@ -189,7 +189,7 @@ def crea(ctx: Contesto) -> None:
 		for persona, _fine in corridori:
 			_programma(ctx, davide, persona, "At own pace", "Training", CORSA, esercizi)
 	if elena:
-		seguiti, a_tempo = _divisi(ctx, visti_da(ctx, elena, 45), nell_area, ctx.quanti(6), ctx.quanti(1))
+		seguiti, a_tempo = divisi(ctx, visti_da(ctx, elena, 45), nell_area, ctx.quanti(6), ctx.quanti(1))
 		for persona, fine in seguiti:
 			momenti, voci = _abitudini(ABITUDINI)
 			istruzioni = "Segna ogni sera come è andata: ne parliamo al prossimo controllo."
@@ -199,12 +199,12 @@ def crea(ctx: Contesto) -> None:
 		for persona, _fine in a_tempo:
 			_programma(ctx, elena, persona, "By time", "Habits", TRE_MESI, esercizi)
 	for autore, persona, fine, tipo, titolo, istruzioni, momenti, voci in dati:
-		_piano(ctx, autore, persona, fine, tipo, titolo, istruzioni, momenti, voci)
+		piano_alla_seduta(ctx, autore, persona, fine, tipo, titolo, istruzioni, momenti, voci)
 	ctx.salva()
-	_spuntano(ctx)
+	spuntano(ctx)
 
 
-def _divisi(
+def divisi(
 	ctx: Contesto, visti: list, nell_area: set[str], quanti_primi: int, quanti_secondi: int
 ) -> tuple[list, list]:
 	"""Two groups of different people among whom a colleague saw - a person follows
@@ -274,12 +274,16 @@ def _abitudini(per_momento) -> tuple[list[dict], list[dict]]:
 	return momenti, voci
 
 
-def _piano(ctx: Contesto, autore, persona, fine, tipo, titolo, istruzioni, momenti, voci) -> None:
-	"""Written and published at the person's last session, as the author does it."""
+def piano_alla_seduta(
+	ctx: Contesto, autore, persona, fine, tipo, titolo, istruzioni, momenti, voci, **altro
+) -> str | None:
+	"""Written and published at the person's last session, as the author does it;
+	``altro`` what a module's kind adds (a diet's targets). A module's part gives its
+	plans so too - the clinic's diets and exercises at home."""
 	from crm.piani import api
 
 	if not voci:
-		return
+		return None
 	quando = get_datetime(fine)
 	with ctx.come(autore):
 		piano = api.save_plan(
@@ -291,11 +295,13 @@ def _piano(ctx: Contesto, autore, persona, fine, tipo, titolo, istruzioni, momen
 				"starts_on": str(quando.date()),
 				"moments": momenti,
 				"items": voci,
+				**altro,
 			},
 		)
 		api.publish_plan(piano["name"])
 	frappe.db.set_value(PIANO, piano["name"], "published_on", quando, update_modified=False)
 	ctx.retrodata(PIANO, piano["name"], quando, autore)
+	return piano["name"]
 
 
 def _programma(ctx: Contesto, autore, persona, modo, tipo, programma, esercizi) -> None:
@@ -341,9 +347,10 @@ def _programma(ctx: Contesto, autore, persona, modo, tipo, programma, esercizi) 
 # -- what the person ticks in the area ------------------------------------------------
 
 
-def _spuntano(ctx: Contesto) -> None:
-	"""Who came into the area ticks their plans, day by day, as far back as it lets
-	them: some days all, some days part, a day forgotten now and then."""
+def spuntano(ctx: Contesto) -> None:
+	"""Who came into the area ticks the plans the part being made gave them, day by
+	day, as far back as it lets them: some days all, some days part, a day forgotten
+	now and then. A module's part with plans of its own ticks them so too."""
 	from crm.piani import api, area
 	from crm.piani import regole as R
 
