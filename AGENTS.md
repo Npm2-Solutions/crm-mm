@@ -673,7 +673,13 @@ row, the bar's words beside their icons).
   held upright the menu folds to its icons until its button chooses
   (`AppSidebar.vue`, `menuPiegato`), the dashboard stacks below
   `GRIGLIA_MINIMA` as on a phone (`data-impilata`), and a row's chips wrap
-  under a name rather than squeezing it (doc 29, eighth part).
+  under a name rather than squeezing it (doc 29, eighth part). Upright, a
+  record's column beside its panel is a phone's width (368px) at `md:`: what
+  sits side by side there wraps by its own width, never by the screen's - a
+  tab's words keep `min-w-[15rem]` in a `flex-wrap` row with their buttons, a
+  section's columns wrap at 11rem (`FieldLayout/Column.vue`), cards are a grid
+  of `repeat(auto-fit,minmax(12rem,1fr))`, a card that lays out by its own
+  width asks a container query (`ClinicSummary.vue`).
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its
