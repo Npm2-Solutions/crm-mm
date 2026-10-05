@@ -350,6 +350,16 @@ router.afterEach((to, from) => {
 router.beforeEach(async (to, from, next) => {
   router.previousRoute = from
 
+  // a notification touched on the phone opens its page with `?notifica=`: it is
+  // read, and the address goes on without it (crm/notifiche/spinta.py)
+  if (to.query.notifica) {
+    const { notifica, ...resto } = to.query
+    call('crm.notifiche.api.mark_as_read', { names: [notifica] }).catch(
+      () => {},
+    )
+    return next({ path: to.path, query: resto, hash: to.hash, replace: true })
+  }
+
   const { isLoggedIn, user } = sessionStore()
   const store = usersStore()
   const { users, isCrmUser, isAgency, permissions, puoUno } = store
