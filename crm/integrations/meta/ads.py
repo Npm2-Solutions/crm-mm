@@ -39,6 +39,12 @@ def read_creative(ad_id: str) -> dict:
 	if not ad_id:
 		return {}
 	known = _stored(ad_id)
+	from crm.demo import guardie
+
+	if guardie.mai_fuori("Facebook Ad", ad_id):
+		# an ad of the demo data: what the demo wrote is all there is, never asked of
+		# Meta (crm.demo.guardie)
+		return known
 	if (
 		known.get("creative_fetched_on")
 		and date_diff(now(), known["creative_fetched_on"]) < CREATIVE_CACHE_DAYS

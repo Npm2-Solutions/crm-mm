@@ -126,6 +126,17 @@ def publish_post(name: str) -> None:
 	post = frappe.get_doc("CRM Social Post", name)
 	if post.status != "Scheduled":
 		return
+	from crm.demo import guardie
+
+	if guardie.mai_fuori("CRM Social Post", post.name):
+		# a post of the demo data: published at its time as the planner shows it, never
+		# handed to a network - as a demo SMS is kept as sent (crm.demo.guardie)
+		for target in post.targets:
+			target.status = "Published"
+		post.status = "Published"
+		post.published_at = frappe.utils.now_datetime()
+		post.save(ignore_permissions=True)
+		return
 	any_failed = False
 	for target in post.targets:
 		if target.status == "Published":

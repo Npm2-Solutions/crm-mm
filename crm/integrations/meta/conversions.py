@@ -63,6 +63,11 @@ def queue(lead: str, event_name: str, when=None, facebook_lead_id: str | None = 
 	"""
 	if not enabled() or not lead or not event_name:
 		return None
+	from crm.demo import guardie
+
+	if guardie.mai_fuori("CRM Lead", lead):
+		# a person of the demo data: Meta never hears of them (crm.demo.guardie)
+		return None
 
 	lead_id = facebook_lead_id or frappe.db.get_value("CRM Lead", lead, "facebook_lead_id")
 	if not lead_id:
