@@ -85,6 +85,79 @@ def accendi_l_italiano() -> None:
 		lingua.save(ignore_permissions=True)
 
 
+# What the setup wizard writes for a centre in Italy (the Country's formats),
+# and the week from Monday that DottorCloud keeps everywhere
+ITALIA = {
+	"time_zone": "Europe/Rome",
+	"currency": "EUR",
+	"date_format": "dd/mm/yyyy",
+	"number_format": "#.###,##",
+	"first_day_of_the_week": "Monday",
+}
+
+# What a site holds before anybody chose: the framework's own values, which a
+# format chosen in Settings never is
+_DEL_FRAMEWORK = {
+	"time_zone": ("",),
+	"currency": ("",),
+	"date_format": ("", "yyyy-mm-dd"),
+	"number_format": ("", "#,###.##"),
+	"first_day_of_the_week": ("", "Sunday"),
+}
+
+
+def per_l_italia(attuali: dict) -> dict:
+	"""The rule, without a site: what to write over System Settings' ``attuali``
+	so that a site nobody set up reads as a centre in Italy.
+
+	A country chosen elsewhere keeps everything; in Italy, only what is still
+	empty; where nobody said, Italy, with its formats over the framework's own
+	values - never over a format somebody chose."""
+	paese = attuali.get("country") or ""
+	if paese and paese != "Italy":
+		return {}
+	cambi = {}
+	if not attuali.get("language"):
+		# the one field of these the framework asks for: left empty, no save of
+		# the settings went through, the Formats page's either
+		cambi["language"] = "it"
+	for campo, valore in ITALIA.items():
+		attuale = attuali.get(campo) or ""
+		if attuale == valore:
+			continue
+		if not attuale or (not paese and attuale in _DEL_FRAMEWORK[campo]):
+			cambi[campo] = valore
+	if not paese:
+		cambi["country"] = "Italy"
+	return cambi
+
+
+def italia_dove_nessuno_ha_scelto() -> None:
+	"""After every migrate: a site the setup wizard never ran on - its country
+	empty - reads as a centre in Italy (``per_l_italia``).
+
+	The framework left it on India's time zone (Asia/Kolkata, its fallback for an
+	empty one): now, today and every reminder were three hours and a half ahead
+	of the centre, and the dates were written «2026-10-05», the amounts
+	«€ 50,000.00». The times already kept stay as they were written: an
+	appointment's hours are the ones the desk chose on the agenda. The language
+	is written only where there is none, Italian as ``scegli`` reads such a site:
+	a language chosen stays."""
+	campi = ("country", "language", *ITALIA)
+	impostazioni = frappe.get_single("System Settings")
+	cambi = per_l_italia({campo: impostazioni.get(campo) for campo in campi})
+	if not cambi:
+		return
+	impostazioni.update(cambi)
+	impostazioni.flags.ignore_permissions = True
+	try:
+		impostazioni.save()
+	except Exception:
+		# a site whose settings no longer validate (another field of theirs)
+		# still migrates: the formats wait for the next one
+		frappe.log_error(title="DottorCloud: the site's Italian formats")
+
+
 def valuta() -> str:
 	"""The currency the centre counts in: the one chosen in Settings, else its
 	country's, the euro where nobody said where the centre is (the rule of
