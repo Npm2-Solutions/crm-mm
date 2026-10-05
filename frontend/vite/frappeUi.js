@@ -620,20 +620,37 @@ watch(visible, (si) => {
     ],
   ],
   // The emoji after ":" (":smile", in English): their list, 66 KB, comes
-  // the first time somebody types one, not with every editor
+  // the first time somebody types one, not with every editor. For a reader in
+  // Italian each is named and found by its Italian words too (Unicode's,
+  // utils/emoji.js): ":grazie" finds 🙏, ":cuore" ❤️, as ":smile" still does
   'editor/extensions/emoji/emoji-extension.ts': [
-    ["import _EMOJIS from './emojis.json'\n", ''],
+    [
+      "import _EMOJIS from './emojis.json'\n",
+      "import { caricaLeParole, cercaLeEmoji, paroleDi, testoDiRicerca } from '@/utils/emoji'\n",
+    ],
     [
       'const EMOJIS = _EMOJIS as EmojiItem[]',
       `let elencoDelleEmoji: Promise<EmojiItem[]> | undefined
 const EMOJIS = () =>
-  (elencoDelleEmoji ||= import('./emojis.json').then(
-    (modulo) => modulo.default as EmojiItem[],
+  (elencoDelleEmoji ||= Promise.all([
+    import('./emojis.json'),
+    caricaLeParole(),
+  ]).then(([modulo, parole]) =>
+    (modulo.default as EmojiItem[]).map((voce) => ({
+      ...voce,
+      name: paroleDi(parole, voce.emoji).nome || voce.name,
+      cerca: testoDiRicerca(
+        [voce.name, voce.name.replace(/_/g, ' ')],
+        parole,
+        voce.emoji,
+      ),
+    })),
   ))`,
     ],
+    // the closest first: the one named so or with that very word
     [
-      "items: ({ query }: { query: string }) => {\n    return filterByQuery(EMOJIS, query, 'name')",
-      "items: async ({ query }: { query: string }) => {\n    return filterByQuery(await EMOJIS(), query, 'name')",
+      /items: \(\{ query \}: \{ query: string \}\) => \{\n\s*return filterByQuery\(EMOJIS, query, 'name'\)[\s\S]*?\.slice\(0, 5\)\n\s*\},/,
+      'items: async ({ query }: { query: string }) =>\n    cercaLeEmoji(await EMOJIS(), query).slice(0, 5),',
     ],
   ],
   // Markdown as the editor's format (`format: 'markdown'`): nobody here writes

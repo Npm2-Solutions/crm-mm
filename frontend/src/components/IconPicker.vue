@@ -70,7 +70,8 @@
                 v-for="_emoji in emojis"
                 :key="_emoji.description"
                 class="h-8 w-8 rounded-md p-1 text-3xl hover:bg-surface-gray-2 focus:outline-none focus:ring focus:ring-blue-200"
-                :title="_emoji.description"
+                :title="_emoji.nome"
+                :aria-label="_emoji.nome"
                 @click="() => (emoji = _emoji.emoji) && togglePopover()"
               >
                 {{ _emoji.emoji }}
@@ -83,18 +84,31 @@
   </Popover>
 </template>
 <script setup>
+import { caricaLeParole, paroleDi, testoDiRicerca, trova } from '@/utils/emoji'
 import { Popover } from 'frappe-ui'
 import { ref, computed, shallowRef } from 'vue'
 
 // the emoji database (gemoji, 320 KB) comes when the picker opens: imported at
 // the top, it was in the first download of every person's page, whose writing
-// boxes carry this picker
+// boxes carry this picker. With it, for a reader in Italian, the emoji's
+// Italian words (Unicode's): «sorriso» or «grazie» find them as «smile» does,
+// and each says its Italian name
 const gemoji = shallowRef([])
 let caricamento = null
 function carica() {
-  caricamento ||= import('gemoji').then((modulo) => {
-    gemoji.value = modulo.gemoji
-  })
+  caricamento ||= Promise.all([import('gemoji'), caricaLeParole()]).then(
+    ([modulo, parole]) => {
+      gemoji.value = modulo.gemoji.map((voce) => ({
+        ...voce,
+        nome: paroleDi(parole, voce.emoji).nome || voce.description,
+        cerca: testoDiRicerca(
+          [voce.description, ...voce.names, ...voce.tags],
+          parole,
+          voce.emoji,
+        ),
+      }))
+    },
+  )
   return caricamento
 }
 
@@ -125,14 +139,7 @@ function nomeDelGruppo(gruppo) {
 const emojiGroups = computed(() => {
   let groups = {}
   for (let _emoji of gemoji.value) {
-    if (search.value) {
-      let keywords = [_emoji.description, ..._emoji.names, ..._emoji.tags]
-        .join(' ')
-        .toLowerCase()
-      if (!keywords.includes(search.value.toLowerCase())) {
-        continue
-      }
-    }
+    if (!trova(_emoji.cerca, search.value)) continue
 
     let group = groups[_emoji.category]
     if (!group) {

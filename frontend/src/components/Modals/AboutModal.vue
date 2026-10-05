@@ -27,6 +27,14 @@
               )
             }}
           </p>
+          <!-- the Italian words of the emoji are Unicode's (src/assets/emoji) -->
+          <p>
+            {{
+              __(
+                'The names of the emoji in Italian are Unicode CLDR data, © Unicode, Inc., under the Unicode License v3.',
+              )
+            }}
+          </p>
         </div>
         <a
           class="mt-2 flex items-center rounded px-2 py-2 hover:bg-surface-gray-1"

@@ -43992,3 +43992,7 @@ msgstr "Le tue schede"
 #: frontend/src/components/Clinic/ClinicArea.vue
 msgid "Other sheets"
 msgstr "Altre schede"
+
+#: frontend/src/components/Modals/AboutModal.vue
+msgid "The names of the emoji in Italian are Unicode CLDR data, © Unicode, Inc., under the Unicode License v3."
+msgstr "I nomi delle emoji in italiano sono dati Unicode CLDR, © Unicode, Inc., con la licenza Unicode v3."

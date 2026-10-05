@@ -124,7 +124,11 @@ describe('frappe-ui in the user’s language', () => {
     )
     expect(emoji).not.toContain("import _EMOJIS from './emojis.json'")
     expect(emoji).toContain("import('./emojis.json')")
-    expect(emoji).toContain("filterByQuery(await EMOJIS(), query, 'name')")
+    // found by its Italian words too, named by them for a reader in Italian
+    expect(emoji).toContain("from '@/utils/emoji'")
+    expect(emoji).toContain('caricaLeParole()')
+    expect(emoji).toContain('cercaLeEmoji(await EMOJIS(), query).slice(0, 5)')
+    expect(emoji).not.toContain('filterByQuery(EMOJIS')
     const estensioni = tradotto('editor/extensions.ts', MOLECOLE)
     expect(estensioni).not.toContain('@tiptap/markdown')
   })
