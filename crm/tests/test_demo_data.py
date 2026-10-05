@@ -99,6 +99,11 @@ class TestDatiDiProva(IntegrationTestCase):
 		}
 		nuovi_clienti.crea()
 		preventivi.crea()
+		# invoicing's part is made where the centre has no company of its own: the
+		# companies other tests left are switched off while the demo is in
+		cls.aziende = frappe.get_all("CRM Invoicing Company", filters={"enabled": 1}, pluck="name")
+		for nome in cls.aziende:
+			frappe.db.set_value("CRM Invoicing Company", nome, "enabled", 0, update_modified=False)
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the site's own before the demo, which commits part by part
 		cls.prima = _conta()
 		cls.serie_di_prima = _serie()
@@ -123,6 +128,8 @@ class TestDatiDiProva(IntegrationTestCase):
 					(doctype, campo, valore),
 				)
 			frappe.clear_document_cache(doctype, doctype)
+		for nome in cls.aziende:
+			frappe.db.set_value("CRM Invoicing Company", nome, "enabled", 1, update_modified=False)
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the demo's parts committed what this undoes
 		super().tearDownClass()
 
@@ -195,6 +202,23 @@ class TestDatiDiProva(IntegrationTestCase):
 					"CRM Document Delivery", {"document": ["in", [riga.name for riga in documenti]]}
 				)
 			)
+		# the demo's company invoices in test: the visits on their days, a credit note
+		if "fatturazione" in self.esito["made"]:
+			[azienda] = r["CRM Invoicing Company"]
+			self.assertEqual(
+				frappe.db.get_value("CRM Invoicing Company", azienda, "provider_environment"), "sandbox"
+			)
+			emesse = frappe.get_all(
+				"CRM Invoice",
+				filters={"name": ["in", sorted(r["CRM Invoice"])], "docstatus": 1},
+				fields=["company", "test_document", "document_number", "document_type", "posting_date"],
+			)
+			self.assertTrue(emesse)
+			self.assertTrue(
+				all(f.company == azienda and f.test_document and "PROVA" in f.document_number for f in emesse)
+			)
+			self.assertIn("TD04", {f.document_type for f in emesse})
+			self.assertGreater(len({f.posting_date for f in emesse}), 1)
 		# whoever loads the demo has things to do and somebody mentions them
 		self.assertTrue(
 			frappe.db.count(
@@ -290,6 +314,30 @@ class TestDatiDiProva(IntegrationTestCase):
 		for doctype in ("CRM Service", "CRM Lead", "CRM Appointment"):
 			nomi = sorted(self.registrati[doctype])
 			self.assertFalse(primi_passi.c_e(doctype, {"name": ["in", nomi]}), doctype)
+
+	def test_4e_a_centre_that_invoices_gets_no_invoice_from_the_demo(self):
+		from crm.demo.contesto import Contesto
+		from crm.invoicing import demo
+
+		frappe.db.savepoint("azienda_del_centro")
+		try:
+			frappe.get_doc(
+				{
+					"doctype": "CRM Invoicing Company",
+					"company_name": "Studio del centro",
+					# an office code (789) that gives no number: nobody's
+					"tax_id": "01234567897",
+					"tax_regime": "RF01",
+					"address_line": "Via Roma",
+					"postal_code": "20100",
+					"city": "Milano",
+				}
+			).insert(ignore_permissions=True)
+			prima = frappe.db.count("CRM Invoice")
+			demo.crea(Contesto(utente="Administrator", scala=0.01))
+			self.assertEqual(frappe.db.count("CRM Invoice"), prima)
+		finally:
+			frappe.db.rollback(save_point="azienda_del_centro")
 
 	def test_5_visitors_of_the_booking_page_do_not_see_the_demo(self):
 		from crm.api import service_booking
