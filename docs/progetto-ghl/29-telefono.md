@@ -757,6 +757,14 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   «Altro», e il «+» di un giorno nel planner dei social è solo un suggerimento:
   si tocca il giorno.
 
+- **Il marketing in piedi.** Nel planner dei social un giorno è largo 97
+  punti, e il titolo di un post accanto all'ora era «p…»: sotto i 1280 punti
+  il titolo va sotto l'ora (`pages/SocialPlanner.vue`), e «+24 altri» al tocco
+  è alto 30 punti. L'editor di un'automazione sotto i 1024 punti mette
+  «Statistiche» e «Prova a vuoto» nel menu «⋯», come sul telefono: accanto a
+  «Salva» il nome era «Recupero no…» e la via del ritorno «Aut…»
+  (`pages/AutomationEditor.vue`).
+
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la

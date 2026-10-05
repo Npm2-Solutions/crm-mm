@@ -206,10 +206,12 @@
               </span>
             </div>
             <div class="flex min-w-0 flex-col gap-1">
+              <!-- narrower than a desk's (a tablet, a small laptop) the title
+                   goes under the time: beside it a day 97px wide left it «p…» -->
               <button
                 v-for="post in cell.posts.slice(0, 3)"
                 :key="post.name"
-                class="flex min-w-0 items-center gap-1.5 rounded-md border-l-2 px-1.5 py-1 text-left text-xs leading-tight"
+                class="flex min-w-0 items-center gap-x-1.5 gap-y-0.5 rounded-md border-l-2 px-1.5 py-1 text-left text-xs leading-tight max-xl:flex-wrap"
                 :class="chipClass(post.status)"
                 :style="{ borderLeftColor: statusColor(post.status) }"
                 @click.stop="openComposer(post)"
@@ -225,11 +227,13 @@
                 <span class="shrink-0 tabular-nums text-ink-gray-5">
                   {{ timeOf(post.scheduled_at) }}
                 </span>
-                <span class="truncate">{{ post.content }}</span>
+                <span class="truncate max-xl:basis-full">{{
+                  post.content
+                }}</span>
               </button>
               <button
                 v-if="cell.posts.length > 3"
-                class="rounded px-1.5 py-0.5 text-left text-xs font-medium text-ink-gray-5 hover:bg-surface-gray-2"
+                class="rounded px-1.5 py-0.5 text-left text-xs font-medium text-ink-gray-5 hover:bg-surface-gray-2 [@media(pointer:coarse)]:py-1.5"
                 @click.stop="openDay(cell)"
               >
                 +{{ cell.posts.length - 3 }} {{ __('more') }}
