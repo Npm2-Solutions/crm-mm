@@ -57,28 +57,8 @@
           />
         </div>
       </div>
-      <div class="h-px border-t mx-2 border-outline-elevation-2" />
-      <div class="flex items-center justify-between gap-4 py-3 px-2">
-        <div class="flex min-w-0 flex-col">
-          <div class="text-p-base-medium text-ink-gray-7">
-            {{ __('Auto Update Expected Deal Value') }}
-          </div>
-          <div class="text-p-sm text-ink-gray-5">
-            {{
-              __(
-                'Automatically update "Expected Deal Value" based on the total value of associated products in a deal',
-              )
-            }}
-          </div>
-        </div>
-        <div>
-          <Switch
-            :aria-label="__('Auto Update Expected Deal Value')"
-            v-model="settings.doc.auto_update_expected_deal_value"
-            size="sm"
-          />
-        </div>
-      </div>
+      <!-- no switch to add a deal's products up: a deal has no products to add
+           any more, its value comes from its quotes (doc 50) -->
       <div class="h-px border-t mx-2 border-outline-elevation-2" />
       <div class="flex items-center justify-between gap-8 py-3 px-2">
         <div class="flex min-w-0 flex-col">
