@@ -204,6 +204,13 @@ def identificativo(corpo) -> str | None:
 	return None
 
 
+def ricevuta(voce) -> bool:
+	"""Whether a row of Itala's is an invoice received rather than an update on one
+	sent. Their guide says `ricezione` is 0 or 1; the API answers every value as
+	text, and `"0"` is true in Python: read as a flag, every update looked received."""
+	return isinstance(voce, dict) and str(voce.get("ricezione") or "").strip().lower() in ("1", "true")
+
+
 def xml_in_ingresso(voce: dict) -> bytes | None:
 	"""An incoming invoice's own XML, whichever way the provider encoded it.
 

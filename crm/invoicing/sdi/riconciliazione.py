@@ -123,7 +123,7 @@ def _chiave(emittente: dict, voce: dict) -> str:
 	"""One name per update: the same one, from the webhook or from the sweep, is one."""
 	parti = (
 		emittente.get("name") or "",
-		"in" if voce.get("ricezione") in (1, "1", True) else "out",
+		"in" if busta.ricevuta(voce) else "out",
 		str(voce.get("id") or ""),
 		(voce.get("sdi_stato") or "").strip().upper(),
 	)
@@ -138,7 +138,7 @@ def _conserva(emittente: dict, voce) -> bool:
 		return False
 	if not busta.della_partita_iva(voce, emittente.get("tax_id")):
 		return False
-	entrata = voce.get("ricezione") in (1, "1", True)
+	entrata = busta.ricevuta(voce)
 	if entrata and not _vuole_ingresso(emittente):
 		return False
 	nome = _chiave(emittente, voce)

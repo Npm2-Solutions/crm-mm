@@ -147,6 +147,20 @@ class PartitaIvaTest(UnitTestCase):
 		self.assertFalse(itala.stessa_partita_iva("", ""))
 
 
+class RicezioneTest(UnitTestCase):
+	def test_il_testo_zero_e_un_aggiornamento(self):
+		# Itala answers every value as text: "0" is true in Python
+		self.assertFalse(itala.ricevuta({"ricezione": "0"}))
+		self.assertFalse(itala.ricevuta({"ricezione": 0}))
+		self.assertFalse(itala.ricevuta({}))
+		self.assertFalse(itala.ricevuta("non una riga"))
+
+	def test_uno_e_una_fattura_ricevuta(self):
+		self.assertTrue(itala.ricevuta({"ricezione": "1"}))
+		self.assertTrue(itala.ricevuta({"ricezione": 1}))
+		self.assertTrue(itala.ricevuta({"ricezione": True}))
+
+
 class ScadenzaTest(UnitTestCase):
 	def test_la_scadenza_si_legge_con_l_ora_del_sito(self):
 		from datetime import datetime
