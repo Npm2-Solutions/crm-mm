@@ -138,6 +138,14 @@ class PartitaIvaTest(UnitTestCase):
 		self.assertTrue(itala.della_partita_iva({"id": 3}, "01234567890"))
 		self.assertFalse(itala.della_partita_iva("non una riga", "01234567890"))
 
+	def test_la_societa_registrata_si_ritrova_col_prefisso_del_paese(self):
+		# Itala's /aziende answers "IT13832480969" for a company registered as
+		# "13832480969": found again, not registered twice (a 400 from Itala)
+		self.assertTrue(itala.stessa_partita_iva("IT13832480969", "13832480969"))
+		self.assertTrue(itala.stessa_partita_iva("13832480969", "IT 13832480969"))
+		self.assertFalse(itala.stessa_partita_iva("IT13832480969", "01234567890"))
+		self.assertFalse(itala.stessa_partita_iva("", ""))
+
 
 class ScadenzaTest(UnitTestCase):
 	def test_la_scadenza_si_legge_con_l_ora_del_sito(self):

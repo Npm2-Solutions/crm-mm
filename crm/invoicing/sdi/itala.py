@@ -114,7 +114,7 @@ def _cerca_azienda(chi: connessione.Accesso, partita_iva: str) -> str | None:
 		if not isinstance(righe, list) or not righe:
 			return None
 		for riga in righe:
-			if isinstance(riga, dict) and (riga.get("piva") or "").replace(" ", "") == partita_iva:
+			if isinstance(riga, dict) and busta.stessa_partita_iva(riga.get("piva"), partita_iva):
 				return str(riga.get("id") or "") or None
 		pagina += 1
 	return None
