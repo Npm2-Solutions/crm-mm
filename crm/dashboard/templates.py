@@ -188,6 +188,32 @@ TEMPLATES: tuple[Template, ...] = (
 		),
 	),
 	Template(
+		"economy",
+		_lt("Centre economics"),
+		_lt("What came in, what is still to collect, what went to the suppliers, and what is left"),
+		"wallet",
+		reader="numeri.economici",
+		period="this_year",
+		sequence=26,
+		sections=(
+			section(
+				Line.of(
+					KPI, "invoiced_revenue", "collected", "to_collect", "supplier_invoices_received", "margin"
+				),
+				Line.of(CHART, "margin_trend"),
+			),
+			section(
+				Line.of(CHART, "to_collect_by_age", "to_collect_list"),
+				heading=_lt("To collect"),
+			),
+			section(
+				Line.of(CHART, "costs_by_supplier", "invoiced_by_service"),
+				Line.of(KPI, "vat_balance", "supplier_invoices_to_register"),
+				heading=_lt("Costs and VAT"),
+			),
+		),
+	),
+	Template(
 		"conversations",
 		_lt("Conversations"),
 		_lt("Who is waiting, how fast the team answers, and every channel"),
