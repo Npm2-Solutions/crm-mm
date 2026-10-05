@@ -320,6 +320,28 @@ class TestDatiDiProva(IntegrationTestCase):
 			doc = frappe.get_doc("CRM Programme", programma)
 			self.assertEqual(doc.status, "Published")
 			self.assertTrue(doc.stages[0].opened_on and doc.stages[0].plan)
+		# the automations stay off - on, they would write to the centre's own people -
+		# and who went through them in the story is there
+		if "marketing" in self.esito["made"]:
+			accese = frappe.get_all(
+				"CRM Automation", filters={"name": ["in", sorted(r["CRM Automation"])]}, pluck="enabled"
+			)
+			self.assertTrue(accese)
+			self.assertFalse(any(accese))
+			self.assertTrue(r.get("CRM Automation Enrollment"))
+		# where the demo made its Meta page: the people its ads brought, paid social with
+		# their ad, and what the ads spent
+		if r.get("Facebook Page"):
+			da_meta = frappe.get_all(
+				"CRM Lead",
+				filters={"name": ["in", sorted(r["CRM Lead"])], "facebook_lead_id": ["is", "set"]},
+				fields=["first_touch_category", "facebook_ad_id"],
+			)
+			self.assertTrue(da_meta)
+			self.assertTrue(
+				all(p.first_touch_category == "Paid Social" and p.facebook_ad_id for p in da_meta)
+			)
+			self.assertTrue(r.get("Facebook Ad Insight"))
 		# whoever loads the demo has things to do and somebody mentions them
 		self.assertTrue(
 			frappe.db.count(
@@ -378,6 +400,37 @@ class TestDatiDiProva(IntegrationTestCase):
 		)
 		if nome:
 			self.assertFalse(frappe.db.get_value("CRM Notification", nome, "email_due"))
+
+	def test_4a_nothing_of_the_demo_reaches_meta_or_a_network(self):
+		from unittest.mock import patch
+
+		from crm.integrations.meta import ads, conversions
+		from crm.social import publisher
+
+		guardie.dimentica()
+		persona = sorted(self.registrati["CRM Lead"])[0]
+		# Meta's conversions never hear of a demo person
+		with patch.object(conversions, "enabled", return_value=True):
+			self.assertIsNone(conversions.queue(persona, "Lead"))
+		# a demo ad's preview is never asked of Meta
+		for annuncio in sorted(self.registrati.get("Facebook Ad", ()))[:1]:
+			with patch("crm.integrations.meta.ads.graph_get") as graph:
+				ads.read_creative(annuncio)
+			graph.assert_not_called()
+		# a demo post, at its time, is marked published and handed to no network
+		in_programma = frappe.get_all(
+			"CRM Social Post",
+			filters={
+				"name": ["in", sorted(self.registrati.get("CRM Social Post", ()))],
+				"status": "Scheduled",
+			},
+			pluck="name",
+		)
+		for post in in_programma[:1]:
+			with patch.object(publisher, "publish_target") as pubblica:
+				publisher.publish_post(post)
+			pubblica.assert_not_called()
+			self.assertEqual(frappe.db.get_value("CRM Social Post", post, "status"), "Published")
 
 	def test_4b_a_real_message_from_a_demo_number_is_not_the_demos(self):
 		from crm.integrations.api import find_contact_by_phone_number, get_contact_lead_or_deal_from_number
