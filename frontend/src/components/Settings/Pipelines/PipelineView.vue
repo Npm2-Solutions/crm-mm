@@ -74,8 +74,11 @@
             class="flex flex-col gap-2"
           >
             <template #item="{ element: stage }">
+              <!-- the name keeps 10rem; where the row is narrower (a phone, a
+                   tablet held upright) its type, chance and deals go under it:
+                   beside them the name was «Qualif» -->
               <div
-                class="flex items-center gap-2 rounded border border-outline-gray-2 bg-surface-elevation-2 px-2 py-1.5"
+                class="flex flex-wrap items-center gap-2 rounded border border-outline-gray-2 bg-surface-elevation-2 px-2 py-1.5"
               >
                 <DragVerticalIcon
                   class="stage-handle h-3.5 cursor-grab text-ink-gray-5"
@@ -110,39 +113,41 @@
                 </Popover>
                 <TextInput
                   v-model="stage.stage"
-                  class="flex-1"
+                  class="min-w-40 flex-1"
                   type="text"
                   :placeholder="__('Stage name')"
                 />
-                <Select
-                  v-model="stage.type"
-                  class="w-32"
-                  :options="stageTypes"
-                />
-                <TextInput
-                  v-model="stage.probability"
-                  class="w-20"
-                  type="number"
-                  inputmode="numeric"
-                  :placeholder="__('%')"
-                />
-                <Tooltip
-                  :text="
-                    stage.deal_count
-                      ? __('{0} deals in this stage', [stage.deal_count])
-                      : __('No deals in this stage')
-                  "
-                >
-                  <span class="w-8 text-center text-sm text-ink-gray-5">
-                    {{ stage.deal_count || 0 }}
-                  </span>
-                </Tooltip>
-                <Button
-                  :aria-label="__('Delete')"
-                  icon="lucide-trash-2"
-                  variant="ghost"
-                  @click="askToDeleteStage(stage)"
-                />
+                <div class="ml-auto flex shrink-0 items-center gap-2">
+                  <Select
+                    v-model="stage.type"
+                    class="w-32"
+                    :options="stageTypes"
+                  />
+                  <TextInput
+                    v-model="stage.probability"
+                    class="w-20"
+                    type="number"
+                    inputmode="numeric"
+                    :placeholder="__('%')"
+                  />
+                  <Tooltip
+                    :text="
+                      stage.deal_count
+                        ? __('{0} deals in this stage', [stage.deal_count])
+                        : __('No deals in this stage')
+                    "
+                  >
+                    <span class="w-8 text-center text-sm text-ink-gray-5">
+                      {{ stage.deal_count || 0 }}
+                    </span>
+                  </Tooltip>
+                  <Button
+                    :aria-label="__('Delete')"
+                    icon="lucide-trash-2"
+                    variant="ghost"
+                    @click="askToDeleteStage(stage)"
+                  />
+                </div>
               </div>
             </template>
           </Draggable>

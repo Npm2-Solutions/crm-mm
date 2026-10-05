@@ -736,8 +736,14 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   chi può prenotare un servizio sotto il suo nome, gli extra del piano e i campi
   dell'Assistente su una colonna. Il nome di un professionista e il suo titolo
   vanno a capo invece di tagliarsi a vicenda (`Booking/OnlineBookingSetup.vue`).
-  Sul telefono il riquadro è lo schermo, e non cambia niente; di traverso e sul
-  computer (760 punti e più) le colonne restano affiancate.
+  Un livello più giù, toccando una voce, l'editor di un modulo mette le sue
+  azioni sotto il titolo come sul telefono (`Forms/TemplateBuilder.vue`: il
+  segno «Versione 1» era tagliato), le azioni di un'intestazione non restano
+  rientrate in un quarto della riga, e nella pipeline il nome di una fase tiene
+  10rem con tipo, probabilità e trattative sotto (`Pipelines/PipelineView.vue`:
+  era «Qualif»; anche sul telefono). Sul telefono il riquadro è lo schermo, e
+  non cambia altro; di traverso e sul computer (760 punti e più) le colonne
+  restano affiancate.
 
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
