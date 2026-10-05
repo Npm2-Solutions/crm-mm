@@ -43824,3 +43824,83 @@ msgstr "Vuoi eliminare questa regola?"
 #: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
 msgid "{0} goes back to the price the service or the list’s other rules give it. This cannot be undone."
 msgstr "{0} torna al prezzo del servizio o delle altre regole del listino. Non si può annullare."
+
+#: crm/clinica/parole.py
+msgid "A service for a patient, with who delivers it and where."
+msgstr "Un servizio per un paziente, con chi lo fa e dove."
+
+#: crm/clinica/parole.py
+msgid "Booked online by the patient"
+msgstr "Prenotato online dal paziente"
+
+#: crm/clinica/parole.py
+msgid "A patient in two places at once"
+msgstr "Un paziente in due posti alla volta"
+
+#: crm/clinica/parole.py
+msgid "Patients can book online"
+msgstr "I pazienti possono prenotare online"
+
+#: crm/clinica/parole.py
+msgid "Services patients can book"
+msgstr "Servizi che i pazienti possono prenotare"
+
+#: crm/clinica/parole.py
+msgid "People patients can book"
+msgstr "Professionisti che i pazienti possono prenotare"
+
+#: crm/clinica/parole.py
+msgid "Patient picks the professional"
+msgstr "Il paziente sceglie il professionista"
+
+#: crm/clinica/parole.py
+msgid "Patient can cancel online"
+msgstr "Il paziente può annullare online"
+
+#: crm/clinica/parole.py
+msgid "Patient can move online"
+msgstr "Il paziente può spostare online"
+
+#: crm/clinica/parole.py
+msgid "Max per patient per day (0 = any)"
+msgstr "Massimo per paziente al giorno (0 = senza limite)"
+
+#: crm/clinica/parole.py
+msgid "Upcoming bookings per patient"
+msgstr "Prenotazioni in programma per paziente"
+
+#: crm/clinica/parole.py
+msgid "Upcoming per patient"
+msgstr "Appuntamenti in arrivo per paziente"
+
+#: crm/clinica/parole.py
+msgid "New patients only"
+msgstr "Solo nuovi pazienti"
+
+#: crm/clinica/parole.py
+msgid "Returning patients only"
+msgstr "Solo pazienti già venuti"
+
+#: crm/clinica/parole.py
+msgid "Patients book it on the booking page, with the rules below."
+msgstr "I pazienti lo prenotano nella pagina di prenotazione, con le regole qui sotto."
+
+#: crm/clinica/parole.py
+msgid "A line patients read before choosing them"
+msgstr "Una riga che i pazienti leggono prima di scegliere"
+
+#: crm/clinica/parole.py
+msgid "As a patient online"
+msgstr "Come un paziente online"
+
+#: crm/clinica/parole.py
+msgid "Question for the patient"
+msgstr "Domanda per il paziente"
+
+#: crm/clinica/parole.py
+msgid "Email the patient"
+msgstr "Invia un'email al paziente"
+
+#: crm/clinica/parole.py
+msgid "Link patients as leads"
+msgstr "Collega i pazienti alle loro schede"

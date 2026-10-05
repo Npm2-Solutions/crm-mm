@@ -105,6 +105,32 @@ PAROLE = {
 		"The stage after a booking has to be one of the new patients pipeline's stages"
 	),
 	"New clients and quotes need two different pipelines": "New patients and quotes need two different pipelines",
+	# the agenda: a new appointment, who booked it, two places at once
+	"A service for a client, with who delivers it and where.": (
+		"A service for a patient, with who delivers it and where."
+	),
+	"Booked online by the client": "Booked online by the patient",
+	"A client in two places at once": "A patient in two places at once",
+	# online booking and its rules (Settings > Agenda)
+	"Clients can book online": "Patients can book online",
+	"Services clients can book": "Services patients can book",
+	"People clients can book": "People patients can book",
+	"Client picks the professional": "Patient picks the professional",
+	"Client can cancel online": "Patient can cancel online",
+	"Client can move online": "Patient can move online",
+	"Max per client per day (0 = any)": "Max per patient per day (0 = any)",
+	"Upcoming bookings per client": "Upcoming bookings per patient",
+	"Upcoming per client": "Upcoming per patient",
+	"New clients only": "New patients only",
+	"Returning clients only": "Returning patients only",
+	"Clients book it on the booking page, with the rules below.": (
+		"Patients book it on the booking page, with the rules below."
+	),
+	"A line clients read before choosing them": "A line patients read before choosing them",
+	"As a client online": "As a patient online",
+	"Question for the client": "Question for the patient",
+	"Email the client": "Email the patient",
+	"Link clients as leads": "Link patients as leads",
 	# the invoice: who it is for
 	"Client": "Patient",
 	"Choose the client": "Choose the patient",
