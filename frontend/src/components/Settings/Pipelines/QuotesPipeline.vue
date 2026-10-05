@@ -100,7 +100,7 @@ const pipelineOptions = computed(() => [
   { label: '', value: '' },
   ...(pipelines.data || [])
     .filter((pipeline) => pipeline.name)
-    .map((pipeline) => ({ label: pipeline.name, value: pipeline.name })),
+    .map((pipeline) => ({ label: __(pipeline.name), value: pipeline.name })),
 ])
 
 async function run(method, args = {}) {
