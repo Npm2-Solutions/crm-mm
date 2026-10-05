@@ -279,7 +279,7 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. The centre pays WhatsApp messages directly to Meta, and calls, numbers and SMS to Twilio when the account is its own.',
+              'Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. WhatsApp messages, calls, numbers and SMS never are, nor are they in the plan: Meta and Twilio bill them to whoever owns the account.',
             )
           }}
         </p>
