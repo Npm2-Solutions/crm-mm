@@ -19977,8 +19977,12 @@ msgid "People"
 msgstr "Persone"
 
 #: crm/permissions/catalogo.py
-msgid "People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and platforms, reminders; conversations; quotes; forms with a simple signature, consents and documents; dashboards, users and levels"
-msgstr "Persone e agenda con le sale, cicli, abbonamenti e liste d'attesa; prenotazione online e piattaforme, promemoria; conversazioni; preventivi; moduli con firma semplice, consensi e documenti; dashboard, utenti e livelli"
+msgid "People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and platforms, reminders; conversations; quotes; forms with a simple signature, consents and documents; the client area; dashboards, users and levels"
+msgstr "Persone e agenda con ambulatori, cicli, abbonamenti e liste d'attesa; prenotazione online e piattaforme, promemoria; conversazioni; preventivi; moduli con firma semplice, consensi e documenti; l'area clienti; dashboard, utenti e livelli"
+
+#: crm/clinica/parole.py
+msgid "People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and platforms, reminders; conversations; quotes; forms with a simple signature, consents and documents; the patient area; dashboards, users and levels"
+msgstr "Persone e agenda con ambulatori, cicli, abbonamenti e liste d'attesa; prenotazione online e piattaforme, promemoria; conversazioni; preventivi; moduli con firma semplice, consensi e documenti; l'area pazienti; dashboard, utenti e livelli"
 
 #: crm/dashboard/widgets/automations.py
 msgid "People and deals that entered an automation in the period"

@@ -19,6 +19,7 @@ from crm.fcrm.doctype.crm_plan.crm_plan import crediti_sdi
 from crm.permissions import livelli, utenti
 from crm.permissions.livelli import ModuloPiano
 from crm.permissions.test_org_hierarchy import make_user
+from crm.tests.test_frasi_costanti import _msgid
 
 MANAGER = "features.manager@example.com"
 
@@ -164,6 +165,19 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		livelli.dimentica_cache()
 		frappe.set_user(MANAGER)
 		self.assertIsNone(plan.get_plan()["usage"]["sdi_credits"])
+
+	def test_ogni_modulo_si_legge_nella_lingua_del_centro(self):
+		# the page draws a module's name and words through __(): their English is
+		# in the catalog by hand, and a sentence changed in the code alone came
+		# out in English («People and agenda with rooms, cycles…»)
+		catalogo = _msgid()
+		mancano = sorted(
+			testo
+			for modulo in plan.get_plan()["modules"]
+			for testo in (modulo["label"], modulo["description"])
+			if testo and testo not in catalogo
+		)
+		self.assertEqual(mancano, [])
 
 	def test_ogni_modulo_dice_dove_si_imposta(self):
 		moduli = self.moduli()
