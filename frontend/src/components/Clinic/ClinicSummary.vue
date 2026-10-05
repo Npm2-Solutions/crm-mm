@@ -12,7 +12,7 @@
 <template>
   <section
     v-if="summary.data"
-    class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
+    class="sintesi flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex items-center justify-between gap-2">
       <h3 class="text-base-semibold text-ink-gray-8">
@@ -30,8 +30,12 @@
       />
     </div>
 
+    <!-- a value under its name where the card is narrow (`sintesi-righe`
+         below): on a phone, and in a record's column on a tablet held
+         upright, where beside a 10rem name «Pollini e graminacee» took a
+         word to a line -->
     <dl
-      class="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-p-sm max-md:grid-cols-1 max-md:gap-y-0.5"
+      class="sintesi-righe grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-p-sm max-md:grid-cols-1 max-md:gap-y-0.5"
     >
       <template v-for="line in summary.data.lines" :key="line.key">
         <dt class="pt-1 text-ink-gray-5 max-md:pt-2">{{ line.label }}</dt>
@@ -192,3 +196,20 @@ async function decide(method, proposal) {
 
 defineExpose({ reload: () => summary.reload() })
 </script>
+
+<style scoped>
+/* the card as wide as it is drawn: a name and its value side by side where
+   there is room for both, one under the other where there is not */
+.sintesi {
+  container-type: inline-size;
+}
+@container (max-width: 28rem) {
+  .sintesi-righe {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.125rem;
+  }
+  .sintesi-righe dt {
+    padding-top: 0.5rem;
+  }
+}
+</style>

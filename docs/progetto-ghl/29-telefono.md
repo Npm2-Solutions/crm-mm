@@ -711,7 +711,11 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   (`Moduli/FormsArea.vue`, `Plans/PlansCard.vue`), i passi dove ognuno ha 12rem,
   i segni di un preventivo sotto le sue parole (`Quotes/QuotesCard.vue`), e sotto
   i 1024 punti gli Eventi offrono «Appuntamento» ed «Evento»
-  (`Activities/ActivityHeader.vue`). Sul computer non cambia niente.
+  (`Activities/ActivityHeader.vue`). Nella Clinica, quando la scheda è più stretta
+  di 560 punti, due pulsanti vanno sotto «⋯» come sul telefono, e nella sintesi un
+  valore va sotto il suo nome quando il riquadro è più stretto di 28rem
+  (`Clinic/ClinicArea.vue`, `ClinicSummary.vue`, con una container query). Sul
+  computer non cambia niente.
 - **Le note sono quattro per riga dove ci stanno**, meno dove una scheda
   sarebbe più stretta di 13rem: in piedi erano 155 punti, il titolo «Nota di
   pr…» e l'autore e il giorno su tre righe (`pages/Notes.vue`).
