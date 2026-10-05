@@ -356,6 +356,32 @@
           <div v-else class="text-p-sm text-ink-gray-7">
             {{ metodoDiPagamento }}
           </div>
+          <!-- whether its money reached the centre: a fact of its own, the
+               payment date starts as the issue date whatever happened -->
+          <div
+            v-if="vista.docstatus === 1 && vista.collectable"
+            class="flex items-center justify-between gap-3 max-md:flex-col max-md:items-start"
+          >
+            <span class="min-w-0 text-p-sm text-ink-gray-7">
+              {{
+                vista.collected_on
+                  ? __('Collected on {0}.', [
+                      formatDate(vista.collected_on, 'D MMMM YYYY'),
+                    ])
+                  : __('Still to collect.')
+              }}
+            </span>
+            <Button
+              v-if="vista.can.collect"
+              class="shrink-0"
+              variant="subtle"
+              :loading="azione === 'incasso'"
+              :label="
+                vista.collected_on ? __('Not collected') : __('Collected today')
+              "
+              @click="incassa(!vista.collected_on)"
+            />
+          </div>
           <FormControl
             v-if="modificabile && pagataPrima"
             v-model="vista.payment.advance_payment"
@@ -537,7 +563,8 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, nextTick, ref, watch } from 'vue'
-import { dateFormat } from '@/utils'
+import { dateFormat, formatDate } from '@/utils'
+import { oggiDelCentro } from '@/utils/scheduler'
 
 const { stato, chiudiFattura } = useFattura()
 
@@ -825,6 +852,15 @@ async function faiPdf() {
     return
   }
   if (risposta) apri()
+}
+
+async function incassa(si) {
+  const risposta = await esegui(
+    'incasso',
+    'crm.invoicing.incassi.set_collected',
+    { invoice: vista.value.name, collected_on: si ? oggiDelCentro() : null },
+  )
+  if (risposta) vista.value.collected_on = risposta.collected_on
 }
 
 function scaricaPdf() {
