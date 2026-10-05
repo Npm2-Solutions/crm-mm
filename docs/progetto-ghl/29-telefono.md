@@ -866,6 +866,27 @@ nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
   segni sotto («Valutazione fisiot…», «Ve…» accanto a «Predefinito»); cosa
   limita un ambulatorio va a capo.
 
+## Decima parte: i fogli scorrono col dito (05/10/2026)
+
+«I pannelli aperti dal basso non scorrono.» Provati col dito (eventi di tocco
+veri, un trascinamento di 200 punti verso l'alto), non con la rotella del mouse,
+che scorre anche quello che al dito non risponde.
+
+- **La lista di un selettore scorre.** Il fuso orario nelle preferenze, 400
+  voci, non si muoveva: 0 punti a ogni trascinamento, un terzo con la rotella.
+  frappe-ui mette la lista sopra la voce scelta (`item-aligned` di reka-ui):
+  allora la lista cresce mentre la si scorre, e mentre cresce rimette lo
+  scorrimento a capo. Sul telefono la lista è un foglio dal basso
+  (`telefono.css`) che non cresce, e ogni tocco era rimesso a zero. Sul
+  telefono la lista è posata come un menu (`popper`), e il foglio la prende
+  com'è: ora scorre di 392 punti, su iPhone e su Android
+  (`vite/frappeUi.js`, `Select/Select.vue`). Sul computer e sul tablet resta
+  sopra la voce scelta; nell'area clienti, che non ha i fogli, sul telefono si
+  apre sotto il campo, larga quanto lui.
+- **Gli altri fogli scorrevano già**: una finestra lunga (nuova persona, nuova
+  fattura, una qualifica), la lista di un campo collegato, i filtri
+  dell'agenda, il pannello di un appuntamento, le schede in «Altro».
+
 ## File
 
 | File | Cosa cambia |

@@ -799,7 +799,10 @@ row, the bar's words beside their icons).
   which the lists need (`ViewControls` reads `?view=` once).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
-  phone. A popover that holds a list of choices (the agenda's filters) marks
+  phone. A select's list is a popper there (`vite/frappeUi.js`): set over its
+  trigger, reka-ui gave a finger's scroll back while the list grew, and it
+  never moved. A sheet is tried with a finger (touch events), never only with
+  the wheel, which scrolls what a finger does not. A popover that holds a list of choices (the agenda's filters) marks
   the list `data-foglio`, and is a sheet of 48px rows as well. A sheet's or a page's row of actions is one row on a phone: what
   does not fit goes under a «⋯» (an icon button, which stays a 44px square),
   as the form's «Discard» and «Other ways to sign» do. A sheet taken by its grabber follows the finger down and closes as
