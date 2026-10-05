@@ -44441,7 +44441,7 @@ msgstr "Ricevute"
 
 #: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
 msgid "Back to seen"
-msgstr "Torna a vista"
+msgstr "Segna come vista"
 
 #: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
 msgid "Dispute it"
