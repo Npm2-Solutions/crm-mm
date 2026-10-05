@@ -79,7 +79,7 @@
           </div>
           <div
             v-if="editing"
-            class="absolute right-3.5 top-3.5 z-10 flex items-center gap-0.5 rounded-lg border border-outline-gray-2 bg-surface-elevation-2 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+            class="absolute right-3.5 top-3.5 z-10 flex items-center gap-0.5 rounded-lg border border-outline-gray-2 bg-surface-elevation-2 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
           >
             <Tooltip v-if="configurable(byKey[i])" :text="__('Settings')">
               <button

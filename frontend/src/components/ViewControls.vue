@@ -92,7 +92,7 @@
                 </template>
                 <template #suffix>
                   <span
-                    class="lucide-x h-3.5 cursor-pointer group-hover:flex hidden"
+                    class="lucide-x hidden h-3.5 cursor-pointer group-hover:flex [@media(hover:none)]:flex"
                     aria-hidden="true"
                     @click.stop="removeQuickFilter(filter)"
                   />
