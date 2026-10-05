@@ -8,8 +8,11 @@
         : 'border-t border-outline-elevation-2 mt-5 pt-5',
     ]"
   >
+    <!-- the columns side by side where each has 11rem (Column's basis), one
+         under the other where they would be narrower: three in a record's
+         column on a tablet held upright were 90px, «rita.deang» for an email -->
     <CollapsibleSection
-      class="flex sm:flex-row flex-col gap-4 text-lg-medium"
+      class="flex flex-wrap gap-4 text-lg-medium max-sm:flex-col"
       :class="{ 'px-3 sm:px-5': hasTabs }"
       :labelClass="['text-lg font-medium', { 'px-3 sm:px-5': hasTabs }]"
       :label="section.label"
