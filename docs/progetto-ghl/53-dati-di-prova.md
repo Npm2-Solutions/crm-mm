@@ -107,6 +107,29 @@ d'attesa, conversazioni.
     contratto di alcuni anche online (il link per email, il codice detto allo
     sportello), e una persona l'ha già scaricato dalla pagina. Archiviati oggi,
     come i moduli.
+  - **Fatturazione** (`crm/invoicing/demo.py`, con il modulo «fatturazione»), solo
+    dove il centro non ha ancora un'azienda che emette: un centro che fattura già
+    non riceve fatture dalla demo, mai un numero della sua serie.
+    - L'azienda della demo è **in prova**, con un nome che lo dice («… (dati di
+      prova)») e una partita IVA di un ufficio che non ne dà: nessuno ce l'ha. Le sue
+      fatture sono fatture di prova, sulla loro serie (`2026/PROVA-S/1`), con la
+      fascia sul PDF, il resoconto al Sistema TS controllato e mai mandato, niente
+      allo SdI.
+    - Il responsabile risponde alle tre domande della preimpostazione sanitaria
+      (una struttura, il regime ordinario, i codici della Regione). Ogni servizio
+      della demo ha la sua scheda, come la fa la pagina dei servizi: esente per chi è
+      professione sanitaria, tassata al 22% e allo SdI per chi non lo è (l'osteopata,
+      il chinesiologo delle lezioni). Mai una scheda del centro legata a un servizio
+      della demo.
+    - La segreteria fattura le visite dei tre mesi, ognuna nel suo giorno e
+      nell'ordine dei giorni, come sono state pagate: carta, contanti, bonifico;
+      qualcuno si è opposto al Sistema TS. I cicli pagati per intero si fatturano il
+      giorno in cui sono stati venduti. Gli ultimi tre giorni restano da fatturare;
+      una fattura è corretta da una nota di credito.
+    - Il codice fiscale di chi paga è coerente con il suo nome, ma nato in un luogo
+      che nessun codice ha (una «Y»): non è di nessuno.
+    - Le rate degli abbonamenti non si fatturano: sono stati venduti prima che ci
+      fossero le schede.
 - È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
   parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
@@ -197,8 +220,6 @@ Finché i dati di prova ci sono:
 
 ## Prossime parti
 
-- **Fatturazione**: l'azienda in prova, le fatture di prova delle visite, una nota
-  di credito, il resoconto al Sistema TS controllato e mai mandato.
 - **Area clienti e piani** (con il modulo «area»): gli inviti, la bacheca, i piani
   e i programmi pubblicati.
 - **La clinica**: pazienti, cartelle e visite firmate, la sintesi, il dossier,
