@@ -35249,6 +35249,14 @@ msgctxt "Automation editor tab"
 msgid "Enrolments"
 msgstr "Iscrizioni"
 
+#: frontend/src/pages/SocialPlanner.vue
+msgid "Published post"
+msgstr "Post pubblicato"
+
+#: frontend/src/pages/SocialPlanner.vue
+msgid "Published on {0}"
+msgstr "Pubblicato il {0}"
+
 #: frontend/src/pages/Automations.vue
 msgctxt "Automations filter"
 msgid "All"

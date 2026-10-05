@@ -283,7 +283,7 @@
           v-for="post in dayPosts"
           :key="post.name"
           class="flex cursor-pointer items-center gap-3 py-2.5 hover:bg-surface-gray-1"
-          @click="(showDay = false), openComposer(post)"
+          @click="((showDay = false), openComposer(post))"
         >
           <span class="w-12 shrink-0 tabular-nums text-sm text-ink-gray-5">
             {{ timeOf(post.scheduled_at) }}
@@ -324,7 +324,8 @@
             <button
               v-for="account in accounts.data || []"
               :key="account.name"
-              class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors"
+              class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors disabled:cursor-default"
+              :disabled="pubblicato"
               :class="
                 isSelected(account.name)
                   ? 'border-outline-gray-4 bg-surface-gray-7 text-ink-base'
@@ -363,6 +364,7 @@
             type="textarea"
             :label="__('Content')"
             :rows="5"
+            :disabled="pubblicato"
             :placeholder="__('What do you want to share?')"
           />
           <div class="mt-1 text-right text-xs text-ink-gray-5">
@@ -372,6 +374,7 @@
 
         <div class="flex items-center gap-3">
           <FileUploader
+            v-if="!pubblicato"
             :fileTypes="['image/*', 'video/*']"
             @success="(file) => (form.media = file.file_url)"
           >
@@ -398,6 +401,7 @@
               {{ form.media.split('/').pop() }}
             </a>
             <Button
+              v-if="!pubblicato"
               :aria-label="__('Remove')"
               variant="ghost"
               icon="lucide-x"
@@ -420,6 +424,7 @@
               v-model="t.override_content"
               type="textarea"
               :rows="2"
+              :disabled="pubblicato"
               :label="t.account"
               :placeholder="__('Leave empty to use the main content')"
             />
@@ -439,11 +444,13 @@
             type="datetime"
             :format="datetimeFormat()"
             :label="__('Schedule at')"
+            :disabled="pubblicato"
           />
           <FormControl
             v-model="form.recurrence"
             type="select"
             :label="__('Repeat')"
+            :disabled="pubblicato"
             :options="
               ['None', 'Daily', 'Weekly', 'Monthly'].map((r) => ({
                 label: __(r),
@@ -454,7 +461,16 @@
         </div>
 
         <div v-if="editingStatus" class="text-xs text-ink-gray-5">
-          {{ __('Status') }}: {{ __(editingStatus) }}
+          <template v-if="pubblicato && editingPublishedAt">
+            {{
+              __('Published on {0}', [
+                getFormat(editingPublishedAt, datetimeFormat()),
+              ])
+            }}
+          </template>
+          <template v-else>
+            {{ __('Status') }}: {{ __(editingStatus) }}
+          </template>
           <template v-if="targetErrors.length">
             <div
               v-for="err in targetErrors"
@@ -478,7 +494,12 @@
             @click="cancelPost"
           />
         </div>
-        <div class="flex gap-2">
+        <!-- what went out is not written again: the server refuses it, and
+             «Publish now» would have offered to post it a second time -->
+        <div v-if="pubblicato" class="flex gap-2">
+          <Button variant="solid" :label="__('Duplicate')" @click="duplica" />
+        </div>
+        <div v-else class="flex gap-2">
           <Button :label="__('Save draft')" @click="save('Draft')" />
           <Button
             v-if="!puo('social.pubblica')"
@@ -520,7 +541,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
-import { datetimeFormat } from '@/utils'
+import { datetimeFormat, getFormat } from '@/utils'
 import { platformColor } from '@/utils/social'
 import {
   createResource,
@@ -742,6 +763,8 @@ const showComposer = ref(false)
 const editingName = ref(null)
 const editingStatus = ref('')
 const editingTargets = ref([])
+const editingPublishedAt = ref('')
+const pubblicato = computed(() => editingStatus.value === 'Published')
 const form = reactive({
   content: '',
   media: '',
@@ -751,7 +774,11 @@ const form = reactive({
 })
 
 const composerTitle = computed(() =>
-  editingName.value ? __('Edit post') : __('New post'),
+  pubblicato.value
+    ? __('Published post')
+    : editingName.value
+      ? __('Edit post')
+      : __('New post'),
 )
 
 const targetErrors = computed(() =>
@@ -764,6 +791,7 @@ function openComposer(post = null, date = null) {
   editingName.value = post?.name || null
   editingStatus.value = post?.status || ''
   editingTargets.value = post?.targets || []
+  editingPublishedAt.value = post?.published_at || ''
   form.content = post?.content || ''
   form.media = post?.media || ''
   form.recurrence = post?.recurrence || 'None'
@@ -778,6 +806,17 @@ function openComposer(post = null, date = null) {
     override_content: t.override_content || '',
   }))
   showComposer.value = true
+}
+
+/** A new post with what the published one said, on the same profiles: it
+ * goes out when it is scheduled, as any other. */
+function duplica() {
+  editingName.value = null
+  editingStatus.value = ''
+  editingTargets.value = []
+  editingPublishedAt.value = ''
+  form.scheduled_at = ''
+  form.recurrence = 'None'
 }
 
 function isSelected(account) {
