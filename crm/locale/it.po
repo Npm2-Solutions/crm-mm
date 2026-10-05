@@ -43618,6 +43618,14 @@ msgstr "I menu della dietista con gli alimenti della libreria e una dieta a scam
 msgid "The centre's page with two lead forms, three campaigns and what they spent day by day; who came from Instagram or Facebook while an ad ran arrived through its form. Only where the centre has no Meta page of its own."
 msgstr "La pagina del centro con due moduli Lead Ads, tre campagne e quello che hanno speso giorno per giorno; chi è arrivato da Instagram o da Facebook mentre girava un'inserzione è arrivato dal suo modulo. Solo dove il centro non ha una sua pagina Meta."
 
+#: crm/demo/base.py
+msgid "Automations and social"
+msgstr "Automazioni e social"
+
+#: crm/demo/base.py
+msgid "Four automations, switched off, with who went through them; the Instagram and Facebook profiles with the posts published and scheduled; two tracked links and their clicks."
+msgstr "Quattro automazioni, spente, con chi ci è passato; i profili Instagram e Facebook con i post pubblicati e programmati; due link tracciati e i loro clic."
+
 #: crm/scheduling/abbonamenti.py
 msgid "One of the {0} people uses their subscription"
 msgstr "Una persona su {0} usa il suo abbonamento"
