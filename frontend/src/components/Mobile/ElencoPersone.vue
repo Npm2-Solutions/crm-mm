@@ -51,8 +51,20 @@
             class="shrink-0"
           />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate text-base-medium text-ink-gray-9">
-              {{ nomeDi(persona) }}
+            <!-- a client or a patient says so beside the name, and wraps
+                 under it on a page zoomed (utils/rapporto.js) -->
+            <span class="flex min-w-0 flex-wrap items-center gap-x-1.5">
+              <span
+                class="max-w-full truncate text-base-medium text-ink-gray-9"
+              >
+                {{ nomeDi(persona) }}
+              </span>
+              <CategoryTag
+                v-if="tonoDel(rapportoDi(persona))"
+                class="shrink-0"
+                :color="tonoDel(rapportoDi(persona))"
+                :label="__(rapportoDi(persona), null, CONTESTO)"
+              />
             </span>
             <span
               v-if="contattoDi(persona)"
@@ -108,6 +120,8 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
+import { CONTESTO, rapportoDi, tonoDel } from '@/utils/rapporto'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
 import { adessoDelCentro } from '@/utils/scheduler'

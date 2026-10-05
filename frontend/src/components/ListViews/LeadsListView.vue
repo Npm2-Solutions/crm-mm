@@ -161,6 +161,31 @@
               "
             />
           </div>
+          <!-- who they are to the centre: a tag for clients and patients,
+               plain words for a contact (utils/rapporto.js) -->
+          <div
+            v-else-if="column.key === 'relationship' && label"
+            class="truncate text-base"
+            @click="
+              (event) =>
+                emit('applyFilter', {
+                  event,
+                  idx,
+                  column,
+                  item,
+                  firstColumn: columns[0],
+                })
+            "
+          >
+            <CategoryTag
+              v-if="tonoDel(label)"
+              :color="tonoDel(label)"
+              :label="__(label, null, CONTESTO)"
+            />
+            <span v-else class="text-ink-gray-6">{{
+              __(label, null, CONTESTO)
+            }}</span>
+          </div>
           <div v-else-if="column.type === 'Check'">
             <FormControl
               type="checkbox"
@@ -244,6 +269,8 @@ import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import ListBulkActions from '@/components/ListBulkActions.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
 import MobileListRows from '@/components/ListViews/MobileListRows.vue'
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
+import { CONTESTO, tonoDel } from '@/utils/rapporto'
 import { isTranslatable, formatDuration } from '@/utils'
 import {
   Avatar,

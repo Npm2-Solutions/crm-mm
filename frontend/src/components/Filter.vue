@@ -179,6 +179,7 @@ import {
 } from 'frappe-ui'
 import { h, computed, onMounted } from 'vue'
 import { isMobileView } from '@/composables/settings'
+import { CONTESTO } from '@/utils/rapporto'
 
 const typeCheck = ['Check']
 const typeLink = ['Link', 'Dynamic Link']
@@ -188,6 +189,9 @@ const typeString = ['Data', 'Long Text', 'Small Text', 'Text Editor', 'Text']
 const typeDate = ['Date', 'Datetime']
 const typeDuration = ['Duration']
 const typeRating = ['Rating']
+// the choices a field reads in a context of their own: a person's relationship
+// says «Cliente» where the clinic's words turn the bare «Client» into a patient
+const CONTESTI = { relationship: CONTESTO }
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -442,8 +446,9 @@ function getValueControl(f) {
       fieldtype == 'Check' ? ['Yes', 'No'] : getSelectOptions(options)
     return h(Combobox, {
       trigger: 'button',
+      // a choice reads in the user's language; the value stays the stored one
       options: _options.map((o) => ({
-        label: o,
+        label: __(o, null, CONTESTI[f.field?.fieldname]),
         value: o,
       })),
       modelValue: f.value,
