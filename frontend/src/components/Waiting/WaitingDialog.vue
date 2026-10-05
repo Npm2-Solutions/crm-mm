@@ -151,6 +151,20 @@
       <!-- what they wait for, and what was offered -->
       <div v-else class="flex flex-col gap-4">
         <div class="flex flex-col gap-1">
+          <!-- opened from everybody waiting: whom it is for, their page a tap
+               away. The sheet said the service only, and whose place it was
+               stayed on the list behind it -->
+          <RouterLink
+            v-if="conChi && entry.lead_name"
+            :to="{ name: 'Lead', params: { leadId: lead } }"
+            class="touch-target flex w-fit items-center gap-1 text-p-base font-medium text-ink-gray-9"
+          >
+            {{ entry.lead_name }}
+            <span
+              class="lucide-arrow-up-right size-4 text-ink-gray-5"
+              aria-hidden="true"
+            />
+          </RouterLink>
           <p class="text-p-base text-ink-gray-8">{{ waitsFor }}</p>
           <p class="text-p-sm text-ink-gray-6">{{ facts }}</p>
         </div>
@@ -363,6 +377,8 @@ const props = defineProps({
   lead: { type: String, required: true },
   // the entry to open; none to put the person on a list
   name: { type: String, default: null },
+  // opened from the list of everybody waiting, not from the person's page
+  conChi: { type: Boolean, default: false },
 })
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })
