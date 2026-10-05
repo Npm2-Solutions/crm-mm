@@ -28,15 +28,23 @@
               )
         "
       >
+        <!-- its words on a desk; narrower than 1024px (a tablet held
+             upright) the header had no room for them beside the sisters'
+             switch, which lost «Lista d'attesa»: the icon there, its name
+             still read -->
         <Button
           :variant="googleConnection.data?.connected ? 'subtle' : 'outline'"
-          :label="
-            googleConnection.data?.connected
-              ? __('Google connected')
-              : __('Connect Google Calendar')
-          "
+          :aria-label="googleLabel"
           @click="connectGoogle"
-        />
+        >
+          <template #prefix>
+            <span
+              class="lucide-calendar-sync size-4 lg:hidden"
+              aria-hidden="true"
+            />
+          </template>
+          <span class="max-lg:hidden">{{ googleLabel }}</span>
+        </Button>
       </Tooltip>
       <!--
         One way in. There were two buttons, «Event» and «Appointment», for two
@@ -432,7 +440,7 @@ import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
-import { isMobileView } from '@/composables/breakpoints'
+import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
@@ -483,6 +491,12 @@ const googleConnection = createResource({
   auto: true,
 })
 
+const googleLabel = computed(() =>
+  googleConnection.data?.connected
+    ? __('Google connected')
+    : __('Connect Google Calendar'),
+)
+
 function connectGoogle() {
   if (googleConnection.data?.connected) {
     toast.success(__('Google Calendar is already connected'))
@@ -522,6 +536,10 @@ const defaultMode = computed(() => {
   // A seven-column week grid on a 390px screen is a smear; a phone calendar
   // opens on the day.
   if (isMobileView.value) return vistaSulTelefono.value
+  // so does a tablet held upright: beside the menu a day of the week was 92px,
+  // a hundred appointments drawn as «Tratt…» over one another; the week is a
+  // choice away
+  if (viewportWidth.value <= 1024) return 'Day'
   return modeMap[settings.value?.default_calendar_view] || 'Week'
 })
 
