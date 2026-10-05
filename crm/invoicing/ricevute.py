@@ -113,8 +113,9 @@ def get_received_invoice(name: str) -> dict:
 		}
 		for riga in (letta.righe if letta else [])
 	]
+	scrive = frappe.has_permission(FORNITORE, "write", doc=doc)
 	vista["can"] = {
-		"write": bool(frappe.has_permission(FORNITORE, "write", doc=doc)),
+		"write": bool(scrive),
 		"pdf": bool(doc.pdf_file or doc.provider_id),
 	}
 	return vista

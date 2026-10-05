@@ -72,7 +72,7 @@ def ogni_notte() -> dict:
 				frappe.db.rollback()
 				fermate.append(f"{_numero(fattura)}: {frappe.utils.strip_html(str(errore))}")
 				continue
-			frappe.db.commit()  # nosemgrep: frappe-manual-commit - one report, one answer kept
+			frappe.db.commit()  # nosemgrep: frappe-manual-commit — one report, one answer kept
 			if esito.get("accepted"):
 				inviate += 1
 			else:
