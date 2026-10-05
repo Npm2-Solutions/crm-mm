@@ -106,8 +106,11 @@
             </SidebarItem>
           </nav>
         </div>
+        <!-- the pane a page is drawn in, and what its layout follows
+             (`impostazioni-strette:` in tailwind.config.js): upright on a
+             tablet it is 500px, a phone's width beside the menu -->
         <div
-          class="flex flex-1 flex-col overflow-y-auto bg-surface-elevation-2"
+          class="flex flex-1 flex-col overflow-y-auto bg-surface-elevation-2 [container-name:impostazioni] [container-type:inline-size]"
           :class="{ hidden: isMobileView && !showingDetail }"
         >
           <div

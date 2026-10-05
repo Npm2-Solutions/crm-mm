@@ -183,7 +183,9 @@
             <div class="pb-1 pt-6 text-base-semibold text-ink-gray-9">
               {{ __('Where the model runs') }}
             </div>
-            <div class="grid grid-cols-2 gap-4 px-2 py-3 max-md:grid-cols-1">
+            <div
+              class="grid grid-cols-2 gap-4 px-2 py-3 impostazioni-strette:grid-cols-1"
+            >
               <FormControl
                 v-model="settings.doc.provider"
                 type="select"

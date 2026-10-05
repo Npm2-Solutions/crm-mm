@@ -1,6 +1,7 @@
 // Modifications copyright (c) 2026, NPM2 Solutions Srl
 
 import frappeUIPreset from 'frappe-ui/tailwind'
+import plugin from 'tailwindcss/plugin'
 
 export default {
   presets: [frappeUIPreset],
@@ -38,5 +39,16 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    // A settings page follows the pane it is drawn in (`Settings.vue`), not
+    // the screen: on a tablet held upright the pane beside the menu is as
+    // narrow as a phone, on a screen `max-md:` takes for a desk's. On a phone
+    // the pane is the screen, so the variant holds there too.
+    plugin(({ addVariant }) => {
+      addVariant(
+        'impostazioni-strette',
+        '@container impostazioni (max-width: 40rem)',
+      )
+    }),
+  ],
 }

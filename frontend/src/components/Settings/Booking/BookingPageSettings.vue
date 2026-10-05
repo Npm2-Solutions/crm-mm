@@ -8,7 +8,7 @@
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div
-      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex items-start justify-between gap-4 px-2 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1">
         <h2
@@ -49,9 +49,12 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Look of the page') }}
         </h3>
-        <!-- the preview goes under the fields on a phone: at 320px beside
-             them it ran off the screen -->
-        <div class="grid grid-cols-[1fr_320px] gap-5 max-md:grid-cols-1">
+        <!-- the preview goes under the fields where the page is narrow (a
+             phone, a tablet held upright): at 320px beside them it ran off
+             the screen -->
+        <div
+          class="grid grid-cols-[1fr_320px] gap-5 impostazioni-strette:grid-cols-1"
+        >
           <div class="flex flex-col gap-4">
             <FormControl
               v-model="form.booking_page_title"

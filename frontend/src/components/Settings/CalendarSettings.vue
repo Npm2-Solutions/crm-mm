@@ -11,7 +11,7 @@
   >
     <!-- Header -->
     <div
-      class="flex justify-between px-2 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex justify-between px-2 text-ink-gray-8 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1">
         <h2

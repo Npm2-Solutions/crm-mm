@@ -680,6 +680,12 @@ row, the bar's words beside their icons).
   section's columns wrap at 11rem (`FieldLayout/Column.vue`), cards are a grid
   of `repeat(auto-fit,minmax(12rem,1fr))`, a card that lays out by its own
   width asks a container query (`ClinicSummary.vue`).
+- A settings page follows its pane, not the screen: `impostazioni-strette:`
+  (`tailwind.config.js`) is the pane under 40rem, a phone's or a tablet's
+  held upright beside the menu (500px). What goes in a column on a phone - a
+  page's header and its actions, side-by-side columns, a preview beside its
+  fields, a status beside a name - does so with it; `max-md:` stays for what
+  touches the screen's edges (paddings) and the phone's own rules.
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its

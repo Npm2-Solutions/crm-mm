@@ -12,7 +12,7 @@
   >
     <!-- Header -->
     <div
-      class="flex justify-between px-2 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex justify-between px-2 text-ink-gray-8 impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1">
         <h2
@@ -76,7 +76,7 @@
 
       <!-- logo -->
       <div
-        class="flex items-center gap-5 max-md:flex-col max-md:items-stretch max-md:gap-3"
+        class="flex items-center gap-5 impostazioni-strette:flex-col impostazioni-strette:items-stretch impostazioni-strette:gap-3"
       >
         <!-- the logo fills the frame and is drawn whole inside it. The frame
              was a grid, whose row grows with what it holds: a square logo

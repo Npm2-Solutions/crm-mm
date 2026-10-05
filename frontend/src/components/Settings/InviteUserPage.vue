@@ -6,7 +6,7 @@
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div
-      class="flex px-2 justify-between max-md:flex-col max-md:items-start max-md:gap-3"
+      class="flex px-2 justify-between impostazioni-strette:flex-col impostazioni-strette:items-start impostazioni-strette:gap-3"
     >
       <div class="flex flex-col gap-1 w-9/12 max-md:w-full">
         <h2
