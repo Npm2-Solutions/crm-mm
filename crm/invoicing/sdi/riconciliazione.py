@@ -33,7 +33,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_to_date, now_datetime
 
-from crm.invoicing.engine import busta
+from crm.invoicing.engine import busta, fornitori
 from crm.invoicing.sdi import itala, ricezione
 
 #: What a company may ask the provider for.
@@ -413,6 +413,16 @@ def _registra_ingresso(emittente: dict, voce: dict) -> bool:
 		)
 		allegato.insert(ignore_permissions=True)
 		doc.db_set("xml_file", allegato.file_url, update_modified=False)
+		# the file is the record: its own amounts over Itala's summary
+		letta = fornitori.leggi(contenuto)
+		if letta:
+			doc.db_set(
+				{chiave: valore for chiave, valore in letta.campi().items() if valore not in (None, "")},
+				update_modified=False,
+			)
+	from crm.invoicing import ricevute
+
+	ricevute.annuncia(doc.name)
 	return True
 
 

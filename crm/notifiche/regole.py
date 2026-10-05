@@ -78,6 +78,9 @@ NUMERO_NON_VERIFICATO = "{0} was not verified: the call was not answered or the 
 
 MESSAGGIO_IN_SEGRETERIA = "{0} left a message on the answering service"
 
+#: A supplier's invoice arrived through Itala: the Invoices page's «Received» tab.
+FATTURA_FORNITORE = "{0} sent an invoice of {1}"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -115,6 +118,7 @@ FRASI = (
 	NUMERO_VERIFICATO,
 	NUMERO_NON_VERIFICATO,
 	MESSAGGIO_IN_SEGRETERIA,
+	FATTURA_FORNITORE,
 )
 
 #: The sentences that take something away: the panel draws them apart.

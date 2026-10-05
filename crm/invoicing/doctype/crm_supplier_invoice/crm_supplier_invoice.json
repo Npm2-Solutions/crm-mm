@@ -23,9 +23,17 @@
   "document_date",
   "column_document",
   "total_amount",
+  "taxable_amount",
+  "vat_amount",
+  "due_date",
   "currency",
+  "handling_section",
+  "paid_on",
+  "column_handling",
+  "notes",
   "file_section",
   "xml_file",
+  "pdf_file",
   "payload"
  ],
  "fields": [
@@ -139,11 +147,49 @@
    "read_only": 1
   },
   {
+   "fieldname": "taxable_amount",
+   "fieldtype": "Currency",
+   "label": "Taxable amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_amount",
+   "fieldtype": "Currency",
+   "label": "VAT",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due date"
+  },
+  {
    "fieldname": "currency",
    "fieldtype": "Data",
    "label": "Currency",
    "read_only": 1,
    "default": "EUR"
+  },
+  {
+   "fieldname": "handling_section",
+   "fieldtype": "Section Break",
+   "label": "Handling"
+  },
+  {
+   "fieldname": "paid_on",
+   "fieldtype": "Date",
+   "label": "Paid on"
+  },
+  {
+   "fieldname": "column_handling",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
   },
   {
    "fieldname": "file_section",
@@ -158,6 +204,12 @@
    "description": "The original FatturaPA as it was delivered. This is the record; everything else on this form is a convenience read off it."
   },
   {
+   "fieldname": "pdf_file",
+   "fieldtype": "Attach",
+   "label": "PDF",
+   "read_only": 1
+  },
+  {
    "fieldname": "payload",
    "fieldtype": "Small Text",
    "label": "Provider data",
@@ -168,7 +220,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-29 16:00:00.000000",
+ "modified": "2026-10-05 14:30:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Supplier Invoice",

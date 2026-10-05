@@ -44397,3 +44397,39 @@ msgstr "{0}: {1} Aspetta «Invia allo SdI»."
 #: crm/tessera_sanitaria/automatico.py
 msgid "Expenses the Sistema TS did not take tonight"
 msgstr "Spese che stanotte il Sistema TS non ha accolto"
+
+#: crm/invoicing/doctype/crm_supplier_invoice/crm_supplier_invoice.json
+msgid "Handling"
+msgstr "Gestione"
+
+#: crm/invoicing/doctype/crm_supplier_invoice/crm_supplier_invoice.json
+msgid "PDF"
+msgstr "PDF"
+
+#: crm/invoicing/ricevute.py
+msgid "A supplier"
+msgstr "Un fornitore"
+
+#: crm/invoicing/ricevute.py
+msgid "Unknown state {0}"
+msgstr "Stato sconosciuto: {0}"
+
+#: crm/invoicing/ricevute.py
+msgid "You are not allowed to export invoices"
+msgstr "Non puoi esportare le fatture"
+
+#: crm/invoicing/ricevute.py
+msgid "Say why it is disputed: the supplier will ask."
+msgstr "Scrivi perché è contestata: il fornitore lo chiederà."
+
+#: crm/invoicing/ricevute.py
+msgid "This invoice did not come through Itala: there is no PDF to ask for."
+msgstr "Questa fattura non è arrivata tramite Itala: non c'è un PDF da chiedere."
+
+#: crm/invoicing/ricevute.py
+msgid "Itala has no PDF of this invoice: its XML is the original."
+msgstr "Itala non ha un PDF di questa fattura: l'originale è il suo XML."
+
+#: crm/notifiche/regole.py
+msgid "{0} sent an invoice of {1}"
+msgstr "{0} ha mandato una fattura di {1}"

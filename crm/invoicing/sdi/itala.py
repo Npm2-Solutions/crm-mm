@@ -310,6 +310,16 @@ def notifica(emittente: dict, riferimento) -> tuple[bytes | None, str | None]:
 	return risposta.content, busta.nome_da_disposizione(testate.get("Content-Disposition"))
 
 
+def pdf(emittente: dict, riferimento) -> bytes | None:
+	"""Itala's PDF of one of its records (`GET /fatture/{id}/pdf`): a supplier's
+	invoice drawn for reading. None when Itala has none to give."""
+	chi = connessione.accesso(emittente)
+	risposta = connessione.leggi(chi, f"fatture/{riferimento}/pdf", accetta="application/pdf")
+	if risposta.status_code != 200 or not risposta.content or not risposta.content.startswith(b"%PDF"):
+		return None
+	return risposta.content
+
+
 def aggiornamenti(emittente: dict, solo_non_letti: bool = True, **filtri) -> list[dict]:
 	"""Everything the provider has for this company that we have not acted on yet.
 
