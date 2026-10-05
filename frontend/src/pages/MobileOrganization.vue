@@ -19,72 +19,24 @@
       @success="changeOrganizationImage"
     >
       <template #default="{ openFileSelector, error }">
-        <div class="flex flex-col items-start justify-start gap-4 p-4">
-          <div class="flex gap-4 items-center">
-            <div class="group relative h-14.5 w-14.5">
-              <Avatar
-                size="3xl"
-                class="dc-avatar--round h-14.5 w-14.5"
-                :label="organization.doc.organization_name"
-                :image="organization.doc.organization_logo"
-              />
-              <component
-                :is="organization.doc.organization_logo ? Dropdown : 'div'"
-                v-if="canWrite"
-                v-bind="
-                  organization.doc.organization_logo
-                    ? {
-                        options: [
-                          {
-                            icon: 'upload',
-                            label: organization.doc.organization_logo
-                              ? __('Change Image')
-                              : __('Upload Image'),
-                            onClick: openFileSelector,
-                          },
-                          {
-                            icon: 'trash-2',
-                            label: __('Remove Image'),
-                            onClick: () => changeOrganizationImage(''),
-                          },
-                        ],
-                      }
-                    : { onClick: openFileSelector }
-                "
-                class="!absolute bottom-0 left-0 right-0"
-              >
-                <div
-                  class="z-[1] absolute bottom-0 left-0 right-0 flex h-14 cursor-pointer items-center justify-center rounded-b-full bg-black bg-opacity-40 pt-5 opacity-0 duration-300 ease-in-out group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-                  style="
-                    -webkit-clip-path: inset(22px 0 0 0);
-                    clip-path: inset(22px 0 0 0);
-                  "
-                >
-                  <CameraIcon class="h-6 w-6 cursor-pointer text-white" />
-                </div>
-              </component>
-            </div>
-            <div class="flex flex-col gap-2 truncate">
-              <h1 class="truncate text-lg-medium text-ink-gray-9">
-                {{ organization.doc.name }}
-              </h1>
-              <div class="flex items-center gap-1.5">
-                <Button :aria-label="__('Open Website')" @click="openWebsite">
-                  <span class="lucide-link h-4 w-4" aria-hidden="true" />
-                </Button>
-                <Button
-                  v-if="canDelete"
-                  :label="__('Delete')"
-                  theme="red"
-                  size="sm"
-                  iconLeft="trash-2"
-                  @click="deleteOrganization"
-                />
-              </div>
-              <ErrorMessage :message="__(error)" />
-            </div>
-          </div>
-        </div>
+        <TestataDellaScheda
+          :titolo="title"
+          :riga="rigaDellAzienda(organization.doc, __)"
+          :immagine="organization.doc.organization_logo"
+          tondo
+          :puoCambiare="canWrite"
+          :altro="altro"
+          :errore="error ? __(error) : ''"
+          @scegli="openFileSelector"
+          @togli="changeOrganizationImage('')"
+        >
+          <Button
+            v-if="organization.doc.website"
+            :label="__('Website')"
+            icon-left="lucide-globe"
+            @click="openWebsite"
+          />
+        </TestataDellaScheda>
       </template>
     </FileUploader>
     <Tabs
@@ -173,7 +125,7 @@ import DealsListView from '@/components/ListViews/DealsListView.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
-import CameraIcon from '@/components/Icons/CameraIcon.vue'
+import TestataDellaScheda from '@/components/Mobile/TestataDellaScheda.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import { useDocument } from '@/data/document'
@@ -188,13 +140,13 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import {
   validateIsImageFile,
   openWebsite as openExternalWebsite,
+  copyToClipboard,
 } from '@/utils'
+import { rigaDellAzienda } from '@/utils/sulTelefono'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import {
   Breadcrumbs,
-  Avatar,
   FileUploader,
-  Dropdown,
   Tabs,
   call,
   createListResource,
@@ -315,6 +267,22 @@ async function deleteOrganization() {
     ],
   })
 }
+
+// under «⋯», as on a person's page: the link to send a colleague, deleting last
+const altro = computed(() => [
+  {
+    label: __('Copy the link'),
+    icon: 'link',
+    onClick: () =>
+      copyToClipboard(window.location.origin + window.location.pathname),
+  },
+  canDelete.value && {
+    label: __('Delete'),
+    icon: 'trash-2',
+    theme: 'red',
+    onClick: deleteOrganization,
+  },
+])
 
 function openWebsite() {
   if (!organization.doc.website) {

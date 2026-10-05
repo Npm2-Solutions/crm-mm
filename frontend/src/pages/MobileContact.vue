@@ -19,87 +19,24 @@
       @success="changeContactImage"
     >
       <template #default="{ openFileSelector, error }">
-        <div class="flex flex-col items-start justify-start gap-4 p-4">
-          <div class="flex gap-4 items-center">
-            <div class="group relative h-14.5 w-14.5">
-              <Avatar
-                size="3xl"
-                class="h-14.5 w-14.5"
-                :label="contact.doc.full_name"
-                :image="contact.doc.image"
-              />
-              <component
-                :is="contact.doc.image ? Dropdown : 'div'"
-                v-if="canWrite"
-                v-bind="
-                  contact.doc.image
-                    ? {
-                        options: [
-                          {
-                            icon: 'upload',
-                            label: contact.doc.image
-                              ? __('Change Image')
-                              : __('Upload Image'),
-                            onClick: openFileSelector,
-                          },
-                          {
-                            icon: 'trash-2',
-                            label: __('Remove Image'),
-                            onClick: () => changeContactImage(''),
-                          },
-                        ],
-                      }
-                    : { onClick: openFileSelector }
-                "
-                class="!absolute bottom-0 left-0 right-0"
-              >
-                <div
-                  class="z-[1] absolute bottom-0 left-0 right-0 flex h-14 cursor-pointer items-center justify-center rounded-b-full bg-black bg-opacity-40 pt-5 opacity-0 duration-300 ease-in-out group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-                  style="
-                    -webkit-clip-path: inset(22px 0 0 0);
-                    clip-path: inset(22px 0 0 0);
-                  "
-                >
-                  <CameraIcon class="h-6 w-6 cursor-pointer text-white" />
-                </div>
-              </component>
-            </div>
-            <div class="flex flex-col gap-2 truncate">
-              <h1 class="truncate text-lg-medium text-ink-gray-9">
-                <span v-if="contact.doc.salutation">
-                  {{ contact.doc.salutation + '. ' }}
-                </span>
-                <span>{{ contact.doc.full_name }}</span>
-              </h1>
-              <div class="flex items-center gap-1.5">
-                <Button
-                  v-if="callEnabled && contact.doc.mobile_no"
-                  :label="__('Make a Call')"
-                  size="sm"
-                  :iconLeft="PhoneIcon"
-                  @click="callEnabled && makeCall(contact.doc.mobile_no)"
-                />
-                <Button
-                  v-if="canDelete"
-                  :label="__('Delete')"
-                  theme="red"
-                  size="sm"
-                  icon-left="lucide-trash-2"
-                  @click="deleteContact"
-                />
-                <Avatar
-                  v-if="contact.doc.company_name"
-                  size="md"
-                  :label="contact.doc.company_name"
-                  :image="
-                    getOrganization(contact.doc.company_name)?.organization_logo
-                  "
-                />
-              </div>
-              <ErrorMessage :message="__(error)" />
-            </div>
-          </div>
-        </div>
+        <TestataDellaScheda
+          :titolo="nomeDelContatto"
+          :nome="contact.doc.full_name"
+          :riga="contact.doc.company_name"
+          :immagine="contact.doc.image"
+          :puoCambiare="canWrite"
+          :altro="altro"
+          :errore="error ? __(error) : ''"
+          @scegli="openFileSelector"
+          @togli="changeContactImage('')"
+        >
+          <Button
+            v-if="callEnabled && contact.doc.mobile_no"
+            :label="__('Make a Call')"
+            :iconLeft="PhoneIcon"
+            @click="makeCall(contact.doc.mobile_no)"
+          />
+        </TestataDellaScheda>
       </template>
     </FileUploader>
     <Tabs
@@ -172,11 +109,11 @@ import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
-import CameraIcon from '@/components/Icons/CameraIcon.vue'
+import TestataDellaScheda from '@/components/Mobile/TestataDellaScheda.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
-import { validateIsImageFile } from '@/utils'
+import { validateIsImageFile, copyToClipboard } from '@/utils'
 import { useContactFields } from '@/composables/useContactFields'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { getView } from '@/utils/view'
@@ -192,13 +129,11 @@ import { statusesStore } from '@/stores/statuses'
 import { callEnabled } from '@/composables/telephony'
 import {
   Breadcrumbs,
-  Avatar,
   FileUploader,
   Tabs,
   call,
   createResource,
   usePageMeta,
-  Dropdown,
   toast,
 } from 'frappe-ui'
 import { useDoctypeModal } from '@/composables/doctypeModal'
@@ -290,6 +225,34 @@ function changeContactImage(file) {
     },
   })
 }
+
+// with its salutation, as the computer's page writes it, in the reader's
+// language: «Mr» is «Sig.», which carries its own dot
+const nomeDelContatto = computed(() => {
+  const titolo = contact.doc?.salutation ? __(contact.doc.salutation) : ''
+  return [
+    titolo && (titolo.endsWith('.') ? titolo : `${titolo}.`),
+    contact.doc?.full_name,
+  ]
+    .filter(Boolean)
+    .join(' ')
+})
+
+// under «⋯», as on a person's page: the link to send a colleague, deleting last
+const altro = computed(() => [
+  {
+    label: __('Copy the link'),
+    icon: 'link',
+    onClick: () =>
+      copyToClipboard(window.location.origin + window.location.pathname),
+  },
+  canDelete.value && {
+    label: __('Delete'),
+    icon: 'trash-2',
+    theme: 'red',
+    onClick: deleteContact,
+  },
+])
 
 async function deleteContact() {
   $dialog({
