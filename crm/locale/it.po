@@ -44894,3 +44894,13 @@ msgstr "Il profilo non è stato salvato"
 #: frontend/src/components/Settings/SettingsPage.vue
 msgid "The settings were not saved"
 msgstr "Le impostazioni non sono state salvate"
+
+#: frontend/src/utils/ricevute.js
+msgctxt "Supplier invoices filter"
+msgid "All"
+msgstr "Tutte"
+
+#: frontend/src/utils/ricevute.js
+msgctxt "Supplier invoices filter"
+msgid "Disputed"
+msgstr "Contestate"
