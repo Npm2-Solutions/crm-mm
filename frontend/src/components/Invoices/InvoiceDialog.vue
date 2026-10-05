@@ -18,8 +18,10 @@
         <h3 class="truncate text-2xl font-semibold text-ink-gray-9">
           {{ titolo }}
         </h3>
+        <!-- a draft's title says so already («Bozza di fattura»): the badge only
+             on a numbered one taken back to be corrected -->
         <Badge
-          v-if="vista?.name && vista.docstatus === 0"
+          v-if="vista?.name && vista.docstatus === 0 && vista.document_number"
           :label="__('Draft')"
           theme="orange"
         />
@@ -472,9 +474,18 @@
         v-if="vista"
         class="dialog-footer flex flex-wrap items-center justify-end gap-2"
       >
+        <!-- on a phone one row: what is done now, the rest under «⋯» (three
+             keys went on two rows with the page zoomed) -->
+        <Dropdown v-if="altreAzioni.length" :options="altreAzioni">
+          <Button
+            class="mr-auto"
+            icon="more-horizontal"
+            :aria-label="__('Other actions')"
+          />
+        </Dropdown>
         <template v-if="vista.docstatus === 0">
           <Button
-            v-if="vista.can.delete"
+            v-if="vista.can.delete && !isMobileView"
             class="mr-auto"
             variant="ghost"
             theme="red"
@@ -499,7 +510,7 @@
         </template>
         <template v-else>
           <Button
-            v-if="vista.can.credit_note"
+            v-if="vista.can.credit_note && !isMobileView"
             class="mr-auto"
             variant="ghost"
             :label="__('Credit note')"
@@ -507,26 +518,27 @@
             @click="notaDiCredito"
           />
           <Button
-            v-if="vista.can.reopen"
+            v-if="vista.can.reopen && !isMobileView"
             :label="__('Correct it')"
             :loading="azione === 'riapri'"
             @click="riapri"
           />
           <Button
             v-if="vista.can.transmit"
+            :variant="inviaSulTelefono ? 'solid' : 'subtle'"
             :label="__('Send to the SdI')"
             :loading="azione === 'sdi'"
             @click="trasmetti"
           />
           <Button
-            v-if="vista.can.pdf"
+            v-if="vista.can.pdf && !inviaSulTelefono"
             variant="solid"
             iconLeft="download"
             :label="__('Download the PDF')"
             @click="scaricaPdf"
           />
           <Button
-            v-else-if="vista.can.make_pdf"
+            v-else-if="vista.can.make_pdf && !inviaSulTelefono"
             variant="solid"
             :label="__('Make the PDF')"
             :loading="azione === 'pdf'"
@@ -556,6 +568,7 @@ import {
   Badge,
   Button,
   Dialog,
+  Dropdown,
   ErrorMessage,
   FormControl,
   LoadingIndicator,
@@ -603,6 +616,55 @@ const pagataPrima = computed(() => {
 const titolo = computed(() =>
   __(titoloDellaFattura(vista.value), [vista.value?.document_number]),
 )
+
+// on a phone an invoice still to send to the SdI has that as its one key, its PDF
+// (a courtesy copy) under «⋯» with the rest
+const inviaSulTelefono = computed(
+  () => isMobileView.value && Boolean(vista.value?.can?.transmit),
+)
+
+// what a phone keeps under «⋯»: throwing a draft away, correcting an issued one
+const altreAzioni = computed(() => {
+  const v = vista.value
+  if (!v || !isMobileView.value) return []
+  if (v.docstatus === 0) {
+    return v.can.delete
+      ? [
+          {
+            label: __('Throw the draft away'),
+            icon: 'lucide-trash-2',
+            theme: 'red',
+            onClick: elimina,
+          },
+        ]
+      : []
+  }
+  return [
+    v.can.credit_note && {
+      label: __('Credit note'),
+      icon: 'lucide-file-minus',
+      onClick: notaDiCredito,
+    },
+    v.can.reopen && {
+      label: __('Correct it'),
+      icon: 'lucide-pencil',
+      onClick: riapri,
+    },
+    inviaSulTelefono.value &&
+      v.can.pdf && {
+        label: __('Download the PDF'),
+        icon: 'lucide-download',
+        onClick: scaricaPdf,
+      },
+    inviaSulTelefono.value &&
+      !v.can.pdf &&
+      v.can.make_pdf && {
+        label: __('Make the PDF'),
+        icon: 'lucide-file-text',
+        onClick: faiPdf,
+      },
+  ].filter(Boolean)
+})
 
 const totali = computed(() => righeDeiTotali(vista.value?.totals || {}))
 
