@@ -13,6 +13,7 @@ import {
   faseIniziale,
   gruppoDi,
   quandoTorna,
+  quanteNellaBarra,
   rigaDellAzienda,
   rigaDellaNota,
   scadenzaInBreve,
@@ -365,5 +366,34 @@ describe('whom an appointment of the day is for', () => {
     expect(
       chiDellAppuntamentoDelGiorno({ title: 'Riunione', participants: [] }),
     ).toEqual({ titolo: 'Riunione', persone: 0 })
+  })
+})
+
+describe("a record's tabs in the phone's bar", () => {
+  // Attività, Dettagli, Eventi, Preventivi, Documenti, Note: their widths
+  const sei = [70, 72, 60, 86, 90, 50]
+
+  it('holds what it always did before the bar is measured', () => {
+    expect(quanteNellaBarra(sei, 0, 60)).toBe(4)
+    expect(quanteNellaBarra(sei.slice(0, 5), 0, 60)).toBe(5)
+  })
+
+  it('holds five or fewer whole when they fit, without «More»', () => {
+    expect(quanteNellaBarra(sei.slice(0, 5), 400, 60)).toBe(5)
+    expect(quanteNellaBarra(sei.slice(0, 3), 300, 60)).toBe(3)
+  })
+
+  it('holds four beside «More» where there is room', () => {
+    expect(quanteNellaBarra(sei, 382, 60)).toBe(4)
+  })
+
+  it('moves under «More» what a page zoomed has no room for', () => {
+    // 272 points: three of them and «More»
+    expect(quanteNellaBarra(sei, 272, 60)).toBe(3)
+    // five that do not fit are not all there either
+    expect(quanteNellaBarra(sei.slice(0, 5), 272, 60)).toBe(3)
+    expect(quanteNellaBarra(sei, 180, 60)).toBe(1)
+    // one tab at least, however narrow
+    expect(quanteNellaBarra(sei, 90, 60)).toBe(1)
   })
 })

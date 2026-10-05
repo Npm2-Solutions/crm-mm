@@ -55,10 +55,12 @@
                         class="w-[35%] min-w-20 shrink-0 flex items-center gap-0.5"
                         :class="{ 'pt-[9px]': isTextareaField(field) }"
                       >
-                        <!-- two lines rather than «No. of Employe…» -->
+                        <!-- lines rather than «No. of Employe…»: three, for
+                             a phone with its page zoomed («Responsabile
+                             della…» in two) -->
                         <div
                           data-etichetta
-                          class="line-clamp-2 break-words text-sm text-ink-gray-5"
+                          class="line-clamp-3 break-words text-sm text-ink-gray-5"
                         >
                           {{ __(field.label) }}
                         </div>

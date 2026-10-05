@@ -71,10 +71,15 @@
 
     <!-- the actions, as round keys with their word under them: a column for
          each key drawn. Six columns for five keys (no SMS) left each word
-         a column narrower than itself, «Chiama» touching «WhatsApp» -->
+         a column narrower than itself, «Chiama» touching «WhatsApp». The
+         columns are equal while each word fits; a word that would not
+         («WhatsA…» at 320 points, a page zoomed, or six keys on an iPhone
+         SE) takes the few points it needs from the others -->
     <div
       class="grid gap-0.5"
-      :style="{ gridTemplateColumns: `repeat(${tasti}, minmax(0, 1fr))` }"
+      :style="{
+        gridTemplateColumns: `repeat(${tasti}, minmax(min-content, 1fr))`,
+      }"
       role="toolbar"
       :aria-label="title"
     >

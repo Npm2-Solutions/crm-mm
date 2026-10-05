@@ -353,3 +353,29 @@ export function durataDellaChiamata(secondi) {
 export function rigaDellaNota(nota = {}, { autore = '', quando = '' } = {}) {
   return [autore, nota.reference_title, quando].filter(Boolean).join(' · ')
 }
+
+// ------------------------------------------------------------------ tabs
+
+/**
+ * How many of a record's tabs the phone's bar holds (`SchedeDelTelefono`):
+ * `larghezze` are the tabs' widths in the order the bar takes them, `spazio`
+ * the bar's and `altre` the «More» key's. Five or fewer that fit are all there;
+ * otherwise as many as fit beside «More», up to `massimo`, one at least. Not
+ * measured yet (`spazio` 0), the bar holds what it always did: a page zoomed
+ * (large text on Android: 277 points on a 360 phone) gave four tabs and
+ * «More» 54 points each, «Detta…», «Eve…», «Preventi…».
+ */
+export function quanteNellaBarra(
+  larghezze = [],
+  spazio = 0,
+  altre = 0,
+  massimo = 4,
+) {
+  const tutte = larghezze.length
+  const somma = (quante) =>
+    larghezze.slice(0, quante).reduce((totale, larga) => totale + larga, 0)
+  if (tutte <= massimo + 1 && (!spazio || somma(tutte) <= spazio)) return tutte
+  let quante = Math.min(massimo, tutte - 1)
+  while (spazio && quante > 1 && somma(quante) + altre > spazio) quante--
+  return quante
+}

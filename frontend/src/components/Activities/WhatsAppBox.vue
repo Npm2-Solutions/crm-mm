@@ -56,15 +56,17 @@
   </div>
   <!-- On a phone, held either way, one line, the whole of it the way to the
        templates: two lines and a button took a third of the box, over a chat
-       already short (sideways, they left it 90px) -->
+       already short (sideways, they left it 90px). Where the line has no room
+       for the words (a page zoomed, 320 wide) they go on two rather than
+       stopping at «solo un m…» -->
   <button
     v-if="!windowOpen && isMobileView"
     type="button"
-    class="mx-2 mt-1.5 flex min-h-9 w-[calc(100%-1rem)] items-center gap-2 rounded-lg bg-surface-amber-1 px-3 text-left text-p-sm text-ink-amber-9 ring-1 ring-inset ring-outline-amber-2 active:bg-surface-amber-2"
+    class="mx-2 mt-1.5 flex min-h-9 w-[calc(100%-1rem)] items-center gap-2 rounded-lg bg-surface-amber-1 px-3 py-1 text-left text-p-sm text-ink-amber-9 ring-1 ring-inset ring-outline-amber-2 active:bg-surface-amber-2"
     @click="emit('template')"
   >
     <span class="lucide-clock size-4 shrink-0" aria-hidden="true" />
-    <span class="min-w-0 flex-1 truncate">{{ windowNoticeShort }}</span>
+    <span class="min-w-0 flex-1">{{ windowNoticeShort }}</span>
     <span class="shrink-0 font-medium">
       {{ __('Choose', null, 'WhatsApp template') }}
     </span>

@@ -123,37 +123,44 @@
             aria-hidden="true"
           />
           <span class="flex min-w-0 flex-1 flex-col">
+            <!-- the name is read whole: the chips sit beside it while the
+                 row has room, under it when it has not («Frances…» beside
+                 «Completato» on a phone with its page zoomed) -->
             <span
-              class="truncate text-base-medium"
-              :class="
-                annullato(riga)
-                  ? 'text-ink-gray-5 line-through'
-                  : 'text-ink-gray-9'
-              "
+              class="flex flex-wrap items-start justify-between gap-x-2 gap-y-1"
             >
-              {{ titolo(riga) }}
+              <span
+                class="max-w-full truncate text-base-medium"
+                :class="
+                  annullato(riga)
+                    ? 'text-ink-gray-5 line-through'
+                    : 'text-ink-gray-9'
+                "
+              >
+                {{ titolo(riga) }}
+              </span>
+              <!-- a first visit says so and still says how it went: a new
+                   patient who did not come read only «First visit» -->
+              <span
+                v-if="riga.dati.first_visit || statoDaDire(riga)"
+                class="flex shrink-0 flex-wrap gap-1"
+              >
+                <span
+                  v-if="riga.dati.first_visit"
+                  class="rounded bg-[var(--brand-subtle)] px-1.5 py-0.5 text-xs text-[var(--on-brand-subtle)]"
+                >
+                  {{ __('First visit') }}
+                </span>
+                <span
+                  v-if="statoDaDire(riga)"
+                  class="rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+                >
+                  {{ __(riga.dati.status) }}
+                </span>
+              </span>
             </span>
             <span v-if="sotto(riga)" class="truncate text-p-sm text-ink-gray-5">
               {{ sotto(riga) }}
-            </span>
-          </span>
-          <!-- a first visit says so and still says how it went: a new patient
-               who did not come read only «First visit» -->
-          <span
-            v-if="riga.dati.first_visit || statoDaDire(riga)"
-            class="flex shrink-0 flex-col items-end gap-1 self-start"
-          >
-            <span
-              v-if="riga.dati.first_visit"
-              class="rounded bg-[var(--brand-subtle)] px-1.5 py-0.5 text-xs text-[var(--on-brand-subtle)]"
-            >
-              {{ __('First visit') }}
-            </span>
-            <span
-              v-if="statoDaDire(riga)"
-              class="rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
-            >
-              {{ __(riga.dati.status) }}
             </span>
           </span>
         </button>
