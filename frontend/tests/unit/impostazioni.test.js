@@ -116,7 +116,7 @@ describe('the settings menu, by who reads it', () => {
       'WhatsApp: Numbers, Templates',
       'Phone: Telephony, Call scripts',
       'Marketing: Website, Social Planner, Tracking [Lead tracking · Tracked links]',
-      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Test and go live, Options',
+      'Invoicing: Test and go live, Issuing company, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
       'Integrations: Meta, Assistant',
     ])
   })
@@ -174,7 +174,7 @@ describe('the settings menu, by who reads it', () => {
   it('shows accounting the invoicing, and the medical director the forms and the libraries', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
-      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Test and go live, Options',
+      'Invoicing: Test and go live, Issuing company, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
@@ -238,13 +238,13 @@ describe('a page asked for by its name', () => {
       ['Issuing company', 'Issuing company', null],
       [
         'Qualification register',
-        'Services & providers',
+        'Advanced invoicing',
         'Qualification register',
       ],
       ['Billable services', 'Services & providers', 'Billable services'],
       ['Providers', 'Services & providers', 'Providers'],
       ['Provider connection', 'Provider connection', null],
-      ['Invoicing defaults', 'Invoicing defaults', null],
+      ['Invoicing defaults', 'Advanced invoicing', 'Invoicing defaults'],
       ['Services', 'Services', 'Services'],
       ['Team rota', 'Hours & shifts', 'Team rota'],
       ['Studio hours & rules', 'Hours & shifts', 'Studio hours & rules'],

@@ -57,19 +57,25 @@
       @saved="impostata"
     />
 
-    <!-- What is still missing, and what each gap costs. A live list, not a
-         document nobody opens: it gets shorter. -->
+    <!-- what is still missing lives on Test and go live, each row with the way
+         to fill it: here only how many, and the way there -->
     <div
       v-if="checklist.data?.length && !creando"
-      class="mx-2 flex flex-col gap-2 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
+      class="mx-2 flex items-center justify-between gap-4 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3 max-md:flex-col max-md:items-start"
     >
-      <span class="text-p-base-medium text-ink-gray-8">
-        {{ __('Still missing') }}
+      <span class="min-w-0 text-p-base text-ink-gray-8">
+        {{
+          checklist.data.length === 1
+            ? __('One thing is still to set up.')
+            : __('{0} things are still to set up.', [checklist.data.length])
+        }}
       </span>
-      <div v-for="voce in checklist.data" :key="voce.title" class="text-p-sm">
-        <span class="font-medium text-ink-gray-7">{{ voce.title }}</span>
-        <span class="text-ink-gray-6"> — {{ voce.consequence }}</span>
-      </div>
+      <Button
+        class="shrink-0"
+        variant="subtle"
+        :label="__('See what')"
+        @click="activeSettingsPage = 'Provider connection'"
+      />
     </div>
 
     <div class="px-2">
@@ -93,6 +99,7 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import { activeSettingsPage } from '@/composables/settings'
 import DocFields from '@/components/Settings/Invoicing/DocFields.vue'
 import HealthcareSetup from '@/components/Settings/Invoicing/HealthcareSetup.vue'
 import { createListResource, createResource, Button, Dropdown } from 'frappe-ui'

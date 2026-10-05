@@ -30,7 +30,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Try invoicing before the first real invoice: in test the invoices are numbered PROVA and reach nobody, not the SdI, not the Sistema TS, not the patient.',
+              'Try invoicing before the first real invoice: in test the invoices are numbered PROVA and reach nobody.',
             )
           }}
         </p>
@@ -68,7 +68,7 @@
                     ])
                   : __('Every invoice is real.')
                 : __(
-                    'The invoices issued now are test invoices: numbered PROVA, with a band on the PDF. The electronic ones go to Itala’s test environment; the report to the Sistema TS is checked and not sent.',
+                    'The invoices issued now are test invoices: numbered PROVA, with a band on the PDF, and they reach nobody.',
                   )
             }}
           </span>
@@ -119,23 +119,33 @@
           </p>
         </div>
         <div class="flex flex-col divide-y divide-outline-gray-1">
+          <!-- each gap a click from the page that fills it -->
           <div
             v-for="voce in mancanti"
             :key="voce.title"
-            class="flex min-w-0 flex-col gap-0.5 py-2.5"
+            class="flex items-start justify-between gap-4 py-2.5"
           >
-            <span class="text-p-base-medium text-ink-gray-8">
-              {{ voce.title }}
-              <!-- the brand's mark for what must be filled -->
-              <span
-                v-if="voce.blocking && !dalVivo"
-                class="segno-obbligatorio text-ink-red-6"
-                :title="__('Needed to go live')"
-              />
-            </span>
-            <span class="text-p-sm text-ink-gray-6">{{
-              voce.consequence
-            }}</span>
+            <div class="flex min-w-0 flex-col gap-0.5">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ voce.title }}
+                <!-- the brand's mark for what must be filled -->
+                <span
+                  v-if="voce.blocking && !dalVivo"
+                  class="segno-obbligatorio text-ink-red-6"
+                  :title="__('Needed to go live')"
+                />
+              </span>
+              <span class="text-p-sm text-ink-gray-6">{{
+                voce.consequence
+              }}</span>
+            </div>
+            <Button
+              v-if="paginaDellaMancanza(voce)"
+              class="shrink-0"
+              variant="subtle"
+              :label="__('Set up')"
+              @click="activeSettingsPage = paginaDellaMancanza(voce)"
+            />
           </div>
         </div>
       </section>
@@ -146,7 +156,22 @@
           {{ __('How invoices leave') }}
         </h3>
         <div class="flex flex-col gap-2 text-p-sm text-ink-gray-7">
-          <div class="flex items-start gap-2">
+          <!-- a centre that reports no healthcare expense: every invoice is electronic -->
+          <div v-if="!stato.data.healthcare" class="flex items-start gap-2">
+            <LucideSend class="mt-0.5 size-4 shrink-0 text-ink-gray-5" />
+            <span>
+              {{
+                stato.data.itala
+                  ? __(
+                      'Every invoice reaches the SdI through Itala, an intermediary accredited by the Agenzia delle Entrate, and the client gets it as a PDF too. Connected.',
+                    )
+                  : __(
+                      'Every invoice reaches the SdI through Itala, an intermediary accredited by the Agenzia delle Entrate, and the client gets it as a PDF too. {brand} connects it.',
+                    )
+              }}
+            </span>
+          </div>
+          <div v-else class="flex items-start gap-2">
             <LucideSend class="mt-0.5 size-4 shrink-0 text-ink-gray-5" />
             <span>
               {{
@@ -160,7 +185,7 @@
               }}
             </span>
           </div>
-          <div class="flex items-start gap-2">
+          <div v-if="stato.data.healthcare" class="flex items-start gap-2">
             <LucideFileText class="mt-0.5 size-4 shrink-0 text-ink-gray-5" />
             <span>
               {{
@@ -348,6 +373,8 @@ import {
   Dropdown,
   toast,
 } from 'frappe-ui'
+import { activeSettingsPage } from '@/composables/settings'
+import { inOrdine, paginaDellaMancanza } from '@/utils/mancanze'
 import LucideFileText from '~icons/lucide/file-text'
 import LucideSend from '~icons/lucide/send'
 import { globalStore } from '@/stores/global'
@@ -390,11 +417,7 @@ const opzioni = computed(() =>
   })),
 )
 // what stops going live first, then the rest
-const mancanti = computed(() =>
-  [...(stato.data?.missing || [])].sort(
-    (a, b) => Number(b.blocking) - Number(a.blocking),
-  ),
-)
+const mancanti = computed(() => inOrdine(stato.data?.missing))
 const registrataQui = computed(() => {
   const registrata = stato.data?.agency?.registered || {}
   return dalVivo.value ? !!registrata.production : !!registrata.test
