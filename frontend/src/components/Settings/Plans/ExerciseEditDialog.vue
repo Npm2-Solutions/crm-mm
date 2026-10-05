@@ -139,7 +139,10 @@ const saving = ref(false)
 // the library's picture did not load: no broken one in its place
 const nonCaricata = ref(false)
 const error = ref('')
-const partOptions = PARTI.map((p) => ({ label: __(p), value: p }))
+const partOptions = PARTI.map((p) => ({
+  label: __(p, null, 'Body part'),
+  value: p,
+}))
 
 const CAMPI = [
   'exercise_name',

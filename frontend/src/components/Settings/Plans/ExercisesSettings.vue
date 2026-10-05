@@ -78,6 +78,7 @@ const library = {
   endpoint: 'crm.piani.librerie.get_exercises',
   nameField: 'exercise_name',
   groups: PARTI,
+  groupContext: 'Body part',
   everyGroup: __('Every body part'),
   groupLabel: __('Body part'),
   // the library DottorCloud ships keeps this name as its source, in the code only
