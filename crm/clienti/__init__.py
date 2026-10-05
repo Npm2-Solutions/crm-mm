@@ -17,8 +17,11 @@ passa dalla clinica al CRM"), so it is the CRM's:
   new client costs.
 - **The automations** hear "Became Client", with the rule that fired; the
   dashboard counts the new clients and what one costs.
+- **Who they are** (`CRM Lead.relationship`): a contact, then a client - on the
+  person's page, in the lists and their filters.
 
-A module whose trade has rules of its own takes the CRM's place where it is on
-(`cliente.registra_regole`): with the clinic, a client is a patient, and the clinic
-says who becomes one.
+The rules decide in every centre: whoever came to a Pilates class is a client of a
+medical centre too. A module adds its own step above the client and keeps it (the
+clinic: a patient, the person who had a health service or whose health data the
+centre keeps), with its own event; the client's door never takes it back down.
 """

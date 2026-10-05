@@ -11,7 +11,7 @@
   >
     <div class="flex flex-col gap-1">
       <h3 class="text-base-semibold text-ink-gray-8">
-        {{ __('New clients') }}
+        {{ __('New clients pipeline') }}
       </h3>
       <p class="text-p-sm text-ink-gray-6">
         {{

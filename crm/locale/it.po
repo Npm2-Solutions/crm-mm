@@ -396,8 +396,8 @@ msgid "A booking moves an open deal of the new clients pipeline to the stage aft
 msgstr "Una prenotazione porta una trattativa aperta della pipeline dei nuovi clienti alla fase dopo la prenotazione, e la prima volta che la persona viene la vince. Così il resoconto delle inserzioni dice quanto costa un nuovo cliente."
 
 #: crm/clinica/parole.py
-msgid "A booking moves an open deal of the new patients pipeline to the stage after a booking, and becoming a patient wins it. So the ads report says what a new patient costs."
-msgstr "Una prenotazione porta una trattativa aperta della pipeline dei nuovi pazienti alla fase dopo la prenotazione, e diventare paziente la vince. Così il resoconto delle inserzioni dice quanto costa un nuovo paziente."
+msgid "A booking moves an open deal of the new patients pipeline to the stage after a booking, and the first time the person comes wins it, whatever they come for. So the ads report says what bringing in a new client costs."
+msgstr "Una prenotazione porta una trattativa aperta della pipeline dei nuovi pazienti alla fase dopo la prenotazione, e la prima volta che la persona viene la vince, qualunque cosa venga a fare. Così il resoconto delle inserzioni dice quanto costa portare un nuovo cliente."
 
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
 msgid "A caller who rings again inside this window joins the callback already queued instead of creating a second one. Set to 0 to queue every call separately."
@@ -20041,8 +20041,8 @@ msgid "People who became clients in the period: the first time they came, or the
 msgstr "Le persone diventate clienti nel periodo: la prima volta che sono venute, o la loro prima fattura"
 
 #: crm/clinica/parole.py
-msgid "People who became patients in the period, whatever the rule that made them"
-msgstr "Le persone diventate pazienti nel periodo, qualunque sia la regola che le ha rese tali"
+msgid "People who became patients in the period: a health service, or health data the centre keeps"
+msgstr "Le persone diventate pazienti nel periodo: una prestazione sanitaria, o dati sanitari che il centro conserva"
 
 #: crm/dashboard/widgets/people.py
 msgid "People who reached you for the first time in the period"
@@ -27351,8 +27351,8 @@ msgid "The person becomes a client of the centre: the first time they come, or t
 msgstr "La persona diventa cliente del centro: la prima volta che viene, o con la sua prima fattura."
 
 #: crm/clinica/parole.py
-msgid "The person becomes a patient of the centre: first visit, first healthcare invoice, first clinical note."
-msgstr "La persona diventa paziente del centro: prima visita, prima fattura sanitaria, prima nota clinica."
+msgid "The person becomes a patient of the centre: a health service, or health data the centre keeps."
+msgstr "La persona diventa paziente del centro: una prestazione sanitaria, o dati sanitari che il centro conserva."
 
 #: frontend/src/components/Plans/PlansCard.vue
 msgid "The person does not enter their area yet: invite them from the Client area tab, so that they see the plans you publish."
@@ -44084,3 +44084,19 @@ msgstr "Un programma con dati sanitari protetti"
 #: frontend/src/components/Plans/PlansCard.vue
 msgid "{0} programmes with protected health data"
 msgstr "{0} programmi con dati sanitari protetti"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Relationship"
+msgstr "Rapporto"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Who they are to the centre: a contact until the first time they come or buy, then a client. Written by the rules, never by hand."
+msgstr "Chi è per il centro: un contatto fino alla prima volta che viene o compra, poi un cliente. Lo scrivono le regole, mai a mano."
+
+#: crm/clinica/custom/crm_lead.json
+msgid "When they became a patient: a health service, or health data the centre keeps. Written once, by the clinic's rules."
+msgstr "Quando è diventato paziente: una prestazione sanitaria, o dati sanitari che il centro conserva. Lo scrivono una volta sola le regole della clinica."
+
+#: crm/clinica/parole.py
+msgid "New patients pipeline"
+msgstr "Pipeline dei nuovi pazienti"

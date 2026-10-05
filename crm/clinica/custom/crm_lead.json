@@ -1,0 +1,34 @@
+{
+ "custom_fields": [
+  {
+   "name": "CRM Lead-patient_since",
+   "dt": "CRM Lead",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "client_since",
+   "description": "When they became a patient: a health service, or health data the centre keeps. Written once, by the clinic's rules.",
+   "fieldname": "patient_since",
+   "fieldtype": "Datetime",
+   "label": "Patient since",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "CRM Lead",
+ "links": [],
+ "property_setters": [
+  {
+   "name": "CRM Lead-relationship-options",
+   "doc_type": "CRM Lead",
+   "doctype_or_field": "DocField",
+   "field_name": "relationship",
+   "is_system_generated": 1,
+   "module": "Clinica",
+   "property": "options",
+   "property_type": "Text",
+   "value": "Contact\nClient\nPatient"
+  }
+ ],
+ "sync_on_migrate": 1
+}

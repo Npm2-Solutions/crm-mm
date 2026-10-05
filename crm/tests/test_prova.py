@@ -107,10 +107,7 @@ class InProvaTest(Base):
 
 		documento = self.emessa()
 		documento.db_set({"party_type": "CRM Lead", "party": "PERSONA-DI-PROVA"})
-		with (
-			patch("crm.clienti.cliente.regole_del_crm", return_value=True),
-			patch("crm.clienti.cliente.diventa_cliente") as diventa,
-		):
+		with patch("crm.clienti.cliente.diventa_cliente") as diventa:
 			eventi.fattura_confermata(documento)
 		diventa.assert_not_called()
 		self.assertEqual(area._fatture("PERSONA-DI-PROVA"), [])

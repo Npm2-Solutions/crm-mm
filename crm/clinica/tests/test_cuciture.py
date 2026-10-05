@@ -1,14 +1,15 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The first seam, from marketing to the centre: becoming a patient closes the deal.
+"""The first seam, from marketing to the centre: coming closes the deal.
 
 The pipelines are the CRM's (`crm.clienti`, `crm.preventivi`): switching the clinic
 on makes them, the new clients one in the clinic's words. A booking moves an open
-new-patients deal to "appointment booked"; becoming a patient makes a client of
-the centre from the same moment, wins it, and the automations hear "Became
-Client" - "Became Patient" in the clinic's words. The patients found in last
-year's data close nothing and start nothing.
+new-patients deal to "appointment booked"; the first time the person comes makes a
+client of them and wins it, whatever they came for, and the automations hear
+"Became Client". A health service, or health data the centre keeps, makes a
+patient besides, a step above, and the automations hear "Became Patient". The
+patients found in last year's data close nothing and start nothing.
 """
 
 from unittest.mock import patch
@@ -47,8 +48,29 @@ class CucitureCase(ClinicCase):
 		return frappe.db.get_value("CRM Deal Status", self.stato(deal), "type")
 
 	@staticmethod
-	def annunci(evento):
-		return [chiamata for chiamata in evento.call_args_list if chiamata.args[0] == cliente.EVENTO]
+	def annunci(evento, quale=cliente.EVENTO):
+		return [chiamata for chiamata in evento.call_args_list if chiamata.args[0] == quale]
+
+	@staticmethod
+	def rapporto(persona):
+		return frappe.db.get_value("CRM Lead", persona.name, "relationship")
+
+	def corso(self):
+		"""A course the centre invoices as not healthcare: a client, never a patient."""
+		corso = self.make_service("Corso di yoga cuciture", [self.doctor])
+		frappe.get_doc(
+			{
+				"doctype": "CRM Billable Service",
+				"service_name": "Corso di yoga cuciture",
+				"fiscal_description": "Corso di yoga",
+				"crm_service": corso.name,
+				"is_healthcare": 0,
+				"vat_rate": 22,
+				"default_rate": 50,
+				"enabled": 1,
+			}
+		).insert()
+		return corso
 
 
 class LePipeline(CucitureCase):
@@ -104,46 +126,61 @@ class DiventarePaziente(CucitureCase):
 		self.assertTrue(paziente.e_paziente(self.mario.name))
 		self.assertEqual(self.tipo(deal), "Won")
 		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "closed_date").isoformat(), nowdate())
-		# a patient is a client from the same moment
+		# the same visit makes a client and a patient, at the same moment
 		self.assertEqual(cliente.cliente_da(self.mario.name), self.scheda(self.mario).patient_since)
+		self.assertEqual(self.rapporto(self.mario), paziente.PAZIENTE)
+		self.assertEqual(
+			frappe.db.get_value("CRM Lead", self.mario.name, paziente.CAMPO),
+			self.scheda(self.mario).patient_since,
+		)
 
 	def test_le_automazioni_lo_sentono(self):
 		with patch("crm.automation.engine.process_event") as evento:
 			paziente.assicura_paziente(self.mario.name, regole.A_MANO)
-		annunci = self.annunci(evento)
+		annunci = self.annunci(evento, paziente.EVENTO)
 		self.assertEqual(len(annunci), 1)
 		self.assertEqual(annunci[0].args[1].name, self.mario.name)
 		self.assertEqual(annunci[0].args[2], {"rule": regole.A_MANO.valore})
+		# a patient by hand has not come yet: not a client
+		self.assertEqual(self.annunci(evento), [])
 
-	def test_il_trigger_e_del_crm_nelle_parole_della_clinica(self):
+	def test_due_trigger_ognuno_il_suo(self):
 		from crm import verticali
 		from crm.automation.engine import trigger_offerti
 
 		self.assertIn(cliente.TRIGGER, trigger_offerti())
-		self.assertNotIn("Became Patient", trigger_offerti())
-		self.assertEqual(verticali.parole()[cliente.TRIGGER], "Became Patient")
+		self.assertIn(paziente.TRIGGER, trigger_offerti())
+		# the client's is never the patient's renamed
+		self.assertNotIn(cliente.TRIGGER, verticali.parole())
+		self.accendi(False)
+		self.assertIn(cliente.TRIGGER, trigger_offerti())
+		self.assertNotIn(paziente.TRIGGER, trigger_offerti())
 
-	def test_le_regole_del_crm_si_fanno_da_parte(self):
-		"""With the clinic on, a course makes nobody a patient, nor a client."""
-		self.assertFalse(cliente.regole_del_crm())
-		corso = self.make_service("Corso di yoga cuciture", [self.doctor])
-		frappe.get_doc(
-			{
-				"doctype": "CRM Billable Service",
-				"service_name": "Corso di yoga cuciture",
-				"fiscal_description": "Corso di yoga",
-				"crm_service": corso.name,
-				"is_healthcare": 0,
-				"vat_rate": 22,
-				"default_rate": 50,
-				"enabled": 1,
-			}
-		).insert()
-		incontro = self.appuntamento(self.mario, self.ieri(), servizio=corso.name)
+	def test_un_corso_fa_un_cliente_non_un_paziente(self):
+		"""With the clinic on, a course makes a client, as in any centre: not a patient."""
+		deal = self.richiesta(self.mario)
+		incontro = self.appuntamento(self.mario, self.ieri(), servizio=self.corso().name)
+		with patch("crm.automation.engine.process_event") as evento:
+			incontro.status = "Completed"
+			incontro.save()
+		self.assertFalse(paziente.e_paziente(self.mario.name))
+		self.assertEqual(cliente.cliente_da(self.mario.name), incontro.starts_on)
+		self.assertEqual(self.rapporto(self.mario), cliente.CLIENTE)
+		self.assertEqual(self.tipo(deal), "Won")
+		self.assertEqual(len(self.annunci(evento)), 1)
+		self.assertEqual(self.annunci(evento, paziente.EVENTO), [])
+
+	def test_un_paziente_resta_un_paziente(self):
+		"""Coming to a course after the clinical note makes a client, and the person
+		still reads "Patient"."""
+		paziente.assicura_paziente(self.mario.name, regole.A_MANO)
+		self.assertEqual(self.rapporto(self.mario), paziente.PAZIENTE)
+		self.assertIsNone(cliente.cliente_da(self.mario.name))
+		incontro = self.appuntamento(self.mario, self.ieri(), servizio=self.corso().name)
 		incontro.status = "Completed"
 		incontro.save()
-		self.assertFalse(paziente.e_paziente(self.mario.name))
-		self.assertIsNone(cliente.cliente_da(self.mario.name))
+		self.assertEqual(cliente.cliente_da(self.mario.name), incontro.starts_on)
+		self.assertEqual(self.rapporto(self.mario), paziente.PAZIENTE)
 
 	def test_i_pazienti_di_prima_non_chiudono_niente(self):
 		self.accendi(False)
@@ -159,11 +196,13 @@ class DiventarePaziente(CucitureCase):
 		self.assertNotEqual(self.tipo(deal), "Won")
 		self.assertEqual(self.annunci(evento), [])
 
-	def test_un_deal_che_non_si_salva_non_ferma_il_paziente(self):
-		self.richiesta(self.mario)
-		with patch("crm.clienti.pipeline.vinci", side_effect=frappe.ValidationError("no")):
-			paziente.assicura_paziente(self.mario.name, regole.A_MANO)
+	def test_i_dati_sanitari_non_vincono_la_richiesta(self):
+		"""A patient because the centre keeps their health data has not come yet: the
+		deal waits for the first time they come."""
+		deal = self.richiesta(self.mario)
+		paziente.assicura_paziente(self.mario.name, regole.A_MANO)
 		self.assertTrue(paziente.e_paziente(self.mario.name))
+		self.assertNotEqual(self.tipo(deal), "Won")
 
 
 class IlCruscotto(CucitureCase):
@@ -171,25 +210,32 @@ class IlCruscotto(CucitureCase):
 		return Context.build(add_days(nowdate(), -7), nowdate(), scope="site", config={})
 
 	def test_i_nuovi_pazienti(self):
-		widget = registry.get("new_clients")
-		prima = widget.fn(self.contesto())["value"]
+		pazienti = registry.get("new_patients")
+		clienti = registry.get("new_clients")
+		prima = pazienti.fn(self.contesto())["value"], clienti.fn(self.contesto())["value"]
 		paziente.assicura_paziente(self.mario.name, regole.A_MANO)
-		self.assertEqual(widget.fn(self.contesto())["value"], prima + 1)
+		# a patient by hand is not a client until they come
+		self.assertEqual(
+			(pazienti.fn(self.contesto())["value"], clienti.fn(self.contesto())["value"]),
+			(prima[0] + 1, prima[1]),
+		)
 
 	def test_il_costo_di_un_nuovo_paziente(self):
-		from crm.dashboard.widgets.marketing import ad_clients
+		from crm.clinica.cruscotto import ad_patients
 
-		prima = ad_clients(self.contesto())
+		prima = ad_patients(self.contesto())
 		frappe.db.set_value("CRM Lead", self.mario.name, "facebook_ad_id", "ad-1")
 		paziente.assicura_paziente(self.mario.name, regole.A_MANO)
-		self.assertEqual(ad_clients(self.contesto()), prima + 1)
+		self.assertEqual(ad_patients(self.contesto()), prima + 1)
 
-	def test_nelle_parole_della_clinica(self):
+	def test_clienti_e_pazienti_ognuno_con_le_sue_parole(self):
 		from crm.api.dashboard import get_widget_catalog
 
 		titoli = {widget["id"]: widget["title"] for widget in get_widget_catalog()["widgets"]}
-		self.assertEqual(titoli["new_clients"], frappe._("New patients"))
-		self.assertEqual(titoli["meta_cost_per_client"], frappe._("Cost per new patient"))
+		self.assertEqual(titoli["new_clients"], frappe._("New clients"))
+		self.assertEqual(titoli["meta_cost_per_client"], frappe._("Cost per new client"))
+		self.assertEqual(titoli["new_patients"], frappe._("New patients"))
+		self.assertEqual(titoli["meta_cost_per_patient"], frappe._("Cost per new patient"))
 		self.accendi(False)
 		titoli = {widget["id"]: widget["title"] for widget in get_widget_catalog()["widgets"]}
 		self.assertEqual(titoli["new_clients"], frappe._("New clients"))

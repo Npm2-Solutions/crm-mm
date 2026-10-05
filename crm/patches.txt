@@ -103,3 +103,5 @@ crm.patches.v1_0.a_person_has_genders_and_titles
 crm.patches.v1_0.each_person_uses_their_own_subscription
 crm.patches.v1_0.a_person_counts_no_employees
 crm.patches.v1_0.the_kinesiologist_is_not_a_health_profession
+crm.patches.v1_0.whoever_came_is_a_client
+crm.clinica.patches.patients_say_so_on_their_page

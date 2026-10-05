@@ -133,6 +133,7 @@ class CRMLead(Document):
 		organization: DF.Link | None
 		phone: DF.Data | None
 		products: DF.Table[CRMProducts]
+		relationship: DF.Literal["Contact", "Client"]
 		response_by: DF.Datetime | None
 		rolling_responses: DF.Table[CRMRollingResponseTime]
 		salutation: DF.Link | None
@@ -694,6 +695,13 @@ class CRMLead(Document):
 				"key": "lead_name",
 				"width": "12rem",
 			},
+			# who they are to the centre: a contact, a client, with the clinic a patient
+			{
+				"label": "Relationship",
+				"type": "Select",
+				"key": "relationship",
+				"width": "8rem",
+			},
 			{
 				"label": "Organization",
 				"type": "Link",
@@ -729,6 +737,7 @@ class CRMLead(Document):
 		rows = [
 			"name",
 			"lead_name",
+			"relationship",
 			"organization",
 			"email",
 			"mobile_no",

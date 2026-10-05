@@ -49,8 +49,6 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 		for riga in righe
 	):
 		return
-	if not cliente.regole_del_crm():
-		return
 
 	def registra():
 		for riga in righe:
@@ -66,7 +64,7 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 def fattura_confermata(doc, method=None) -> None:
 	"""The first confirmed invoice made out to the person. A credit note sells nothing,
 	and neither does a test invoice: it is gone the day invoicing goes live."""
-	if not regole.vendita(doc.get("document_type")) or not cliente.regole_del_crm():
+	if not regole.vendita(doc.get("document_type")):
 		return
 	if cint(doc.get("test_document")):
 		return

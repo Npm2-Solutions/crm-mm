@@ -73,20 +73,11 @@ PAROLE = {
 	"Signature of the person, or of who answers for them": (
 		"Signature of the patient, or of who answers for them"
 	),
-	# new clients (`crm.clienti`): with the clinic, whoever becomes a patient
-	"New clients": "New patients",
-	"Client since": "Patient since",
-	# the head of a person's page (PersonHeader)
-	"Client since {0}": "Patient since {0}",
-	"Became Client": "Became Patient",
-	"The person becomes a client of the centre: the first time they come, or their first invoice.": (
-		"The person becomes a patient of the centre: first visit, first healthcare invoice, "
-		"first clinical note."
-	),
-	"People who became clients in the period: the first time they came, or their first invoice": (
-		"People who became patients in the period, whatever the rule that made them"
-	),
-	"Cost per new client": "Cost per new patient",
+	# new clients (`crm.clienti`) stay clients: whoever came or bought, a Pilates
+	# class too. A patient is a step above (`paziente`), with its own words - "Patient
+	# since", "Became Patient", "New patients" - never the client's renamed. The new
+	# clients pipeline is the one to the first visit, named in the clinic's words
+	"New clients pipeline": "New patients pipeline",
 	# the first steps
 	"Your first client": "Your first patient",
 	# the person's plans, without the area
@@ -97,12 +88,10 @@ PAROLE = {
 	"Automations, campaigns, Meta leads and spend, social, tracking, cost per new client, the website": (
 		"Automations, campaigns, Meta leads and spend, social, tracking, cost per new patient, the website"
 	),
-	"Ad spend divided by the people the ads brought who became clients": (
-		"Ad spend divided by the people the ads brought who became patients"
-	),
 	"A booking moves an open deal of the new clients pipeline to the stage after a booking, and the first time the person comes wins it. So the ads report says what a new client costs.": (
 		"A booking moves an open deal of the new patients pipeline to the stage after a booking, "
-		"and becoming a patient wins it. So the ads report says what a new patient costs."
+		"and the first time the person comes wins it, whatever they come for. So the ads report "
+		"says what bringing in a new client costs."
 	),
 	"Create the new clients pipeline": "Create the new patients pipeline",
 	"The stage after a booking has to be one of the new clients pipeline's stages": (
