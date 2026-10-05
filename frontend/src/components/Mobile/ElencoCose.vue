@@ -105,6 +105,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useRitorno } from '@/composables/ritorno'
@@ -124,7 +125,8 @@ import { computed, ref, watch } from 'vue'
 
 const emit = defineEmits(['apri'])
 const { getUser, solaLettura } = usersStore()
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 
 const di = ref('mie')
 const opzioni = [

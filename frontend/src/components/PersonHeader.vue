@@ -174,6 +174,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
@@ -215,7 +216,8 @@ const { makeCall } = globalStore()
 const { puo } = usersStore()
 const scheduling = useSchedulerMeta()
 
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 
 // a round key and its word: what the phone's own contact card looks like.
 // No padding beside the word, and 2px between the keys: in a side panel 352px

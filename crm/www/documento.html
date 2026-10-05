@@ -198,7 +198,7 @@
 
         function day(value) {
           const date = new Date(String(value).replace(" ", "T"));
-          return isNaN(date) ? value : date.toLocaleDateString(window.BOOT.lang || "it", { day: "numeric", month: "long", year: "numeric" });
+          return isNaN(date) ? value : date.toLocaleDateString(String(window.BOOT.lang || "it").startsWith("it") ? "it-IT" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
         }
 
         function ask(error) {

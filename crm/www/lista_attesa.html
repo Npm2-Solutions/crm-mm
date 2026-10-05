@@ -153,7 +153,8 @@
         };
         const lang = (window.BOOT.lang || "it").slice(0, 2);
         const words = lang === "it" ? IT : {};
-        const locale = lang === "it" ? "it-IT" : undefined;
+        // English the European way: the day first, the 24-hour clock
+        const locale = lang === "it" ? "it-IT" : "en-GB";
         const t = (message, args) => {
           let text = words[message] || message;
           (args || []).forEach((arg, i) => (text = text.replace("{" + i + "}", arg)));
@@ -205,11 +206,11 @@
         // the place is at the centre: its times are the centre's
         let zone = undefined;
         const fmt = (value, options) => new Intl.DateTimeFormat(locale, { ...options, timeZone: zone }).format(new Date(value));
-        const when = (value) => fmt(value, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+        const when = (value) => fmt(value, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
         const hour = (value) => {
           const today = fmt(new Date(), { year: "numeric", month: "2-digit", day: "2-digit" });
           const that = fmt(value, { year: "numeric", month: "2-digit", day: "2-digit" });
-          return that === today ? fmt(value, { hour: "2-digit", minute: "2-digit" }) : when(value);
+          return that === today ? fmt(value, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : when(value);
         };
         const day = (value) => new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(value + "T00:00:00Z"));
         const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];

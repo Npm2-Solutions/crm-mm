@@ -569,7 +569,11 @@ describe('timeKey and wallClock', () => {
 describe('clockOf', () => {
   it('is the time and nothing else: the day is on the marker', () => {
     expect(clockOf('2026-08-16 14:05:00', 'it')).toBe('14:05')
-    expect(clockOf('2026-08-16 14:05:00', 'en-US')).toMatch(/02:05\sPM/)
+  })
+
+  it('is the 24-hour clock in every language, as Europe reads it', () => {
+    expect(clockOf('2026-08-16 14:05:00', 'en-GB')).toBe('14:05')
+    expect(clockOf('2026-08-16 14:05:00', 'en-US')).toBe('14:05')
   })
 
   it('has no clock to give for a bare date', () => {

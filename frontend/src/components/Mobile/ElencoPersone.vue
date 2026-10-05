@@ -116,6 +116,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import { tastiera } from '@/utils/tastiera'
@@ -132,7 +133,8 @@ import { computed } from 'vue'
 const { puo, ambito } = usersStore()
 // whoever reads people masked finds them by name only (the server says so too)
 const mascherati = computed(() => ambito('persone.vedi') === 'mascherato')
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 
 const { testo, righe, contenitore, carica, cerca, forseAltre, tira } =
   useElencoDelTelefono('crm.api.sul_telefono.get_people', 'persone')

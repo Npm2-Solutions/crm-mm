@@ -10,11 +10,16 @@
  * says which language the words are in (`window.lang`, the Frappe user
  * language), and the dates and numbers follow it. A code `Intl` does not know
  * falls back to the browser's, which is what every caller did before.
+ *
+ * DottorCloud is European: English is written the way Europe writes it - the
+ * day before the month, the 24-hour clock, the week from Monday - which is
+ * «en-GB», not the United States' «en».
  */
 export function appLocale(lang = globalThis.window?.lang) {
   if (!lang) return undefined
   // Frappe writes some codes the POSIX way («pt_BR»); Intl wants «pt-BR».
-  const tag = String(lang).trim().replace(/_/g, '-')
+  let tag = String(lang).trim().replace(/_/g, '-')
+  if (/^en(-US)?$/i.test(tag)) tag = 'en-GB'
   try {
     return Intl.DateTimeFormat.supportedLocalesOf([tag]).length
       ? tag

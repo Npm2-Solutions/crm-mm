@@ -179,6 +179,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
@@ -228,7 +229,8 @@ useScorriGiorni(
 const { getUser } = usersStore()
 // whoever reads, as the store gives it: the user's name, not a ref
 const { user } = sessionStore()
-const lingua = window.navigator?.language || 'it-IT'
+// the user's language, the European way (utils/locale.js)
+const lingua = appLocale() || 'it-IT'
 
 // "now" moves on its own while the page stays open, on the centre's clock as
 // the day's times are
