@@ -7,7 +7,10 @@
 `dati/esercizi.json` was made once from hasaneyldrm's exercises-dataset at
 7455efa (18/03/2026), keeping only what the library reads: the name in English,
 how it is done in Italian and English in steps, the body part, the equipment and
-the muscles, the pictures' paths and whose they are. The data are MIT (the notice
+the muscles, the pictures' paths and whose they are. The dataset names its
+exercises in English only: the Italian names (`names.it`) are NPM2's, written in
+the words of an Italian gym ("Panca piana con bilanciere", "Rematore a un braccio
+con manubrio") and kept by code from one version to the next. The data are MIT (the notice
 travels with them, `dati/esercizi.LICENSE.txt`); the media © Gym visual, with its
 written authorisation to NPM2 Solutions, only from where the agency hosts them and
 always with "© Gym visual — https://gymvisual.com/". The assistant never touches
@@ -166,10 +169,21 @@ def _percorso(valore, forma: re.Pattern) -> str | None:
 LINGUE = ("it", "en")
 
 
+def _nome(record: dict, lingua: str) -> str:
+	"""The exercise's name in ``lingua``: NPM2's (`names`), else the dataset's
+	English one, with its first letter capital."""
+	inglese = re.sub(r"\s+", " ", str(record.get("name") or "")).strip()
+	nome = inglese
+	if lingua != "en":
+		nome = re.sub(r"\s+", " ", str(((record.get("names") or {}).get(lingua)) or "")).strip() or inglese
+	return (nome[0].upper() + nome[1:])[:140] if nome else ""
+
+
 def _parole(record: dict, lingua: str) -> dict:
 	"""What the library writes of an exercise in ``lingua`` and the centre may
-	rewrite: its equipment and how it is done."""
+	rewrite: its name, its equipment and how it is done."""
 	return {
+		"exercise_name": _nome(record, lingua) or None,
 		"equipment": parola(str(record.get("equipment") or ""), lingua)[:140] or None,
 		"instructions": _passi(record, lingua) or None,
 	}
@@ -196,10 +210,9 @@ def esercizio(record, lingua: str = "it") -> dict | None:
 	if not isinstance(record, dict):
 		return None
 	codice = str(record.get("id") or "").strip()
-	nome = re.sub(r"\s+", " ", str(record.get("name") or "")).strip()
-	if not codice or not nome:
+	inglese = _nome(record, "en")
+	if not codice or not inglese:
 		return None
-	nome = (nome[0].upper() + nome[1:])[:140]
 	principale = parola(str(record.get("target") or ""), lingua)
 	secondari = []
 	for muscolo in record.get("secondary_muscles") or []:
@@ -208,8 +221,9 @@ def esercizio(record, lingua: str = "it") -> dict | None:
 			secondari.append(tradotto)
 	return {
 		"code": codice[:40],
-		"name": nome,
-		"name_in_source": nome,
+		"name": _nome(record, lingua),
+		# the dataset's own, which a search in English still finds
+		"name_in_source": inglese,
 		"body_part": PARTI_DATASET.get(str(record.get("body_part") or "").strip().lower(), "Other"),
 		"primary_muscles": principale or None,
 		"secondary_muscles": ", ".join(secondari) or None,

@@ -258,7 +258,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 		for riga in frappe.get_all(
 			ESERCIZIO,
 			filters={"source": D.DATASET},
-			fields=["name", "source_code", "equipment", "instructions"],
+			fields=["name", "source_code", "exercise_name", "equipment", "instructions"],
 			limit=100000,
 		)
 		if riga.source_code

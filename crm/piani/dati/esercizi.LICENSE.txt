@@ -36,3 +36,11 @@ https://gymvisual.com/". Its use and reuse are governed by Gym visual's Terms
 by `NOTICE.md` in this repository — NOT by the MIT license above. Cloning this
 repository does not grant you any license to the media; obtain your own from
 Gym visual.
+
+------------------------------------------------------------------------------
+ITALIAN NAMES
+------------------------------------------------------------------------------
+
+The dataset names its exercises in English. The Italian names in this file
+(each record's `names.it`) are NPM2 Solutions Srl's translation of those names,
+released under the same MIT License as the data above.
