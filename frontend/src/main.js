@@ -11,6 +11,7 @@ import translationPlugin from './translation'
 import { indossa } from './utils/marchio'
 import { ascoltaLInstallazione } from './utils/installa'
 import { ricaricaSeManca } from './utils/ricarica'
+import { percorsoDellApp } from './utils/spinta'
 import App from './App.vue'
 
 import {
@@ -53,6 +54,25 @@ ascoltaLInstallazione()
 // a part that no longer exists on the server (a new version came out while the
 // page was open): the page loads again, once (utils/ricarica.js)
 ricaricaSeManca()
+
+// a notification touched while DottorCloud is open goes to its page without
+// loading it again (crm/notifiche/spinta_sw.js)
+navigator.serviceWorker?.addEventListener('message', (evento) => {
+  if (evento.data?.tipo !== 'apri') return
+  const percorso = percorsoDellApp(evento.data.url)
+  if (percorso) router.push(percorso)
+})
+// where they were turned on, the server knows this browser is this person's:
+// once the app is idle, never before the first page (composables/spinta.js)
+if (window.Notification?.permission === 'granted') {
+  const quandoLibero =
+    window.requestIdleCallback || ((fai) => setTimeout(fai, 3000))
+  quandoLibero(() =>
+    import('@/composables/spinta')
+      .then((spinta) => spinta.sincronizza())
+      .catch(() => {}),
+  )
+}
 
 // create a pinia instance
 let pinia = createPinia()

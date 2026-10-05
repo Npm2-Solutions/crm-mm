@@ -48,6 +48,8 @@
 
     <!-- on the home screen it opens like an app -->
     <InstallaApp />
+    <!-- the app on the home screen: its notifications one tap away -->
+    <NotificheSulTelefono />
 
     <section
       v-for="gruppo in gruppi"
@@ -121,6 +123,7 @@ import LucideBrushCleaning from '~icons/lucide/brush-cleaning'
 import ElementoNativo from '@/components/ElementoNativo'
 import FirstStepsCard from '@/components/FirstSteps/FirstStepsCard.vue'
 import InstallaApp from '@/components/Mobile/InstallaApp.vue'
+import NotificheSulTelefono from '@/components/Mobile/NotificheSulTelefono.vue'
 import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
