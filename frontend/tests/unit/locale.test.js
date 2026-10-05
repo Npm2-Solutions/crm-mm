@@ -73,6 +73,11 @@ describe('conLApostrofo', () => {
     expect(conLApostrofo('la seduta del 1 ott', 'it')).toBe(
       "la seduta dell'1 ott",
     )
+    // Italy's format writes the day with its zero, a site's may write it with dashes
+    expect(conLApostrofo('fino al 08/10/2026', 'it')).toBe(
+      "fino all'08/10/2026",
+    )
+    expect(conLApostrofo('dal 01-10-2026', 'it')).toBe("dall'01-10-2026")
   })
 
   it('leaves alone every other number, word and language', () => {
@@ -81,6 +86,8 @@ describe('conLApostrofo', () => {
       'Paziente dal 7 set 2026',
     )
     expect(conLApostrofo('il 18 ott', 'it')).toBe('il 18 ott')
+    expect(conLApostrofo('il 09/10/2026', 'it')).toBe('il 09/10/2026')
+    expect(conLApostrofo('dal 10/01/2026', 'it')).toBe('dal 10/01/2026')
     // not a date
     expect(conLApostrofo('il 1 di 10', 'it')).toBe('il 1 di 10')
     expect(conLApostrofo('al 8%', 'it')).toBe('al 8%')

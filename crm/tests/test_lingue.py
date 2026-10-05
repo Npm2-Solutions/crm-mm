@@ -111,11 +111,21 @@ class LApostrofoDavantiAUnaData(UnitTestCase):
 		self.assertEqual(c("Fino al 8-10-2026", "it"), "Fino all'8-10-2026")
 		self.assertEqual(c("prima del 1/1/2021", "it"), "prima dell'1/1/2021")
 		self.assertEqual(c("Il 11 ott", "it"), "L'11 ott")
+		# Italy's format writes the day with its zero
+		self.assertEqual(c("Puoi aprirlo fino al 08/10/2026.", "it"), "Puoi aprirlo fino all'08/10/2026.")
+		self.assertEqual(c("il 01/10/2026", "it"), "l'01/10/2026")
 
 	def test_altrimenti_resta_com_e(self):
 		c = lingue.con_l_apostrofo
-		# another day, a day without a date, a rate, a year, a day written 08
-		for testo in ("al 12 ottobre", "il 11", "il riepilogo IVA al 10%", "nel 2026", "il 08/10/2026"):
+		# another day, a day without a date, a rate, a year, a day read with no vowel
+		for testo in (
+			"al 12 ottobre",
+			"il 11",
+			"il riepilogo IVA al 10%",
+			"nel 2026",
+			"il 09/10/2026",
+			"dal 10/01/2026",
+		):
 			self.assertEqual(c(testo, "it"), testo)
 		# other languages, and what is not a sentence
 		self.assertEqual(c("until al 11/10", "en"), "until al 11/10")
