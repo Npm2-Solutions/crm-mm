@@ -26587,8 +26587,8 @@ msgid "The centre's name and logo, at the top of every page the people it looks 
 msgstr "Il nome e il logo del centro, in cima a ogni pagina che aprono le persone che segue: prenotazioni, moduli, la loro area. {brand} firma in fondo."
 
 #: frontend/src/utils/impostazioni.js
-msgid "The centre's name and logo, how conversations behave, the dashboard, the menu."
-msgstr "Il nome e il logo del centro, come si comportano le conversazioni, la dashboard, il menu."
+msgid "The centre's name, logo, language and clock, how conversations behave, the dashboard, the menu."
+msgstr "Il nome, il logo, la lingua e l'ora del centro, come si comportano le conversazioni, la dashboard, il menu."
 
 #: frontend/src/utils/impostazioni.js
 msgid "The centre's numbers and the messages WhatsApp has approved."
@@ -44278,3 +44278,39 @@ msgstr "Scegli italiano o inglese"
 #: crm/lingue.py
 msgid "Choose a time zone of Europe"
 msgstr "Scegli un fuso orario europeo"
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "Language & time"
+msgstr "Lingua e fuso orario"
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "The language {brand} writes in for the centre - the emails and pages your clients read, the documents, the screens of whoever has not chosen their own - and the clock of its agenda."
+msgstr "La lingua in cui {brand} scrive per il centro - le email e le pagine che leggono i clienti, i documenti, gli schermi di chi non ne ha scelta una sua - e l'ora della sua agenda."
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "The centre’s language"
+msgstr "Lingua del centro"
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "Italian or English. Each person can read {brand} in their own, from Your account › Preferences."
+msgstr "Italiano o inglese. Ognuno può leggere {brand} nella sua, da Il tuo account › Preferenze."
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "The centre’s time zone"
+msgstr "Fuso orario del centro"
+
+#: frontend/src/components/Settings/CentreLanguageSettings.vue
+msgid "The hours of the agenda, the reminders and the booking page."
+msgstr "Le ore dell'agenda, dei promemoria e della pagina di prenotazione."
+
+#: frontend/src/components/Settings/PreferencesSettings.vue
+msgid "The language you read {brand} in: the centre’s, or your own."
+msgstr "La lingua in cui leggi {brand}: quella del centro, o una tua."
+
+#: frontend/src/components/Settings/PreferencesSettings.vue
+msgid "As the centre ({0})"
+msgstr "Come il centro ({0})"
+
+#: frontend/src/components/Settings/PreferencesSettings.vue
+msgid "The clock you read the hours on. The agenda keeps the centre’s."
+msgstr "L'ora su cui leggi gli orari. L'agenda tiene quella del centro."

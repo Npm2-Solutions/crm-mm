@@ -19,6 +19,7 @@ from frappe.translate import (
 from frappe.utils import cint, get_system_timezone
 from werkzeug.wrappers import Response
 
+from crm.lingue import del_centro
 from crm.marchio import con_nome
 
 no_cache = 1
@@ -102,6 +103,8 @@ def get_boot():
 			"traduzioni": indirizzo_delle_traduzioni(),
 			# the language the words above are in, so dates and numbers speak it too
 			"lang": frappe.local.lang,
+			# the centre's, which whoever has not chosen their own reads (Preferences)
+			"centre_language": del_centro(),
 			"timezone": {
 				"system": get_system_timezone(),
 				"user": frappe.db.get_value("User", frappe.session.user, "time_zone")

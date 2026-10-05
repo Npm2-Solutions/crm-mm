@@ -80,9 +80,11 @@ export const MENU = [
         key: 'General settings',
         label: 'General',
         description:
-          "The centre's name and logo, how conversations behave, the dashboard, the menu.",
+          "The centre's name, logo, language and clock, how conversations behave, the dashboard, the menu.",
         tabs: [
           { key: 'Brand', label: 'Name & logo', condition: generali },
+          // Italian or English, and Europe's time zone of the agenda
+          { key: 'Language', label: 'Language & time', condition: generali },
           // how a person's record answers a message, and how its story reads
           { key: 'General', label: 'Conversations', condition: generali },
           { key: 'Dashboard', label: 'Dashboard', condition: generali },

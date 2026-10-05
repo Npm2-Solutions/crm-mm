@@ -8,6 +8,20 @@
 
 export const ITALIA = 'Europe/Rome'
 
+// Europe's zones out of the continent's names (the server's `lingue.fusi_europei`)
+const ATLANTICO = ['Atlantic/Azores', 'Atlantic/Canary', 'Atlantic/Madeira']
+
+/** The zones of `zone` a centre in Europe keeps its clock on, in order. */
+export function europei(zone = []) {
+  return [
+    ...new Set(
+      zone.filter(
+        (zona) => zona.startsWith('Europe/') || ATLANTICO.includes(zona),
+      ),
+    ),
+  ].sort()
+}
+
 /** What a zone is called in `lingua` («Ora dell'Europa centrale»), or nothing. */
 export function nomeDelFuso(zona, lingua = 'it', quando = new Date()) {
   try {
