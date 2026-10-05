@@ -340,7 +340,8 @@ class TestResources(SchedulingCase):
 	def test_a_room_with_capacity_two_takes_two_appointments(self):
 		anna = self.make_user("anna_sched@example.com")
 		bruno = self.make_user("bruno_sched@example.com")
-		room = self.make_resource("Palestra", capacity=2)
+		# not a name a centre's own rooms (or the demo's) would have
+		room = self.make_resource("Palestra di prova", capacity=2)
 		service = self.make_service("Ginnastica", [anna, bruno])
 		service.append("resources", {"resource": room.name, "quantity": 1, "required": 1})
 		service.save()
@@ -361,7 +362,9 @@ class TestResources(SchedulingCase):
 		slots = get_slots("Colloquio", self.tomorrow(9).date(), self.tomorrow(9).date())
 		self.assertTrue(slots)
 		self.assertEqual(len(slots[0].resources), 1)
-		self.assertIn(slots[0].resources[0]["resource"], ("Sala 1", "Sala 2"))
+		# any free room of the site: the ones made here, or a centre's own
+		scelta = slots[0].resources[0]["resource"]
+		self.assertEqual(frappe.db.get_value("CRM Resource", scelta, "resource_type"), "Room")
 
 	def test_equipment_quantity_is_respected(self):
 		anna = self.make_user("anna_sched@example.com")
