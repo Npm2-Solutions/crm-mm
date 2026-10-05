@@ -207,7 +207,7 @@ import { menuDi } from '@/utils/menu'
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
 import { showSettings } from '@/composables/settings'
 import { Sidebar, SidebarItem, SidebarLabel, Tooltip } from 'frappe-ui'
-import { useStorage } from '@vueuse/core'
+import { StorageSerializers, useMediaQuery, useStorage } from '@vueuse/core'
 import { useDemoData } from '@/composables/demoData'
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -218,7 +218,27 @@ const { toggle: toggleNotificationPanel } = notificationsStore()
 const { clearDemoData, isDemoDataCreated } = useDemoData()
 const { puo, puoUno, ambito } = usersStore()
 
-const isSidebarCollapsed = useStorage('isSidebarCollapsed', false)
+// Folded to its icons on a tablet held upright, as a tablet's own apps keep
+// their menu: open, it took 223px of an iPad's 768 and left a person's page a
+// column narrower than a phone. Held sideways, and with a mouse, it stays open.
+// Once the button folds or opens it, that choice stays, held either way. The
+// old key wrote its default as if it were a choice («false» for everybody who
+// never pressed it): only a menu folded there was one.
+function piegatoPrima() {
+  try {
+    return localStorage.getItem('isSidebarCollapsed') === 'true' ? true : null
+  } catch {
+    return null
+  }
+}
+const scelta = useStorage('menuPiegato', piegatoPrima(), undefined, {
+  serializer: StorageSerializers.boolean,
+})
+const tabletInPiedi = useMediaQuery('(pointer: coarse) and (max-width: 1100px)')
+const isSidebarCollapsed = computed({
+  get: () => scelta.value ?? tabletInPiedi.value,
+  set: (piegato) => (scelta.value = piegato),
+})
 
 const isCollapsed = computed(() => isSidebarCollapsed.value)
 
