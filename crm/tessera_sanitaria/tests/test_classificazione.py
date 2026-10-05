@@ -68,6 +68,25 @@ class RisoluzioneNoveTest(UnitTestCase):
 		self.assertEqual(avviso.modello, "line {0}: {1}")
 		self.assertEqual(avviso.argomenti[0], 1)
 
+	def test_il_paziente_che_vive_all_estero_non_passa_dallo_sdi(self):
+		# Risposta AdE 327/2019: a healthcare service to a natural person never goes
+		# through the SdI, resident or not; no Italian codice fiscale, no report
+		esito = classifica(
+			[riga("psicologo")],
+			TipoDestinatario.ESTERO,
+			soggetto_emittente="professionista_sanitario",
+			privato_estero=True,
+		)
+		self.assertEqual(esito.canale, Canale.PDF_SOLO)
+		self.assertFalse(esito.sdi_consentito)
+		self.assertFalse(esito.ts_richiesto)
+
+	def test_un_azienda_estera_resta_sullo_sdi(self):
+		esito = classifica(
+			[riga("psicologo")], TipoDestinatario.ESTERO, soggetto_emittente="professionista_sanitario"
+		)
+		self.assertEqual(esito.canale, Canale.SDI)
+
 	def test_l_osteopata_e_imponibile_e_deve_passare_da_sdi(self):
 		esito = self._paziente(riga("osteopata", esente=False))
 		self.assertEqual(esito.canale, Canale.SDI)

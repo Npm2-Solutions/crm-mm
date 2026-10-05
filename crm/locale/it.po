@@ -44822,3 +44822,51 @@ msgstr "riga {0}: il totale non è il prezzo unitario, meno gli sconti, per la q
 
 msgid "For invoices on paper or PDF. An electronic invoice through the SdI pays the duty by itself (art. 6 DM 17/06/2014): the Agenzia adds up each quarter and it is paid from Fatture e corrispettivi."
 msgstr "Per le fatture su carta o in PDF. Una fattura elettronica allo SdI assolve il bollo da sé (art. 6 DM 17/06/2014): l'Agenzia somma ogni trimestre e si paga da Fatture e corrispettivi."
+
+msgid "A fee subject to a withholding is never under the split payment: the public administration pays the VAT to whoever invoices"
+msgstr "Un compenso soggetto a ritenuta non va mai in scissione dei pagamenti: l'amministrazione pubblica paga l'IVA a chi fattura"
+
+msgid "Under the flat-rate regime nobody withholds on the fee: take the withholding off"
+msgstr "Nel regime forfettario sul compenso non si applica la ritenuta: toglila"
+
+msgid "from this date the fund asks {0}% (now {1}%): update the rate on the issuing company"
+msgstr "da questa data la cassa chiede il {0}% (ora è al {1}%): aggiorna l'aliquota sull'azienda emittente"
+
+msgid "For an association of professionals (studio associato). An STP produces business income: no withholding."
+msgstr "Per un'associazione professionale (studio associato). Una STP produce reddito d'impresa: nessuna ritenuta."
+
+msgid "Agrotecnico"
+msgstr "Agrotecnico"
+
+msgid "Perito agrario"
+msgstr "Perito agrario"
+
+msgid "ENPAIA's agrotecnici fund: contributo integrativo 4% since 01/01/2022."
+msgstr "Gestione agrotecnici ENPAIA: contributo integrativo del 4% dal 01/01/2022."
+
+msgid "ENPAIA's periti agrari fund: contributo integrativo 2%, not the agrotecnici's 4%."
+msgstr "Gestione periti agrari ENPAIA: contributo integrativo del 2%, non il 4% degli agrotecnici."
+
+msgid "Associazione professionale (studio associato)"
+msgstr "Associazione professionale (studio associato)"
+
+msgid "A studio associato keeps the withholding, as a legal person (RT02). The fund depends on the professionals it groups."
+msgstr "Uno studio associato subisce la ritenuta, come persona giuridica (RT02). La cassa dipende dai professionisti che riunisce."
+
+msgid "Società tra professionisti (STP)"
+msgstr "Società tra professionisti (STP)"
+
+msgid "the fund of its professionals, which an STP charges like they would"
+msgstr "la cassa dei suoi professionisti, che una STP addebita come farebbero loro"
+
+msgid "An STP produces business income (Ris. AdE 35/E of 2018): nobody withholds on its fees. Its professionals' fund still applies (Cassa Forense for lawyers, for instance)."
+msgstr "Una STP produce reddito d'impresa (Ris. AdE 35/E del 2018): sui suoi compensi nessuno applica la ritenuta. La cassa dei suoi professionisti si applica comunque (Cassa Forense per gli avvocati, per esempio)."
+
+msgid "A freelance midwife is in the INPS separate management (ENPAPI is nurses', health assistants' and child-care workers'): the 4% rivalsa is optional."
+msgstr "Un'ostetrica libera professionista è iscritta alla gestione separata INPS (ENPAPI è di infermieri, assistenti sanitari e vigilatrici d'infanzia): la rivalsa del 4% è facoltativa."
+
+msgid "ENPAP's reform to 4% from 2027, which its bodies approved in April 2026 and the ministries still have to"
+msgstr "la riforma ENPAP al 4% dal 2027, approvata dai suoi organi ad aprile 2026 e ancora da approvare dai ministeri"
+
+msgid "Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty. ENPAV's contributo integrativo rises to 3% from 1 January 2027 and 4% from 2030: an invoice with the old rate after that day says so."
+msgstr "Scadenza propria a metà marzo: un invio separato. Le società veterinarie (S.r.l., STP) hanno la facoltà, non l'obbligo. Il contributo integrativo ENPAV sale al 3% dal 1° gennaio 2027 e al 4% dal 2030: una fattura con la vecchia aliquota dopo quella data lo segnala."

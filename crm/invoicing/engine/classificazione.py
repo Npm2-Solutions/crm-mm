@@ -211,6 +211,7 @@ def classifica_riga(
 	regime: str = RegimeFiscale.ORDINARIO,
 	soggetto_emittente: str | None = None,
 	risolvi: Risolutore | None = None,
+	privato_estero: bool = False,
 ) -> EsitoRiga:
 	"""`soggetto_emittente` is the category of **whoever issues the document**.
 
@@ -288,7 +289,14 @@ def classifica_riga(
 
 	# ------------------------------------------------------------------ routing
 	obbligo_esplicito = False
-	if destinatario in (
+	if destinatario == TipoDestinatario.ESTERO and privato_estero and riga.is_sanitaria:
+		# A patient who lives abroad is a natural person all the same: a healthcare
+		# service to them never goes through the SdI (Risposta AdE 327/2019), and
+		# with no Italian codice fiscale there is no Sistema TS report either.
+		regola = prof.regola_sdi
+		va_al_ts = False
+		obbligo_esplicito = regola == RegolaSdI.OBBLIGATORIO
+	elif destinatario in (
 		TipoDestinatario.SOGGETTO_IVA,
 		TipoDestinatario.PUBBLICA_AMMINISTRAZIONE,
 		TipoDestinatario.ESTERO,
@@ -388,6 +396,7 @@ def classifica(
 	regime: str = RegimeFiscale.ORDINARIO,
 	soggetto_emittente: str | None = None,
 	risolvi: Risolutore | None = None,
+	privato_estero: bool = False,
 ) -> EsitoClassificazione:
 	"""Classify the whole document. **Model it per line, never per document.**
 
@@ -405,7 +414,9 @@ def classifica(
 			errori=["the document has no lines"],
 		)
 
-	esiti = [classifica_riga(r, destinatario, regime, soggetto_emittente, risolvi) for r in righe]
+	esiti = [
+		classifica_riga(r, destinatario, regime, soggetto_emittente, risolvi, privato_estero) for r in righe
+	]
 	da_valutare = [e for e in esiti if not e.riga.e_riga_bollo and not e.riga.e_anticipazione]
 
 	vietato = any(e.regola_sdi == RegolaSdI.VIETATO for e in da_valutare)
@@ -467,6 +478,6 @@ def guardia_sdi(esito: EsitoClassificazione) -> None:
 		if e.regola_sdi == RegolaSdI.VIETATO
 	]
 	raise GuardiaSdI(
-		"Sending to the SdI is not allowed: since 2026 the electronic invoice through the Sistema di Interscambio for healthcare services towards natural persons is structurally forbidden (D.Lgs. 12 giugno 2025 n. 81, art. 10-bis D.L. 119/2018). The patient receives the invoice as a PDF and the expense is reported to the Sistema TS.",
+		"Sending to the SdI is not allowed: the electronic invoice through the Sistema di Interscambio for healthcare services towards natural persons is forbidden (art. 10-bis D.L. 119/2018 and art. 9-bis D.L. 135/2018, permanent since D.Lgs. 12 giugno 2025 n. 81). The patient receives the invoice as a PDF and the expense is reported to the Sistema TS.",
 		motivi,
 	)

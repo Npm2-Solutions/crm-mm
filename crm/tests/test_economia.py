@@ -80,7 +80,8 @@ class EconomiaTest(InvoicingBase):
 		self.a_un_azienda()
 		torta = self.numero("to_collect_by_age")
 		self.assertEqual(torta["kind"], "donut")
-		elenco = self.numero("to_collect_list")
+		# as many rows as it gives: the site may hold older ones waiting
+		elenco = self.numero("to_collect_list", limit=20)
 		self.assertIn("Acme Srl", [voce["title"] for voce in elenco["items"]])
 
 	def test_costi_margine_e_iva(self):

@@ -190,6 +190,8 @@ def prepara(doc) -> dict:
 		regime,
 		emittente.get("sender_category"),
 		estensioni.risolutore(),
+		# a client abroad with no VAT number is a private person: a patient
+		privato_estero=doc.recipient_type == TipoDestinatario.ESTERO and not doc.tax_id,
 	)
 
 	soggetto_a_bollo = bool(doc.subject_to_stamp_duty) and any(
@@ -221,6 +223,15 @@ def prepara(doc) -> dict:
 	_scrivi_righe(doc, conto)
 	_scrivi_riepilogo(doc, conto)
 	doc.legal_notes = "\n".join(annotazioni(doc, emittente, classificazione, conto))
+	atteso = motore.aliquota_in_vigore(doc.fund_type, getdate(doc.posting_date) or date.today())
+	if atteso and doc.fund_rate and _dec(doc.fund_rate) < atteso:
+		conto.avvisi.append(
+			Messaggio(
+				"from this date the fund asks {0}% (now {1}%): update the rate on the issuing company",
+				f"{atteso:.0f}",
+				f"{_dec(doc.fund_rate):.0f}",
+			)
+		)
 	doc.warnings = "\n".join(in_parole(avviso) for avviso in (*classificazione.tutti_avvisi, *conto.avvisi))
 	return {"classificazione": classificazione, "calcolo": conto, "azienda": emittente}
 
@@ -473,6 +484,19 @@ def blocchi(doc, classificazione) -> list[str]:
 		problemi.append(
 			_("An invoice to the public administration needs the six-character office code of the IPA")
 		)
+
+	if doc.apply_withholding and doc.split_payment:
+		# art. 17-ter, c. 1-sexies, DPR 633/72 (D.L. 87/2018): fees subject to a
+		# withholding are out of the split payment
+		problemi.append(
+			_(
+				"A fee subject to a withholding is never under the split payment: the public "
+				"administration pays the VAT to whoever invoices"
+			)
+		)
+	if doc.apply_withholding and azienda(doc).get("tax_regime") == RegimeFiscale.FORFETTARIO:
+		# L. 190/2014, c. 67: a flat-rate fee is never withheld on
+		problemi.append(_("Under the flat-rate regime nobody withholds on the fee: take the withholding off"))
 
 	if doc.document_type in ("TD04", "TD05", "TD08", "TD09") and not doc.reference_invoice:
 		problemi.append(_("A credit or debit note has to say which document it corrects"))
