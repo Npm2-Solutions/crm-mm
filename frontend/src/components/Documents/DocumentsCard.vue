@@ -265,12 +265,20 @@ function iconFor(kind) {
   return ICONS[kind] || 'lucide-file'
 }
 
+// a day or whom it is for never broken across two lines: on a phone «per Laura»
+// ended one line and «Bassi» began the next
+const unito = (testo) => testo.replace(/ /g, ' ')
+
 function describe(doc) {
   return [
     __(doc.document_type),
-    doc.document_date ? formatDate(doc.document_date, 'D MMM YYYY') : null,
+    doc.document_date
+      ? unito(formatDate(doc.document_date, 'D MMM YYYY'))
+      : null,
     doc.source,
-    doc.practitioner_name ? __('for {0}', [doc.practitioner_name]) : null,
+    doc.practitioner_name
+      ? unito(__('for {0}', [doc.practitioner_name]))
+      : null,
   ]
     .filter(Boolean)
     .join(' · ')
