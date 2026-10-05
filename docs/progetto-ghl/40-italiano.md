@@ -142,6 +142,34 @@ che al momento dell'installazione era ancora l'inglese del framework.
 - **Le pipeline già create in inglese** si leggono in italiano: le fasi passano da
   `__()`, e il catalogo ha anche "Quote to prepare", "Quote delivered" e "Request".
 
+## Fatto: italiano e inglese, e basta (05/10/2026)
+
+DottorCloud ha le sue parole in due lingue: l'inglese in cui sono scritte e
+l'italiano del catalogo. Il framework ne accendeva altre sedici, in cui DottorCloud
+non ha parole (un telefono in tedesco leggeva il tedesco del framework intorno
+all'inglese di DottorCloud), e teneva spento l'italiano.
+
+- **Due lingue accese**, all'installazione e a ogni migrate
+  (`lingue.solo_italiano_e_inglese`): l'italiano e l'inglese, le altre spente. Un
+  visitatore delle pagine pubbliche legge la sua se è una delle due, l'inglese se
+  il telefono lo accetta, altrimenti la lingua del centro.
+- **La lingua del centro** si sceglie in Impostazioni › Il centro › Generale ›
+  Lingua e fuso orario: italiano o inglese, e il fuso orario di un paese
+  d'Europa. È quella in cui DottorCloud scrive per il centro (le email e le pagine
+  che leggono i clienti, i documenti, i consensi, le librerie) e quella di chi non
+  ne ha scelta una sua. Scelta qui vale qualunque sia il paese (un centro in Italia
+  che lavora in inglese, `lingue.SCELTA`); le parole di DottorCloud la seguono in
+  un lavoro in coda (`crm_lingua_del_centro` in `hooks.py`), quelle del centro
+  restano. Chi teneva l'ora del centro segue quella nuova.
+- **La lingua di ciascuno**, in Il tuo account › Preferenze: «Come il centro», che
+  la segue quando cambia, oppure italiano o inglese per sé. Il fuso orario è uno
+  d'Europa. Chi aveva scelto un'altra lingua legge quella del centro (la patch
+  `everybody_reads_italian_or_english`).
+- **La lingua del sistema è quella del centro**: dove il framework aveva lasciato
+  l'inglese a un centro in Italia, o una lingua senza parole di DottorCloud, chi non
+  ne ha scelta una sua leggeva quella, mentre le parole di DottorCloud erano in
+  italiano. A ogni migrate la lingua di System Settings torna quella del centro.
+
 ## Come si trovano le frasi in inglese
 
 - **Nel codice**: le chiamate `__('…')` del frontend e `_()`/`_lt()` del server, e le
@@ -209,7 +237,8 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | File | Cosa fa |
 |---|---|
 | `crm/locale/it.po` | Il catalogo di DottorCloud: vince su quello del framework |
-| `crm/lingue.py` | La lingua delle parole che DottorCloud scrive nel sito (consensi, fasi, librerie): quella del sito, l'italiano se è rimasto sull'inglese del framework in Italia |
+| `crm/lingue.py` | La lingua delle parole che DottorCloud scrive nel sito (consensi, fasi, librerie): quella scelta dal centro, altrimenti quella del sito, l'italiano se è rimasto sull'inglese del framework in Italia; solo italiano e inglese accesi; la pagina Lingua e fuso orario (`get_centre_language`, `save_centre_language`) |
+| `Settings/CentreLanguageSettings.vue`, `Settings/PreferencesSettings.vue` | La lingua e il fuso orario del centro; quelli di ciascuno, «Come il centro» o la sua |
 | `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build: i componenti, l'importazione dei dati, la barra dell'editor |
 | `frontend/src/components/ListViews/*ListView.vue`, `Kanban/KanbanView.vue` | I valori a scelta e le colonne del Kanban tradotti |
 | `frontend/src/area/it.js` | Il dizionario dell'area clienti |
