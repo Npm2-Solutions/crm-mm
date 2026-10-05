@@ -85,7 +85,7 @@
         >
           {{
             __(
-              "DottorCloud shows every time on the site's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the site's time zone.",
+              "{brand} shows every time on the centre's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the centre's time zone, chosen in The centre › General › Language & time.",
               [settings.data.site_timezone, form.timezone],
             )
           }}
@@ -247,7 +247,9 @@ const timezoneOptions = computed(() => {
   }
   return [
     {
-      label: __('Site time zone ({0})', [settings.data?.site_timezone || '—']),
+      label: __('The centre’s time zone ({0})', [
+        settings.data?.site_timezone || '—',
+      ]),
       value: '',
     },
     ...fusiOrari({
