@@ -78,14 +78,17 @@
       <div
         class="flex items-center gap-5 max-md:flex-col max-md:items-stretch max-md:gap-3"
       >
+        <!-- the logo fills the frame and is drawn whole inside it. The frame
+             was a grid, whose row grows with what it holds: a square logo
+             came out of it below, over the line under the row -->
         <div
-          class="grid h-16 w-28 shrink-0 place-items-center rounded-lg border border-outline-gray-2 bg-white p-2"
+          class="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-outline-gray-2 bg-white p-2"
         >
           <img
             v-if="logo"
             :src="logo"
             :alt="__('Logo')"
-            class="max-h-full max-w-full object-contain"
+            class="size-full object-contain"
           />
           <ImageIcon v-else class="size-5 text-ink-gray-4" />
         </div>
