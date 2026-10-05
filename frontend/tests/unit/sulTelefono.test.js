@@ -270,6 +270,14 @@ describe('a company on one line', () => {
     expect(rigaDellAzienda({ website: 'www.acme.it' })).toBe('acme.it')
     expect(rigaDellAzienda({})).toBe('')
   })
+
+  it('names its sector in the language of whoever reads', () => {
+    const t = (testo) => ({ Transportation: 'Trasporti' })[testo] || testo
+    expect(rigaDellAzienda({ industry: 'Transportation' }, t)).toBe('Trasporti')
+    expect(rigaDellAzienda({ industry: 'Odontoiatria' }, t)).toBe(
+      'Odontoiatria',
+    )
+  })
 })
 
 describe('a call on one line', () => {
