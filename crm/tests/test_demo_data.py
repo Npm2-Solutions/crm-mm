@@ -221,6 +221,18 @@ class TestDatiDiProva(IntegrationTestCase):
 		persone = sorted(r["CRM Lead"])
 		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "client_since": ["is", "set"]}))
 		self.assertTrue(frappe.db.count("CRM Lead", {"name": ["in", persone], "last_visit": ["is", "set"]}))
+		# and somebody the centre knew before, last seen more than a year ago, who said
+		# yes to its news: the dashboard's «To recall» has somebody to invite back
+		self.assertTrue(
+			frappe.db.count(
+				"CRM Lead",
+				{
+					"name": ["in", persone],
+					"last_visit": ["<=", frappe.utils.add_days(frappe.utils.today(), -365)],
+					"marketing_consent": "Given",
+				},
+			)
+		)
 		# the course agreed at the first visit, the subscriptions on sale, who waits,
 		# what was written
 		self.assertTrue(r.get("CRM Session Cycle") or r.get("CRM Quote"))

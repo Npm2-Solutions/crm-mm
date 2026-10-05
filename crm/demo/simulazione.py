@@ -198,6 +198,7 @@ class Simulazione:
 
 	def esegui(self) -> None:
 		self._fonti()
+		self._vecchi_clienti()
 		for _volta in range(self.ctx.quanti(6)):
 			self._nuovo_regolare(self.inizio + datetime.timedelta(days=self.rng.randint(0, 6)))
 		giorno = self.inizio
@@ -304,7 +305,10 @@ class Simulazione:
 		cellulare: str | None | bool = True,
 		email: bool = True,
 		creata: datetime.datetime | None = None,
+		da_prima: bool = False,
 	) -> Persona:
+		"""Somebody the centre hears from: ``da_prima``, one it knew before the three
+		months the demo lives through, keeps the day the centre met them."""
 		ctx = self.ctx
 		genere = genere or ctx.rng.choice(("Female", "Female", "Male"))
 		nome, cognome = self._nome(genere, nome, cognome)
@@ -312,10 +316,9 @@ class Simulazione:
 		if creata is None:
 			prima = ctx.alle(giorno, "08:00") - datetime.timedelta(days=ctx.rng.randint(1, 12))
 			creata = prima + datetime.timedelta(hours=ctx.rng.randint(1, 11), minutes=ctx.rng.randint(0, 59))
-		creata = max(
-			min(creata, ctx.adesso - datetime.timedelta(minutes=ctx.rng.randint(5, 90))),
-			ctx.alle(self.inizio, "09:00") - datetime.timedelta(days=20),
-		)
+		creata = min(creata, ctx.adesso - datetime.timedelta(minutes=ctx.rng.randint(5, 90)))
+		if not da_prima:
+			creata = max(creata, ctx.alle(self.inizio, "09:00") - datetime.timedelta(days=20))
 		proprietario = self.desk
 		if percorso and ctx.rng.random() < 0.25:
 			proprietario = self.squadra.get(PRATICO.get(percorso, "")) or self.desk
@@ -358,7 +361,9 @@ class Simulazione:
 		)
 		if percorso:
 			self._metti_in_percorso(persona, percorso, pratico)
-		self._consenso(persona)
+		if not da_prima:
+			# whoever came before answers when they came (`_vecchi_clienti`)
+			self._consenso(persona)
 		if fonte in CON_TRATTATIVA and self.stadi:
 			if persona.da_meta:
 				self._prendi_trattativa(persona)
@@ -421,14 +426,14 @@ class Simulazione:
 		persona.restanti = self.rng.randint(meno, piu)
 		persona.intervallo = intervallo
 
-	def _consenso(self, persona: Persona) -> None:
+	def _consenso(self, persona: Persona, stato: str | None = None) -> None:
 		from crm.moduli import consensi
 		from crm.moduli import registro as tipi
 
 		caso = self.rng.random()
-		if caso > 0.7:
+		if not stato and caso > 0.7:
 			return
-		stato = tipi.DATO if caso < 0.56 else tipi.RIFIUTATO
+		stato = stato or (tipi.DATO if caso < 0.56 else tipi.RIFIUTATO)
 		canale = "Online booking" if persona.fonte == "Online booking" else "At the desk"
 		try:
 			nome = consensi.registra_risposta(persona.lead, "marketing", stato, canale)
@@ -436,6 +441,100 @@ class Simulazione:
 			return
 		if nome:
 			self.ctx.retrodata("CRM Consent", nome, persona.creata + datetime.timedelta(minutes=3), self.desk)
+
+	def _vecchi_clienti(self) -> None:
+		"""A few people who came once or twice more than a year ago and never since:
+		the centre's own from before the three months the demo lives through. The
+		dashboard's «To recall» has somebody to invite back - most said yes to the
+		centre's news, one did not."""
+		from crm.moduli import registro as tipi
+
+		quanti = self.ctx.quanti(6)
+		for volta in range(quanti):
+			percorso = self.ctx.scegli_pesato(dati.BISOGNI)
+			chiave = PRATICO.get(percorso) or "giulia"
+			if not self.squadra.get(chiave):
+				continue
+			servizio = dati.PERCORSI[percorso][0]
+			giorno = self._feriale_di(chiave, self.ctx.giorno(-self.rng.randint(400, 640)))
+			inizio = self._ora_nel_turno(chiave, giorno, servizio)
+			if not (giorno and inizio):
+				continue
+			persona = self._nuova_persona(
+				giorno,
+				fonte="Walk In",
+				creata=inizio
+				- datetime.timedelta(days=self.rng.randint(2, 10), hours=self.rng.randint(1, 6)),
+				da_prima=True,
+			)
+			# one of several said no: «To recall» counts only who said yes
+			self._consenso(persona, tipi.RIFIUTATO if 1 < quanti == volta + 1 else tipi.DATO)
+			self._visita_di_prima(giorno, inizio, servizio, chiave, persona)
+			# some came back once, weeks after: still more than a year ago
+			if self.rng.random() < 0.4:
+				ritorno = self._feriale_di(chiave, giorno + datetime.timedelta(days=self.rng.randint(21, 45)))
+				ora = self._ora_nel_turno(chiave, ritorno, dati.PERCORSI[percorso][1])
+				if ritorno and ora and ritorno <= self.ctx.giorno(-370):
+					self._visita_di_prima(ritorno, ora, dati.PERCORSI[percorso][1], chiave, persona)
+
+	def _feriale_di(self, chiave: str, giorno: datetime.date) -> datetime.date | None:
+		"""The first day from ``giorno`` that ``chiave`` works."""
+		turni = dati.TURNI.get(chiave, {})
+		for scarto in range(7):
+			candidato = giorno + datetime.timedelta(days=scarto)
+			if turni.get(nome_del_giorno(candidato)):
+				return candidato
+		return None
+
+	def _ora_nel_turno(
+		self, chiave: str, giorno: datetime.date | None, servizio: str
+	) -> datetime.datetime | None:
+		"""A start in one of ``chiave``'s shifts that day, the whole visit inside it."""
+		if not giorno:
+			return None
+		inizio, fine = self.rng.choice(dati.TURNI[chiave][nome_del_giorno(giorno)])
+		apre, chiude = self.ctx.alle(giorno, inizio), self.ctx.alle(giorno, fine)
+		durata = datetime.timedelta(minutes=self.minuti[servizio])
+		mezzore = int((chiude - apre - durata).total_seconds() // 1800)
+		if mezzore < 0:
+			return None
+		return apre + datetime.timedelta(minutes=30 * self.rng.randint(0, mezzore))
+
+	def _visita_di_prima(
+		self, giorno: datetime.date, inizio: datetime.datetime, servizio: str, chiave: str, persona: Persona
+	) -> None:
+		"""A visit somebody came to before the three months: completed, as the agenda
+		closed it; it keeps their last visit, as any other does."""
+		fine = inizio + datetime.timedelta(minutes=self.minuti[servizio])
+		stanza = self.stanze.get(dati.STUDIO.get(chiave) or self.stanza_di[servizio])
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Appointment",
+				"service": self.servizi[servizio],
+				"status": "Completed",
+				"starts_on": inizio,
+				"ends_on": fine,
+				"staff": [{"user": self.squadra[chiave], "status": "Confirmed"}],
+				"participants": [
+					{
+						"party_type": "CRM Lead",
+						"party": persona.lead,
+						"participant_name": persona.nome,
+						"status": "Attended",
+						"arrived_at": inizio - datetime.timedelta(minutes=self.rng.randint(2, 12)),
+					}
+				],
+				"resources": [{"resource": stanza, "quantity": 1}] if stanza else [],
+				"source": "Internal",
+			}
+		)
+		with self.ctx.come(self.desk):
+			doc.insert(ignore_permissions=True)
+		prenotato = inizio - datetime.timedelta(days=self.rng.randint(1, 9), hours=self.rng.randint(0, 5))
+		self.ctx.retrodata("CRM Appointment", doc.name, max(prenotato, persona.creata), self.desk)
+		self.appuntamenti += 1
+		persona.giorni.add(giorno)
+		persona.ultima = max(persona.ultima or fine, fine)
 
 	def _apri_trattativa(self, persona: Persona) -> None:
 		with self.ctx.come(self.desk):
