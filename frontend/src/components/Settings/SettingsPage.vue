@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex h-full flex-col gap-6">
     <div class="flex justify-between gap-3">
@@ -92,7 +95,8 @@ const data = createDocumentResource({
       toast.success(__(props.successMessage))
     },
     onError: (err) => {
-      toast.error(err.message + ': ' + err.messages[0])
+      // the server's words, never its code («ValidationError: …»)
+      toast.error(err.messages?.join(' ') || __('The settings were not saved'))
     },
   },
 })
