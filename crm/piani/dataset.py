@@ -17,10 +17,17 @@ own copy (`immagini`) or the agency's CDN, and always with "© Gym visual —
 https://gymvisual.com/". The assistant never touches them. A new exercise of the
 library is a new record of that file, with an id of NPM2's ("dc-0001"): the
 centre never imports one.
+
+The Italian steps are the dataset's, put right by NPM2 where its translation
+spoke in the infinitive («Ripetere…» beside «Siediti…») or took a word for
+another («le armi» for the arms): each record changed keeps the fingerprints of
+the words it had (`before`), so that a site's copy follows at the next migrate
+while the words a centre wrote stay (`nella_lingua`).
 """
 
 from __future__ import annotations
 
+import hashlib
 import re
 
 #: The library's exercises carry it as their source: what the centre adds has none.
@@ -190,16 +197,26 @@ def _parole(record: dict, lingua: str) -> dict:
 	}
 
 
+def impronta(testo: str) -> str:
+	"""The fingerprint the library keeps of words it no longer writes (`before`)."""
+	return hashlib.sha256(testo.encode("utf-8")).hexdigest()[:16]
+
+
 def nella_lingua(record: dict, lingua: str, attuali: dict) -> dict:
-	"""The library's words a site keeps of an exercise in another language than
-	``lingua``, in ``lingua``: a site loaded in English before it said it is in
-	Italy. Words the centre wrote are the library's in no language, and stay."""
+	"""The library's words a site keeps of an exercise, as the library writes them
+	now in ``lingua``: words of another language (a site loaded in English before
+	it said it is in Italy), or words NPM2 has since put right, which the record
+	remembers by their fingerprint (``before``, by language and field). Words the
+	centre wrote are none of these, and stay."""
 	cambi = {}
+	prima = (record.get("before") or {}).get(lingua) or {}
 	for campo, nuovo in _parole(record, lingua).items():
 		attuale = (attuali.get(campo) or "").strip() or None
 		if not nuovo or attuale == nuovo:
 			continue
-		if attuale in {_parole(record, altra)[campo] for altra in LINGUE if altra != lingua}:
+		altre = {_parole(record, altra)[campo] for altra in LINGUE if altra != lingua}
+		di_prima = attuale is not None and impronta(attuale) in (prima.get(campo) or ())
+		if attuale in altre or di_prima:
 			cambi[campo] = nuovo
 	return cambi
 
