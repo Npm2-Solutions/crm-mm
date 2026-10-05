@@ -10,22 +10,25 @@
 -->
 <template>
   <div class="flex items-center gap-3 py-2 max-md:flex-wrap max-md:py-3">
-    <!-- a phone gives the name its own line, and the buttons the next; the
-         name is read whole, the chips beside it go under it when it is long
-         («Alice Fab…» beside «In attesa» and «1 modulo da firmare») -->
+    <!-- a phone gives the name its own line, and the buttons the next. The
+         name is read whole: the chips beside it go under it when the row has
+         no room for both («Alice Fab…» beside «In attesa» and «1 modulo da
+         firmare»), on a tablet held upright too, where the buttons beside
+         them left it «C…» or nothing and the minutes waiting went under
+         «Presente». With a finger, the name is as tall as a thumb to tap -->
     <div
-      class="flex min-w-0 flex-1 items-center gap-2 max-md:basis-full max-md:flex-wrap max-md:gap-y-1"
+      class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 max-md:basis-full"
     >
       <RouterLink
         v-if="participant.party_type === 'CRM Lead' && participant.party"
         :to="{ name: 'Lead', params: { leadId: participant.party } }"
-        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-3 max-md:max-w-full max-md:shrink-0 max-md:py-3"
+        class="max-w-full shrink-0 truncate text-base-medium text-ink-gray-8 hover:underline [@media(pointer:coarse)]:-my-3 [@media(pointer:coarse)]:py-3"
       >
         {{ participant.participant_name || participant.party }}
       </RouterLink>
       <span
         v-else
-        class="truncate text-base-medium text-ink-gray-8 max-md:max-w-full max-md:shrink-0"
+        class="max-w-full shrink-0 truncate text-base-medium text-ink-gray-8"
       >
         {{ participant.participant_name }}
       </span>
