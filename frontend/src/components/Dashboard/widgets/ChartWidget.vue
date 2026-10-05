@@ -37,10 +37,9 @@
             :style="{ backgroundColor: palette[index] }"
             aria-hidden="true"
           />
-          <span
-            class="min-w-0 flex-1 truncate text-ink-gray-7"
-            :title="slice.label"
-          >
+          <!-- a band's words read whole, on two lines if need be: cut short
+               they said «Oltre 9…» -->
+          <span class="line-clamp-2 min-w-0 flex-1 break-words text-ink-gray-7">
             {{ slice.label }}
           </span>
           <span class="shrink-0 tabular-nums font-medium text-ink-gray-9">
@@ -79,8 +78,9 @@ const props = defineProps({
 const root = ref(null)
 const { width } = useElementSize(root)
 
-// a narrow donut puts its legend underneath instead of beside it
-const stacked = computed(() => width.value > 0 && width.value < 360)
+// a narrow donut puts its legend underneath instead of beside it: beside the
+// ring, a phone's card left the words a few letters («Da 61 …»)
+const stacked = computed(() => width.value > 0 && width.value < 440)
 
 const dark = useDarkCharts()
 
