@@ -34944,9 +34944,21 @@ msgstr "{0} anni fa"
 msgid "{0} yes"
 msgstr "{0} sì"
 
-#: frontend/src/components/Calendar/CalendarEventPanel.vue
-msgid "{0} {1} before{2}"
-msgstr "{0} {1} prima{2}"
+#: frontend/src/utils/promemoria.js
+msgid "{0} {1} before"
+msgstr "{0} {1} prima"
+
+#: frontend/src/utils/promemoria.js
+msgid "{0} {1} before, by email"
+msgstr "{0} {1} prima, per email"
+
+#: frontend/src/utils/promemoria.js
+msgid "{0} {1} before, at {2}"
+msgstr "{0} {1} prima, alle {2}"
+
+#: frontend/src/utils/promemoria.js
+msgid "{0} {1} before, at {2}, by email"
+msgstr "{0} {1} prima, alle {2}, per email"
 
 #: crm/invoicing/doctype/crm_billing_profile/crm_billing_profile.py
 msgid "{0} {1} does not exist"

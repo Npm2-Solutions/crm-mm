@@ -125,13 +125,10 @@
           <div class="flex flex-col gap-1.5">
             <div v-for="notification in notifications" :key="notification.name">
               {{
-                __(`{0} {1} before{2}`, [
-                  notification.before,
-                  notification.before == 1
-                    ? notification.interval.slice(0, -1)
-                    : notification.interval,
-                  notification.type == 'Email' ? ', as email' : '',
-                ])
+                promemoriaInParole(notification, {
+                  tuttoIlGiorno: _event.isFullDay,
+                  t: __,
+                })
               }}
             </div>
           </div>
@@ -615,6 +612,7 @@ import {
 } from '@/composables/event'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { NAMED_HEX } from '@/utils/calendarColors'
+import { promemoriaInParole } from '@/utils/promemoria'
 import {
   TextInput,
   Switch,
