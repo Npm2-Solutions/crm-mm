@@ -154,7 +154,29 @@ class TestSocialPlanner(IntegrationTestCase):
 		process_due_posts()
 		doc = frappe.get_doc("CRM Social Post", result["name"])
 		self.assertEqual(doc.status, "Failed")
-		self.assertTrue(doc.targets[0].error)
+		# what Instagram needs, said before its page is looked for
+		self.assertEqual(doc.targets[0].error, frappe._("Instagram requires an image or a video"))
+
+	def test_a_page_disconnected_since_asks_to_reconnect(self):
+		# its record gone, the post said the framework's «Facebook Page … not found»
+		account = make_account("Test FB senza pagina", "Facebook")
+		account.provider_account_id = "1784000000999"
+		account.save()
+		result = S.save_post(
+			{
+				"content": "ciao",
+				"status": "Scheduled",
+				"scheduled_at": frappe.utils.add_to_date(frappe.utils.now_datetime(), hours=-1),
+				"targets": [{"account": "Test FB senza pagina"}],
+			}
+		)
+		process_due_posts()
+		doc = frappe.get_doc("CRM Social Post", result["name"])
+		self.assertEqual(doc.status, "Failed")
+		self.assertEqual(
+			doc.targets[0].error,
+			frappe._("No Facebook page token for this profile — reconnect in Settings → Integrations → Meta"),
+		)
 
 
 class TestSocialPlannerRoles(IntegrationTestCase):

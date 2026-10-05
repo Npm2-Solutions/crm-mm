@@ -42,10 +42,17 @@ def publish_to_meta(post, target, account) -> str:
 
 	content = target.override_content or post.content
 	media_url = get_url(post.media) if post.media else None
+	# what Instagram needs is known before anybody is asked anything
+	if account.platform != "Facebook" and not media_url:
+		raise PublishError(_("Instagram requires an image or a video"))
 
 	page_id = account.facebook_page or account.provider_account_id
-	token = page_id and frappe.get_doc("Facebook Page", page_id).get_password(
-		"access_token", raise_exception=False
+	# a page disconnected since leaves no record: the post says to reconnect, not
+	# the framework's «Facebook Page … not found»
+	token = (
+		page_id
+		and frappe.db.exists("Facebook Page", page_id)
+		and frappe.get_doc("Facebook Page", page_id).get_password("access_token", raise_exception=False)
 	)
 	if not token:
 		raise PublishError(
@@ -69,8 +76,6 @@ def publish_to_meta(post, target, account) -> str:
 			raise PublishError(
 				_("No Instagram account id — refresh the profiles in Settings → Marketing → Social Planner")
 			)
-		if not media_url:
-			raise PublishError(_("Instagram requires an image or a video"))
 		params = (
 			{"media_type": "REELS", "video_url": media_url, "caption": content}
 			if is_video
