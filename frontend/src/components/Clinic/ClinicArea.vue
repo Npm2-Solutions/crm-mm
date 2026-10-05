@@ -395,6 +395,7 @@
     :doctype="obscuring.doctype"
     :name="obscuring.name"
     :title="obscuring.title"
+    :about="obscuring.about"
     :obscured="obscuring.obscured"
     @done="afterObscure"
   />
@@ -733,6 +734,7 @@ const obscuring = reactive({
   doctype: 'Clinic Record',
   name: null,
   title: '',
+  about: '',
   obscured: false,
 })
 
@@ -742,6 +744,9 @@ function askObscure(doctype, entry) {
     doctype,
     name: entry.name,
     title: entry.title || (entry.kind === 'Note' ? __('Note') : __('Visit')),
+    about: [formatDate(entry.record_date, ''), entry.practitioner_name]
+      .filter(Boolean)
+      .join(' · '),
     obscured: Boolean(entry.obscured),
   })
 }

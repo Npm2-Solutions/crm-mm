@@ -22513,11 +22513,11 @@ msgstr "Solo clienti già venuti"
 
 #: frontend/src/components/Documents/DocumentsCard.vue
 msgid "Reveal"
-msgstr "Mostra"
+msgstr "Rendi visibile"
 
 #: frontend/src/components/Clinic/ObscureDialog.vue
 msgid "Reveal again"
-msgstr "Mostra di nuovo"
+msgstr "Rendi di nuovo visibile"
 
 #: crm/api/dashboard.py:727
 msgid "Revenue"
@@ -34351,8 +34351,8 @@ msgid "{0} gaps in square brackets still to fill"
 msgstr "{0} parti tra parentesi quadre ancora da completare"
 
 #: frontend/src/components/Clinic/ObscureDialog.vue
-msgid "{0} goes back into the dossier: the care team reads it again, as before."
-msgstr "{0} torna nel dossier: di nuovo leggibile dall'équipe di cura, come prima."
+msgid "It goes back into the dossier: the care team reads it again, as before."
+msgstr "Torna nel dossier: di nuovo leggibile dall'équipe di cura, come prima."
 
 #: frontend/src/utils/index.js:153
 msgid "{0} h"
@@ -34629,8 +34629,8 @@ msgid "{0} leads could not be imported"
 msgstr "Non è stato possibile importare {0} contatti"
 
 #: frontend/src/components/Clinic/ObscureDialog.vue
-msgid "{0} leaves the dossier. Its author and you still read it; the other practitioners will not know it exists. A visit takes its addenda and reports with it."
-msgstr "{0} esce dal dossier. Resta leggibile per il suo autore e per te; gli altri professionisti non sapranno che esiste. Una visita porta con sé le sue integrazioni e i suoi referti."
+msgid "It leaves the dossier. Its author and you still read it; the other practitioners will not know it exists. A visit takes its addenda and reports with it."
+msgstr "Esce dal dossier. Resta leggibile per il suo autore e per te; gli altri professionisti non sapranno che esiste. Una visita porta con sé le sue integrazioni e i suoi referti."
 
 #: frontend/src/components/Quotes/QuoteDialog.vue
 msgid "{0} less {1}%"

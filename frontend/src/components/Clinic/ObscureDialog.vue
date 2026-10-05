@@ -16,16 +16,22 @@
   >
     <template #body-content>
       <div class="flex flex-col gap-3">
+        <!-- what it is on its own line: glued into the sentence, a note
+             without a title read «Nota esce dal dossier» -->
+        <div v-if="title" class="flex flex-col gap-0.5">
+          <span class="text-base-medium text-ink-gray-8">{{ title }}</span>
+          <span v-if="about" class="text-p-sm text-ink-gray-6">
+            {{ about }}
+          </span>
+        </div>
         <p class="text-p-base text-ink-gray-7">
           {{
             obscured
               ? __(
-                  '{0} goes back into the dossier: the care team reads it again, as before.',
-                  [title],
+                  'It goes back into the dossier: the care team reads it again, as before.',
                 )
               : __(
-                  '{0} leaves the dossier. Its author and you still read it; the other practitioners will not know it exists. A visit takes its addenda and reports with it.',
-                  [title],
+                  'It leaves the dossier. Its author and you still read it; the other practitioners will not know it exists. A visit takes its addenda and reports with it.',
                 )
           }}
         </p>
@@ -61,6 +67,8 @@ const props = defineProps({
   doctype: { type: String, required: true },
   name: { type: String, default: null },
   title: { type: String, default: '' },
+  // when and by whom, under the title
+  about: { type: String, default: '' },
   obscured: { type: Boolean, default: false },
 })
 const emit = defineEmits(['done'])
