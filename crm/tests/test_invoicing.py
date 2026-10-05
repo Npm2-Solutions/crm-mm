@@ -155,6 +155,22 @@ class EmissioneTest(InvoicingBase):
 		self.assertTrue(documento.xml_file)
 		self.assertTrue(documento.sdi_filename.startswith(f"IT{PIVA}_"))
 
+	def test_una_copia_non_porta_via_il_numero(self):
+		# the Desk's Duplicate kept the number, and an issued number is never
+		# assigned twice: the copy took the original's (05/10/2026, Itala's test).
+		# `ignore_no_copy=False` is what the Desk's Duplicate does
+		originale = self.fattura(self.trattamento.name, self.osteopata.name)
+		originale.submit()
+		copia = frappe.copy_doc(originale, ignore_no_copy=False)
+		copia.docstatus = 0
+		copia.insert()
+		self.assertFalse(copia.document_number)
+		self.assertFalse(copia.xml_file)
+		self.assertFalse(copia.sdi_filename)
+		copia.submit()
+		self.assertNotEqual(copia.document_number, originale.document_number)
+		self.assertNotEqual(copia.sdi_filename, originale.sdi_filename)
+
 	def test_il_numero_si_assegna_solo_all_emissione(self):
 		documento = self.fattura(self.seduta.name, self.psicologo.name)
 		self.assertFalse(documento.document_number)
