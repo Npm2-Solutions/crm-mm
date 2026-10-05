@@ -111,3 +111,19 @@ def registra() -> None:
 		registra_capacita(capacita, livelli)
 	for capacita in TECNICHE:
 		registra_capacita(capacita)
+	# its share of the demo, where the centre has no company of its own yet
+	from crm.demo.registro import Parte, registra_parte
+	from crm.invoicing import demo
+
+	registra_parte(
+		Parte(
+			"fatturazione",
+			"Invoicing",
+			demo.crea,
+			modulo=PIANO,
+			dopo=("clienti", "abbonamenti"),
+			descrizione="A company in test with the cards of its services, the visits invoiced day "
+			"by day as they were paid, the cycles paid as a whole, a credit note: test invoices, "
+			"never sent. Made only where the centre has no issuing company yet.",
+		)
+	)
