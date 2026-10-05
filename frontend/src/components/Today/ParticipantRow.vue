@@ -10,16 +10,23 @@
 -->
 <template>
   <div class="flex items-center gap-3 py-2 max-md:flex-wrap max-md:py-3">
-    <!-- a phone gives the name its own line, and the buttons the next -->
-    <div class="flex min-w-0 flex-1 items-center gap-2 max-md:basis-full">
+    <!-- a phone gives the name its own line, and the buttons the next; the
+         name is read whole, the chips beside it go under it when it is long
+         («Alice Fab…» beside «In attesa» and «1 modulo da firmare») -->
+    <div
+      class="flex min-w-0 flex-1 items-center gap-2 max-md:basis-full max-md:flex-wrap max-md:gap-y-1"
+    >
       <RouterLink
         v-if="participant.party_type === 'CRM Lead' && participant.party"
         :to="{ name: 'Lead', params: { leadId: participant.party } }"
-        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-3 max-md:py-3"
+        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-3 max-md:max-w-full max-md:shrink-0 max-md:py-3"
       >
         {{ participant.participant_name || participant.party }}
       </RouterLink>
-      <span v-else class="truncate text-base-medium text-ink-gray-8">
+      <span
+        v-else
+        class="truncate text-base-medium text-ink-gray-8 max-md:max-w-full max-md:shrink-0"
+      >
         {{ participant.participant_name }}
       </span>
       <!-- a day gone by asks with its buttons: «In arrivo» there is not true -->
