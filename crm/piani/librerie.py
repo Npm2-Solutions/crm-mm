@@ -262,7 +262,8 @@ def carica(record: list, lingua: str | None = None) -> dict:
 	"""The library's records into the site: a new exercise comes in; one already
 	there gets the library's pictures and muscles again, and what a centre wrote
 	on it before - its name, body part, how it is done - stays. The library's own
-	words the site keeps in another language take ``lingua``."""
+	words the site keeps in another language, or as they were before NPM2 put
+	them right, take the library's words in ``lingua`` (`dataset.nella_lingua`)."""
 	lingua = lingua or lingua_del_sito()
 	presenti = {
 		riga.source_code: riga

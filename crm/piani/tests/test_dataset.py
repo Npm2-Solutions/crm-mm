@@ -91,6 +91,30 @@ class GliEsercizi(UnitTestCase):
 		indietro = T.nella_lingua(RECORD, "en", T.esercizio(RECORD, "it"))
 		self.assertEqual((indietro["equipment"], indietro["exercise_name"]), ("body weight", "3/4 sit-up"))
 
+	def test_le_parole_che_npm2_ha_corretto(self):
+		# the library's Italian put right since a site loaded it: the record keeps
+		# the fingerprint of the words it had
+		vecchie = "1. Sdraiarsi sulla schiena.\n2. Sollevare il busto."
+		corretto = {**RECORD, "before": {"it": {"instructions": [T.impronta(vecchie)]}}}
+		italiano = T.esercizio(RECORD, "it")
+		self.assertEqual(
+			T.nella_lingua(corretto, "it", {**italiano, "instructions": vecchie}),
+			{"instructions": "1. Sdraiati sulla schiena.\n2. Solleva il busto."},
+		)
+		# what the centre wrote in their place stays
+		self.assertEqual(
+			T.nella_lingua(corretto, "it", {**italiano, "instructions": "Piano, guardando avanti."}),
+			{},
+		)
+
+	def test_ogni_correzione_ricorda_le_parole_di_prima(self):
+		file = Path(T.__file__).parent / "dati" / "esercizi.json"
+		for voce in json.loads(file.read_text(encoding="utf-8")):
+			for impronta in ((voce.get("before") or {}).get("it") or {}).get("instructions") or []:
+				self.assertRegex(impronta, r"^[0-9a-f]{16}$", voce["id"])
+				# never the fingerprint of the words it has now
+				self.assertNotEqual(impronta, T.impronta(T.esercizio(voce, "it")["instructions"]), voce["id"])
+
 	def test_il_nome_italiano_o_quello_del_dataset(self):
 		senza = {key: value for key, value in RECORD.items() if key != "names"}
 		self.assertEqual(T.esercizio(senza, "it")["name"], "3/4 sit-up")
