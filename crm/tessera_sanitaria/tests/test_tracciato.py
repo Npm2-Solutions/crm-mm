@@ -344,10 +344,25 @@ class BatchTest(UnitTestCase):
 
 class ScadenzeTest(UnitTestCase):
 	def test_la_scadenza_ordinaria_e_il_31_gennaio(self):
-		self.assertEqual(scadenza_invio(2026), date(2027, 1, 31))
+		self.assertEqual(scadenza_invio(2027), date(2028, 1, 31))
+
+	def test_di_sabato_o_di_domenica_slitta_al_lunedi(self):
+		# 31/01/2026 a Saturday: 2 February, as the Sistema TS announced
+		self.assertEqual(scadenza_invio(2025), date(2026, 2, 2))
+		# 31/01/2027 a Sunday
+		self.assertEqual(scadenza_invio(2026), date(2027, 2, 1))
 
 	def test_i_veterinari_hanno_la_loro(self):
 		self.assertEqual(scadenza_invio(2026, veterinario=True), date(2027, 3, 16))
+		# 16/03/2030 a Saturday
+		self.assertEqual(scadenza_invio(2029, veterinario=True), date(2030, 3, 18))
+
+	def test_la_pasqua(self):
+		from crm.tessera_sanitaria.engine.tracciato import _pasqua
+
+		self.assertEqual(
+			[_pasqua(a) for a in (2026, 2027, 2038)], [date(2026, 4, 5), date(2027, 3, 28), date(2038, 4, 25)]
+		)
 
 
 class CanaliTest(UnitTestCase):
@@ -437,6 +452,20 @@ class BustaSoapTest(UnitTestCase):
 		# The body of the document is not sent: the identifier is the whole request.
 		self.assertEqual(nomi.count("idCancellazioneDocumentoFiscale"), 1)
 
+	def test_cancellare_un_rimborso_nomina_il_rimborso(self):
+		originale = IdSpesa(p_iva="00743110157", data_emissione=date(2026, 3, 10), num_documento="2026/S/128")
+		nota = documento(
+			id_spesa=IdSpesa(p_iva="00743110157", data_emissione=date(2026, 4, 2), num_documento="2026/NC/3"),
+			id_rimborso=originale,
+		)
+		cancellazione = self._busta(documento=nota, operazione="Cancellazione")[1][0]
+		testi = [e.text for e in cancellazione.iter() if e.tag.endswith("numDocumento")]
+		# the credit note goes, never the invoice it refunded
+		self.assertEqual(testi, ["2026/NC/3"])
+		rimborso = self._busta(documento=nota, operazione="Rimborso")[1][0]
+		blocco = next(e for e in rimborso if e.tag.endswith("idRimborsoDocumentoFiscale"))
+		self.assertEqual([e.text for e in blocco.iter() if e.tag.endswith("numDocumento")], ["2026/S/128"])
+
 	def test_la_soap_action_non_e_un_url(self):
 		from crm.tessera_sanitaria.engine.tracciato import soap_action
 
@@ -476,15 +505,16 @@ class EsitoTest(UnitTestCase):
 		esito = self._analizza(
 			b"""<esito><esitoChiamata>1</esitoChiamata><listaMessaggi>
 			<tipoMessaggio>E</tipoMessaggio><codiceEsito>105</codiceEsito>
-			<descrizione>x</descrizione></listaMessaggi></esito>"""
+			</listaMessaggi></esito>"""
 		)
 		self.assertFalse(esito.accolto)
 		self.assertEqual(esito.codici_errore, ["105"])
-		self.assertIn("delega", esito.riassunto())
+		# without the service's words, the list's
+		self.assertEqual(esito.riassunto(), "Codice 105: Invio per conto in assenza di delega attiva")
 
 	def test_la_risposta_vera_un_messaggio_per_codice(self):
 		# as the test door answered (05/10/2026): each message in its own element
-		# inside the list, the code read once, the service's words where we have none
+		# inside the list, the code read once, in the service's own words
 		esito = self._analizza(
 			b"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body>
 			<inserimentoDocumentoSpesaResponse xmlns="http://documentospesap730.sanita.finanze.it">
@@ -538,7 +568,8 @@ class EsitoTest(UnitTestCase):
 			b"<esito><esitoChiamata>1</esitoChiamata><codiceEsito>002</codiceEsito></esito>"
 		)
 		self.assertEqual(esito.codici_errore, ["002"])
-		self.assertIn("Certificato", esito.riassunto())
+		# 002 is the PIN code that cannot be decrypted, as the Sistema TS's list says
+		self.assertIn("Codice 002: Il PIN code inviato non si riesce a decifrare", esito.riassunto())
 
 
 class ModalitaTest(UnitTestCase):

@@ -43,7 +43,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from xml.etree import ElementTree as ET
 
@@ -824,14 +824,44 @@ def prepara_batch(
 # ------------------------------------------------------------------- deadlines
 
 
+def _pasqua(anno: int) -> date:
+	"""Easter Sunday (the anonymous Gregorian computus)."""
+	a, b, c = anno % 19, anno // 100, anno % 100
+	d, e = divmod(b, 4)
+	f = (b + 8) // 25
+	g = (b - f + 1) // 3
+	h = (19 * a + b - d - g + 15) % 30
+	i, k = divmod(c, 4)
+	settimana = (32 + 2 * e + 2 * i - h - k) % 7
+	m = (a + 11 * h + 22 * settimana) // 451
+	mese, giorno = divmod(h + settimana - 7 * m + 114, 31)
+	return date(anno, mese, giorno + 1)
+
+
+def _festivo(giorno: date) -> bool:
+	"""A Saturday, a Sunday or a national holiday of the months a deadline falls in
+	(L. 260/1949)."""
+	if giorno.weekday() >= 5:
+		return True
+	fisse = {(1, 1), (6, 1), (25, 4), (1, 5), (2, 6), (15, 8), (1, 11), (8, 12), (25, 12), (26, 12)}
+	if (giorno.day, giorno.month) in fisse:
+		return True
+	return giorno == _pasqua(giorno.year) + timedelta(days=1)
+
+
 def scadenza_invio(anno: int, veterinario: bool = False) -> date:
 	"""When the year's expenses have to be with the Sistema TS.
 
-	31 January of the following year for everybody, **mid-March for vets**, who have
-	their own deadline and therefore their own batch. Merging the two is how a vet
-	practice discovers in February that it is late.
+	31 January of the following year for everybody (the sending is yearly from the
+	2025 expenses), **mid-March for vets**, who have their own deadline and therefore
+	their own batch. A deadline on a Saturday or a holiday moves to the next working
+	day (art. 7, c. 1, lett. h, D.L. 70/2011): the 2025 expenses were due on 2 February
+	2026, the 2026 ones on 1 February 2027.
 	"""
-	return date(anno + 1, 3, 16) if veterinario else date(anno + 1, 1, 31)
+	giorno = date(anno + 1, 3, 16) if veterinario else date(anno + 1, 1, 31)
+	while _festivo(giorno):
+		giorno += timedelta(days=1)
+	return giorno
 
 
 def giorni_alla_scadenza(anno: int, oggi: date | None = None, veterinario: bool = False) -> int:
@@ -1041,7 +1071,14 @@ def costruisci_busta(
 	)
 
 	if operazione in WRAPPER_IDENTIFICATIVO:
-		identificativo = documento.id_rimborso or documento.id_spesa
+		# a refund names the document it refunds; a cancellation names the document
+		# being cancelled, its own identifier - a refund cancelled is the refund,
+		# never the invoice it refunded
+		identificativo = (
+			documento.id_rimborso
+			if operazione == Operazione.RIMBORSO and documento.id_rimborso
+			else documento.id_spesa
+		)
 		scrivi_id_spesa(richiesta, identificativo, WRAPPER_IDENTIFICATIVO[operazione], NAMESPACE_SINCRONO)
 
 	if operazione not in OPERAZIONI_SOLO_IDENTIFICATIVO:
@@ -1143,10 +1180,14 @@ class Esito:
 
 			righe: list[str] = []
 			for m in self.errori:
-				nota = descrivi_esito(m.codice)
-				# a code we do not describe is said with the service's own words
-				if nota == f"Codice {m.codice}" and m.descrizione:
+				# the code always first, as the Sistema TS's list has it; the service's
+				# own words when it gives them, they are the current ones, else ours
+				if m.descrizione:
 					nota = f"Codice {m.codice}: {m.descrizione.strip().capitalize()}"
+				else:
+					nota = descrivi_esito(m.codice)
+					if nota != f"Codice {m.codice}":
+						nota = f"Codice {m.codice}: {nota}"
 				if nota not in righe:
 					righe.append(nota)
 			return " - ".join(righe)
