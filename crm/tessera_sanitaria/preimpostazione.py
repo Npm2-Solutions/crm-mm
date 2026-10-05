@@ -23,7 +23,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate
 
-from crm.invoicing import scelte
+from crm.invoicing import registro, scelte
 from crm.invoicing.engine import diciture, voci
 from crm.permissions.livelli import richiede
 from crm.tessera_sanitaria.engine.codici import SoggettoInviante, tipi_spesa_ammessi
@@ -300,8 +300,10 @@ def _erogatore(servizio: str) -> str | None:
 @richiede("fatture.configura")
 def cards_from_services(company: str | None = None) -> dict:
 	"""A card for every service of the agenda that has none: a healthcare service,
-	exempt, with the expense type of whoever issues and the agenda's price. A card
-	of the same name that points nowhere is tied to its service, not doubled."""
+	exempt, with the expense type of whoever issues and the agenda's price - one
+	only somebody who is not exempt performs (the osteopath, the kinesiologist)
+	taxed at their rate (`registro.scheda_tassata`). A card of the same name that
+	points nowhere is tied to its service, not doubled."""
 	frappe.has_permission(SCHEDA, "create", throw=True)
 	azienda = _azienda(company)
 	categoria = frappe.db.get_value(AZIENDA, azienda, "sender_category") if azienda else None
@@ -323,6 +325,7 @@ def cards_from_services(company: str | None = None) -> dict:
 				"crm_service": servizio.name,
 				"default_rate": flt(servizio.default_price),
 				"default_provider": _erogatore(servizio.name),
+				**(registro.scheda_tassata(registro.erogatori_del_servizio(servizio.name)) or {}),
 			}
 		)
 		scheda.insert()

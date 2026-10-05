@@ -156,50 +156,26 @@ def _schede(ctx: Contesto, predefinita: dict) -> None:
 	centre's tied to them. A service somebody performs who is not exempt - the
 	osteopath, the classes' kinesiologist - is taxed at their rate: the engine refuses
 	an exemption to who is not a health profession, never a tax."""
+	from crm.invoicing import registro as qualifiche
+
 	for servizio in sorted(ctx.con_chiave("service.").values()):
 		if frappe.db.exists(SCHEDA, {"crm_service": servizio}):
 			continue
 		nome, prezzo = frappe.db.get_value("CRM Service", servizio, ["service_name", "default_price"])
-		erogatori = _erogatori_di(servizio)
-		scheda = {
-			**predefinita,
-			"doctype": SCHEDA,
-			"service_name": nome_libero(SCHEDA, nome),
-			"fiscal_description": nome,
-			"crm_service": servizio,
-			"default_rate": flt(prezzo),
-			"default_provider": erogatori[0].name if len(erogatori) == 1 else None,
-		}
-		tassata = next((erogatore for erogatore in erogatori if not erogatore.vat_exempt), None)
-		if tassata:
-			scheda.update(
-				{
-					# a healthcare expense only where it goes to the Sistema TS: the
-					# osteopath's does not (Ris. AdE 9/2026)
-					"is_healthcare": int(bool(tassata.is_healthcare and tassata.ts_required)),
-					"vat_exempt": 0,
-					"vat_rate": tassata.default_vat_rate or 22,
-					"exemption_reference": "",
-					"ts_expense_type": "",
-				}
-			)
-		frappe.get_doc(scheda).insert()
-
-
-def _erogatori_di(servizio: str) -> list:
-	"""Whoever performs ``servizio``, with the fiscal rules of their qualification."""
-	utenti = frappe.get_all(
-		"CRM Service Staff", filters={"parenttype": "CRM Service", "parent": servizio}, pluck="user"
-	)
-	return frappe.db.sql(
-		"""select p.name, q.vat_exempt, q.default_vat_rate, q.is_healthcare, q.ts_required
-		from `tabCRM Service Provider` p
-		join `tabCRM Professional Qualification` q on q.name = p.qualification
-		where p.enabled = 1 and p.user in %(utenti)s
-		order by p.name""",
-		{"utenti": utenti or [""]},
-		as_dict=True,
-	)
+		erogatori = qualifiche.erogatori_del_servizio(servizio)
+		frappe.get_doc(
+			{
+				**predefinita,
+				"doctype": SCHEDA,
+				"service_name": nome_libero(SCHEDA, nome),
+				"fiscal_description": nome,
+				"crm_service": servizio,
+				"default_rate": flt(prezzo),
+				"default_provider": erogatori[0].name if len(erogatori) == 1 else None,
+				# the osteopath's, the classes' kinesiologist's: taxed at their rate
+				**(qualifiche.scheda_tassata(erogatori) or {}),
+			}
+		).insert()
 
 
 # -- who pays ---------------------------------------------------------------------------------------

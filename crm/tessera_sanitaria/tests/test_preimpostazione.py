@@ -160,3 +160,36 @@ class LeTreDomande(IntegrationTestCase):
 
 		# once
 		self.assertEqual(preimpostazione.cards_from_services(AZIENDA), {"created": [], "linked": []})
+
+	def test_la_scheda_di_chi_non_e_esente_ha_l_iva(self):
+		"""Pilates with the kinesiologist: no health profession (Ris. AdE 9/2026),
+		taxed at its rate; an exempt card would be refused at the first invoice."""
+		preimpostazione.apply_setup(AZIENDA, "professionista_sanitario", "RF01", "fisioterapista")
+		chinesiologo = "kinesiologist.cards@example.com"
+		if not frappe.db.exists("User", chinesiologo):
+			frappe.get_doc(
+				{
+					"doctype": "User",
+					"email": chinesiologo,
+					"first_name": "Kinesiologist",
+					"send_welcome_email": 0,
+				}
+			).insert(ignore_permissions=True)
+		frappe.db.delete("CRM Service Provider", {"user": chinesiologo})
+		frappe.get_doc(
+			{
+				"doctype": "CRM Service Provider",
+				"provider_name": "Chinesiologo di prova",
+				"qualification": "chinesiologo",
+				"user": chinesiologo,
+				"enabled": 1,
+			}
+		).insert(ignore_permissions=True)
+		pilates = _servizio("Pilates di prova delle schede", 20, chi=chinesiologo)
+		self.assertIn(pilates, preimpostazione.cards_from_services(AZIENDA)["created"])
+		scheda = frappe.get_doc("CRM Billable Service", pilates)
+		self.assertFalse(scheda.vat_exempt)
+		self.assertFalse(scheda.is_healthcare)
+		self.assertEqual(scheda.vat_rate, 22)
+		self.assertFalse(scheda.ts_expense_type)
+		self.assertFalse(scheda.exemption_reference)

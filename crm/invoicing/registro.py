@@ -129,3 +129,42 @@ def da_verificare(azienda: str | None = None) -> list[dict]:
 		)
 		righe = [r for r in righe if r["name"] in in_uso]
 	return righe
+
+
+# ---------------------------------------------------------- who performs a service
+
+
+def erogatori_del_servizio(servizio: str) -> list[dict]:
+	"""Whoever performs ``servizio`` on the agenda, with the fiscal rules of their
+	qualification."""
+	utenti = frappe.get_all(
+		"CRM Service Staff", filters={"parenttype": "CRM Service", "parent": servizio}, pluck="user"
+	)
+	return frappe.db.sql(
+		"""select p.name, q.vat_exempt, q.default_vat_rate, q.is_healthcare, q.ts_required
+		from `tabCRM Service Provider` p
+		join `tabCRM Professional Qualification` q on q.name = p.qualification
+		where p.enabled = 1 and p.user in %(utenti)s
+		order by p.name""",
+		{"utenti": [utente for utente in utenti if utente] or [""]},
+		as_dict=True,
+	)
+
+
+def scheda_tassata(erogatori: list[dict]) -> dict | None:
+	"""What a service's card takes when nobody who performs it is exempt - the
+	osteopath, the kinesiologist (Ris. AdE 9/2026): their rate, no exemption nor
+	expense type, no stamp duty; a healthcare expense only where it goes to the
+	Sistema TS. None when somebody exempt performs it, or nobody is known: the
+	engine refuses an exemption to who is not a health profession, never a tax."""
+	if not erogatori or any(erogatore.get("vat_exempt") for erogatore in erogatori):
+		return None
+	primo = erogatori[0]
+	return {
+		"is_healthcare": int(bool(primo.get("is_healthcare") and primo.get("ts_required"))),
+		"vat_exempt": 0,
+		"vat_rate": primo.get("default_vat_rate") or 22,
+		"exemption_reference": "",
+		"ts_expense_type": "",
+		"subject_to_stamp_duty": 0,
+	}

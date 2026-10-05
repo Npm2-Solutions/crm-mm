@@ -53,7 +53,7 @@
           <span class="text-p-sm text-ink-gray-6">
             {{
               __(
-                "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card.",
+                "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price; one only somebody who is not exempt performs (an osteopath, a kinesiologist) is taxed at their rate. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card.",
               )
             }}
           </span>
