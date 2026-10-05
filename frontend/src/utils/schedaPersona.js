@@ -131,6 +131,24 @@ export function nomeDellAppuntamento(appuntamento, nome) {
 }
 
 /**
+ * Whom an appointment is for, from its title («Fisioterapia — Laura Bassi» is
+ * «Laura Bassi»; a class keeps its «+3»): where a list that is not a person's
+ * page names it by who comes. Its service goes on the line under it: with the
+ * service first, a phone cut the name («Seduta di fisioterapia — Fabio…»).
+ * Empty when the title names nobody.
+ */
+export function chiDellAppuntamento(appuntamento) {
+  const titolo = String(appuntamento?.title || '').trim()
+  const servizio = String(appuntamento?.service || '').trim()
+  if (!servizio) return ''
+  for (const trattino of [' — ', ' - ', ' – ']) {
+    if (titolo.startsWith(servizio + trattino))
+      return titolo.slice((servizio + trattino).length).trim()
+  }
+  return ''
+}
+
+/**
  * What an appointment is, on the page of the person it is for: its title
  * without their name («Fisioterapia — Laura Consenso» is «Fisioterapia» there).
  */
