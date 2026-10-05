@@ -152,6 +152,13 @@ def invite(lead: str, relation: str = SE_STESSO, email: str | None = None) -> di
 	indirizzo = _normalizza(email) or _normalizza(_destinatario(lead, relation))
 	if not indirizzo:
 		frappe.throw(_("There is no email address to open the area to"))
+	utente = apri(lead, relation, indirizzo)
+	return {"user": utente, "email": indirizzo, "accesses": accessi(lead)}
+
+
+def apri(lead: str, relation: str, indirizzo: str, invito: bool = True) -> str:
+	"""The area of ``lead`` opened to ``indirizzo``: its user made if there is none.
+	The invitation's email unless what opens it sends its own (`collegamento`)."""
 	validate_email_address(indirizzo, throw=True)
 	assicura_ruolo()
 	nome = frappe.db.get_value("CRM Lead", lead, "lead_name")
@@ -183,8 +190,9 @@ def invite(lead: str, relation: str = SE_STESSO, email: str | None = None) -> di
 				"granted_on": adesso,
 			}
 		).insert(ignore_permissions=True)
-	_manda_l_invito(indirizzo)
-	return {"user": utente, "email": indirizzo, "accesses": accessi(lead)}
+	if invito:
+		_manda_l_invito(indirizzo)
+	return utente
 
 
 def _manda_l_invito(email: str) -> None:

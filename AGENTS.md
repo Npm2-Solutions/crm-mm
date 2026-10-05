@@ -344,7 +344,7 @@ of their own, linked to the parent, never the parent's record. Somebody the desk
 into an appointment with a contact is found or made the same way
 (`appointments._persona_scritta`); a name alone stays a name.
 
-### The client area (`crm/area`, the plan's "area" module; the clinic comprises it)
+### The client area (`crm/area`, the plan's "area" module; the base comprises it, every centre has it)
 | File | Role |
 |---|---|
 | `crm/area/accesso.py` + `crm/www/area.py` | The door: invitation (`CRM Area Access`, role "Client Area User"), a code by email, step-up before a download; every call derives the session's people on the server |
@@ -352,6 +352,7 @@ into an appointment with a contact is found or made the same way
 | `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the plans, the documents given online, the quotes, shown to whom they have something |
 | `crm/area/messaggi.py` | The board (`CRM Area Message`): the desk writes administration, the chat passes questions; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers |
 | `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |
+| `crm/area/collegamento.py` + `CRM Area Link` | The link every email of the area's carries: it enters once, within seven days, only its fingerprint kept; the door's «Enter» spends it (a POST: a mail scanner opening links never does), it counts as a code just read, an old one leads to the code. A new document told by email where the centre wants it (`CRM Area Settings.email_new_documents`, off to start with): an invoice to a person, never a test one, the area opened if there was none (the parent's for a minor), never for the demo |
 | `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The area's app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js`, the vertical's first |
 | `frontend/src/area/area.css` + `aspetto.js`, `components/AreaChip.vue`, `NextAppointment.vue` | The area as the brand draws the patient's phone (doc 42, `brand/presentazione/sorgenti/img/telefono-*.png`): `area-*` classes on Espresso's tokens - titles, small-capital labels, cards with the tail, a kind in its category's cloud (a plan kind's `colore` and `icona`), the next appointment the one deep block, the days, the one-tap tick, the code's boxes; five places at the bottom, the open one in the brand's colour; light or dark as the phone is set, and following it (`utils/temaDelTelefono.js`), the centre's wide logo on a white card in the dark; the dates and a day's progress pure, tested |
