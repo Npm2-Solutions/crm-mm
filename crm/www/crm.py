@@ -17,7 +17,6 @@ from frappe.translate import (
 	get_translated_doctypes,
 )
 from frappe.utils import cint, get_system_timezone
-from frappe.utils.telemetry import capture
 from werkzeug.wrappers import Response
 
 from crm.marchio import con_nome
@@ -37,8 +36,6 @@ def get_context():
 	context.boot = get_boot()
 	# the head of the page (index.html): the brand's name, icons and manifest
 	context.marchio = context.boot.brand
-	if frappe.session.user != "Guest":
-		capture("active_site", "crm")
 	return context
 
 

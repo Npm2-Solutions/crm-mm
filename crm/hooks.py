@@ -165,6 +165,8 @@ after_install = [
 	"crm.lingue.accendi_l_italiano",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
+	# nothing about the centre's use leaves for Frappe's servers
+	"crm.telemetria.spegni",
 ]
 
 # a migrate syncs the modules of this release, whatever map a worker left in the cache
@@ -630,7 +632,6 @@ scheduler_events = {
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
 		"crm.api.tracking.purge_old_data",
-		"crm.telemetry.capture_feature_state",
 		"crm.telephony.transcription.expire_transcripts",
 		# Invoicing fails quietly and annually: an expired Sistema TS certificate,
 		# a button nobody pressed. The sweep looks for absence, not for errors.
@@ -745,6 +746,8 @@ ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log"]
 
 after_migrate = [
 	"crm.fcrm.doctype.fcrm_settings.fcrm_settings.after_migrate",
+	# nothing about the centre's use leaves for Frappe's servers, whatever a host turned on
+	"crm.telemetria.spegni",
 	# the levels' Role Profiles follow the registry, which is code
 	"crm.permissions.utenti.sincronizza",
 	"crm.api.whatsapp.add_roles",
