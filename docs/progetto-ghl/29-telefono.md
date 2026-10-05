@@ -665,6 +665,47 @@ la chat dell'area: il campo attivo resta in vista e la tastiera, chiudendosi,
 riporta tutto com'era. Su un iPhone vero va guardato appena possibile, perché
 nessun browser di prova ha la sua tastiera.
 
+## Ottava parte: il tablet (05/10/2026)
+
+Un tablet ha l'interfaccia del computer, toccata con un dito. Un giro su un
+iPad in piedi (768 e 820 punti) e di traverso (1180) ha aperto ogni pagina del
+giorno e una scheda di ogni tipo, misurando cosa usciva dallo schermo, cosa
+veniva tagliato e cosa si toccava su meno di 24 punti.
+
+- **In piedi il menu si riduce alle icone**, come nelle app di un tablet:
+  aperto, prendeva 223 punti dei 768 di un iPad, e alla scheda di una persona
+  restava una colonna più stretta di un telefono. Di traverso, e con il mouse,
+  resta aperto. Il pulsante «Comprimi» / «Espandi» decide da lì in poi, in
+  piedi e di traverso (`AppSidebar.vue`, `menuPiegato`; la vecchia chiave
+  scriveva «aperto» per chi non l'aveva mai toccato, e vale solo se era chiuso).
+- **L'accoglienza non taglia più i nomi.** Accanto ai pulsanti, i chip
+  («Presente», «1 modulo da firmare») riducevano il nome a «C…» o a niente, e i
+  minuti d'attesa finivano sotto «Presente». Ora i chip vanno sotto il nome
+  quando non c'è posto per tutti e due; con il dito il nome si tocca su 40 punti
+  (`Today/ParticipantRow.vue`).
+- **La dashboard si impila dove la griglia è stretta**: venti colonne su 545
+  punti davano a un numero 93 punti, «66,…» per i ricavi e «R…» per il titolo, e
+  a una lista una lettera di ogni nome. Sotto `GRIGLIA_MINIMA` (900 punti) i
+  riquadri vanno uno sotto l'altro come sul telefono, tre o quattro numeri per
+  riga e gli altri a due a due da 760 punti (`perRiga`); il titolo va su due
+  righe e il confronto sotto la variazione (`data-impilata`). Mentre la si
+  sistema resta la griglia. I «Apri l'agenda» in fondo alle liste prendono il
+  tocco su 44 punti su ogni schermo che si tocca, non solo sul telefono.
+- **I tasti della scheda di una persona hanno una colonna ciascuno.** Erano sei
+  colonne anche per cinque tasti (senza SMS), e «Chiama» toccava «WhatsApp»,
+  anche sul computer; ora le colonne sono quanti i tasti, e una parola troppo
+  lunga si accorcia invece di finire sulla vicina (`PersonHeader.vue`).
+- **Le note sono quattro per riga dove ci stanno**, meno dove una scheda
+  sarebbe più stretta di 13rem: in piedi erano 155 punti, il titolo «Nota di
+  pr…» e l'autore e il giorno su tre righe (`pages/Notes.vue`).
+
+Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
+frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
+righe da un tablet è raro), la settimana dell'agenda in piedi (sette colonne da
+70 punti tagliano i titoli; il giorno è a un tocco) e i riquadri della dashboard
+di traverso: lì la griglia è quella che il centro ha sistemato, e un titolo
+lungo resta tagliato come su un computer stretto.
+
 ## File
 
 | File | Cosa cambia |
