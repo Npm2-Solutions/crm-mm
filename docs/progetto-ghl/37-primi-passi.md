@@ -51,10 +51,44 @@
   le chiamate sparse che li segnavano (dodici componenti), e l'API che dava a
   chiunque il nome del primo lead (`crm/api/onboarding.py`).
 
+## Prima dei primi passi: il benvenuto (05/10/2026)
+
+La prima volta che chi imposta il centro apre DottorCloud (capacità
+`impostazioni.generali`) trova due schermate, prima di ogni altra pagina:
+
+```
+  [icona]  ▬ ▭                           [icona]  ▬ ▬
+  Ti diamo il benvenuto in DottorCloud   Il tuo centro
+  In che lingua lavora il centro? …      Il suo nome apre la pagina di prenotazione…
+  ┌ Italiano                     ✚ ┐     Nome del centro ✚  [es. Studio Medico Aurora]
+  │ Il centro lavora in italiano   │     Fuso orario del centro  [Europe/Rome · …]
+  └────────────────────────────────┘     ┌ Prima dai un'occhiata con i dati di prova ○ ┐
+  ┌ English                      › ┐     [ Inizia a usare DottorCloud ]
+  │ The centre works in English    │     ‹ Lingua
+  └────────────────────────────────┘
+               Lo faccio dopo                       Lo faccio dopo
+```
+
+- **La lingua del centro**, italiano o inglese, ognuna detta nelle sue parole: chi
+  legge l'altra trova la sua. Scelta un'altra, la pagina torna in quella lingua,
+  sulla seconda schermata; chi l'ha scelta la legge da subito (la sua lingua torna
+  «come il centro»).
+- **Il nome del centro e il suo fuso orario** (uno d'Europa, Roma già scelto), e,
+  per chi può caricarli e se non ci sono, i dati di prova: una scelta, spenta.
+- **Una volta**: si offre finché il centro non ha un nome e nessuno l'ha finito
+  (`crm_benvenuto_fatto`); un centro che lavora già ha il suo nome e non lo vede.
+  Gli altri utenti intanto usano DottorCloud. «Lo faccio dopo» lo lascia per quella
+  scheda del browser.
+- **Al posto della procedura guidata del framework**, che a fine benvenuto è segnata
+  fatta: nel Desk non si apre più, e finirla dopo avrebbe caricato da sola i dati di
+  prova. Al suo posto c'erano le domande del framework sul modo di lavorare
+  (`PersonaForm`), che servivano solo alla sua telemetria, spenta: tolte.
+
 ## Come è fatto
 
 | File | Cosa fa |
 |---|---|
+| `crm/benvenuto.py`, `frontend/src/pages/Benvenuto.vue` | Il benvenuto: `da_fare()`, `per_il_boot()` (il boot e il router), `get_welcome`, `choose_language`, `finish`; la pagina con le due schermate |
 | `crm/primi_passi.py` | Il registro (`Passo`, `registra_passo`, `passi()`), `da_offrire()` puro, `get_first_steps()`; i passi della base |
 | `crm/moduli/__init__.py` | Il passo dei moduli e consensi, registrato con i moduli |
 | `crm/registrazione.py` | I passi della base prima dei moduli |

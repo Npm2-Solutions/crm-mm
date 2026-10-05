@@ -604,6 +604,7 @@ a 28px-high button with its words cut to one line.
 ### The first steps (docs/progetto-ghl/37)
 | File | Role |
 |---|---|
+| `crm/benvenuto.py` + `pages/Benvenuto.vue` | The centre's first opening, before anything else for whoever sets it up (`impostazioni.generali`, the boot's `benvenuto`): its language, Italian or English, each said in its own words, then its name, its clock and maybe the demo data; offered while the centre has no name and nobody finished it (`FATTO`), «Later» for that tab; it marks the framework's setup wizard done |
 | `crm/primi_passi.py` | The registry: a `Passo` says who takes it (capabilities), its module, where it is taken (a settings page or a route) and whether the centre's data say it is done; `get_first_steps()`; the base's steps |
 | `frontend/src/components/FirstSteps/`, `composables/primiPassi.js`, `utils/primiPassi.js` | The sidebar's card and the panel (in `GlobalModals.vue`); the pure part tested |
 
@@ -868,7 +869,7 @@ row, the bar's words beside their icons).
   them only for the picker (`ScegliIcona.vue`), never frappe-ui's
   `spritePlugin`: 82 KB of the first download and 8,673 hidden elements.
 - The first page waits on no call in a row: what the router needs comes with
-  the page's boot (`crm_user`, `ask_persona`, the capabilities), and a page asks
+  the page's boot (`crm_user`, `benvenuto`, the capabilities), and a page asks
   its calls together - what the server would answer from a capability, the
   browser asks `puo()` for before the first answer arrives.
 - A tap is drawn before anything else is asked of the page. A CSS rule finds an
