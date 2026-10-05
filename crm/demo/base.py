@@ -111,62 +111,93 @@ def registra() -> None:
 
 
 def crea_squadra(ctx: Contesto) -> None:
-	from crm.permissions import utenti
-
 	festivita = _festivita(ctx)
 	for chiave, nome, cognome, livelli, qualifica, titolo, cellulare in dati.SQUADRA:
-		ctx.avanza(f"{nome} {cognome}")
-		email = indirizzo(nome, cognome)
-		if frappe.db.exists("User", email):
-			# a colleague of a demo taken away by hand, without the register: theirs
-			email = indirizzo(nome, cognome, 2)
-		utente = frappe.get_doc(
+		collega(
+			ctx,
+			chiave,
+			nome,
+			cognome,
+			livelli,
+			qualifica,
+			titolo,
+			cellulare,
+			dati.TURNI.get(chiave),
+			festivita,
+		)
+
+
+def collega(
+	ctx: Contesto,
+	chiave: str,
+	nome: str,
+	cognome: str,
+	livelli: tuple[str, ...],
+	qualifica: str | None,
+	titolo: str,
+	cellulare: str,
+	turni: dict | None = None,
+	festivita: str | None = None,
+	dal: datetime.date | None = None,
+) -> str:
+	"""A colleague of the demo: their user with their levels, their qualification and
+	their shifts, found again as ``team.<chiave>``. A module's part adds its own
+	colleagues this way - the clinic's medical director, its dentist."""
+	from crm.permissions import utenti
+
+	ctx.avanza(f"{nome} {cognome}")
+	email = indirizzo(nome, cognome)
+	if frappe.db.exists("User", email):
+		# a colleague of a demo taken away by hand, without the register: theirs
+		email = indirizzo(nome, cognome, 2)
+	utente = frappe.get_doc(
+		{
+			"doctype": "User",
+			"email": email,
+			"first_name": nome,
+			"last_name": cognome,
+			"mobile_no": cellulare,
+			"user_type": "System User",
+			"send_welcome_email": 0,
+			"enabled": 1,
+		}
+	)
+	utente.flags.no_welcome_mail = True
+	utente.insert(ignore_permissions=True)
+	utenti.assegna_livelli(utente.name, list(livelli))
+	ctx.ricorda("User", utente.name, f"team.{chiave}")
+
+	if qualifica and frappe.db.exists("CRM Professional Qualification", qualifica):
+		frappe.get_doc(
 			{
-				"doctype": "User",
-				"email": email,
-				"first_name": nome,
-				"last_name": cognome,
-				"mobile_no": cellulare,
-				"user_type": "System User",
-				"send_welcome_email": 0,
+				"doctype": "CRM Service Provider",
+				"provider_name": nome_libero("CRM Service Provider", f"{nome} {cognome}"),
+				"qualification": qualifica,
+				"user": utente.name,
 				"enabled": 1,
 			}
-		)
-		utente.flags.no_welcome_mail = True
-		utente.insert(ignore_permissions=True)
-		utenti.assegna_livelli(utente.name, list(livelli))
-		ctx.ricorda("User", utente.name, f"team.{chiave}")
+		).insert(ignore_permissions=True)
 
-		if qualifica and frappe.db.exists("CRM Professional Qualification", qualifica):
-			frappe.get_doc(
-				{
-					"doctype": "CRM Service Provider",
-					"provider_name": nome_libero("CRM Service Provider", f"{nome} {cognome}"),
-					"qualification": qualifica,
-					"user": utente.name,
-					"enabled": 1,
-				}
-			).insert(ignore_permissions=True)
-
-		turni = dati.TURNI.get(chiave)
-		if turni:
-			frappe.get_doc(
-				{
-					"doctype": "CRM Staff Schedule",
-					"user": utente.name,
-					"enabled": 1,
-					"bookable_online": 1,
-					"public_title": titolo,
-					"holiday_list": festivita,
-					"availability": [
-						{"workday": giorno, "start_time": inizio, "end_time": fine}
-						for giorno, fasce in turni.items()
-						for inizio, fine in fasce
-					],
-					"exceptions": _assenze(ctx, chiave),
-				}
-			).insert(ignore_permissions=True)
-		ctx.retrodata("User", utente.name, ctx.giorno(-simulazione.GIORNI_INDIETRO - 20), "Administrator")
+	if turni:
+		frappe.get_doc(
+			{
+				"doctype": "CRM Staff Schedule",
+				"user": utente.name,
+				"enabled": 1,
+				"bookable_online": 1,
+				"public_title": titolo,
+				"holiday_list": festivita or ctx.trova("agenda.festivita"),
+				"availability": [
+					{"workday": giorno, "start_time": inizio, "end_time": fine}
+					for giorno, fasce in turni.items()
+					for inizio, fine in fasce
+				],
+				"exceptions": _assenze(ctx, chiave),
+			}
+		).insert(ignore_permissions=True)
+	quando = dal or ctx.giorno(-simulazione.GIORNI_INDIETRO - 20)
+	ctx.retrodata("User", utente.name, quando, "Administrator")
+	return utente.name
 
 
 def _festivita(ctx: Contesto) -> str:
