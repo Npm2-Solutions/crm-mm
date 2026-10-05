@@ -15,6 +15,14 @@ from __future__ import annotations
 PAROLE = {
 	# DottorCloud
 	"Client area": "Patient area",
+	# Settings > The centre > Features: what the base comprises
+	"People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and "
+	"platforms, reminders; conversations; quotes; forms with a simple signature, consents and "
+	"documents; the client area; dashboards, users and levels": (
+		"People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and "
+		"platforms, reminders; conversations; quotes; forms with a simple signature, consents and "
+		"documents; the patient area; dashboards, users and levels"
+	),
 	# the agenda's first appointment of a person
 	"First appointment": "First visit",
 	# the settings' group of the people the centre serves, and the booking rules'.
