@@ -44819,3 +44819,6 @@ msgstr "Art. 25-ter DPR 600/73: la ritenuta del 4%."
 
 msgid "line {0}: its total is not its unit price, less its discounts, times its quantity"
 msgstr "riga {0}: il totale non è il prezzo unitario, meno gli sconti, per la quantità"
+
+msgid "For invoices on paper or PDF. An electronic invoice through the SdI pays the duty by itself (art. 6 DM 17/06/2014): the Agenzia adds up each quarter and it is paid from Fatture e corrispettivi."
+msgstr "Per le fatture su carta o in PDF. Una fattura elettronica allo SdI assolve il bollo da sé (art. 6 DM 17/06/2014): l'Agenzia somma ogni trimestre e si paga da Fatture e corrispettivi."

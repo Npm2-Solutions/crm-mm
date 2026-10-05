@@ -236,6 +236,31 @@ class AnticipazioniTest(UnitTestCase):
 		self.assertFalse(calcolo.bollo_dovuto)
 
 
+class SogliaDelBolloTest(UnitTestCase):
+	"""The natures the Agenzia counts towards EUR 77.47 ("L'imposta di bollo sulle
+	fatture elettroniche", 2024): N2.1, N2.2, N3.5, N3.6, N4. Reverse charge is VAT."""
+
+	def test_l_inversione_contabile_non_fa_scattare_il_bollo(self):
+		calcolo = calcola(
+			classifica(
+				[riga("500.00", "avvocato", sanitaria=False, esente=False, natura="N6.7")],
+				TipoDestinatario.SOGGETTO_IVA,
+			)
+		)
+		self.assertEqual(calcolo.base_bollo, Decimal("0.00"))
+		self.assertFalse(calcolo.bollo_dovuto)
+
+	def test_l_esente_sanitario_lo_fa_scattare(self):
+		calcolo = calcola(sanitario(riga("80.00")))
+		self.assertEqual(calcolo.base_bollo, Decimal("80.00"))
+		self.assertTrue(calcolo.bollo_dovuto)
+
+	def test_il_bollo_elettronico_non_chiede_la_marca(self):
+		calcolo = calcola(sanitario(riga("80.00")), modalita_bollo=ModalitaBollo.ELETTRONICO)
+		self.assertTrue(calcolo.bollo_dovuto)
+		self.assertFalse(any("14-digit" in a for a in calcolo.avvisi))
+
+
 class ForfettarioTest(UnitTestCase):
 	def test_il_forfettario_usa_n2_2_anche_quando_non_lo_stampa(self):
 		calcolo = calcola(

@@ -130,6 +130,13 @@ def bollo_virtuale(
 	return f"Imposta di bollo di EUR {importo:.2f} assolta in modo virtuale ai sensi dell'{BOLLO_VIRTUALE.testo(data_documento)} - Autorizzazione dell'Agenzia delle Entrate{sede}, n. {numero_autorizzazione} del {data_autorizzazione.strftime('%d/%m/%Y')}."
 
 
+def bollo_elettronico(importo: Decimal = Decimal("2.00")) -> str:
+	"""Wording for the duty on an electronic invoice or document (art. 6 DM
+	17/06/2014): no authorisation and no stamp, the quarter's total paid from the
+	"Fatture e corrispettivi" portal. The DM is not repealed by the Testi Unici."""
+	return f"Imposta di bollo di EUR {importo:.2f} assolta ai sensi dell'art. 6 del D.M. 17 giugno 2014."
+
+
 def bollo_su_originale(
 	identificativo: str | None,
 	data_contrassegno: date | None,

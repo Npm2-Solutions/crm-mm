@@ -204,7 +204,7 @@ def prepara(doc) -> dict:
 		cassa_obbligatoria=bool(doc.fund_mandatory),
 		cassa_soggetta_a_ritenuta=bool(doc.fund_subject_to_withholding),
 		applica_rivalsa_facoltativa=bool(doc.apply_optional_fund),
-		modalita_bollo=doc.stamp_duty_mode or ModalitaBollo.SU_ORIGINALE,
+		modalita_bollo=modalita_bollo(doc, emittente, classificazione),
 		bollo_riaddebitato=bool(doc.recharge_stamp_duty),
 		soggetto_a_bollo=soggetto_a_bollo,
 		bollo_pagato_in_contanti=bool(doc.stamp_duty_paid_cash),
@@ -301,6 +301,15 @@ def _scrivi_riepilogo(doc, conto) -> None:
 		)
 
 
+def modalita_bollo(doc, emittente: dict, classificazione) -> str:
+	"""How the duty is paid: an invoice through the SdI, or a document kept
+	electronically, by art. 6 DM 17/06/2014 whatever the company chose; a paper or
+	PDF original as the company chose (a stamp, or the art. 15 authorisation)."""
+	if classificazione.canale == Canale.SDI or emittente.get("document_mode") == "elettronica_extra_sdi":
+		return ModalitaBollo.ELETTRONICO
+	return doc.stamp_duty_mode or ModalitaBollo.SU_ORIGINALE
+
+
 def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 	"""The wording that has to appear on the document.
 
@@ -326,7 +335,9 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 		testi.append(diciture.scissione_pagamenti(data))
 
 	if conto.bollo_dovuto:
-		if doc.stamp_duty_mode == ModalitaBollo.VIRTUALE:
+		if modalita_bollo(doc, emittente, classificazione) == ModalitaBollo.ELETTRONICO:
+			testi.append(diciture.bollo_elettronico(conto.bollo))
+		elif doc.stamp_duty_mode == ModalitaBollo.VIRTUALE:
 			testi.append(
 				diciture.bollo_virtuale(
 					data,
