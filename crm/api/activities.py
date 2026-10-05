@@ -612,6 +612,7 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 	if not frappe.db.exists("DocType", "CRM Appointment"):
 		return []
 	from crm.api.appointments import per_la_persona, posti_della_persona
+	from crm.scheduling import cicli
 
 	posti = posti_della_persona(doctype, name)
 	if not posti:
@@ -622,6 +623,8 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 		fields=["name", "title", "service", "status", "starts_on", "ends_on", "creation", "owner"],
 		limit_page_length=0,
 	)
+	# which session of its cycle each one is, as the agenda and the area say it
+	sedute = cicli.numero_della_seduta([row.name for row in rows])
 	return [
 		{
 			"name": row.name,
@@ -631,7 +634,11 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 			"creation": row.starts_on or row.creation,
 			"owner": row.owner,
 			# in a class, as it went for this person: their place given up is theirs
-			"data": {**row, "status": per_la_persona(row.status, posti.get(row.name))},
+			"data": {
+				**row,
+				"status": per_la_persona(row.status, posti.get(row.name)),
+				"cycle": sedute.get(row.name),
+			},
 			"is_lead": doctype == "CRM Lead",
 		}
 		for row in rows

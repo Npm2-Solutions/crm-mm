@@ -20,6 +20,7 @@ import frappe
 from frappe.utils import add_days, getdate
 
 from crm.api import oggi
+from crm.api.activities import appointments_on
 from crm.invoicing import api as fatture
 from crm.invoicing import emissione
 from crm.invoicing.install import semina_qualifiche
@@ -328,3 +329,14 @@ class ChiLegge(CicliCase):
 		scheda = appointments.get_appointment(seconda.name)["cycle"]
 		self.assertEqual((scheda["cycle"], scheda["number"], scheda["total"]), (fatto["name"], 2, 3))
 		self.assertTrue(scheda["can_manage"])
+
+	def test_la_cronologia_dice_la_seduta(self):
+		fatto = self.ciclo(3)
+		prima = self.seduta(self.giorno(1, 9))
+		seconda = self.seduta(self.giorno(2))
+		fuori = self.seduta(self.giorno(3), servizio=self.visita)
+		cronologia = {r["name"]: r["data"]["cycle"] for r in appointments_on("CRM Lead", self.mario.name)}
+		self.assertEqual(cronologia[prima.name], {"cycle": fatto["name"], "number": 1, "total": 3})
+		self.assertEqual(cronologia[seconda.name]["number"], 2)
+		# a visit outside the cycle is no session of it
+		self.assertIsNone(cronologia[fuori.name])

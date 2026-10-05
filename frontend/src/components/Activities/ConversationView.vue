@@ -299,6 +299,13 @@
                 <span class="font-medium">
                   {{ nomeDellAppuntamento(row.item.data) }}
                 </span>
+                <!-- which session of its cycle, as the agenda says it -->
+                <span
+                  v-if="laSeduta(row.item.data?.cycle, __)"
+                  class="text-ink-gray-6"
+                >
+                  {{ laSeduta(row.item.data.cycle, __) }}
+                </span>
                 <Badge
                   v-if="row.item.data?.status"
                   size="sm"
@@ -477,6 +484,7 @@ import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
 import HappenedCard from '@/components/Activities/HappenedCard.vue'
 import { nomeDellAppuntamento } from '@/utils/schedaPersona'
+import { laSeduta } from '@/utils/cicli'
 import MessageActions from '@/components/Activities/MessageActions.vue'
 import NewMessagesLine from '@/components/Activities/NewMessagesLine.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
