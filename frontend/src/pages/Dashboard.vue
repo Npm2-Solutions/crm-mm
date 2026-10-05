@@ -536,11 +536,20 @@ const moreOptions = computed(() => {
 let inApertura = ''
 
 // whoever reads only their own numbers - a professional - opens on their day:
-// the overview's sales were their own zeros, the day their appointments
+// the overview's sales were their own zeros, the day their appointments.
+// Whoever reads the centre's agenda but sells nothing for the centre - a
+// medical director who also visits - opens on the agenda, for the same zeros
 function laSuaGiornata() {
-  if (ambito('numeri.operativi') !== 'suoi') return null
+  const operativi = ambito('numeri.operativi')
+  const template =
+    operativi === 'suoi'
+      ? 'my_day'
+      : operativi === 'centro' && ambito('trattative.vedi') !== 'centro'
+        ? 'agenda'
+        : null
+  if (!template) return null
   return list.value.find(
-    (dashboard) => dashboard.template === 'my_day' && dashboard.available,
+    (dashboard) => dashboard.template === template && dashboard.available,
   )
 }
 

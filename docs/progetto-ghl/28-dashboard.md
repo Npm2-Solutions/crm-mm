@@ -58,7 +58,9 @@ larghezza fra chi resta.
 **Si apre sull'ultima aperta**, e la prima volta sulla prima che sa rispondere.
 Chi legge solo i propri numeri, un professionista, si apre invece su La mia
 giornata: sulla Panoramica le vendite erano i suoi zeri, nella sua giornata ci
-sono i suoi appuntamenti e le sue cose da fare.
+sono i suoi appuntamenti e le sue cose da fare. Chi legge l'agenda di tutto il
+centro ma non le sue trattative, un direttore sanitario che visita anche, si
+apre su Agenda: quanto è piena, chi viene, quanto vale.
 
 **Un modulo non ancora attivo non sparisce.** Un manager trova le dashboard a
 cui il sito non sa ancora rispondere nel selettore, sotto "Da configurare":
