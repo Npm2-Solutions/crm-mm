@@ -30,9 +30,17 @@ class RiferimentiTest(UnitTestCase):
 		self.assertNotIn("633/1972", testo)
 		self.assertIn("art. 37, comma 1, lett. t), del D.Lgs. 10/2026", testo)
 
-	def test_la_struttura_cita_il_numero_19(self):
-		self.assertIn("n. 19", diciture.esenzione(PRIMA, struttura=True))
-		self.assertIn("lett. u)", diciture.esenzione(DOPO, struttura=True))
+	def test_il_ricovero_cita_il_numero_19(self):
+		self.assertIn("n. 19", diciture.esenzione(PRIMA, ricovero=True))
+		self.assertIn("lett. u)", diciture.esenzione(DOPO, ricovero=True))
+
+	def test_i_nuovi_articoli_come_li_dice_la_gazzetta(self):
+		# read in the Gazzetta Ufficiale on 05/10/2026: three had been guessed wrong
+		self.assertIn("art. 17 del D.Lgs. 10/2026", diciture.FUORI_CAMPO_TERRITORIALE.nuovo)
+		self.assertIn("art. 65 del D.Lgs. 10/2026", diciture.SPLIT_PAYMENT.nuovo)
+		self.assertIn("art. 29, comma 1, lett. c)", diciture.ANTICIPAZIONI.nuovo)
+		self.assertEqual(diciture.RITENUTA_ACCONTO.nuovo, "art. 38 del D.Lgs. 33/2025")
+		self.assertEqual(diciture.BOLLO_VIRTUALE.nuovo, "art. 150 del D.Lgs. 123/2025")
 
 
 class BolloTest(UnitTestCase):
