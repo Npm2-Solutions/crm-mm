@@ -796,6 +796,46 @@ righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
 griglia è quella che il centro ha sistemato, e un titolo lungo resta tagliato
 come su un computer stretto.
 
+## Nona parte: la pagina ingrandita (05/10/2026)
+
+Chi vede poco ingrandisce. Su Android il testo grande delle impostazioni di
+sistema ingrandisce tutta la pagina in Chrome: un telefono largo 360 punti al
+130% dà alla pagina 277 punti. Su un iPhone lo zoom di Safari («aA») dà 312
+punti a un telefono da 390 al 125%. Tra queste persone ci sono molti pazienti
+dell'area e qualche collega. Le pagine di ogni giorno, le schede di una
+persona, di una trattativa, di un contatto e di un'azienda, la dashboard e
+l'area sono state guardate a 320 e a 280 punti: niente esce dallo schermo,
+nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
+
+- **Le schede di una persona o di una trattativa stanno nella barra quante ce
+  ne stanno.** Erano sempre quattro più «Altro». A 280 punti erano «Detta…»,
+  «Eve…», «Preventi…». Ora la barra misura le parole nel suo carattere e ne
+  tiene quante entrano accanto ad «Altro», fino a quattro; le altre vanno in
+  «Altro» (`SchedeDelTelefono.vue`, `quanteNellaBarra` in `utils/sulTelefono.js`).
+- **Il nome nell'intestazione ha il posto di «Assegna a».** Sul telefono, se
+  nessuno è assegnato, il tasto è un'icona tonda come l'avatar che diventa:
+  «Assegna a» scritto lasciava a 320 punti «Giulia Bianc…». Il nome del tasto
+  resta per chi legge con la voce, ed è il titolo del foglio che apre
+  (`AssignTo.vue`).
+- **Il nome si legge intero, i chip vanno sotto.** Nell'agenda del giorno
+  «Completato» e «Prima visita» stavano in una colonna a destra e lasciavano
+  «Frances…»; nella lista d'attesa «Urgente» e «Posto proposto» lasciavano
+  «Giov…»; nei contatti di una trattativa «Primario» lasciava «Silvi…». Ora i
+  chip stanno accanto al nome finché c'è posto, sotto quando non c'è
+  (`AgendaDelGiorno.vue`, `WaitingList.vue`, `MobileDeal.vue`).
+- **I tasti di una persona prendono la larghezza della loro parola.** A 320
+  punti, o con sei tasti su un iPhone SE, «WhatsApp» era «WhatsA…». Le colonne
+  restano uguali finché ogni parola ci sta; quella che non ci sta prende i
+  pochi punti che le servono dalle altre (`PersonHeader.vue`,
+  `minmax(min-content, 1fr)`).
+- **L'avviso di WhatsApp va su due righe invece di tagliarsi.** Era «Non ha mai
+  scritto: solo un m…»: dove la riga non basta, le parole vanno a capo
+  (`WhatsAppBox.vue`).
+- **La dashboard mette un numero per riga** dove due sarebbero sotto i 136 punti
+  l'uno: i titoli erano «Trattati… vinte» (`perRiga` in `utils/dashboard.js`).
+- **Le etichette dei campi vanno fino a tre righe**: in due,
+  «Responsabile della…» (`SidePanelLayout.vue`).
+
 ## File
 
 | File | Cosa cambia |

@@ -7,10 +7,13 @@
   day - the ones asked for, in that order, the first four there are - and "More"
   holds the rest. When the open tab is one of those, "More" says its name. Each
   tab is as wide as its name and the room left is shared: in equal parts,
-  «Documenti» was «Docu…» beside «Eventi».
+  «Documenti» was «Docu…» beside «Eventi». The bar holds as many as fit beside
+  "More" (`quanteNellaBarra`): a page zoomed - large text on Android, 277
+  points on a 360 phone - had four tabs read «Detta…», «Eve…», «Preventi…».
 -->
 <template>
   <div
+    ref="barra"
     class="flex shrink-0 items-stretch border-b border-outline-gray-2 px-1"
     role="tablist"
     :aria-label="__('Sections')"
@@ -68,8 +71,10 @@
 </template>
 
 <script setup>
+import { quanteNellaBarra } from '@/utils/sulTelefono'
+import { useElementSize } from '@vueuse/core'
 import { Dropdown } from 'frappe-ui'
-import { computed, h } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 
 const props = defineProps({
   // the record's tabs, as the page's Tabs has them: { name, label, icon }
@@ -81,18 +86,57 @@ const indice = defineModel({ type: Number, default: 0 })
 
 const QUANTE = 4
 
-const inBarra = computed(() => {
-  // five or fewer fit as they are: a "More" holding one tab helps nobody
-  if (props.tabs.length <= QUANTE + 1) return props.tabs
+// the order the bar takes them in: the ones asked for, then the others
+const inOrdine = computed(() => {
   const scelte = props.principali
     .map((nome) => props.tabs.find((t) => t.name === nome))
     .filter(Boolean)
   for (const scheda of props.tabs) {
-    if (scelte.length >= QUANTE) break
     if (!scelte.includes(scheda)) scelte.push(scheda)
   }
-  return scelte.slice(0, QUANTE)
+  return scelte
 })
+
+// what the bar has room for: its width, and each word in the bar's own type
+// as the open tab wears it (medium), with the tab's padding around it
+const barra = ref(null)
+const { width: spazio } = useElementSize(barra)
+const font = ref('')
+onMounted(() => {
+  const misura = () => {
+    const stile = barra.value && getComputedStyle(barra.value)
+    if (stile) font.value = `500 ${stile.fontSize} ${stile.fontFamily}`
+  }
+  misura()
+  // the typeface may arrive after the bar: measured again with it
+  document.fonts?.ready?.then(misura)
+})
+let tela = null
+function larghezzaDi(parole) {
+  if (!font.value) return 0
+  tela ||= document.createElement('canvas').getContext('2d')
+  if (!tela) return 0
+  tela.font = font.value
+  return Math.ceil(tela.measureText(parole).width)
+}
+const MARGINE = 12
+const quante = computed(() =>
+  quanteNellaBarra(
+    inOrdine.value.map((scheda) => larghezzaDi(scheda.label) + MARGINE),
+    font.value ? spazio.value : 0,
+    // «More» and its chevron
+    larghezzaDi(__('More')) + MARGINE + 20,
+    QUANTE,
+  ),
+)
+
+const inBarra = computed(() =>
+  // all of them, as they come, when they all fit: a "More" holding one tab
+  // helps nobody
+  quante.value >= props.tabs.length
+    ? props.tabs
+    : inOrdine.value.slice(0, quante.value),
+)
 const altre = computed(() =>
   props.tabs.filter((t) => !inBarra.value.includes(t)),
 )

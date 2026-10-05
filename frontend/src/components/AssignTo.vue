@@ -3,7 +3,9 @@
 -->
 <template>
   <!-- on a phone a sheet from the bottom, as every choice there: the card
-       floated under the header, over the person's name -->
+       floated under the header, over the person's name. Nobody assigned, the
+       key is round like the avatar it becomes: «Assegna a» in words took the
+       header's room from the name («Giulia Bianc…» at 320 points) -->
   <template v-if="canAssign && isMobileView">
     <div class="flex items-center" @click="nelFoglio = true">
       <component
@@ -13,7 +15,7 @@
       >
         <MultipleAvatar :avatars="assignees" :withName="false" />
       </component>
-      <Button v-else :label="__('Assign To')" />
+      <Button v-else icon="lucide-user-plus" :aria-label="__('Assign To')" />
     </div>
     <Dialog v-model="nelFoglio" :options="{ title: __('Assign To') }">
       <template #body-content>

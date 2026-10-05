@@ -92,11 +92,16 @@
             class="flex min-w-0 flex-1 flex-col gap-0.5 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:outline-none"
             @click="open(entry)"
           >
-            <span class="flex items-center justify-between gap-2">
+            <!-- the name is read whole: the chips go under it when the row
+                 has no room for all («Giov…» beside «Urgente» and «Posto
+                 proposto» on a phone with its page zoomed) -->
+            <span
+              class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1"
+            >
               <span
-                class="flex min-w-0 items-center gap-2 text-base font-medium text-ink-gray-9"
+                class="flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-base font-medium text-ink-gray-9"
               >
-                <span class="truncate">{{ entry.lead_name }}</span>
+                <span class="max-w-full truncate">{{ entry.lead_name }}</span>
                 <Badge
                   v-if="entry.urgent && !closed"
                   class="shrink-0"

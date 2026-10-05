@@ -686,6 +686,15 @@ row, the bar's words beside their icons).
   page's header and its actions, side-by-side columns, a preview beside its
   fields, a status beside a name - does so with it; `max-md:` stays for what
   touches the screen's edges (paddings) and the phone's own rules.
+- A phone's page may be zoomed: large text on Android zooms the page (277
+  points on a 360 phone at 130%), Safari's «aA» too (312 on a 390 at 125%).
+  The daily pages, the records and the area hold at 280: a name is read
+  whole and its chips wrap under it (`flex-wrap`, the name `max-w-full
+  truncate`), a row of equal keys gives a word the width it needs
+  (`minmax(min-content, 1fr)`), the record's tabs are as many as fit beside
+  «More» (`quanteNellaBarra`), a sentence wraps rather than stopping
+  half-way, and a key that is a word on a desk may be its icon on a phone
+  (with its `aria-label`).
 - What a finger drags never takes the page's scroll: a list that reorders has
   a handle, or waits on a finger (`:delay="200" :delay-on-touch-only="true"`:
   the mouse of a touch screen's PC drags at once);

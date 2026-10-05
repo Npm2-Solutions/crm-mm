@@ -153,8 +153,11 @@
                           <div
                             class="flex cursor-pointer items-center justify-between gap-2 pr-1 text-base leading-5 text-ink-gray-7"
                           >
+                            <!-- the name is read whole: «Primary» goes
+                                 under it when the row has no room for both
+                                 («Silvi…» on a phone with its page zoomed) -->
                             <div
-                              class="flex h-7 items-center gap-2 truncate"
+                              class="flex min-h-7 min-w-0 items-center gap-2"
                               @click="toggle()"
                             >
                               <Avatar
@@ -162,16 +165,20 @@
                                 :image="contact.image"
                                 size="md"
                               />
-                              <div class="truncate">
-                                {{ contact.full_name }}
+                              <div
+                                class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
+                              >
+                                <span class="max-w-full truncate">
+                                  {{ contact.full_name }}
+                                </span>
+                                <Badge
+                                  v-if="contact.is_primary"
+                                  class="shrink-0"
+                                  variant="outline"
+                                  :label="__('Primary')"
+                                  theme="green"
+                                />
                               </div>
-                              <Badge
-                                v-if="contact.is_primary"
-                                class="ml-2"
-                                variant="outline"
-                                :label="__('Primary')"
-                                theme="green"
-                              />
                             </div>
                             <div class="flex items-center">
                               <Dropdown
