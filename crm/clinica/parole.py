@@ -131,6 +131,15 @@ PAROLE = {
 	"Question for the client": "Question for the patient",
 	"Email the client": "Email the patient",
 	"Link clients as leads": "Link patients as leads",
+	# the server's: the booking page, a cancellation, why a professional is not bookable
+	"This service can be booked online by new clients only.": (
+		"This service can be booked online by new patients only."
+	),
+	"This service can be booked online by existing clients only. Please contact us.": (
+		"This service can be booked online by existing patients only. Please contact us."
+	),
+	"Cancelled online by the client": "Cancelled online by the patient",
+	"Pick the services clients can book them for": "Pick the services patients can book them for",
 	# the invoice: who it is for
 	"Client": "Patient",
 	"Choose the client": "Choose the patient",

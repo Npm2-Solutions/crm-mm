@@ -41,6 +41,7 @@ from crm.scheduling.availability import (
 )
 from crm.scheduling.timeutils import UTC, parse_date, parse_utc, scheduling_tz, to_system_naive
 from crm.utils import count_field
+from crm.verticali import parola
 
 
 def _check(capacita: str) -> None:
@@ -570,7 +571,7 @@ def _why_not_online(is_open: bool, online: bool, delivers: int, bookable: list) 
 	if not online:
 		return _("Switched off")
 	if not delivers:
-		return _("Pick the services clients can book them for")
+		return parola("Pick the services clients can book them for")
 	if not bookable:
 		return _("None of their services is online")
 	return ""

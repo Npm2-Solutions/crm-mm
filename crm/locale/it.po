@@ -43904,3 +43904,19 @@ msgstr "Invia un'email al paziente"
 #: crm/clinica/parole.py
 msgid "Link patients as leads"
 msgstr "Collega i pazienti alle loro schede"
+
+#: crm/clinica/parole.py
+msgid "This service can be booked online by new patients only."
+msgstr "Online questo servizio lo possono prenotare solo i nuovi pazienti."
+
+#: crm/clinica/parole.py
+msgid "This service can be booked online by existing patients only. Please contact us."
+msgstr "Online questo servizio lo può prenotare solo chi è già paziente. Contattaci."
+
+#: crm/clinica/parole.py
+msgid "Cancelled online by the patient"
+msgstr "Annullato online dal paziente"
+
+#: crm/clinica/parole.py
+msgid "Pick the services patients can book them for"
+msgstr "Scegli i servizi per cui i pazienti possono prenotare questo professionista"
