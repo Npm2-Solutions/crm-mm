@@ -136,6 +136,9 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | 
 	if genere == "agenda":
 		return {"name": "Today"}
 	if genere == "invoicing":
+		# a supplier's invoice opens on itself, in the «Received» tab
+		if riga.notification_type_doctype == "CRM Supplier Invoice" and riga.notification_type_doc:
+			return {"name": "Invoices", "query": {"ricevuta": riga.notification_type_doc}}
 		return {"name": "Invoices"}
 	pagina = PAGINE.get(riga.reference_doctype)
 	if not pagina or riga.reference_name not in esistenti.get(riga.reference_doctype, ()):
