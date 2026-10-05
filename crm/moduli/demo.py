@@ -207,6 +207,10 @@ DAL_SITO = (
 )
 
 
+#: The services a person comes to the first time: the welcome questionnaire goes with them.
+PRIME_VISITE = ("prima_fisio", "prima_osteo", "nutri")
+
+
 def crea(ctx: Contesto) -> None:
 	from crm.moduli import modelli
 
@@ -226,16 +230,19 @@ def crea(ctx: Contesto) -> None:
 			description="L'informativa sul trattamento dei dati e il consenso alle novità: si "
 			"firma una volta, alla prima visita.",
 		)
+		# a regular is not welcomed again: only who comes to a first visit
+		prime_visite = [ctx.trova(f"service.{chiave}") for chiave in PRIME_VISITE]
 		fatti["benvenuto"] = _pubblica(
 			ctx,
 			"benvenuto",
 			"Questionario di benvenuto",
 			BENVENUTO,
 			use=modelli.FORMA,
-			ask_on="First appointment",
+			ask_on="Services",
+			services=[servizio for servizio in prime_visite if servizio],
 			validity="Forever",
 			send_before=2,
-			description="Come ci ha conosciuto, cosa cerca, quando preferisce venire.",
+			description="Come ci ha conosciuto, cosa cerca, quando preferisce venire: alla prima visita.",
 		)
 		fatti["scheda"] = _pubblica(
 			ctx,

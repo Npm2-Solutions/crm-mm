@@ -89,8 +89,9 @@ d'attesa, conversazioni.
     una è rimandata di due giorni.
 - Le parti dei moduli del CRM, registrate dal loro `registra()`:
   - **Moduli e consensi** (`crm/moduli/demo.py`): il responsabile ha pubblicato
-    l'informativa con i due consensi (presa visione e novità) e un questionario di
-    benvenuto, chiesti a chi non li ha ancora firmati; la scheda della seduta del
+    l'informativa con i due consensi (presa visione e novità), chiesta a chi non
+    l'ha ancora firmata, e un questionario di benvenuto, chiesto solo a una prima
+    visita (un abituale non si accoglie di nuovo); la scheda della seduta del
     fisioterapista; il modulo «Richiedi informazioni» del sito. **Quello che si firma
     si firma oggi, con il suo PDF e le sue prove**: una firma non si data mai
     indietro. Il centro ha cominciato stamattina: la segreteria ha mandato il link a
