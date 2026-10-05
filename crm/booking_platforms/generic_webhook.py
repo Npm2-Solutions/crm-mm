@@ -161,7 +161,7 @@ class GenericWebhook(BookingPlatform):
 	fields = ("webhook_secret", "field_map")
 	setup_help = (
 		"Point Zapier, Make, n8n or any system at the webhook address below, sending one "
-		"booking (or a list) as JSON. Use the field map to tell the CRM where the id, start, "
+		"booking (or a list) as JSON. Use the field map to tell {brand} where the id, start, "
 		"end, status and client live in your payload. Tip: for platforms that only send "
 		"emails, forward the booking email to a Zapier Email Parser or Make Mailhook."
 	)

@@ -44929,3 +44929,87 @@ msgstr "Tutte"
 msgctxt "Supplier invoices filter"
 msgid "Disputed"
 msgstr "Contestate"
+
+#: crm/booking_platforms/docplanner.py
+msgid "MioDottore opens its API only to certified software vendors: request integration access at integrations.docplanner.com (sandbox + acceptance tests). Enter the facility ID as Account ID and the OAuth client ID/secret. Map every MioDottore doctor (Staff) and address service (Service). Ask your integration specialist to send push notifications to the webhook address; if they add an API-key header, put its value in the signing secret. Without partner access, use the 'Notification email' connector on the MioDottore booking emails instead."
+msgstr "MioDottore apre la sua API solo ai fornitori di software certificati: chiedi l'accesso all'integrazione su integrations.docplanner.com (sandbox e test di accettazione). Scrivi l'ID della struttura in «ID dell'account / dell'attività», e l'ID e la chiave segreta del client OAuth. Abbina ogni medico di MioDottore a un professionista e ogni servizio di un indirizzo a un servizio. Chiedi al tuo referente per l'integrazione di mandare le notifiche push all'indirizzo del webhook; se aggiunge un'intestazione con una chiave API, metti il suo valore nella chiave segreta di firma. Senza l'accesso da partner, usa invece il collegamento «Email di notifica (qualsiasi piattaforma)» sulle email di prenotazione di MioDottore."
+
+#: crm/booking_platforms/__init__.py
+msgid "For practices without Docplanner partner credentials: MioDottore booking, change and cancellation emails become appointments."
+msgstr "Per gli studi senza credenziali da partner di Docplanner: le email di prenotazione, di modifica e di annullamento di MioDottore diventano appuntamenti."
+
+#: crm/booking_platforms/email_parser.py
+msgid "Add a dedicated mailbox in Settings → Email → Accounts (e.g. prenotazioni@…), pick it here, and add that address as a notification (or secondary) email on the platform, or set up a forward. Booking, change and cancellation emails become appointments. Alternatively send the email as JSON {from, subject, text|html} to the webhook address (Zapier Email Parser, Make Mailhook, Mailgun routes). If the platform offers a calendar export link, paste it too."
+msgstr "Aggiungi una casella dedicata in Impostazioni → Email → Account (per esempio prenotazioni@…), sceglila qui e aggiungi quell'indirizzo sulla piattaforma come email di notifica (o secondaria), oppure imposta un inoltro. Le email di prenotazione, di modifica e di annullamento diventano appuntamenti. In alternativa manda l'email come JSON {from, subject, text|html} all'indirizzo del webhook (Zapier Email Parser, Make Mailhook, Mailgun routes). Se la piattaforma offre un link per esportare il calendario, incolla anche quello."
+
+#: crm/booking_platforms/__init__.py
+msgid "Treatwell (which absorbed Uala) has no public API. In Treatwell Connect → Team → staff member → 'Calendario esterno' paste that professional's busy-feed address from {brand}: {brand} appointments then block Treatwell slots. Bookings reach {brand} through the notification emails."
+msgstr "Treatwell (che ha assorbito Uala) non ha un'API pubblica. In Treatwell Connect → Team → membro del team → «Calendario esterno» incolla l'indirizzo del feed degli impegni di quel professionista, preso da {brand}: così gli appuntamenti di {brand} occupano gli orari di Treatwell. Le prenotazioni arrivano in {brand} con le email di notifica."
+
+#: crm/booking_platforms/__init__.py
+msgid "Fresha has no merchant API. Calendar → Sync lets each team member import the {brand} busy feed as blocked time; bookings come in through the notification emails (or the export link, if your workspace shows one)."
+msgstr "Fresha non ha un'API per i centri. Con Calendario → Sincronizza ogni membro del team importa il feed degli impegni di {brand} come orari bloccati; le prenotazioni arrivano con le email di notifica (o con il link di esportazione, se il tuo spazio lo mostra)."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Booksy's Public API is for approved partners. Client ID = partner UUID, Client Secret = the partner RSA private key (PEM), Account ID = business id, Tenant = country code (it, pl, us…), Additional parameter = partner name. Booksy sends webhooks unsigned to the address agreed at onboarding: the URL token authenticates them."
+msgstr "La Public API di Booksy è per i partner approvati. «ID del client / nome utente» = UUID del partner, «Chiave segreta del client / password» = la chiave privata RSA del partner (PEM), «ID dell'account / dell'attività» = id dell'attività, «Tenant / paese» = codice del paese (it, pl, us…), «Parametro aggiuntivo» = nome del partner. Booksy manda i webhook senza firma all'indirizzo concordato all'attivazione: li autentica il token nell'indirizzo."
+
+#: crm/booking_platforms/__init__.py
+msgid "Elty integrates only with selected practice software (AlfaDocs, MEG). Until a direct partnership exists, bookings arrive from Elty's notification emails."
+msgstr "Elty si integra solo con alcuni gestionali (AlfaDocs, MEG). Finché non c'è un accordo diretto, le prenotazioni arrivano dalle email di notifica di Elty."
+
+#: crm/booking_platforms/__init__.py
+msgid "To block on the platform the hours already booked in {brand}, paste each professional's busy-feed address from {brand} in the platform's external calendar setting."
+msgstr "Per bloccare sulla piattaforma gli orari già prenotati in {brand}, incolla nell'impostazione del calendario esterno della piattaforma l'indirizzo del feed degli impegni di ogni professionista, preso da {brand}."
+
+#: crm/booking_platforms/__init__.py
+msgid "iDoctors syncs its agenda with Google Calendar: connect the same Google Calendar to {brand} (Settings → Google Calendar) for two-way availability, and use this connection for its notification emails."
+msgstr "iDoctors sincronizza la sua agenda con Google Calendar: collega lo stesso Google Calendar a {brand} (Impostazioni → Google Calendar) per avere la disponibilità nei due sensi, e usa questo collegamento per le sue email di notifica."
+
+#: crm/booking_platforms/__init__.py
+msgid "Doctolib's API is reserved to certified partners; bookings arrive from its notification emails."
+msgstr "L'API di Doctolib è riservata ai partner certificati; le prenotazioni arrivano dalle sue email di notifica."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Account ID is your company login (the xxx in xxx.simplybook.it); Client ID and Client Secret are an admin user's login and password (use a dedicated user without 2FA). Enable the API Custom Feature in SimplyBook. {brand} registers the webhook for new/changed/cancelled bookings on 'Test connection'; SimplyBook webhooks are unsigned, so every notification is re-read from the API before it is trusted."
+msgstr "In «ID dell'account / dell'attività» va il login della tua azienda (lo xxx di xxx.simplybook.it); in «ID del client / nome utente» e «Chiave segreta del client / password» il nome utente e la password di un amministratore (usa un utente apposta, senza autenticazione a due fattori). Attiva in SimplyBook la funzione personalizzata API. {brand} registra il webhook per le prenotazioni nuove, cambiate e annullate con «Prova il collegamento»; i webhook di SimplyBook non sono firmati, quindi ogni notifica viene riletta dall'API prima di fidarsene."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Create a Personal Access Token in Calendly → Integrations → API & Webhooks. Webhooks need a paid plan: create a subscription to the address below for invitee.created, invitee.canceled and invitee_no_show.created with a signing key, and paste the key here. Calendly has no API to block time: connect the same Google Calendar {brand} syncs to, and Calendly will see {brand} appointments as busy."
+msgstr "Crea un Personal Access Token in Calendly → Integrations → API & Webhooks. I webhook richiedono un piano a pagamento: crea un'iscrizione verso l'indirizzo qui sotto per invitee.created, invitee.canceled e invitee_no_show.created con una chiave di firma, e incolla qui la chiave. Calendly non ha un'API per bloccare gli orari: collega lo stesso Google Calendar che {brand} sincronizza, e Calendly vedrà occupati gli orari degli appuntamenti di {brand}."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Create an API key in Cal.com → Settings → Developer → API keys (cal_live_…). Add a webhook (Settings → Developer → Webhooks) to the address below with the triggers Booking created/rescheduled/cancelled/requested/rejected and a secret, and paste the same secret here. 'Block {brand} appointments on the platform' registers the {brand} busy feed as a read-only calendar in Cal.com, so {brand} appointments block Cal.com slots."
+msgstr "Crea una chiave API in Cal.com → Settings → Developer → API keys (cal_live_…). Aggiungi un webhook (Settings → Developer → Webhooks) verso l'indirizzo qui sotto, con gli eventi Booking created/rescheduled/cancelled/requested/rejected e una chiave segreta, e incolla qui la stessa chiave. «Blocca sulla piattaforma gli orari degli appuntamenti di {brand}» registra in Cal.com il feed degli impegni di {brand} come calendario in sola lettura: così gli appuntamenti di {brand} occupano gli orari di Cal.com."
+
+#: crm/booking_platforms/schedulers.py
+msgid "In Acuity → Integrations → API copy the User ID (Client ID here) and the API key. {brand} registers its webhooks (scheduled, rescheduled, canceled, changed) on 'Test connection'; they are verified with your API key. Map each Acuity calendar to a professional (Staff) and each appointment type to a service."
+msgstr "In Acuity → Integrations → API copia lo User ID (qui «ID del client / nome utente») e la chiave API. {brand} registra i suoi webhook (scheduled, rescheduled, canceled, changed) con «Prova il collegamento»; vengono verificati con la tua chiave API. Abbina ogni calendario di Acuity a un professionista e ogni tipo di appuntamento a un servizio."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Register an app in Microsoft Entra ID with the application permission BookingsAppointment.ReadWrite.All (admin consent), create a client secret, and enter Tenant ID, Client ID and secret. Account ID is the booking business id (its e-mail address, e.g. studio@contoso.onmicrosoft.com). Graph has no webhooks for Bookings: {brand} polls every 15 minutes."
+msgstr "Registra un'app in Microsoft Entra ID con l'autorizzazione dell'applicazione BookingsAppointment.ReadWrite.All (con il consenso dell'amministratore), crea una chiave segreta del client e scrivi l'ID del tenant, l'ID del client e la chiave. In «ID dell'account / dell'attività» va l'id dell'attività di Bookings (il suo indirizzo email, per esempio studio@contoso.onmicrosoft.com). Graph non ha webhook per Bookings: {brand} controlla ogni 15 minuti."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Create an app in the TIMIFY Developer Platform: App ID and App Secret go in Client ID/Secret, the company id in Account ID. Configure the appointment webhooks to the address below, adding a custom header X-Webhook-Secret with a value of your choice and paste the same value in the signing secret."
+msgstr "Crea un'app nella TIMIFY Developer Platform: App ID e App Secret vanno in «ID del client / nome utente» e «Chiave segreta del client / password», l'id dell'azienda in «ID dell'account / dell'attività». Imposta i webhook degli appuntamenti verso l'indirizzo qui sotto, con un'intestazione X-Webhook-Secret dal valore che vuoi, e incolla lo stesso valore nella chiave segreta di firma del webhook."
+
+#: crm/booking_platforms/schedulers.py
+msgid "Setmore's API is a limited beta for Pro accounts: write to api@setmore.com to receive a refresh token and paste it here. Setmore has no webhooks nor a cancel endpoint: {brand} polls every 15 minutes."
+msgstr "L'API di Setmore è una beta riservata agli account Pro: scrivi ad api@setmore.com per ricevere un token di aggiornamento e incollalo qui. Setmore non ha webhook né un modo per annullare: {brand} controlla ogni 15 minuti."
+
+#: crm/booking_platforms/schedulers.py
+msgid "API Base URL is https://<your-host>/index.php/api/v1 and the API key is the token set in Settings → Integrations → API. For webhooks, point them to the address below and use the same token in X-EA-Token (signing secret here)."
+msgstr "L'URL di base dell'API è https://<il-tuo-host>/index.php/api/v1 e la chiave API è il token impostato in Easy!Appointments, in Settings → Integrations → API. Fai arrivare i webhook all'indirizzo qui sotto e usa lo stesso token in X-EA-Token (qui, la chiave segreta di firma del webhook)."
+
+#: crm/booking_platforms/ical.py
+msgid "Copy the private calendar address (.ics / iCal / 'sync with Google Calendar') from the platform's agenda settings and paste it here. Bookings are read every 15 minutes; a booking that disappears from the feed is cancelled in {brand}."
+msgstr "Copia l'indirizzo privato del calendario (.ics / iCal / «sincronizza con Google Calendar») dalle impostazioni dell'agenda della piattaforma e incollalo qui. Le prenotazioni si leggono ogni 15 minuti; una prenotazione che sparisce dal feed viene annullata in {brand}."
+
+#: crm/booking_platforms/generic_webhook.py
+msgid "Point Zapier, Make, n8n or any system at the webhook address below, sending one booking (or a list) as JSON. Use the field map to tell {brand} where the id, start, end, status and client live in your payload. Tip: for platforms that only send emails, forward the booking email to a Zapier Email Parser or Make Mailhook."
+msgstr "Fai mandare a Zapier, Make, n8n o a qualsiasi altro sistema una prenotazione (o un elenco) in JSON all'indirizzo del webhook qui sotto. Con la mappa dei campi dici a {brand} dove stanno, nel tuo payload, l'id, l'inizio, la fine, lo stato e il cliente. Un consiglio: per le piattaforme che mandano solo email, inoltra l'email di prenotazione a uno Zapier Email Parser o a un Make Mailhook."
+
+#: crm/booking_platforms/sync.py
+msgid "Cancelled in {brand}"
+msgstr "Annullato in {brand}"

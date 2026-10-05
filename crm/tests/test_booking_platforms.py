@@ -64,6 +64,28 @@ class TestRegistry(unittest.TestCase):
 		self.assertFalse(is_stable("Treatwell / Uala"))
 		self.assertFalse(is_stable("nope"))
 
+	def test_every_help_reads_in_italian(self):
+		# the settings translate a platform's help a paragraph at a time (its own
+		# note, then how it connects): each is in the catalog by hand, or the
+		# centre read «Copy the private calendar address…» in English
+		from crm.tests.test_frasi_costanti import _msgid
+
+		catalogo = _msgid()
+		mancano = sorted(
+			{
+				paragrafo
+				for cls in PROVIDERS
+				for paragrafo in (cls.setup_help or "").split("\n\n")
+				if paragrafo and paragrafo not in catalogo
+			}
+		)
+		self.assertEqual(mancano, [])
+
+	def test_no_help_calls_the_product_the_crm(self):
+		for cls in PROVIDERS:
+			self.assertNotIn("the CRM", cls.setup_help or "", cls.label)
+			self.assertNotIn("The CRM", cls.setup_help or "", cls.label)
+
 	def test_missing_fields(self):
 		provider = S.CalCom(Conn())
 		self.assertEqual(provider.missing_fields(), ["api_key"])

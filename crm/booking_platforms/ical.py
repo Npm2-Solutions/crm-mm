@@ -276,7 +276,7 @@ class ICalFeed(BookingPlatform):
 	setup_help = (
 		"Copy the private calendar address (.ics / iCal / 'sync with Google Calendar') "
 		"from the platform's agenda settings and paste it here. Bookings are read every "
-		"15 minutes; a booking that disappears from the feed is cancelled in the CRM."
+		"15 minutes; a booking that disappears from the feed is cancelled in {brand}."
 	)
 	#: feeds carry the full window they know about — missing events mean deleted ones
 	authoritative_window = True

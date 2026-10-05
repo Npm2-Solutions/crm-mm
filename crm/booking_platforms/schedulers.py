@@ -133,8 +133,8 @@ class CalCom(BookingPlatform):
 		"Create an API key in Cal.com → Settings → Developer → API keys (cal_live_…). "
 		"Add a webhook (Settings → Developer → Webhooks) to the address below with the "
 		"triggers Booking created/rescheduled/cancelled/requested/rejected and a secret, and "
-		"paste the same secret here. 'Block time' registers the CRM busy feed as a read-only "
-		"calendar in Cal.com, so CRM appointments block Cal.com slots."
+		"paste the same secret here. 'Block {brand} appointments on the platform' registers the {brand} busy feed as a read-only "
+		"calendar in Cal.com, so {brand} appointments block Cal.com slots."
 	)
 
 	def auth_headers(self):
@@ -185,7 +185,7 @@ class CalCom(BookingPlatform):
 		self.request(
 			"POST",
 			f"/v2/bookings/{external_id}/cancel",
-			json={"cancellationReason": reason or "Cancelled in the CRM"},
+			json={"cancellationReason": reason or "Cancelled"},
 		)
 
 	def register_busy_feed(self, url: str) -> None:
@@ -267,7 +267,7 @@ class Calendly(BookingPlatform):
 		"Webhooks need a paid plan: create a subscription to the address below for "
 		"invitee.created, invitee.canceled and invitee_no_show.created with a signing key, "
 		"and paste the key here. Calendly has no API to block time: connect the same Google "
-		"Calendar the CRM syncs to, and Calendly will see CRM appointments as busy."
+		"Calendar {brand} syncs to, and Calendly will see {brand} appointments as busy."
 	)
 
 	def auth_headers(self):
@@ -394,7 +394,7 @@ class SimplyBook(BookingPlatform):
 	setup_help = (
 		"Account ID is your company login (the xxx in xxx.simplybook.it); Client ID and "
 		"Client Secret are an admin user's login and password (use a dedicated user without "
-		"2FA). Enable the API Custom Feature in SimplyBook. The CRM registers the webhook for "
+		"2FA). Enable the API Custom Feature in SimplyBook. {brand} registers the webhook for "
 		"new/changed/cancelled bookings on 'Test connection'; SimplyBook webhooks are unsigned, "
 		"so every notification is re-read from the API before it is trusted."
 	)
@@ -544,7 +544,7 @@ class Acuity(BookingPlatform):
 	default_base_url = "https://acuityscheduling.com/api/v1"
 	setup_help = (
 		"In Acuity → Integrations → API copy the User ID (Client ID here) and the API key. "
-		"The CRM registers its webhooks (scheduled, rescheduled, canceled, changed) on 'Test "
+		"{brand} registers its webhooks (scheduled, rescheduled, canceled, changed) on 'Test "
 		"connection'; they are verified with your API key. Map each Acuity calendar to a "
 		"professional (Staff) and each appointment type to a service."
 	)
@@ -609,7 +609,7 @@ class Acuity(BookingPlatform):
 		self.request(
 			"PUT",
 			f"/appointments/{external_id}/cancel",
-			json={"cancelNote": reason or "Cancelled in the CRM"},
+			json={"cancelNote": reason or "Cancelled"},
 		)
 
 	def block_time(self, staff_ref, start, end, reason=""):
@@ -680,7 +680,7 @@ class MicrosoftBookings(BookingPlatform):
 		"BookingsAppointment.ReadWrite.All (admin consent), create a client secret, and enter "
 		"Tenant ID, Client ID and secret. Account ID is the booking business id (its e-mail "
 		"address, e.g. studio@contoso.onmicrosoft.com). Graph has no webhooks for Bookings: "
-		"the CRM polls every 15 minutes."
+		"{brand} polls every 15 minutes."
 	)
 
 	def _login(self):
@@ -911,7 +911,7 @@ class Setmore(BookingPlatform):
 	setup_help = (
 		"Setmore's API is a limited beta for Pro accounts: write to api@setmore.com to "
 		"receive a refresh token and paste it here. Setmore has no webhooks nor a cancel "
-		"endpoint: the CRM polls every 15 minutes."
+		"endpoint: {brand} polls every 15 minutes."
 	)
 
 	def _login(self):
