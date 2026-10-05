@@ -41,9 +41,12 @@
     }"
   />
   <div v-if="!isMobileView" class="flex-1 overflow-y-auto">
+    <!-- four to a row where there is room, fewer where a card would be
+         narrower than 13rem: on a tablet held upright four were 155px, the
+         title «Nota di pr…» and the author and the day on three lines -->
     <div
       v-if="notes.data?.data?.length"
-      class="grid grid-cols-1 gap-2 px-3 pb-2 sm:grid-cols-4 sm:gap-4 sm:px-5 sm:pb-3"
+      class="grid grid-cols-1 gap-2 px-3 pb-2 sm:grid-cols-[repeat(auto-fill,minmax(max(13rem,calc((100%_-_3rem)/4)),1fr))] sm:gap-4 sm:px-5 sm:pb-3"
     >
       <div
         v-for="note in notes.data.data"
@@ -87,14 +90,14 @@
         />
         <!-- eslint-enable vue/no-v-html -->
         <div class="mt-2 flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
+          <div class="flex min-w-0 items-center gap-2">
             <UserAvatar :user="note.owner" size="xs" />
-            <div class="text-sm text-ink-gray-8">
+            <div class="truncate text-sm text-ink-gray-8">
               {{ getUser(note.owner).full_name }}
             </div>
           </div>
           <Tooltip :text="formatDate(note.modified)">
-            <div class="text-sm text-ink-gray-7">
+            <div class="shrink-0 whitespace-nowrap text-sm text-ink-gray-7">
               {{ __(timeAgo(note.modified)) }}
             </div>
           </Tooltip>
