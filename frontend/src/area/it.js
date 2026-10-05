@@ -52,6 +52,10 @@ export default {
   'Too many wrong codes: ask for a new one':
     'Troppi codici sbagliati: chiedine uno nuovo',
   'The code is not right': 'Il codice non è giusto',
+  'The link of your email enters your area: tap Enter.':
+    'Il link della tua email ti fa entrare nella tua area: tocca Entra.',
+  'This link no longer works: write your email and we send you a code':
+    'Questo link non vale più: scrivi la tua email e ti mandiamo un codice',
   'This area is closed: ask the centre':
     'Quest’area è chiusa: chiedi al centro',
   'Write your email address': 'Scrivi il tuo indirizzo email',

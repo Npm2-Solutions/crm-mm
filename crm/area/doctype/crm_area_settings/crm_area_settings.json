@@ -5,6 +5,7 @@
  "engine": "InnoDB",
  "field_order": [
   "notices_section",
+  "email_new_documents",
   "whatsapp_template",
   "plans_section",
   "exercise_media_url"
@@ -15,6 +16,13 @@
    "fieldname": "notices_section",
    "fieldtype": "Section Break",
    "label": "News in the area"
+  },
+  {
+   "default": "0",
+   "description": "An email with a link that enters their area, never the document itself. Off, the centre hands documents over as it does now",
+   "fieldname": "email_new_documents",
+   "fieldtype": "Check",
+   "label": "Tell the person by email when there is a new document in their area"
   },
   {
    "description": "An approved template that says only that there is news; its one variable, if any, is the centre's name",
@@ -38,7 +46,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-05 17:00:00.000000",
+ "modified": "2026-10-05 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Area",
  "name": "CRM Area Settings",

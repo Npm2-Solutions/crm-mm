@@ -545,6 +545,8 @@ doc_events = {
 			"crm.scheduling.esiti.fattura_emessa",
 			"crm.clienti.eventi.fattura_confermata",
 			"crm.clinica.eventi.fattura_confermata",
+			# where the centre wants it, the person hears of it with a link to the area
+			"crm.area.collegamento.fattura_emessa",
 		],
 	},
 	"CRM Plan": {

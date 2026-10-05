@@ -23,7 +23,7 @@ from dataclasses import dataclass
 
 import frappe
 from frappe import _
-from frappe.utils import cint, escape_html, get_fullname, get_url, now_datetime
+from frappe.utils import cint, get_fullname, now_datetime
 
 from crm.area import accesso
 from crm.permissions import livelli
@@ -164,27 +164,11 @@ def post_message(lead: str, body: str) -> dict:
 
 
 def _avvisa(lead: str) -> None:
-	from crm.moduli.richieste import nome_del_centro
+	from crm.area import collegamento
 
-	indirizzi = sorted({riga.user for riga in accesso.accessi_aperti(lead)})
-	if not indirizzi:
-		return
-	from crm.posta.aspetto import pulsante
-
-	centro = nome_del_centro() or _("your centre")
-	try:
-		frappe.sendmail(
-			recipients=indirizzi,
-			subject=_("News in your area at {0}").format(centro),
-			header=_("News in your area"),
-			with_container=True,
-			message="<p>{}</p>{}".format(
-				escape_html(_("There is news for you in your area at {0}.").format(centro)),
-				pulsante(get_url("/area"), _("Open your area")),
-			),
-		)
-	except frappe.OutgoingEmailError:
-		frappe.clear_last_message()
+	# each who enters the area gets the email with a link of their own
+	for utente in sorted({riga.user for riga in accesso.accessi_aperti(lead)}):
+		collegamento.manda(utente, lead, "message", "messages")
 	# WhatsApp or SMS to who asked for them, with the same words
 	from crm.area import avvisi
 

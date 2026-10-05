@@ -27131,8 +27131,8 @@ msgid "The names of this table are not in Italian: choose the foods the Italian 
 msgstr "I nomi di questa tabella non sono in italiano: scegli gli alimenti che mancano alle tabelle italiane, poi rinominali nella libreria."
 
 #: frontend/src/utils/impostazioni.js
-msgid "The news their area sends by WhatsApp or SMS."
-msgstr "Le novità che la loro area manda per WhatsApp o SMS."
+msgid "The news their area sends: the email with its link, WhatsApp or SMS."
+msgstr "Le novità che la sua area manda: l'email con il suo link, WhatsApp o SMS."
 
 #: crm/dashboard/widgets/agenda.py
 msgid "The next appointments on the agenda"
@@ -44714,3 +44714,36 @@ msgstr "L'IVA delle fatture emesse meno quella delle fatture dei fornitori: un'i
 #: crm/dashboard/widgets/invoicing.py
 msgid "An indication: the settlement is the accountant's"
 msgstr "Un'indicazione: la liquidazione è del commercialista"
+
+msgid "Tell the person by email when there is a new document"
+msgstr "Avvisa la persona via email quando c'è un documento nuovo"
+
+msgid "An invoice issued to them: an email with a link that enters their area, never the document itself. Who has no area yet gets it then, or their parent for a minor."
+msgstr "Una fattura emessa a suo nome: un'email con un link che entra nella sua area, mai il documento. Chi non ha ancora l'area la riceve allora, o il genitore per un minore."
+
+msgid "This link no longer works: write your email and we send you a code"
+msgstr "Questo link non vale più: scrivi la tua email e ti mandiamo un codice"
+
+msgid "The button enters your area without a code, once, within {0} days. Then you enter with your email, as always."
+msgstr "Il pulsante ti fa entrare nella tua area senza codice, una volta, entro {0} giorni. Poi entri con la tua email, come sempre."
+
+msgid "Tell the person by email when there is a new document in their area"
+msgstr "Avvisa la persona via email quando c'è un documento nuovo nella sua area"
+
+msgid "An email with a link that enters their area, never the document itself. Off, the centre hands documents over as it does now"
+msgstr "Un'email con un link che entra nella sua area, mai il documento. Spento, il centro consegna i documenti come fa ora"
+
+msgid "CRM Area Link"
+msgstr "Link all'area"
+
+msgid "A link by email that enters the client area once, within its days: only its fingerprint is kept"
+msgstr "Un link via email che fa entrare nell'area clienti una volta, entro i suoi giorni: se ne tiene solo l'impronta"
+
+msgid "Why it was sent"
+msgstr "Perché è stato mandato"
+
+msgid "Fingerprint"
+msgstr "Impronta"
+
+msgid "Used on"
+msgstr "Usato il"

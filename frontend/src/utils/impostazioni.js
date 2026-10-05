@@ -251,7 +251,8 @@ export const MENU = [
         // what the area tells outside it
         key: 'News in the client area',
         label: 'Client area',
-        description: 'The news their area sends by WhatsApp or SMS.',
+        description:
+          'The news their area sends: the email with its link, WhatsApp or SMS.',
         condition: (c) => c.puo('canali.configura') && c.puo('area.invita'),
       },
       {

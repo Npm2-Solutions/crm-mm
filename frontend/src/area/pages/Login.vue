@@ -28,7 +28,10 @@
         <img v-else :src="brand.logo" :alt="brand.name" class="h-8 w-auto" />
         <h1 class="area-title mt-2">{{ __('Enter your area') }}</h1>
         <p class="text-p-base text-ink-gray-6">
-          <template v-if="!sent">
+          <template v-if="link">
+            {{ __('The link of your email enters your area: tap Enter.') }}
+          </template>
+          <template v-else-if="!sent">
             {{ __('Enter with your email') }}.
             {{ __('We send you a code: no password to remember.') }}
           </template>
@@ -42,7 +45,23 @@
           </template>
         </p>
       </div>
-      <form v-if="!sent" class="flex flex-col gap-3" @submit.prevent="send">
+      <!-- the email's link: it enters on a tap, never on the opening, which
+           the programs that check every link of an email would spend -->
+      <form v-if="link" class="flex flex-col gap-3" @submit.prevent="withLink">
+        <Button
+          variant="solid"
+          size="lg"
+          type="submit"
+          :label="__('Enter')"
+          :loading="busy === true"
+        />
+      </form>
+      <form
+        v-else-if="!sent"
+        class="flex flex-col gap-3"
+        @submit.prevent="send"
+      >
+        <ErrorMessage v-if="linkError" :message="linkError" />
         <FormControl
           v-model="email"
           type="email"
@@ -137,6 +156,7 @@
 <script setup>
 import { Button, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { nextTick, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { inJSON, opzioniDiAccesso, supported } from '../passkey'
 import { messageOf } from '../store'
 import CentreTile from '@/components/CentreTile.vue'
@@ -151,6 +171,10 @@ const forma = useFormaDelLogo(logo, boot.logo_shape)
 const brand = marchio(boot.brand)
 const field = ref(null)
 const focused = ref(false)
+
+const route = useRoute()
+const link = ref(String(route.query.link || ''))
+const linkError = ref('')
 
 const email = ref('')
 const code = ref('')
@@ -199,6 +223,23 @@ async function withPasskey() {
   } catch (e) {
     // closed on the phone: nothing to say
     if (e?.name !== 'NotAllowedError') error.value = __(messageOf(e))
+  } finally {
+    busy.value = false
+  }
+}
+
+async function withLink() {
+  busy.value = true
+  try {
+    const { page } = await call('crm.area.collegamento.enter', {
+      link: link.value,
+    })
+    // a new session: the page starts again with it, where the email meant
+    window.location.href = page ? `/area/${page}` : '/area'
+  } catch (e) {
+    // old or used: the usual door, which says the same to everybody
+    linkError.value = __(messageOf(e))
+    link.value = ''
   } finally {
     busy.value = false
   }

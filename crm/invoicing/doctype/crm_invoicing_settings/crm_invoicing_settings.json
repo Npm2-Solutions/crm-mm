@@ -11,9 +11,6 @@
   "advances_in_stamp_base",
   "delivery_section",
   "attach_pdf",
-  "email_on_submit",
-  "column_delivery",
-  "retention_days",
   "automatic_section",
   "auto_send_sdi",
   "column_automatic",
@@ -70,22 +67,6 @@
    "fieldname": "attach_pdf",
    "fieldtype": "Check",
    "label": "Attach the PDF to the invoice"
-  },
-  {
-   "fieldname": "email_on_submit",
-   "fieldtype": "Check",
-   "label": "Email the client on issue"
-  },
-  {
-   "fieldname": "column_delivery",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "description": "0 means no expiry: the file stays in the centre's own systems, so its link can stay open.",
-   "fieldname": "retention_days",
-   "fieldtype": "Int",
-   "label": "Keep the download link open for (days)"
   },
   {
    "description": "Off, every invoice waits for somebody to press «Send to the SdI». On, an electronic invoice leaves through Itala as soon as it is issued; one the SdI would reject waits, and whoever manages invoicing is told.",
@@ -182,7 +163,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-05 14:00:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Settings",
