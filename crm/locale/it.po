@@ -42551,8 +42551,8 @@ msgid "A call from a telephony provider carries both numbers."
 msgstr "Una chiamata arrivata dal fornitore di telefonia porta entrambi i numeri."
 
 #: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
-msgid "DottorCloud shows every time on the site's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the site's time zone."
-msgstr "DottorCloud mostra ogni orario sull'ora del sito ({0}): con {1} qui, gli orari di lavoro compaiono spostati della differenza. Tieni il fuso del sito."
+msgid "{brand} shows every time on the centre's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the centre's time zone, chosen in The centre › General › Language & time."
+msgstr "{brand} mostra ogni orario sull'ora del centro ({0}): con {1} qui, gli orari di lavoro compaiono spostati della differenza. Tieni il fuso orario del centro, che si sceglie in Il centro › Generale › Lingua e fuso orario."
 
 #: frontend/src/components/Clinic/ClinicArea.vue
 msgctxt "Assistant action"
@@ -44314,3 +44314,7 @@ msgstr "Come il centro ({0})"
 #: frontend/src/components/Settings/PreferencesSettings.vue
 msgid "The clock you read the hours on. The agenda keeps the centre’s."
 msgstr "L'ora su cui leggi gli orari. L'agenda tiene quella del centro."
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "The centre’s time zone ({0})"
+msgstr "Fuso orario del centro ({0})"
