@@ -3,16 +3,11 @@ name: Migration
 # Verifies that an existing site on the PR's base branch can `bench migrate`
 # to the PR code. Catches broken patches / schema changes before release.
 
+# Not on every pull request: NPM2 runs the checks when they are needed
+# (05/10/2026, a pull request waited eleven minutes on them). By hand from
+# Actions > Run workflow, on the branch to try.
+# Started on a branch, it upgrades a site on develop to that branch.
 on:
-    pull_request:
-        paths-ignore:
-            - "**.css"
-            - "**.js"
-            - "**.md"
-            - "**.html"
-            - "**.csv"
-            - "**.po"
-            - "**.pot"
     workflow_dispatch:
 
 concurrency:

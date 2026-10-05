@@ -1,11 +1,10 @@
 name: Sito
 
+# Not on every pull request: NPM2 runs the checks when they are needed
+# (05/10/2026, a pull request waited eleven minutes on them). By hand from
+# Actions > Run workflow, on the branch to try.
+# Publishing the site runs these tests first anyway (`sito-pubblica.yml`).
 on:
-    pull_request:
-        paths:
-            - "sito/**"
-            - "brand/**"
-            - ".github/workflows/sito.yml"
     workflow_dispatch:
 
 concurrency:

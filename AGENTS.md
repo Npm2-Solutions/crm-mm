@@ -868,6 +868,17 @@ yarn test          # watch mode
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
 
+No check runs on a pull request (NPM2, 05/10/2026): the server's tests, the
+frontend's, the linters and Semgrep run every night on develop, and every
+workflow - the migration from develop and the E2E tests too - by hand from
+Actions > Run workflow, on develop or on a branch, when a change needs it. So
+before a pull request is merged, what CI would have said is run on the machine:
+prettier 3.2.5, eslint and oxlint on the files changed, `yarn test:run`, the
+build; ruff 0.8.1 and Semgrep on the Python changed, and the server's tests of
+the modules it touches (`bench --site … run-tests --module …`). A change to
+patches or DocTypes is migrated on a site first, or run through the Migration
+workflow on its branch.
+
 The server's tests run on a CI bench with only frappe and crm. What needs
 frappe_whatsapp asks `crm.tests.serve_whatsapp(self)` (skipped there, run where
 the app is) or `con_whatsapp()` to leave WhatsApp's part out; what needs Builder

@@ -1,14 +1,9 @@
 name: UI Tests
 
-# E2E (Playwright) suite. Heavy gate: runs on the main-hotfix staging lane
-# before promoting to main, plus on demand. Develop stays on the fast lane.
+# E2E (Playwright) suite. Not on its own any more: NPM2 runs the checks when
+# they are needed (05/10/2026), this one by hand from Actions > Run workflow,
+# before promoting main-hotfix to main.
 on:
-  push:
-    branches:
-      - main-hotfix
-  pull_request:
-    branches:
-      - main-hotfix
   workflow_dispatch:
 
 concurrency:
