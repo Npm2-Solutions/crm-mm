@@ -121,6 +121,16 @@ export function giornoInBreve(data, locale) {
 }
 
 /**
+ * An appointment on the page of somebody it is for: its service. Its title
+ * names who takes part - the person again, or in a class two of the others
+ * («Pilates — Sofia Pellegrini, Marco Conti +3»), whose names are not theirs
+ * to read there. Without a service, the title without the person's name.
+ */
+export function nomeDellAppuntamento(appuntamento, nome) {
+  return appuntamento?.service || titoloSenzaPersona(appuntamento?.title, nome)
+}
+
+/**
  * What an appointment is, on the page of the person it is for: its title
  * without their name («Fisioterapia — Laura Consenso» is «Fisioterapia» there).
  */

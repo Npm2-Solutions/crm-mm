@@ -297,7 +297,7 @@
             >
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-medium">
-                  {{ row.item.data?.title || row.item.data?.service }}
+                  {{ nomeDellAppuntamento(row.item.data) }}
                 </span>
                 <Badge
                   v-if="row.item.data?.status"
@@ -476,6 +476,7 @@ import ChatBubble from '@/components/Activities/ChatBubble.vue'
 import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
 import HappenedCard from '@/components/Activities/HappenedCard.vue'
+import { nomeDellAppuntamento } from '@/utils/schedaPersona'
 import MessageActions from '@/components/Activities/MessageActions.vue'
 import NewMessagesLine from '@/components/Activities/NewMessagesLine.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'

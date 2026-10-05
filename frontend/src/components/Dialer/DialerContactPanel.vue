@@ -62,7 +62,7 @@
           class="flex items-center justify-between gap-2 px-2.5 py-2 text-sm"
         >
           <span class="min-w-0 truncate text-ink-gray-8">
-            {{ a.title || a.service }}
+            {{ nomeDellAppuntamento(a) }}
           </span>
           <span class="shrink-0 text-xs text-ink-gray-5">
             {{ formatDate(a.starts_on, 'D MMM, HH:mm') }}
@@ -113,6 +113,7 @@
 
 <script setup>
 import { formatDate } from '@/utils'
+import { nomeDellAppuntamento } from '@/utils/schedaPersona'
 import { Badge, FeatherIcon } from 'frappe-ui'
 import { computed } from 'vue'
 
