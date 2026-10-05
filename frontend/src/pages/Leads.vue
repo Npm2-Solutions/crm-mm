@@ -20,7 +20,7 @@
       />
       <!-- a practitioner opens the record of somebody not in their care, saying why -->
       <Button
-        v-if="puo('clinica.fuori_equipe')"
+        v-if="apreFuoriEquipe"
         :label="__('Out of your care')"
         iconLeft="lucide-lock-open"
         @click="showOutOfCare = true"
@@ -43,7 +43,7 @@
       @click="showLeadModal = true"
     />
   </template>
-  <OutOfCareDialog v-if="puo('clinica.fuori_equipe')" v-model="showOutOfCare" />
+  <OutOfCareDialog v-if="apreFuoriEquipe" v-model="showOutOfCare" />
   <ViewControls
     v-if="!isMobileView"
     ref="viewControls"
@@ -115,7 +115,11 @@ import { ref, computed, reactive, h } from 'vue'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Lead')
-const { getUser, puo } = usersStore()
+const { getUser, puo, ambito } = usersStore()
+// who reads every record (the medical director) has nobody out of their care
+const apreFuoriEquipe = computed(
+  () => puo('clinica.fuori_equipe') && ambito('clinica.vedi') !== 'centro',
+)
 const { getLeadStatus } = statusesStore()
 const { on } = useBroadcast()
 
