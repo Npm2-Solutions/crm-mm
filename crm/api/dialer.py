@@ -388,15 +388,14 @@ def _upcoming_appointments(entry, limit: int = 5) -> list[dict]:
 	"""Appointments the person already has, so nobody books a second one by mistake."""
 	if not (entry.reference_doctype and entry.reference_name):
 		return []
-	names = frappe.get_all(
-		"CRM Appointment Participant",
-		filters={
-			"parenttype": "CRM Appointment",
-			"party_type": entry.reference_doctype,
-			"party": entry.reference_name,
-		},
-		pluck="parent",
-	)
+	from crm.api.appointments import POSTO_LASCIATO, posti_della_persona
+
+	# a class whose place they gave up is no appointment of theirs
+	names = [
+		appuntamento
+		for appuntamento, posto in posti_della_persona(entry.reference_doctype, entry.reference_name).items()
+		if posto not in POSTO_LASCIATO
+	]
 	if not names:
 		return []
 	return frappe.get_list(

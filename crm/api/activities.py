@@ -611,17 +611,14 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 	"""
 	if not frappe.db.exists("DocType", "CRM Appointment"):
 		return []
-	booked = frappe.get_all(
-		"CRM Appointment Participant",
-		filters={"party_type": doctype, "party": name},
-		pluck="parent",
-		limit_page_length=0,
-	)
-	if not booked:
+	from crm.api.appointments import per_la_persona, posti_della_persona
+
+	posti = posti_della_persona(doctype, name)
+	if not posti:
 		return []
 	rows = frappe.get_all(
 		"CRM Appointment",
-		filters={"name": ["in", booked]},
+		filters={"name": ["in", list(posti)]},
 		fields=["name", "title", "service", "status", "starts_on", "ends_on", "creation", "owner"],
 		limit_page_length=0,
 	)
@@ -633,7 +630,8 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 			# in the history at the moment it happens, the way a call does
 			"creation": row.starts_on or row.creation,
 			"owner": row.owner,
-			"data": dict(row),
+			# in a class, as it went for this person: their place given up is theirs
+			"data": {**row, "status": per_la_persona(row.status, posti.get(row.name))},
 			"is_lead": doctype == "CRM Lead",
 		}
 		for row in rows
