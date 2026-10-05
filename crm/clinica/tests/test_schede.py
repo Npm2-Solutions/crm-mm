@@ -235,6 +235,17 @@ class LaSintesi(SchedeCase):
 		with self.assertRaises(frappe.ValidationError):
 			sintesi.set_value(self.anna.name, "hobbies", "Tennis")
 
+	def test_a_mano_si_legge_nella_lingua_di_chi_legge(self):
+		# written by somebody who reads English (the demo's job, a colleague)...
+		self.come(DOC1)
+		frappe.local.lang = "en"
+		sintesi.set_value(self.anna.name, "allergies", "Nichel")
+		# ...it says where it comes from in the language of who reads it
+		frappe.local.lang = "it"
+		self.addCleanup(setattr, frappe.local, "lang", "en")
+		righe = {riga["key"]: riga for riga in sintesi.get_summary(self.anna.name)["lines"]}
+		self.assertEqual(righe["allergies"]["source_title"], "A mano")
+
 	def test_anche_un_modulo_clinico_firmato_propone(self):
 		frappe.set_user("Administrator")
 		modulo = self.pubblica(ANAMNESI_MODULO, "Anamnesi del paziente", clinical=1)
