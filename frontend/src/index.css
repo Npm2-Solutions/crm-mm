@@ -254,6 +254,36 @@
   color: var(--ink-gray-5);
 }
 
+/* A select whose value is read whole (a time zone: on a phone «Europe/Rome ·
+   Ora dell’Europa centrale» ended at «centra», cut with no «…»). frappe-ui
+   sizes the value's column by the words, so they ran out of the box: here the
+   column is the box's, the value goes on under itself and the box grows. A
+   class one gives (on the select, or around it with a label), never every
+   select: a column of no width of its own let a filter beside a search shrink
+   to a letter a line. */
+:is(
+    .dc-valore-intero[data-slot='trigger'],
+    .dc-valore-intero [data-slot='trigger']
+  ) {
+  padding-block: 0.25rem;
+}
+:is(
+    .dc-valore-intero[data-slot='trigger'],
+    .dc-valore-intero [data-slot='trigger']
+  )
+  > .grid.truncate {
+  grid-template-columns: minmax(0, 1fr);
+}
+:is(
+    .dc-valore-intero[data-slot='trigger'],
+    .dc-valore-intero [data-slot='trigger']
+  )
+  > .grid.truncate
+  > .truncate {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* Reka menu content (e.g. the kebab menu inside PrimaryDropdown) portals to
    <body> without a z-index, so it falls behind frappe-ui Popover content
    (z-[100]). Lift menus above popovers so nested menus stay visible. */
