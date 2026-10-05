@@ -37469,8 +37469,8 @@ msgid "{0} services of the agenda have no card"
 msgstr "{0} servizi dell'agenda non hanno la scheda fiscale"
 
 #: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
-msgid "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card."
-msgstr "Ognuno diventa una prestazione sanitaria esente, con il tipo di spesa di chi emette e il prezzo dell'agenda. Il commercialista le conferma; quella che non è una prestazione sanitaria (un corso, un prodotto) si corregge sulla sua scheda."
+msgid "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price; one only somebody who is not exempt performs (an osteopath, a kinesiologist) is taxed at their rate. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card."
+msgstr "Ognuno diventa una prestazione sanitaria esente, con il tipo di spesa di chi emette e il prezzo dell'agenda; quello che svolge solo chi non è esente (un osteopata, un chinesiologo) ha l'IVA della sua qualifica. Il commercialista le conferma; quella che non è una prestazione sanitaria (un corso, un prodotto) si corregge sulla sua scheda."
 
 #: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
 msgid "Create the cards"
