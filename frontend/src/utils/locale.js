@@ -46,3 +46,41 @@ export function inFrase(label) {
   }
   return testo
 }
+
+// In Italian an article, or a preposition with its article, drops its vowel
+// before a number read with one: «l'1 ottobre», «dall'8 marzo», «all'11
+// settembre». A sentence that puts a date after «il {0}» or «dal {0}» read «dal
+// 11 set»: the date is known only once the sentence is filled, so it is put
+// right here, for every sentence, and only before a day of a date.
+const ELISIONI = {
+  il: "l'",
+  dal: "dall'",
+  al: "all'",
+  del: "dell'",
+  nel: "nell'",
+  sul: "sull'",
+}
+const MESI = 'gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic'
+const DAVANTI_A_UNA_DATA = new RegExp(
+  `(^|[^\\p{L}'])(il|dal|al|del|nel|sul) (1|8|11)(?= (?:${MESI})|/)`,
+  'giu',
+)
+
+export function conLApostrofo(testo, lingua = globalThis.window?.lang) {
+  if (typeof testo !== 'string') return testo
+  if (
+    !String(lingua || '')
+      .toLowerCase()
+      .startsWith('it')
+  )
+    return testo
+  return testo.replace(DAVANTI_A_UNA_DATA, (_, prima, articolo, giorno) => {
+    const eliso = ELISIONI[articolo.toLowerCase()]
+    const maiuscolo = articolo[0] !== articolo[0].toLowerCase()
+    return (
+      prima +
+      (maiuscolo ? eliso[0].toUpperCase() + eliso.slice(1) : eliso) +
+      giorno
+    )
+  })
+}

@@ -1,5 +1,6 @@
 import { getConfig } from 'frappe-ui'
 import { conMarchio } from '@/utils/marchio'
+import { conLApostrofo } from '@/utils/locale'
 
 export default function translationPlugin(app) {
   app.config.globalProperties.__ = translate
@@ -44,5 +45,6 @@ function translate(message, replace, context = null) {
     return translatedMessage
   }
 
-  return format(translatedMessage, replace)
+  // a date after «il» or «dal» is known only now: «dall'11 set», not «dal 11»
+  return conLApostrofo(format(translatedMessage, replace))
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { appLocale, inFrase } from '@/utils/locale'
+import { appLocale, conLApostrofo, inFrase } from '@/utils/locale'
 
 describe('appLocale', () => {
   afterEach(() => {
@@ -55,5 +55,38 @@ describe('inFrase', () => {
       expect(inFrase(comeScritto)).toBe(comeScritto)
     }
     expect(inFrase(undefined)).toBe('')
+  })
+})
+
+describe('conLApostrofo', () => {
+  it('drops the vowel before a day read with one, in Italian', () => {
+    expect(conLApostrofo('Paziente dal 11 set 2026', 'it')).toBe(
+      "Paziente dall'11 set 2026",
+    )
+    expect(conLApostrofo('Ultima visita il 1 ott 2026', 'it')).toBe(
+      "Ultima visita l'1 ott 2026",
+    )
+    expect(conLApostrofo('fino al 8 novembre', 'it')).toBe(
+      "fino all'8 novembre",
+    )
+    expect(conLApostrofo('Il 11/10 è chiuso', 'it')).toBe("L'11/10 è chiuso")
+    expect(conLApostrofo('la seduta del 1 ott', 'it')).toBe(
+      "la seduta dell'1 ott",
+    )
+  })
+
+  it('leaves alone every other number, word and language', () => {
+    // a day read with a consonant keeps its article
+    expect(conLApostrofo('Paziente dal 7 set 2026', 'it')).toBe(
+      'Paziente dal 7 set 2026',
+    )
+    expect(conLApostrofo('il 18 ott', 'it')).toBe('il 18 ott')
+    // not a date
+    expect(conLApostrofo('il 1 di 10', 'it')).toBe('il 1 di 10')
+    expect(conLApostrofo('al 8%', 'it')).toBe('al 8%')
+    // inside a word
+    expect(conLApostrofo('Brasil 1 ott', 'it')).toBe('Brasil 1 ott')
+    expect(conLApostrofo('Client since 1 Oct', 'en')).toBe('Client since 1 Oct')
+    expect(conLApostrofo(null, 'it')).toBe(null)
   })
 })
