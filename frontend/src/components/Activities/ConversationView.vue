@@ -423,7 +423,7 @@
               <div class="mt-0.5 text-p-xs text-ink-gray-5">
                 {{
                   row.item.data?.locked
-                    ? __('Only the care team reads it')
+                    ? __('Protected health data: only the care team reads it')
                     : __('Read it in the Clinic tab')
                 }}
               </div>

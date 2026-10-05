@@ -148,8 +148,8 @@
       <span>
         {{
           archive.data.hidden === 1
-            ? __('One document with health data you cannot read')
-            : __('{0} documents with health data you cannot read', [
+            ? __('One document with protected health data')
+            : __('{0} documents with protected health data', [
                 archive.data.hidden,
               ])
         }}
