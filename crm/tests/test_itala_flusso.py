@@ -161,14 +161,16 @@ class FlussoItala(ConItala):
 
 		def ce_l_ha(metodo, url, argomenti):
 			if metodo == "GET" and url.endswith("/fatture"):
+				# every value as text, as Itala's API answers (not its guide): "0"
+				# is true in Python, and the invoice went out twice (05/10/2026)
 				return Risposta(
 					200,
 					[
 						{
-							"id": 777,
-							"ricezione": 0,
+							"id": "777",
+							"ricezione": "0",
 							"numero_documento": documento.document_number,
-							"sdi_identificativo": 4400112233,
+							"sdi_identificativo": "4400112233",
 							"sdi_nome_file": "IT0123_xyz.xml",
 							"sdi_stato": "INVI",
 						}

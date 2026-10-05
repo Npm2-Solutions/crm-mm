@@ -276,7 +276,7 @@ def cerca_inviata(chi: connessione.Accesso, doc, emittente: dict) -> dict | None
 	for riga in righe if isinstance(righe, list) else []:
 		if (
 			isinstance(riga, dict)
-			and not riga.get("ricezione")
+			and not busta.ricevuta(riga)
 			and str(riga.get("numero_documento") or doc.document_number) == str(doc.document_number)
 		):
 			return riga
