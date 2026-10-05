@@ -137,7 +137,7 @@ const props = defineProps({
 
 const { puo } = usersStore()
 const meta = useSchedulerMeta()
-const t = (text, args) => __(text, args)
+const t = (text, args, contesto) => __(text, args, contesto)
 
 const cycles = createResource({
   url: 'crm.scheduling.cicli.get_cycles',

@@ -277,7 +277,7 @@ const { apriFattura } = useFattura()
 const router = useRouter()
 const { $dialog } = globalStore()
 const meta = useSchedulerMeta()
-const t = (text, args) => __(text, args)
+const t = (text, args, contesto) => __(text, args, contesto)
 
 const cycle = reactive({})
 const form = reactive({})

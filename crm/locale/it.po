@@ -34149,6 +34149,11 @@ msgstr "{0} prenotabili"
 msgid "{0} booked"
 msgstr "{0} prenotate"
 
+#: frontend/src/utils/cicli.js
+msgctxt "Cycle sessions"
+msgid "{0} of {1} done"
+msgstr "{0} di {1} fatte"
+
 #: frontend/src/components/RelatedPeopleSection.vue
 msgid "{0} books for them"
 msgstr "{0} prenota per questa persona"
