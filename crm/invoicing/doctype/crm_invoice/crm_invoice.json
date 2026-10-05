@@ -184,6 +184,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Number",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -200,18 +201,21 @@
    "fieldname": "series",
    "fieldtype": "Data",
    "label": "Series",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "fiscal_year",
    "fieldtype": "Int",
    "label": "Year",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "sequence",
    "fieldtype": "Int",
    "label": "Sequence",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -647,6 +651,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "SdI",
+   "no_copy": 1,
    "options": "non_applicabile\nda_inviare\ninviato\nconsegnata\nscartata\nmancata_consegna\nesito_pa\ndecorrenza_termini\nerrore",
    "read_only": 1
   },
@@ -654,6 +659,7 @@
    "fieldname": "sdi_identifier",
    "fieldtype": "Data",
    "label": "SdI identifier",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -667,18 +673,21 @@
    "fieldname": "sdi_filename",
    "fieldtype": "Data",
    "label": "XML file name",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "sdi_sent_on",
    "fieldtype": "Datetime",
    "label": "Sent on",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "sdi_message",
    "fieldtype": "Small Text",
    "label": "Last SdI message",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -686,6 +695,7 @@
    "fieldname": "sdi_environment",
    "fieldtype": "Data",
    "label": "Environment",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -693,6 +703,7 @@
    "fieldname": "sdi_notices",
    "fieldtype": "Small Text",
    "label": "Notices applied",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -704,6 +715,7 @@
    "fieldname": "ts_status",
    "fieldtype": "Select",
    "label": "Sistema TS",
+   "no_copy": 1,
    "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato\nprova",
    "read_only": 1
   },
@@ -718,12 +730,14 @@
    "fieldname": "ts_year",
    "fieldtype": "Int",
    "label": "Year of competence",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "ts_submission",
    "fieldtype": "Link",
    "label": "Submission",
+   "no_copy": 1,
    "options": "CRM TS Submission",
    "read_only": 1
   },
@@ -736,25 +750,29 @@
    "fieldname": "xml_file",
    "fieldtype": "Attach",
    "label": "FatturaPA XML",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "xml_hash",
    "fieldtype": "Data",
    "label": "XML SHA-256",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "description": "Only for an invoice sent by the centre's own PEC: the .p7m, when the XML has been signed by hand. Through Itala nothing is signed here: Itala signs the invoices to a public body itself, and sends the XML as it is.",
    "fieldname": "sdi_signed_file",
    "fieldtype": "Attach",
-   "label": "Signed XML (.p7m)"
+   "label": "Signed XML (.p7m)",
+   "no_copy": 1
   },
   {
    "description": "The file Itala transmitted to the SdI, with its own transmission data: the one the SdI holds, kept as it came back.",
    "fieldname": "sdi_sent_file",
    "fieldtype": "Attach",
    "label": "XML as transmitted",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -765,12 +783,14 @@
    "fieldname": "pdf_file",
    "fieldtype": "Attach",
    "label": "PDF",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "pdf_hash",
    "fieldtype": "Data",
    "label": "PDF SHA-256",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -778,6 +798,7 @@
    "fieldname": "pdf_conformita",
    "fieldtype": "Data",
    "label": "PDF conformance",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -880,7 +901,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-02 23:45:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",
