@@ -315,7 +315,7 @@
           <Button
             v-else
             variant="solid"
-            :label="__('Done')"
+            :label="__('Done', null, 'Closes a dialog')"
             @click="show = false"
           />
         </div>

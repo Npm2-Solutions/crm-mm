@@ -263,7 +263,11 @@
           :loading="busy === 'next'"
           @click="next"
         />
-        <Button v-else :label="__('Done')" @click="show = false" />
+        <Button
+          v-else
+          :label="__('Done', null, 'Closes a dialog')"
+          @click="show = false"
+        />
       </div>
     </template>
   </Dialog>

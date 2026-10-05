@@ -408,7 +408,7 @@
         </div>
         <Button
           v-else-if="!deciding"
-          :label="__('Done')"
+          :label="__('Done', null, 'Closes a dialog')"
           @click="show = false"
         />
       </div>

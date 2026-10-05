@@ -105,7 +105,11 @@
           :disabled="!list || (!list.foods.length && !list.groups.length)"
           @click="copy"
         />
-        <Button variant="solid" :label="__('Done')" @click="show = false" />
+        <Button
+          variant="solid"
+          :label="__('Done', null, 'Closes a dialog')"
+          @click="show = false"
+        />
       </div>
     </template>
   </Dialog>

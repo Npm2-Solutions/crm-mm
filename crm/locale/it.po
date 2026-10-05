@@ -43781,3 +43781,10 @@ msgstr "Aggiungi qualcuno"
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "{0} people"
 msgstr "{0} persone"
+
+#: frontend/src/components/CycleDialog.vue
+#: frontend/src/components/Subscriptions/SubscriptionDialog.vue
+#: frontend/src/components/Quotes/QuoteDialog.vue
+msgctxt "Closes a dialog"
+msgid "Done"
+msgstr "Fine"
