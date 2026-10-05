@@ -419,35 +419,42 @@ export const MENU = [
       'Who issues the invoices, what is billed, how they reach the tax system.',
     condition: puo('fatture.configura'),
     items: [
+      // where to start: what is still missing, each row a click from the page
+      // that fills it, then going live. The key stays: links are built on it
+      {
+        key: 'Provider connection',
+        label: 'Test and go live',
+        description:
+          'Start here: what is still missing, a test invoice, then go live.',
+      },
       // the company's own record has its tabs already (company, invoicing,
       // documents, transmission, healthcare): no second row over them
       {
         key: 'Issuing company',
         label: 'Issuing company',
-        description:
-          'Who issues the invoices: details, tax regime, Sistema TS credentials.',
+        // the clinic says its Sistema TS credentials too (crm/clinica/parole.py)
+        description: 'Who issues the invoices: details, tax regime, numbering.',
       },
       {
         key: 'Services & providers',
         label: 'Services & providers',
-        description: 'What is billed, who performs it, their qualifications.',
+        description: 'What is billed, and who performs it.',
         tabs: [
           { key: 'Billable services', label: 'Billable services' },
           { key: 'Providers', label: 'Providers' },
-          { key: 'Qualification register', label: 'Qualifications' },
         ],
       },
+      // what a centre opens once a year, if ever: the switches over everything,
+      // and the register the accountant confirms
       {
-        // the key stays: links are built on it
-        key: 'Provider connection',
-        label: 'Test and go live',
+        key: 'Advanced invoicing',
+        label: 'Advanced',
         description:
-          'Try invoicing before the first real invoice, then go live.',
-      },
-      {
-        key: 'Invoicing defaults',
-        label: 'Options',
-        description: 'The switches over all invoicing.',
+          'The switches over all invoicing, and what each qualification means for VAT.',
+        tabs: [
+          { key: 'Invoicing defaults', label: 'Options' },
+          { key: 'Qualification register', label: 'Qualifications' },
+        ],
       },
     ],
   },
