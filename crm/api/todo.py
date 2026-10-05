@@ -2,7 +2,7 @@ import frappe
 
 from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
 from crm.notifiche import regole as R
-from crm.notifiche.avvisi import avvisa, nome_utente
+from crm.notifiche.avvisi import SISTEMA, avvisa, nome_utente
 
 
 def after_insert(doc, method):
@@ -60,6 +60,10 @@ def notify_assigned_user(doc, is_cancelled=False):
 			frase = R.ASSEGNATA_TRATTATIVA if trattativa else R.ASSEGNATA
 		nomi = [nome_utente(da), nome_di(doc.reference_type, doc.reference_name)]
 		riguarda = (doc.reference_type, doc.reference_name)
+	# given by nobody of the centre (an automation, an assignment rule, a job): the
+	# news without a name in front, never «Administrator» or «Guest»
+	if da in SISTEMA:
+		frase, nomi = R.SENZA_CHI[frase], nomi[1:]
 
 	avvisa(
 		doc.allocated_to,

@@ -35450,11 +35450,11 @@ msgstr "Valori della libreria: Anses. 2025. Ciqual French food composition table
 
 #: crm/notifiche/regole.py
 msgid "{0} assigned you the task {1}"
-msgstr "{0} ti ha assegnato l'attività {1}"
+msgstr "{0} ti ha assegnato una cosa da fare: {1}"
 
 #: crm/notifiche/regole.py
 msgid "{0} removed your assignment on the task {1}"
-msgstr "{0} ti ha tolto l'attività {1}"
+msgstr "{0} ti ha tolto una cosa da fare: {1}"
 
 #: crm/notifiche/regole.py
 msgid "You received {1} WhatsApp messages from {0}"
@@ -35574,7 +35574,7 @@ msgstr "Scegli cosa ricevere per email"
 
 #: frontend/src/components/Settings/NotificationsSettings.vue
 msgid "Assignments and tasks"
-msgstr "Assegnazioni e attività"
+msgstr "Assegnazioni e cose da fare"
 
 #: frontend/src/components/Settings/NotificationsSettings.vue
 msgid "Who mentions you in a note or a comment."
@@ -35582,7 +35582,7 @@ msgstr "Chi ti menziona in una nota o in un commento."
 
 #: frontend/src/components/Settings/NotificationsSettings.vue
 msgid "A person, a deal or a task given to you, or taken back."
-msgstr "Una persona, una trattativa o un'attività che ti viene data, o tolta."
+msgstr "Una persona, una trattativa o una cosa da fare che ti viene data, o tolta."
 
 #: frontend/src/components/Settings/NotificationsSettings.vue
 msgid "Questions from the client area"
@@ -43788,3 +43788,27 @@ msgstr "{0} persone"
 msgctxt "Closes a dialog"
 msgid "Done"
 msgstr "Fine"
+
+#: crm/notifiche/regole.py
+msgid "You now follow {0}"
+msgstr "Ora segui tu {0}"
+
+#: crm/notifiche/regole.py
+msgid "You now follow the deal {0}"
+msgstr "Ora segui tu la trattativa {0}"
+
+#: crm/notifiche/regole.py
+msgid "You no longer follow {0}"
+msgstr "Non segui più {0}"
+
+#: crm/notifiche/regole.py
+msgid "You no longer follow the deal {0}"
+msgstr "Non segui più la trattativa {0}"
+
+#: crm/notifiche/regole.py
+msgid "You have a new task: {0}"
+msgstr "Hai una nuova cosa da fare: {0}"
+
+#: crm/notifiche/regole.py
+msgid "A task is no longer yours: {0}"
+msgstr "Una cosa da fare non è più tua: {0}"

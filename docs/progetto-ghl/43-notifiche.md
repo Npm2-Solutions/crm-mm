@@ -52,6 +52,11 @@ anche dei difetti veri:
   niente.
 - **I messaggi della stessa persona si sommano** finché non li leggi: «Hai ricevuto
   3 messaggi WhatsApp da Laura».
+- **Quello che non dà nessuno del centro non ha un nome davanti**: un'automazione,
+  una regola di assegnazione, un lavoro in coda assegnano come Administrator, una
+  persona che scrive dal sito come Guest. La notifica dice «Hai una nuova cosa da
+  fare: …», «Ora segui tu Laura Bianchi», mai «Administrator ti ha assegnato…»
+  (`regole.SENZA_CHI`, 05/10/2026).
 - **Quando ne arriva una** compare un avviso nel blocco verde profondo del marchio,
   come nel video, con il segno del tipo, la frase, le prime parole e «Apri». Non
   compare se il pannello o la pagina delle notifiche sono già aperti. Sul telefono
