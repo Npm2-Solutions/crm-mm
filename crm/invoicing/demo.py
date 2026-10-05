@@ -126,19 +126,28 @@ def _azienda() -> str:
 			"city": "Milano",
 			"province": "MI",
 			"email": f"amministrazione@{dati.DOMINIO}",
-			"is_default": 1,
 		}
 	).insert()
 	return doc.name
 
 
 def _prepara(azienda: str) -> dict:
-	"""The company set up as the modules set it up. Returns what a new card of it
-	starts from."""
+	"""The company set up as the modules set it up, then made the one that issues.
+	Returns what a new card of it starts from."""
+	# the default by hand, once its controller has saved it: the controller would
+	# take the flag from the centre's switched-off companies, which must find it as
+	# they left it when the demo goes
+	_predefinita(azienda, 0)
 	scheda: dict = {}
 	for prepara in _preparazioni:
 		scheda.update(prepara(azienda) or {})
+	_predefinita(azienda, 1)
 	return scheda
+
+
+def _predefinita(azienda: str, valore: int) -> None:
+	frappe.db.set_value(AZIENDA, azienda, "is_default", valore, update_modified=False)
+	frappe.clear_document_cache(AZIENDA, azienda)
 
 
 def _schede(ctx: Contesto, predefinita: dict) -> None:
