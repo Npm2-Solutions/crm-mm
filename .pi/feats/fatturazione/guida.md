@@ -612,6 +612,27 @@ Sistema TS. Il collaudo di Sogei si sceglie solo per un sito di sviluppo, con
 ufficiale l'agenzia lo carica una volta per il sito, nelle *Opzioni*; quello di
 un'azienda vale solo se c'e'.
 
+**Provato sul collaudo il 05/10/2026** (kit `kit730P_ver_20240214`, invio sincrono):
+una fattura accolta con protocollo, la sua nota di credito accolta come rimborso
+(`R`), uno scarto letto con le parole del servizio (S035, pagamento di un anno
+chiuso), una segnalazione letta allo stesso modo (W014, stesso paziente lo stesso
+giorno). Quello che serve per rifarlo:
+
+- **Il certificato del collaudo** lo firma la «Sogei Certification Authority
+  Test», che nessun sistema riconosce e Sogei non pubblica: il sito di sviluppo
+  nomina il file di cui fidarsi con `sistema_ts_ca` (il certificato che il server
+  presenta, salvato con `openssl s_client`). In produzione il certificato e'
+  pubblico (Sectigo) e quel valore non si legge mai.
+- **Le utenze del kit**: quella del medico (`PROVAX00X00X000Y`, PINCODE
+  `1234567890`, partita IVA `01201200121`) entra; quella della struttura
+  autorizzata (`ASC7Y72S`) risponde «Errore generico di autenticazione» anche alla
+  richiesta d'esempio del kit, mandata intatta. Il codice fiscale e la partita IVA
+  del kit non passano le cifre di controllo: un'azienda di prova li riceve scritti
+  nel database, e la verifica prima dell'invio va saltata solo per loro.
+- **I tempi**: il collaudo ha messo 65 secondi a rifiutare un accesso. Il
+  trasporto aspetta la risposta 90 secondi e, se non arriva, non rimanda: il
+  documento potrebbe esserci gia'.
+
 **Il predefinito e' `credenziali_studio`**, e il motivo e' commerciale prima che
 tecnico: non costa niente a documento, ed e' questo che rende le *fatture sanitarie
 illimitate* un prodotto invece di una perdita. Un centro con sei professionisti fa

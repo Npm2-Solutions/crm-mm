@@ -44747,3 +44747,6 @@ msgstr "Impronta"
 
 msgid "Used on"
 msgstr "Usato il"
+
+msgid "The Sistema TS did not answer in time: the document may have arrived. Check it on the Sistema TS before sending it again."
+msgstr "Il Sistema TS non ha risposto in tempo: il documento potrebbe essere arrivato. Controlla sul Sistema TS prima di mandarlo di nuovo."

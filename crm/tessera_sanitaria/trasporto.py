@@ -27,6 +27,7 @@ from __future__ import annotations
 import time
 
 import frappe
+import requests
 from frappe import _
 from frappe.utils import cint, getdate
 from frappe.utils.password import get_decrypted_password
@@ -58,7 +59,9 @@ STATI_RITENTABILI = frozenset({429, 500, 502, 503, 504})
 TENTATIVI = 3
 ATTESA_INIZIALE = 2.0
 FATTORE_BACKOFF = 2.0
-TIMEOUT = 30.0
+#: Connecting, and waiting for the answer: the test door took 65 seconds to refuse
+#: a login (05/10/2026), and an answer that is late is not one to send again.
+TIMEOUT = (10.0, 90.0)
 
 
 class ErroreTrasporto(Exception):
@@ -99,6 +102,16 @@ def _ambiente() -> str:
 	return Ambiente.TEST if valore.startswith("test") else Ambiente.PRODUZIONE
 
 
+def _verifica() -> bool | str:
+	"""What the connection trusts. Production's certificate is public (Sectigo): the
+	system's own. The test door's is signed by Sogei's own test CA, which no system
+	trusts and Sogei does not publish: a developer's site names the file it trusts
+	there (`sistema_ts_ca`: the CA, or the door's own certificate). Never in
+	production, never verification turned off."""
+	percorso = (frappe.conf.get("sistema_ts_ca") or "").strip()
+	return percorso if percorso and _ambiente() == Ambiente.TEST else True
+
+
 def _post(url: str, corpo: bytes, intestazioni: dict, credenziali: Credenziali) -> bytes:
 	attesa = ATTESA_INIZIALE
 	ultimo: Exception | None = None
@@ -113,7 +126,17 @@ def _post(url: str, corpo: bytes, intestazioni: dict, credenziali: Credenziali) 
 				auth=(credenziali.utente, credenziali.password),
 				timeout=TIMEOUT,
 				allow_redirects=False,
+				verify=_verifica(),
 			)
+		except requests.exceptions.ReadTimeout:
+			# The document left and no answer came: it may be there. Sent again it would
+			# be a duplicate, so it waits for somebody to look.
+			raise ErroreTrasporto(
+				_(
+					"The Sistema TS did not answer in time: the document may have arrived. Check it "
+					"on the Sistema TS before sending it again."
+				)
+			) from None
 		except Exception as errore:
 			# The message may carry the URL but never the credentials: they are in the
 			# auth tuple, not in the string.
