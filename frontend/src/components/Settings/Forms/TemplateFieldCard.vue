@@ -180,10 +180,11 @@
               class="form-input min-w-0 flex-1"
               :placeholder="__('Option {0}', [index + 1])"
             />
+            <!-- «Punti»: «Punteggio» was «Punte…» in its 80 pixels -->
             <input
               class="form-input w-20 shrink-0"
               inputmode="decimal"
-              :placeholder="__('Score')"
+              :placeholder="__('Score', null, 'Form option placeholder')"
               :value="option.score ?? ''"
               @input="(e) => setScore(option, e.target.value)"
             />

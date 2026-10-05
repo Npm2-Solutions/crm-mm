@@ -35190,6 +35190,11 @@ msgctxt "Service editor tab"
 msgid "Hours"
 msgstr "Orari"
 
+#: frontend/src/components/Settings/Forms/TemplateFieldCard.vue
+msgctxt "Form option placeholder"
+msgid "Score"
+msgstr "Punti"
+
 #: frontend/src/components/Conversations/ConversationPicker.vue
 msgctxt "Conversation view"
 msgid "Handled"
