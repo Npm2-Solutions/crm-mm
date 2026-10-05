@@ -53,8 +53,11 @@
         <div class="text-base text-ink-gray-5 mb-2">
           {{ __('Fields Order') }}
         </div>
+        <!-- on a touch screen a row moves after a short press: a swipe
+             scrolls the list -->
         <Draggable
           :list="allFields"
+          :delay="isTouchScreenDevice() ? 200 : 0"
           group="fields"
           item-key="name"
           class="flex flex-col gap-1"
@@ -117,6 +120,7 @@
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import { getMeta } from '@/stores/meta'
+import { isTouchScreenDevice } from '@/utils'
 import { Combobox, Dialog } from 'frappe-ui'
 import Draggable from 'vuedraggable'
 import { ref, computed, nextTick } from 'vue'

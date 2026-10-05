@@ -686,6 +686,12 @@ row, the bar's words beside their icons).
   page's header and its actions, side-by-side columns, a preview beside its
   fields, a status beside a name - does so with it; `max-md:` stays for what
   touches the screen's edges (paddings) and the phone's own rules.
+- What a finger drags never takes the page's scroll: a list that reorders has
+  a handle, or waits on a touch (`:delay="isTouchScreenDevice() ? 200 : 0"`);
+  a widget of the dashboard moves from its grip, the only place that does not
+  pan (`touch-action: none`, `Dashboard/DashboardGrid.vue`: grid-layout-plus
+  says so only on Android). An appointment is not dragged by a finger: its
+  hours change in its panel.
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its

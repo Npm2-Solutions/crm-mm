@@ -3,7 +3,13 @@
 -->
 <template>
   <div>
-    <Draggable :list="sections" item-key="name" class="flex flex-col gap-5.5">
+    <!-- on a touch screen a section moves after a short press: a swipe scrolls -->
+    <Draggable
+      :list="sections"
+      :delay="isTouchScreenDevice() ? 200 : 0"
+      item-key="name"
+      class="flex flex-col gap-5.5"
+    >
       <template #item="{ element: section }">
         <div class="flex flex-col gap-3">
           <div
@@ -147,7 +153,7 @@
 <script setup>
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
-import { getRandom } from '@/utils'
+import { getRandom, isTouchScreenDevice } from '@/utils'
 import { getMeta } from '@/stores/meta'
 import Draggable from 'vuedraggable'
 import { Combobox, Input } from 'frappe-ui'
