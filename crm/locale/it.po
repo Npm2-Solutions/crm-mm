@@ -19528,7 +19528,7 @@ msgstr "Chiamate in uscita"
 
 #: frontend/src/components/Settings/WhatsAppTemplates.vue
 msgid "Outside 24 hours from the last customer message, WhatsApp only delivers approved templates."
-msgstr "Passate 24 ore dall'ultimo messaggio del cliente, WhatsApp consegna solo modelli approvati."
+msgstr "Passate 24 ore dall'ultimo messaggio della persona, WhatsApp consegna solo modelli approvati."
 
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
 msgid "Outside Working Hours"
