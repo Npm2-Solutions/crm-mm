@@ -81,7 +81,8 @@
         <Draggable
           class="flex w-full gap-2 items-center"
           :list="newQuickFilters"
-          :delay="isTouchScreenDevice() ? 200 : 0"
+          :delay="200"
+          :delay-on-touch-only="true"
           group="filters"
           item-key="fieldname"
         >
@@ -346,7 +347,7 @@ import { viewsStore } from '@/stores/views'
 import { usersStore } from '@/stores/users'
 import { organizationsStore } from '@/stores/organizations'
 import { getMeta } from '@/stores/meta'
-import { isEmoji, isTouchScreenDevice } from '@/utils'
+import { isEmoji } from '@/utils'
 import { nomeDellaPagina } from '@/utils/menu'
 import {
   Combobox,

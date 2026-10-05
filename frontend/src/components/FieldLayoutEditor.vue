@@ -11,7 +11,8 @@
       <Draggable
         v-if="tabs.length && tabs[tabIndex].label"
         :list="tabs"
-        :delay="isTouchScreenDevice() ? 200 : 0"
+        :delay="200"
+        :delay-on-touch-only="true"
         item-key="name"
         class="flex items-center gap-2 w-full overflow-auto py-1 [&::-webkit-scrollbar]:h-0"
         @end="(e) => (tabIndex = e.newIndex)"
@@ -181,7 +182,8 @@
             <Draggable
               class="flex gap-2"
               :list="section.columns"
-              :delay="isTouchScreenDevice() ? 200 : 0"
+              :delay="200"
+              :delay-on-touch-only="true"
               group="columns"
               item-key="name"
               @start="isDragging = true"
@@ -284,7 +286,7 @@
 <script setup>
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import Draggable from 'vuedraggable'
-import { getRandom, isTouchScreenDevice } from '@/utils'
+import { getRandom } from '@/utils'
 import { getMeta } from '@/stores/meta'
 import { globalStore } from '@/stores/global'
 import { Combobox, Dropdown } from 'frappe-ui'

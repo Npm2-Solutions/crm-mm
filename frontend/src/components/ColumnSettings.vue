@@ -20,7 +20,8 @@
         <div v-if="!edit">
           <Draggable
             :list="columns"
-            :delay="isTouchScreenDevice() ? 200 : 0"
+            :delay="200"
+            :delay-on-touch-only="true"
             item-key="key"
             class="list-group"
             @end="apply"
@@ -148,7 +149,6 @@ import ColumnsIcon from '@/components/Icons/ColumnsIcon.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DragIcon from '@/components/Icons/DragIcon.vue'
 import ReloadIcon from '@/components/Icons/ReloadIcon.vue'
-import { isTouchScreenDevice } from '@/utils'
 import { getMeta } from '@/stores/meta'
 import { Combobox, Popover } from 'frappe-ui'
 import Draggable from 'vuedraggable'

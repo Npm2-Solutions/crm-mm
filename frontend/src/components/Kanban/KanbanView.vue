@@ -12,7 +12,8 @@
       v-if="columns"
       :list="columns"
       item-key="column"
-      :delay="isTouchScreenDevice() ? 200 : 0"
+      :delay="200"
+      :delay-on-touch-only="true"
       class="flex sm:mx-2.5 mx-2 pb-3.5"
       @end="updateColumn"
     >
@@ -88,7 +89,8 @@
               group="fields"
               item-key="name"
               class="flex flex-col gap-3.5 flex-1"
-              :delay="isTouchScreenDevice() ? 200 : 0"
+              :delay="200"
+              :delay-on-touch-only="true"
               :data-column="column.column.name"
               @end="updateColumn"
             >
@@ -192,7 +194,7 @@
 <script setup>
 import RefreshIcon from '@/components/Icons/RefreshIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
-import { isTouchScreenDevice, colors, parseColor } from '@/utils'
+import { colors, parseColor } from '@/utils'
 import Draggable from 'vuedraggable'
 import { Combobox, Dropdown, Popover } from 'frappe-ui'
 import { computed } from 'vue'

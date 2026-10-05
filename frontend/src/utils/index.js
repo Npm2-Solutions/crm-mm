@@ -470,10 +470,6 @@ export function isEmoji(str) {
   return typeof str === 'string' && EMOJI.test(str)
 }
 
-export function isTouchScreenDevice() {
-  return 'ontouchstart' in document.documentElement
-}
-
 export function convertArrayToString(array) {
   return array.map((item) => item).join(',')
 }
