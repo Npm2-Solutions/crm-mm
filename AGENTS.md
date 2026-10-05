@@ -804,7 +804,8 @@ row, the bar's words beside their icons).
   never moved. A dialog's sheet scrolls itself, as tall as the screen at most,
   never the box behind it (`.dialog-scroll-container`): while a dialog is
   open that box takes `pointer-events: none` from the page reka-ui locks, and
-  an iPhone need not scroll it under a finger. A sheet is tried with a finger
+  an iPhone need not scroll it under a finger; the client area's dialogs the
+  same (`area/area.css`), its buttons at its foot. A sheet is tried with a finger
   (touch events), never only with the wheel, which scrolls what a finger does
   not. A popover that holds a list of choices (the agenda's filters) marks
   the list `data-foglio`, and is a sheet of 48px rows as well. A sheet's or a page's row of actions is one row on a phone: what
