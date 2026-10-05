@@ -21,6 +21,7 @@ import {
 import {
   axisOptions,
   colors,
+  righeDellaLegenda,
   OTHER,
   seriesColors,
   donutOptions,
@@ -411,6 +412,33 @@ describe('charts', () => {
       'solid',
       'dashed',
     ])
+  })
+
+  it('makes room for a legend that wraps on a phone', () => {
+    const three = ['Persone nuove', 'Trattative nuove', 'Trattative vinte']
+    expect(righeDellaLegenda(three, 800)).toBe(1)
+    expect(righeDellaLegenda(three, 330)).toBe(2)
+    // no width known: one line, as before
+    expect(righeDellaLegenda(three, 0)).toBe(1)
+    const payload = {
+      x: { type: 'time', grain: 'day', values: ['2026-09-01', '2026-09-02'] },
+      series: three.map((label) => ({ label, type: 'line', values: [0, 1] })),
+    }
+    expect(axisOptions(payload, { width: 800 }).grid.bottom).toBe(34)
+    expect(axisOptions(payload, { width: 330 }).grid.bottom).toBe(58)
+  })
+
+  it('counts whole things in whole steps', () => {
+    const counts = {
+      x: { type: 'category', values: ['a', 'b'] },
+      series: [{ label: 'People', type: 'line', values: [0, 1] }],
+    }
+    expect(axisOptions(counts).yAxis.minInterval).toBe(1)
+    const rates = {
+      x: { type: 'category', values: ['a', 'b'] },
+      series: [{ label: 'Rate', type: 'line', values: [0.25, 0.5] }],
+    }
+    expect(axisOptions(rates).yAxis.minInterval).toBe(undefined)
   })
 
   it('labels time buckets by grain', () => {
