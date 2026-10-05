@@ -44886,3 +44886,11 @@ msgstr "il riepilogo IVA ha un blocco per \"{0}\" che nessuna riga porta"
 #: frontend/src/components/Settings/Clinic/FoodEditDialog.vue
 msgid "In {0}: {1}"
 msgstr "In {0}: {1}"
+
+#: frontend/src/components/Settings/Profile/ProfileSettings.vue
+msgid "The profile was not saved"
+msgstr "Il profilo non è stato salvato"
+
+#: frontend/src/components/Settings/SettingsPage.vue
+msgid "The settings were not saved"
+msgstr "Le impostazioni non sono state salvate"

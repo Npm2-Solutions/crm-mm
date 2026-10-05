@@ -148,8 +148,9 @@ function save() {
         window.location.reload()
       }
     },
+    // the server's words, never its code («PermissionError: …»)
     onError: (err) => {
-      toast.error(err.message + ': ' + err.messages[0])
+      toast.error(err.messages?.join(' ') || __('The choice was not saved'))
     },
   })
 }

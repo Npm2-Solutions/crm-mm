@@ -189,7 +189,8 @@ function save() {
       toast.success(__('Profile updated successfully'))
     },
     onError: (err) => {
-      toast.error(err.message + ': ' + err.messages[0])
+      // the server's words, never its code («ValidationError: …»)
+      toast.error(err.messages?.join(' ') || __('The profile was not saved'))
     },
   })
 }
