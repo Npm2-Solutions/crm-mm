@@ -119,6 +119,8 @@ class ChiScrive(PianiCase):
 		self.come(DESK)
 		fatto = piani.get_plans(self.anna.name)
 		self.assertEqual((fatto["plans"], fatto["kinds"]), ([], []))
+		# it knows a diet is there, as it knows a visit happened: a padlock, not «No plans yet»
+		self.assertEqual(fatto["hidden"], 1)
 		with self.assertRaises(frappe.PermissionError):
 			piani.save_plan(self.anna.name, json.dumps(self.menu()))
 		self.come(SALES)
@@ -219,10 +221,12 @@ class ChiLegge(PianiCase):
 		# without the dossier, each practitioner reads their own
 		self.come(DOC2)
 		self.assertEqual(piani.get_plans(self.anna.name)["plans"], [])
+		self.assertEqual(piani.get_plans(self.anna.name)["hidden"], 1)
 		self.assertNotIn(fatto["name"], frappe.get_list(piani.PIANO, pluck="name"))
 		self.consenso()
 		self.come(DOC2)
 		self.assertEqual([p["name"] for p in piani.get_plans(self.anna.name)["plans"]], [fatto["name"]])
+		self.assertEqual(piani.get_plans(self.anna.name)["hidden"], 0)
 		self.assertIn(fatto["name"], frappe.get_list(piani.PIANO, pluck="name"))
 		self.assertFalse(piani.get_plan(fatto["name"])["can_close"])
 		# the medical director reads the centre's

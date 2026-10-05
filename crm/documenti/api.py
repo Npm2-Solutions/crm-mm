@@ -227,6 +227,8 @@ def get_documents(lead: str) -> dict:
 		righe.append(_riga(doc))
 	pagina = {
 		"documents": righe,
+		# the ones with health data the session may know of but does not read: a padlock
+		"hidden": sanitari.nascosti(DOCTYPE, lead, {riga["name"] for riga in righe}),
 		"can_add": livelli.puo("documenti.aggiungi"),
 		"can_deliver": livelli.puo("documenti.consegna"),
 	}

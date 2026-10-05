@@ -286,6 +286,13 @@ def get_plans(lead: str) -> dict:
 	andamento = _andamento([d.name for d in documenti if d.status != BOZZA], lunedi)
 	return {
 		"plans": [_riga(doc, andamento.get(doc.name)) for doc in documenti],
+		# the published ones with health data the session may know of but does not read
+		"hidden": sanitari.nascosti(
+			PIANO,
+			lead,
+			{doc.name for doc in documenti},
+			filtri={"status": ("!=", BOZZA), "programme": ("is", "not set")},
+		),
 		"kinds": [descrivi_tipo(tipo) for tipo in tipi_consentiti()],
 		"area": _nell_area(lead),
 	}

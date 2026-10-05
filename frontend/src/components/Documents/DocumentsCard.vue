@@ -32,7 +32,10 @@
       />
     </div>
 
-    <p v-if="!archive.data.documents.length" class="text-p-sm text-ink-gray-5">
+    <p
+      v-if="!archive.data.documents.length && !archive.data.hidden"
+      class="text-p-sm text-ink-gray-5"
+    >
       {{
         __(
           'Nothing yet. What the person brings or sends goes here: a contract, a certificate, a consent signed on paper.',
@@ -40,7 +43,7 @@
       }}
     </p>
 
-    <ul v-else class="flex flex-col">
+    <ul v-if="archive.data.documents.length" class="flex flex-col">
       <li
         v-for="doc in shown"
         :key="doc.name"
@@ -135,6 +138,23 @@
       "
       @click="showAll = !showAll"
     />
+    <!-- health data one may know of but does not read: their padlock, as in
+         the history, never «Nothing yet» over a list that is not empty -->
+    <p
+      v-if="archive.data.hidden"
+      class="flex items-start gap-2 text-p-sm text-ink-gray-6"
+    >
+      <span class="lucide-lock mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span>
+        {{
+          archive.data.hidden === 1
+            ? __('One document with health data you cannot read')
+            : __('{0} documents with health data you cannot read', [
+                archive.data.hidden,
+              ])
+        }}
+      </span>
+    </p>
   </section>
 
   <DeliverDialog

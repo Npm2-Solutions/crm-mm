@@ -47,6 +47,19 @@
       <span>{{ avvisoArea }}</span>
     </div>
 
+    <!-- health data one may know of but does not read: their padlock, as in
+         the history, never «No plans yet» over plans that are there -->
+    <div v-if="nascosti.length" class="flex flex-col gap-1">
+      <p
+        v-for="riga in nascosti"
+        :key="riga"
+        class="flex items-start gap-2 text-p-sm text-ink-gray-6"
+      >
+        <span class="lucide-lock mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <span>{{ riga }}</span>
+      </p>
+    </div>
+
     <!-- none yet: how it goes, and what one may write -->
     <template v-if="vuoto">
       <!-- side by side where each has 12rem: three in a record's column on a
@@ -107,7 +120,7 @@
           </li>
         </ul>
       </div>
-      <p v-else class="text-p-sm text-ink-gray-5">
+      <p v-else-if="!nascosti.length" class="text-p-sm text-ink-gray-5">
         {{
           __(
             'No plans yet. A practitioner writes them here, and the person follows them in their area.',
@@ -273,6 +286,19 @@ const COME_FUNZIONA = [
   'Write the moments - breakfast, Monday morning - and what to do in each; exercises and foods come from the libraries.',
   'Publish it: the person finds it in their area and ticks off what they do. Here you see how their week went.',
 ]
+
+// the plans and programmes with health data one may know of but does not read
+const nascosti = computed(() => {
+  const piani = plans.data?.hidden || 0
+  const programmi = programmes.data?.hidden || 0
+  return [
+    piani === 1 && __('One plan with health data you cannot read'),
+    piani > 1 && __('{0} plans with health data you cannot read', [piani]),
+    programmi === 1 && __('One programme with health data you cannot read'),
+    programmi > 1 &&
+      __('{0} programmes with health data you cannot read', [programmi]),
+  ].filter(Boolean)
+})
 
 // none yet, of plans or programmes
 const vuoto = computed(

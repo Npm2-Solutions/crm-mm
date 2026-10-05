@@ -13,12 +13,18 @@ writes is health data".
 
 With nobody registered, what carries the mark is read only by whoever wrote or
 added it.
+
+Whoever may know that health data are there, though they do not read them, sees
+their padlock in the list, never an empty one: «2 documents with health data you
+cannot read» rather than «Nothing yet» (`nascosti`).
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
+
+import frappe
 
 
 @dataclass(frozen=True)
@@ -31,6 +37,9 @@ class Lettore:
 	condizione: Callable[[object, str], object | None]
 	#: Whether a document is health data whatever its kind: who wrote it, or for whom.
 	marca: Callable[[object], bool] | None = None
+	#: Whether ``user`` may know that a document with the mark exists, though they do
+	#: not read it: a padlock in its place. None: nobody knows of what they do not read.
+	si_sa: Callable[[object, str], bool] | None = None
 
 
 _lettore: dict[str, Lettore] = {}
@@ -55,6 +64,24 @@ def condizione(tabella, user: str):
 	condition on ``tabella``; None when there are none."""
 	registrato = lettore()
 	return registrato.condizione(tabella, user) if registrato else None
+
+
+def nascosti(
+	doctype: str, lead: str, letti: Collection[str], user: str | None = None, filtri: dict | None = None
+) -> int:
+	"""How many of ``lead``'s documents with the mark - of ``doctype``, ``filtri`` on
+	them - ``user`` does not read (``letti`` are the ones they do) but may know of."""
+	registrato = lettore()
+	if not (registrato and registrato.si_sa):
+		return 0
+	user = user or frappe.session.user
+	return sum(
+		1
+		for nome in frappe.get_all(
+			doctype, filters={"lead": lead, "clinical": 1, **(filtri or {})}, pluck="name"
+		)
+		if nome not in letti and registrato.si_sa(frappe.get_doc(doctype, nome), user)
+	)
 
 
 def per_chi_scrive(doc) -> bool:

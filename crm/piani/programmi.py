@@ -156,6 +156,10 @@ def get_programmes(lead: str) -> dict:
 	]
 	return {
 		"programmes": [_riga(doc) for doc in documenti],
+		# the published ones with health data the session may know of but does not read
+		"hidden": sanitari.nascosti(
+			PROGRAMMA, lead, {doc.name for doc in documenti}, filtri={"status": ("!=", BOZZA)}
+		),
 		"can_write": livelli.puo("piani.scrivi"),
 	}
 

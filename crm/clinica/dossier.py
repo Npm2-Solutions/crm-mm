@@ -124,12 +124,26 @@ def e_sanitario(doc) -> bool:
 	)
 
 
+def sa_che_c_e(doc, user: str) -> bool:
+	"""Whether ``user`` may know of an entry or a document with health data they do
+	not read: whoever knows a visit happened (`cartella.visite_su`) sees its
+	padlock. Never of what is "only me", nor of an episode obscured, but for who
+	sees those: they must not be able to tell it is there."""
+	if not (livelli.puo("clinica.vedi", user) or livelli.puo("clinica.traccia", user)):
+		return False
+	if doc.get("visibility") == SOLO_IO and doc.get("practitioner") != user:
+		return False
+	return not cint(doc.get("obscured")) or vede_gli_oscurati(user)
+
+
 def lettore():
 	"""The clinic's reader of what carries the mark of health data in the CRM (a plan,
 	a programme, a document): the dossier's rules, and the mark by who wrote it."""
 	from crm.permissions import sanitari
 
-	return sanitari.Lettore(legge=legge_le_altre, condizione=condizione_condivisa, marca=e_sanitario)
+	return sanitari.Lettore(
+		legge=legge_le_altre, condizione=condizione_condivisa, marca=e_sanitario, si_sa=sa_che_c_e
+	)
 
 
 def fonti_nascoste(fonti: list[tuple[str, str]], user: str | None = None) -> set[tuple[str, str]]:
