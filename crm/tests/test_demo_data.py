@@ -101,6 +101,9 @@ class TestDatiDiProva(IntegrationTestCase):
 		preventivi.crea()
 		# invoicing's part is made where the centre has no company of its own: the
 		# companies other tests left are switched off while the demo is in
+		cls.predefinite = dict(
+			frappe.get_all("CRM Invoicing Company", fields=["name", "is_default"], as_list=True)
+		)
 		cls.aziende = frappe.get_all("CRM Invoicing Company", filters={"enabled": 1}, pluck="name")
 		for nome in cls.aziende:
 			frappe.db.set_value("CRM Invoicing Company", nome, "enabled", 0, update_modified=False)
@@ -208,6 +211,13 @@ class TestDatiDiProva(IntegrationTestCase):
 			self.assertEqual(
 				frappe.db.get_value("CRM Invoicing Company", azienda, "provider_environment"), "sandbox"
 			)
+			# it issues while it is in: the centre's companies keep their default flag, to
+			# find it as they left it when the demo goes
+			self.assertEqual(frappe.db.get_value("CRM Invoicing Company", azienda, "is_default"), 1)
+			for nome, predefinita in self.predefinite.items():
+				self.assertEqual(
+					frappe.db.get_value("CRM Invoicing Company", nome, "is_default"), predefinita, nome
+				)
 			emesse = frappe.get_all(
 				"CRM Invoice",
 				filters={"name": ["in", sorted(r["CRM Invoice"])], "docstatus": 1},

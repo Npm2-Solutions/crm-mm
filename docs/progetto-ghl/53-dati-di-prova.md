@@ -115,6 +115,8 @@ d'attesa, conversazioni.
       fatture sono fatture di prova, sulla loro serie (`2026/PROVA-S/1`), con la
       fascia sul PDF, il resoconto al Sistema TS controllato e mai mandato, niente
       allo SdI.
+    - L'azienda della demo è quella che emette finché c'è: un'azienda del centro
+      spenta tiene il suo segno di predefinita, e lo ritrova quando la demo se ne va.
     - Il responsabile risponde alle tre domande della preimpostazione sanitaria
       (una struttura, il regime ordinario, i codici della Regione): è la parte del
       Sistema TS (`crm/tessera_sanitaria/demo.py`), che la registra nella demo della
