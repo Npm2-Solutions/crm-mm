@@ -212,8 +212,11 @@ const gruppi = computed(() => preferenze.data?.groups || [])
 const salva = createResource({
   url: 'crm.notifiche.posta.save_email_preferences',
   onSuccess: (data) => preferenze.setData(data),
-  onError: (error) =>
-    toast.error(error.messages?.[0] || __('The choice was not saved')),
+  onError: (error) => {
+    toast.error(error.messages?.[0] || __('The choice was not saved'))
+    // the switch moved at once: it goes back to what the server keeps
+    preferenze.reload()
+  },
 })
 
 function cambia(chiave, valore) {
