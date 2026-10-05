@@ -392,6 +392,9 @@ def get_appointment(name: str) -> dict:
 			row["party_type"], row["party"] = "CRM Lead", person
 	data["start_utc"] = from_system_naive(doc.starts_on).isoformat()
 	data["end_utc"] = from_system_naive(doc.ends_on).isoformat()
+	# where the price came from, in the reader's language: it is stored in the
+	# language of whoever saved the appointment
+	data["price_source"] = pricing.in_parole(doc.price_source)
 	# which session of its cycle it is, and the cycles it could join; the same for
 	# the subscriptions an entry is used of
 	data["cycle"] = cicli.della_seduta(doc)

@@ -23,6 +23,7 @@ an appointment is never unexplainable.
 from __future__ import annotations
 
 import datetime
+import re
 from dataclasses import dataclass
 
 import frappe
@@ -203,6 +204,50 @@ def resolve_price(
 		source=f"{price_list} · {label}" if winner.label else price_list,
 		rule=winner.name,
 	)
+
+
+#: The sentences a price's source is stored as - in the language of whoever saved
+#: the appointment (a demo loaded by an English speaker, a colleague who reads
+#: English) - by their English words: the cycles', the subscriptions' and the
+#: quotes' too (`cicli`, `abbonamenti`, `preventivi.appuntamenti`).
+FONTI = (
+	"Service default",
+	"Professional's price",
+	"As agreed in the quote",
+	"A cycle of {0} sessions for {1}",
+	"One of the {0} people uses their subscription",
+	"{0} of the {1} people use their subscription",
+	"Comprised in the subscription {0}",
+	"Comprised in their subscriptions",
+)
+
+
+def _schema(modello: str) -> re.Pattern:
+	"""An English sentence of `FONTI` as a pattern, its places as groups."""
+	pezzi = re.split(r"(\{\d\})", modello)
+	return re.compile(
+		"^" + "".join("(.+?)" if re.fullmatch(r"\{\d\}", p) else re.escape(p) for p in pezzi) + "$"
+	)
+
+
+_SCHEMI = [(modello, _schema(modello)) for modello in FONTI]
+
+
+def in_parole(fonte: str | None) -> str:
+	"""A price's source in the reader's language.
+
+	It is stored as a sentence in the language of the request that saved the
+	appointment. One stored by its English words is said again in the reader's,
+	with the values it holds; one in another language, or a price list's name
+	(the centre's own words), stays as it is.
+	"""
+	if not fonte:
+		return ""
+	for modello, schema in _SCHEMI:
+		trovato = schema.match(fonte)
+		if trovato:
+			return _(modello).format(*trovato.groups())
+	return fonte
 
 
 def apply_to(doc) -> None:
