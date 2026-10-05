@@ -2,7 +2,9 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
   On a phone a setting's words come first and its field under them, as wide
-  as the screen.
+  as the screen. The language is the centre's, or Italian or English for the
+  user alone (crm/lingue.py: the two DottorCloud speaks); the clock one of
+  Europe's.
 -->
 <template>
   <SettingsLayoutBase
@@ -62,16 +64,23 @@
               {{ __('Language') }}
             </span>
             <span class="text-p-sm text-ink-gray-6">
-              {{ __('Change language of the application.') }}
+              {{
+                __(
+                  'The language you read {brand} in: the centre’s, or your own.',
+                )
+              }}
             </span>
           </div>
-          <!-- empty means «the system's language», and said nothing -->
-          <Link
-            v-model="user.doc.language"
-            doctype="Language"
-            class="w-40 shrink-0 max-md:w-full"
-            :placeholder="__('System default')"
-          />
+          <!-- empty is the centre's, and follows it when it changes; the
+               select fills the box it is given, so the box is its width -->
+          <div class="w-48 shrink-0 max-md:w-full">
+            <FormControl
+              v-model="lingua"
+              type="select"
+              :options="lingue"
+              :aria-label="__('Language')"
+            />
+          </div>
         </div>
         <div
           class="mt-6 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2"
@@ -81,14 +90,21 @@
               {{ __('Timezone') }}
             </span>
             <span class="text-p-sm text-ink-gray-6">
-              {{ __('Change timezone of the application.') }}
+              {{
+                __(
+                  'The clock you read the hours on. The agenda keeps the centre’s.',
+                )
+              }}
             </span>
           </div>
-          <Combobox
-            v-model="user.doc.time_zone"
-            class="w-40 shrink-0 max-md:w-full"
-            :options="getTimezoneOptions()"
-          />
+          <div class="w-80 shrink-0 max-md:w-full">
+            <FormControl
+              v-model="user.doc.time_zone"
+              type="select"
+              :options="fusi"
+              :aria-label="__('Timezone')"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -101,10 +117,11 @@ import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import { marchio } from '@/utils/marchio'
 import ThemeSwitcher from '@/components/Settings/ThemeSwitcher.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
-import Link from '@/components/Controls/Link.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { europei, fusiOrari } from '@/utils/fusiOrari'
+import { appLocale } from '@/utils/locale'
 import {
-  Combobox,
+  FormControl,
   Badge,
   toast,
   createResource,
@@ -137,8 +154,29 @@ function save() {
   })
 }
 
-const isDirty = computed(() => {
-  return JSON.stringify(user.doc) !== JSON.stringify(user.originalDoc)
+// the two this page writes, an empty language the same as none
+const isDirty = computed(
+  () =>
+    Boolean(user.doc) &&
+    ((user.doc.language || '') !== (user.originalDoc?.language || '') ||
+      (user.doc.time_zone || '') !== (user.originalDoc?.time_zone || '')),
+)
+
+// each language in its own words, as a choice of language names it
+const NOMI = { it: 'Italiano', en: 'English' }
+const lingue = computed(() => [
+  {
+    label: __('As the centre ({0})', [
+      NOMI[window.centre_language] || window.centre_language || '—',
+    ]),
+    value: '',
+  },
+  { label: NOMI.it, value: 'it' },
+  { label: NOMI.en, value: 'en' },
+])
+const lingua = computed({
+  get: () => user.doc?.language || '',
+  set: (valore) => (user.doc.language = valore),
 })
 
 const timeZones = createResource({
@@ -147,9 +185,16 @@ const timeZones = createResource({
   auto: true,
 })
 
-function getTimezoneOptions() {
-  return timeZones.data?.timezones.map((tz) => ({ label: tz, value: tz })) || []
-}
+// Europe's, each by its name in the reader's language, the device's and
+// Italy's first; the one kept stays a choice wherever it is
+const fusi = computed(() =>
+  fusiOrari({
+    zone: europei(timeZones.data?.timezones || []),
+    scelto: user.doc?.time_zone || '',
+    dispositivo: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    lingua: appLocale() || 'it',
+  }),
+)
 
 useKeyboardShortcuts({
   ignoreTyping: false,

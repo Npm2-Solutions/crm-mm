@@ -283,6 +283,9 @@ const PAGINE = {
     () => import('@/components/Settings/GoogleCalendarSettings.vue'),
   ),
   Brand: aRichiesta(() => import('@/components/Settings/BrandSettings.vue')),
+  Language: aRichiesta(
+    () => import('@/components/Settings/CentreLanguageSettings.vue'),
+  ),
   General: aRichiesta(
     () => import('@/components/Settings/GeneralSettings.vue'),
   ),

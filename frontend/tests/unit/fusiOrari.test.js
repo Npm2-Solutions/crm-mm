@@ -1,6 +1,6 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 import { describe, expect, it } from 'vitest'
-import { ITALIA, fusiOrari, nomeDelFuso } from '@/utils/fusiOrari'
+import { ITALIA, europei, fusiOrari, nomeDelFuso } from '@/utils/fusiOrari'
 
 const ZONE = ['Africa/Abidjan', 'America/New_York', 'Asia/Kolkata', ITALIA]
 
@@ -43,5 +43,22 @@ describe('the time zones a centre picks from', () => {
 
   it('names nothing it cannot', () => {
     expect(nomeDelFuso('Not/A_Zone')).toBe('')
+  })
+})
+
+describe('Europe’s zones', () => {
+  it('keeps the continent’s and the Atlantic islands’, in order', () => {
+    expect(
+      europei([
+        'Europe/Rome',
+        'Asia/Kolkata',
+        'Atlantic/Canary',
+        'America/New_York',
+        'Europe/Lisbon',
+        'Atlantic/Bermuda',
+        'Europe/Rome',
+      ]),
+    ).toEqual(['Atlantic/Canary', 'Europe/Lisbon', 'Europe/Rome'])
+    expect(europei()).toEqual([])
   })
 })
