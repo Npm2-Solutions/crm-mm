@@ -73,6 +73,8 @@ class TestLePartiInOrdine(IntegrationTestCase):
 			self.assertIn(chiave, chiavi)
 		# the forms are signed by people who came
 		self.assertIn("clienti", registro.tutte_le_parti()[chiavi.index("moduli")].dopo)
+		# the plans are ticked in the area, which opens first
+		self.assertLess(chiavi.index("area"), chiavi.index("piani"))
 
 
 class TestDatiDiProva(IntegrationTestCase):
@@ -146,7 +148,11 @@ class TestDatiDiProva(IntegrationTestCase):
 
 	def test_2_a_centre_full_of_life(self):
 		r = self.registrati
-		self.assertEqual(len(r.get("User", ())), 6)
+		# the team; whoever enters the client area is a website user of their own
+		squadra = frappe.get_all(
+			"User", filters={"name": ["in", sorted(r["User"])], "user_type": "System User"}, pluck="name"
+		)
+		self.assertEqual(len(squadra), 6)
 		self.assertEqual(len(r.get("CRM Service", ())), 10)
 		self.assertGreater(len(r.get("CRM Lead", ())), 10)
 		self.assertGreater(len(r.get("CRM Appointment", ())), 20)
@@ -229,6 +235,36 @@ class TestDatiDiProva(IntegrationTestCase):
 			)
 			self.assertIn("TD04", {f.document_type for f in emesse})
 			self.assertGreater(len({f.posting_date for f in emesse}), 1)
+		# the area opened to the regulars, most came in; never to a colleague
+		if "area" in self.esito["made"]:
+			accessi = frappe.get_all(
+				"CRM Area Access",
+				filters={"name": ["in", sorted(r.get("CRM Area Access", ()))]},
+				fields=["user", "last_seen_on"],
+			)
+			self.assertTrue(accessi)
+			self.assertTrue(any(riga.last_seen_on for riga in accessi))
+			self.assertFalse(
+				frappe.db.count(
+					"User", {"name": ["in", [riga.user for riga in accessi]], "user_type": "System User"}
+				)
+			)
+		# the plans given at a session, something in each; a programme opened its first stage
+		if r.get("CRM Personal Plan"):
+			from crm.piani import api as piani
+
+			pubblicati = frappe.get_all(
+				"CRM Personal Plan",
+				filters={"name": ["in", sorted(r["CRM Personal Plan"])], "status": "Published"},
+				pluck="name",
+			)
+			self.assertTrue(pubblicati)
+			for nome in pubblicati:
+				self.assertTrue(piani.righe_del_piano(frappe.get_doc("CRM Personal Plan", nome))[1])
+		for programma in sorted(r.get("CRM Programme", ())):
+			doc = frappe.get_doc("CRM Programme", programma)
+			self.assertEqual(doc.status, "Published")
+			self.assertTrue(doc.stages[0].opened_on and doc.stages[0].plan)
 		# whoever loads the demo has things to do and somebody mentions them
 		self.assertTrue(
 			frappe.db.count(
