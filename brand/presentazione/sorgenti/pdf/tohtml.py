@@ -156,5 +156,6 @@ for sl in prs.slides:
 			)
 	out.append("</div>")
 out.append("</body></html>")
+# nosemgrep: frappe-security-file-traversal — a tool run by hand: it writes where its command line says
 open(sys.argv[2], "w").write("".join(out))
 print("slides", count)

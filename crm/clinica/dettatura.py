@@ -142,7 +142,7 @@ def propose_answers(record: str, text: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def apply_answers(event: str, answers) -> dict:
+def apply_answers(event: str, answers: str | dict) -> dict:
 	"""The answers the practitioner ticked go into the draft visit; the register
 	keeps what was proposed and what was kept."""
 	from crm.moduli import schema as S

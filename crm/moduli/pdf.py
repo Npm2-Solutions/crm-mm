@@ -291,6 +291,7 @@ def _carta(doc) -> dict | None:
 
 
 def html(doc, versione, da_firmare: bool = False) -> str:
+	# nosemgrep: frappe-ssti — the app's own template
 	return frappe.render_template(MODELLO_HTML, contesto(doc, versione, da_firmare))
 
 

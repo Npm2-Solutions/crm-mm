@@ -18,6 +18,7 @@ from crm.invoicing.engine import anagrafica as motore
 #: Whose profile it can be. A deal or a contact resolves to one of these.
 TITOLARI = ("CRM Lead", "CRM Organization")
 
+# nosemgrep: frappe-breaks-multitenancy — functions, called at each check: nothing of a site is kept
 _ERRORI = {
 	"fiscal_code": lambda v: _(
 		"The codice fiscale {0} is not valid: its last character is computed from the others, and it does not match"

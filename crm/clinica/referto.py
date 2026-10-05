@@ -97,7 +97,8 @@ def _integra(doc) -> str | None:
 	originale = frappe.db.get_value("Clinic Record", doc.addendum_to, ["title", "record_date"], as_dict=True)
 	if not originale:
 		return None
-	return " · ".join(filter(None, [originale.title, format_datetime(originale.record_date)]))
+	parti = (originale.title, format_datetime(originale.record_date))
+	return " · ".join(parte for parte in parti if parte)
 
 
 def _note(contenuto: str) -> dict:
@@ -107,6 +108,7 @@ def _note(contenuto: str) -> dict:
 
 
 def html(doc, versione=None) -> str:
+	# nosemgrep: frappe-ssti — the app's own template
 	return frappe.render_template(MODELLO_HTML, contesto(doc, versione))
 
 

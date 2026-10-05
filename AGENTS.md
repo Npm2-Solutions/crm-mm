@@ -886,7 +886,10 @@ prettier 3.2.5, eslint and oxlint on the files changed, `yarn test:run`, the
 build; ruff 0.8.1 and Semgrep on the Python changed, and the server's tests of
 the modules it touches (`bench --site … run-tests --module …`). A change to
 patches or DocTypes is migrated on a site first, or run through the Migration
-workflow on its branch.
+workflow on its branch. Out of a pull request Semgrep reads the whole
+repository, with the rules as they are that night: a finding is put right, or,
+where the shape is meant (an OAuth redirect is a GET, a template is the app's
+own), carries `# nosemgrep: <rule> — why` on its line or the line before.
 
 The server's tests run on a CI bench with only frappe and crm. What needs
 frappe_whatsapp asks `crm.tests.serve_whatsapp(self)` (skipped there, run where

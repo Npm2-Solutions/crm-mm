@@ -21,6 +21,7 @@ def execute():
 	from crm.persone.collegate import assicura_legame
 
 	has_relation = frappe.db.has_column("Clinic Patient", "guardian_relation")
+	# nosemgrep: frappe-sql-format-injection — the one piece put in is a column of ours, when it exists
 	righe = frappe.db.sql(
 		f"""select lead, guardian{", guardian_relation" if has_relation else ""}
 		from `tabClinic Patient` where ifnull(guardian, '') != '' and guardian != lead""",

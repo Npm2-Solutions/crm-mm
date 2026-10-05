@@ -280,6 +280,7 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 		# that dies takes the whole transaction with it, losing the token that
 		# was already obtained. That is why granting access to a single Page
 		# worked and granting access to all of them came back disconnected.
+		# nosemgrep: whitelisted-side-effect-on-get — Meta's redirect is a GET: the signed state and the session are checked above
 		frappe.db.commit()
 
 		start_page_sync()

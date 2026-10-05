@@ -127,6 +127,7 @@ def verifica_assegnazione(doctype: str | None) -> None:
 		frappe.throw(_("Your level does not assign people"), frappe.PermissionError)
 
 
+# nosemgrep: overusing-args — the signature of frappe.desk.form.assign_to's, which it stands in for
 @frappe.whitelist()
 def assegna(args: dict | None = None):
 	from frappe.desk.form import assign_to
@@ -136,6 +137,7 @@ def assegna(args: dict | None = None):
 	return assign_to.add(args)
 
 
+# nosemgrep: overusing-args — the signature of frappe.desk.form.assign_to's, which it stands in for
 @frappe.whitelist()
 def assegna_a_molti(args: dict | None = None):
 	from frappe.desk.form import assign_to
@@ -287,7 +289,7 @@ def scrivi_condizioni(doc, method=None) -> None:
 			condizioni = json.loads(doc.get(guidata) or "[]")
 			scritta = guidate.in_python(condizioni, campi, regole["prefisso"])
 		except (ValueError, guidate.CondizioneNonValida) as errore:
-			frappe.throw(_("This condition cannot be saved: {0}").format(errore))
+			frappe.throw(_("This condition cannot be saved: {0}").format(str(errore)))
 		if not scritta and doc.get(python):
 			# Python with no guided condition behind it: the agency's, from the Desk
 			frappe.throw(solo_agenzia, frappe.PermissionError)

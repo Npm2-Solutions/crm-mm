@@ -272,7 +272,8 @@ def _risposta(party_type: str, party: str) -> dict:
 		profilo = frappe.new_doc(DOCTYPE)
 		profilo.party_type, profilo.party = party_type, party
 		frappe.has_permission(DOCTYPE, "read", throw=True)
-		puo_scrivere = bool(frappe.has_permission(DOCTYPE, "create"))
+		puo_creare = frappe.has_permission(DOCTYPE, "create")
+		puo_scrivere = bool(puo_creare)
 	return {
 		"name": nome,
 		"values": {campo: profilo.get(campo) for campo in motore.CAMPI},

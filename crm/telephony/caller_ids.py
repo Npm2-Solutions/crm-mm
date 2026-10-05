@@ -297,14 +297,12 @@ def get_caller_ids(provider: str | None = None, only_enabled: bool = True) -> li
 	return frappe.get_list("CRM Caller ID", filters=filters, fields=list(FIELDS), order_by="phone_number asc")
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_caller_ids(provider: str = "twilio") -> dict:
 	"""Refresh the list from the provider. Managers only — it talks to the carrier."""
 	if not frappe.has_permission("CRM Caller ID", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
-	result = sync(provider)
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET would roll back the carrier sync
-	return result
+	return sync(provider)
 
 
 @frappe.whitelist(methods=["POST"])
