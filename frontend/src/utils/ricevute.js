@@ -22,14 +22,21 @@ export function statoRicevuta(stato, t = (testo) => testo) {
   return { label: t(trovato.label), theme: trovato.theme }
 }
 
-/** The filters above the list: everything, each state, what is left to pay. */
+/**
+ * The filters above the list: everything, each state, what is left to pay. They
+ * name invoices, not one of them: «Tutte», «Contestate» where a badge says
+ * «Contestata» (the context).
+ */
 export function filtriRicevute(t = (testo) => testo) {
   return [
-    { value: '', label: t('All') },
+    { value: '', label: t('All', null, 'Supplier invoices filter') },
     { value: 'ricevuta', label: t('To see') },
     { value: 'da_pagare', label: t('To pay') },
     { value: 'registrata', label: t('To the accountant') },
-    { value: 'rifiutata', label: t('Disputed') },
+    {
+      value: 'rifiutata',
+      label: t('Disputed', null, 'Supplier invoices filter'),
+    },
   ]
 }
 
