@@ -929,6 +929,11 @@ lontane dai fogli di un telefono.
   persona, trattativa, azienda o un nuovo contatto disegnano da sé la riga
   del titolo (`#body`), e il titolo se ne andava col modulo: ora resta in
   cima con la ✕, come nei fogli di frappe-ui (`telefono.css`, «4»).
+- **Un solo scorrimento per foglio.** Dentro alcuni fogli una scatola era
+  limitata al 60-70% dello schermo e scorreva da sé (il controllo «Perché
+  non possono prenotare?», il registro degli accessi alla cartella): due
+  scatole una dentro l'altra si davano il turno sotto il dito. Sul telefono
+  la scatola scorre col foglio (`telefono.css`, «4»).
 - **Anche nell'area clienti la finestra scorre da sé.** La «Lista d'attesa»
   a 320×568 era più alta dello schermo: scorreva la scatola dietro, che il
   tocco non prende, e «Mettimi in lista» stava sotto il bordo. Ora la
