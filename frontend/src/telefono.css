@@ -338,7 +338,12 @@
      scrolls, with the close button: beside the title's first line, not in the
      middle of a title that wraps (a quote's state and its deal under it) */
   .dialog-content
-    div.mb-6.flex.items-center.justify-between:has(> div > header) {
+    div.mb-6.flex.items-center.justify-between:has(> div > header),
+  /* and a sheet drawn by hand (`#body`: a new person, deal, company,
+     contact): its first row with the title, the buttons beside it */
+  .dialog-content
+    > div:first-child:not(.settings-modal)
+    > div.flex.justify-between:first-child:has(> div > h3, > h3) {
     position: sticky;
     top: 0;
     z-index: 10;
