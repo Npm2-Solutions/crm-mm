@@ -110,10 +110,13 @@
                   service.online_staff ? 'text-ink-gray-6' : 'text-ink-amber-8'
                 "
               >
+                <!-- who can take it, counted: «1 prenotabili» was no Italian -->
                 {{
-                  service.online_staff
-                    ? __('{0} bookable', [service.online_staff])
-                    : __('Nobody bookable for it')
+                  service.online_staff === 1
+                    ? __('1 professional bookable')
+                    : service.online_staff
+                      ? __('{0} professionals bookable', [service.online_staff])
+                      : __('Nobody bookable for it')
                 }}
               </span>
             </span>

@@ -34142,8 +34142,8 @@ msgid "{0} awaiting"
 msgstr "{0} in attesa"
 
 #: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
-msgid "{0} bookable"
-msgstr "{0} prenotabili"
+msgid "{0} professionals bookable"
+msgstr "{0} professionisti prenotabili"
 
 #: frontend/src/utils/cicli.js
 msgid "{0} booked"
@@ -43980,3 +43980,7 @@ msgstr "Ogni SMS del centro parte da qui: le proposte della lista d'attesa, le n
 #: crm/clinica/parole.py
 msgid "Everything the demo made goes, and with it what is about its people, what you wrote too: notes, appointments, messages. The services, rooms and price lists you used for your own patients stay."
 msgstr "Se ne va tutto quello che la demo ha creato e, con esso, quello che riguarda le sue persone, anche ciò che hai scritto tu: note, appuntamenti, messaggi. Restano i servizi, le stanze e i listini che hai usato per i tuoi pazienti."
+
+#: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
+msgid "1 professional bookable"
+msgstr "1 professionista prenotabile"
