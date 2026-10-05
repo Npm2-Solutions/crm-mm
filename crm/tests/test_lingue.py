@@ -5,9 +5,12 @@
 
 from __future__ import annotations
 
+import frappe
+
 try:
-	from frappe.tests import UnitTestCase
+	from frappe.tests import IntegrationTestCase, UnitTestCase
 except ImportError:  # no bench: the rule is still testable
+	from unittest import TestCase as IntegrationTestCase
 	from unittest import TestCase as UnitTestCase
 
 from crm import lingue
@@ -96,6 +99,30 @@ class UnSitoCheNessunoHaImpostato(UnitTestCase):
 
 	def test_un_altro_paese_tiene_tutto(self):
 		self.assertEqual(lingue.per_l_italia({**MAI_IMPOSTATO, "country": "Switzerland"}), {})
+
+
+class GliUtentiSulFusoDelCentro(IntegrationTestCase):
+	"""Who was made while the site had no zone follows the centre's; a zone somebody
+	chose stays."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.clear_cache()
+
+	def utente(self, email: str, fuso: str) -> str:
+		if not frappe.db.exists("User", email):
+			frappe.get_doc(
+				{"doctype": "User", "email": email, "first_name": "Fuso", "send_welcome_email": 0}
+			).insert(ignore_permissions=True)
+		frappe.db.set_value("User", email, "time_zone", fuso, update_modified=False)
+		return email
+
+	def test_kolkata_diventa_roma_il_resto_resta(self):
+		da_prima = self.utente("fuso.kolkata@example.com", lingue.FUSO_DEL_FRAMEWORK)
+		scelto = self.utente("fuso.londra@example.com", "Europe/London")
+		self.assertGreaterEqual(lingue.utenti_sul_fuso_del_centro("Europe/Rome"), 1)
+		self.assertEqual(frappe.db.get_value("User", da_prima, "time_zone"), "Europe/Rome")
+		self.assertEqual(frappe.db.get_value("User", scelto, "time_zone"), "Europe/London")
 
 
 class LApostrofoDavantiAUnaData(UnitTestCase):
