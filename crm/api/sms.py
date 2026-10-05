@@ -125,9 +125,9 @@ def deliver_via_twilio(doc):
 	"""Push a queued outgoing message to Twilio; failures land on the doc, not the caller."""
 	from crm.demo import guardie
 
-	if guardie.numero_di_prova(doc.to):
-		# a person of the demo data: kept in the conversation as sent, never handed
-		# to Twilio (crm.demo.guardie)
+	if guardie.trattenuto(doc.to):
+		# a person of the demo data, or a part of it being made: kept in the
+		# conversation as sent, never handed to Twilio (crm.demo.guardie)
 		doc.db_set({"status": "Sent"})
 		return
 	twilio = Twilio.connect()
