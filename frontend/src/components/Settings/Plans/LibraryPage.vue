@@ -189,12 +189,15 @@ const groupOptions = computed(() => [
 ])
 
 // a source is a table's own name ("CIQUAL"), or a value with the words the
-// centre reads ("exercises-dataset" is the library DottorCloud ships)
-const sources = computed(() =>
-  props.library.sources.map((s) =>
-    typeof s === 'string' ? { label: s, value: s } : s,
-  ),
-)
+// centre reads ("exercises-dataset" is the library DottorCloud ships); one the
+// site holds nothing from (a table a centre imported before the library came)
+// is no choice: it showed «No results»
+const sources = computed(() => {
+  const presenti = data.value?.sources
+  return props.library.sources
+    .map((s) => (typeof s === 'string' ? { label: s, value: s } : s))
+    .filter((s) => !presenti || presenti[s.value] || filters.show === s.value)
+})
 
 // what the list shows: all of it, the library's, the centre's own, or what was
 // switched off
