@@ -30,7 +30,10 @@ export function laSeduta(ciclo, t = (s, a) => format(s, a)) {
 // "4 of 10 done · 2 booked · 1 missed"
 export function comeVa(conti, t = (s, a) => format(s, a)) {
   if (!conti) return ''
-  const parti = [t('{0} of {1} done', [conti.done, conti.total])]
+  // sessions: «fatte», where the first steps are «fatti»
+  const parti = [
+    t('{0} of {1} done', [conti.done, conti.total], 'Cycle sessions'),
+  ]
   if (conti.booked) parti.push(t('{0} booked', [conti.booked]))
   if (conti.missed) parti.push(t('{0} missed', [conti.missed]))
   return parti.join(' · ')
