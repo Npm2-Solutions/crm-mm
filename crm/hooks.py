@@ -185,7 +185,11 @@ after_install = [
 ]
 
 # a migrate syncs the modules of this release, whatever map a worker left in the cache
-before_migrate = ["crm.migrazione.mappa_dei_moduli"]
+before_migrate = [
+	"crm.migrazione.mappa_dei_moduli",
+	# the words this release writes into the site come from its own catalogue
+	"crm.migrazione.il_catalogo_del_rilascio",
+]
 
 # Uninstallation
 # ------------
