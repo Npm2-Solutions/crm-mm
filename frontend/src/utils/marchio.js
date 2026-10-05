@@ -29,6 +29,17 @@ export function marchio(boot = globalThis.window?.brand) {
   return { ...DI_RISERVA, ...boot }
 }
 
+// The account the product works with by itself - an import from Meta, an
+// automation, a webhook, a job - signs as the product: «Administrator» is the
+// framework's word, never somebody's name.
+export const ACCOUNT_DEL_SISTEMA = 'Administrator'
+
+export function nomeDiUnUtente(utente, prodotto = marchio().name) {
+  const nome = utente?.name || utente?.email || ''
+  if (nome === ACCOUNT_DEL_SISTEMA) return prodotto
+  return utente?.full_name?.trim() || nome
+}
+
 // A sentence that names the product says "{brand}": here it gets the brand's name.
 export function conMarchio(testo, nome = marchio().name) {
   return typeof testo === 'string' ? testo.replaceAll('{brand}', nome) : testo
