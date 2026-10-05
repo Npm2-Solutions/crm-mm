@@ -69,6 +69,7 @@ export default {
   'See all': 'Vedi tutti',
   Messages: 'Messaggi',
   'Prepare your appointment': 'Prepara l’appuntamento',
+  'Forms to fill in': 'Moduli da compilare',
   'Prepare your visit': 'Prepara la visita',
   'Before your appointment of {0}': 'Prima del tuo appuntamento del {0}',
   Started: 'Iniziato',

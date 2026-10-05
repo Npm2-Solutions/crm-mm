@@ -5,7 +5,15 @@
 -->
 <template>
   <section v-if="forms.data?.forms?.length" class="flex flex-col gap-2">
-    <h2 class="area-label">{{ __('Prepare your appointment') }}</h2>
+    <!-- without an appointment booked there is no visit to prepare: what the
+         centre asks is owed all the same -->
+    <h2 class="area-label">
+      {{
+        forms.data.appointment
+          ? __('Prepare your appointment')
+          : __('Forms to fill in')
+      }}
+    </h2>
     <div class="area-card flex flex-col">
       <p
         v-if="forms.data.appointment"
