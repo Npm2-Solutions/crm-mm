@@ -287,6 +287,12 @@ def della_partita_iva(voce, partita_iva: str | None) -> bool:
 	return bool(partita_iva) and _partita_iva(nominata) == _partita_iva(partita_iva)
 
 
+def stessa_partita_iva(una, altra) -> bool:
+	"""Whether two VAT numbers are the same one, however each is written: Itala keeps
+	a company's with its country's prefix (`IT13832480969`), DottorCloud without."""
+	return bool(_partita_iva(una)) and _partita_iva(una) == _partita_iva(altra)
+
+
 def _partita_iva(valore) -> str:
 	"""A VAT number as compared: letters and digits only, without the IT prefix."""
 	return "".join(c for c in str(valore or "") if c.isalnum()).upper().removeprefix("IT")
