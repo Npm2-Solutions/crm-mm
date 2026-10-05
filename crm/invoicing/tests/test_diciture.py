@@ -44,6 +44,11 @@ class RiferimentiTest(UnitTestCase):
 
 
 class BolloTest(UnitTestCase):
+	def test_il_bollo_della_fattura_elettronica_cita_il_dm_2014(self):
+		testo = diciture.bollo_elettronico()
+		self.assertIn("art. 6 del D.M. 17 giugno 2014", testo)
+		self.assertNotIn("Autorizzazione", testo)
+
 	def test_il_bollo_virtuale_senza_estremi_e_un_errore(self):
 		with self.assertRaises(ValueError):
 			diciture.bollo_virtuale(PRIMA, None, None, "Milano")

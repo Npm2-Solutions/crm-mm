@@ -223,6 +223,11 @@ NATURE_REVERSE_CHARGE: frozenset[str] = frozenset(
 	{"N6.1", "N6.2", "N6.3", "N6.4", "N6.5", "N6.6", "N6.7", "N6.8", "N6.9"}
 )
 
+#: The natures that count towards the EUR 77.47 stamp-duty threshold, as the
+#: Agenzia's own computation reads an invoice ("L'imposta di bollo sulle fatture
+#: elettroniche", 2024): not reverse charge, exports, intra-EU, margin, N7.
+NATURE_BOLLO: frozenset[str] = frozenset({"N2.1", "N2.2", "N3.5", "N3.6", "N4"})
+
 #: Amounts that never enter the taxable base at all (advances in the client's name
 #: and on the client's behalf). They do not feed the stamp-duty threshold either.
 NATURE_FUORI_BASE: frozenset[str] = frozenset({"N1"})
@@ -431,6 +436,12 @@ DESCRIZIONE_CASSA: dict[str, str] = {
 
 
 class ModalitaBollo(StrEnum):
+	ELETTRONICO = "elettronico"
+	"""Art. 6 DM 17/06/2014: an electronic invoice, or a document kept electronically.
+	Through the SdI it carries `BolloVirtuale` SI and is paid every quarter from the
+	"Fatture e corrispettivi" portal: no authorisation, no stamp. Never chosen: it is
+	what the channel imposes."""
+
 	VIRTUALE = "virtuale"
 	"""Art. 15 DPR 642/72, with the authorisation number and date on the document."""
 

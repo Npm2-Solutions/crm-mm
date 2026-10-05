@@ -420,7 +420,8 @@
    "fieldname": "stamp_duty_mode",
    "fieldtype": "Select",
    "label": "How the stamp duty is paid",
-   "options": "su_originale\nvirtuale\nnon_dovuto"
+   "options": "su_originale\nvirtuale\nnon_dovuto",
+   "description": "For invoices on paper or PDF. An electronic invoice through the SdI pays the duty by itself (art. 6 DM 17/06/2014): the Agenzia adds up each quarter and it is paid from Fatture e corrispettivi."
   },
   {
    "description": "It is an integral part of the compensation (Risposta AdE 428/2022), so it follows the VAT regime of the service. It is not an art. 15 exclusion.",
@@ -810,7 +811,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-05 20:00:00.000000",
+ "modified": "2026-10-05 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

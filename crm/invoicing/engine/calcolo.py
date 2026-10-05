@@ -35,6 +35,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from .classificazione import EsitoClassificazione, EsitoRiga
 from .codici import (
+	NATURE_BOLLO,
 	NATURE_REVERSE_CHARGE,
 	EsigibilitaIVA,
 	ModalitaBollo,
@@ -220,7 +221,8 @@ def calcola(
 	aliquota_ritenuta: Decimal = Decimal("20.00"),
 	tipo_ritenuta: str = TipoRitenuta.PERSONE_FISICHE,
 	causale_pagamento: str | None = "A",
-	ritenuta_su_riaddebito_bollo: bool = False,
+	# the re-charged duty is part of the fee (Risposta AdE 428/2022): withheld on too
+	ritenuta_su_riaddebito_bollo: bool = True,
 	split_payment: bool = False,
 	riferimenti_normativi: dict[str, str] | None = None,
 ) -> Calcolo:
@@ -271,12 +273,15 @@ def calcola(
 
 	# 4 - the stamp-duty threshold, measured on the amounts NOT charged with VAT and
 	#     **after** the fund levy. On a pure healthcare invoice it equals the total.
+	#     Only the natures the Agenzia counts: reverse charge is VAT all the same,
+	#     exports and intra-EU supplies are exempt from the duty by their own rule.
 	base_bollo = arrotonda(
 		sum(
 			(
 				imponibili_servizi[i] + quote_cassa[i]
 				for i, r in enumerate(righe_utili)
-				if not r.fuori_base_iva and (r.natura_iva or r.esente_iva or not (r.aliquota or ZERO) > ZERO)
+				if not r.fuori_base_iva
+				and (r.natura_iva in NATURE_BOLLO or (r.esente_iva and not r.natura_iva))
 			),
 			ZERO,
 		)

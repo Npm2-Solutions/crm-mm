@@ -217,7 +217,8 @@ def costruisci(doc, preparato: dict, progressivo: str | None = None) -> FatturaE
 		formato_trasmissione="FPA12" if len(codice) == LUNGHEZZA_CODICE_PA else None,
 		contatti_trasmittente=Contatti(email=emittente.get("email"), telefono=emittente.get("phone")),
 		dati_ritenuta=ritenute_da_calcolo(conto),
-		bollo_virtuale=bool(conto.bollo_dovuto and doc.stamp_duty_mode == "virtuale"),
+		# through the SdI the duty is always art. 6 DM 17/06/2014: BolloVirtuale SI
+		bollo_virtuale=bool(conto.bollo_dovuto),
 		importo_bollo=conto.bollo if conto.bollo_dovuto else None,
 		dati_cassa=casse_da_calcolo(
 			conto, bool(doc.apply_withholding) and bool(doc.fund_subject_to_withholding)
