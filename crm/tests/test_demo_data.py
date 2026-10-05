@@ -32,8 +32,9 @@ DEI_MODULI = ("moduli", "documenti")
 IMPOSTAZIONI_DELLE_PIPELINE = ("CRM Client Settings", "CRM Quote Settings")
 
 
-#: The plan's rows: none, and every module is at its default.
-PIANO, RIGA = "CRM Plan", "CRM Plan Module"
+#: The plan and its rows: none, and every module is at its default.
+PIANO = "CRM Plan"
+RIGA = "CRM Plan Module"
 
 
 def piano_cambiato() -> None:
