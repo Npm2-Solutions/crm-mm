@@ -19,8 +19,9 @@ session was not given.
   (`sezioni`) - the clinic its documents, plans and care plans - and their kinds of
   message, with their own readers (`messaggi.registra_tipo`).
 
-It is a module of the plan of its own, "Client area"; the clinic comprises it, so a
-medical centre has it with the clinic.
+It is a module of the plan of its own, "Client area", which the base comprises:
+every centre has it, since every centre gives its people documents and invoices
+(05/10/2026). The clinic comprises it too, and names it "the patient area".
 """
 
 from __future__ import annotations
@@ -35,7 +36,7 @@ from crm.permissions.livelli import (
 	registra_modulo_piano,
 )
 
-#: The plan's module: off until the agency switches it on; the clinic comprises it.
+#: The plan's module: the base comprises it, and so does the clinic.
 PIANO = "area"
 
 MODULO = ModuloPiano(
