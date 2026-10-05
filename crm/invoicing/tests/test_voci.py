@@ -127,7 +127,8 @@ class IlProfiloSanitario(UnitTestCase):
 
 	def test_il_profilo_generale_offre_tutto(self):
 		self.assertEqual(len(voci.voci("natura")), len(voci.tutte("natura")))
-		self.assertEqual(len(voci.voci("regime_fiscale")), 18)
+		# RF20, the cross-border franchise, since 01/04/2025
+		self.assertEqual(len(voci.voci("regime_fiscale")), 19)
 
 	def test_un_valore_gia_scelto_resta(self):
 		# a company that kept the regime of salt and tobacco still sees its own choice

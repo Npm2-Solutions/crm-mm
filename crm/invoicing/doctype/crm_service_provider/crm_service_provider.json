@@ -43,7 +43,7 @@
    "label": "Professional qualification",
    "options": "CRM Professional Qualification",
    "reqd": 1,
-   "link_filters": "[[\"CRM Professional Qualification\", \"sender_category\", \"not in\", [\"struttura_autorizzata\", \"struttura_accreditata\", \"farmacia\", \"parafarmacia\"]], [\"CRM Professional Qualification\", \"enabled\", \"=\", 1]]"
+   "link_filters": "{\"sender_category\": [\"not in\", [\"struttura_autorizzata\", \"struttura_accreditata\", \"farmacia\", \"parafarmacia\"]], \"enabled\": 1}"
   },
   {
    "description": "Links the provider to the user they work as, so the agenda can propose them.",
@@ -112,7 +112,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-05 18:00:00.000000",
+ "modified": "2026-10-05 20:30:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Service Provider",

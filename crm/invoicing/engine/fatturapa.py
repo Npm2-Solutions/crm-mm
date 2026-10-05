@@ -1,4 +1,4 @@
-"""FatturaPA 1.2.2: the XML, generated here.
+"""FatturaPA 1.2.3 (from 01/04/2025): the XML, generated here.
 
 The original design bought this conversion from a provider, and for good reason:
 XML generation is where 90% of the bugs live, and outsourcing it was cheaper than
@@ -45,7 +45,7 @@ from .voci import etichetta
 NAMESPACE = "http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2"
 SCHEMA_LOCATION = (
 	"http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2 "
-	"http://www.fatturapa.gov.it/export/fatturazione/sdi/fatturapa/v1.2.2/Schema_del_file_xml_FatturaPA_v1.2.2.xsd"
+	"https://www.fatturapa.gov.it/export/documenti/fatturapa/v1.4/Schema_VFPR12_v1.2.3.xsd"
 )
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 DS = "http://www.w3.org/2000/09/xmldsig#"
@@ -76,6 +76,14 @@ class ErroreFatturaPA(ValueError):
 
 def _d(valore: Decimal | None, decimali: int = 2) -> str:
 	return f"{Decimal(valore or 0):.{decimali}f}"
+
+
+def _prezzo(valore: Decimal | None) -> str:
+	"""A unit price or a per-unit discount as the schema takes it (Amount8Decimal):
+	two decimals at least, eight at most, nothing rounded away that the total needs."""
+	testo = f"{Decimal(valore or 0).quantize(Decimal('0.00000001')):f}"
+	intero, _, decimali = testo.partition(".")
+	return f"{intero}.{decimali.rstrip('0').ljust(2, '0')}"
 
 
 def _quantita(valore: Decimal | None) -> str:
@@ -260,7 +268,7 @@ class ScontoMaggiorazione:
 		if self.percentuale is not None:
 			_sub(blocco, "Percentuale", _d(self.percentuale))
 		if self.importo is not None:
-			_sub(blocco, "Importo", _d(self.importo))
+			_sub(blocco, "Importo", _prezzo(self.importo))
 
 
 @dataclass
@@ -297,7 +305,7 @@ class Linea:
 			_sub(blocco, "DataInizioPeriodo", self.data_inizio_periodo.isoformat())
 		if self.data_fine_periodo:
 			_sub(blocco, "DataFinePeriodo", self.data_fine_periodo.isoformat())
-		_sub(blocco, "PrezzoUnitario", _d(self.prezzo_unitario))
+		_sub(blocco, "PrezzoUnitario", _prezzo(self.prezzo_unitario))
 		for sconto in self.sconti:
 			sconto.xml(blocco)
 		_sub(blocco, "PrezzoTotale", _d(self.prezzo_totale))
@@ -650,6 +658,19 @@ def dimensione_ammessa(dati: bytes | str) -> Rilievo | None:
 	)
 
 
+def _totale_atteso(linea: Linea) -> Decimal:
+	"""A line's total as check 00423 computes it: amounts per unit added up,
+	percentages applied one after the other, then times the quantity."""
+	prezzo = Decimal(linea.prezzo_unitario)
+	for sconto in linea.sconti:
+		segno = -1 if sconto.tipo == "SC" else 1
+		if sconto.importo is not None:
+			prezzo += segno * Decimal(sconto.importo)
+		elif sconto.percentuale is not None:
+			prezzo += segno * prezzo * Decimal(sconto.percentuale) / Decimal("100")
+	return prezzo * (linea.quantita if linea.quantita is not None else Decimal("1"))
+
+
 def valida(fattura: FatturaElettronica) -> list[str]:
 	"""Re-read the document with the SdI's own checks, before sending it.
 
@@ -801,6 +822,14 @@ def _valida_documento(fattura: FatturaElettronica) -> list[str]:
 		if linea.aliquota_iva != ZERO and linea.natura:
 			problemi.append(
 				Rilievo("00401", "line {0} has both a VAT rate and a reason for no VAT", linea.numero)
+			)
+		if abs(_totale_atteso(linea) - linea.prezzo_totale) >= TOLLERANZA_CENTESIMO:
+			problemi.append(
+				Rilievo(
+					"00423",
+					"line {0}: its total is not its unit price, less its discounts, times its quantity",
+					linea.numero,
+				)
 			)
 		if linea.natura in NATURE_RITIRATE:
 			problemi.append(
@@ -985,6 +1014,18 @@ def _valida_importi(fattura: FatturaElettronica) -> list[str]:
 #: tested without a database - it is the seam where a wrong total actually happens.
 
 
+def _sconto_della_riga(prezzo: Decimal, quantita: Decimal, totale: Decimal) -> list[ScontoMaggiorazione]:
+	"""The discount (or surcharge) between the list price and the line's total, per
+	unit as check 00423 reads it: PrezzoTotale = (PrezzoUnitario - sconto) x Quantita.
+	Without it a discounted line was refused: the total did not follow the price."""
+	quantita = quantita or Decimal("1")
+	differenza = prezzo * quantita - totale
+	if abs(differenza) < Decimal("0.005"):
+		return []
+	per_unita = (abs(differenza) / quantita).quantize(Decimal("0.00000001"))
+	return [ScontoMaggiorazione(tipo="SC" if differenza > 0 else "MG", importo=per_unita)]
+
+
 def linee_da_calcolo(calcolo, dettagli: list[dict]) -> list[Linea]:
 	"""Lines from a computed document.
 
@@ -1001,13 +1042,15 @@ def linee_da_calcolo(calcolo, dettagli: list[dict]) -> list[Linea]:
 		prezzo = dettaglio.get("prezzo_unitario")
 		if prezzo is None:
 			prezzo = riga.imponibile / quantita if quantita else riga.imponibile
+		prezzo = Decimal(str(prezzo))
 		linee.append(
 			Linea(
 				numero=numero,
 				descrizione=dettaglio.get("descrizione") or "",
 				quantita=quantita,
 				unita_misura=dettaglio.get("unita_misura"),
-				prezzo_unitario=Decimal(str(prezzo)),
+				prezzo_unitario=prezzo,
+				sconti=_sconto_della_riga(prezzo, quantita, riga.imponibile),
 				prezzo_totale=riga.imponibile,
 				aliquota_iva=riga.aliquota,
 				natura=riga.natura,
