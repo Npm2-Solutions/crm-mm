@@ -366,7 +366,7 @@ const PREVIEW = 12
 
 const route = useRoute()
 const router = useRouter()
-const { users, getUser, puo } = usersStore()
+const { users, getUser, puo, ambito } = usersStore()
 const { $dialog } = globalStore()
 
 // numbers and dates in the language the words are in
@@ -535,10 +535,20 @@ const moreOptions = computed(() => {
 // open (`current` is still the one before until its layout comes)
 let inApertura = ''
 
+// whoever reads only their own numbers - a professional - opens on their day:
+// the overview's sales were their own zeros, the day their appointments
+function laSuaGiornata() {
+  if (ambito('numeri.operativi') !== 'suoi') return null
+  return list.value.find(
+    (dashboard) => dashboard.template === 'my_day' && dashboard.available,
+  )
+}
+
 function openInitial() {
   const wanted = route.query.d || safeStorage('get')
   const found =
     list.value.find((dashboard) => dashboard.name === wanted) ||
+    laSuaGiornata() ||
     list.value.find((dashboard) => dashboard.available) ||
     list.value[0]
   if (found) openDashboard(found.name, { replace: true })

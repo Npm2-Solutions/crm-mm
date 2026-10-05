@@ -55,6 +55,11 @@ con i soli widget a cui il suo sito e il suo ruolo sanno rispondere. Una
 sezione vuota sparisce col suo titolo, una riga con dei buchi divide la
 larghezza fra chi resta.
 
+**Si apre sull'ultima aperta**, e la prima volta sulla prima che sa rispondere.
+Chi legge solo i propri numeri, un professionista, si apre invece su La mia
+giornata: sulla Panoramica le vendite erano i suoi zeri, nella sua giornata ci
+sono i suoi appuntamenti e le sue cose da fare.
+
 **Un modulo non ancora attivo non sparisce.** Un manager trova le dashboard a
 cui il sito non sa ancora rispondere nel selettore, sotto "Da configurare":
 aprendone una vede cosa conterra' e il pulsante che porta alla pagina giusta
