@@ -27,8 +27,7 @@ def execute():
 		frappe.qb.update(persona)
 		.set(persona.relationship, cliente.CLIENTE)
 		.where(
-			persona.client_since.isnotnull()
-			& IfNull(persona.relationship, "").isin(["", cliente.CONTATTO])
+			persona.client_since.isnotnull() & IfNull(persona.relationship, "").isin(["", cliente.CONTATTO])
 		)
 	).run()
 	(
