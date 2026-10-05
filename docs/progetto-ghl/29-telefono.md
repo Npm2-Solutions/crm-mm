@@ -765,6 +765,16 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   «Salva» il nome era «Recupero no…» e la via del ritorno «Aut…»
   (`pages/AutomationEditor.vue`).
 
+- **La dashboard si sistema col dito.** In modifica un riquadro non si
+  spostava: la griglia (grid-layout-plus) prende un trascinamento solo dove la
+  pagina non scorre, e lo dice al browser solo su Android; su un iPad il dito
+  faceva scorrere la pagina e il trascinamento si annullava. Ora, al tocco, ogni
+  riquadro ha una maniglia «⤧» tra i suoi strumenti, da cui si sposta, e
+  l'angolo che lo ridimensiona è di 28 punti invece di 10; il resto del
+  riquadro fa scorrere la pagina, come ci si aspetta. Gli strumenti al tocco
+  sono di 28 punti (`Dashboard/DashboardGrid.vue`). Col mouse non cambia
+  niente: si trascina da tutto il riquadro.
+
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
