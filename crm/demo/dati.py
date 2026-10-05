@@ -126,7 +126,7 @@ SERVIZI = (
 	),
 	(
 		"fisio",
-		"Seduta di fisioterapia",
+		"Trattamento fisioterapico",
 		"Fisioterapia",
 		45,
 		50,
