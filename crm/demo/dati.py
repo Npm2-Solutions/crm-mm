@@ -1499,3 +1499,140 @@ META_MOTIVI = {
 	"massaggio": ("Contratture alla schiena", "Un massaggio dopo le gare"),
 }
 META_QUANDO = ("La mattina", "In pausa pranzo", "Dopo le 18")
+
+#: The demo's automations, switched off - so that they never write to the centre's
+#: own people: the centre switches on the ones it keeps. Key, title, what it does,
+#: the trigger and its settings, whether it asks for the marketing consent, its steps.
+AUTOMAZIONI = (
+	(
+		"benvenuto",
+		"Benvenuto a chi diventa cliente",
+		"Dopo la prima visita un'email di benvenuto, con dove trovare appuntamenti, moduli e "
+		"documenti, e il segno «Nuovo cliente».",
+		"Became Client",
+		None,
+		False,
+		(
+			{
+				"type": "send_email",
+				"subject": "Benvenuto, {{ first_name }}!",
+				"message": "Ciao {{ first_name }}, grazie per averci scelto. Nell'area clienti trovi i tuoi "
+				"appuntamenti, i moduli da compilare e i tuoi documenti. A presto!",
+			},
+			{"type": "add_tag", "tag": "Nuovo cliente"},
+		),
+	),
+	(
+		"richiamo",
+		"Richiamo dopo due mesi",
+		"A chi non torna da due mesi e ha detto sì al marketing: un'email per sapere come sta, e "
+		"una cosa da fare per la segreteria.",
+		"Date Reminder",
+		{"doctype": "CRM Lead", "date_field": "last_visit", "direction": "after", "offset_days": 60},
+		True,
+		(
+			{
+				"type": "send_email",
+				"subject": "Come stai, {{ first_name }}?",
+				"message": "Ciao {{ first_name }}, è passato un po' dalla tua ultima visita. Se vuoi "
+				"prenotare un controllo, rispondi a questa email o chiamaci.",
+			},
+			{"type": "create_task", "title": "Richiamare {{ lead_name }} per un controllo", "due_in_days": 2},
+		),
+	),
+	(
+		"richiesta",
+		"Nuova richiesta da un modulo",
+		"Chi lascia i suoi dati in un modulo del sito o di Meta: una cosa da fare per richiamarlo in "
+		"giornata.",
+		"Lead Form Submitted",
+		None,
+		False,
+		(
+			{
+				"type": "create_task",
+				"title": "Richiamare {{ lead_name }}: ha chiesto informazioni",
+				"due_in_days": 0,
+			},
+		),
+	),
+	(
+		"assenza",
+		"Assenza all'appuntamento",
+		"Chi non si presenta riceve un'email per riprenotare, e la segreteria lo richiama il giorno dopo.",
+		"Appointment No Show",
+		None,
+		False,
+		(
+			{
+				"type": "send_email",
+				"subject": "Oggi non ti abbiamo visto, {{ first_name }}",
+				"message": "Ciao {{ first_name }}, oggi non sei riuscito a venire: vuoi spostare "
+				"l'appuntamento? Rispondi a questa email o chiamaci.",
+			},
+			{"type": "create_task", "title": "Riprenotare {{ lead_name }}", "due_in_days": 1},
+		),
+	),
+)
+
+#: The centre's social profiles in the demo, on its page.
+PROFILI_SOCIAL = ("Instagram", "Facebook")
+#: Its posts: the day (from today: before, published; after, scheduled), the hour, the
+#: words, the profiles.
+POST_SOCIAL = (
+	(
+		-38,
+		"18:30",
+		"Riprendono le lezioni di Pilates in piccoli gruppi: al massimo sei persone, con il "
+		"chinesiologo. La prima è di prova 💪",
+		("Instagram", "Facebook"),
+	),
+	(
+		-26,
+		"12:30",
+		"Mal di schiena da scrivania? Tre esercizi da fare in pausa pranzo, spiegati dalla nostra "
+		"fisioterapista 👇",
+		("Instagram",),
+	),
+	(
+		-15,
+		"09:00",
+		"Una settimana al mese per la prevenzione: con la prima visita fisioterapica c'è anche il "
+		"controllo della postura.",
+		("Facebook",),
+	),
+	(
+		-6,
+		"19:00",
+		"La ricetta della settimana dalla nostra dietista: zuppa di zucca e lenticchie, 380 kcal a "
+		"porzione 🎃",
+		("Instagram", "Facebook"),
+	),
+	(
+		3,
+		"18:00",
+		"Novità: la fisioterapia sportiva anche il sabato mattina. Prenota dall'app o in accoglienza.",
+		("Instagram",),
+	),
+	(
+		7,
+		"12:00",
+		"Cinque domande al nostro osteopata: quando serve davvero un trattamento?",
+		("Facebook",),
+	),
+	(
+		12,
+		"18:30",
+		"Che cosa mangiare prima e dopo l'allenamento: i consigli della dietista per chi corre.",
+		("Instagram", "Facebook"),
+	),
+)
+#: A post somebody is still writing.
+POST_BOZZA = "Le novità del mese: gli orari, i corsi nuovi, la settimana della prevenzione…"
+
+#: The links whose clicks the centre counts: the address, where it goes, what it is
+#: for, how many clicked it at the demo's full size.
+LINK_TRACCIATI = (
+	("prenota-instagram", "/prenota", "Il link nella bio di Instagram", 64),
+	("volantino-pilates", "/prenota", "Il QR code del volantino delle lezioni di Pilates", 23),
+)
