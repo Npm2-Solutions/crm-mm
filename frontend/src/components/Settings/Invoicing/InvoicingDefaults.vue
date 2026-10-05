@@ -27,7 +27,7 @@
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
-            'What applies to every document: what gets attached, how long a link stays open, and when silence becomes an alert.',
+            'What applies to every document: what gets attached, what leaves by itself, and when silence becomes an alert.',
           )
         }}
       </p>

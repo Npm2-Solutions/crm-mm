@@ -110,3 +110,21 @@ export function valorePredefinito(field) {
   }
   return testo
 }
+
+/**
+ * The tab that holds a field, by its name: where a missing setting is filled, so
+ * «Set up» opens on it and not on the record's first tab. '' when no tab has it.
+ */
+export function schedaDelCampo(tabs, fieldname) {
+  if (!fieldname) return ''
+  for (const tab of tabs || []) {
+    for (const section of tab.sections || []) {
+      for (const column of section.columns || []) {
+        if ((column.fields || []).some((f) => f.fieldname === fieldname)) {
+          return tab.name
+        }
+      }
+    }
+  }
+  return ''
+}

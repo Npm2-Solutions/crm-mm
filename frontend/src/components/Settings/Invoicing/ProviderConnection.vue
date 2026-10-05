@@ -144,7 +144,7 @@
               class="shrink-0"
               variant="subtle"
               :label="__('Set up')"
-              @click="activeSettingsPage = paginaDellaMancanza(voce)"
+              @click="imposta(voce)"
             />
           </div>
         </div>
@@ -373,7 +373,7 @@ import {
   Dropdown,
   toast,
 } from 'frappe-ui'
-import { activeSettingsPage } from '@/composables/settings'
+import { activeSettingsPage, campoDaAprire } from '@/composables/settings'
 import { inOrdine, paginaDellaMancanza } from '@/utils/mancanze'
 import LucideFileText from '~icons/lucide/file-text'
 import LucideSend from '~icons/lucide/send'
@@ -451,6 +451,13 @@ watch(
     if (proprio && azienda.value) endpoint.fetch({ company: azienda.value })
   },
 )
+
+// where a missing row is filled, on the field that fills it: the company's page
+// opened on its first tab, and the person looked at a name and a surname
+function imposta(voce) {
+  campoDaAprire.value = voce.field || ''
+  activeSettingsPage.value = paginaDellaMancanza(voce)
+}
 
 function passaAlVivo() {
   const prova = stato.data?.test_invoices || 0
