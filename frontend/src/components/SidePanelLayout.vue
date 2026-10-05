@@ -674,6 +674,13 @@ function isFieldVisible(field, scriptHidden) {
   // Script override for hidden wins over everything
   if (scriptHidden !== undefined) return !scriptHidden
 
+  // a field fetched from a link (`organization.annual_revenue`) is that link's:
+  // without it a person's deal listed a company's description, sector, staff,
+  // website, territory and «Annual revenue € 0.00», none of them theirs
+  if (field.fetch_from && !doc.value[field.fetch_from.split('.')[0]]) {
+    return false
+  }
+
   let readOnlyField =
     field.read_only || field.fieldtype === 'Read Only' ? true : false
 
