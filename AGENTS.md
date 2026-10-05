@@ -607,8 +607,11 @@ the Frappe site's public pages: those belong to each centre.
 A module adds its share of the demo from its `registra()` with `registra_parte`,
 and makes it through its own code paths, never rows written beside them; what
 carries evidence (a signature, a delivery, a download) is dated when the part
-runs, never back. A module that sends something on its own, or asks something of
-people by itself, adds its guard to `crm/demo/guardie.py`; one that
+runs, never back. A module that extends another adds to that one's part the way it
+extends it, never by an import the other may not make (the Sistema TS's healthcare
+setup: `crm.invoicing.demo.registra_preparazione`). A module that sends something
+on its own, or asks something of people by itself, adds its guard to
+`crm/demo/guardie.py`; one that
 keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.

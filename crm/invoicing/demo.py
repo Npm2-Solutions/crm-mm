@@ -11,9 +11,10 @@ client because of them. Its name says it is the demo's, so the centre's own, whe
 comes, never meets it; a centre that invoices already gets no invoice from the demo,
 never a number of its series.
 
-The accountant's work, done as a centre does it: the manager answers the three
-questions of the healthcare setup (a facility, the ordinary regime, the Region's
-codes), and a card is made for each of the demo's services as the services page
+The accountant's work, done as a centre does it: the manager sets the company up
+with what the modules add to it - the Sistema TS registers the healthcare setup's
+three questions (`registra_preparazione`), as it registers everything else into
+invoicing - and a card is made for each of the demo's services as the services page
 makes one; a service somebody performs who is not exempt - the osteopath, the
 classes' kinesiologist - is taxed, through the SdI, as their qualification says (the
 team are providers already, with their qualifications). Then the desk invoices, day by day, the visits as they were paid -
@@ -28,6 +29,7 @@ issued it; its register (`CRM Invoice Log`) says when the demo issued it.
 from __future__ import annotations
 
 import datetime
+from collections.abc import Callable
 
 import frappe
 from frappe import _
@@ -46,9 +48,6 @@ FATTURA = "CRM Invoice"
 #: Eleven digits with their check digit, from an office (890) that gives none: no
 #: taxpayer has it.
 PARTITA_IVA = "12345678903"
-#: The Region's codes the healthcare setup asks a facility for: an ASL that does not
-#: exist, so no real facility's (and the Sistema TS is never sent to from a test).
-CODICI_TS = {"region_code": "030", "asl_code": "999", "ssa_code": "999999"}
 
 #: How people paid, and how often: by card, in cash, by bank transfer.
 PAGAMENTI = (("MP08", 70), ("MP01", 18), ("MP05", 12))
@@ -69,6 +68,17 @@ VIE = (
 #: The month letters of a codice fiscale.
 MESI = "ABCDEHLMPRST"
 
+#: What other modules set up on the demo's company before its cards are made: each
+#: ``prepara(azienda)`` returns what a new card of the company starts from.
+_preparazioni: list[Callable[[str], dict]] = []
+
+
+def registra_preparazione(prepara: Callable[[str], dict]) -> None:
+	"""A module's share of the demo company's setup (the Sistema TS: the healthcare
+	setup's three questions), made in the order registered."""
+	if prepara not in _preparazioni:
+		_preparazioni.append(prepara)
+
 
 def crea(ctx: Contesto) -> None:
 	from crm.demo import registro
@@ -83,8 +93,7 @@ def crea(ctx: Contesto) -> None:
 	with ctx.come(manager):
 		# made again after a try that stopped half-way: the same company goes on
 		azienda = della_demo[0] if della_demo else _azienda()
-		_preimpostazione(azienda)
-		_schede(ctx, azienda)
+		_schede(ctx, _prepara(azienda))
 	ctx.salva()
 	fatture = []
 	# one series, its numbers in the order of the days: visits and cycles together
@@ -123,25 +132,21 @@ def _azienda() -> str:
 	return doc.name
 
 
-def _preimpostazione(azienda: str) -> None:
-	"""The healthcare setup's three questions: a facility, the ordinary regime, its codes."""
-	from crm.tessera_sanitaria import preimpostazione
-	from crm.tessera_sanitaria.engine.codici import SoggettoInviante
+def _prepara(azienda: str) -> dict:
+	"""The company set up as the modules set it up. Returns what a new card of it
+	starts from."""
+	scheda: dict = {}
+	for prepara in _preparazioni:
+		scheda.update(prepara(azienda) or {})
+	return scheda
 
-	preimpostazione.apply_setup(
-		company=azienda, issuer=SoggettoInviante.STRUTTURA_AUTORIZZATA, regime="RF01", **CODICI_TS
-	)
 
-
-def _schede(ctx: Contesto, azienda: str) -> None:
+def _schede(ctx: Contesto, predefinita: dict) -> None:
 	"""A card for each of the demo's services, as the services page makes a new one
-	(the healthcare setup's defaults): never a card of the centre's tied to them. A
-	service somebody performs who is not exempt - the osteopath, the classes'
-	kinesiologist - is taxed at their rate: the engine refuses an exemption to who is
-	not a health profession, never a tax."""
-	from crm.tessera_sanitaria import preimpostazione
-
-	predefinita = preimpostazione.get_setup(azienda)["card_defaults"]
+	(``predefinita``: what the company's setup gives a new card): never a card of the
+	centre's tied to them. A service somebody performs who is not exempt - the
+	osteopath, the classes' kinesiologist - is taxed at their rate: the engine refuses
+	an exemption to who is not a health profession, never a tax."""
 	for servizio in sorted(ctx.con_chiave("service.").values()):
 		if frappe.db.exists(SCHEDA, {"crm_service": servizio}):
 			continue
