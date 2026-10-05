@@ -60,6 +60,12 @@ def registra() -> None:
 	from crm.invoicing import scelte
 
 	scelte.registra_regola("tipo_spesa", tipi_spesa_offerti)
+	# the demo's company answers the healthcare setup before its cards are made
+	from crm.invoicing import demo as demo_della_fatturazione
+
+	from . import demo
+
+	demo_della_fatturazione.registra_preparazione(demo.prepara)
 
 
 def tipi_spesa_offerti(doc: dict) -> frozenset[str] | None:

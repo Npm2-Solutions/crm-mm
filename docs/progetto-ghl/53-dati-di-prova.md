@@ -116,7 +116,10 @@ d'attesa, conversazioni.
       fascia sul PDF, il resoconto al Sistema TS controllato e mai mandato, niente
       allo SdI.
     - Il responsabile risponde alle tre domande della preimpostazione sanitaria
-      (una struttura, il regime ordinario, i codici della Regione). Ogni servizio
+      (una struttura, il regime ordinario, i codici della Regione): è la parte del
+      Sistema TS (`crm/tessera_sanitaria/demo.py`), che la registra nella demo della
+      fatturazione (`registra_preparazione`) come registra tutto il resto, perché la
+      fatturazione non lo conosce. Ogni servizio
       della demo ha la sua scheda, come la fa la pagina dei servizi: esente per chi è
       professione sanitaria, tassata al 22% e allo SdI per chi non lo è (l'osteopata,
       il chinesiologo delle lezioni). Mai una scheda del centro legata a un servizio
