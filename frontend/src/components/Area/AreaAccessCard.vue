@@ -27,11 +27,7 @@
           :loading="previewing"
           @click="preview"
         />
-        <Button
-          icon-left="user-plus"
-          :label="__('Open the area')"
-          @click="openDialog"
-        />
+        <Button icon-left="user-plus" :label="apri" @click="openDialog" />
       </div>
     </div>
     <p v-if="!accesses.data.accesses.length" class="text-p-sm text-ink-gray-5">
@@ -77,10 +73,7 @@
     </div>
   </section>
 
-  <Dialog
-    v-model="dialog.show"
-    :options="{ title: __('Open the area'), size: 'md' }"
-  >
+  <Dialog v-model="dialog.show" :options="{ title: apri, size: 'md' }">
     <template #body-content>
       <div class="flex flex-col gap-3">
         <FormControl
@@ -136,7 +129,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({ lead: { type: String, required: true } })
 const { $dialog } = globalStore()
@@ -169,10 +162,22 @@ const dialog = reactive({
   error: '',
 })
 
+// the person's own access open, what is left is letting somebody else in - a
+// parent, who follows them: «Open the area» and «The person» again only sent
+// the same invitation a second time
+const propriaAperta = computed(() =>
+  (accesses.data?.accesses || []).some(
+    (access) => access.relation === 'Self' && access.enabled,
+  ),
+)
+const apri = computed(() =>
+  propriaAperta.value ? __('Add somebody') : __('Open the area'),
+)
+
 function openDialog() {
   Object.assign(dialog, {
     show: true,
-    relation: 'Self',
+    relation: propriaAperta.value ? 'Parent or guardian' : 'Self',
     email: '',
     busy: false,
     error: '',
