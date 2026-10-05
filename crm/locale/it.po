@@ -44433,3 +44433,124 @@ msgstr "Itala non ha un PDF di questa fattura: l'originale è il suo XML."
 #: crm/notifiche/regole.py
 msgid "{0} sent an invoice of {1}"
 msgstr "{0} ha mandato una fattura di {1}"
+
+#: frontend/src/pages/Invoices.vue
+msgctxt "Supplier invoices"
+msgid "Received"
+msgstr "Ricevute"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Back to seen"
+msgstr "Torna a vista"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Dispute it"
+msgstr "Contestala"
+
+#: frontend/src/utils/ricevute.js
+msgid "Disputed"
+msgstr "Contestata"
+
+#: frontend/src/utils/ricevute.js
+msgid "Due in {0} days"
+msgstr "Scade tra {0} giorni"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "For the accountant"
+msgstr "Per il commercialista"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "No supplier invoices yet"
+msgstr "Ancora nessuna fattura dai fornitori"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "They arrive here through Itala once the centre has registered its recipient code at the Agenzia."
+msgstr "Arrivano qui tramite Itala, una volta che il centro ha registrato il suo codice destinatario presso l'Agenzia."
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Not paid"
+msgstr "Non pagata"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "Nothing found"
+msgstr "Nessun risultato"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "One invoice, {0}"
+msgstr "Una fattura, {0}"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Other actions"
+msgstr "Altre azioni"
+
+#: frontend/src/utils/ricevute.js
+msgid "Overdue"
+msgstr "Scaduta"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Paid on {0}."
+msgstr "Pagata il {0}."
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Paid today"
+msgstr "Pagata oggi"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "Search the received invoices"
+msgstr "Cerca tra le fatture ricevute"
+
+#: frontend/src/utils/ricevute.js
+msgid "Seen"
+msgstr "Vista"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Supplier invoice"
+msgstr "Fattura del fornitore"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "Supplier, number, VAT number"
+msgstr "Fornitore, numero, partita IVA"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "The XML file"
+msgstr "Il file XML"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "The supplier wrote no due date."
+msgstr "Il fornitore non ha indicato una scadenza."
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "To be paid by {0}."
+msgstr "Da pagare entro il {0}."
+
+#: frontend/src/utils/ricevute.js
+msgid "To pay"
+msgstr "Da pagare"
+
+#: frontend/src/utils/ricevute.js
+msgid "To see"
+msgstr "Da vedere"
+
+#: frontend/src/utils/ricevute.js
+msgid "To the accountant"
+msgstr "Al commercialista"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "Try another word, or another filter."
+msgstr "Prova con un'altra parola o un altro filtro."
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "VAT number {0}"
+msgstr "P.IVA {0}"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "Why it is disputed, what the accountant should know"
+msgstr "Perché è contestata, cosa deve sapere il commercialista"
+
+#: frontend/src/components/Invoices/ReceivedInvoiceDialog.vue
+msgid "no VAT"
+msgstr "senza IVA"
+
+#: frontend/src/components/Invoices/ReceivedInvoices.vue
+msgid "{0} invoices, {1}"
+msgstr "{0} fatture, {1}"
