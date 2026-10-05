@@ -835,6 +835,10 @@ nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
   l'uno: i titoli erano «Trattati… vinte» (`perRiga` in `utils/dashboard.js`).
 - **Le etichette dei campi vanno fino a tre righe**: in due,
   «Responsabile della…» (`SidePanelLayout.vue`).
+- **Una scelta si legge intera.** Nel foglio di un campo collegato, a 360
+  punti, «Massaggiatore capo bagnino degli stabi…» e «Tecnico di
+  fisiopatologia cardiocircolato…» non si distinguevano: ora un nome lungo va
+  a capo nella sua riga (`telefono.css`, «5»).
 
 ## File
 

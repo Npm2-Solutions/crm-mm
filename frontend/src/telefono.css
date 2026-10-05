@@ -518,6 +518,12 @@
   [role='listbox'] [role='option'] .text-base {
     font-size: 16px;
   }
+  /* a choice is read whole: a long name goes on under itself, where the row
+     cut it («Massaggiatore capo bagnino degli stabi…», 360px) */
+  [role='listbox'] [role='option'] .truncate {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
 }
 /* frappe-ui's Autocomplete, the list of a link field: a popover holding a
    search and a listbox one level deeper than the rules above reach. It opened
