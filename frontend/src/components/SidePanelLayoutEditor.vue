@@ -6,7 +6,8 @@
     <!-- on a touch screen a section moves after a short press: a swipe scrolls -->
     <Draggable
       :list="sections"
-      :delay="isTouchScreenDevice() ? 200 : 0"
+      :delay="200"
+      :delay-on-touch-only="true"
       item-key="name"
       class="flex flex-col gap-5.5"
     >
@@ -153,7 +154,7 @@
 <script setup>
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
-import { getRandom, isTouchScreenDevice } from '@/utils'
+import { getRandom } from '@/utils'
 import { getMeta } from '@/stores/meta'
 import Draggable from 'vuedraggable'
 import { Combobox, Input } from 'frappe-ui'

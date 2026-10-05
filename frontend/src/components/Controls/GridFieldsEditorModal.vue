@@ -26,7 +26,8 @@
         <Draggable
           v-if="oldFields?.length"
           :list="fields"
-          :delay="isTouchScreenDevice() ? 200 : 0"
+          :delay="200"
+          :delay-on-touch-only="true"
           group="fields"
           item-key="fieldname"
           class="flex flex-col gap-1"
@@ -106,7 +107,6 @@
 <script setup>
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import { getMeta } from '@/stores/meta'
-import { isTouchScreenDevice } from '@/utils'
 import Draggable from 'vuedraggable'
 import { Combobox, Dialog, ErrorMessage } from 'frappe-ui'
 import { ref, computed } from 'vue'

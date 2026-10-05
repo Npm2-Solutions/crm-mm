@@ -783,9 +783,12 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   (`ViewControls.vue`, `Kanban/KanbanSettings.vue`,
   `Controls/GridFieldsEditorModal.vue`, `FieldLayoutEditor.vue`,
   `SidePanelLayoutEditor.vue`); gli elenchi con una maniglia (fasi della
-  pipeline, domande di un modulo) già si prendevano solo da lì. Un
-  appuntamento dell'agenda col dito non si sposta: lo scorrimento resta
-  dell'agenda, e l'orario si cambia nel suo pannello.
+  pipeline, domande di un modulo) già si prendevano solo da lì. L'attesa vale
+  solo per il dito (`delay-on-touch-only`): su un PC con lo schermo tattile,
+  come quelli di molte accoglienze, il mouse trascina subito, e prima aspettava
+  anche lui, kanban e colonne comprese. Un appuntamento dell'agenda col dito non
+  si sposta: lo scorrimento resta dell'agenda, e l'orario si cambia nel suo
+  pannello.
 
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più

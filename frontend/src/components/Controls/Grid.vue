@@ -80,7 +80,8 @@
           v-model="rows"
           class="w-full"
           :style="{ minWidth: tableMinWidth }"
-          :delay="isTouchScreenDevice() ? 200 : 0"
+          :delay="200"
+          :delay-on-touch-only="true"
           group="rows"
           item-key="name"
           @end="reorder"
@@ -502,7 +503,6 @@ import {
   getRandom,
   getFormat,
   datetimeFormat,
-  isTouchScreenDevice,
   interpolateTemplate,
 } from '@/utils'
 import { flt } from '@/utils/numberFormat.js'

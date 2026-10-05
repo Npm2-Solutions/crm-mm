@@ -687,7 +687,8 @@ row, the bar's words beside their icons).
   fields, a status beside a name - does so with it; `max-md:` stays for what
   touches the screen's edges (paddings) and the phone's own rules.
 - What a finger drags never takes the page's scroll: a list that reorders has
-  a handle, or waits on a touch (`:delay="isTouchScreenDevice() ? 200 : 0"`);
+  a handle, or waits on a finger (`:delay="200" :delay-on-touch-only="true"`:
+  the mouse of a touch screen's PC drags at once);
   a widget of the dashboard moves from its grip, the only place that does not
   pan (`touch-action: none`, `Dashboard/DashboardGrid.vue`: grid-layout-plus
   says so only on Android). An appointment is not dragged by a finger: its
