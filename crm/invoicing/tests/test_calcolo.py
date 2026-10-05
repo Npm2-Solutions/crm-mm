@@ -273,3 +273,20 @@ class ForfettarioTest(UnitTestCase):
 		self.assertEqual(calcolo.iva, Decimal("0.00"))
 		self.assertEqual(calcolo.riepiloghi[0].natura, "N2.2")
 		self.assertEqual(calcolo.totale, Decimal("1000.00"))
+
+
+class AliquoteDelleCasseTest(UnitTestCase):
+	def test_enpav_sale_dal_2027(self):
+		from datetime import date
+
+		from crm.invoicing.engine.calcolo import aliquota_in_vigore
+
+		self.assertIsNone(aliquota_in_vigore(TipoCassa.ENPAV, date(2026, 12, 31)))
+		self.assertEqual(aliquota_in_vigore(TipoCassa.ENPAV, date(2027, 1, 1)), Decimal("3.00"))
+		self.assertEqual(aliquota_in_vigore(TipoCassa.ENPAV, date(2030, 6, 1)), Decimal("4.00"))
+		self.assertIsNone(aliquota_in_vigore(TipoCassa.ENPAP, date(2027, 1, 1)))
+
+	def test_epap_e_al_quattro(self):
+		from crm.invoicing.engine.calcolo import PERCENTUALE_CASSA
+
+		self.assertEqual(PERCENTUALE_CASSA[TipoCassa.EPAP], Decimal("4.00"))

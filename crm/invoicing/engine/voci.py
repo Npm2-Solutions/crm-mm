@@ -313,7 +313,7 @@ TIPO_RITENUTA = (
 	_v(
 		"RT02",
 		"Withholding tax, legal person",
-		"For an association of professionals or a professional company (STP).",
+		"For an association of professionals (studio associato). An STP produces business income: no withholding.",
 		sanita=True,
 	),
 	_v("RT03", "INPS contribution", "Withheld as a social security contribution."),

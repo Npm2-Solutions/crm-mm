@@ -131,7 +131,8 @@ class SistemaTsDiNotteTest(P.Base):
 		):
 			esiti = ts_automatico.ogni_notte()
 		self.assertTrue(esiti[self.azienda.name]["stopped"])
-		avvisa.assert_called_once()
+		# once for this company: the site may hold others with their own nights
+		self.assertEqual([chiamata.args[1] for chiamata in avvisa.call_args_list].count(self.azienda.name), 1)
 		# refused, it is the desk's to correct: the night does not send it again
 		seduta.db_set("ts_status", "scartato")
 		self.assertNotIn(seduta.name, ts_automatico.da_comunicare(self.azienda.name))

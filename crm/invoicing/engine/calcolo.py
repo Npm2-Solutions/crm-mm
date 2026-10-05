@@ -31,6 +31,7 @@ exception of a stamp duty paid in cash.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 from .classificazione import EsitoClassificazione, EsitoRiga
@@ -67,11 +68,28 @@ PERCENTUALE_CASSA: dict[str, Decimal | None] = {
 	TipoCassa.INGEGNERI_ARCHITETTI: Decimal("4.00"),
 	TipoCassa.GEOMETRI: Decimal("5.00"),
 	TipoCassa.EPPI: Decimal("5.00"),
-	TipoCassa.EPAP: Decimal("2.00"),
+	TipoCassa.EPAP: Decimal("4.00"),  # since 16/04/2022 (EPAP's regulation)
 	TipoCassa.INPGI: Decimal("4.00"),
-	TipoCassa.ENPAIA: Decimal("4.00"),
+	TipoCassa.ENPAIA: Decimal("4.00"),  # agrotecnici; periti agrari 2%
 	TipoCassa.INPS: Decimal("4.00"),  # optional
 }
+
+#: Rates a fund has already decided to change, from a day: ENPAV's reform, 3% from
+#: 2027 and 4% from 2030 (FNOVI, 2026). An invoice dated after the change with the
+#: old rate is said, never corrected by itself: the rate is the company's.
+ALIQUOTE_FUTURE: dict[str, tuple[tuple[date, Decimal], ...]] = {
+	TipoCassa.ENPAV: ((date(2027, 1, 1), Decimal("3.00")), (date(2030, 1, 1), Decimal("4.00"))),
+}
+
+
+def aliquota_in_vigore(tipo_cassa: str | None, giorno: date) -> Decimal | None:
+	"""The rate a fund asks on ``giorno``, where it has decided a change; else None."""
+	valida = None
+	for dal, aliquota in ALIQUOTE_FUTURE.get(tipo_cassa or "", ()):
+		if giorno >= dal:
+			valida = aliquota
+	return valida
+
 
 #: Funds whose contributo integrativo is **mandatory** to show on the invoice
 #: (art. 8, c. 3, D.Lgs. 103/1996). The INPS 4% rivalsa is optional instead.

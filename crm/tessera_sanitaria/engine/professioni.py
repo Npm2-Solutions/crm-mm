@@ -155,6 +155,9 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		cassa=TipoCassa.ENPAP,
 		percentuale="2.00",
 		cassa_obbligatoria=True,
+		verificare=(
+			"ENPAP's reform to 4% from 2027, which its bodies approved in April 2026 and the ministries still have to",
+		),
 		note="ENPAP contributo integrativo 2% on the gross fee, mandatory and shown on the invoice.",
 	),
 	_sanitaria(
@@ -171,10 +174,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		"Ostetrica / ostetrico",
 		SoggettoInviante.PROFESSIONISTA_SANITARIO,
 		dal=2016,
-		cassa=None,
-		percentuale=None,
-		verificare=("pension fund and the rivalsa that goes with it",),
-		note="The reference fund has to be confirmed: nothing is assumed here.",
+		note="A freelance midwife is in the INPS separate management (ENPAPI is nurses', health assistants' and child-care workers'): the 4% rivalsa is optional.",
 	),
 	_sanitaria(
 		"tsrm",
@@ -190,7 +190,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		cassa=TipoCassa.ENPAV,
 		percentuale="2.00",
 		cassa_obbligatoria=True,
-		note="Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty.",
+		note="Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty. ENPAV's contributo integrativo rises to 3% from 1 January 2027 and 4% from 2030: an invoice with the old rate after that day says so.",
 	),
 	_sanitaria(
 		"ottico",

@@ -594,3 +594,22 @@ class LErogatoreEUnaPersona(InvoicingBase):
 					"enabled": 1,
 				}
 			).insert()
+
+
+class LaRitenutaCheNonSiApplicaTest(InvoicingBase):
+	def test_split_payment_e_ritenuta_non_stanno_insieme(self):
+		from crm.invoicing import documento
+
+		doc = self.fattura(
+			self.consulenza.name, self.consulente.name, recipient_type="soggetto_iva", tax_id="01234567897"
+		)
+		# art. 17-ter, c. 1-sexies: a withheld fee is out of the split payment
+		doc.apply_withholding = 1
+		doc.split_payment = 1
+		preparato = documento.prepara(doc)
+		self.assertTrue(
+			any(
+				"split payment" in problema
+				for problema in documento.blocchi(doc, preparato["classificazione"])
+			)
+		)
