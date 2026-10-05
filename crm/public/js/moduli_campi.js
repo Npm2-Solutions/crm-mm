@@ -103,7 +103,8 @@ export function drawForm({
     } else {
       const id = idPrefix + field.id
       wrap.append(
-        h('label', { class: 'label', for: id }, field.label || '', h('span', { class: 'req' })),
+        // `for` names a control one writes in; `id` names a group of buttons
+        h('label', { class: 'label', for: id, id: id + '-q' }, field.label || '', h('span', { class: 'req' })),
       )
       if (field.description) wrap.append(h('div', { class: 'help' }, field.description))
       wrap.append(control(field, id))
@@ -194,7 +195,7 @@ export function drawForm({
           })
           return button
         })
-        return h('div', { class: 'options', role: 'group' }, buttons)
+        return h('div', { class: 'options', role: 'group', 'aria-labelledby': id + '-q' }, buttons)
       }
       case 'yesno':
       case 'consent': {
@@ -218,7 +219,7 @@ export function drawForm({
           })
           return button
         })
-        const pills = h('div', { class: 'pills', role: 'group' }, buttons)
+        const pills = h('div', { class: 'pills', role: 'group', 'aria-labelledby': id + '-q' }, buttons)
         return consent ? h('div', { class: 'consent' }, h('p', {}, field.text || ''), pills) : pills
       }
       case 'scale': {
@@ -241,7 +242,7 @@ export function drawForm({
         return h(
           'div',
           { class: 'stack' },
-          h('div', { class: 'pills', role: 'group' }, buttons),
+          h('div', { class: 'pills', role: 'group', 'aria-labelledby': id + '-q' }, buttons),
           field.min_label || field.max_label
             ? h('div', { class: 'ends' }, h('span', {}, field.min_label || ''), h('span', {}, field.max_label || ''))
             : null,
@@ -266,7 +267,12 @@ export function drawForm({
             h('span', { class: 'row' }, el, field.unit ? h('span', { class: 'unit' }, field.unit) : null),
           )
         }
-        return h('div', { class: 'row' }, side('left', t('Left')), side('right', t('Right')))
+        return h(
+          'div',
+          { class: 'row', role: 'group', 'aria-labelledby': id + '-q' },
+          side('left', t('Left')),
+          side('right', t('Right')),
+        )
       }
       case 'table':
         return tableControl(field)
