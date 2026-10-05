@@ -180,6 +180,7 @@ import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
 import { adessoDelCentro, appointmentColor } from '@/utils/scheduler'
 import {
+  chiDellAppuntamentoDelGiorno,
   doveAdesso,
   elencoDelGiorno,
   settimanaDi,
@@ -281,23 +282,24 @@ function colore(riga) {
   return NAMED_HEX[riga.dati.color] || 'var(--outline-gray-4)'
 }
 
-// who comes, as the desk says it; an event by its subject
+// who comes, as the desk says it (a class by its service); an event by its
+// subject
 function titolo(riga) {
   if (riga.tipo === 'event') return riga.dati.title || __('Event')
-  const nomi = (riga.dati.participants || [])
-    .filter((p) => p.status !== 'Cancelled')
-    .map((p) => p.participant_name || p.party)
-    .filter(Boolean)
-  return nomi.join(', ') || riga.dati.title || riga.dati.service
+  return chiDellAppuntamentoDelGiorno(riga.dati).titolo
 }
 
-// what and with whom: the service and the professionals, or where an event is
+// what and with whom: the service and the professionals - a class says how
+// many come - or where an event is
 function sotto(riga) {
   if (riga.tipo === 'event') return riga.dati.location || ''
   const professionisti = (riga.dati.staff || [])
     .map((s) => getUser(s.user)?.full_name || s.user)
     .filter(Boolean)
-  return [riga.dati.service, ...professionisti].filter(Boolean).join(' · ')
+  const { persone } = chiDellAppuntamentoDelGiorno(riga.dati)
+  const cosa =
+    persone > 1 ? __('{0} people', [persone]) : riga.dati.service || ''
+  return [cosa, ...professionisti].filter(Boolean).join(' · ')
 }
 
 // booked is what an appointment is: the other states are worth a word
