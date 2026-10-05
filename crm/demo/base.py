@@ -20,7 +20,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate
 
-from crm.demo import abbonati, conversazioni, dati, in_attesa, registro, simulazione
+from crm.demo import abbonati, conversazioni, dati, in_attesa, meta, registro, simulazione
 from crm.demo.contesto import Contesto, indirizzo, nome_libero
 from crm.demo.registro import Parte, registra_parte
 
@@ -103,6 +103,20 @@ def registra() -> None:
 			dopo=("clienti", "aziende", "attese"),
 			descrizione="Emails between the centre and its people, and SMS and WhatsApp messages where "
 			"they are on: most dealt with, a few waiting for an answer, some for you.",
+		)
+	)
+	# the marketing module's: the ads first, so that the people they bring arrive through them
+	registra_parte(
+		Parte(
+			"meta",
+			"Meta ads",
+			meta.crea,
+			modulo="marketing",
+			dopo=("squadra",),
+			prima=("clienti",),
+			descrizione="The centre's page with two lead forms, three campaigns and what they spent day "
+			"by day; who came from Instagram or Facebook while an ad ran arrived through its form. Only "
+			"where the centre has no Meta page of its own.",
 		)
 	)
 

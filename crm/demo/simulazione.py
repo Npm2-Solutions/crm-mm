@@ -28,6 +28,7 @@ from frappe.utils import get_datetime, getdate
 
 from crm.demo import dati
 from crm.demo.contesto import Contesto, indirizzo, nome_del_giorno
+from crm.demo.meta import SISTEMA, Annunci
 
 #: How far back the centre's history goes, and how far ahead its agenda.
 GIORNI_INDIETRO = 84
@@ -160,6 +161,8 @@ class Persona:
 	preventivo: str | None = None
 	prenotata: datetime.datetime | None = None
 	ultima: datetime.datetime | None = None
+	#: came through a lead form of the demo's Meta ads: their deal is the one it opened
+	da_meta: bool = False
 
 
 class Simulazione:
@@ -186,6 +189,9 @@ class Simulazione:
 		self.preventivi = 0
 		self.stadi = self._stadi_nuovi_clienti()
 		self.pipeline_dei_preventivi = self._pipeline_dei_preventivi()
+		# where the marketing module made its part: who comes from Instagram or Facebook
+		# while an ad for what they need runs arrives through its lead form
+		self.annunci = Annunci.della_demo(ctx)
 		self.famiglia = prossimo(self.inizio + datetime.timedelta(days=45), "Tuesday")
 
 	# -- the run -----------------------------------------------------------------------
@@ -323,31 +329,79 @@ class Simulazione:
 			self.indirizzi.add(indirizzo_email)
 		if cellulare is True:
 			cellulare = numero(ctx) if ctx.rng.random() < 0.96 else None
-		with ctx.come(self.desk):
-			doc = frappe.get_doc(
-				{
-					"doctype": "CRM Lead",
-					"first_name": nome,
-					"last_name": cognome,
-					"gender": genere,
-					"email": indirizzo_email,
-					"mobile_no": cellulare or None,
-					"source": fonte,
-					"lead_owner": proprietario,
-				}
-			).insert(ignore_permissions=True)
-		chi = "Administrator" if fonte == "Online booking" else self.desk
+		da_meta = self._da_meta(
+			fonte, percorso, creata, nome, cognome, indirizzo_email, cellulare or None, genere, proprietario
+		)
+		if da_meta:
+			doc = frappe.get_doc("CRM Lead", da_meta)
+			chi = SISTEMA
+		else:
+			with ctx.come(self.desk):
+				doc = frappe.get_doc(
+					{
+						"doctype": "CRM Lead",
+						"first_name": nome,
+						"last_name": cognome,
+						"gender": genere,
+						"email": indirizzo_email,
+						"mobile_no": cellulare or None,
+						"source": fonte,
+						"lead_owner": proprietario,
+					}
+				).insert(ignore_permissions=True)
+			chi = "Administrator" if fonte == "Online booking" else self.desk
 		retrodata_persona(ctx, doc, creata, chi)
 		self.contatore += 1
 		ctx.ricorda("CRM Lead", doc.name, f"person.{self.contatore}")
-		persona = Persona(lead=doc.name, nome=f"{nome} {cognome}", creata=creata, fonte=fonte)
+		persona = Persona(
+			lead=doc.name, nome=f"{nome} {cognome}", creata=creata, fonte=fonte, da_meta=bool(da_meta)
+		)
 		if percorso:
 			self._metti_in_percorso(persona, percorso, pratico)
 		self._consenso(persona)
 		if fonte in CON_TRATTATIVA and self.stadi:
-			self._apri_trattativa(persona)
+			if persona.da_meta:
+				self._prendi_trattativa(persona)
+			else:
+				self._apri_trattativa(persona)
 		self.persone.append(persona)
 		return persona
+
+	def _da_meta(
+		self,
+		fonte: str,
+		percorso: str | None,
+		creata: datetime.datetime,
+		nome: str,
+		cognome: str,
+		email: str | None,
+		cellulare: str | None,
+		genere: str,
+		proprietario: str,
+	) -> str | None:
+		"""The person, when an ad of the demo's brought them: Meta hands the lead over,
+		then the desk says who looks after them."""
+		annuncio = self.annunci.per(fonte, percorso, creata) if self.annunci else None
+		if not annuncio:
+			return None
+		lead = self.annunci.arriva(
+			annuncio,
+			fonte=fonte,
+			nome=nome,
+			cognome=cognome,
+			email=email,
+			cellulare=cellulare,
+			percorso=percorso,
+			creata=creata,
+		)
+		if not lead:
+			return None
+		doc = frappe.get_doc("CRM Lead", lead)
+		doc.gender = genere
+		doc.lead_owner = proprietario
+		with self.ctx.come(self.desk):
+			doc.save(ignore_permissions=True)
+		return lead
 
 	def _nome(self, genere: str, nome: str | None, cognome: str | None) -> tuple[str, str]:
 		nomi = dati.NOMI_DONNA if genere == "Female" else dati.NOMI_UOMO
@@ -402,6 +456,30 @@ class Simulazione:
 			"CRM Deal", trattativa.name, persona.creata + datetime.timedelta(minutes=2), self.desk
 		)
 		persona.trattativa = trattativa.name
+
+	def _prendi_trattativa(self, persona: Persona) -> None:
+		"""The deal Meta's import opened for the request, where the new clients' start."""
+		from crm.api.lead import open_deal_of
+
+		trattativa = open_deal_of(persona.lead)
+		if not trattativa:
+			self._apri_trattativa(persona)
+			return
+		if frappe.db.get_value("CRM Deal", trattativa, "status") != self.stadi["Open"]:
+			doc = frappe.get_doc("CRM Deal", trattativa)
+			doc.status = self.stadi["Open"]
+			doc.flags.from_inquiry = True
+			with self.ctx.come(self.desk):
+				doc.save(ignore_permissions=True)
+		# its first touch is the person's, at the moment the lead arrived
+		frappe.db.set_value(
+			"CRM Deal",
+			trattativa,
+			{"first_touch_on": persona.creata, "last_touch_on": persona.creata},
+			update_modified=False,
+		)
+		self.ctx.retrodata("CRM Deal", trattativa, persona.creata + datetime.timedelta(minutes=2), SISTEMA)
+		persona.trattativa = trattativa
 
 	def _nuovo_regolare(self, dal: datetime.date) -> Persona:
 		persona = self._nuova_persona(dal, fonte=self.ctx.scegli_pesato(dati.FONTI))

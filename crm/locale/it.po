@@ -43614,6 +43614,10 @@ msgstr "Diete ed esercizi a casa"
 msgid "The dietitian's menus with the foods of the library and an exchange diet, the physiotherapist's exercises at home; ticked in the area."
 msgstr "I menu della dietista con gli alimenti della libreria e una dieta a scambi, gli esercizi a casa della fisioterapista; spuntati nell'area."
 
+#: crm/demo/base.py
+msgid "The centre's page with two lead forms, three campaigns and what they spent day by day; who came from Instagram or Facebook while an ad ran arrived through its form. Only where the centre has no Meta page of its own."
+msgstr "La pagina del centro con due moduli Lead Ads, tre campagne e quello che hanno speso giorno per giorno; chi è arrivato da Instagram o da Facebook mentre girava un'inserzione è arrivato dal suo modulo. Solo dove il centro non ha una sua pagina Meta."
+
 #: crm/scheduling/abbonamenti.py
 msgid "One of the {0} people uses their subscription"
 msgstr "Una persona su {0} usa il suo abbonamento"

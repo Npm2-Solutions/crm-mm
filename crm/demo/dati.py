@@ -1397,3 +1397,105 @@ WHATSAPP = (
 		"done",
 	),
 )
+
+# -- marketing -------------------------------------------------------------------------------
+
+#: The demo's Meta page: its lead forms, by key - the name and the questions (key,
+#: label, Meta's type). The ids the demo gives them are made up, never a real one.
+META_MODULI = {
+	"prima": (
+		"Prenota la prima visita",
+		(
+			("full_name", "Nome e cognome", "FULL_NAME"),
+			("email", "Email", "EMAIL"),
+			("phone_number", "Cellulare", "PHONE"),
+			("motivo", "Che cosa ti porta da noi?", "CUSTOM"),
+		),
+	),
+	"info": (
+		"Chiedi informazioni",
+		(
+			("full_name", "Nome e cognome", "FULL_NAME"),
+			("email", "Email", "EMAIL"),
+			("phone_number", "Cellulare", "PHONE"),
+			("quando", "Quando preferisci essere richiamato?", "CUSTOM"),
+		),
+	),
+}
+#: Its campaigns: key, name, the ad set, the paths of the people they bring, the days
+#: they ran (from, to: days ago, 0 still running), and their ads - key, name, title,
+#: words, the form they open.
+META_CAMPAGNE = (
+	(
+		"schiena",
+		"Autunno in movimento",
+		"Mal di schiena, 30-65 anni, 10 km",
+		("fisio", "tecar", "osteo", "massaggio"),
+		(100, 0),
+		(
+			(
+				"schiena_dolore",
+				"Mal di schiena? Prima visita",
+				"Il mal di schiena non è normale",
+				"Una valutazione con la fisioterapista e un piano per stare meglio, senza liste d'attesa.",
+				"prima",
+			),
+			(
+				"schiena_corsa",
+				"Torna a correre senza dolore",
+				"Torna a correre",
+				"Fisioterapia sportiva e un programma per riprendere a correre, passo dopo passo.",
+				"prima",
+			),
+		),
+	),
+	(
+		"nutrizione",
+		"Nutrizione: la prima visita",
+		"Benessere e alimentazione, 25-55 anni",
+		("nutri",),
+		(75, 12),
+		(
+			(
+				"nutri_piano",
+				"Il tuo piano alimentare",
+				"Mangiare bene, senza rinunce",
+				"Una prima visita con la dietista e un piano su misura, con la lista della spesa nell'app.",
+				"info",
+			),
+		),
+	),
+	(
+		"pilates",
+		"Pilates in piccoli gruppi",
+		"Pilates e postura, 30-60 anni",
+		("lezioni",),
+		(45, 0),
+		(
+			(
+				"pilates_gruppi",
+				"Pilates: al massimo sei persone",
+				"Pilates in piccoli gruppi",
+				"Lezioni con il chinesiologo, al massimo sei persone: la prima è di prova.",
+				"info",
+			),
+		),
+	),
+)
+#: What an ad spends a day at the demo's full size, in euros; how many see it for
+#: each euro, and the share of them who click.
+META_SPESA = (4.0, 9.0)
+META_IMPRESSIONI = (90, 160)
+META_CLIC = (0.008, 0.02)
+#: What people write in the forms' own questions, by the path they come for.
+META_MOTIVI = {
+	"fisio": (
+		"Mal di schiena da qualche mese",
+		"Dolore al collo, lavoro tutto il giorno al computer",
+		"Mi fa male il ginocchio quando corro",
+	),
+	"tecar": ("Tendinite alla spalla", "Una distorsione che non passa"),
+	"osteo": ("Mal di schiena", "La cervicale, soprattutto la mattina"),
+	"massaggio": ("Contratture alla schiena", "Un massaggio dopo le gare"),
+}
+META_QUANDO = ("La mattina", "In pausa pranzo", "Dopo le 18")
