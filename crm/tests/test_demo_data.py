@@ -108,6 +108,8 @@ class TestDatiDiProva(IntegrationTestCase):
 
 	#: Small: what each part does, not how much of it.
 	SCALA = 0.08
+	#: how the demo's texts call a client, without a vertical
+	CLIENTE = "cliente"
 	#: The base's colleagues and services; a module that adds its own says so.
 	SQUADRA = 6
 	SERVIZI = 10
@@ -329,6 +331,10 @@ class TestDatiDiProva(IntegrationTestCase):
 			self.assertTrue(accese)
 			self.assertFalse(any(accese))
 			self.assertTrue(r.get("CRM Automation Enrollment"))
+			# in the words of the vertical that is on: «cliente», a clinic's «paziente»
+			benvenuto = frappe.db.get_value("CRM Automation", registro.trova("automation.benvenuto"), "title")
+			self.assertIn(self.CLIENTE, benvenuto)
+			self.assertNotIn("{", benvenuto)
 		# where the demo made its Meta page: the people its ads brought, paid social with
 		# their ad, and what the ads spent
 		if r.get("Facebook Page"):
