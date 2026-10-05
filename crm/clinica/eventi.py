@@ -36,7 +36,8 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 		for riga in righe
 	):
 		return
-	if not paziente.clinica_accesa() or not paziente.appuntamento_per_la_clinica(doc.service):
+	professionisti = [riga.user for riga in doc.staff or [] if riga.get("status") != "Declined"]
+	if not paziente.clinica_accesa() or not paziente.appuntamento_per_la_clinica(doc.service, professionisti):
 		return
 
 	def converti():
