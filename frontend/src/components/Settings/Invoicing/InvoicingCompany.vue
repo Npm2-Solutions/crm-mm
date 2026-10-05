@@ -35,9 +35,18 @@
           }}
         </p>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <Dropdown v-if="companies.data?.length > 1" :options="opzioni">
-          <Button variant="ghost" iconRight="chevron-down">
+      <!-- the company and «New company» go one under the other where the pane
+           has no room for both (a phone with its page zoomed: 90px past the
+           edge), the company's name cut rather than the page -->
+      <div
+        class="flex min-w-0 max-w-full shrink-0 flex-wrap items-center gap-2"
+      >
+        <Dropdown
+          v-if="companies.data?.length > 1"
+          class="min-w-0 max-w-full"
+          :options="opzioni"
+        >
+          <Button variant="ghost" iconRight="chevron-down" class="max-w-full">
             <span class="truncate">{{ etichettaCorrente }}</span>
           </Button>
         </Dropdown>
