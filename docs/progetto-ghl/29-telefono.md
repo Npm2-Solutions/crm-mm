@@ -745,6 +745,18 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   non cambia altro; di traverso e sul computer (760 punti e più) le colonne
   restano affiancate.
 
+- **Niente solo al passaggio del mouse, anche sul tablet.** Il tablet ha la
+  pagina del computer ma nessun mouse: quello che compariva solo sotto il
+  puntatore restava invisibile. Ora si vede dove niente passa sopra
+  (`[@media(hover:none)]`): la fascia con la fotocamera per cambiare la foto di
+  un'azienda o di un contatto (`pages/Organization.vue`, `Contact.vue`: non c'è
+  un altro modo), il segno di copia accanto al codice della trattativa
+  (`pages/Deal.vue`, anche con la tastiera), gli strumenti di un riquadro mentre
+  si sistema la dashboard (`Dashboard/DashboardGrid.vue`) e la × che toglie un
+  filtro rapido (`ViewControls.vue`). La foto di una persona si cambia anche da
+  «Altro», e il «+» di un giorno nel planner dei social è solo un suggerimento:
+  si tocca il giorno.
+
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
