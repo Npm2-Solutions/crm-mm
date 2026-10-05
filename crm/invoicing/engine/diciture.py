@@ -1,14 +1,22 @@
 """Legal wording to print on the invoice.
 
 **Every reference is doubled with the Testo Unico that applies from 1 January
-2027**, otherwise in January 2027 every invoice cites repealed articles:
+2027**, otherwise in January 2027 every invoice cites repealed articles. Each new
+reference was read in the Gazzetta Ufficiale (05/10/2026), not taken from a
+summary:
 
-	DPR 633/72 art. 21        -> D.Lgs. 10/2026 (TU IVA), art. 72
-	DPR 633/72 art. 10 n. 18  -> D.Lgs. 10/2026, art. 37, c. 1, lett. t)
-	DPR 633/72 art. 10 n. 19  -> D.Lgs. 10/2026, art. 37, c. 1, lett. u)
-	DPR 642/72 art. 15        -> D.Lgs. 123/2025, art. 150
-	DPR 600/73                -> D.Lgs. 33/2025 e 141/2026
-	TUIR                      -> D.Lgs. 117/2026
+	DPR 633/72 art. 21          -> D.Lgs. 10/2026 (TU IVA), art. 72
+	DPR 633/72 art. 10 n. 18    -> D.Lgs. 10/2026, art. 37, c. 1, lett. t)
+	DPR 633/72 art. 10 n. 19    -> D.Lgs. 10/2026, art. 37, c. 1, lett. u)
+	DPR 633/72 art. 7-ter       -> D.Lgs. 10/2026, art. 17
+	DPR 633/72 art. 17-ter      -> D.Lgs. 10/2026, art. 65
+	DPR 633/72 art. 15 c. 1 n.3 -> D.Lgs. 10/2026, art. 29, c. 1, lett. c)
+	DPR 642/72 art. 15          -> D.Lgs. 123/2025, art. 150
+	DPR 600/73 art. 25          -> D.Lgs. 33/2025, art. 38 (as D.Lgs. 141/2026 rewrote it)
+
+The TU IVA (S.O. 4 to GU 24 of 30/01/2026) and D.Lgs. 141/2026 apply from
+1 January 2027 by their own last article; D.Lgs. 123/2025 and D.Lgs. 33/2025 said
+2026, and the Milleproroghe (D.L. 200/2025) moved them to 2027 too.
 
 `Riferimento.testo` picks the right form from the document date and, in the months
 either side, shows both.
@@ -53,29 +61,34 @@ BOLLO_VIRTUALE = Riferimento(
 )
 RITENUTA_ACCONTO = Riferimento(
 	attuale="art. 25 del D.P.R. 600/1973",
-	nuovo="art. 61 del D.Lgs. 141/2026",
+	nuovo="art. 38 del D.Lgs. 33/2025",
 )
 FUORI_CAMPO_TERRITORIALE = Riferimento(
 	attuale="art. 7-ter del D.P.R. 633/1972",
-	nuovo="art. 12 del D.Lgs. 10/2026",
+	nuovo="art. 17 del D.Lgs. 10/2026",
 )
 SPLIT_PAYMENT = Riferimento(
 	attuale="art. 17-ter del D.P.R. 633/1972",
-	nuovo="art. 30 del D.Lgs. 10/2026",
+	nuovo="art. 65 del D.Lgs. 10/2026",
 )
 ANTICIPAZIONI = Riferimento(
 	attuale="art. 15, comma 1, n. 3, del D.P.R. 633/1972",
-	nuovo="art. 26, comma 1, lett. c), del D.Lgs. 10/2026",
+	nuovo="art. 29, comma 1, lett. c), del D.Lgs. 10/2026",
 )
 
 
-def esenzione(data_documento: date, struttura: bool = False) -> str:
+def esenzione(data_documento: date, ricovero: bool = False) -> str:
 	"""The "exempt operation" annotation with the article behind it.
 
 	It is mandatory (art. 21, c. 6, lett. c). On a PDF **this** is what counts, not
 	the `N4`/`N2.2` codes, which are XML fields with no legal weight on paper.
+
+	A visit is exempt under n. 18 whoever invoices it, a professional or a
+	facility, an S.r.l. included, as long as qualified professionals perform it
+	(Ris. 39/E of 16/03/2004). n. 19 is hospital care - "ricovero e cura" - in
+	hospitals and clinics with an agreement: never an outpatient centre's visit.
 	"""
-	norma = ESENZIONE_STRUTTURA if struttura else ESENZIONE_PROFESSIONISTA
+	norma = ESENZIONE_STRUTTURA if ricovero else ESENZIONE_PROFESSIONISTA
 	return f"Operazione esente da IVA ai sensi dell'{norma.testo(data_documento)}."
 
 
