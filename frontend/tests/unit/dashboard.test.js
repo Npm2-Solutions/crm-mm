@@ -267,9 +267,13 @@ describe('the grid', () => {
     // a tablet held upright beside the menu stacks; a laptop keeps the grid
     expect(545 < GRIGLIA_MINIMA && 1057 >= GRIGLIA_MINIMA).toBe(true)
     expect(perRiga(390)).toEqual({ numeri: 2, altri: 1 })
-    // a phone's page zoomed: two numbers would be 122 points each
-    expect(perRiga(296)).toEqual({ numeri: 2, altri: 1 })
-    expect(perRiga(256)).toEqual({ numeri: 1, altri: 1 })
+    // a 360 phone (the grid's box, padding included): two of 162 points,
+    // «Appuntamenti di oggi» fits
+    expect(perRiga(360)).toEqual({ numeri: 2, altri: 1 })
+    // a 320 phone, or a phone's page zoomed: two would be 142 points or less,
+    // the title's long word cut beside the tile's crosses
+    expect(perRiga(320)).toEqual({ numeri: 1, altri: 1 })
+    expect(perRiga(277)).toEqual({ numeri: 1, altri: 1 })
     expect(perRiga(545)).toEqual({ numeri: 3, altri: 1 })
     expect(perRiga(800)).toEqual({ numeri: 4, altri: 2 })
     expect(larghezzaDiUno(1)).toBe('100%')

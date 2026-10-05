@@ -856,6 +856,15 @@ nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
   `dc-valore-intero` (`index.css`): il valore va a capo e il riquadro cresce.
   Non tutti i selettori: senza una larghezza sua la colonna lasciava un
   filtro accanto a una ricerca largo una lettera.
+- **A 320 punti.** La dashboard mette i numeri uno per riga sotto i 340 punti
+  (la sua larghezza comprende i margini, quindi tutto lo schermo): due erano
+  larghi 142 punti e, accanto alle crocette, «Appunta-menti di oggi» perdeva
+  «oggi»; il confronto («contro 18.900 € prima») va a capo invece di
+  tagliarsi (`perRiga`, `NumberWidget.vue`). Un indirizzo email va a capo dopo
+  la «@» («crm.manager@ / example.com», `partiDellIndirizzo`), in «Altro» e
+  negli utenti; il nome di un modulo e di una pipeline si legge intero, i suoi
+  segni sotto («Valutazione fisiot…», «Ve…» accanto a «Predefinito»); cosa
+  limita un ambulatorio va a capo.
 
 ## File
 

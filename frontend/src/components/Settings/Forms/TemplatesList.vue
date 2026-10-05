@@ -72,8 +72,12 @@
               class="w-7/12 min-w-0 text-left max-md:w-full"
               @click="$emit('open', template.name)"
             >
-              <div class="flex min-w-0 items-center gap-2">
-                <span class="truncate text-base-medium text-ink-gray-7">
+              <!-- the name read whole, its tags under it where they do not
+                   fit beside it: at 320 it was «Valutazione fisiot…» -->
+              <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                <span
+                  class="max-w-full truncate text-base-medium text-ink-gray-7"
+                >
                   {{ template.title }}
                 </span>
                 <!-- what kind of form it is: the design system's Tag, as on a

@@ -34,8 +34,12 @@
         <span class="truncate text-lg font-semibold text-ink-gray-9">
           {{ utente.full_name }}
         </span>
-        <span class="truncate text-p-sm text-ink-gray-5">
-          {{ utente.email }}
+        <!-- an address is read whole, on under itself after its «@»:
+             «crm.manager@example.c…» at 320 -->
+        <span class="text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]">
+          {{ partiDellIndirizzo(utente.email)[0] }}<wbr />{{
+            partiDellIndirizzo(utente.email)[1]
+          }}
         </span>
       </span>
       <span
@@ -135,6 +139,7 @@ import { useVisteSalvate } from '@/composables/visteSalvate'
 import { unreadNotificationsCount } from '@/stores/notifications'
 import { usersStore } from '@/stores/users'
 import { barraDelTelefono, menuDi } from '@/utils/menu'
+import { partiDellIndirizzo } from '@/utils/sulTelefono'
 import { Avatar } from 'frappe-ui'
 import { computed, markRaw } from 'vue'
 import { RouterLink } from 'vue-router'

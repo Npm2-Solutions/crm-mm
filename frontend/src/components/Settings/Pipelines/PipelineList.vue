@@ -46,11 +46,15 @@
             <div
               class="grid grid-cols-8 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded max-md:grid-cols-[minmax(0,1fr)_3.5rem_5.5rem] max-md:gap-3"
             >
+              <!-- on a phone the name is read whole and its marks go under
+                   it: beside «Predefinito» it was «Ve…» at 320 -->
               <div
-                class="w-full min-w-0 pl-2 col-span-5 flex items-center h-14 gap-2 max-md:col-span-1"
+                class="w-full min-w-0 pl-2 col-span-5 flex items-center h-14 gap-2 max-md:col-span-1 max-md:h-auto max-md:min-h-14 max-md:flex-wrap max-md:content-center max-md:gap-y-1 max-md:py-2"
                 @click="openPipeline(pipeline)"
               >
-                <div class="text-base-medium text-ink-gray-7 truncate">
+                <div
+                  class="text-base-medium text-ink-gray-7 truncate max-w-full"
+                >
                   {{
                     pipeline.name ? __(pipeline.name) : __('Without pipeline')
                   }}

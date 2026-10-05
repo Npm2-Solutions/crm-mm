@@ -324,13 +324,15 @@ export const GRIGLIA_MINIMA = 900
 // How many to a row once stacked, by the width there is: the numbers two on a
 // phone, three on a tablet held upright, four where there is room; the other
 // widgets the whole width, two to a row from 760px. A heading is a row of its own.
-// A phone with its page zoomed (large text on Android: 277 points on a 360
-// phone) has the numbers one to a row: two left each under 136 points, its
-// title cut in two lines («Trattati… vinte»).
+// The width is the grid's box, its padding included: a phone's whole screen.
+// A phone 320 points wide, or one with its page zoomed (large text on Android:
+// 277 points on a 360 phone), has the numbers one to a row: two left each under
+// 150 points, and beside the tile's crosses a title's long word did not fit
+// («Appunta-menti di…» in two lines, «Trattati… vinte»).
 export function perRiga(larghezza) {
   if (larghezza >= 760) return { numeri: 4, altri: 2 }
   if (larghezza >= 520) return { numeri: 3, altri: 1 }
-  if (larghezza >= 284) return { numeri: 2, altri: 1 }
+  if (larghezza >= 340) return { numeri: 2, altri: 1 }
   return { numeri: 1, altri: 1 }
 }
 

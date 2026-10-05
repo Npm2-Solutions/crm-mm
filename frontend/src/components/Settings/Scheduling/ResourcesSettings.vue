@@ -55,7 +55,11 @@
               <div class="truncate text-p-base-medium text-ink-gray-8">
                 {{ resource.resource_name }}
               </div>
-              <div class="truncate text-p-sm text-ink-gray-5">
+              <!-- on a phone what limits it goes on under itself: «Nessun
+                   limite impos…» at 320 -->
+              <div
+                class="truncate text-p-sm text-ink-gray-5 max-md:whitespace-normal"
+              >
                 {{ describe(resource) }}
               </div>
             </div>
