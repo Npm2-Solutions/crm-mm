@@ -7,6 +7,7 @@ import {
   indirizzoTel,
   mascherato,
   modiDiChiamare,
+  chiDellAppuntamento,
   nomeDellAppuntamento,
   numeriDi,
   prossimoAppuntamento,
@@ -204,5 +205,30 @@ describe('nomeDellAppuntamento', () => {
       ),
     ).toBe('Fisioterapia')
     expect(nomeDellAppuntamento(null, 'Laura')).toBe('')
+  })
+})
+
+describe('chiDellAppuntamento', () => {
+  it('names who comes, the service taken off', () => {
+    expect(
+      chiDellAppuntamento({
+        title: 'Seduta di fisioterapia — Fabio Marchetti',
+        service: 'Seduta di fisioterapia',
+      }),
+    ).toBe('Fabio Marchetti')
+    expect(
+      chiDellAppuntamento({
+        title: 'Pilates — Sofia Palumbo, Marco Conti +3',
+        service: 'Pilates',
+      }),
+    ).toBe('Sofia Palumbo, Marco Conti +3')
+  })
+
+  it('is empty when the title names nobody', () => {
+    expect(
+      chiDellAppuntamento({ title: 'Pilates di gruppo', service: 'Pilates' }),
+    ).toBe('')
+    expect(chiDellAppuntamento({ title: 'Visita — Anna Neri' })).toBe('')
+    expect(chiDellAppuntamento(null)).toBe('')
   })
 })

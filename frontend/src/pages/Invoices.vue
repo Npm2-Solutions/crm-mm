@@ -141,12 +141,26 @@
               :key="incontro.name"
               class="flex items-center justify-between gap-3 border-t border-outline-blue-2 pt-2 first:border-0 first:pt-0"
             >
+              <!-- who first, what and when under it: the title put the
+                   service first, and a phone cut the name. Within the last two
+                   weeks, the day needs no year -->
               <div class="min-w-0">
                 <div class="truncate text-p-sm-medium text-ink-gray-7">
-                  {{ incontro.title || incontro.name }}
+                  {{
+                    chiDellAppuntamento(incontro) ||
+                    incontro.title ||
+                    incontro.name
+                  }}
                 </div>
                 <div class="text-p-xs text-ink-gray-5">
-                  {{ formatDate(incontro.starts_on, 'DD/MM/YYYY HH:mm') }}
+                  {{
+                    [
+                      chiDellAppuntamento(incontro) && incontro.service,
+                      formatDate(incontro.starts_on, 'D MMM, HH:mm'),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')
+                  }}
                 </div>
               </div>
               <Button
@@ -263,13 +277,24 @@
                 :theme="row.channel === 'sdi' ? 'blue' : 'green'"
                 :label="channelLabel(row.channel)"
               />
+              <!-- how its sending went, once it is issued: a draft has gone
+                   nowhere yet, and «TS: To send» beside its own badge asked
+                   for something it could not do -->
               <Badge
-                v-if="row.sdi_status && row.sdi_status !== 'non_applicabile'"
+                v-if="
+                  row.docstatus !== 0 &&
+                  row.sdi_status &&
+                  row.sdi_status !== 'non_applicabile'
+                "
                 :theme="invoiceStatusTheme(row.sdi_status)"
                 :label="'SdI: ' + statusLabel(row.sdi_status)"
               />
               <Badge
-                v-if="row.ts_status && row.ts_status !== 'non_applicabile'"
+                v-if="
+                  row.docstatus !== 0 &&
+                  row.ts_status &&
+                  row.ts_status !== 'non_applicabile'
+                "
                 :theme="invoiceStatusTheme(row.ts_status)"
                 :label="'TS: ' + statusLabel(row.ts_status)"
               />
@@ -451,6 +476,7 @@ import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
 import { formatEuro, invoiceStatusTheme, statusLabel } from '@/utils/invoicing'
+import { chiDellAppuntamento } from '@/utils/schedaPersona'
 import {
   createListResource,
   createResource,
