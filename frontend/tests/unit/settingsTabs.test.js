@@ -3,6 +3,7 @@ import {
   schedaDelCampo,
   valorePredefinito,
 } from '@/utils/settingsTabs'
+import { describe, expect, it } from 'vitest'
 
 // The settings screens render a DocType's own layout, so the sections, the order
 // and above all the field descriptions come from the DocType. This is the shape
