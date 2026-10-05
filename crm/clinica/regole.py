@@ -17,6 +17,7 @@ the one that would have fired first, in time; the table's order only breaks a ti
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 
 # the CRM's rules of who came, which the clinic's are built on (`crm.clienti`)
@@ -40,6 +41,24 @@ A_MANO = Regola(6, "By hand", "Somebody marked them as a patient")
 
 REGOLE = (INFORMAZIONE_MEDICA, ACCETTAZIONE, APPUNTAMENTO_SVOLTO, FATTURA_SANITARIA, IMPORTAZIONE, A_MANO)
 PER_VALORE = {regola.valore: regola for regola in REGOLE}
+
+
+def servizio_sanitario(scheda: bool | None, professioni: Iterable[bool | None] = ()) -> bool:
+	"""Whether an appointment can make somebody a patient: a health service.
+
+	``scheda`` is what the service's fiscal card says, None without one: a service
+	the centre invoices as not healthcare - a course, a membership - is not one.
+	``professioni`` says, for each professional of the appointment, whether theirs
+	is a health profession, None where nobody registered one: a Pilates class with
+	the kinesiologist, a treatment with the beautician, is not one either (the
+	kinesiologist is no health profession: Ris. AdE 9/2026). Without either fact - a
+	practice that neither invoices through DottorCloud nor registered who does what -
+	it is: the clinic is a medical centre's.
+	"""
+	if scheda is not None and not scheda:
+		return False
+	note = [sanitaria for sanitaria in professioni if sanitaria is not None]
+	return not note or any(note)
 
 
 def prima_regola(fatti: dict[str, datetime | None]) -> tuple[Regola, datetime] | None:

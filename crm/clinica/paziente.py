@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime
 from collections import defaultdict
+from collections.abc import Iterable
 
 import frappe
 from frappe import _
@@ -121,19 +122,45 @@ def _chi() -> str | None:
 # ------------------------------------------------------------ the rules' facts
 
 
-def appuntamento_per_la_clinica(servizio: str | None) -> bool:
-	"""Whether an appointment of this service can make somebody a patient.
+def appuntamento_per_la_clinica(servizio: str | None, professionisti: Iterable[str] = ()) -> bool:
+	"""Whether an appointment of this service, with these professionals (their
+	users), can make somebody a patient (`regole.servizio_sanitario`): a course the
+	centre invoices as not healthcare does not, nor a class with the kinesiologist."""
+	scheda = None
+	if servizio:
+		valore = frappe.db.get_value(
+			"CRM Billable Service", {"crm_service": servizio, "enabled": 1}, "is_healthcare"
+		)
+		scheda = None if valore is None else bool(valore)
+	return regole.servizio_sanitario(scheda, [_professione_sanitaria(utente) for utente in professionisti])
 
-	A service the centre invoices as not healthcare - a course, a membership - does
-	not, as an invoice for it does not. One without a fiscal card counts: a small
-	practice that does not invoice through the CRM still sees patients.
-	"""
-	if not servizio:
-		return True
-	sanitario = frappe.db.get_value(
-		"CRM Billable Service", {"crm_service": servizio, "enabled": 1}, "is_healthcare"
+
+def _professione_sanitaria(utente: str | None) -> bool | None:
+	"""Whether ``utente`` practises a health profession, as the register of the
+	qualifications says; None where no qualification of theirs is registered."""
+	qualifica = utente and frappe.db.get_value(
+		"CRM Service Provider", {"user": utente, "enabled": 1}, "qualification"
 	)
-	return sanitario is None or bool(sanitario)
+	if not qualifica:
+		return None
+	sanitaria = frappe.db.get_value("CRM Professional Qualification", qualifica, "is_healthcare")
+	return None if sanitaria is None else bool(sanitaria)
+
+
+def professionisti_di(appuntamenti: Iterable[str]) -> dict[str, list[str]]:
+	"""Who performs each of these appointments: whoever did not decline."""
+	chi: dict[str, list[str]] = defaultdict(list)
+	nomi = list(appuntamenti)
+	if not nomi:
+		return chi
+	for riga in frappe.get_all(
+		"CRM Appointment Staff",
+		filters={"parenttype": "CRM Appointment", "parent": ["in", nomi], "status": ["!=", "Declined"]},
+		fields=["parent", "user"],
+	):
+		if riga.user:
+			chi[riga.parent].append(riga.user)
+	return chi
 
 
 def _fatture_sanitarie() -> list[dict]:
@@ -171,14 +198,20 @@ def fatti_esistenti() -> dict[str, dict[str, tuple[datetime.datetime, tuple[str,
 
 	from crm.clienti.cliente import presenze
 
-	servizi: dict[str | None, bool] = {}
-	for riga in presenze():
+	righe = [
+		riga
+		for riga in presenze()
+		if regole.accolto(riga.arrived_at, riga.participant_status)
+		or regole.presente(riga.status, riga.participant_status)
+	]
+	chi = professionisti_di({riga.name for riga in righe})
+	servizi: dict[tuple[str | None, frozenset[str]], bool] = {}
+	for riga in righe:
 		accolto = regole.accolto(riga.arrived_at, riga.participant_status)
-		if not (accolto or regole.presente(riga.status, riga.participant_status)):
-			continue
-		if riga.service not in servizi:
-			servizi[riga.service] = appuntamento_per_la_clinica(riga.service)
-		if not servizi[riga.service]:
+		chiave = (riga.service, frozenset(chi.get(riga.name, ())))
+		if chiave not in servizi:
+			servizi[chiave] = appuntamento_per_la_clinica(*chiave)
+		if not servizi[chiave]:
 			continue
 		persona = persona_di(riga.party_type, riga.party)
 		if accolto:

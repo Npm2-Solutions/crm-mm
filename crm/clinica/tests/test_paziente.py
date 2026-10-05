@@ -140,6 +140,59 @@ class LeRegole(ClinicCase):
 		incontro.save()
 		self.assertFalse(paziente.e_paziente(self.mario.name))
 
+	def professionista(self, utente, sanitaria: bool):
+		"""``utente`` with a qualification of the register: a health profession, or not."""
+		codice = "prova_sanitaria" if sanitaria else "prova_non_sanitaria"
+		if not frappe.db.exists("CRM Professional Qualification", codice):
+			frappe.get_doc(
+				{
+					"doctype": "CRM Professional Qualification",
+					"code": codice,
+					"qualification_name": codice,
+					"category": "sanitaria" if sanitaria else "non_ordinistica",
+					"sender_category": "professionista_sanitario" if sanitaria else "non_sanitario",
+					"is_healthcare": int(sanitaria),
+					"sdi_rule": "vietato" if sanitaria else "obbligatorio",
+				}
+			).insert(ignore_permissions=True)
+		frappe.get_doc(
+			{
+				"doctype": "CRM Service Provider",
+				"provider_name": f"{utente} ({codice})",
+				"qualification": codice,
+				"user": utente,
+				"enabled": 1,
+			}
+		).insert(ignore_permissions=True)
+
+	def test_la_lezione_del_chinesiologo_non_fa_pazienti(self):
+		"""Pilates with the kinesiologist alone: no health profession is there
+		(Ris. AdE 9/2026), and whoever comes stays a client."""
+		chinesiologo = self.make_user("clinic.kinesiologist@example.com")
+		self.professionista(chinesiologo, sanitaria=False)
+		pilates = self.make_service("Pilates di prova", [chinesiologo])
+		incontro = self.make_appointment(
+			pilates.name,
+			self.ieri(),
+			[chinesiologo],
+			status="Completed",
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": self.mario.name,
+					"participant_name": self.mario.lead_name,
+					"status": "Attended",
+				}
+			],
+		)
+		self.assertFalse(paziente.e_paziente(self.mario.name))
+		# the same class with a physiotherapist beside him is the clinic's
+		fisioterapista = self.make_user("clinic.physio@example.com")
+		self.professionista(fisioterapista, sanitaria=True)
+		incontro.append("staff", {"user": fisioterapista})
+		incontro.save()
+		self.assertTrue(paziente.e_paziente(self.mario.name))
+
 	def test_l_importazione(self):
 		frappe.flags.in_import = True
 		try:

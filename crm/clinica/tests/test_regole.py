@@ -31,6 +31,31 @@ class PresenteTest(UnitTestCase):
 		self.assertFalse(r.presente("Confirmed", "Booked"))
 
 
+class ServizioSanitarioTest(UnitTestCase):
+	def test_una_visita_e_della_clinica(self):
+		self.assertTrue(r.servizio_sanitario(True, [True]))
+		# with the doctor and the kinesiologist together: a health professional is there
+		self.assertTrue(r.servizio_sanitario(None, [True, False]))
+
+	def test_un_corso_fatturato_come_non_sanitario_no(self):
+		self.assertFalse(r.servizio_sanitario(False, [True]))
+		self.assertFalse(r.servizio_sanitario(0, []))
+
+	def test_la_lezione_del_chinesiologo_no(self):
+		"""Pilates with the kinesiologist alone makes nobody a patient, even on a card
+		somebody left as healthcare."""
+		self.assertFalse(r.servizio_sanitario(None, [False]))
+		self.assertFalse(r.servizio_sanitario(True, [False, False]))
+		# a colleague with no profession registered says nothing
+		self.assertFalse(r.servizio_sanitario(None, [False, None]))
+
+	def test_senza_fatti_e_della_clinica(self):
+		"""A practice that neither invoices through DottorCloud nor registered who does
+		what still sees its patients."""
+		self.assertTrue(r.servizio_sanitario(None))
+		self.assertTrue(r.servizio_sanitario(None, [None]))
+
+
 class PrimaRegolaTest(UnitTestCase):
 	def test_niente_fatti_niente_paziente(self):
 		self.assertIsNone(r.prima_regola({}))
