@@ -122,6 +122,15 @@ describe('prossimoAppuntamento', () => {
     expect(prossimoAppuntamento(lista, adesso).name).toBe('Z')
   })
 
+  it('is never one already done, whatever the clock says', () => {
+    // done this morning, and the phone's clock behind the centre's
+    const lista = [
+      { name: 'F', starts_on: '2026-10-02 13:00:00', status: 'Completed' },
+      { name: 'G', starts_on: '2026-10-06 09:00:00', status: 'Scheduled' },
+    ]
+    expect(prossimoAppuntamento(lista, adesso).name).toBe('G')
+  })
+
   it('is nothing when all are past', () => {
     expect(
       prossimoAppuntamento(
