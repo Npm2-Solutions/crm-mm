@@ -839,6 +839,23 @@ nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
   punti, «Massaggiatore capo bagnino degli stabi…» e «Tecnico di
   fisiopatologia cardiocircolato…» non si distinguevano: ora un nome lungo va
   a capo nella sua riga (`telefono.css`, «5»).
+- **Un nome si legge intero anche nelle righe.** Cercati a 360 punti i testi
+  tagliati con i puntini, pagina per pagina: il nome di un'automazione accanto
+  al suo stato («Promemoria appuntam…», ora lo stato va sotto), il servizio del
+  prossimo appuntamento sulla scheda della persona, la seduta di un ciclo
+  negli eventi («09:00 – 09:45 · …»), la durata di una chiamata nel registro,
+  due esercizi uguali una volta tagliati («Abduzione dell'anca da seduto…») e
+  gli alimenti della libreria: vanno a capo (`Automations.vue`,
+  `PersonHeader.vue`, `EventArea.vue`, `ElencoChiamate.vue`,
+  `LibraryPage.vue`). Restano tagliate le anteprime dei messaggi e le
+  descrizioni che si aprono con «Mostra altro».
+- **Il fuso orario si legge intero.** «Europe/Rome · Ora dell’Europa
+  centrale» finiva a «centra», senza puntini: frappe-ui misura la colonna del
+  valore sulle parole, che uscivano dal riquadro. I selettori del fuso
+  (preferenze, lingua del centro, orari dell'agenda) portano
+  `dc-valore-intero` (`index.css`): il valore va a capo e il riquadro cresce.
+  Non tutti i selettori: senza una larghezza sua la colonna lasciava un
+  filtro accanto a una ricerca largo una lettera.
 
 ## File
 
