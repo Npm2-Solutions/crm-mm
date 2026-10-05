@@ -387,7 +387,10 @@ result, image, prescription) with the mark of health data and the capability tha
 adds them (`clinica.archivia`), its fields as customisations (`crm/clinica/custom`),
 and its rule on going online. A document with the mark is read like the clinical
 record, every listing in the access log; without the clinic only whom it is for and
-who added it read it.
+who added it read it. Whoever may know of health data they do not read (the
+clinic's `si_sa`: who knows a visit happened, never of what is "only me" or
+obscured) finds their padlock in a person's documents and plans
+(`sanitari.nascosti`, `hidden`), never «Nothing yet» over a list that is not empty.
 
 ### Quotes (`crm/preventivi`, followed to the end by the agenda; deals and quotes, doc 50)
 | File | Role |
@@ -423,7 +426,12 @@ the clinic is on. DottorCloud connects to no ERP: the ERPNext integration went o
 
 With the clinic on, a client is a patient: its rules decide, `assicura_paziente`
 calls `diventa_cliente` from the same moment, and the CRM's words read "New
-patients", "Became Patient", "Patient since".
+patients", "Became Patient", "Patient since". Only a health service makes a
+patient (`regole.servizio_sanitario`): its card does not say otherwise and, where
+the professionals' qualifications are known, one of them is a health profession -
+a Pilates class with the kinesiologist makes clients, not patients. The
+kinesiologist is no health profession (Ris. AdE 9/2026): invoicing's ordinary
+register has it, and what one writes is no health data by its author.
 
 ### Verticals (`crm/verticali.py`)
 A module of the plan that makes the CRM the software of a trade registers a
