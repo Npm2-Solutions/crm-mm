@@ -185,6 +185,7 @@ import {
   prossimoAppuntamento,
   quandoInBreve,
 } from '@/utils/schedaPersona'
+import { adessoDelCentro } from '@/utils/scheduler'
 import { Dropdown, Tooltip, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -277,7 +278,10 @@ const appuntamenti = createResource({
   auto: puo('agenda.vedi'),
 })
 
-const prossimo = computed(() => prossimoAppuntamento(appuntamenti.data))
+// the agenda keeps the centre's clock: now is the centre's, not the phone's
+const prossimo = computed(() =>
+  prossimoAppuntamento(appuntamenti.data, adessoDelCentro()),
+)
 
 // who they are to the centre, in a few words: client since, last visit
 const fatti = computed(() => {

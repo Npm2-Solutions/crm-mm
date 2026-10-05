@@ -72,12 +72,15 @@ export function modiDiChiamare(
   return modi
 }
 
-const CHIUSI = ['Cancelled', 'No Show']
+// done, cancelled or missed: never what comes next, whatever the clock says
+const CHIUSI = ['Completed', 'Cancelled', 'No Show']
 
 /**
- * The next appointment of a person: the first one still to start, not cancelled
- * nor missed. `appuntamenti` as `crm.api.appointments.get_person_appointments`
- * gives them (newest first, `starts_on` as "YYYY-MM-DD HH:mm:ss").
+ * The next appointment of a person: the first one still to start, not done,
+ * cancelled nor missed. `appuntamenti` as
+ * `crm.api.appointments.get_person_appointments` gives them (newest first,
+ * `starts_on` as "YYYY-MM-DD HH:mm:ss", the centre's clock: `adesso` is the
+ * centre's now, `adessoDelCentro()`).
  */
 export function prossimoAppuntamento(appuntamenti = [], adesso = new Date()) {
   let prossimo = null
