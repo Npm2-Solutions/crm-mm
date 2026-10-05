@@ -702,7 +702,7 @@ scadenza dell'intero anno.
 L'anno di competenza e' quello della **data di pagamento**, non dell'emissione: un
 pacchetto pagato a dicembre e fatturato a marzo appartiene a dicembre.
 
-Scadenza: 31 gennaio dell'anno dopo. **I veterinari hanno la loro, a meta' marzo**,
+Scadenza: 31 gennaio dell'anno dopo, il primo giorno lavorativo dopo se cade di sabato o festivo (spese 2026: lunedì 1° febbraio 2027). **I veterinari hanno la loro, a meta' marzo**,
 e per questo hanno un batch separato.
 
 ### L'opposizione

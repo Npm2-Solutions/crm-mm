@@ -197,26 +197,85 @@ CODICE_DELEGA_PRESENTE = "106"
 """Sent in own name while a mandate is active -> the mandate IS there."""
 
 #: Rejections that send the tenant back to `export` with an alert rather than a
-#: retry: the last mile is broken, and invoicing must not stop for it.
-CODICI_RETROCESSIONE: frozenset[str] = frozenset({"105", "106", "002", "003", "004", "005", "006"})
+#: retry: who authenticates, with which PIN, for which owner - the last mile is
+#: broken, and invoicing must not stop for it ("Tabella errori" v1.1, 20/01/2021).
+CODICI_RETROCESSIONE: frozenset[str] = frozenset(
+	{
+		"002",
+		"003",
+		"004",
+		"005",
+		"006",
+		"010",
+		"104",
+		"105",
+		"106",
+		"107",
+		"109",
+		"110",
+		"E001",
+		"E003",
+	}
+)
 
-#: Transient conditions worth retrying.
-CODICI_RITENTABILI: frozenset[str] = frozenset({"999", "500", "503"})
+#: The service's own failures: the file is worth sending again later.
+CODICI_RITENTABILI: frozenset[str] = frozenset({"200", "999", "9000"})
 
+#: The official meanings ("Tabella errori" of the Sistema TS, v1.1), said plainly.
+#: A code not listed here is said with the service's own words.
 DESCRIZIONE_ESITO_TS: dict[str, str] = {
-	"000": "Elaborazione conclusa correttamente",
-	"002": "Certificato non valido o scaduto",
-	"003": "Utenza non abilitata al servizio",
-	"004": "Password scaduta",
-	"005": "PINCODE errato o scaduto",
-	"006": "Utenza revocata",
-	"010": "Struttura del messaggio non conforme",
-	"104": "Soggetto non abilitato per la categoria indicata",
+	"000": "Controllo superato",
+	"002": "Il PIN code inviato non si riesce a decifrare: va ricifrato con il certificato del Sistema TS",
+	"003": "Utente non valido o non presente",
+	"004": "Il codice fiscale del medico non è quello usato per l'autenticazione",
+	"005": "PIN code del medico errato o non più attivo",
+	"006": "Medico non attivo o codice fiscale errato",
+	"010": "Il codice fiscale del proprietario è diverso da quello usato per l'autenticazione",
+	"101": "Il nome del file allegato deve avere da 6 a 60 caratteri e finire in .zip",
+	"102": "L'allegato non è un file ZIP valido",
+	"103": "L'allegato è vuoto",
+	"104": "PIN code errato",
 	"105": "Invio per conto in assenza di delega attiva",
 	"106": "Invio in proprio in presenza di delega attiva",
-	"107": "Codice proprietario non congruente con il soggetto",
-	"109": "Composizione del proprietario non ammessa per il soggetto",
-	"110": "Periodo di riferimento non aperto",
+	"107": "Utente non riconosciuto",
+	"108": "Il file allegato supera la dimensione consentita",
+	"109": "Dati del proprietario formalmente errati",
+	"110": "Il codice fiscale del proprietario è diverso da quello dell'utente",
+	"200": "Errore nell'applicazione del Sistema TS",
+	"999": "Anomalia interna alla procedura del Sistema TS",
+	"9000": "Errore del Sistema TS",
+	"E001": "I dati del proprietario nel file non coincidono con quelli dell'invio",
+	"E002": "Il codice fiscale indicato non è associato alla struttura indicata",
+	"E003": "Il codice fiscale del proprietario nel file è diverso da quello dichiarato nell'invio",
+	"E011": "Il file non è conforme allo schema",
+	"E015": "Il file è già stato inviato ed elaborato",
+	"S001": "Numero del documento da rimborsare non valido",
+	"S002": "Data di emissione non valida: prima del 1° gennaio dell'anno o nel futuro",
+	"S003": "Data di pagamento successiva all'invio, o pagamento anticipato non indicato bene",
+	"S004": "Il rimborso ha una data di emissione precedente al documento rimborsato",
+	"S011": "Il codice fiscale del paziente è formalmente errato",
+	"S012": "Tipo di spesa non previsto",
+	"S016": "Il documento da rimborsare non è presente nel Sistema TS",
+	"S017": "Il documento è già presente nel Sistema TS",
+	"S022": "Il documento da variare o cancellare non è presente nel Sistema TS",
+	"S023": "Il rimborso è già presente nel Sistema TS",
+	"S024": "La partita IVA non risulta del proprietario indicato",
+	"S026": "Il rimborso supera, in una o più voci, il documento originario",
+	"S027": "Non si può variare un documento che ha dei rimborsi",
+	"S029": "Non si può cancellare un documento che ha dei rimborsi",
+	"S032": "Il codice fiscale del rimborso è diverso da quello del documento originario",
+	"S035": "Trasmesso oltre il termine: l'Agenzia non lo metterà nella precompilata",
+	"S036": "La data di pagamento è successiva all'invio",
+	"S037": "Non si può più variare o cancellare: riguarda un anno d'imposta già chiuso",
+	"S038": "Il documento ha tipi di spesa non compatibili tra loro",
+	"S041": "Il codice fiscale del paziente è quello del proprietario",
+	"S042": "Non si può più inserire: riguarda un anno d'imposta già chiuso",
+	"S043": "Non si può più rimborsare: riguarda un anno d'imposta già chiuso",
+	"S050": "C'è il codice fiscale del paziente, che però si è opposto",
+	"S051": "Manca il codice fiscale del paziente, che non si è opposto",
+	"S052": "Manca il tipo di documento a fronte della natura IVA",
+	"S053": "La natura IVA non è compatibile con il tipo di documento",
+	"S054": "Indicate insieme la natura IVA e l'aliquota IVA",
 }
 
 
