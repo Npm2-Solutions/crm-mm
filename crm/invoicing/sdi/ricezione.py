@@ -18,7 +18,7 @@ from frappe import _
 from frappe.utils import cint
 
 from crm.invoicing.engine import ricevute
-from crm.invoicing.engine.ricevute import Ricevuta, TipoRicevuta
+from crm.invoicing.engine.ricevute import SENZA_STATO, Ricevuta, TipoRicevuta
 
 #: How far back the inbox scan looks. Notices arrive within minutes; a week of
 #: slack covers a mailbox that was down over a weekend.
@@ -64,16 +64,23 @@ def applica(ricevuta: Ricevuta, nome_ricevuta: str | None = None, fattura: str |
 	if gia_applicata(doc, nome_ricevuta):
 		return {"applied": False, "invoice": nome, "reason": _("Already applied")}
 
-	valori = {
-		"sdi_status": ricevuta.stato,
-		"sdi_message": ricevuta.riassunto(),
-	}
+	# the client's outcome or the file's metadata say nothing of where the invoice
+	# is: they are kept in its log and leave its state alone
+	valori = (
+		{}
+		if ricevuta.tipo in SENZA_STATO
+		else {
+			"sdi_status": ricevuta.stato,
+			"sdi_message": ricevuta.riassunto(),
+		}
+	)
 	if ricevuta.identificativo_sdi:
 		valori["sdi_identifier"] = ricevuta.identificativo_sdi
 	if nome_ricevuta:
 		notizie = [r for r in (doc.sdi_notices or "").split("\n") if r]
 		valori["sdi_notices"] = "\n".join([*notizie, nome_ricevuta])
-	doc.db_set(valori, update_modified=False)
+	if valori:
+		doc.db_set(valori, update_modified=False)
 
 	documento.registra(
 		doc,
@@ -109,7 +116,12 @@ def applica(ricevuta: Ricevuta, nome_ricevuta: str | None = None, fattura: str |
 				"It counts as not issued, and the five days to correct and resend run from the notice. {0}"
 			).format(ricevuta.riassunto()),
 		)
-	return {"applied": True, "invoice": nome, "status": ricevuta.stato, "summary": ricevuta.riassunto()}
+	return {
+		"applied": True,
+		"invoice": nome,
+		"status": valori.get("sdi_status", doc.sdi_status),
+		"summary": ricevuta.riassunto(),
+	}
 
 
 def _impara_indirizzo(doc, ricevuta: Ricevuta) -> None:

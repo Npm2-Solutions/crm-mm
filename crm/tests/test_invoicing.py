@@ -422,7 +422,8 @@ class RicevuteTest(InvoicingBase):
 
 	def test_i_tipi_di_ricevuta_coprono_gli_stati(self):
 		for tipo in ricevute.TipoRicevuta:
-			self.assertIn(tipo.value, ricevute.STATO_PER_TIPO)
+			if tipo not in ricevute.SENZA_STATO:
+				self.assertIn(tipo.value, ricevute.STATO_PER_TIPO)
 
 
 class PdfTest(InvoicingBase):

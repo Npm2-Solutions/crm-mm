@@ -44870,3 +44870,15 @@ msgstr "la riforma ENPAP al 4% dal 2027, approvata dai suoi organi ad aprile 202
 
 msgid "Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty. ENPAV's contributo integrativo rises to 3% from 1 January 2027 and 4% from 2030: an invoice with the old rate after that day says so."
 msgstr "Scadenza propria a metà marzo: un invio separato. Le società veterinarie (S.r.l., STP) hanno la facoltà, non l'obbligo. Il contributo integrativo ENPAV sale al 3% dal 1° gennaio 2027 e al 4% dal 2030: una fattura con la vecchia aliquota dopo quella data lo segnala."
+
+msgid "the recipient code \"XXXXXXX\" is for a client abroad, with the VAT identifier of their country"
+msgstr "il codice destinatario \"XXXXXXX\" vale per un cliente estero, con l'identificativo IVA del suo paese"
+
+msgid "the VAT summary has a block at {0}% that no line carries"
+msgstr "il riepilogo IVA ha un blocco al {0}% che nessuna riga porta"
+
+msgid "there is no VAT summary for \"{0}\""
+msgstr "manca il riepilogo IVA per \"{0}\""
+
+msgid "the VAT summary has a block for \"{0}\" that no line carries"
+msgstr "il riepilogo IVA ha un blocco per \"{0}\" che nessuna riga porta"

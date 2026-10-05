@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from crm.invoicing.engine import ricevute
 from crm.invoicing.engine.codici import StatoSdI
 from crm.invoicing.engine.ricevute import (
 	ESITO_ACCETTAZIONE,
@@ -78,6 +79,15 @@ class NomeFileTest(UnitTestCase):
 
 	def test_il_nome_dice_a_quale_file_risponde(self):
 		self.assertEqual(riferimento_da_nome("IT01234567890_00001_MC_001.xml"), "IT01234567890_00001.xml")
+
+	def test_i_nomi_dell_allegato_b1(self):
+		# the attestation comes zipped; the client's outcome and its rejection are their own types
+		self.assertEqual(tipo_da_nome("IT01234567890_00001_AT_001.zip"), "AT")
+		self.assertEqual(tipo_da_nome("IT01234567890_00001_EC_001.xml"), "EC")
+		self.assertEqual(tipo_da_nome("IT01234567890_00001_SE_001.xml"), "SE")
+		self.assertEqual(tipo_da_nome("IT01234567890_00001_MT_001.xml"), "MT")
+		# the file's progressive is five characters at most
+		self.assertIsNone(tipo_da_nome("IT01234567890_000001_RC_001.xml"))
 
 	def test_un_nome_qualunque_non_passa(self):
 		self.assertIsNone(tipo_da_nome("ricevuta.xml"))
@@ -173,6 +183,18 @@ class RobustezzaTest(UnitTestCase):
 			b"<Qualcosa><Descrizione>x</Descrizione></Qualcosa>", "IT01234567890_00001_RC_001.xml"
 		)
 		self.assertEqual(ricevuta.tipo, TipoRicevuta.CONSEGNA)
+
+	def test_le_radici_dei_messaggi_v1_1(self):
+		scarto = analizza(
+			b"<NotificaScarto><IdentificativoSdI>1</IdentificativoSdI><NomeFile>IT01234567890_00001.xml</NomeFile></NotificaScarto>"
+		)
+		self.assertEqual(scarto.tipo, TipoRicevuta.SCARTO)
+		esito = analizza(
+			b"<ScartoEsitoCommittente><IdentificativoSdI>1</IdentificativoSdI></ScartoEsitoCommittente>"
+		)
+		self.assertEqual(esito.tipo, TipoRicevuta.SCARTO_ESITO)
+		# the client's outcome rejected is not the invoice rejected
+		self.assertIn(esito.tipo, ricevute.SENZA_STATO)
 
 	def test_il_parsing_ignora_i_namespace(self):
 		ricevuta = analizza(
