@@ -44554,3 +44554,163 @@ msgstr "senza IVA"
 #: frontend/src/components/Invoices/ReceivedInvoices.vue
 msgid "{0} invoices, {1}"
 msgstr "{0} fatture, {1}"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Costs"
+msgstr "Costi"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "With VAT"
+msgstr "Con l'IVA"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Without VAT"
+msgstr "Senza IVA"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Up to 30 days"
+msgstr "Fino a 30 giorni"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "31 to 60 days"
+msgstr "Da 31 a 60 giorni"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "61 to 90 days"
+msgstr "Da 61 a 90 giorni"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Over 90 days"
+msgstr "Oltre 90 giorni"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected"
+msgstr "Incassato"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "To collect"
+msgstr "Da incassare"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Margin"
+msgstr "Margine"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Centre economics"
+msgstr "Economia del centro"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "What came in, what is still to collect, what went to the suppliers, and what is left"
+msgstr "Cosa è entrato, cosa resta da incassare, cosa è andato ai fornitori e cosa resta"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Costs and VAT"
+msgstr "Costi e IVA"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Invoices to collect"
+msgstr "Fatture da incassare"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Costs by supplier"
+msgstr "Costi per fornitore"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "VAT of the period"
+msgstr "IVA del periodo"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected on {0}."
+msgstr "Incassata il {0}."
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Still to collect."
+msgstr "Ancora da incassare."
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Not collected"
+msgstr "Non incassata"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected today"
+msgstr "Incassata oggi"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected on"
+msgstr "Incassata il"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Back to collect"
+msgstr "Di nuovo da incassare"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected on {0}"
+msgstr "Incassata il {0}"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "You are not allowed to record payments"
+msgstr "Non puoi registrare gli incassi"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Only an issued invoice is collected, and never a credit note"
+msgstr "Si incassa solo una fattura emessa, mai una nota di credito"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Collected before it was issued: mark it as paid before the invoice instead."
+msgstr "Incassata prima di essere emessa: segnala invece come pagata prima della fattura."
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "When the money reached the centre. Empty, the invoice is still to collect. An invoice to a person issued at the desk takes the payment date written in it; one to a company, or issued by itself (a subscription's instalment), waits for somebody to mark it."
+msgstr "Quando i soldi sono arrivati al centro. Vuota, la fattura è ancora da incassare. Una fattura a una persona emessa in accettazione prende la data di pagamento scritta; una a un'azienda, o emessa da sola (la rata di un abbonamento), aspetta che qualcuno la segni."
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "The money that reached the centre in the period, by the day it was collected"
+msgstr "I soldi arrivati al centro nel periodo, secondo il giorno dell'incasso"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "What the invoices issued and not collected yet are worth, today"
+msgstr "Quanto valgono oggi le fatture emesse e non ancora incassate"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "To collect, by how long it waits"
+msgstr "Da incassare, per quanto aspetta"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "The money still to collect, by how many days ago its invoice was issued"
+msgstr "I soldi ancora da incassare, per quanti giorni fa è stata emessa la fattura"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "The invoices still waiting for their money, the oldest first"
+msgstr "Le fatture che aspettano ancora i soldi, le più vecchie prima"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Nothing to collect: every invoice has been paid"
+msgstr "Niente da incassare: ogni fattura è stata pagata"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Who the centre's money goes to: the suppliers' invoices of the period"
+msgstr "A chi vanno i soldi del centro: le fatture dei fornitori del periodo"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "What was invoiced in the period (taxable) less the suppliers' invoices"
+msgstr "Il fatturato del periodo (imponibile) meno le fatture dei fornitori"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "A reading of the period, not the accountant's books"
+msgstr "Una lettura del periodo, non la contabilità del commercialista"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "Invoiced, costs and margin"
+msgstr "Fatturato, costi e margine"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "What was invoiced and what the suppliers billed, period by period, and what is left"
+msgstr "Il fatturato e quanto hanno fatturato i fornitori, periodo per periodo, e cosa resta"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "VAT on the invoices issued less VAT on the suppliers' ones: an indication, the settlement is the accountant's"
+msgstr "L'IVA delle fatture emesse meno quella delle fatture dei fornitori: un'indicazione, la liquidazione è del commercialista"
+
+#: crm/dashboard/widgets/invoicing.py
+msgid "An indication: the settlement is the accountant's"
+msgstr "Un'indicazione: la liquidazione è del commercialista"
