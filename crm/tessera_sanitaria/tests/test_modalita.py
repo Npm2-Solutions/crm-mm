@@ -42,3 +42,50 @@ class ModalitaTest(UnitTestCase):
 		a liability that should never grow by accident.
 		"""
 		self.assertEqual(set(MODALITA_CON_CREDENZIALI), {"credenziali_studio", "intermediario"})
+
+
+class FiduciaTest(UnitTestCase):
+	"""The test door's certificate comes from Sogei's own test CA: only there, and only
+	when the site names the file, is anything but the system's trust used."""
+
+	def verifica(self, **conf):
+		from unittest import mock
+
+		import frappe
+
+		from crm.tessera_sanitaria import trasporto
+
+		with mock.patch.dict(frappe.local.conf, conf, clear=False):
+			for chiave in ("sistema_ts_ambiente", "sistema_ts_ca"):
+				if chiave not in conf:
+					frappe.local.conf.pop(chiave, None)
+			return trasporto._verifica()
+
+	def test_in_produzione_sempre_il_sistema(self):
+		self.assertIs(self.verifica(sistema_ts_ca="/x/sogei.pem"), True)
+		self.assertIs(self.verifica(sistema_ts_ambiente="produzione", sistema_ts_ca="/x/sogei.pem"), True)
+
+	def test_in_prova_il_file_del_sito(self):
+		self.assertEqual(
+			self.verifica(sistema_ts_ambiente="test", sistema_ts_ca="/x/sogei.pem"), "/x/sogei.pem"
+		)
+		# nothing named: the system's, never verification off
+		self.assertIs(self.verifica(sistema_ts_ambiente="test"), True)
+
+	def test_una_risposta_persa_non_si_rimanda(self):
+		# the document may have arrived: sent again it would be a duplicate
+		from types import SimpleNamespace
+		from unittest import mock
+
+		import requests
+
+		from crm.tessera_sanitaria import trasporto
+
+		sessione = mock.Mock()
+		sessione.post.side_effect = requests.exceptions.ReadTimeout()
+		credenziali = SimpleNamespace(utente="u", password="p")
+		with mock.patch("frappe.utils.get_request_session", return_value=sessione):
+			with self.assertRaises(trasporto.ErroreTrasporto) as preso:
+				trasporto._post("https://x", b"", {}, credenziali)
+		self.assertEqual(sessione.post.call_count, 1)
+		self.assertIn("may have arrived", str(preso.exception))
