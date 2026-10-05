@@ -24,6 +24,7 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
+from crm.lingue import con_l_apostrofo
 from crm.posta.aspetto import pulsante
 from crm.scheduling import attese as A
 from crm.scheduling import attese_regole as R
@@ -175,7 +176,8 @@ def _email_d_ingresso(voce, segreto: str) -> None:
 		else:
 			righe.append(f"<p>{esc(_scelte_a_parole(voce))}</p>")
 		if voce.until:
-			righe.append(f"<p>{esc(_('Until {0}').format(frappe.utils.formatdate(voce.until)))}</p>")
+			fino = con_l_apostrofo(_("Until {0}").format(frappe.utils.formatdate(voce.until)))
+			righe.append(f"<p>{esc(fino)}</p>")
 		righe.append(
 			f"<p>{esc(_('When a place frees up we write to you: it goes to whoever confirms first.'))}</p>"
 		)

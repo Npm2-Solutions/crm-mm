@@ -48,6 +48,7 @@ from frappe.utils import (
 	now_datetime,
 )
 
+from crm.lingue import con_l_apostrofo
 from crm.moduli import compilazioni, modelli, traccia
 from crm.moduli import schema as S
 from crm.permissions import livelli
@@ -339,7 +340,8 @@ def manda_il_link(
 				f"<p>{_('Hello,')}</p>",
 				f"<p>{invito}</p>",
 				pulsante(_indirizzo(token), _("Open the forms")),
-				f'<p class="text-muted text-small">{avviso.format(format_datetime(scadenza, "d MMMM, HH:mm"))}</p>',
+				# «valido fino all'11 ottobre»: the date is known once it is filled
+				f'<p class="text-muted text-small">{con_l_apostrofo(avviso.format(format_datetime(scadenza, "d MMMM, HH:mm")))}</p>',
 			]
 		),
 		reference_doctype=RICHIESTA,
