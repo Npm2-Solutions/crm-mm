@@ -310,7 +310,8 @@ class ConfigurazioneTest(InvoicingBase):
 		self.assertTrue(frappe.db.exists("CRM Professional Qualification", "avvocato"))
 		massoterapista = frappe.get_doc("CRM Professional Qualification", "massoterapista")
 		self.assertEqual(massoterapista.sdi_rule, "vietato")
-		self.assertTrue(massoterapista.ts_required)
+		# the Agenzia's FAQ of 11/03/2026: no Sistema TS report until a decree adds them
+		self.assertFalse(massoterapista.ts_required)
 
 	def test_la_checklist_dice_cosa_manca_e_cosa_costa(self):
 		voci = api.onboarding_checklist(self.azienda.name)
@@ -579,3 +580,17 @@ class DueRamiTest(InvoicingBase):
 		self.assertFalse(voce["blocking"])
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "conservation_joined", 1)
 		self.assertNotIn("Preservation of the SdI documents", self._checklist())
+
+
+class LErogatoreEUnaPersona(InvoicingBase):
+	def test_una_struttura_non_e_la_qualifica_di_chi_esegue(self):
+		# a pharmacy or a facility is who issues the invoice, never what a person does
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "CRM Service Provider",
+					"provider_name": "Farmacia per sbaglio",
+					"qualification": "farmacia",
+					"enabled": 1,
+				}
+			).insert()

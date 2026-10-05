@@ -34,7 +34,9 @@ from .codici import SoggettoInviante
 CATEGORIA_SANITARIA = "sanitaria"
 
 ESENZIONE_PROFESSIONISTA = "art. 10, n. 18, DPR 633/72 (dal 2027: art. 37, c. 1, lett. t, D.Lgs. 10/2026)"
-ESENZIONE_STRUTTURA = "art. 10, n. 19, DPR 633/72 (dal 2027: art. 37, c. 1, lett. u, D.Lgs. 10/2026)"
+#: Hospital care in hospitals and clinics with an agreement: never an outpatient
+#: centre's visit, which is n. 18 whoever invoices it (Ris. 39/E/2004).
+ESENZIONE_RICOVERO = "art. 10, n. 19, DPR 633/72 (dal 2027: art. 37, c. 1, lett. u, D.Lgs. 10/2026)"
 
 
 @dataclass(frozen=True)
@@ -288,11 +290,17 @@ _ELENCO: list[ProfessioneSanitaria] = [
 	# ============================ Risoluzione AdE n. 9 del 24 febbraio 2026
 	_sanitaria(
 		"massoterapista",
-		"Massoterapista (massaggiatore capo bagnino)",
+		"Massaggiatore capo bagnino degli stabilimenti idroterapici (massoterapista)",
 		SoggettoInviante.PROFESSIONISTA_SANITARIO,
-		dal=2016,
-		verificare=("the Sistema TS category it is enrolled under, and the tipoSpesa to use",),
-		note="Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 n. 18, the electronic invoice through the SdI is FORBIDDEN, the Sistema TS report is DUE (Ris. AdE 9/2026).",
+		# the Agenzia's FAQ of 11/03/2026: no report is possible until a decree adds
+		# them to the Sistema TS; the invoice stays out of the SdI meanwhile
+		obbligo_ts=False,
+		dal=None,
+		verificare=(
+			"the title that qualifies for the activity, which the exemption requires",
+			"the decree that will add them to the Sistema TS, and from when",
+		),
+		note="Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 n. 18 when a suitable title attests the qualification, and the electronic invoice through the SdI is FORBIDDEN (Ris. AdE 9/2026). The Sistema TS report cannot be sent yet: the Agenzia's FAQ of 11 March 2026 waits for a decree that adds them, so the invoice is a paper or PDF one, outside the SdI.",
 	),
 	_sanitaria(
 		"osteopata",
@@ -325,20 +333,18 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		"Struttura autorizzata ex art. 8-ter D.Lgs. 502/1992",
 		SoggettoInviante.STRUTTURA_AUTORIZZATA,
 		dal=2016,
-		riferimento=ESENZIONE_STRUTTURA,
 		cassa=None,
 		percentuale=None,
-		note="Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. invoicing the patient is a bound subject ONLY if accredited or authorised under art. 8-ter; otherwise it is not one at all.",
+		note="Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. invoicing the patient is a bound subject ONLY if accredited or authorised under art. 8-ter; otherwise it is not one at all. Its visits are exempt under n. 18, performed by qualified professionals (Ris. 39/E/2004): n. 19 is hospital care only.",
 	),
 	_sanitaria(
 		"struttura_accreditata",
 		"Struttura accreditata al SSN",
 		SoggettoInviante.STRUTTURA_ACCREDITATA,
 		dal=2015,
-		riferimento=ESENZIONE_STRUTTURA,
 		cassa=None,
 		percentuale=None,
-		note="For public or accredited private facilities, payment traceability may not be required.",
+		note="For public or accredited private facilities, payment traceability may not be required. Its visits are exempt under n. 18 (Ris. 39/E/2004); n. 19 only for hospital care in a clinic with an agreement.",
 	),
 	_sanitaria(
 		"farmacia",

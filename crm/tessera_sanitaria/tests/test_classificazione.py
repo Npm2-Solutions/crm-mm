@@ -41,12 +41,13 @@ class RisoluzioneNoveTest(UnitTestCase):
 	def _paziente(self, *righe, emittente="professionista_sanitario"):
 		return classifica(list(righe), TipoDestinatario.PERSONA_FISICA, soggetto_emittente=emittente)
 
-	def test_il_massoterapista_e_esente_vietato_sdi_e_va_al_ts(self):
+	def test_il_massoterapista_e_esente_e_vietato_sdi_ma_il_ts_non_lo_prende_ancora(self):
+		# Ris. 9/2026: exempt, never through the SdI; the FAQ of 11/03/2026: no report
+		# to the Sistema TS until a decree adds them. A paper or PDF invoice meanwhile.
 		esito = self._paziente(riga("massoterapista", tipo_spesa_catalogo="SP"))
-		self.assertEqual(esito.canale, Canale.PDF_TS)
+		self.assertEqual(esito.canale, Canale.PDF_SOLO)
 		self.assertFalse(esito.sdi_consentito)
-		self.assertTrue(esito.ts_richiesto)
-		self.assertEqual(esito.righe[0].tipo_spesa, "SP")
+		self.assertFalse(esito.ts_richiesto)
 		self.assertEqual(esito.righe[0].natura_iva, "N4")
 
 	def test_l_osteopata_e_imponibile_e_deve_passare_da_sdi(self):

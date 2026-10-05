@@ -3,8 +3,8 @@
 
 """The practice's own register wins over the one DottorCloud ships, on a real site.
 
-The massoterapista is shipped as a health profession, with a point still open for
-the accountant. A practice whose accountant decides otherwise makes it ordinary in
+The massoterapista is shipped as a health art, exempt and out of the SdI, with
+points still open for the accountant. A practice whose accountant decides otherwise makes it ordinary in
 its register, and its invoices follow its register; one that switches the osteopath
 off gets a refusal, never the osteopath as it shipped.
 """
