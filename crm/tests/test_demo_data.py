@@ -133,6 +133,11 @@ class TestDatiDiProva(IntegrationTestCase):
 		}
 		nuovi_clienti.crea()
 		preventivi.crea()
+		# and the client area's role, which its first invitation makes: a role is never
+		# taken away with the demo
+		from crm.area import accesso
+
+		accesso.assicura_ruolo()
 		# invoicing's part is made where the centre has no company of its own: the
 		# companies other tests left are switched off while the demo is in
 		cls.predefinite = dict(
