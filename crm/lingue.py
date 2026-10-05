@@ -117,11 +117,15 @@ def per_l_italia(attuali: dict) -> dict:
 
 	A country chosen elsewhere keeps everything; in Italy, only what is still
 	empty; where nobody said, Italy, with its formats over the framework's own
-	values - never over a format somebody chose."""
+	values - never over a format somebody chose. But the week, which starts on
+	Monday everywhere in Europe whoever chose Sunday: the agenda, the pickers and
+	the dashboard's periods count from Monday whatever the site says."""
 	paese = attuali.get("country") or ""
-	if paese and paese != "Italy":
-		return {}
 	cambi = {}
+	if attuali.get("first_day_of_the_week") != "Monday":
+		cambi["first_day_of_the_week"] = "Monday"
+	if paese and paese != "Italy":
+		return cambi
 	if not attuali.get("language"):
 		# the one field of these the framework asks for: left empty, no save of
 		# the settings went through, the Formats page's either

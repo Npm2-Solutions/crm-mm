@@ -80,7 +80,7 @@ class UnSitoCheNessunoHaImpostato(UnitTestCase):
 		)
 
 	def test_in_italia_solo_quello_che_e_vuoto(self):
-		# the wizard ran with Italy: its formats and Sunday are the centre's
+		# the wizard ran with Italy: its formats are the centre's, its Sunday is not
 		italia = {
 			"country": "Italy",
 			"language": "en",
@@ -90,15 +90,29 @@ class UnSitoCheNessunoHaImpostato(UnitTestCase):
 			"number_format": "#,###.##",
 			"first_day_of_the_week": "Sunday",
 		}
-		self.assertEqual(lingue.per_l_italia(italia), {"time_zone": "Europe/Rome"})
+		self.assertEqual(
+			lingue.per_l_italia(italia), {"time_zone": "Europe/Rome", "first_day_of_the_week": "Monday"}
+		)
 		# nothing left to write: nothing written, at every migrate
-		self.assertEqual(lingue.per_l_italia({**italia, "time_zone": "Europe/Rome"}), {})
+		self.assertEqual(
+			lingue.per_l_italia({**italia, "time_zone": "Europe/Rome", "first_day_of_the_week": "Monday"}), {}
+		)
 		self.assertEqual(
 			lingue.per_l_italia({**MAI_IMPOSTATO, **lingue.ITALIA, "country": "Italy", "language": "it"}), {}
 		)
 
-	def test_un_altro_paese_tiene_tutto(self):
-		self.assertEqual(lingue.per_l_italia({**MAI_IMPOSTATO, "country": "Switzerland"}), {})
+	def test_un_altro_paese_tiene_tutto_ma_la_settimana(self):
+		# the week starts on Monday everywhere in Europe
+		self.assertEqual(
+			lingue.per_l_italia({**MAI_IMPOSTATO, "country": "Switzerland"}),
+			{"first_day_of_the_week": "Monday"},
+		)
+		self.assertEqual(
+			lingue.per_l_italia(
+				{**MAI_IMPOSTATO, "country": "Switzerland", "first_day_of_the_week": "Monday"}
+			),
+			{},
+		)
 
 
 class GliUtentiSulFusoDelCentro(IntegrationTestCase):
