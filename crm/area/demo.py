@@ -22,6 +22,7 @@ import frappe
 from babel.dates import format_date
 from frappe import _
 
+from crm import verticali
 from crm.demo import dati
 from crm.demo.contesto import Contesto
 from crm.demo.simulazione import persone_della_demo, visti_da
@@ -51,7 +52,7 @@ A_CHI_ARRIVA = (
 def crea(ctx: Contesto) -> None:
 	from crm.area import accesso
 
-	ctx.avanza(_("Client area"))
+	ctx.avanza(verticali.parola("Client area"))
 	persone = persone_della_demo(ctx)
 	desk = ctx.squadra("desk") or ctx.utente
 	if not persone:

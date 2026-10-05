@@ -131,6 +131,50 @@ PAROLE = {
 	"Question for the client": "Question for the patient",
 	"Email the client": "Email the patient",
 	"Link clients as leads": "Link patients as leads",
+	"Opening the page, and who clients can book for what, is in Online booking.": (
+		"Opening the page, and who patients can book for what, is in Online booking."
+	),
+	"Who clients can book, and for what. Every switch here applies at once.": (
+		"Who patients can book, and for what. Every switch here applies at once."
+	),
+	"Every professional listed below is booked together — two therapists following one client.": (
+		"Every professional listed below is booked together — two therapists following one patient."
+	),
+	"No platform connected yet. Connect the ones where your clients already book.": (
+		"No platform connected yet. Connect the ones where your patients already book."
+	),
+	# a service's rules in short, in the list of services
+	"{0} upcoming per client": "{0} upcoming per patient",
+	"new clients": "new patients",
+	"returning clients": "returning patients",
+	# the dashboard's agenda: who booked, who did not come
+	"Appointments clients booked themselves on the booking page": (
+		"Appointments patients booked themselves on the booking page"
+	),
+	"Share of the period's new appointments booked by the clients themselves": (
+		"Share of the period's new appointments booked by the patients themselves"
+	),
+	"When clients book online": "When patients book online",
+	"Of the appointments that were due, the share where the client did not come": (
+		"Of the appointments that were due, the share where the patient did not come"
+	),
+	"Value of the appointments the client did not turn up to": (
+		"Value of the appointments the patient did not turn up to"
+	),
+	# the person's field, where a centre lays it out
+	"When they became a client: the first time they came, or their first invoice. Written once, by the rules; automations and the dashboard count on it.": (
+		"When they became a patient: their first visit, first healthcare invoice or first clinical note. "
+		"Written once, by the rules; automations and the dashboard count on it."
+	),
+	# the SMS sender's line, the demo's removal
+	"Every SMS the centre sends leaves from here: the waiting list’s offers, the client area’s news, the automations, the ones written by hand.": (
+		"Every SMS the centre sends leaves from here: the waiting list’s offers, the patient area’s news, "
+		"the automations, the ones written by hand."
+	),
+	"Everything the demo made goes, and with it what is about its people, what you wrote too: notes, appointments, messages. The services, rooms and price lists you used for your own clients stay.": (
+		"Everything the demo made goes, and with it what is about its people, what you wrote too: notes, "
+		"appointments, messages. The services, rooms and price lists you used for your own patients stay."
+	),
 	# the server's: the booking page, a cancellation, why a professional is not bookable
 	"This service can be booked online by new clients only.": (
 		"This service can be booked online by new patients only."

@@ -43920,3 +43920,63 @@ msgstr "Annullato online dal paziente"
 #: crm/clinica/parole.py
 msgid "Pick the services patients can book them for"
 msgstr "Scegli i servizi per cui i pazienti possono prenotare questo professionista"
+
+#: crm/clinica/parole.py
+msgid "Opening the page, and who patients can book for what, is in Online booking."
+msgstr "Per aprire la pagina e scegliere chi i pazienti possono prenotare, e per cosa, vai in Prenotazione online."
+
+#: crm/clinica/parole.py
+msgid "Who patients can book, and for what. Every switch here applies at once."
+msgstr "Chi i pazienti possono prenotare, e per cosa. Ogni interruttore qui vale subito."
+
+#: crm/clinica/parole.py
+msgid "Every professional listed below is booked together — two therapists following one patient."
+msgstr "Si prenotano insieme tutti i professionisti qui sotto, come due terapisti che seguono lo stesso paziente."
+
+#: crm/clinica/parole.py
+msgid "No platform connected yet. Connect the ones where your patients already book."
+msgstr "Ancora nessuna piattaforma collegata. Collega quelle su cui i tuoi pazienti prenotano già."
+
+#: crm/clinica/parole.py
+msgid "{0} upcoming per patient"
+msgstr "{0} in arrivo per paziente"
+
+#: crm/clinica/parole.py
+msgid "new patients"
+msgstr "nuovi pazienti"
+
+#: crm/clinica/parole.py
+msgid "returning patients"
+msgstr "pazienti già venuti"
+
+#: crm/clinica/parole.py
+msgid "Appointments patients booked themselves on the booking page"
+msgstr "Gli appuntamenti che i pazienti hanno prenotato da soli nella pagina di prenotazione"
+
+#: crm/clinica/parole.py
+msgid "Share of the period's new appointments booked by the patients themselves"
+msgstr "La quota dei nuovi appuntamenti del periodo prenotati dai pazienti stessi"
+
+#: crm/clinica/parole.py
+msgid "When patients book online"
+msgstr "Quando i pazienti prenotano online"
+
+#: crm/clinica/parole.py
+msgid "Of the appointments that were due, the share where the patient did not come"
+msgstr "Degli appuntamenti previsti, la quota in cui il paziente non è venuto"
+
+#: crm/clinica/parole.py
+msgid "Value of the appointments the patient did not turn up to"
+msgstr "Il valore degli appuntamenti a cui il paziente non si è presentato"
+
+#: crm/clinica/parole.py
+msgid "When they became a patient: their first visit, first healthcare invoice or first clinical note. Written once, by the rules; automations and the dashboard count on it."
+msgstr "Quando la persona è diventata paziente: la prima visita, la prima fattura sanitaria o la prima nota clinica. Si scrive una volta sola, secondo le regole; le automazioni e la dashboard contano su questo dato."
+
+#: crm/clinica/parole.py
+msgid "Every SMS the centre sends leaves from here: the waiting list’s offers, the patient area’s news, the automations, the ones written by hand."
+msgstr "Ogni SMS del centro parte da qui: le proposte della lista d'attesa, le novità dell'area pazienti, le automazioni, quelli scritti a mano."
+
+#: crm/clinica/parole.py
+msgid "Everything the demo made goes, and with it what is about its people, what you wrote too: notes, appointments, messages. The services, rooms and price lists you used for your own patients stay."
+msgstr "Se ne va tutto quello che la demo ha creato e, con esso, quello che riguarda le sue persone, anche ciò che hai scritto tu: note, appuntamenti, messaggi. Restano i servizi, le stanze e i listini che hai usato per i tuoi pazienti."

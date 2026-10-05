@@ -17,6 +17,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_datetime, now_datetime
 
+from crm import verticali
 from crm.demo import guardie, registro
 from crm.demo.contesto import SEME, Contesto
 from crm.demo.modo import in_prova
@@ -42,11 +43,13 @@ def get_demo_state() -> dict:
 	job is making them now."""
 	_verifica()
 	fatte = registro.parti_fatte()
+	# in the words of the vertical that is on: with the clinic, the patient area
+	parola = verticali.traduttore()
 	parti = [
 		{
 			"key": parte.chiave,
-			"label": _(parte.etichetta),
-			"description": _(parte.descrizione),
+			"label": parola(parte.etichetta),
+			"description": parola(parte.descrizione),
 			"made": parte.chiave in fatte,
 			"available": registro.accesa(parte),
 		}
@@ -170,7 +173,7 @@ def crea(utente: str | None = None, scala: float = 1.0) -> dict:
 		for indice, parte in enumerate(parti):
 
 			def avanzamento(testo: str, parte=parte, indice=indice) -> None:
-				etichetta = _(parte.etichetta)
+				etichetta = verticali.parola(parte.etichetta)
 				_annuncia(utente, "progress", parte=etichetta, step=testo, done=indice, total=len(parti))
 				_segna_il_lavoro(part=etichetta, step=testo, done=indice, total=len(parti))
 
