@@ -329,6 +329,13 @@
     border-radius: 1.25rem 1.25rem 0 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* a box capped in `vh` inside a sheet (an availability check, an access
+     log, a paper form's text) scrolls with the sheet: one scroll, as a
+     phone's sheets have, not two boxes taking turns under the finger */
+  .dialog-content .overflow-y-auto[class*='max-h-['][class*='vh]'] {
+    max-height: none;
+    overflow-y: visible;
+  }
   .dialog-content::before {
     content: '';
     display: block;
