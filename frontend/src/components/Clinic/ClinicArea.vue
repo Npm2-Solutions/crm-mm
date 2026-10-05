@@ -515,18 +515,35 @@ const shownRecords = computed(() =>
   ),
 )
 
-const newOptions = computed(() => [
-  {
-    label: __('Free visit'),
-    icon: 'lucide-file-text',
-    onClick: () => startNew(),
-  },
-  ...(record.data?.sheets || []).map((sheet) => ({
+// a free visit, then the sheets one writes on (the server puts them first and
+// marks them), then the others: a sheet's specialty is tied to no
+// qualification, and the dietitian was offered the dental visit beside her own
+const newOptions = computed(() => {
+  const sheets = record.data?.sheets || []
+  const asOption = (sheet) => ({
     label: sheet.title,
     icon: 'lucide-clipboard-list',
     onClick: () => startSheet(sheet.name),
-  })),
-])
+  })
+  const free = {
+    label: __('Free visit'),
+    icon: 'lucide-file-text',
+    onClick: () => startNew(),
+  }
+  if (!sheets.some((sheet) => sheet.mine))
+    return [free, ...sheets.map(asOption)]
+  return [
+    free,
+    {
+      group: __('Your sheets'),
+      items: sheets.filter((sheet) => sheet.mine).map(asOption),
+    },
+    {
+      group: __('Other sheets'),
+      items: sheets.filter((sheet) => !sheet.mine).map(asOption),
+    },
+  ]
+})
 
 const composer = reactive({
   open: false,

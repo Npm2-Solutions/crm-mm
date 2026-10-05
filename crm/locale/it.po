@@ -43984,3 +43984,11 @@ msgstr "Se ne va tutto quello che la demo ha creato e, con esso, quello che rigu
 #: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
 msgid "1 professional bookable"
 msgstr "1 professionista prenotabile"
+
+#: frontend/src/components/Clinic/ClinicArea.vue
+msgid "Your sheets"
+msgstr "Le tue schede"
+
+#: frontend/src/components/Clinic/ClinicArea.vue
+msgid "Other sheets"
+msgstr "Altre schede"

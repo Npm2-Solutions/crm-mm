@@ -143,15 +143,34 @@ def _scheda(doc) -> dict:
 
 def _schede() -> list[dict]:
 	"""The clinical sheets a practitioner can write a visit on: the CRM's sheets
-	with the mark of health data. One without it is written among the forms."""
-	from crm.moduli import modelli
+	with the mark of health data. One without it is written among the forms.
 
-	return frappe.get_all(
+	The ones the practitioner already wrote on come first, the most used first,
+	marked `mine`: a sheet's specialty is free text, tied to no qualification, so
+	what one has used is what tells one's sheets from the others' - the dietitian
+	was offered the dental visit beside her own."""
+	from crm.moduli import modelli
+	from crm.utils import count_field
+
+	schede = frappe.get_all(
 		modelli.MODELLO,
 		filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.SCHEDA, "clinical": 1},
 		fields=["name", "title", "specialty"],
 		order_by="title asc",
 	)
+	usate = dict(
+		frappe.get_all(
+			DOCTYPE,
+			filters={"practitioner": frappe.session.user, "template": ("is", "set")},
+			fields=["template", count_field("volte")],
+			group_by="template",
+			as_list=True,
+		)
+	)
+	for scheda in schede:
+		scheda["mine"] = bool(usate.get(scheda.name))
+	# a stable sort: among sheets used as often, the titles' order stays
+	return sorted(schede, key=lambda scheda: -usate.get(scheda.name, 0))
 
 
 def _legge() -> bool:

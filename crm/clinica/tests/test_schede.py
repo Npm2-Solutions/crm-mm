@@ -117,6 +117,27 @@ class LaScheda(SchedeCase):
 		with self.assertRaises(frappe.ValidationError):
 			cartella.start_sheet(self.anna.name, trattamento)
 
+	def test_le_schede_su_cui_si_scrive_vengono_prima(self):
+		# «Nuova visita» offered every sheet in the titles' order: the dentist's
+		# visit before the dietitian's own. The ones one wrote on come first
+		frappe.set_user("Administrator")
+		prima = self.pubblica(VISITA, "Anamnesi odontoiatrica", use=modelli.SCHEDA, clinical=1)
+		self.come(DOC1)
+		titoli = [s["name"] for s in cartella.get_record(self.anna.name)["sheets"]]
+		self.assertLess(titoli.index(prima), titoli.index(self.scheda))
+		self.visita(firma=False)
+		schede = cartella.get_record(self.anna.name)["sheets"]
+		self.assertEqual(schede[0]["name"], self.scheda)
+		self.assertEqual(
+			{s["name"]: s["mine"] for s in schede if s["name"] in (prima, self.scheda)},
+			{self.scheda: True, prima: False},
+		)
+		# a colleague who wrote on none has none of their own yet
+		self.come(DOC2)
+		del_collega = cartella.get_record(self.anna.name)["sheets"]
+		self.assertTrue(del_collega)
+		self.assertFalse(any(s["mine"] for s in del_collega))
+
 	def test_le_schede_cliniche_di_prima_sono_schede_col_marchio(self):
 		from crm.patches.v1_0 import sheets_are_the_crms
 
