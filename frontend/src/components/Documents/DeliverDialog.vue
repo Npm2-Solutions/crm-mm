@@ -144,7 +144,7 @@
     <template #actions>
       <div class="dialog-footer flex justify-end gap-2">
         <Button
-          :label="given ? __('Done') : __('Cancel')"
+          :label="given ? __('Done', null, 'Closes a dialog') : __('Cancel')"
           @click="show = false"
         />
         <Button

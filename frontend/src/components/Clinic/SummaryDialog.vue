@@ -47,7 +47,11 @@
     </template>
     <template #actions>
       <div class="dialog-footer flex justify-end">
-        <Button variant="solid" :label="__('Done')" @click="done" />
+        <Button
+          variant="solid"
+          :label="__('Done', null, 'Closes a dialog')"
+          @click="done"
+        />
       </div>
     </template>
   </Dialog>
