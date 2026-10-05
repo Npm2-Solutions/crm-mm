@@ -43777,3 +43777,7 @@ msgstr "{0} di {1} servizi fatti"
 #: frontend/src/components/Area/AreaAccessCard.vue
 msgid "Add somebody"
 msgstr "Aggiungi qualcuno"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "{0} people"
+msgstr "{0} persone"

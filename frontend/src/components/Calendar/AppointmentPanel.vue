@@ -101,10 +101,10 @@
                   : 'text-ink-gray-8'
               "
             >
-              {{ clientNames || serviceName }}
+              {{ titleLine }}
             </div>
             <div class="text-p-base text-ink-gray-6">
-              {{ clientNames ? `${serviceName} · ` : '' }}{{ whenLabel }}
+              {{ underTitle }}
             </div>
           </div>
         </div>
@@ -186,10 +186,13 @@
              desk booked it before selling the cycle, or the other way round -->
         <div
           v-if="doc.cycle"
-          class="flex items-center gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
+          class="flex items-start gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
         >
-          <span class="lucide-repeat size-4 shrink-0" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate">{{ cycleLine }}</span>
+          <span
+            class="lucide-repeat mt-1.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 flex-1 py-1">{{ cycleLine }}</span>
           <Dropdown
             v-if="doc.cycle.can_manage && cycleActions.length"
             :options="cycleActions"
@@ -206,15 +209,18 @@
         </div>
 
         <!-- each person's subscription whose entry they use: in or out by hand -->
+        <!-- the line wraps: cut, a phone read «Sofia Palumbo usa un ingresso
+             di Gi…» and never which subscription -->
         <div
           v-for="who in doc.subscription?.people || []"
           :key="who.party"
-          class="flex items-center gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
+          class="flex items-start gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
         >
-          <span class="lucide-ticket size-4 shrink-0" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate">{{
-            subscriptionLine(who)
-          }}</span>
+          <span
+            class="lucide-ticket mt-1.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 flex-1 py-1">{{ subscriptionLine(who) }}</span>
           <Dropdown
             v-if="
               doc.subscription.can_manage && subscriptionActions(who).length
@@ -1019,15 +1025,28 @@ const serviceColor = computed(
   () => doc.value?.color || serviceOf(doc.value?.service)?.color || '',
 )
 
-const clientNames = computed(() =>
+const clients = computed(() =>
   (doc.value?.participants || [])
     .filter(
       (row) => row.status !== 'Cancelled' || doc.value.status === 'Cancelled',
     )
     .map((row) => row.participant_name || row.party)
-    .filter(Boolean)
-    .join(', '),
+    .filter(Boolean),
 )
+
+// who comes, then what and when; a class reads by what it is, its people listed
+// below with how it went for each: their names as its title took four lines
+// for a class of four, and would have taken a screen for a full one
+const titleLine = computed(() =>
+  clients.value.length === 1 ? clients.value[0] : serviceName.value,
+)
+const underTitle = computed(() => {
+  if (clients.value.length === 1)
+    return `${serviceName.value} · ${whenLabel.value}`
+  if (clients.value.length > 1)
+    return `${__('{0} people', [clients.value.length])} · ${whenLabel.value}`
+  return whenLabel.value
+})
 
 const whenLabel = computed(() => {
   if (!doc.value) return ''
