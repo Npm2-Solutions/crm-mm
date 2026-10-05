@@ -228,9 +228,8 @@ def prepara(doc) -> dict:
 def _riferimenti(doc, emittente: dict) -> dict[str, str]:
 	"""`RiferimentoNormativo` per nature: the human on the other side reads it."""
 	data = getdate(doc.posting_date) or date.today()
-	struttura = str(emittente.get("sender_category") or "").startswith("struttura")
 	riferimenti = {
-		"N4": diciture.esenzione(data, struttura),
+		"N4": diciture.esenzione(data),
 		"N2.2": diciture.forfettario(includi_ritenuta=False)[0],
 		"N2.1": diciture.fuori_campo_territoriale(data),
 		"N1": diciture.anticipazione(data),
@@ -309,13 +308,12 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 	field. Every reference is doubled with the Testo Unico applicable from 2027.
 	"""
 	data = getdate(doc.posting_date) or date.today()
-	struttura = str(emittente.get("sender_category") or "").startswith("struttura")
 	testi: list[str] = []
 
 	if emittente.get("tax_regime") == RegimeFiscale.FORFETTARIO:
 		testi.extend(diciture.forfettario())
 	elif any(r.esente_iva for r in classificazione.righe):
-		testi.append(diciture.esenzione(data, struttura))
+		testi.append(diciture.esenzione(data))
 
 	nature = {r.natura_iva for r in classificazione.righe if r.natura_iva}
 	if nature & NATURE_REVERSE_CHARGE:

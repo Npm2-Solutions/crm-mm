@@ -178,7 +178,7 @@ def scheda_predefinita(categoria: str | None) -> dict:
 		"is_healthcare": 1,
 		"vat_exempt": 1,
 		"vat_rate": 0,
-		"exemption_reference": diciture.esenzione(getdate(), str(categoria or "") in STRUTTURE),
+		"exemption_reference": diciture.esenzione(getdate()),
 		"ts_expense_type": tipo_di_spesa(categoria),
 	}
 

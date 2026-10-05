@@ -97,7 +97,8 @@ class LeTreDomande(IntegrationTestCase):
 		self.assertEqual((azienda.region_code, azienda.asl_code, azienda.ssa_code), ("120", "201", "AB12"))
 		self.assertFalse(azienda.fund_type)
 		self.assertEqual(dati["expense_type"]["value"], "SR")
-		self.assertIn("art. 10, n. 19", dati["card_defaults"]["exemption_reference"])
+		# a facility's visit is n. 18 like anybody's (Ris. 39/E/2004): n. 19 is hospital care
+		self.assertIn("art. 10, n. 18", dati["card_defaults"]["exemption_reference"])
 
 		# the same centre answers again, as a professional: the facility's codes go
 		preimpostazione.apply_setup(AZIENDA, "professionista_sanitario", "RF01", "psicologo")
