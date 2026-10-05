@@ -6,10 +6,10 @@
     >
       {{ value }}
     </div>
-    <!-- on a phone «vs 14,1 M before» goes under the change, whole, instead
-         of being cut beside it -->
+    <!-- on a phone, and stacked on a tablet, «vs 14,1 M before» goes under
+         the change, whole, instead of being cut beside it -->
     <div
-      class="flex min-w-0 items-center gap-1.5 text-xs max-md:flex-wrap max-md:gap-y-0.5"
+      class="flex min-w-0 items-center gap-1.5 text-xs max-md:flex-wrap max-md:gap-y-0.5 [[data-impilata]_&]:flex-wrap [[data-impilata]_&]:gap-y-0.5"
     >
       <WidgetBadge v-if="badge" :badge="badge" />
       <span

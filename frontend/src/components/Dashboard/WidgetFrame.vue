@@ -19,12 +19,12 @@
       :class="cardLink ? 'pr-12' : ''"
     >
       <div class="flex min-w-0 items-center gap-1.5">
-        <!-- two lines on a phone: half a screen wide, «Waiting for an
-             answer» and «Appointments today» were cut to «Waiting for an ans…»;
-             a word wider than the column breaks where Italian does
-             («Appunta-menti»), not «Appuntam…» -->
+        <!-- two lines on a phone, and stacked on a tablet: half a screen
+             wide, «Waiting for an answer» and «Appointments today» were cut to
+             «Waiting for an ans…»; a word wider than the column breaks where
+             Italian does («Appunta-menti»), not «Appuntam…» -->
         <span
-          class="truncate text-sm font-medium text-ink-gray-7 max-md:line-clamp-2 max-md:hyphens-auto max-md:whitespace-normal"
+          class="truncate text-sm font-medium text-ink-gray-7 max-md:line-clamp-2 max-md:hyphens-auto max-md:whitespace-normal [[data-impilata]_&]:line-clamp-2 [[data-impilata]_&]:hyphens-auto [[data-impilata]_&]:whitespace-normal"
           :title="title"
         >
           {{ title }}

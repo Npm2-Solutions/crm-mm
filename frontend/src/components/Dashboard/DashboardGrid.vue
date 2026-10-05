@@ -1,18 +1,23 @@
 <template>
-  <div class="p-3 sm:px-4">
+  <div ref="radice" class="p-3 sm:px-4">
     <!-- A 20-column grid on a 390px screen gives a four-column widget about
-         78px: a chart nobody can read. On a phone the same widgets stack —
-         numbers two per row, everything else full width — in the order the
-         grid shows them, top to bottom and left to right. -->
-    <div v-if="isMobileView" class="flex flex-wrap gap-3">
+         78px: a chart nobody can read. On a phone, and wherever the grid is
+         narrower than GRIGLIA_MINIMA (a tablet held upright, beside the menu),
+         the same widgets stack in the order the grid shows them, top to bottom
+         and left to right: the numbers two to a row on a phone, three or four
+         on a tablet, everything else the whole width or two to a row
+         (`perRiga`). While the board is arranged the grid stays: it is what
+         is being arranged. Nothing is drawn before the width is known, or a
+         tablet would build the grid only to put it away. -->
+    <!-- `data-impilata`: a widget stacked reads as on a phone, its title on
+         two lines and its comparison under the change (WidgetFrame,
+         NumberWidget), on a tablet too -->
+    <div v-if="impilata" class="flex flex-wrap gap-3" data-impilata>
       <div
         v-for="item in mobileItems"
         :key="item.layout.i"
         class="min-w-0"
-        :class="
-          kindOf(item) === 'number' ? 'basis-[calc(50%_-_0.375rem)]' : 'w-full'
-        "
-        :style="mobileSize(item)"
+        :style="stileImpilato(item)"
       >
         <DashboardItem
           :item="item"
@@ -33,7 +38,7 @@
          drops to one column and hands that layout back as the new positions,
          which saving would then keep. -->
     <GridLayout
-      v-else-if="items.length"
+      v-else-if="items.length && (larghezza || editing)"
       class="h-fit w-full"
       :class="editing ? 'mb-[20rem] select-none' : ''"
       :cols="GRID_COLUMNS"
@@ -115,12 +120,16 @@ import DashboardItem from '@/components/Dashboard/DashboardItem.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import {
   GRID_COLUMNS,
+  GRIGLIA_MINIMA,
   ROW_HEIGHT,
   highlightedNumbers,
+  larghezzaDiUno,
   mobileOrder,
+  perRiga,
 } from '@/utils/dashboard'
+import { useElementSize } from '@vueuse/core'
 import { GridLayout, Tooltip } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   answers: { type: Object, default: () => ({}) },
@@ -140,6 +149,31 @@ const items = defineModel({ type: Array, default: () => [] })
 
 const mobileItems = computed(() => mobileOrder(items.value))
 
+// the grid's own width, its padding included: the same at mount (offsetWidth)
+// as when it is observed, so a width near the line does not flip it once
+const radice = ref(null)
+const { width: larghezza } = useElementSize(radice, undefined, {
+  box: 'border-box',
+})
+const impilata = computed(
+  () =>
+    isMobileView.value ||
+    (!props.editing && larghezza.value > 0 && larghezza.value < GRIGLIA_MINIMA),
+)
+
+// a number keeps its share of the row; the others share what a row leaves,
+// so the last one alone in its row takes all of it
+function stileImpilato(item) {
+  const { numeri, altri } = perRiga(larghezza.value)
+  if (kindOf(item) === 'number')
+    return {
+      flex: `0 0 ${larghezzaDiUno(numeri)}`,
+      minHeight: mobileHeight(item),
+    }
+  const n = item.name === 'heading' ? 1 : altri
+  return { flex: `1 1 ${larghezzaDiUno(n)}`, height: mobileHeight(item) }
+}
+
 const byKey = computed(() =>
   Object.fromEntries(items.value.map((item) => [item.layout.i, item])),
 )
@@ -152,13 +186,8 @@ function kindOf(item) {
 const blocchi = computed(() => highlightedNumbers(items.value, kindOf))
 
 // A number sets its own height, from 128px up, so a two-line title and a
-// comparison on a line of its own fit whole; the two in a row grow together.
+// comparison on a line of its own fit whole; the ones in a row grow together.
 // Everything else keeps the height it is given.
-function mobileSize(item) {
-  if (kindOf(item) === 'number') return { minHeight: mobileHeight(item) }
-  return { height: mobileHeight(item) }
-}
-
 function mobileHeight(item) {
   const kind = kindOf(item)
   if (kind === 'number') return '128px'

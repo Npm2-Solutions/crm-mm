@@ -10,8 +10,11 @@ import {
   groupDashboards,
   groupByCategory,
   highlightedNumbers,
+  GRIGLIA_MINIMA,
+  larghezzaDiUno,
   mobileOrder,
   newItem,
+  perRiga,
   newKey,
   periodRange,
   searchCatalog,
@@ -258,6 +261,17 @@ describe('the grid', () => {
       { name: 'a', layout: { x: 0, y: 0 } },
     ])
     expect(order.map((item) => item.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('stacks a narrow grid, more to a row the wider it is', () => {
+    // a tablet held upright beside the menu stacks; a laptop keeps the grid
+    expect(545 < GRIGLIA_MINIMA && 1057 >= GRIGLIA_MINIMA).toBe(true)
+    expect(perRiga(390)).toEqual({ numeri: 2, altri: 1 })
+    expect(perRiga(545)).toEqual({ numeri: 3, altri: 1 })
+    expect(perRiga(800)).toEqual({ numeri: 4, altri: 2 })
+    expect(larghezzaDiUno(1)).toBe('100%')
+    expect(larghezzaDiUno(3)).toBe('calc((100% - 2 * 0.75rem) / 3)')
+    expect(larghezzaDiUno(2, '1rem')).toBe('calc((100% - 1 * 1rem) / 2)')
   })
 
   it('makes the first number of each row the deep block, one a row', () => {
