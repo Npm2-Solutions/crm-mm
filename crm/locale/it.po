@@ -43590,6 +43590,30 @@ msgstr "Piani e programmi"
 msgid "The kinesiologist's trainings to do at home and the dietitian's habits, given at the last session; a programme of each, written this morning; what people ticked in the area these last days."
 msgstr "Gli allenamenti a casa del chinesiologo e le abitudini della dietista, dati all'ultima seduta; un programma di ciascuno, scritto stamattina; quello che le persone hanno spuntato nell'area in questi ultimi giorni."
 
+#: crm/clinica/demo/__init__.py crm/clinica/demo/cartelle.py
+msgid "Clinical record"
+msgstr "Cartella clinica"
+
+#: crm/clinica/demo/__init__.py
+msgid "The medical director and the clinical sheets; the last weeks' visits written in the record this morning and signed, each with its report; the summary, the dossier's consents, an episode obscured, a record opened out of care; reports and test results filed, one given online."
+msgstr "La direzione sanitaria e le schede cliniche; le visite delle ultime settimane scritte stamattina in cartella e firmate, ognuna con il suo referto; la sintesi, i consensi al dossier, un episodio oscurato, una cartella aperta fuori dall'équipe di cura; referti ed esiti di esame archiviati, uno dato online."
+
+#: crm/clinica/demo/__init__.py crm/clinica/demo/dentista.py
+msgid "Dentistry"
+msgstr "Odontoiatria"
+
+#: crm/clinica/demo/__init__.py
+msgid "A dentist with the dental chair and the services; the first visits of the last weeks with the odontogram and the care plan; the treatments booked for who said yes."
+msgstr "Un dentista con il suo studio e i suoi servizi; le prime visite delle ultime settimane con l'odontogramma e il piano di cura; le cure prenotate per chi ha detto sì."
+
+#: crm/clinica/demo/__init__.py crm/clinica/demo/diete.py
+msgid "Diets and exercises at home"
+msgstr "Diete ed esercizi a casa"
+
+#: crm/clinica/demo/__init__.py
+msgid "The dietitian's menus with the foods of the library and an exchange diet, the physiotherapist's exercises at home; ticked in the area."
+msgstr "I menu della dietista con gli alimenti della libreria e una dieta a scambi, gli esercizi a casa della fisioterapista; spuntati nell'area."
+
 #: crm/scheduling/abbonamenti.py
 msgid "One of the {0} people uses their subscription"
 msgstr "Una persona su {0} usa il suo abbonamento"

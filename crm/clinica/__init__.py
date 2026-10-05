@@ -395,6 +395,10 @@ def registra() -> None:
 		Verticale(PIANO, PIANO, parole=PAROLE, marchio=DOTTORCLOUD.chiave, fatturazione="sanitario")
 	)
 	_registra_area()
+	# its share of the demo: the record, the dentist, the diets
+	from crm.clinica import demo
+
+	demo.registra()
 
 
 def _registra_area() -> None:
