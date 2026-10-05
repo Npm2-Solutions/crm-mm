@@ -392,6 +392,36 @@
   }
 }
 
+/* A dialog on a phone scrolls itself, as tall as the screen at most, its
+   buttons in sight at its foot. frappe-ui scrolls the box behind it, which
+   takes `pointer-events: none` from the page reka-ui locks while a dialog is
+   open: an iPhone need not scroll it under a finger, and at 568px the waiting
+   list's «Join» was under the screen. The same as the CRM's sheets
+   (telefono.css, «4»), the area's card kept. */
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  .dialog-scroll-container > div[data-position] {
+    height: 100%;
+    min-height: 0;
+    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem
+      max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .dialog-content {
+    margin: auto 0 !important;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .dialog-content > div.px-4.pb-7.pt-4 {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-top: 1px solid var(--outline-elevation-2);
+    background-color: var(--surface-elevation-1);
+    padding-bottom: 1rem;
+  }
+}
+
 /* Writing on a phone: the keyboard covers the bottom of the screen without
    making the page shorter (utils/tastieraAperta.js). While the person writes,
    the area is as tall as what one sees: the header stays, the places at the
