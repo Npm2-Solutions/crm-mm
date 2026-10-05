@@ -66,7 +66,8 @@
             >
               {{ c.person || leggibile(c.number) || __('Unknown') }}
             </span>
-            <span class="truncate text-p-sm text-ink-gray-5">
+            <!-- the duration was the first to go: «· 1:…» -->
+            <span class="break-words text-p-sm text-ink-gray-5">
               {{ comeAndata(c) }}
             </span>
           </span>

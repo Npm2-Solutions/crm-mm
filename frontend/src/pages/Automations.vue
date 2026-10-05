@@ -91,8 +91,12 @@
             />
           </div>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="truncate text-base font-medium text-ink-gray-9">
+            <!-- the name read whole, its state under it where they do not fit
+                 side by side: at 360px it was «Promemoria appuntam…» -->
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span
+                class="max-w-full truncate text-base font-medium text-ink-gray-9"
+              >
                 {{ row.title }}
               </span>
               <Badge

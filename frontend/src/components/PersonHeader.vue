@@ -59,7 +59,9 @@
       <span class="lucide-calendar-clock size-4 shrink-0" aria-hidden="true" />
       <span class="flex min-w-0 flex-col">
         <span class="text-xs">{{ __('Next appointment') }}</span>
-        <span class="truncate text-sm font-medium">
+        <!-- on two lines when it must: at 360px the service was
+             «Massaggio decontrattura…» -->
+        <span class="break-words text-sm font-medium">
           {{
             [
               quandoInBreve(prossimo.starts_on, lingua),

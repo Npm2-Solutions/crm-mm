@@ -37,8 +37,10 @@
               }"
             />
             <span class="min-w-0 flex-1">
+              <!-- the service and when go on under themselves: at 360px the
+                   session of a cycle was «09:00 – 09:45 · …» -->
               <span
-                class="block truncate text-base"
+                class="block break-words text-base"
                 :class="
                   appointment.status === 'Cancelled'
                     ? 'text-ink-gray-5 line-through'
@@ -47,7 +49,7 @@
               >
                 {{ appointment.service }}
               </span>
-              <span class="block truncate text-p-sm text-ink-gray-5">
+              <span class="block break-words text-p-sm text-ink-gray-5">
                 {{ when(appointment) }}
                 <template v-if="laSeduta(appointment.cycle, t)">
                   · {{ laSeduta(appointment.cycle, t) }}

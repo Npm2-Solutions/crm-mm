@@ -98,8 +98,10 @@
               class="flex min-w-0 flex-1 flex-col text-left after:absolute after:inset-0 after:rounded-md after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-outline-gray-3"
               @click="emit('edit', { ...row })"
             >
+              <!-- the name read whole: two exercises cut were the same
+                   «Abduzione dell'anca da seduto…» -->
               <span
-                class="max-w-full truncate text-base"
+                class="max-w-full break-words text-base"
                 :class="row.enabled ? 'text-ink-gray-8' : 'text-ink-gray-5'"
               >
                 {{ row[library.nameField] }}
