@@ -43769,3 +43769,7 @@ msgstr "{0} è in un abbonamento"
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "Change the subscription of {0}"
 msgstr "Cambia l'abbonamento di {0}"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgid "{0} of {1} services done"
+msgstr "{0} di {1} servizi fatti"

@@ -50,7 +50,8 @@
           </span>
           <span class="text-p-sm text-ink-gray-5">
             {{ money(quote.total_net, quote.currency) }} ·
-            {{ __('{0} of {1} done', [quote.done, quote.services]) }} ·
+            {{ __('{0} of {1} services done', [quote.done, quote.services]) }}
+            ·
             {{ quote.practitioner_name }}
           </span>
         </span>
