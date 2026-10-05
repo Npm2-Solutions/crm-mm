@@ -404,6 +404,10 @@ import {
 import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
 import { computed, provide, inject, ref, defineAsyncComponent } from 'vue'
 
+// a register made with its own page and its rules, never in passing from a field:
+// a qualification created from a provider's field would carry no VAT regime
+const SOLO_DAL_REGISTRO = new Set(['CRM Professional Qualification'])
+
 // the text editor (TipTap, highlight.js) comes when a field needs it: imported
 // here it was in every page's first download, on a phone too
 const TextEditorControl = defineAsyncComponent(
@@ -588,7 +592,11 @@ const field = computed(() => {
     })
   }
 
-  if (field.fieldtype === 'Link' && field.options !== 'User') {
+  if (
+    field.fieldtype === 'Link' &&
+    field.options !== 'User' &&
+    !SOLO_DAL_REGISTRO.has(field.options)
+  ) {
     if (!field.create) {
       field.create = (value, close) => {
         const callback = (d) => {
