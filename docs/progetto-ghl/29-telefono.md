@@ -864,7 +864,11 @@ nessuna parola è schiacciata e nessun nome è tagliato sotto i 72 punti.
   la «@» («crm.manager@ / example.com», `partiDellIndirizzo`), in «Altro» e
   negli utenti; il nome di un modulo e di una pipeline si legge intero, i suoi
   segni sotto («Valutazione fisiot…», «Ve…» accanto a «Predefinito»); cosa
-  limita un ambulatorio va a capo.
+  limita un ambulatorio va a capo. Nel pannello di un appuntamento il nome di
+  chi viene era «Laura Conse…» accanto a «Prenotato» e alla freccia: ora,
+  dove non c'è posto, stato e freccia vanno sotto, a destra, e il telefono e
+  l'email vanno a capo invece di tagliarsi; «Aggiungi un ambulatorio o
+  un'attrezzatura» va su due righe (`AppointmentPanel.vue`).
 
 ## Decima parte: i fogli scorrono col dito (05/10/2026)
 
