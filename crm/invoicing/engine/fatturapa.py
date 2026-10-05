@@ -78,6 +78,14 @@ def _d(valore: Decimal | None, decimali: int = 2) -> str:
 	return f"{Decimal(valore or 0):.{decimali}f}"
 
 
+def _quantita(valore: Decimal | None) -> str:
+	"""A quantity as the schema takes it: two decimals at least, eight at most
+	(`[0-9]{1,12}\\.[0-9]{2,8}`). «1» is refused, «1.00» and «1.5» -> «1.50» are not."""
+	testo = _d(valore, 8).rstrip("0")
+	intero, _, decimali = testo.partition(".")
+	return f"{intero}.{decimali.ljust(2, '0')}"
+
+
 def _sub(parent: ET.Element, tag: str, testo: str | None = None) -> ET.Element:
 	elemento = ET.SubElement(parent, tag)
 	if testo is not None:
@@ -283,7 +291,7 @@ class Linea:
 		# also the one that leaks: on a healthcare document it says the specialty.
 		_sub(blocco, "Descrizione", (self.descrizione or "").strip()[:1000])
 		if self.quantita is not None:
-			_sub(blocco, "Quantita", _d(self.quantita, 8).rstrip("0").rstrip(".") or "0")
+			_sub(blocco, "Quantita", _quantita(self.quantita))
 		_sub_se(blocco, "UnitaMisura", self.unita_misura)
 		if self.data_inizio_periodo:
 			_sub(blocco, "DataInizioPeriodo", self.data_inizio_periodo.isoformat())
