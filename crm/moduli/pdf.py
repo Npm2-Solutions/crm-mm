@@ -74,6 +74,13 @@ def _numero(valore, unita=None) -> str:
 	return f"{testo} {unita}" if unita else testo
 
 
+def _estremo(numero, se_manca: int, parole: str | None) -> str:
+	"""One end of a scale as the person read it: its number, then its words."""
+	n = S.numero(numero)
+	n = se_manca if n is None else (int(n) if n.is_integer() else n)
+	return f"{n} {parole}" if parole else str(n)
+
+
 def risposta_in_parole(campo: dict, valore, fascia: str | None = None) -> str:
 	"""An answer as a person reads it on paper."""
 	if S.vuoto(valore):
@@ -92,8 +99,11 @@ def risposta_in_parole(campo: dict, valore, fascia: str | None = None) -> str:
 	if tipo == "choice":
 		return ", ".join(valore) if isinstance(valore, list) else str(valore)
 	if tipo == "scale":
-		estremi = " – ".join(filter(None, [campo.get("min_label"), campo.get("max_label")]))
-		return f"{valore} ({estremi})" if estremi else str(valore)
+		# with the scale's ends, each its number and its words: the words alone did not
+		# say how far the scale went
+		minimo = _estremo(campo.get("min"), 0, campo.get("min_label"))
+		massimo = _estremo(campo.get("max"), 10, campo.get("max_label"))
+		return f"{valore} ({minimo} – {massimo})"
 	if tipo == "sides":
 		unita = campo.get("unit") or ""
 		parti = []

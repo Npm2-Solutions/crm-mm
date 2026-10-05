@@ -264,12 +264,16 @@ describe('a signed answer in words', () => {
     expect(answerInWords({ type: 'choice' }, ['Latex', 'Food'])).toBe(
       'Latex, Food',
     )
+    // a scale says how far it goes: its ends' numbers, then their words
     expect(
       answerInWords(
         { type: 'scale', min_label: 'None', max_label: 'Worst' },
         3,
       ),
-    ).toBe('3 (None – Worst)')
+    ).toBe('3 (0 None – 10 Worst)')
+    expect(answerInWords({ type: 'scale', min: 1, max: 5 }, 4)).toBe(
+      '4 (1 – 5)',
+    )
     expect(
       answerInWords({ type: 'sides', unit: '°' }, { left: 120, right: '' }),
     ).toBe('Left: 120 °')
