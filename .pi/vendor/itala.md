@@ -113,6 +113,17 @@ says something its guide does not, the API is what the code follows:
   `/fatture/{id}/notifica` is a 404 and `sdi_file_notifica` is empty: the state is
   applied as Itala's word.
 
+- **An invoice received** (inserted by hand in their dashboard, "Ricezione") is a
+  row with `ricezione` "1", the row's own `numero_documento`, `data_documento`,
+  `tipo_documento` (TD01) and `data`, an empty `sdi_stato` and a null
+  `sdi_data_aggiornamento`; its `dati_documento` speaks FatturaPA's names
+  (`mittente.PartitaIVA` "IT…", `Denominazione`, `documento.Numero`, `Data`,
+  `Totale`, `Tipo` "FATT"). Read by `busta.fattura_ricevuta()`. Inserting one by
+  hand with "Invio" asks for the issuer to be a registered company («il
+  Cedente/Cessionario … non è una tua azienda registrata»).
+- **`unread=true` uses the rows up**, as the guide says: listing them by hand
+  takes them from the site. `GET /fatture/{id}` reads one without.
+
 ## Sistema TS — sistema-ts-api.it, REST API v1
 
 Guide: https://www.sistema-ts-api.it/documentazione/ (OpenAPI at
