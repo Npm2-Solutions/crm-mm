@@ -84,7 +84,8 @@ export function cosePerGruppo(cose = [], adesso = new Date()) {
 /**
  * When a task is due, said briefly: the hour for today and tomorrow, the day
  * otherwise (the group says which one), nothing without a date, nor for today
- * and tomorrow without an hour.
+ * and tomorrow without an hour. One late since this morning says «oggi» and
+ * its hour: «lun 5 ott» under «In ritardo» on Monday the 5th did not say why.
  */
 export function scadenzaInBreve(dueDate, locale, adesso = new Date()) {
   const scadenza = letta(dueDate)
@@ -98,6 +99,15 @@ export function scadenzaInBreve(dueDate, locale, adesso = new Date()) {
     hourCycle: 'h23',
   }).format(scadenza)
   if (gruppo === 'today' || gruppo === 'tomorrow') return ora
+  if (
+    gruppo === 'late' &&
+    inizioDelGiorno(scadenza).getTime() === inizioDelGiorno(adesso).getTime()
+  ) {
+    const oggi = new Intl.RelativeTimeFormat(locale, {
+      numeric: 'auto',
+    }).format(0, 'day')
+    return `${oggi}, ${ora}`
+  }
   const opzioni = { weekday: 'short', day: 'numeric', month: 'short' }
   if (scadenza.getFullYear() !== adesso.getFullYear()) opzioni.year = 'numeric'
   return new Intl.DateTimeFormat(locale, opzioni).format(scadenza)
