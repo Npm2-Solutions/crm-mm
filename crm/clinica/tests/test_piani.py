@@ -16,6 +16,7 @@ import json
 from unittest import mock
 
 import frappe
+from frappe.utils import add_days, getdate
 
 from crm.area import messaggi
 from crm.clinica import cartella, paziente
@@ -284,11 +285,14 @@ class LaSpesa(PianiCase):
 		self.assertIn(("plan", DOC1), [(riga["kind"], riga["viewed_by"]) for riga in registro])
 
 	def test_solo_i_giorni_del_piano_e_solo_una_dieta(self):
-		fatto = self.pubblica(dati=self.menu(starts_on="2026-10-05", ends_on="2026-10-07"))
+		# a plan that starts tomorrow in the site's clock: written on fixed days,
+		# the test began failing the day after them
+		domani = add_days(getdate(), 1)
+		fatto = self.pubblica(dati=self.menu(starts_on=str(domani), ends_on=str(add_days(domani, 2))))
 		self.come(DOC1)
 		lista = piani_clinica.shopping_list(fatto["name"], days=14)
 		# from the plan's first day, and not after its last
-		self.assertEqual((lista["from"], lista["days"]), ("2026-10-05", 3))
+		self.assertEqual((lista["from"], lista["days"]), (str(domani), 3))
 		self.assertEqual(lista["foods"][0]["grams"], 240)
 		esercizi = {
 			"plan_type": R.ESERCIZI,
