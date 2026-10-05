@@ -55,6 +55,9 @@ class Parte:
 	dopo: tuple[str, ...] = ()
 	#: One line on what it adds, in English.
 	descrizione: str = ""
+	#: The parts that take what it makes, made after it: a module registered later
+	#: that gives an earlier one something to use - the dentist's visits, invoiced.
+	prima: tuple[str, ...] = ()
 
 
 _parti: dict[str, Parte] = {}
@@ -85,13 +88,19 @@ def in_ordine(parti: list[Parte]) -> list[Parte]:
 	per_chiave = {parte.chiave: parte for parte in parti}
 	ordine: list[Parte] = []
 	visti: set[str] = set()
+	# what comes after a part says so in its `dopo`, or the part in its `prima`
+	dopo = {parte.chiave: list(parte.dopo) for parte in parti}
+	for parte in parti:
+		for seguente in parte.prima:
+			if seguente in dopo and parte.chiave not in dopo[seguente]:
+				dopo[seguente].append(parte.chiave)
 
 	def visita(parte: Parte, catena: tuple[str, ...]) -> None:
 		if parte.chiave in visti:
 			return
 		if parte.chiave in catena:
 			raise ValueError(f"demo parts depend on each other: {' -> '.join((*catena, parte.chiave))}")
-		for prima in parte.dopo:
+		for prima in dopo[parte.chiave]:
 			if prima in per_chiave:
 				visita(per_chiave[prima], (*catena, parte.chiave))
 		visti.add(parte.chiave)

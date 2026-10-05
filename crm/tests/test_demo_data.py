@@ -57,6 +57,16 @@ class TestLePartiInOrdine(IntegrationTestCase):
 		]
 		self.assertEqual([p.chiave for p in registro.in_ordine(parti)], ["a", "b", "c", "d"])
 
+	def test_a_part_comes_before_the_ones_it_gives_to(self):
+		niente = lambda ctx: None  # noqa: E731
+		parti = [
+			Parte("fattura", "F", niente, dopo=("base",)),
+			Parte("base", "B", niente),
+			# registered after, made before what takes what it makes
+			Parte("dente", "D", niente, dopo=("base",), prima=("fattura",)),
+		]
+		self.assertEqual([p.chiave for p in registro.in_ordine(parti)], ["base", "dente", "fattura"])
+
 	def test_parts_that_need_each_other_are_refused(self):
 		niente = lambda ctx: None  # noqa: E731
 		with self.assertRaises(ValueError):
