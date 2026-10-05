@@ -149,6 +149,7 @@
     v-model="dialog.show"
     :lead="dialog.lead"
     :name="dialog.name"
+    con-chi
     @changed="list.reload()"
   />
 </template>
