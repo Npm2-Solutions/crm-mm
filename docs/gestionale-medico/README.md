@@ -1080,7 +1080,8 @@ il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
     NPM2 (`GRUPPI_CIQUAL`: le paste per torte sono farina, le alternative vegetali
     alla carne legumi).
   - Ricaricata, la libreria porta i numeri nuovi; un nome che il centro non ha
-    cambiato segue quello della libreria, uno cambiato resta del centro.
+    cambiato segue quello della libreria, uno cambiato prima del 05/10/2026 resta
+    del centro.
   - Le tabelle italiane (BDA-IEO con la licenza per i software, CREA con il
     permesso scritto) le aggiungiamo noi allo stesso modo, quando ci sono.
 - **I numeri sono della tabella**: "4,63" è 4,63; "-" non è noto e non si conta;
@@ -1095,20 +1096,27 @@ il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
   (`crm/piani/dati/esercizi.json`, fatto una volta da exercises-dataset). Si carica
   da sola all'installazione e a ogni aggiornamento che porta un file nuovo: dal
   01/10/2026 il centro non importa più, e gli esercizi nuovi li aggiungiamo noi.
-  - Il nome in inglese, da rinominare quando un trainer l'ha letto; come si fa in
-    italiano, a passi numerati; la parte del corpo; l'attrezzo e i muscoli in
-    italiano (poche decine di parole, tradotte una volta).
-  - Le immagini e le animazioni (© Gym visual, autorizzate a NPM2 Solutions) si
-    vedono solo da dove le tiene l'agenzia: un indirizzo https o un percorso del
-    server, sul permlevel 1 (`tecnico.integrazioni`). Una copia per server o un CDN,
-    non una per sito; si cambia l'indirizzo e ogni esercizio lo segue, senza
-    reimportare. L'assistente non le tocca mai.
+  - Il nome in italiano, tradotto da NPM2 (05/10/2026: il dataset ha solo
+    l'inglese, che resta accanto e si cerca anche così); come si fa in italiano, a
+    passi numerati; la parte del corpo; l'attrezzo e i muscoli in italiano (poche
+    decine di parole, tradotte una volta).
+  - Le immagini e le animazioni (© Gym visual, autorizzate a NPM2 Solutions) se le
+    porta ogni server da solo (`crm/piani/immagini.py`): ogni ora guarda se gli
+    mancano e, se sì, le prende dal dataset al commit della libreria, in
+    `sites/assets/crm-esercizi`, un sito alla volta; ogni sito del server le mostra
+    da lì. Nessuno preme niente, e nessuna pagina le carica da un server altrui.
+    Un CDN dell'agenzia resta possibile dal Desk (`CRM Area Settings`, permlevel
+    1). L'assistente non le tocca mai.
   - Il paziente vede l'animazione nell'area, con "© Gym visual" sotto; la foto del
     centro, se c'è, vince, e allora non è di Gym visual.
+- **Il centro non cambia la libreria** (05/10/2026): spegne gli alimenti e gli
+  esercizi che non usa, con l'interruttore della riga, e aggiunge i suoi, che
+  scrive e corregge come vuole. Uno della libreria si apre per leggerlo (le figure,
+  i muscoli, come si fa; i valori per 100 g), non per cambiarlo. Un alimento o un
+  esercizio si spegne, non si cancella: un piano può averlo.
 - **Caricate di nuovo**, la libreria degli alimenti porta i suoi numeri nuovi e
-  quella degli esercizi le sue immagini e i muscoli; le parole del centro (un nome,
-  il gruppo, come si fa un esercizio) restano sue. Un alimento o un esercizio si spegne, non si
-  cancella: un piano può averlo.
+  quella degli esercizi le sue immagini e i muscoli; quello che un centro aveva
+  scritto prima (un nome, il gruppo, come si fa un esercizio) resta suo.
 
 ### I cicli di sedute
 
