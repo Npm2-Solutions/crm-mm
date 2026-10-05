@@ -540,9 +540,7 @@ def _attribute(doc, lead: dict, form_id: str | None, token: str | None = None) -
 
 def _note_unmapped_answers(lead_doc, answers: list[tuple[str, str]]) -> None:
 	"""Park the answers with no CRM field on the lead, instead of dropping them."""
-	lines = "".join(
-		f"<li><b>{frappe.utils.escape_html(q)}</b>: {frappe.utils.escape_html(a)}</li>" for q, a in answers
-	)
+	lines = "".join(_risposta(q, a) for q, a in answers)
 	try:
 		lead_doc.add_comment(
 			"Comment",
@@ -550,6 +548,13 @@ def _note_unmapped_answers(lead_doc, answers: list[tuple[str, str]]) -> None:
 		)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Meta: could not record unmapped answers")
+
+
+def _risposta(domanda: str, risposta: str) -> str:
+	"""One answer of the note: a question that ends with its own mark takes no
+	colon after it («When shall we call you?: After 6pm» read twice punctuated)."""
+	segno = " " if str(domanda).rstrip().endswith(("?", ":")) else ": "
+	return f"<li><b>{frappe.utils.escape_html(domanda)}</b>{segno}{frappe.utils.escape_html(risposta)}</li>"
 
 
 def get_question_labels(form_id: str | None) -> dict:
