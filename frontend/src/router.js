@@ -11,24 +11,18 @@ import { isMobileView } from '@/composables/breakpoints'
 import { nomeDellaPagina } from '@/utils/menu'
 import { segnaIRitorni } from '@/utils/ritorno'
 
-let personaChecked = false
-export const PERSONA_DONE_KEY = 'crm_persona_captured'
-
-async function shouldCapturePersona() {
-  // Client-side flag guards against re-prompting if the server persist failed.
-  if (localStorage.getItem(PERSONA_DONE_KEY)) return false
-  // the page says it (crm.www.crm, `ask_persona`): the two calls below waited in
-  // a row before every first page a manager opened
-  if (window.ask_persona != null) return Boolean(window.ask_persona)
-  const captured = await call('frappe.client.get_single_value', {
-    doctype: 'FCRM Settings',
-    field: 'persona_captured',
-  })
-  if (captured) return false
-  // The wizard only feeds telemetry; skip it entirely if the user opted out.
-  const { enabled } =
-    (await call('frappe.utils.telemetry.pulse.client.boot_config')) || {}
-  return !!enabled
+// The centre's first opening (crm/benvenuto.py): whoever sets it up chooses its
+// language and writes its name before anything else, as the page's boot says.
+// «Later» leaves it for this tab (`sessionStorage`), and it comes back with the
+// next one
+export const BENVENUTO_DOPO = 'dc-benvenuto-dopo'
+function daAccogliere() {
+  if (!window.benvenuto) return false
+  try {
+    return window.sessionStorage.getItem(BENVENUTO_DOPO) !== '1'
+  } catch {
+    return true
+  }
 }
 
 // Every scope of people's records but the masked one: who reads names, emails
@@ -264,9 +258,10 @@ const routes = [
     props: true,
   },
   {
-    path: '/onboarding',
+    path: '/benvenuto',
+    alias: '/onboarding',
     name: 'Onboarding',
-    component: () => import('@/pages/PersonaForm.vue'),
+    component: () => import('@/pages/Benvenuto.vue'),
   },
   {
     path: '/:invalidpath',
@@ -360,9 +355,9 @@ router.beforeEach(async (to, from, next) => {
     return next({ path: to.path, query: resto, hash: to.hash, replace: true })
   }
 
-  const { isLoggedIn, user } = sessionStore()
+  const { isLoggedIn } = sessionStore()
   const store = usersStore()
-  const { users, isCrmUser, isAgency, permissions, puoUno } = store
+  const { users, isCrmUser, permissions } = store
 
   // whether the session opens DottorCloud comes with the page (`crm_user`): the
   // list of users arrives meanwhile, the first page does not wait for it
@@ -382,37 +377,18 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // the wizard that sets the CRM up is the agency's, or the centre's manager's
-  const isAdminUser =
-    isLoggedIn &&
-    (isAgency() || user === 'Administrator' || puoUno('utenti.gestisci'))
-
-  // Only admins who haven't finished may reach the wizard, even via direct URL.
-  if (isLoggedIn && to.name === 'Onboarding') {
-    try {
-      if (!isAdminUser || !(await shouldCapturePersona())) {
-        return next({ name: 'Home' })
-      }
-    } catch {
-      return next({ name: 'Home' })
-    }
+  // the welcome is only while the centre is still to be welcomed, and before
+  // anything else for whoever sets it up (the boot's `benvenuto` says both)
+  if (isLoggedIn && to.name === 'Onboarding' && !window.benvenuto) {
+    return next({ name: 'Home' })
   }
-
   if (
     isLoggedIn &&
-    isCrmUser() &&
-    !personaChecked &&
     to.name !== 'Onboarding' &&
-    isAdminUser
+    to.name !== 'Not Permitted' &&
+    daAccogliere()
   ) {
-    personaChecked = true
-    try {
-      if (await shouldCapturePersona()) {
-        return next({ name: 'Onboarding' })
-      }
-    } catch (error) {
-      // fail open
-    }
+    return next({ name: 'Onboarding' })
   }
 
   if (isLoggedIn && to.name !== 'Not Permitted' && !isCrmUser()) {

@@ -25235,9 +25235,9 @@ msgstr "Passo copiato: incollalo da qualsiasi + del flusso"
 msgid "Step options"
 msgstr "Opzioni del passo"
 
-#: frontend/src/components/Questionnaire.vue:91
+#: frontend/src/pages/Benvenuto.vue
 msgid "Step {0} of {1}"
-msgstr "Domanda {0} di {1}"
+msgstr "Passo {0} di {1}"
 
 #: crm/automation/engine.py
 msgid "Step {0}: if_else requires at least one branch"
@@ -30748,9 +30748,9 @@ msgstr "Pipeline ponderata"
 msgid "Welcome Message"
 msgstr ""
 
-#: frontend/src/pages/PersonaForm.vue:132
+#: frontend/src/pages/Benvenuto.vue
 msgid "Welcome to {brand}"
-msgstr "Benvenuto in {brand}"
+msgstr "Ti diamo il benvenuto in {brand}"
 
 #: frontend/src/pages/Welcome.vue:4
 msgid "Welcome {0}, lets add your first lead"
@@ -44318,6 +44318,46 @@ msgstr "L'ora su cui leggi gli orari. L'agenda tiene quella del centro."
 #: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
 msgid "The centre’s time zone ({0})"
 msgstr "Fuso orario del centro ({0})"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "The page could not be loaded: try again in a moment."
+msgstr "Non è stato possibile aprire la pagina: riprova tra un momento."
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Which language does the centre work in? Its emails, documents and screens will speak it; each person can choose their own later."
+msgstr "In che lingua lavora il centro? La parleranno le sue email, i documenti e gli schermi; ognuno potrà poi sceglierne una sua."
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Your centre"
+msgstr "Il tuo centro"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Its name heads the booking page, the forms and the emails your clients receive."
+msgstr "Il suo nome apre la pagina di prenotazione, i moduli e le email che ricevono i tuoi clienti."
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "e.g. Studio Medico Aurora"
+msgstr "es. Studio Medico Aurora"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Look around with demo data first"
+msgstr "Prima dai un'occhiata con i dati di prova"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "People, appointments and invoices to try {brand} on, taken away in one tap from Settings › The centre › Demo data."
+msgstr "Persone, appuntamenti e fatture per provare {brand}, che si tolgono con un tocco da Impostazioni › Il centro › Dati di prova."
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Start using {brand}"
+msgstr "Inizia a usare {brand}"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "Do it later"
+msgstr "Lo faccio dopo"
+
+#: frontend/src/pages/Benvenuto.vue
+msgid "The centre could not be saved: try again."
+msgstr "Non è stato possibile salvare il centro: riprova."
 
 #: crm/benvenuto.py
 msgid "Write the centre's name"
