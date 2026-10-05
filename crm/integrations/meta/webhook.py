@@ -120,7 +120,7 @@ def _valid_signature(header: str | None, raw_body: bytes) -> bool:
 	return hmac.compare_digest(header.split("=", 1)[1], expected)
 
 
-@frappe.whitelist(allow_guest=True)  # nosemgrep: guest-whitelisted-method
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def data_deletion(signed_request: str | None = None):
 	"""Meta Data Deletion Request callback (required for App Review).
 

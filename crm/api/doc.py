@@ -620,7 +620,8 @@ def get_doc_permissions(doctype: str, docname: str | int) -> dict:
 	permissions = frappe.permissions.get_doc_permissions(doc)
 	for ptype in ("write", "create", "delete", "share", "email"):
 		if permissions.get(ptype):
-			permissions[ptype] = int(frappe.has_permission(doctype, ptype, doc))
+			allowed = frappe.has_permission(doctype, ptype, doc)
+			permissions[ptype] = int(allowed)
 	return {"permissions": permissions}
 
 
@@ -901,7 +902,7 @@ def remove_linked_doc_reference(items: str | list, remove_contact: bool = False,
 	return "success"
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def delete_bulk_docs(doctype: str, items: str | list, delete_linked: bool = False):
 	from frappe.desk.reportview import delete_bulk
 

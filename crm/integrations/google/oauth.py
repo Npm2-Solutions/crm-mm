@@ -171,6 +171,7 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 	try:
 		tokens = exchange_code(code)
 		store_tokens(parsed.get("cal"), tokens)
+		# nosemgrep: whitelisted-side-effect-on-get — Google's redirect is a GET: the signed state and the session are checked above
 		frappe.db.commit()
 		_redirect_back()
 	except Exception as exc:

@@ -223,7 +223,7 @@ def recupera() -> int:
 		):
 			creati += 1
 			if creati % 200 == 0:
-				frappe.db.commit()
+				frappe.db.commit()  # nosemgrep: frappe-manual-commit — a job over every person: what is done stays if it stops
 	frappe.db.set_default(RECUPERO_FATTO, str(now_datetime()))
 	return creati
 

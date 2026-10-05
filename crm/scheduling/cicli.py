@@ -487,7 +487,7 @@ def della_seduta(appuntamento) -> dict | None:
 
 
 @frappe.whitelist(methods=["POST"])
-def save_cycle(lead: str, data, name: str | None = None) -> dict:
+def save_cycle(lead: str, data: str | dict, name: str | None = None) -> dict:
 	"""A cycle, new or put right. The service does not change once sessions are
 	booked, nor the sessions go below the ones used."""
 	_gestisce()

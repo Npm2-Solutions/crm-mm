@@ -135,7 +135,7 @@ def registration_options() -> dict:
 
 @frappe.whitelist(methods=["POST"])
 @rate_limit(limit=20, seconds=60 * 60)
-def register(credential) -> dict:
+def register(credential: str | dict) -> dict:
 	"""The passkey the phone made: its public half is kept, the rest stays there."""
 	from webauthn import verify_registration_response
 	from webauthn.helpers import bytes_to_base64url
@@ -206,7 +206,7 @@ def authentication_options() -> dict:
 # nosemgrep: guest-whitelisted-method — the signature of the phone's key is the credential
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=60, seconds=60 * 60)
-def authenticate(credential, state: str) -> dict:
+def authenticate(credential: str | dict, state: str) -> dict:
 	"""The phone's answer: the right key of an open area enters it."""
 	from webauthn import verify_authentication_response
 	from webauthn.helpers import base64url_to_bytes, bytes_to_base64url

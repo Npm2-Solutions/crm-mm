@@ -142,7 +142,7 @@ def propose(file_url: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def create_draft(event: str, title: str, schema) -> dict:
+def create_draft(event: str, title: str, schema: str | dict) -> dict:
 	"""The proposal, as checked, becomes a draft template: finished and published in
 	the builder. The register keeps what the person changed of it."""
 	from crm.moduli import modelli

@@ -504,7 +504,8 @@ def livelli_di(user: str | None = None) -> list[str]:
 	frappe = _frappe()
 	carica()
 	user = user or frappe.session.user
-	espliciti = [lv.chiave for lv in map(livello_del_profilo, profili_di(user)) if lv]
+	dai_profili = (livello_del_profilo(profilo) for profilo in profili_di(user))
+	espliciti = [lv.chiave for lv in dai_profili if lv]
 	if espliciti:
 		ordine = {lv.chiave: i for i, lv in enumerate(livelli())}
 		return sorted(espliciti, key=lambda chiave: ordine.get(chiave, 99))

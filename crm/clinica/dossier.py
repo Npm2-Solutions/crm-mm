@@ -234,11 +234,12 @@ def find_out_of_care(query: str) -> list[dict]:
 	persone += frappe.get_all("CRM Lead", filters={"lead_name": testo}, pluck="name", limit=5)
 	righe = []
 	for nome in dict.fromkeys(persone):
+		in_cura = frappe.has_permission("CRM Lead", "read", doc=nome)
 		righe.append(
 			{
 				"name": nome,
 				"lead_name": frappe.db.get_value("CRM Lead", nome, "lead_name"),
-				"in_care": bool(frappe.has_permission("CRM Lead", "read", doc=nome)),
+				"in_care": bool(in_cura),
 			}
 		)
 	return righe[:5]
