@@ -76,28 +76,24 @@
                 <span class="truncate text-base-medium text-ink-gray-7">
                   {{ template.title }}
                 </span>
-                <!-- written by the operator at the desk, not filled by the person -->
-                <Badge
+                <!-- what kind of form it is: the design system's Tag, as on a
+                     person's documents, quotes and plans. A sheet is written by
+                     the operator at the desk, not filled by the person -->
+                <CategoryTag
                   v-if="template.use === 'Sheet'"
+                  color="blue"
                   :label="__('Sheet')"
-                  theme="gray"
-                  variant="subtle"
-                  size="sm"
                 />
                 <!-- filled by anybody on the centre's website -->
-                <Badge
+                <CategoryTag
                   v-else-if="template.use === 'Website'"
+                  color="violet"
                   :label="__('Website')"
-                  theme="blue"
-                  variant="subtle"
-                  size="sm"
                 />
-                <Badge
+                <CategoryTag
                   v-if="template.clinical"
+                  color="rose"
                   :label="__('Health data')"
-                  theme="blue"
-                  variant="subtle"
-                  size="sm"
                 />
               </div>
               <!-- on a phone the line wraps: cut, it lost the address's end
@@ -206,6 +202,7 @@ import { copyToClipboard, formatDate } from '@/utils'
 import { usersStore } from '@/stores/users'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import PaperFormDialog from '@/components/Settings/Forms/PaperFormDialog.vue'
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import {
   Badge,
