@@ -161,6 +161,53 @@ class RicezioneTest(UnitTestCase):
 		self.assertTrue(itala.ricevuta({"ricezione": True}))
 
 
+#: a supplier's invoice as Itala's test door listed it on 05/10/2026, without
+#: its XML: every value as text, `dati_documento` in FatturaPA's names
+RIGA_RICEVUTA = {
+	"id": "551096",
+	"partita_iva": "09999990121",
+	"data": "2026-10-05 12:57:34",
+	"data_documento": "2026-10-05",
+	"tipo_documento": "TD01",
+	"numero_documento": "F-2026-17",
+	"ricezione": "1",
+	"sdi_identificativo": "5510960",
+	"sdi_stato": "",
+	"sdi_nome_file": "IT00743110157_00001.xml",
+	"sdi_data_aggiornamento": None,
+	"dati_documento": {
+		"mittente": {
+			"PartitaIVA": "IT00743110157",
+			"CodiceFiscale": "",
+			"Denominazione": "Fornitore Prova Srl",
+		},
+		"documento": {"Tipo": "FATT", "Data": "2026-10-05", "Numero": "F-2026-17", "Totale": "61.00"},
+	},
+}
+
+
+class FatturaRicevutaTest(UnitTestCase):
+	def test_fornitore_numero_data_e_totale_si_leggono(self):
+		dati = itala.fattura_ricevuta(RIGA_RICEVUTA)
+		self.assertEqual(dati["supplier_name"], "Fornitore Prova Srl")
+		self.assertEqual(dati["supplier_tax_id"], "00743110157")
+		self.assertIsNone(dati["supplier_fiscal_code"])
+		self.assertEqual(dati["document_type"], "TD01")
+		self.assertEqual(dati["document_number"], "F-2026-17")
+		self.assertEqual(dati["document_date"], "2026-10-05")
+		self.assertEqual(dati["total_amount"], "61.00")
+		self.assertEqual(dati["currency"], "EUR")
+		self.assertEqual(dati["received_on"], "2026-10-05 12:57:34")
+
+	def test_una_persona_si_chiama_per_nome_e_cognome(self):
+		riga = {"dati_documento": {"mittente": {"Nome": "Anna", "Cognome": "Bianchi"}}}
+		self.assertEqual(itala.fattura_ricevuta(riga)["supplier_name"], "Anna Bianchi")
+
+	def test_senza_dati_restano_vuoti(self):
+		self.assertEqual(itala.fattura_ricevuta("non una riga"), {})
+		self.assertIsNone(itala.fattura_ricevuta({"id": "1"})["document_number"])
+
+
 class ScadenzaTest(UnitTestCase):
 	def test_la_scadenza_si_legge_con_l_ora_del_sito(self):
 		from datetime import datetime

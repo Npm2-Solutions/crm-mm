@@ -382,13 +382,8 @@ def _registra_ingresso(emittente: dict, voce: dict) -> bool:
 	if frappe.db.exists("CRM Supplier Invoice", {"provider_id": riferimento}):
 		return False
 
-	dati = voce.get("dati_documento") or {}
-	if isinstance(dati, str):
-		try:
-			dati = json.loads(dati)
-		except ValueError:
-			dati = {}
-
+	dati = busta.fattura_ricevuta(voce)
+	ricevuta_il = dati.pop("received_on", None)
 	doc = frappe.new_doc("CRM Supplier Invoice")
 	doc.update(
 		{
@@ -396,10 +391,10 @@ def _registra_ingresso(emittente: dict, voce: dict) -> bool:
 			"provider_id": riferimento,
 			"sdi_identifier": str(voce.get("sdi_identificativo") or "") or None,
 			"sdi_filename": voce.get("sdi_nome_file"),
-			"received_on": voce.get("sdi_data_aggiornamento") or now_datetime(),
+			"received_on": ricevuta_il or now_datetime(),
 			"status": "ricevuta",
-			"payload": json.dumps(dati, ensure_ascii=False, default=str)[:8000] if dati else None,
-			**_anagrafica(dati),
+			"payload": _dati_del_fornitore(voce),
+			**dati,
 		}
 	)
 	doc.insert(ignore_permissions=True)
@@ -421,27 +416,10 @@ def _registra_ingresso(emittente: dict, voce: dict) -> bool:
 	return True
 
 
-def _anagrafica(dati: dict) -> dict:
-	"""Read the few fields worth showing off what the provider already parsed.
-
-	Defensive on every key: the shape is theirs, it can change, and a missing field
-	must not cost the filing of a document that did arrive.
-	"""
-	if not isinstance(dati, dict):
-		return {}
-	mittente = dati.get("mittente") or dati.get("cedente") or {}
-	documento_ = dati.get("documento") or {}
-	if not isinstance(mittente, dict):
-		mittente = {}
-	if not isinstance(documento_, dict):
-		documento_ = {}
-	return {
-		"supplier_name": (mittente.get("denominazione") or mittente.get("nome") or "")[:140] or None,
-		"supplier_tax_id": mittente.get("partita_iva") or mittente.get("piva"),
-		"supplier_fiscal_code": mittente.get("codice_fiscale"),
-		"document_type": documento_.get("tipo_documento") or documento_.get("tipo"),
-		"document_number": documento_.get("numero"),
-		"document_date": documento_.get("data"),
-		"total_amount": documento_.get("importo_totale") or documento_.get("totale"),
-		"currency": documento_.get("divisa") or "EUR",
-	}
+def _dati_del_fornitore(voce: dict) -> str | None:
+	"""What Itala parsed of the invoice, kept as it came, short: the XML is the record."""
+	dati = voce.get("dati_documento")
+	if not dati:
+		return None
+	testo = dati if isinstance(dati, str) else json.dumps(dati, ensure_ascii=False, default=str)
+	return testo[:8000]
