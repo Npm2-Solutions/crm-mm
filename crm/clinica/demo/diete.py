@@ -163,11 +163,12 @@ def _esercizi() -> dict[str, str]:
 	trovati: dict[str, str] = {}
 	for riga in frappe.get_all(
 		"CRM Exercise",
-		filters={"exercise_name": ["in", sorted(nomi)], "enabled": 1},
-		fields=["name", "exercise_name"],
-		order_by="exercise_name, name",
+		# by the dataset's English name: the library's own name follows the centre's language
+		filters={"name_in_source": ["in", sorted(nomi)], "enabled": 1},
+		fields=["name", "name_in_source"],
+		order_by="name_in_source, name",
 	):
-		trovati.setdefault(riga.exercise_name.lower(), riga.name)
+		trovati.setdefault(riga.name_in_source.lower(), riga.name)
 	return trovati
 
 

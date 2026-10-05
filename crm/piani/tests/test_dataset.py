@@ -20,6 +20,7 @@ from crm.piani import dataset as T
 RECORD = {
 	"id": "0001",
 	"name": "3/4 sit-up",
+	"names": {"it": "Sit-up a 3/4"},
 	"category": "waist",
 	"body_part": "waist",
 	"equipment": "body weight",
@@ -44,9 +45,10 @@ class GliEsercizi(UnitTestCase):
 			T.esercizio(RECORD, "it"),
 			{
 				"code": "0001",
-				"name": "3/4 sit-up",
+				"name": "Sit-up a 3/4",
 				"name_in_source": "3/4 sit-up",
 				"body_part": "Core",
+				"exercise_name": "Sit-up a 3/4",
 				"equipment": "corpo libero",
 				"primary_muscles": "addominali",
 				"secondary_muscles": "flessori dell'anca, zona lombare",
@@ -62,20 +64,38 @@ class GliEsercizi(UnitTestCase):
 		# a site loaded in English before it said it is in Italy
 		self.assertEqual(
 			T.nella_lingua(RECORD, "it", inglese),
-			{"equipment": "corpo libero", "instructions": "1. Sdraiati sulla schiena.\n2. Solleva il busto."},
+			{
+				"exercise_name": "Sit-up a 3/4",
+				"equipment": "corpo libero",
+				"instructions": "1. Sdraiati sulla schiena.\n2. Solleva il busto.",
+			},
 		)
 		# words already right, or the centre's own: nothing to do
 		self.assertEqual(T.nella_lingua(RECORD, "it", T.esercizio(RECORD, "it")), {})
 		self.assertEqual(
-			T.nella_lingua(RECORD, "it", {**inglese, "instructions": "Piano, guardando avanti."}),
+			T.nella_lingua(
+				RECORD,
+				"it",
+				{**inglese, "instructions": "Piano, guardando avanti.", "exercise_name": "Il mio sit-up"},
+			),
 			{"equipment": "corpo libero"},
 		)
 		self.assertEqual(
 			T.nella_lingua(RECORD, "it", {**inglese, "equipment": None}),
-			{"instructions": T.esercizio(RECORD, "it")["instructions"]},
+			{
+				"exercise_name": "Sit-up a 3/4",
+				"instructions": T.esercizio(RECORD, "it")["instructions"],
+			},
 		)
 		# and back, on a site that chose English
-		self.assertEqual(T.nella_lingua(RECORD, "en", T.esercizio(RECORD, "it"))["equipment"], "body weight")
+		indietro = T.nella_lingua(RECORD, "en", T.esercizio(RECORD, "it"))
+		self.assertEqual((indietro["equipment"], indietro["exercise_name"]), ("body weight", "3/4 sit-up"))
+
+	def test_il_nome_italiano_o_quello_del_dataset(self):
+		senza = {key: value for key, value in RECORD.items() if key != "names"}
+		self.assertEqual(T.esercizio(senza, "it")["name"], "3/4 sit-up")
+		self.assertEqual(T.esercizio(RECORD, "en")["name"], "3/4 sit-up")
+		self.assertEqual(T.esercizio({**RECORD, "names": {"it": "  "}}, "it")["name"], "3/4 sit-up")
 
 	def test_in_inglese_e_senza_passi(self):
 		record = {**RECORD, "name": "barbell curl", "instruction_steps": {}}
@@ -109,12 +129,16 @@ class LaLibreriaNelCodice(UnitTestCase):
 		file = Path(T.__file__).parent / "dati" / "esercizi.json"
 		record = json.loads(file.read_text(encoding="utf-8"))
 		self.assertGreaterEqual(len(record), 1324)
-		codici = set()
+		codici, nomi = set(), set()
 		for voce in record:
 			esercizio = T.esercizio(voce, "it")
 			self.assertIsNotNone(esercizio, voce)
 			self.assertNotIn(esercizio["code"], codici, voce)
 			codici.add(esercizio["code"])
+			# NPM2's Italian name, one per exercise
+			self.assertTrue((voce.get("names") or {}).get("it"), voce["id"])
+			self.assertNotIn(esercizio["name"].lower(), nomi, voce["id"])
+			nomi.add(esercizio["name"].lower())
 			self.assertTrue(voce["instruction_steps"]["it"], voce["id"])
 			self.assertTrue(esercizio["instructions"], voce["id"])
 			if voce.get("image") or voce.get("gif_url"):
