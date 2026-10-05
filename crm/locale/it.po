@@ -43578,6 +43578,18 @@ msgstr "Il contratto di ogni abbonamento, consegnato; il certificato portato dag
 msgid "A company in test with the cards of its services, the visits invoiced day by day as they were paid, the cycles paid as a whole, a credit note: test invoices, never sent. Made only where the centre has no issuing company yet."
 msgstr "Un'azienda in prova con le schede dei suoi servizi, le visite fatturate giorno per giorno come sono state pagate, i cicli pagati per intero, una nota di credito: fatture di prova, mai inviate. Si crea solo dove il centro non ha ancora un'azienda che emette."
 
+#: crm/area/__init__.py
+msgid "The area opened to the regulars and to a few who come in the next days, a mother with her child's beside her own; most came in, the desk wrote on some boards and some read it."
+msgstr "L'area aperta agli abituali e a qualcuno che viene nei prossimi giorni, una mamma con quella del figlio accanto alla sua; quasi tutti sono entrati, la segreteria ha scritto sulla bacheca di alcuni e qualcuno l'ha letta."
+
+#: crm/piani/__init__.py
+msgid "Plans and programmes"
+msgstr "Piani e programmi"
+
+#: crm/piani/__init__.py
+msgid "The kinesiologist's trainings to do at home and the dietitian's habits, given at the last session; a programme of each, written this morning; what people ticked in the area these last days."
+msgstr "Gli allenamenti a casa del chinesiologo e le abitudini della dietista, dati all'ultima seduta; un programma di ciascuno, scritto stamattina; quello che le persone hanno spuntato nell'area in questi ultimi giorni."
+
 #: crm/scheduling/abbonamenti.py
 msgid "One of the {0} people uses their subscription"
 msgstr "Una persona su {0} usa il suo abbonamento"

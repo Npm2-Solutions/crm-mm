@@ -89,3 +89,19 @@ def registra() -> None:
 		registra_capacita(capacita, concessioni)
 	registra_funzione(CHAT)
 	messaggi.registra()
+	# its share of the demo: the area opened to the regulars, who came in
+	from crm.area import demo
+	from crm.demo.registro import Parte, registra_parte
+
+	registra_parte(
+		Parte(
+			"area",
+			"Client area",
+			demo.crea,
+			modulo=PIANO,
+			dopo=("clienti", "abbonamenti"),
+			descrizione="The area opened to the regulars and to a few who come in the next days, a "
+			"mother with her child's beside her own; most came in, the desk wrote on some boards "
+			"and some read it.",
+		)
+	)

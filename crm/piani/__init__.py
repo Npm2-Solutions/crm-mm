@@ -76,3 +76,19 @@ def registra() -> None:
 		registra_capacita(capacita, concessioni)
 	# "Plans" in the area, to whoever follows one now
 	registra_sezione(Sezione("plans", area.piani_in_corso))
+	# its share of the demo: plans and programmes, ticked in the area
+	from crm.demo.registro import Parte, registra_parte
+	from crm.piani import demo
+
+	registra_parte(
+		Parte(
+			"piani",
+			"Plans and programmes",
+			demo.crea,
+			modulo=PIANO,
+			dopo=("area",),
+			descrizione="The kinesiologist's trainings to do at home and the dietitian's habits, given "
+			"at the last session; a programme of each, written this morning; what people ticked in "
+			"the area these last days.",
+		)
+	)
