@@ -44270,3 +44270,11 @@ msgstr "Arrivano anche quando {brand} è chiuso."
 #: frontend/src/components/Mobile/NotificheSulTelefono.vue
 msgid "Notifications are on: they arrive on this phone."
 msgstr "Notifiche attive: arrivano su questo telefono."
+
+#: crm/lingue.py
+msgid "Choose Italian or English"
+msgstr "Scegli italiano o inglese"
+
+#: crm/lingue.py
+msgid "Choose a time zone of Europe"
+msgstr "Scegli un fuso orario europeo"
