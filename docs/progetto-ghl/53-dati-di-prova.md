@@ -30,8 +30,10 @@ d'attesa, conversazioni.
 ### Le parti
 
 - `crm/demo/registro.py`: una **parte** (`Parte`) è la quota di un modulo, con la
-  sua chiave, il modulo del piano che la accende e le parti che le servono prima
-  (`dopo`). Il modulo la registra dal suo `registra()`, come le capacità.
+  sua chiave, il modulo del piano che la accende, le parti che le servono prima
+  (`dopo`) e quelle che prendono quello che fa, fatte dopo di lei (`prima`: le
+  visite del dentista, che la fatturazione fattura). Il modulo la registra dal suo
+  `registra()`, come le capacità.
 - Al caricamento si fanno le parti dei moduli **accesi o in prova**, in ordine, non
   ancora fatte. Quelle fatte sono in un valore del sito (`crm_demo_data_parts`):
   una parte fallita a metà non conta come fatta.
@@ -154,6 +156,34 @@ d'attesa, conversazioni.
     mesi a tempo: la prima tappa è aperta. Chi è entrato nell'area spunta lì cosa ha
     fatto, oggi e nei due giorni prima, fin dove l'area lascia recuperare: un giorno
     tutto, un giorno a metà, un giorno dimenticato.
+  - **Cartella clinica** (`crm/clinica/demo/cartelle.py`, con il modulo
+    «clinica»): la direttrice sanitaria entra nella squadra e pubblica le schede
+    cliniche (la valutazione fisioterapica, la prima visita nutrizionale, poi quella
+    odontoiatrica). Stamattina i professionisti hanno scritto in cartella le prime
+    visite delle ultime settimane, ognuna sulla sua scheda (l'anamnesi con allergie,
+    farmaci e patologie, i test, la valutazione, il piano), e le hanno firmate:
+    ogni visita ha il suo referto in PDF/A, archiviato tra i documenti della
+    persona. La fisioterapista annota una seduta e ne integra una. La sintesi
+    propone quello che le schede dicono, e il professionista conferma, scarta o
+    lascia lì; alla visita la persona dà il consenso al dossier, e qualcuno quello
+    ai referti online. La direttrice oscura un episodio dell'osteopata, come la persona
+    ha chiesto; la dietista apre fuori dall'équipe la cartella di una paziente
+    della fisioterapista, con il suo motivo, e la legge. Esami e immagini portati
+    dalle persone, una prescrizione; un referto dato online e già scaricato; sulla
+    bacheca dell'area le indicazioni di chi cura.
+  - **Odontoiatria** (`crm/clinica/demo/dentista.py`): un dentista con il suo
+    studio, i suoi turni e i suoi servizi (prima visita, igiene, otturazione,
+    devitalizzazione, corona, impianto). Le prime visite delle ultime settimane,
+    prenotate nei suoi turni liberi, scritte sulla scheda con l'odontogramma; il
+    piano di cura è un preventivo sui denti e le loro superfici, accettato,
+    rifiutato o ancora da decidere; a chi ha accettato le cure sono prenotate, la
+    prima già fatta quando c'era il tempo. Le sue visite si fatturano con le altre.
+  - **Diete ed esercizi a casa** (`crm/clinica/demo/diete.py`): la dietista dà un
+    menu della settimana con gli alimenti della libreria, i grammi, gli obiettivi
+    del giorno e le calorie, o una dieta a scambi; la fisioterapista gli esercizi a
+    casa scelti per il motivo della prima visita. All'ultima seduta, con quella
+    data; chi è nell'area li spunta lì. Scritti da un professionista sanitario,
+    sono dati sanitari, letti come la cartella.
 - È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
   parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
@@ -207,7 +237,9 @@ il resto, in pochi secondi (circa 6.500 record in meno di 4 secondi).
    esistente né sotto dov'erano prima della demo (`crm_demo_data_series`), e quelli
    che la demo ha cominciato, vuoti, se ne vanno.
 
-I test contano ogni tabella prima e dopo: devono tornare uguali.
+I test contano ogni tabella prima e dopo: devono tornare uguali. Gli stessi test
+girano anche con la clinica accesa (`crm/clinica/tests/test_dati_di_prova.py`),
+con la parte della clinica dentro.
 
 ### Nessuno riceve nulla (`crm/demo/guardie.py`)
 
@@ -216,7 +248,9 @@ Finché i dati di prova ci sono:
 - un'**email** a un indirizzo della demo esce dalla coda prima di partire (gli
   indirizzi sono su example.com, che non riceve posta);
 - un **WhatsApp** o un **SMS** al numero di una persona della demo resta nella
-  conversazione e non arriva a Meta né a Twilio;
+  conversazione e non arriva a Meta né a Twilio, e così ogni messaggio mentre una
+  parte si sta facendo: le sue persone si scrivono man mano, e i numeri si sono
+  letti prima (`trattenuto`);
 - una **chiamata** a una persona della demo non parte, e lo dice;
 - una **notifica** su un record della demo resta nel pannello, mai per email;
 - la **pagina di prenotazione** non mostra i servizi della demo ai visitatori;
@@ -241,8 +275,3 @@ Finché i dati di prova ci sono:
   telefono, finché ci sono.
 - Alla fine della configurazione iniziale il caricamento parte da solo, in coda.
 - Serve la capacità `dati_prova.gestisci` (il responsabile del centro).
-
-## Prossime parti
-
-- **La clinica**: pazienti, cartelle e visite firmate, la sintesi, il dossier,
-  l'odontogramma e i piani di cura, le diete.
