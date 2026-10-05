@@ -3,8 +3,8 @@
 
 """The healthcare register, which **adds** to invoicing's own.
 
-Thirty-six qualifications that carry two things invoicing has no business knowing:
-a VAT exemption under art. 10, and an SdI rule that can be a **ban**. The twenty
+Thirty-five qualifications that carry two things invoicing has no business knowing:
+a VAT exemption under art. 10, and an SdI rule that can be a **ban**. The twenty-one
 ordinary ones - lawyer, engineer, consultant - live in
 `crm.invoicing.engine.professioni`, because cassa and ritenuta are ordinary
 invoicing and an installation with no patients still has to get them right.
@@ -316,19 +316,9 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		sdi=RegolaSdI.OBBLIGATORIO,
 		note="Ris. AdE 9/2026: taxable, SdI mandatory, no Sistema TS report.",
 	),
-	_sanitaria(
-		"chinesiologo",
-		"Chinesiologo (art. 41 D.Lgs. 36/2021)",
-		SoggettoInviante.PROFESSIONISTA_SANITARIO,
-		esente=False,
-		riferimento=None,
-		obbligo_ts=False,
-		dal=None,
-		sdi=RegolaSdI.OBBLIGATORIO,
-		cassa=None,
-		percentuale=None,
-		note="Ris. AdE 9/2026: NOT a health profession. Ordinary 22% VAT, SdI mandatory, no Sistema TS report.",
-	),
+	# The kinesiologist the same resolution settled too, and it is no health
+	# profession at all (the Ministry of Health: art. 41 D.Lgs. 36/2021): invoicing's
+	# ordinary register has it.
 	# ==================================================== healthcare facilities
 	_sanitaria(
 		"struttura_autorizzata",
@@ -394,7 +384,7 @@ def professione(codice: str | None):
 
 
 def elenco() -> list[ProfessioneSanitaria]:
-	"""The healthcare register alone. Invoicing's twenty are not in here."""
+	"""The healthcare register alone. Invoicing's twenty-one are not in here."""
 	return list(_ELENCO)
 
 
