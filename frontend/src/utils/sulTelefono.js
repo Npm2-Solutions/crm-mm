@@ -210,6 +210,29 @@ export function spostaGiorno(giorno, giorni) {
 }
 
 /**
+ * Whom an appointment of the day is for, as its line says it: its person; a
+ * class by its service, its people counted under it (their names cut one
+ * another off); a cancelled one still names whom it was for - its title starts
+ * with the service, and the name was cut off the line.
+ */
+export function chiDellAppuntamentoDelGiorno(appuntamento = {}) {
+  const partecipanti = appuntamento.participants || []
+  const ancora = partecipanti.filter((p) => p.status !== 'Cancelled')
+  const nomi = (ancora.length ? ancora : partecipanti)
+    .map((p) => p.participant_name || p.party)
+    .filter(Boolean)
+  if (nomi.length > 1)
+    return {
+      titolo: appuntamento.service || nomi.join(', '),
+      persone: nomi.length,
+    }
+  return {
+    titolo: nomi[0] || appuntamento.title || appuntamento.service || '',
+    persone: nomi.length,
+  }
+}
+
+/**
  * A day's appointments and events as one list, as a phone shows the agenda:
  * what lasts the whole day first, then by when it starts. Appointments come as
  * `crm.api.appointments.get_calendar` gives them, events as the calendar draws

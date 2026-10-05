@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  chiDellAppuntamentoDelGiorno,
   contattoDi,
   cosePerGruppo,
   dominioDi,
@@ -322,5 +323,47 @@ describe('a note on one line', () => {
     ).toBe('Anna Bianchi · Laura Rossi · 2 ore fa')
     expect(rigaDellaNota({}, { quando: 'ieri' })).toBe('ieri')
     expect(rigaDellaNota()).toBe('')
+  })
+})
+
+describe('whom an appointment of the day is for', () => {
+  const persona = (nome, status = 'Booked') => ({
+    participant_name: nome,
+    status,
+  })
+
+  it('names its person, a class by its service', () => {
+    expect(
+      chiDellAppuntamentoDelGiorno({
+        service: 'Trattamento osteopatico',
+        participants: [persona('Alice Fabbri')],
+      }),
+    ).toEqual({ titolo: 'Alice Fabbri', persone: 1 })
+    // their names cut one another off: the class is its service
+    expect(
+      chiDellAppuntamentoDelGiorno({
+        service: 'Pilates di gruppo',
+        participants: [
+          persona('Federica Esposito'),
+          persona('Diego Ferri'),
+          persona('Anna Neri', 'Cancelled'),
+        ],
+      }),
+    ).toEqual({ titolo: 'Pilates di gruppo', persone: 2 })
+  })
+
+  it('names whom a cancelled one was for', () => {
+    // its title starts with the service: the name was cut off the line
+    expect(
+      chiDellAppuntamentoDelGiorno({
+        title: 'Trattamento osteopatico — Mario Rossi',
+        service: 'Trattamento osteopatico',
+        status: 'Cancelled',
+        participants: [persona('Mario Rossi', 'Cancelled')],
+      }),
+    ).toEqual({ titolo: 'Mario Rossi', persone: 1 })
+    expect(
+      chiDellAppuntamentoDelGiorno({ title: 'Riunione', participants: [] }),
+    ).toEqual({ titolo: 'Riunione', persone: 0 })
   })
 })
