@@ -196,7 +196,7 @@ def natura_territoriale(
 		if controparte_soggetto_iva:
 			return (
 				"N2.1",
-				"Cross-border B2B service: art. 7-ter puts the general rule outside the scope of Italian VAT, with the reverse charge on the client. Services connected to real estate, transport, catering and admission to events follow arts. 7-quater and 7-quinquies instead - confirm it on the service card.",
+				"Cross-border B2B service: art. 7-ter puts the general rule outside the scope of Italian VAT: a client in the EU accounts for the VAT (reverse charge), one outside it under its own rules. Services connected to real estate, transport, catering and admission to events follow arts. 7-quater and 7-quinquies instead - confirm it on the service card.",
 			)
 		return (
 			None,

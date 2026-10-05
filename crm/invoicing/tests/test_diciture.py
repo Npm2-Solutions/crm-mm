@@ -100,3 +100,13 @@ class AltreDicitureTest(UnitTestCase):
 	def test_il_pagamento_non_tracciato_lo_dice_al_paziente(self):
 		self.assertIn("detrazione del 19%", diciture.pagamento("MP01", False))
 		self.assertNotIn("detrazione", diciture.pagamento("MP05", True))
+
+
+class FuoriCampoTest(UnitTestCase):
+	def test_l_inversione_contabile_solo_per_un_cliente_dell_unione(self):
+		# art. 21, c. 6-bis DPR 633/72: «inversione contabile» to the EU, the plain words outside it
+		ue = diciture.fuori_campo_territoriale(date(2026, 5, 4))
+		fuori = diciture.fuori_campo_territoriale(date(2026, 5, 4), cliente_ue=False)
+		self.assertIn("inversione contabile", ue)
+		self.assertNotIn("inversione contabile", fuori)
+		self.assertTrue(fuori.startswith("Operazione non soggetta ad IVA ai sensi dell'art. 7-ter"))
