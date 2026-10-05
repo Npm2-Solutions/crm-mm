@@ -855,24 +855,47 @@ export function triggerSummary(trigger) {
   return parts.join(' · ') || __('every record')
 }
 
+/**
+ * A step's words as the canvas shows them: a field's placeholder
+ * («{{ first_name }}») reads as the field's name the builder offers it by
+ * («Nome»). The step keeps what was written; a placeholder the builder does
+ * not offer stays as it is.
+ */
+export function segnapostiInParole(testo) {
+  if (!testo) return testo
+  return testo.replace(
+    /\{\{\s*([a-z_]+)\s*(?:\([^)]*\))?\s*\}\}/g,
+    (tutto, campo) => {
+      const voce = MERGE_FIELDS.find(
+        (v) => v.token.replace(/[{}\s]/g, '').split('(')[0] === campo,
+      )
+      return voce ? `«${__(voce.label)}»` : tutto
+    },
+  )
+}
+
 export function stepSummary(step) {
   switch (step.type) {
     case 'send_email':
-      return step.subject || step.email_template || __('No subject')
+      return (
+        segnapostiInParole(step.subject) ||
+        step.email_template ||
+        __('No subject')
+      )
     case 'send_sms':
     case 'notify':
-      return step.message || __('No message')
+      return segnapostiInParole(step.message) || __('No message')
     case 'send_whatsapp_template':
       return step.template || __('No template selected')
     case 'create_task':
-      return step.title || __('Follow up')
+      return segnapostiInParole(step.title) || __('Follow up')
     case 'assign':
       return (
         (step.users || []).join(', ') || step.user || __('No user selected')
       )
     case 'add_note':
     case 'add_tag_comment':
-      return step.comment || __('No note')
+      return segnapostiInParole(step.comment) || __('No note')
     case 'add_tag':
     case 'remove_tag':
       return step.tag || __('No tag')

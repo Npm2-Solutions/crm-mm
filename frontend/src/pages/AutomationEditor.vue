@@ -140,11 +140,13 @@
           :label="__('Title')"
           :placeholder="__('e.g. Welcome sequence')"
         />
+        <!-- as tall as what it says: two rows cut a longer description in half -->
         <FormControl
           v-model="draft.description"
           type="textarea"
-          :rows="2"
+          :rows="3"
           :label="__('Description')"
+          class="[&_textarea]:min-h-20 [&_textarea]:[field-sizing:content]"
         />
 
         <div

@@ -17,6 +17,7 @@ import {
   stepFromPalette,
   stepLabels,
   stepSummary,
+  segnapostiInParole,
   triggerDoctype,
   triggerSummary,
   validateAutomation,
@@ -175,6 +176,29 @@ describe('summaries', () => {
     ).toBe('status → Won')
     expect(stepSummary(newStep('split'))).toBe('A 50% · B 50%')
     expect(stepSummary(newStep('send_sms'))).toBe('No message')
+  })
+
+  it("names a field's placeholder on the canvas, never shows its code", () => {
+    expect(
+      stepSummary(
+        newStep('send_email', { subject: 'Benvenuto, {{ first_name }}!' }),
+      ),
+    ).toBe('Benvenuto, «First name»!')
+    expect(
+      stepSummary(
+        newStep('create_task', { title: 'Richiamare {{lead_name}}' }),
+      ),
+    ).toBe('Richiamare «Full name»')
+    // with its argument, the field it is
+    expect(segnapostiInParole('Prenota: {{ tracked_link("prenota") }}')).toBe(
+      'Prenota: «Tracked link»',
+    )
+    // one the builder does not offer stays as written
+    expect(segnapostiInParole('Ciao {{ nickname }}')).toBe(
+      'Ciao {{ nickname }}',
+    )
+    expect(segnapostiInParole('')).toBe('')
+    expect(segnapostiInParole(null)).toBe(null)
   })
 })
 
