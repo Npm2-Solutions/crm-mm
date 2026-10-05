@@ -1408,10 +1408,12 @@ export function answerInWords(field, value, band = null) {
     case 'choice':
       return Array.isArray(value) ? value.join(', ') : String(value)
     case 'scale': {
-      const ends = [field.min_label, field.max_label]
-        .filter(Boolean)
-        .join(' – ')
-      return ends ? `${value} (${ends})` : String(value)
+      // with the scale's ends, their numbers and words: «4 (0 None – 10 Worst)».
+      // The words alone did not say how far the scale went
+      const end = (n, label) => (label ? `${n} ${label}` : String(n))
+      const min = end(toNumber(field.min) ?? 0, field.min_label)
+      const max = end(toNumber(field.max) ?? 10, field.max_label)
+      return `${value} (${min} – ${max})`
     }
     case 'sides': {
       const parts = []

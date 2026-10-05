@@ -15,6 +15,7 @@ import base64
 import io
 import json
 import tempfile
+import unittest
 
 import frappe
 from pypdf import PdfReader
@@ -101,3 +102,16 @@ class IlPdfNonCaricaNiente(CompilazioniCase):
 		pagina = pdf.html(doc, versione)
 		self.assertNotIn('<img src="file:', pagina)
 		self.assertEqual(allegati(pdf.pdf_da_html(pagina)), [])
+
+
+class UnaScalaDiceFinoDove(unittest.TestCase):
+	"""An answer on a scale, on paper and in the record: its ends' numbers and words.
+	A 3 between "None" and "Worst" did not say whether the scale went to 5 or to 10.
+	The browser says it the same way (`answerInWords`)."""
+
+	def test_gli_estremi_con_i_numeri(self):
+		campo = {"type": "scale", "min_label": "None", "max_label": "Worst"}
+		self.assertEqual(pdf.risposta_in_parole(campo, 3), "3 (0 None – 10 Worst)")
+		self.assertEqual(pdf.risposta_in_parole({"type": "scale", "min": 1, "max": 5}, 4), "4 (1 – 5)")
+		self.assertEqual(pdf.risposta_in_parole({"type": "scale", "min": 1.0, "max": 5.0}, 4), "4 (1 – 5)")
+		self.assertEqual(pdf.risposta_in_parole(campo, None), "")
