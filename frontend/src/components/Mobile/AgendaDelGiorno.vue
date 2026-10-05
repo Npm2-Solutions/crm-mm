@@ -176,8 +176,10 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
+import { chiLoFa } from '@/utils/oggi'
 import { adessoDelCentro, appointmentColor } from '@/utils/scheduler'
 import {
   chiDellAppuntamentoDelGiorno,
@@ -217,6 +219,8 @@ useScorriGiorni(
 )
 
 const { getUser } = usersStore()
+// whoever reads, as the store gives it: the user's name, not a ref
+const { user } = sessionStore()
 const lingua = window.navigator?.language || 'it-IT'
 
 // "now" moves on its own while the page stays open, on the centre's clock as
@@ -293,7 +297,7 @@ function titolo(riga) {
 // many come - or where an event is
 function sotto(riga) {
   if (riga.tipo === 'event') return riga.dati.location || ''
-  const professionisti = (riga.dati.staff || [])
+  const professionisti = chiLoFa(riga.dati.staff, user)
     .map((s) => getUser(s.user)?.full_name || s.user)
     .filter(Boolean)
   const { persone } = chiDellAppuntamentoDelGiorno(riga.dati)

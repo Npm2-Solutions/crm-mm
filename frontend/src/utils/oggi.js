@@ -11,6 +11,16 @@ export const NEXT = {
 }
 
 /**
+ * Who does an appointment, as a line says it to whoever reads it: the
+ * colleagues, never the reader. A professional reading their own day read
+ * their own name on every row, and the service and the session were cut to
+ * make room for it.
+ */
+export function chiLoFa(staff = [], utente = '') {
+  return (staff || []).filter((s) => s && s.user !== utente)
+}
+
+/**
  * The outcomes to offer next. A day gone by asks whether they came: nobody is
  * checked into a waiting room days later.
  */

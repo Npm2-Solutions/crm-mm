@@ -248,9 +248,11 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import {
+  chiLoFa,
   byDay,
   firstOfPast,
   shiftDay,
@@ -264,6 +266,8 @@ import { Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 const { puo } = usersStore()
+// whoever reads, as the store gives it: the user's name, not a ref
+const { user } = sessionStore()
 
 // the centre's day, as the server counts it: a browser in another time zone
 // would show tomorrow's arrivals at eleven at night. Null is today.
@@ -376,9 +380,12 @@ const tira = useTiraPerAggiornare(contenitore, () =>
 )
 useScorriGiorni(contenitore, shift, { segue: true })
 
-// the service, which session of its cycle - "session 4 of 10" - and who
+// the service, which session of its cycle - "session 4 of 10" - and who,
+// unless it is whoever reads
 function appointmentLine(appointment) {
-  const who = (appointment.staff || []).map((s) => s.full_name).join(', ')
+  const who = chiLoFa(appointment.staff, user)
+    .map((s) => s.full_name)
+    .join(', ')
   const session = laSeduta(appointment.cycle, (text, args) => __(text, args))
   return [appointment.service, session, who].filter(Boolean).join(' · ')
 }

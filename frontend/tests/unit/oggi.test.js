@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  chiLoFa,
   firstOfPast,
   NEXT,
   byDay,
@@ -157,5 +158,21 @@ describe('the open past, the first few', () => {
       },
     ]
     expect(firstOfPast(chiusi, 4)).toEqual([])
+  })
+})
+
+describe('who does an appointment, to whoever reads it', () => {
+  const staff = [
+    { user: 'giulia@centro.it', full_name: 'Giulia Ferri' },
+    { user: 'luca@centro.it', full_name: 'Luca Moretti' },
+  ]
+
+  it('names the colleagues, never the reader', () => {
+    expect(chiLoFa(staff, 'giulia@centro.it').map((s) => s.full_name)).toEqual([
+      'Luca Moretti',
+    ])
+    // the desk reads everybody's
+    expect(chiLoFa(staff, 'desk@centro.it')).toHaveLength(2)
+    expect(chiLoFa(null, 'giulia@centro.it')).toEqual([])
   })
 })
