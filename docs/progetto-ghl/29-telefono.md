@@ -929,6 +929,8 @@ lontane dai fogli di un telefono.
   persona, trattativa, azienda o un nuovo contatto disegnano da sé la riga
   del titolo (`#body`), e il titolo se ne andava col modulo: ora resta in
   cima con la ✕, come nei fogli di frappe-ui (`telefono.css`, «4»).
+- **La ✕ di un avviso si prende col dito.** Era di 20 punti; su uno schermo
+  che si tocca ha un anello di 40 dentro l'avviso (`telefono.css`, «1»).
 - **In Accoglienza la riga del servizio va a capo.** «Pacchetto completo ·
   seduta 3 di 10 · chi lo fa» si fermava coi puntini a 320 punti; sul telefono
   va a capo, il pallino sulla prima riga (`Today.vue`). Il riepilogo del
