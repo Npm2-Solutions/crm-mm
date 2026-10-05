@@ -510,6 +510,12 @@ the qualifications' notes) is in `lingue.del_centro()`, never the System Setting
 language read on its own: a site installed before anybody chose is in the
 framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
+DottorCloud is European: English is written the way Europe writes it
+(`appLocale()` gives «en-GB»: the day before the month, the 24-hour clock), an
+`Intl` clock carries `hourCycle: 'h23'`, a format takes the user's language
+(`appLocale()`), never the browser's (`navigator.language`), the week starts on
+Monday in System Settings too (`per_l_italia`, whatever country), and a
+measure is metric.
 In Italian an article before a date's day 1, 8 or 11 drops its vowel («dall'11
 set», «l'1 ott»): both translators (the SPA's and the area's) put it right once
 the sentence is filled (`conLApostrofo`, `utils/locale.js`), so a sentence keeps
