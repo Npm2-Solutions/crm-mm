@@ -135,6 +135,24 @@ d'attesa, conversazioni.
       che nessun codice ha (una «Y»): non è di nessuno.
     - Le rate degli abbonamenti non si fatturano: sono stati venduti prima che ci
       fossero le schede.
+  - **Area clienti** (`crm/area/demo.py`, con il modulo «area»): stamattina la
+    segreteria ha aperto l'area agli abituali (chi ha un abbonamento o un ciclo in
+    corso, chi viene alle lezioni del chinesiologo o dalla dietista) e a qualcuno che
+    viene nei prossimi giorni; una mamma ha anche l'area del figlio, accanto alla
+    sua. L'invito va per email, tenuta nella demo; quasi tutti sono già entrati.
+    La segreteria ha scritto sulla bacheca di alcuni (il prossimo giorno di
+    chiusura, le calze antiscivolo in palestra, i moduli prima della prima visita) e
+    qualcuno l'ha letta. Chi è entrato e quando è il registro dell'area: mai datato
+    indietro.
+  - **Piani e programmi** (`crm/piani/demo.py`, con il modulo «area»): il
+    chinesiologo ha dato agli abituali delle sue lezioni un allenamento da fare a
+    casa (esercizi della libreria con serie, ripetizioni e recupero, e una
+    camminata), la dietista le piccole abitudini del mese a chi è venuto da lei:
+    ognuno all'ultima seduta, con quella data. Stamattina il chinesiologo ha scritto
+    un programma per tornare a correre, a proprio ritmo, e la dietista uno di tre
+    mesi a tempo: la prima tappa è aperta. Chi è entrato nell'area spunta lì cosa ha
+    fatto, oggi e nei due giorni prima, fin dove l'area lascia recuperare: un giorno
+    tutto, un giorno a metà, un giorno dimenticato.
 - È **sempre la stessa demo**: le scelte vengono da un seme fisso, uno per
   parte (una parte è la stessa qualunque altra sia venuta prima), le date dal
   giorno in cui si carica.
@@ -225,7 +243,5 @@ Finché i dati di prova ci sono:
 
 ## Prossime parti
 
-- **Area clienti e piani** (con il modulo «area»): gli inviti, la bacheca, i piani
-  e i programmi pubblicati.
 - **La clinica**: pazienti, cartelle e visite firmate, la sintesi, il dossier,
   l'odontogramma e i piani di cura, le diete.
