@@ -68,6 +68,34 @@ anche dei difetti veri:
   CRM-LEAD-2026-00397»; le parole di un'automazione restano sue.
 - **Dopo sei mesi se ne vanno**, lette o no (Impostazioni dei log).
 
+## Sul telefono e sul computer (05/10/2026)
+
+Le notifiche arrivano anche fuori da DottorCloud, nella barra del telefono o
+del computer, appena vengono scritte: le notifiche push dei browser (Web Push),
+senza nessuno in mezzo che le legga.
+
+- **Si attivano da sé, per dispositivo**: Impostazioni > Il tuo account >
+  Notifiche, «Su questo dispositivo», «Attiva le notifiche qui». Il browser chiede
+  il permesso, e da lì ogni notifica del pannello arriva anche lì. Sull'app del
+  telefono la pagina «Altro» lo offre con un tocco. Su iPhone e iPad le riceve solo
+  l'app sulla schermata Home (regola di Safari): la pagina lo spiega, con i due
+  tocchi per metterla lì. «Mandami una prova» ne manda una ai propri dispositivi;
+  l'elenco dice quali li ricevono e si tolgono uno a uno.
+- **Quali**: per ogni gruppo (menzioni, assegnazioni, messaggi, agenda…) un
+  interruttore «Email» e, appena un dispositivo le riceve, uno «Dispositivi»,
+  tutti accesi finché non si spengono. Mai sui dati di prova.
+- **Cosa dicono**: la frase del pannello nella lingua di chi le riceve, le prime
+  parole del messaggio dove le può leggere; toccata, apre DottorCloud sulla pagina
+  della notifica e la segna letta. I messaggi della stessa conversazione prendono
+  il posto l'uno dell'altro. Una notifica arrivata su un dispositivo non parte più
+  anche per email.
+- **Come**: il messaggio è cifrato per quel solo browser (RFC 8291) e firmato con
+  la chiave del sito (VAPID, RFC 8292); lo porta il servizio di chi fa il browser
+  (Google, Apple, Mozilla, Microsoft) e solo a quei servizi si scrive. Un
+  dispositivo che il servizio non conosce più si dimentica da solo. Il service
+  worker sta sulle pagine di DottorCloud (`/crm`), mostra la notifica e apre la
+  pagina: non tiene niente in cache.
+
 ## Come è fatta
 
 - `crm/notifiche/avvisi.py`: `avvisa()`, la porta da cui entra ogni notifica. Ci
@@ -93,6 +121,15 @@ anche dei difetti veri:
   layout, e l'avviso); `utils/notifiche.js`, provato in `tests/unit/notifiche.test.js`.
 - `composables/conversationScroll.js` (`target`): la conversazione si apre sul
   messaggio indicato dall'indirizzo.
+- Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
+  dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
+  `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi
+  in `CRM Push Subscription`, l'invio in coda dopo `avvisa()`, il service worker
+  servito su `/api/method/…` con `Service-Worker-Allowed: /crm`),
+  `crm/notifiche/spinta_sw.js`; nel browser `utils/spinta.js` (provato),
+  `composables/spinta.js`, `Settings/NotificationsSettings.vue`,
+  `Mobile/NotificheSulTelefono.vue`; il router segna letta la notifica toccata
+  (`?notifica=`).
 
 ## Verifiche
 
