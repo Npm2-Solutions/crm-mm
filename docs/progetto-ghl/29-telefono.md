@@ -695,16 +695,20 @@ veniva tagliato e cosa si toccava su meno di 24 punti.
   colonne anche per cinque tasti (senza SMS), e «Chiama» toccava «WhatsApp»,
   anche sul computer; ora le colonne sono quanti i tasti, e una parola troppo
   lunga si accorcia invece di finire sulla vicina (`PersonHeader.vue`).
+- **L'agenda in piedi si apre sul giorno**, come sul telefono: la settimana
+  accanto al menu dava a ogni giorno 92 punti, cento appuntamenti disegnati
+  come «Tratt…» uno sopra l'altro; la settimana è a un tocco. Nell'intestazione
+  «Collega Google Calendar» è la sua icona sotto i 1024 punti: con le sue parole
+  spingeva fuori «Lista d'attesa» (`pages/Calendar.vue`).
 - **Le note sono quattro per riga dove ci stanno**, meno dove una scheda
   sarebbe più stretta di 13rem: in piedi erano 155 punti, il titolo «Nota di
   pr…» e l'autore e il giorno su tre righe (`pages/Notes.vue`).
 
 Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
-righe da un tablet è raro), la settimana dell'agenda in piedi (sette colonne da
-70 punti tagliano i titoli; il giorno è a un tocco) e i riquadri della dashboard
-di traverso: lì la griglia è quella che il centro ha sistemato, e un titolo
-lungo resta tagliato come su un computer stretto.
+righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
+griglia è quella che il centro ha sistemato, e un titolo lungo resta tagliato
+come su un computer stretto.
 
 ## File
 
