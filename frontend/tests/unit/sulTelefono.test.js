@@ -97,6 +97,20 @@ describe('the open tasks by when they are due', () => {
     )
     expect(scadenzaInBreve('', 'it-IT', ADESSO)).toBe('')
   })
+
+  it('says «today» and the hour of one late since this morning', () => {
+    // late by its hour: the day alone did not say why it is late
+    expect(scadenzaInBreve('2026-10-03 09:00:00', 'it-IT', ADESSO)).toBe(
+      'oggi, 09:00',
+    )
+    expect(scadenzaInBreve('2026-10-03 09:00:00', 'en-GB', ADESSO)).toBe(
+      'today, 09:00',
+    )
+    // late since an earlier day: its day
+    expect(scadenzaInBreve('2026-10-02 18:00:00', 'it-IT', ADESSO)).toBe(
+      'ven 2 ott',
+    )
+  })
 })
 
 describe('the deals board on a phone', () => {
