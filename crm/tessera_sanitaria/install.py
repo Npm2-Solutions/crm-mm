@@ -1,9 +1,9 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Seeding the thirty-six this module adds.
+"""Seeding the thirty-five this module adds.
 
-The register itself is invoicing's and it seeds its own twenty. This adds the
+The register itself is invoicing's and it seeds its own twenty-one. This adds the
 healthcare half to the same table, so a mixed practice sees one list and not two.
 """
 

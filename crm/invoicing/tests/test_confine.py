@@ -124,7 +124,7 @@ class LaCatenaDeiRegistri(UnitTestCase):
 	"""What the practice wrote wins over what shipped, whoever loaded first.
 
 	Invoicing registers its stored register when it loads; the healthcare module
-	loads after it and ships thirty-six qualifications. Asked last-registered-first,
+	loads after it and ships thirty-five qualifications. Asked last-registered-first,
 	the shipped osteopath answered before the practice's own row: a qualification
 	the practice had corrected, or switched off, came back as it shipped.
 	"""

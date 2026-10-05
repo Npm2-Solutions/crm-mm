@@ -3,15 +3,15 @@
 
 """The qualifications invoicing needs on its own.
 
-Twenty of them, and none is healthcare: lawyer, accountant, engineer, architect,
-notary, consultant, developer. They are here because **cassa and ritenuta are
+Twenty-one of them, and none is healthcare: lawyer, accountant, engineer, architect,
+notary, consultant, developer, kinesiologist. They are here because **cassa and ritenuta are
 ordinary invoicing**, not a Sistema TS concern - Cassa Forense at 4%, Inarcassa at
 4%, withholding at 20%. An installation that never sees a patient still has to get
 those right, and getting them wrong is a wrong invoice rather than a missing
 feature.
 
 The healthcare register lives in `crm.tessera_sanitaria` and **adds** to this one:
-thirty-six more qualifications, with a VAT exemption and an SdI rule this module
+thirty-five more qualifications, with a VAT exemption and an SdI rule this module
 neither knows nor needs. Resolution walks the chain in
 `crm.invoicing.estensioni`, so a code unknown here is still found there when that
 module is installed.
@@ -253,6 +253,16 @@ _ELENCO: list[Professione] = [
 		note="Training is taxable as a rule. The art. 10 n. 20 exemption is narrow - recognised bodies and school or vocational education - and it is decided in the service card, never inferred from the word 'course'.",
 	),
 	_professionale(
+		"chinesiologo",
+		"Chinesiologo (art. 41 D.Lgs. 36/2021)",
+		categoria=Categoria.NON_ORDINISTICA,
+		cassa=None,
+		percentuale=None,
+		# the Ministry of Health, quoted by the resolution: "not recognised as a health
+		# profession", physical activity for health and wellbeing, never care
+		note="Ris. AdE 9/2026: NOT a health profession. Ordinary 22% VAT, SdI mandatory, no Sistema TS report.",
+	),
+	_professionale(
 		"sviluppatore",
 		"Sviluppatore software",
 		categoria=Categoria.NON_ORDINISTICA,
@@ -312,7 +322,7 @@ def professione(codice: str | None) -> Professione:
 		return PROFESSIONI[codice]
 	except KeyError:
 		raise KeyError(
-			f"qualification {codice!r} is not in the register. The catalogue never infers: add it as a CRM Professional Qualification record, after the accountant has verified it. A healthcare qualification needs the Sistema TS module, which adds thirty-six more. Known here: {', '.join(sorted(PROFESSIONI))}"
+			f"qualification {codice!r} is not in the register. The catalogue never infers: add it as a CRM Professional Qualification record, after the accountant has verified it. A healthcare qualification needs the Sistema TS module, which adds thirty-five more. Known here: {', '.join(sorted(PROFESSIONI))}"
 		) from None
 
 
