@@ -98,6 +98,23 @@ def controlli(emittente: dict) -> list[dict]:
 	from crm.tessera_sanitaria.engine.tracciato import richiede_credenziali
 
 	voci: list[dict] = []
+	# a medical centre says first who issues: until then it looks like a shop, no
+	# expense is exempt nor reported, and nothing below would even be asked
+	from crm.invoicing import scelte
+
+	from .preimpostazione import CHI_EMETTE
+
+	if scelte.profilo() == "sanitario" and emittente.get("sender_category") not in CHI_EMETTE:
+		voci.append(
+			{
+				"title": _("Who issues the invoices"),
+				"consequence": _(
+					"Three questions: who issues, the tax regime and, for a professional, the profession. Until they are answered no service is exempt and nothing reaches the Sistema TS."
+				),
+				"field": "sender_category",
+				"blocking": True,
+			}
+		)
 	if emittente.get("sender_category") not in (None, "", "non_sanitario"):
 		certificato = _riga_mancante(
 			not (emittente.get("ts_certificate") or certificato_del_sito()),

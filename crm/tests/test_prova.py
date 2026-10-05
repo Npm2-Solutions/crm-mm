@@ -174,6 +174,36 @@ class AttivazioneTest(Base):
 		righe = {riga["title"] for riga in prova.mancanze(self.emittente(), agenzia=True)}
 		self.assertNotIn("Preservation of the SdI documents", righe)
 
+	def test_quello_che_manca_dice_dove_si_sistema(self):
+		# the screen opens the page that fills a row: the company's field, or the
+		# records that do
+		with patch("frappe.db.count", return_value=0):
+			righe = {riga["title"]: riga for riga in prova.mancanze(self.emittente(), agenzia=True)}
+		self.assertEqual(righe["At least one provider"]["link"], {"doctype": "CRM Service Provider"})
+		self.assertEqual(righe["At least one service card"]["link"], {"doctype": "CRM Billable Service"})
+		self.imposta(tax_id="")
+		righe = {riga["title"]: riga for riga in prova.mancanze(self.emittente(), agenzia=True)}
+		self.assertEqual(righe["VAT number"]["field"], "tax_id")
+
+	def test_un_centro_medico_dice_prima_chi_emette(self):
+		# with the clinic on, a company that has not said who issues looks like a
+		# shop: nothing exempt, nothing to the Sistema TS. It is the first thing asked
+		self.imposta(sender_category="non_sanitario")
+		with patch("crm.invoicing.scelte.profilo", return_value="sanitario"):
+			righe = {riga["title"]: riga for riga in prova.mancanze(self.emittente(), agenzia=False)}
+			chi = righe["Who issues the invoices"]
+			self.assertTrue(chi["blocking"])
+			self.assertEqual(chi["field"], "sender_category")
+			self.assertFalse(prova.get_status(self.azienda.name)["ready"])
+			self.imposta(sender_category="professionista_sanitario")
+			righe = {riga["title"] for riga in prova.mancanze(self.emittente(), agenzia=False)}
+			self.assertNotIn("Who issues the invoices", righe)
+		# without the clinic a shop is a shop: nobody asks
+		self.imposta(sender_category="non_sanitario")
+		righe = {riga["title"] for riga in prova.mancanze(self.emittente(), agenzia=False)}
+		self.assertNotIn("Who issues the invoices", righe)
+		self.assertFalse(prova.get_status(self.azienda.name)["healthcare"])
+
 	def test_in_prova_si_torna_solo_senza_fatture_vere(self):
 		self.imposta(provider_environment=connessione.PRODUZIONE)
 		self.emessa()

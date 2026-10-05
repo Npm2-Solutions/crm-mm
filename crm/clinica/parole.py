@@ -21,6 +21,10 @@ PAROLE = {
 	# The list of people stays "People": it holds everybody the centre has heard
 	# from - who asked, a parent, a company's contact - not only its patients
 	"Clients": "Patients",
+	# Settings > Invoicing: a medical centre's company carries its Sistema TS credentials
+	"Who issues the invoices: details, tax regime, numbering.": (
+		"Who issues the invoices: details, tax regime, Sistema TS credentials."
+	),
 	"News in the client area": "News in the patient area",
 	# the waiting list: where one joins it
 	"From the client area": "From the patient area",
