@@ -490,7 +490,8 @@ system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 In Italian an article before a date's day 1, 8 or 11 drops its vowel («dall'11
 set», «l'1 ott»): both translators (the SPA's and the area's) put it right once
 the sentence is filled (`conLApostrofo`, `utils/locale.js`), so a sentence keeps
-«dal {0}» in the catalog.
+«dal {0}» in the catalog; a sentence the server fills with a date (an email, a
+public page) goes through `lingue.con_l_apostrofo` once filled.
 A week starts on Monday, everywhere: the phone's strip, the dashboard's periods, the
 agenda and the date pickers (`frappeUi.js` gives frappe-ui's own the same Monday).
 An appointment's day and hours are the centre's clock (`window.timezone.system`), never

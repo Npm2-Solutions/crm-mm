@@ -7,6 +7,8 @@ from frappe import _, throw
 from frappe.model.document import Document
 from frappe.utils import cint, formatdate, getdate
 
+from crm.lingue import con_l_apostrofo
+
 
 class CRMHolidayList(Document):
 	# begin: auto-generated types
@@ -61,7 +63,11 @@ class CRMHolidayList(Document):
 		for day in self.get("holidays"):
 			if not (getdate(self.from_date) <= getdate(day.date) <= getdate(self.to_date)):
 				frappe.throw(
-					_("The holiday on {0} is not between From Date and To Date").format(formatdate(day.date))
+					con_l_apostrofo(
+						_("The holiday on {0} is not between From Date and To Date").format(
+							formatdate(day.date)
+						)
+					)
 				)
 
 	def get_weekly_off_date_list(self, start_date, end_date):

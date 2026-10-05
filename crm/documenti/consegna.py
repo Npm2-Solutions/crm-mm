@@ -34,6 +34,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import add_to_date, cint, get_datetime, get_fullname, get_url, now_datetime
 
 from crm.documenti import regole as R
+from crm.lingue import con_l_apostrofo
 from crm.moduli import traccia
 from crm.permissions import livelli
 
@@ -260,8 +261,10 @@ def _manda_il_link(email: str, link: str, scadenza) -> None:
 			[
 				"<p>{}</p>".format(
 					esc(
-						_("{0} has a document ready for you: you can open it until {1}.").format(
-							centro, frappe.utils.format_date(scadenza)
+						con_l_apostrofo(
+							_("{0} has a document ready for you: you can open it until {1}.").format(
+								centro, frappe.utils.format_date(scadenza)
+							)
 						)
 					)
 				),

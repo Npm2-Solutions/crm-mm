@@ -27,3 +27,27 @@ class LaLinguaDelCentro(UnitTestCase):
 		self.assertEqual(lingue.scegli("de", "Germany"), "de")
 		# a language other than English is a choice, wherever the centre is
 		self.assertEqual(lingue.scegli("fr", "Italy"), "fr")
+
+
+class LApostrofoDavantiAUnaData(UnitTestCase):
+	"""«fino all'11 ottobre»: the server's filled sentences elide as the SPA's do
+	(`conLApostrofo`, utils/locale.js)."""
+
+	def test_davanti_al_giorno_1_8_11_di_una_data(self):
+		c = lingue.con_l_apostrofo
+		self.assertEqual(
+			c("Il link vale fino al 1 ottobre, 14:00.", "it"), "Il link vale fino all'1 ottobre, 14:00."
+		)
+		self.assertEqual(c("Puoi aprirlo fino al 11/10/2026.", "it"), "Puoi aprirlo fino all'11/10/2026.")
+		self.assertEqual(c("Fino al 8-10-2026", "it"), "Fino all'8-10-2026")
+		self.assertEqual(c("prima del 1/1/2021", "it"), "prima dell'1/1/2021")
+		self.assertEqual(c("Il 11 ott", "it"), "L'11 ott")
+
+	def test_altrimenti_resta_com_e(self):
+		c = lingue.con_l_apostrofo
+		# another day, a day without a date, a rate, a year, a day written 08
+		for testo in ("al 12 ottobre", "il 11", "il riepilogo IVA al 10%", "nel 2026", "il 08/10/2026"):
+			self.assertEqual(c(testo, "it"), testo)
+		# other languages, and what is not a sentence
+		self.assertEqual(c("until al 11/10", "en"), "until al 11/10")
+		self.assertIsNone(c(None, "it"))
