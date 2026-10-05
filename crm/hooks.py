@@ -163,6 +163,9 @@ after_install = [
 	"crm.install.after_install",
 	# a phone set in Italian reads the public pages in Italian: the framework ships it off
 	"crm.lingue.accendi_l_italiano",
+	# Rome's clock, Italy's formats and the week from Monday from the first page,
+	# not from the first migrate
+	"crm.lingue.italia_dove_nessuno_ha_scelto",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
 	# nothing about the centre's use leaves for Frappe's servers
