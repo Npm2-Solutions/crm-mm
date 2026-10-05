@@ -84,6 +84,35 @@ github.com/clixclix2/FatturaElettronicaAPIClient2. Read again on 02/10/2026.
 - **Pages.** `per_page` (default 100, at most 1000), `page`; a `Link: <...>
   rel="next"` header when there is another page.
 
+## What the test door answered (05/10/2026)
+
+Tried from a development site with the agency's test credentials. Where the API
+says something its guide does not, the API is what the code follows:
+
+- **Every value is text.** `"id": "550797"`, `"ricezione": "0"`,
+  `"sdi_identificativo": "5507970"`, `"test": "1"`: the guide's integers come as
+  strings. `"0"` is true in Python, so a flag is read with `busta.ricevuta()`, never
+  by its truth.
+- **A company's VAT number keeps its prefix.** `/aziende` answers
+  `"piva": "IT13832480969"` for one registered as `13832480969`; the filter
+  `partita_iva` of `GET /fatture` wants it **without** (`IT…` finds nothing), and a
+  row of `/fatture` names it without. Compared with `busta.stessa_partita_iva()`.
+- **A duplicate company is a 400**: «Azienda gia' esistente in anagrafica con stessa
+  partita iva o codice fiscale». Then it is looked for by its VAT number.
+- **A company may be refused in test**: «Cedente [13832480969] non abilitato in
+  ambiente di test. Contattare l'assistenza.» A company registered by DottorCloud
+  through `/aziende` was not.
+- **The schema comes first**: a file the XSD refuses is a 400, «XML non conforme
+  allo schema FPR12», with no line nor element. The XML is checked against the
+  published XSD in the tests (`crm/invoicing/tests/xsd`).
+- **A sent invoice** comes back at once `INVI` with a made-up SdI identifier (the
+  account's sending mode is "PREDEFINITO"), its transmission block rewritten with
+  Itala's (`IdCodice` 12478341006, a progressive like `83GA`). It is not an unread
+  update: `unread=true` lists it only once a state is changed by hand in their
+  dashboard with "Da leggere" ticked. With no SdI behind it,
+  `/fatture/{id}/notifica` is a 404 and `sdi_file_notifica` is empty: the state is
+  applied as Itala's word.
+
 ## Sistema TS — sistema-ts-api.it, REST API v1
 
 Guide: https://www.sistema-ts-api.it/documentazione/ (OpenAPI at
