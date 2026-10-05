@@ -111,6 +111,8 @@ def get_people(text: str | None = None, start: int = 0) -> dict:
 			"phone",
 			"email",
 			"organization",
+			# a contact, a client, a patient: the line says which
+			"relationship",
 			"modified",
 		],
 		order_by="modified desc",

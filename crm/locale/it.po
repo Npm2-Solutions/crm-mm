@@ -44100,3 +44100,18 @@ msgstr "Quando è diventato paziente: una prestazione sanitaria, o dati sanitari
 #: crm/clinica/parole.py
 msgid "New patients pipeline"
 msgstr "Pipeline dei nuovi pazienti"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Contact"
+msgstr "Contatto"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Client"
+msgstr "Cliente"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Patient"
+msgstr "Paziente"

@@ -33,7 +33,10 @@
           <div class="-ml-4 flex flex-wrap gap-y-0.5">
             <span v-for="(fatto, i) in fatti" :key="i" class="flex">
               <span aria-hidden="true" class="w-4 shrink-0 text-center">·</span>
-              <span>{{ fatto }}</span>
+              <!-- the first says who they are to the centre: it is read first -->
+              <span :class="i === 0 && 'font-medium text-ink-gray-8'">{{
+                fatto
+              }}</span>
             </span>
           </div>
         </div>
@@ -193,6 +196,7 @@ import {
   quandoInBreve,
 } from '@/utils/schedaPersona'
 import { adessoDelCentro } from '@/utils/scheduler'
+import { CONTESTO, fattoDel } from '@/utils/rapporto'
 import { Dropdown, Tooltip, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -292,13 +296,14 @@ const prossimo = computed(() =>
   prossimoAppuntamento(appuntamenti.data, adessoDelCentro()),
 )
 
-// who they are to the centre, in a few words: client since, last visit
+// who they are to the centre, in a few words: a contact, a client since, a
+// patient since (utils/rapporto.js); the last visit
 const fatti = computed(() => {
   const fatti = []
-  if (props.doc.client_since)
-    fatti.push(
-      __('Client since {0}', [giornoInBreve(props.doc.client_since, lingua)]),
-    )
+  const { frase, data } = fattoDel(props.doc)
+  fatti.push(
+    data ? __(frase, [giornoInBreve(data, lingua)]) : __(frase, null, CONTESTO),
+  )
   if (props.doc.last_visit)
     fatti.push(
       __('Last visit {0}', [giornoInBreve(props.doc.last_visit, lingua)]),
