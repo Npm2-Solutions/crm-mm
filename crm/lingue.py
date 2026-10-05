@@ -96,6 +96,10 @@ ITALIA = {
 	"first_day_of_the_week": "Monday",
 }
 
+#: The zone the framework falls back on where a site has none, and gives as their
+#: own to every user made meanwhile (`User.set_time_zone`)
+FUSO_DEL_FRAMEWORK = "Asia/Kolkata"
+
 # What a site holds before anybody chose: the framework's own values, which a
 # format chosen in Settings never is
 _DEL_FRAMEWORK = {
@@ -141,9 +145,10 @@ def italia_dove_nessuno_ha_scelto() -> None:
 	empty one): now, today and every reminder were three hours and a half ahead
 	of the centre, and the dates were written «2026-10-05», the amounts
 	«€ 50,000.00». The times already kept stay as they were written: an
-	appointment's hours are the ones the desk chose on the agenda. The language
-	is written only where there is none, Italian as ``scegli`` reads such a site:
-	a language chosen stays."""
+	appointment's hours are the ones the desk chose on the agenda. The users made
+	meanwhile took Kolkata as their own zone: they follow Rome. The language is
+	written only where there is none, Italian as ``scegli`` reads such a site: a
+	language chosen stays."""
 	campi = ("country", "language", *ITALIA)
 	impostazioni = frappe.get_single("System Settings")
 	cambi = per_l_italia({campo: impostazioni.get(campo) for campo in campi})
@@ -157,6 +162,28 @@ def italia_dove_nessuno_ha_scelto() -> None:
 		# a site whose settings no longer validate (another field of theirs)
 		# still migrates: the formats wait for the next one
 		frappe.log_error(title="DottorCloud: the site's Italian formats")
+		return
+	if "time_zone" in cambi:
+		utenti_sul_fuso_del_centro(cambi["time_zone"])
+
+
+def utenti_sul_fuso_del_centro(fuso: str) -> int:
+	"""Whoever was made while the site had no zone took the framework's fallback as
+	their own, and the screens showed them its hours: they follow the centre's, which
+	they never chose. How many did."""
+	utenti = frappe.get_all("User", filters={"time_zone": FUSO_DEL_FRAMEWORK}, pluck="name")
+	if not utenti:
+		return 0
+	frappe.db.set_value("User", {"name": ("in", utenti)}, "time_zone", fuso, update_modified=False)
+	frappe.db.set_value(
+		"DefaultValue",
+		{"parent": ("in", utenti), "defkey": "time_zone", "defvalue": FUSO_DEL_FRAMEWORK},
+		"defvalue",
+		fuso,
+		update_modified=False,
+	)
+	frappe.clear_cache()
+	return len(utenti)
 
 
 def valuta() -> str:
