@@ -28,7 +28,7 @@
    "label": "Plans"
   },
   {
-   "description": "Where the agency hosts the pictures of the exercise library: an https address, or a path of this server",
+   "description": "Only for a CDN of the agency's, an https address: empty, every server shows the copy it brings onto itself",
    "fieldname": "exercise_media_url",
    "fieldtype": "Data",
    "label": "Exercises' pictures",
@@ -38,7 +38,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 21:00:00.000000",
+ "modified": "2026-10-05 17:00:00.000000",
  "modified_by": "Administrator",
  "module": "Area",
  "name": "CRM Area Settings",

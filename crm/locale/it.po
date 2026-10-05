@@ -10336,10 +10336,6 @@ msgstr "Ogni servizio li eredita, a meno che non imposti un valore suo"
 msgid "Every session of this cycle is booked already"
 msgstr "Tutte le sedute di questo ciclo sono già prenotate"
 
-#: frontend/src/components/Settings/Plans/LibraryPage.vue
-msgid "Every source"
-msgstr "Tutte le origini"
-
 #: frontend/src/components/Settings/Pipelines/PipelineView.vue
 msgid "Every stage needs a name"
 msgstr "Ogni fase deve avere un nome"
@@ -10465,10 +10461,6 @@ msgstr "Riferimento normativo"
 #: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
 msgid "Exercise"
 msgstr "Esercizio"
-
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "Exercise pictures from"
-msgstr "Immagini degli esercizi da"
 
 #: crm/piani/doctype/crm_personal_plan_item/crm_personal_plan_item.json
 msgid "Exercise, Habit, or a kind a module registers (the clinic's foods)"
@@ -12629,10 +12621,6 @@ msgstr "Nel Sito web, il blocco \"Modulo\" lo mostra dentro la pagina, con l'asp
 #: frontend/src/utils/moduliStarters.js
 msgid "In the last two weeks, how often…"
 msgstr "Nelle ultime due settimane, quanto spesso…"
-
-#: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
-msgid "In the library"
-msgstr "Nella libreria"
 
 #: frontend/src/pages/WaitingList.vue
 msgid "In the line"
@@ -26962,10 +26950,6 @@ msgstr "La cartella in cui stanno le sue pagine: /<folder>/… . La sua pagina i
 msgid "The food library is empty: add the centre's foods first"
 msgstr "La libreria degli alimenti è vuota: aggiungi prima gli alimenti del centro"
 
-#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
-msgid "The foods diets are written with. The numbers come from the tables; the names and groups are the centre’s."
-msgstr "Gli alimenti con cui si scrivono le diete. I numeri vengono dalle tabelle; i nomi e i gruppi sono del centro."
-
 #: frontend/src/components/Settings/Forms/TemplateFieldCard.vue
 msgid "The form decides the signature, not who has it signed: simple for notices and questionnaires, advanced for an informed consent. Without a signature provider an advanced one is signed on paper."
 msgstr "È il modulo a decidere la firma, non chi lo fa firmare: semplice per informative e questionari, avanzata per un consenso informato. Senza un fornitore di firma, quella avanzata si firma su carta."
@@ -31478,8 +31462,8 @@ msgid "Where the Book button leads. The appointment lands in the agenda."
 msgstr "Dove porta il pulsante Prenota. L'appuntamento finisce in agenda."
 
 #: crm/area/doctype/crm_area_settings/crm_area_settings.json
-msgid "Where the agency hosts the pictures of the exercise library: an https address, or a path of this server"
-msgstr "Dove l'agenzia tiene le immagini della libreria degli esercizi: un indirizzo https o un percorso di questo server"
+msgid "Only for a CDN of the agency's, an https address: empty, every server shows the copy it brings onto itself"
+msgstr "Solo per un CDN dell'agenzia, un indirizzo https: vuoto, ogni server mostra la copia che si porta da solo"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Where the assistant runs, what it may do, what it did."
@@ -32036,10 +32020,6 @@ msgstr "Scrivi un'email"
 #: frontend/src/components/CommunicationArea.vue
 msgid "Write an email…"
 msgstr "Scrivi un'email…"
-
-#: crm/piani/librerie.py
-msgid "Write an https address, or a path of this server that starts with /"
-msgstr "Scrivi un indirizzo https, o un percorso di questo server che inizia con /"
 
 #: frontend/src/utils/moduliStarters.js
 msgid "Write here the privacy notice of the centre: who you are, what you do with the data, for how long, and the rights of the person. Have it checked by whoever answers for privacy."
@@ -35401,20 +35381,12 @@ msgid "Facebook did not give {brand} the advertising role on this Page, so it ca
 msgstr "Facebook non ha dato a {brand} il ruolo di inserzionista su questa pagina, quindi non può leggerne i moduli per i contatti. Premi «Scegli le pagine» nella schermata di collegamento e spunta questa pagina: devi esserne amministratore."
 
 #: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "The exercises plans are written with: the {brand} library, ready to use, and the centre’s own. Names and body parts can be put in the centre’s words."
-msgstr "Gli esercizi con cui si scrivono i piani: la libreria di {brand}, pronta all'uso, e quelli del centro. Nomi e parti del corpo si possono scrivere con le parole del centro."
-
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
 msgid "New exercise"
 msgstr "Nuovo esercizio"
 
 #: frontend/src/components/Settings/Plans/ExercisesSettings.vue
 msgid "No exercises yet: add the centre’s own with New exercise."
 msgstr "Ancora nessun esercizio: aggiungi quelli del centro con Nuovo esercizio."
-
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "Where the agency hosts the library’s pictures, the images/ and videos/ folders: one copy per server or a CDN, not one per site. Empty: no pictures."
-msgstr "Dove l'agenzia tiene le immagini della libreria, le cartelle images/ e videos/: una copia per server o un CDN, non una per sito. Vuoto: niente immagini."
 
 #: frontend/src/components/Settings/Plans/ExercisesSettings.vue
 msgid "Animations and pictures © Gym visual — https://gymvisual.com/"
@@ -35451,10 +35423,6 @@ msgstr "Nuovo alimento"
 #: frontend/src/components/Settings/Clinic/FoodsSettings.vue
 msgid "No foods yet: add the centre’s own with New food."
 msgstr "Ancora nessun alimento: aggiungi quelli del centro con Nuovo alimento."
-
-#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
-msgid "The foods diets are written with: the {brand} library, ready to use with its values for 100 g, and the centre’s own. Names and groups can be put in the centre’s words."
-msgstr "Gli alimenti con cui si scrivono le diete: la libreria di {brand}, pronta con i valori per 100 g, e quelli del centro. Nomi e gruppi si possono scrivere con le parole del centro."
 
 #: frontend/src/components/Settings/Clinic/FoodsSettings.vue
 msgid "Values of the library: Anses. 2025. Ciqual French food composition table."
@@ -44115,3 +44083,38 @@ msgstr "Cliente"
 msgctxt "Relationship"
 msgid "Patient"
 msgstr "Paziente"
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "The exercises plans are written with: the {brand} library, all there already, and the ones the centre adds. Switch off the ones the centre does not use: they are no longer offered."
+msgstr "Gli esercizi con cui si scrivono i piani: la libreria di {brand}, già tutta qui, e quelli che aggiunge il centro. Spegni quelli che il centro non usa: non vengono più proposti."
+
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "The foods diets are written with: the {brand} library, all there already with its values for 100 g, and the ones the centre adds. Switch off the ones the centre does not use: they are no longer offered."
+msgstr "Gli alimenti con cui si scrivono le diete: la libreria di {brand}, già tutta qui con i valori per 100 g, e quelli che aggiunge il centro. Spegni quelli che il centro non usa: non vengono più proposti."
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "From the library"
+msgstr "Della libreria"
+
+#: frontend/src/components/Settings/Plans/LibraryPage.vue
+msgid "The centre’s own"
+msgstr "Del centro"
+
+#: frontend/src/components/Settings/Plans/LibraryPage.vue
+msgctxt "Library filter"
+msgid "Switched off"
+msgstr "Spenti"
+
+#: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
+#: frontend/src/components/Settings/Clinic/FoodEditDialog.vue
+msgid "Offered in the plans"
+msgstr "Proposto nei piani"
+
+#: crm/piani/librerie.py
+msgid "The library's exercises are switched off, not changed: add the centre's own"
+msgstr "Gli esercizi della libreria si spengono, non si cambiano: aggiungi quelli del centro"
+
+#: crm/clinica/librerie.py
+msgid "The library's foods are switched off, not changed: add the centre's own"
+msgstr "Gli alimenti della libreria si spengono, non si cambiano: aggiungi quelli del centro"

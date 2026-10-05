@@ -10,12 +10,13 @@ how it is done in Italian and English in steps, the body part, the equipment and
 the muscles, the pictures' paths and whose they are. The dataset names its
 exercises in English only: the Italian names (`names.it`) are NPM2's, written in
 the words of an Italian gym ("Panca piana con bilanciere", "Rematore a un braccio
-con manubrio") and kept by code from one version to the next. The data are MIT (the notice
-travels with them, `dati/esercizi.LICENSE.txt`); the media © Gym visual, with its
-written authorisation to NPM2 Solutions, only from where the agency hosts them and
-always with "© Gym visual — https://gymvisual.com/". The assistant never touches
-them. A new exercise of the library is a new record of that file, with an id of
-NPM2's ("dc-0001"): the centre never imports one.
+con manubrio") and kept by code from one version to the next. The data are MIT
+(the notice travels with them, `dati/esercizi.LICENSE.txt`); the media © Gym
+visual, with its written authorisation to NPM2 Solutions, only from the server's
+own copy (`immagini`) or the agency's CDN, and always with "© Gym visual —
+https://gymvisual.com/". The assistant never touches them. A new exercise of the
+library is a new record of that file, with an id of NPM2's ("dc-0001"): the
+centre never imports one.
 """
 
 from __future__ import annotations
@@ -180,8 +181,8 @@ def _nome(record: dict, lingua: str) -> str:
 
 
 def _parole(record: dict, lingua: str) -> dict:
-	"""What the library writes of an exercise in ``lingua`` and the centre may
-	rewrite: its name, its equipment and how it is done."""
+	"""What the library writes of an exercise in ``lingua`` and a centre may have
+	rewritten before: its name, its equipment and how it is done."""
 	return {
 		"exercise_name": _nome(record, lingua) or None,
 		"equipment": parola(str(record.get("equipment") or ""), lingua)[:140] or None,
@@ -206,7 +207,7 @@ def nella_lingua(record: dict, lingua: str, attuali: dict) -> dict:
 def esercizio(record, lingua: str = "it") -> dict | None:
 	"""An exercise of the dataset as the library keeps it; None for a record that
 	is not one. Its pictures are paths in the dataset: where they are served from
-	is the agency's, and may change."""
+	is the server's, or the agency's, and may change."""
 	if not isinstance(record, dict):
 		return None
 	codice = str(record.get("id") or "").strip()

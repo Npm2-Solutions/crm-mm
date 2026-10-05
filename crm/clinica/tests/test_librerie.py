@@ -2,15 +2,16 @@
 # For license information, please see license.txt
 
 """The libraries on a real site: the foods and the exercises DottorCloud ships,
-put in the centre's words, loaded again without losing them.
+all there, switched off by the centre where it does not use them, never changed;
+loaded again without losing what a centre wrote on them before.
 
 The foods come with their names in Italian, ANSES's English beside them, and the
-plans find them by either. The dietitian renames one; the next version of the
-library brings new numbers and keeps the name, while a name nobody touched follows
-the library's - a table a centre imported before included. The centre adds its own
+plans find them by either. A name a centre gave one before stays when the next
+version of the library brings new numbers, while a name nobody touched follows the
+library's - a table a centre imported before included. The centre adds its own
 foods, with their numbers. The exercises come with their steps in Italian; loaded
 again, they keep the centre's words; their pictures appear, with whose they are,
-once the agency says where it hosts them. The centre adds its own.
+once the server has them, or from a CDN the agency names. The centre adds its own.
 """
 
 import json
@@ -31,6 +32,7 @@ from crm.permissions import livelli, utenti
 from crm.piani import api as piani
 from crm.piani import area as area_piani
 from crm.piani import dataset as T
+from crm.piani import immagini
 from crm.piani import librerie as librerie_crm
 from crm.piani import regole as r
 
@@ -98,6 +100,13 @@ class LibrerieCase(PianiCase):
 		super().setUp()
 		frappe.set_user("Administrator")
 		frappe.db.set_single_value(librerie_crm.IMPOSTAZIONI, "exercise_media_url", None)
+		# the server's own copy of the pictures, empty: whatever the bench holds
+		cartella = tempfile.TemporaryDirectory()
+		self.addCleanup(cartella.cleanup)
+		self.server = Path(cartella.name)
+		copia = patch.object(immagini, "cartella", return_value=self.server)
+		copia.start()
+		self.addCleanup(copia.stop)
 
 	def cibo(self, codice):
 		return frappe.get_doc(librerie.CIBO, {"source": librerie.FONTE, "source_code": codice})
@@ -140,17 +149,10 @@ class LaLibreriaDegliAlimenti(LibrerieCase):
 
 	def test_di_nuovo_i_numeri_nuovi_il_nome_del_centro(self):
 		librerie.carica(CIBI, "it")
-		self.come(MANAGER)
 		carota = self.cibo("T20047")
-		librerie.save_food(
-			carota.name,
-			{"food_name": "Carote del centro", "food_group": "Vegetables", "portion_g": 100, "kcal": 999},
-		)
-		carota.reload()
-		# the library's numbers are the library's: the name is the centre's
-		self.assertEqual((carota.food_name, carota.portion_g, carota.kcal), ("Carote del centro", 100, 36.5))
+		# a name the centre gave it when the library's foods could be renamed
+		frappe.db.set_value(librerie.CIBO, carota.name, {"food_name": "Carote del centro", "portion_g": 100})
 		nuova = [dict(CIBI[0], kcal=41), dict(CIBI[1], name="Basilico fresco, foglie")]
-		frappe.set_user("Administrator")
 		fatto = librerie.carica(nuova, "it")
 		self.assertEqual((fatto["created"], fatto["updated"]), (0, 2))
 		carota.reload()
@@ -197,10 +199,10 @@ class LaLibreriaDegliAlimenti(LibrerieCase):
 					self.assertIsNotNone(librerie.carica_libreria())
 					self.assertIsNone(librerie.carica_libreria())
 				self.assertEqual(self.cibo("T20047").food_name, "Carrot, raw")
-				self.come(MANAGER)
-				basilico = self.cibo("T11014")
-				librerie.save_food(basilico.name, {"food_name": "Basilico dell'orto", "food_group": "Other"})
-				frappe.set_user("Administrator")
+				# a name the centre gave the basil before
+				frappe.db.set_value(
+					librerie.CIBO, self.cibo("T11014").name, "food_name", "Basilico dell'orto"
+				)
 				# the same file, wanted in Italian: loaded again, and the names nobody
 				# touched follow; the centre's stays
 				self.assertIsNotNone(librerie.carica_libreria())
@@ -229,6 +231,49 @@ class LaLibreriaDegliAlimenti(LibrerieCase):
 		)
 		with self.assertRaises(frappe.ValidationError):
 			librerie.save_food(None, {"food_name": " ", "food_group": "Cereals and tubers"})
+
+
+class SiSpegneNonSiCambia(LibrerieCase):
+	def test_un_alimento_della_libreria(self):
+		librerie.carica(CIBI, "it")
+		carota = self.cibo("T20047")
+		self.come(MANAGER)
+		with self.assertRaises(frappe.ValidationError):
+			librerie.save_food(carota.name, {"food_name": "Carote", "food_group": "Vegetables", "kcal": 999})
+		self.assertEqual(librerie.switch_food(carota.name, 0), {"name": carota.name, "enabled": 0})
+		carota.reload()
+		self.assertEqual((carota.food_name, carota.kcal, carota.enabled), ("Carota, cruda", 36.5, 0))
+		self.assertIn(carota.name, [c["name"] for c in librerie.get_foods(text="carota", enabled=0)["rows"]])
+		# whoever writes a diet no longer finds it, nor switches it on again
+		self.come(DOC1)
+		self.assertNotIn(carota.name, [c.name for c in piani_clinica.search_foods("carota")])
+		with self.assertRaises(frappe.PermissionError):
+			librerie.switch_food(carota.name, 1)
+		self.come(MANAGER)
+		librerie.switch_food(carota.name, 1)
+		self.come(DOC1)
+		self.assertIn(carota.name, [c.name for c in piani_clinica.search_foods("carota")])
+
+	def test_un_esercizio_della_libreria(self):
+		librerie_crm.carica(DATASET, "it")
+		curl = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
+		self.come(MANAGER)
+		with self.assertRaises(frappe.ValidationError):
+			librerie_crm.save_exercise(curl.name, {"exercise_name": "Curl del centro"})
+		self.assertEqual(librerie_crm.switch_exercise(curl.name, 0), {"name": curl.name, "enabled": 0})
+		curl.reload()
+		self.assertEqual((curl.exercise_name, curl.enabled), ("Barbell curl", 0))
+		self.assertIn(
+			curl.name, [e["name"] for e in librerie_crm.get_exercises(text="curl", enabled=0)["rows"]]
+		)
+		self.come(DOC2)
+		self.assertNotIn(curl.name, [e["name"] for e in piani.search_exercises("curl")])
+		with self.assertRaises(frappe.PermissionError):
+			librerie_crm.switch_exercise(curl.name, 1)
+		# the centre's own, switched off like the library's
+		self.come(MANAGER)
+		suo = librerie_crm.save_exercise(None, {"exercise_name": "Curl con la bottiglia"})
+		self.assertEqual(librerie_crm.switch_exercise(suo["name"], 0)["enabled"], 0)
 
 
 class IlCiboDelCentro(LibrerieCase):
@@ -267,12 +312,13 @@ class GliEsercizi(LibrerieCase):
 
 	def test_di_nuovo_le_immagini_nuove_le_parole_del_centro(self):
 		librerie_crm.carica(DATASET, "it")
-		self.come(MANAGER)
 		addome = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"})
-		librerie_crm.save_exercise(addome.name, {"exercise_name": "Crunch a tre quarti", "body_part": "Core"})
+		# a name the centre gave it when the library's exercises could be renamed
+		frappe.db.set_value(
+			librerie_crm.ESERCIZIO, addome.name, {"exercise_name": "Crunch a tre quarti", "body_part": "Core"}
+		)
 		DATASET[0]["gif_url"] = "videos/0001-nuovo.gif"
 		try:
-			frappe.set_user("Administrator")
 			fatto = librerie_crm.carica(DATASET, "it")
 		finally:
 			DATASET[0]["gif_url"] = "videos/0001-2gPfomN.gif"
@@ -289,19 +335,9 @@ class GliEsercizi(LibrerieCase):
 			(addome.equipment, addome.instructions, addome.primary_muscles),
 			("body weight", "1. Lie flat.", "abs"),
 		)
-		# the centre wrote how the curl is done, and kept the library's equipment
-		self.come(MANAGER)
+		# the centre wrote how the curl is done before, and kept the library's equipment
 		curl = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
-		librerie_crm.save_exercise(
-			curl.name,
-			{
-				"exercise_name": curl.exercise_name,
-				"body_part": curl.body_part,
-				"equipment": curl.equipment,
-				"instructions": "Gomiti fermi.",
-			},
-		)
-		frappe.set_user("Administrator")
+		frappe.db.set_value(librerie_crm.ESERCIZIO, curl.name, "instructions", "Gomiti fermi.")
 		librerie_crm.carica(DATASET, "it")
 		addome.reload()
 		curl.reload()
@@ -338,7 +374,7 @@ class GliEsercizi(LibrerieCase):
 		with self.assertRaises(frappe.ValidationError):
 			librerie_crm.save_exercise(None, {"exercise_name": "  "})
 
-	def test_le_immagini_dove_le_tiene_l_agenzia_con_il_loro_autore(self):
+	def test_le_immagini_del_server_o_di_una_cdn_con_il_loro_autore(self):
 		librerie_crm.carica(DATASET, "it")
 		frappe.set_user("Administrator")
 		addome = frappe.db.get_value(
@@ -361,15 +397,21 @@ class GliEsercizi(LibrerieCase):
 			voce = area_piani.per_la_persona(voci[0], piano, {})
 			return voce["image"], voce["attribution"]
 
-		# no address yet: no picture, and no owner of a picture to name
+		# the server has none yet, and no CDN: no picture, and no owner of a picture to name
 		self.assertEqual(figura(), (None, None))
 		self.come(MANAGER)
-		with self.assertRaises(frappe.PermissionError):
-			librerie_crm.save_media_url("https://cdn.example.com/esercizi")
-		frappe.set_user("Administrator")
-		with self.assertRaises(frappe.ValidationError):
-			librerie_crm.save_media_url("http://cdn.example.com/esercizi")
-		librerie_crm.save_media_url("https://cdn.example.com/esercizi/")
+		self.assertFalse(librerie_crm.get_exercises()["has_media"])
+		# the server brought them onto itself
+		(self.server / "images").mkdir()
+		self.assertEqual(
+			figura(),
+			("/assets/crm-esercizi/videos/0001-2gPfomN.gif", "© Gym visual — https://gymvisual.com/"),
+		)
+		self.assertTrue(librerie_crm.get_exercises()["has_media"])
+		# a CDN the agency names in the Desk comes first
+		frappe.db.set_single_value(
+			librerie_crm.IMPOSTAZIONI, "exercise_media_url", "https://cdn.example.com/esercizi/"
+		)
 		self.assertEqual(
 			figura(),
 			(

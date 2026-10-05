@@ -2,11 +2,13 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  A library the plans are written with, as a settings page: searched, filtered
-  by group and source, a row opened to be put right, a new one of the centre's
-  added. The libraries are the ones DottorCloud ships - the CRM's exercises, the
-  clinic's foods - and the centre's own: nobody imports. Each says where its rows
-  come from and how they read (``library``), and keeps its own dialogs.
+  A library the plans are written with, as a settings page: the one DottorCloud
+  ships - the CRM's exercises, the clinic's foods - all there already, and the
+  centre's own. Searched, filtered by group and by whose it is; each row switched
+  off or on where it is, opened to be read (the library's) or put right (the
+  centre's); a new one of the centre's added. Nobody imports, nobody changes the
+  library. Each says where its rows come from and how they read (``library``),
+  and keeps its own dialogs.
 -->
 <template>
   <SettingsLayoutBase>
@@ -44,12 +46,12 @@
             :aria-label="library.groupLabel"
           />
         </div>
-        <div class="w-40 max-md:flex-1">
+        <div class="w-44 max-md:flex-1">
           <FormControl
-            v-model="filters.source"
+            v-model="filters.show"
             type="select"
-            :options="sourceOptions"
-            :aria-label="__('Source')"
+            :options="showOptions"
+            :aria-label="__('Show')"
           />
         </div>
       </div>
@@ -66,12 +68,12 @@
         </p>
 
         <div v-if="data?.rows.length" class="flex flex-col">
-          <button
+          <!-- the whole row opens it; its switch, above the row's link, turns it
+               off or on where it is -->
+          <div
             v-for="row in rows"
             :key="row.name"
-            type="button"
-            class="flex items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
-            @click="emit('edit', { ...row })"
+            class="relative flex items-center gap-3 rounded-md px-2 py-2 hover:bg-surface-gray-2"
           >
             <img
               v-if="
@@ -86,39 +88,42 @@
             />
             <span
               v-else-if="library.thumbnail"
-              class="flex size-10 shrink-0 items-center justify-center rounded bg-surface-gray-2 text-ink-gray-4"
+              class="flex size-10 shrink-0 items-center justify-center rounded bg-surface-gray-2 text-ink-gray-5"
               aria-hidden="true"
             >
               <span class="lucide-image-off size-4" />
             </span>
-            <span class="flex min-w-0 flex-1 flex-col">
+            <button
+              type="button"
+              class="flex min-w-0 flex-1 flex-col text-left after:absolute after:inset-0 after:rounded-md after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-outline-gray-3"
+              @click="emit('edit', { ...row })"
+            >
               <span
-                class="truncate text-base"
+                class="max-w-full truncate text-base"
                 :class="row.enabled ? 'text-ink-gray-8' : 'text-ink-gray-5'"
               >
                 {{ row[library.nameField] }}
               </span>
-              <span class="truncate text-p-sm text-ink-gray-5">
+              <span class="max-w-full truncate text-p-sm text-ink-gray-5">
                 {{ library.describe(row) }}
               </span>
-            </span>
-            <span class="flex shrink-0 items-center gap-2">
-              <Badge
-                v-if="!row.enabled"
-                variant="subtle"
-                theme="gray"
-                :label="__('Off')"
-              />
-              <!-- what the centre added is the exception worth a mark; a
-                   «Library» on every row of the library said nothing -->
-              <Badge
-                v-if="(row.source || 'Centre') === 'Centre'"
-                variant="subtle"
-                theme="blue"
-                :label="sourceLabel(row.source)"
-              />
-            </span>
-          </button>
+            </button>
+            <!-- what the centre added is the exception worth a mark; a
+                 «Library» on every row of the library said nothing -->
+            <Badge
+              v-if="(row.source || 'Centre') === 'Centre'"
+              class="shrink-0"
+              variant="subtle"
+              theme="blue"
+              :label="__('The centre’s own')"
+            />
+            <Switch
+              class="relative z-10 shrink-0"
+              :model-value="Boolean(row.enabled)"
+              :aria-label="row[library.nameField]"
+              @update:model-value="(acceso) => accendi(row, acceso)"
+            />
+          </div>
           <div class="flex items-center justify-between gap-2 px-2 pt-2">
             <span class="text-p-sm text-ink-gray-5">
               {{ __('{0} of {1}', [rows.length, data.total]) }}
@@ -134,25 +139,36 @@
 
         <slot name="after" :data="data" />
       </div>
-      <slot name="dialogs" :reload="reload" :data="data" />
+      <slot name="dialogs" :reload="reload" :aggiorna="aggiorna" :data="data" />
     </template>
   </SettingsLayoutBase>
 </template>
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
-import { Badge, Button, FormControl, call, debounce, toast } from 'frappe-ui'
+import {
+  Badge,
+  Button,
+  FormControl,
+  Switch,
+  call,
+  debounce,
+  toast,
+} from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
-  // title, description, endpoint, nameField, groups, groupContext, everyGroup, groupLabel,
-  // sources (a name, or its value and label), searchPlaceholder, newLabel,
-  // empty, describe(row), thumbnail(row)
+  // title, description, endpoint, switchEndpoint, nameField, groups,
+  // groupContext, everyGroup, groupLabel, sources (a name, or its value and
+  // label), searchPlaceholder, newLabel, empty, describe(row), thumbnail(row)
   library: { type: Object, required: true },
 })
 const emit = defineEmits(['edit', 'new'])
 
-const filters = reactive({ text: '', group: '', source: '' })
+// the filter's value for the rows switched off, whoever's they are
+const SPENTI = 'switched-off'
+
+const filters = reactive({ text: '', group: '', show: '' })
 // a picture that did not load leaves its place to a quiet mark, never a broken one
 const nonCaricate = reactive(new Set())
 const data = ref(null)
@@ -160,7 +176,7 @@ const rows = ref([])
 const loadingMore = ref(false)
 
 const anyFilter = computed(() =>
-  Boolean(filters.text || filters.group || filters.source),
+  Boolean(filters.text || filters.group || filters.show),
 )
 
 const groupOptions = computed(() => [
@@ -180,22 +196,21 @@ const sources = computed(() =>
   ),
 )
 
-const sourceOptions = computed(() => [
-  { label: __('Every source'), value: '' },
-  { label: __('The centre'), value: 'Centre' },
+// what the list shows: all of it, the library's, the centre's own, or what was
+// switched off
+const showOptions = computed(() => [
+  { label: __('All'), value: '' },
   ...sources.value,
+  { label: __('The centre’s own'), value: 'Centre' },
+  { label: __('Switched off', null, 'Library filter'), value: SPENTI },
 ])
-
-function sourceLabel(source) {
-  if (!source || source === 'Centre') return __('The centre')
-  return sources.value.find((s) => s.value === source)?.label || source
-}
 
 async function load(start = 0) {
   const result = await call(props.library.endpoint, {
     text: filters.text || null,
     group: filters.group || null,
-    source: filters.source || null,
+    source: filters.show && filters.show !== SPENTI ? filters.show : null,
+    enabled: filters.show === SPENTI ? 0 : null,
     start,
   })
   data.value = result
@@ -215,10 +230,32 @@ async function more() {
   }
 }
 
+// switched off or on where it is: the row shows it at once, and goes back if the
+// server says no
+async function accendi(row, acceso) {
+  const prima = row.enabled
+  row.enabled = acceso ? 1 : 0
+  try {
+    await call(props.library.switchEndpoint, {
+      name: row.name,
+      enabled: row.enabled,
+    })
+  } catch (e) {
+    row.enabled = prima
+    toast.error(e.messages?.join(' ') || e.message)
+  }
+}
+
+// a row the dialog changed, in its place: the list keeps where it was
+function aggiorna(riga) {
+  const i = rows.value.findIndex((r) => r.name === riga.name)
+  if (i >= 0) rows.value[i] = { ...rows.value[i], ...riga }
+}
+
 const search = debounce(reload, 300)
 watch(() => filters.text, search)
-watch(() => [filters.group, filters.source], reload)
+watch(() => [filters.group, filters.show], reload)
 reload()
 
-defineExpose({ reload, data })
+defineExpose({ reload, aggiorna, data })
 </script>

@@ -10,16 +10,19 @@ more: what `CRM Library Import` holds is the record of the imports before.
 - **Who** (`piani.librerie`): the manager; a practitioner when the manager turns it
   on. Whoever writes plans still adds an exercise from the editor.
 - **The library** DottorCloud ships (`dati/esercizi.json`, `dataset`): 1,324
-  exercises, ready on every site. `carica_libreria` puts it in at install and at
-  every migrate that brings a new version of the file; the centre never imports
-  it, and NPM2 adds an exercise to the library in that file. The pictures
-  © Gym visual, with its authorisation to NPM2 Solutions, are served from where
-  the agency hosts them (one copy per server or a CDN, not one per site) and never
+  exercises, their names in Italian, all there on every site. `carica_libreria`
+  puts it in at install and at every migrate that brings a new version of the
+  file; NPM2 adds an exercise to the library in that file. The pictures
+  © Gym visual, with its authorisation to NPM2 Solutions, are the server's own
+  copy, brought there by itself (`immagini`), or a CDN the agency names; never
   used by the assistant.
-- **Loaded again**, the library updates its pictures and muscles; the words the
-  centre changed - a name in Italian, the body part, how it is done - stay the
-  centre's. The centre adds its own exercises. An exercise is switched off, not
-  deleted: a plan may point to it.
+- **The centre** changes nothing of the library's: it switches off the exercises
+  it does not use (`switch_exercise`) and adds its own (`save_exercise`), which it
+  puts right as it likes. An exercise is switched off, not deleted: a plan may
+  point to it.
+- **Loaded again**, the library updates its pictures and muscles, and its words
+  kept in another language take the centre's; what a centre wrote on one of them
+  before - a name, how it is done - stays.
 - **In the centre's language** (`crm.lingue`): a site loaded in English before
   it said it is in Italy loads the library again, and the library's own words
   take Italian; the centre's stay.
@@ -38,10 +41,12 @@ from frappe.utils import cint, now_datetime
 from crm import lingue
 from crm.permissions import livelli
 from crm.piani import dataset as D
+from crm.piani import immagini
 from crm.utils import count_field
 
 ESERCIZIO = "CRM Exercise"
-#: Where the agency says it hosts the library's pictures: the area's settings.
+#: Where the agency may name a CDN of its own for the library's pictures, in the
+#: Desk: the area's settings.
 IMPOSTAZIONI = "CRM Area Settings"
 CENTRO = "Centre"
 PER_PAGINA = 50
@@ -124,13 +129,15 @@ def inserisci(doctype: str, righe: list[dict]) -> None:
 
 
 def _base_media() -> str | None:
+	"""Where the library's pictures come from: a CDN the agency named, else the
+	server's own copy once it has one."""
 	# a single's value is kept by Frappe for the request
-	return frappe.db.get_single_value(IMPOSTAZIONI, "exercise_media_url")
+	return frappe.db.get_single_value(IMPOSTAZIONI, "exercise_media_url") or immagini.indirizzo()
 
 
 def media(riga) -> dict:
 	"""An exercise's pictures as a page shows them: the centre's own picture, else
-	the library's from where the agency hosts it; the animation; and whose they are."""
+	the library's; the animation; and whose they are."""
 	base = _base_media()
 	immagine = riga.get("image") or D.indirizzo_media(base, riga.get("media_path"))
 	animazione = D.indirizzo_media(base, riga.get("animation_path"))
@@ -175,8 +182,7 @@ def get_exercises(
 	enabled: str | None = None,
 	start: int = 0,
 ) -> dict:
-	"""A page of the exercises, searched and filtered, with how many come from where,
-	and where the agency hosts the library's pictures."""
+	"""A page of the exercises, searched and filtered, with how many come from where."""
 	livelli.verifica("piani.librerie")
 	risposta = pagina(
 		ESERCIZIO,
@@ -186,24 +192,24 @@ def get_exercises(
 		text,
 		start,
 	)
-	tecnico = livelli.puo("tecnico.integrazioni")
 	return {
 		**risposta,
 		"rows": [_riga_esercizio(r) for r in risposta["rows"]],
-		"media_url": _base_media() if tecnico else None,
-		"can_set_media": tecnico,
+		# whose the pictures are, said under the list where there are pictures
 		"has_media": bool(_base_media()),
 	}
 
 
 @frappe.whitelist(methods=["POST"])
 def save_exercise(name: str | None = None, data: dict | str | None = None) -> dict:
-	"""An exercise put right, or a new one of the centre's: its name, the body part,
-	the equipment, how it is done, the centre's video, on or off. The library's
-	pictures stay the library's."""
+	"""A new exercise of the centre's, or one of its own put right: its name, the
+	body part, the equipment, how it is done, its video, on or off. The library's
+	are DottorCloud's: switched off or on (`switch_exercise`), never changed."""
 	livelli.verifica("piani.librerie")
 	dati = frappe.parse_json(data) if isinstance(data, str) else (data or {})
 	doc = frappe.get_doc(ESERCIZIO, name) if name else frappe.new_doc(ESERCIZIO)
+	if (doc.source or CENTRO) != CENTRO:
+		frappe.throw(_("The library's exercises are switched off, not changed: add the centre's own"))
 	nome = (dati.get("exercise_name") or "").strip()
 	if not nome:
 		frappe.throw(_("An exercise has a name"))
@@ -223,16 +229,21 @@ def save_exercise(name: str | None = None, data: dict | str | None = None) -> di
 	return _riga_esercizio(frappe.get_all(ESERCIZIO, filters={"name": doc.name}, fields=CAMPI_ESERCIZIO)[0])
 
 
+def accendi(doctype: str, name: str, enabled) -> dict:
+	"""A library's entry offered when plans are written, or no longer: one of the
+	library the centre does not use, or one of its own. The plans that have it
+	keep it."""
+	doc = frappe.get_doc(doctype, name)
+	doc.enabled = 1 if cint(enabled) else 0
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "enabled": doc.enabled}
+
+
 @frappe.whitelist(methods=["POST"])
-def save_media_url(url: str | None = None) -> dict:
-	"""Where the agency hosts the dataset's pictures: an https address or a path
-	of this server. Every exercise of the dataset follows it."""
-	livelli.verifica("tecnico.integrazioni")
-	indirizzo = (url or "").strip() or None
-	if indirizzo and not D.indirizzo_media(indirizzo, "images/prova.jpg"):
-		frappe.throw(_("Write an https address, or a path of this server that starts with /"))
-	frappe.db.set_single_value(IMPOSTAZIONI, "exercise_media_url", indirizzo)
-	return {"media_url": indirizzo}
+def switch_exercise(name: str, enabled: int | str = 1) -> dict:
+	"""An exercise switched off, or on again."""
+	livelli.verifica("piani.librerie")
+	return accendi(ESERCIZIO, name, enabled)
 
 
 def lingua_del_sito() -> str:
@@ -249,9 +260,9 @@ def caricata(contenuto: bytes, lingua: str) -> str:
 
 def carica(record: list, lingua: str | None = None) -> dict:
 	"""The library's records into the site: a new exercise comes in; one already
-	there gets the library's pictures and muscles again, and its name, body part
-	and instructions stay as the centre left them. The library's own words the
-	site keeps in another language take ``lingua``."""
+	there gets the library's pictures and muscles again, and what a centre wrote
+	on it before - its name, body part, how it is done - stays. The library's own
+	words the site keeps in another language take ``lingua``."""
 	lingua = lingua or lingua_del_sito()
 	presenti = {
 		riga.source_code: riga
@@ -271,7 +282,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 			scartati += 1
 			continue
 		visti.add(esercizio["code"])
-		immagini = {
+		della_libreria = {
 			campo: esercizio[campo]
 			for campo in (
 				"media_path",
@@ -283,7 +294,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 		}
 		esistente = presenti.get(esercizio["code"])
 		if esistente:
-			aggiornati[esistente.name] = {**immagini, **D.nella_lingua(voce, lingua, esistente)}
+			aggiornati[esistente.name] = {**della_libreria, **D.nella_lingua(voce, lingua, esistente)}
 			continue
 		nuovi.append(
 			{
@@ -292,7 +303,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 				"equipment": esercizio["equipment"],
 				"enabled": 1,
 				"instructions": esercizio["instructions"],
-				**immagini,
+				**della_libreria,
 				"source": D.DATASET,
 				"source_code": esercizio["code"],
 				"name_in_source": esercizio["name_in_source"],

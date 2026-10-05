@@ -1,10 +1,10 @@
 <!--
   The clinic's foods, the library its diets are written with: the library
-  DottorCloud ships, ready on every site with its names in Italian
-  (`crm.clinica.librerie.carica_libreria`), and the centre's own. Here a name
-  becomes the centre's, a group is put right, a food is switched off or added.
-  The centre never imports a table: NPM2 adds to the library in the code.
-  The page is the CRM's library page (Settings/Plans/LibraryPage.vue).
+  DottorCloud ships, all there on every site with its names in Italian
+  (`crm.clinica.librerie.carica_libreria`), and the centre's own. The centre
+  switches off the foods it does not use and adds its own; it changes nothing of
+  the library's, and never imports a table: NPM2 adds to the library in the
+  code. The page is the CRM's library page (Settings/Plans/LibraryPage.vue).
 -->
 <template>
   <LibraryPage
@@ -21,11 +21,12 @@
         }}
       </p>
     </template>
-    <template #dialogs="{ reload }">
+    <template #dialogs="{ reload, aggiorna }">
       <FoodEditDialog
         v-model="editing.show"
         :food="editing.row"
         @saved="reload"
+        @changed="aggiorna"
       />
     </template>
   </LibraryPage>
@@ -43,15 +44,18 @@ const editing = reactive({ show: false, row: null })
 const library = {
   title: __('Foods'),
   description: __(
-    'The foods diets are written with: the {brand} library, ready to use with its values for 100 g, and the centre’s own. Names and groups can be put in the centre’s words.',
+    'The foods diets are written with: the {brand} library, all there already with its values for 100 g, and the ones the centre adds. Switch off the ones the centre does not use: they are no longer offered.',
   ),
   endpoint: 'crm.clinica.librerie.get_foods',
+  switchEndpoint: 'crm.clinica.librerie.switch_food',
   nameField: 'food_name',
   groups: GRUPPI,
   everyGroup: __('Every group'),
   groupLabel: __('Group'),
   sources: FONTI.map((fonte) =>
-    fonte === 'CIQUAL' ? { value: fonte, label: __('Library') } : fonte,
+    fonte === 'CIQUAL'
+      ? { value: fonte, label: __('From the library') }
+      : fonte,
   ),
   searchPlaceholder: __('Search a food'),
   newLabel: __('New food'),
