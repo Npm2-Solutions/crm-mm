@@ -26,9 +26,13 @@
               {{ __(type.label) }}
             </div>
             <!-- the state and its button on one line, when and how under both:
-                 beside the button the date wrapped on three lines -->
+                 beside the button the date wrapped on three lines. The button
+                 goes under the state where both do not fit: beside it «Nessuna
+                 risposta» was «Nessuna ris…», in the panel's 352px -->
             <div class="flex min-w-0 flex-1 flex-col">
-              <div class="flex min-h-7 items-center justify-between gap-2">
+              <div
+                class="flex min-h-7 flex-wrap items-center justify-between gap-x-2"
+              >
                 <div
                   class="flex min-w-0 items-center gap-1 px-2 text-base text-ink-gray-8"
                 >
@@ -39,7 +43,7 @@
                   v-if="action(type)"
                   size="sm"
                   variant="ghost"
-                  class="touch-target shrink-0"
+                  class="touch-target ml-auto shrink-0"
                   :label="action(type).label"
                   @click="action(type).run()"
                 />
