@@ -450,8 +450,10 @@ class Simulazione:
 		from crm.moduli import registro as tipi
 
 		quanti = self.ctx.quanti(6)
+		# what they came for: a course of visits, not the classes (they have no first visit)
+		bisogni = [(bisogno, peso) for bisogno, peso in dati.BISOGNI if bisogno in dati.PERCORSI]
 		for volta in range(quanti):
-			percorso = self.ctx.scegli_pesato(dati.BISOGNI)
+			percorso = self.ctx.scegli_pesato(bisogni)
 			chiave = PRATICO.get(percorso) or "giulia"
 			if not self.squadra.get(chiave):
 				continue
