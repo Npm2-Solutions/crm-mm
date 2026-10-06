@@ -61,7 +61,7 @@
                 {{ list.price_list_name }}
               </div>
               <div class="truncate text-p-sm text-ink-gray-5">
-                {{ list.currency }} ·
+                {{ nomeDellaValuta(list.currency, appLocale()) }} ·
                 {{
                   list.rule_count === 1
                     ? __('1 rule')
@@ -198,11 +198,7 @@
           required
         />
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
-          <FormControl
-            v-model="listForm.currency"
-            type="text"
-            :label="__('Currency')"
-          />
+          <CampoValuta v-model="listForm.currency" :label="__('Currency')" />
           <FormControl
             v-model="listForm.valid_from"
             type="date"
@@ -268,10 +264,14 @@
             type="number"
             :label="__('Price')"
           />
-          <FormControl
+          <CampoValuta
             v-model="ruleForm.currency"
-            type="text"
             :label="__('Currency')"
+            :vuota="
+              __('As the price list ({0})', [
+                nomeDellaValuta(listCurrency, appLocale()),
+              ])
+            "
           />
           <FormControl
             v-model.number="ruleForm.priority"
@@ -377,11 +377,13 @@
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
+import CampoValuta from '@/components/Controls/CampoValuta.vue'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { hhmm } from '@/utils/scheduler'
 import { appLocale } from '@/utils/locale'
+import { nomeDellaValuta, prezzo } from '@/utils/valute'
 import { globalStore } from '@/stores/global'
 import { dateFormat } from '@/utils'
 
@@ -485,14 +487,11 @@ const listCurrency = computed(
 )
 
 function money(amount, currency) {
-  try {
-    return new Intl.NumberFormat(appLocale(), {
-      style: 'currency',
-      currency: currency || window.sysdefaults?.currency || 'EUR',
-    }).format(amount || 0)
-  } catch {
-    return `${amount} ${currency || ''}`.trim()
-  }
+  return prezzo(
+    amount,
+    currency || window.sysdefaults?.currency || 'EUR',
+    appLocale(),
+  )
 }
 
 // --- price list editor ---------------------------------------------------

@@ -135,11 +135,7 @@
             type="number"
             :label="__('Hourly rate')"
           />
-          <FormControl
-            v-model="form.currency"
-            type="text"
-            :label="__('Currency')"
-          />
+          <CampoValuta v-model="form.currency" :label="__('Currency')" />
         </div>
         <label class="flex items-center gap-2 text-sm text-ink-gray-7">
           <Switch v-model="form.enabled" size="sm" /> {{ __('Enabled') }}
@@ -178,6 +174,9 @@
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
+import CampoValuta from '@/components/Controls/CampoValuta.vue'
+import { appLocale } from '@/utils/locale'
+import { prezzo } from '@/utils/valute'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
@@ -207,7 +206,11 @@ function describe(resource) {
   if (resource.seats > 1) parts.push(__('{0} seats', [resource.seats]))
   if (resource.location) parts.push(resource.location)
   if (resource.hourly_rate) {
-    parts.push(`${resource.hourly_rate} ${resource.currency || ''}/h`)
+    parts.push(
+      __('{0} an hour', [
+        prezzo(resource.hourly_rate, resource.currency, appLocale()),
+      ]),
+    )
   }
   return parts.join(' · ') || __('No limits set')
 }

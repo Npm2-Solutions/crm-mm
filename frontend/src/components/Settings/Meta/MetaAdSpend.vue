@@ -94,7 +94,10 @@
                     · {{ account.business_name }}
                   </template>
                   <template v-if="account.currency">
-                    · {{ account.currency }}</template
+                    ·
+                    {{
+                      nomeDellaValuta(account.currency, appLocale())
+                    }}</template
                   >
                   <template v-if="account.last_synced_on">
                     · {{ __('read on {0}', [account.last_synced_on]) }}
@@ -331,6 +334,7 @@
 import { createResource, LoadingIndicator, Switch, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { appLocale } from '@/utils/locale'
+import { nomeDellaValuta } from '@/utils/valute'
 
 // loaded once by the page around the tabs
 const props = defineProps({

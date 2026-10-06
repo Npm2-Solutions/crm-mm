@@ -51,8 +51,8 @@
         </div>
         <div>
           <Switch
-            :aria-label="__('Enable Forecasting')"
             v-model="settings.doc.enable_forecasting"
+            :aria-label="__('Enable Forecasting')"
             size="sm"
           />
         </div>
@@ -68,28 +68,36 @@
           <div class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'Dashboard number cards & charts will show currency in the selected format. Once set, cannot be edited.',
+                'The currency the dashboard and the deals count in. Until one is chosen it is the centre’s country’s; once chosen, it stays.',
               )
             }}
           </div>
         </div>
         <div>
           <div v-if="settings.doc?.currency" class="text-base text-ink-gray-8">
-            {{ settings.doc.currency }}
+            {{ nomeDellaValuta(settings.doc.currency, appLocale()) }}
           </div>
-          <Link
+          <!-- none chosen counts in the country's: the placeholder says so,
+               and a choice asks first, since it stays -->
+          <CampoValuta
             v-else
-            class="form-control flex-1 truncate w-40"
-            :value="settings.doc?.currency"
-            doctype="Currency"
-            :placeholder="__('Select Currency')"
-            placement="bottom-end"
-            @change="(v) => setCurrency(v)"
+            class="w-48 max-md:w-full"
+            :aria-label="__('Dashboard Currency')"
+            :placeholder="__('The currency of the centre’s country')"
+            @update:modelValue="(v) => v && setCurrency(v)"
           />
         </div>
       </div>
-      <div class="h-px border-t mx-2 border-outline-elevation-2" />
-      <div class="flex items-center justify-between gap-8 py-3 px-2">
+      <!-- which service tells the day's exchange rates is the agency's, as
+           its key is (doc 30): a centre reads no list of services' names -->
+      <div
+        v-if="tecnico"
+        class="h-px border-t mx-2 border-outline-elevation-2"
+      />
+      <div
+        v-if="tecnico"
+        class="flex items-center justify-between gap-8 py-3 px-2"
+      >
         <div class="flex min-w-0 flex-col">
           <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Exchange Rate Provider') }}
@@ -120,19 +128,9 @@
         </div>
       </div>
       <div
-        v-if="requiresAccessKey"
+        v-if="requiresAccessKey && tecnico"
         class="h-px border-t mx-2 border-outline-elevation-2"
       />
-      <!-- the provider's key is the agency's (doc 30): the centre picks the
-           provider, the agency puts the key in -->
-      <div
-        v-if="requiresAccessKey && !tecnico"
-        class="px-2 py-3 text-p-sm text-ink-gray-6"
-      >
-        {{
-          __('The agency sets the access key for {0}.', [providerMeta.label])
-        }}
-      </div>
       <div
         v-if="requiresAccessKey && tecnico"
         class="flex items-center justify-between gap-8 p-3"
@@ -177,7 +175,10 @@
 </template>
 <script setup>
 import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
+import CampoValuta from '@/components/Controls/CampoValuta.vue'
 import { getSettings } from '@/stores/settings'
+import { appLocale } from '@/utils/locale'
+import { nomeDellaValuta } from '@/utils/valute'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useBroadcast } from '@/composables/useBroadcast'
@@ -247,7 +248,7 @@ function setCurrency(value) {
     title: __('Set Currency'),
     message: __(
       'Are you sure you want to set the currency as {0}? This cannot be changed later.',
-      [value],
+      [nomeDellaValuta(value, appLocale())],
     ),
     variant: 'solid',
     theme: 'blue',
@@ -259,7 +260,11 @@ function setCurrency(value) {
           settings.doc.currency = value
           settings.save.submit(null, {
             onSuccess: () => {
-              toast.success(__('Currency set as {0} successfully', [value]))
+              toast.success(
+                __('Currency set as {0} successfully', [
+                  nomeDellaValuta(value, appLocale()),
+                ]),
+              )
               close()
             },
           })
