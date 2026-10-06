@@ -580,6 +580,7 @@ const field = computed(() => {
     field.options = conValoreAttuale(
       field.options,
       data.value?.[field.fieldname],
+      field.nomi,
     )
   }
 

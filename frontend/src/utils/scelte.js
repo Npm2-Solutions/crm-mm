@@ -9,12 +9,13 @@
 
 /**
  * The options, with the stored value among them. A profile hides choices, it
- * never loses one: a value saved before stays visible in its own field, as it is.
+ * never loses one: a value saved before stays visible in its own field, by its
+ * name where the server gave the family's names (`nomi`), else as it is.
  */
-export function conValoreAttuale(options, valore) {
+export function conValoreAttuale(options, valore, nomi = {}) {
   if (!valore || !Array.isArray(options)) return options
   if (options.some((opzione) => opzione?.value === valore)) return options
-  return [...options, { label: valore, value: valore }]
+  return [...options, { label: nomi?.[valore] || valore, value: valore }]
 }
 
 /** The line that says when the chosen value applies, or nothing. */

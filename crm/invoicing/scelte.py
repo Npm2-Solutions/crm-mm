@@ -184,6 +184,8 @@ def adatta_campi(doctype: str, campi: list) -> list:
 			adattati.append(campo)
 			continue
 		nuovo["options"] = scelte
+		# a value stored before that the profile no longer offers reads in words too
+		nuovo["nomi"] = {voce.valore: _(voce.etichetta) for voce in voci.tutte(famiglia)}
 		adattati.append(nuovo)
 	return adattati
 
