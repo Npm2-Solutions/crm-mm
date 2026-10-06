@@ -567,6 +567,20 @@
 .dc-evento--prima.dc-evento--adesso .dc-cross {
   --c: var(--mint-300);
 }
+/* in the dark the brand's block is mint: its bar, its cross and its ring
+   take the deep ink of its words (the design system's teal-950), or they
+   vanish into it */
+:root[data-theme='dark'] .dc-evento--prima::before {
+  background: var(--on-brand-solid);
+}
+:root[data-theme='dark'] .dc-evento--prima.dc-evento--adesso .dc-cross {
+  --c: var(--on-brand-solid);
+}
+:root[data-theme='dark'] .dc-evento--prima.dc-evento--adesso {
+  box-shadow:
+    0 0 0 2px var(--brand-segno, var(--brand)),
+    inset 0 0 0 2px var(--on-brand-solid);
+}
 .dc-evento--annullato {
   background-color: var(--surface-gray-2);
 }

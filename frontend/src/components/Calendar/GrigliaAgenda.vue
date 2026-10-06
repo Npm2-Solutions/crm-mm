@@ -63,10 +63,18 @@
                     {{ colonna.nome }}
                   </span>
                   <span
-                    class="block min-h-4 truncate text-p-xs"
+                    class="line-clamp-2 min-h-4 text-p-xs"
                     :class="sottotitoloColore(colonna)"
                   >
-                    {{ colonna.sottotitolo }}
+                    <template
+                      v-for="(pezzo, i) in pezziDi(colonna.sottotitolo)"
+                      :key="i"
+                      >{{ i ? ' · ' : ''
+                      }}<span
+                        :class="pezzo.intero ? 'whitespace-nowrap' : ''"
+                        >{{ pezzo.testo }}</span
+                      ></template
+                    >
                   </span>
                 </span>
               </button>
@@ -92,10 +100,17 @@
                   {{ colonna.titolo }}
                 </span>
                 <span
-                  class="block min-h-4 truncate text-p-xs"
+                  class="line-clamp-2 min-h-4 text-p-xs"
                   :class="sottotitoloColore(colonna)"
                 >
-                  {{ colonna.sottotitolo }}
+                  <template
+                    v-for="(pezzo, i) in pezziDi(colonna.sottotitolo)"
+                    :key="i"
+                    >{{ i ? ' · ' : ''
+                    }}<span :class="pezzo.intero ? 'whitespace-nowrap' : ''">{{
+                      pezzo.testo
+                    }}</span></template
+                  >
                 </span>
               </span>
             </template>
@@ -220,10 +235,12 @@
           >
             {{ banda.tipo === 'impegno' ? __('Engaged') : __('Busy') }}
           </div>
-          <!-- now, across the day -->
+          <!-- now, across the day: under the appointments, whose words it
+               would strike through as if cancelled (the one going on has its
+               ring and cross) -->
           <div
             v-if="adessoMostrato && colonna.oggi"
-            class="pointer-events-none absolute inset-x-0 z-[3] border-t-2 border-[var(--brand-segno)]"
+            class="pointer-events-none absolute inset-x-0 border-t-2 border-[var(--brand-segno)]"
             :style="{ top: posizione(adesso) }"
           />
           <!-- where a dragged appointment would land -->
@@ -432,6 +449,14 @@ function inCorso(colonna, blocco) {
     blocco.startMinutes <= adesso.value &&
     adesso.value < blocco.endMinutes
   )
+}
+
+// a column's line under its name in pieces: «07:30–09:30 · 17:30–21:00»
+// wraps between its windows, never inside one («07:30–09:30 · 1…»)
+function pezziDi(testo) {
+  return String(testo || '')
+    .split(' · ')
+    .map((pezzo) => ({ testo: pezzo, intero: /^\d{1,2}:\d{2}/.test(pezzo) }))
 }
 
 function sottotitoloColore(colonna) {
