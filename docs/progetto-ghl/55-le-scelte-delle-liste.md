@@ -59,6 +59,13 @@ il documento tiene, così come il programma di partenza lo elencava:
   restava vuota quando i campi arrivavano dopo) sono uno solo.
 - **Le parole**: «Persona» per il documento della persona («Lead» resta lo
   stadio, con il suo contesto), «Pagina di provenienza» per il referrer.
+- **Gli editor della scheda** (il pannello laterale, i campi dei Dati, la
+  creazione veloce): la stessa regola con l'uso `scheda`, che prende ogni tipo di
+  campo (anche le tabelle) e mai la struttura né i campi della macchina; le righe
+  e le scelte nelle parole di chi legge, distinte, senza più il nome tecnico e il
+  tipo sotto ogni voce («first_name - Data»); il pannello non ripropone un campo
+  che ha già. Le colonne di una tabella (le proprie di ognuno) si leggono
+  tradotte.
 
 ## Da sapere
 
