@@ -121,6 +121,7 @@
                   <Select
                     v-model="stage.type"
                     class="w-32"
+                    :aria-label="__('Type')"
                     :options="stageTypes"
                   />
                   <TextInput
@@ -164,7 +165,7 @@
 
       <Dialog
         v-model:open="moveDeals.show"
-        :title="__('Delete {0}', [moveDeals.stage])"
+        :title="__('Delete {0}', [mostra(moveDeals.stage)])"
       >
         <template #body-content>
           <div class="flex flex-col gap-4">
@@ -211,6 +212,7 @@ import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import { colors, parseColor } from '@/utils'
+import { daSalvare as salvaParola, inParole } from '@/utils/paroleSpedite'
 import {
   Badge,
   Button,
@@ -236,7 +238,15 @@ const pipelines = inject('pipelines')
 const updateStep = inject('updateStep')
 const reloadPipelines = inject('reloadPipelines')
 
-const stageTypes = ['Open', 'Ongoing', 'On Hold', 'Won', 'Lost']
+// what a stage is, in the reader's words («Aperta», «In corso», «Vinta»)
+const stageTypes = ['Open', 'Ongoing', 'On Hold', 'Won', 'Lost'].map(
+  (tipo) => ({ label: __(tipo, null, 'Stage type'), value: tipo }),
+)
+
+// the default pipeline's words, shipped in English, read as the list reads them
+// and saved as they were while unchanged (utils/paroleSpedite.js)
+const mostra = (valore) => inParole(valore, __)
+const daSalvare = (scritto, originale) => salvaParola(scritto, originale, __)
 
 const currentName = ref(props.name)
 const saving = ref(false)
@@ -252,12 +262,12 @@ const pipeline = computed(() =>
 /** Editing works on a copy — nothing reaches the server until Save. */
 function resetForm() {
   if (!pipeline.value) return
-  form.name = pipeline.value.name
-  form.description = pipeline.value.description || ''
+  form.name = mostra(pipeline.value.name)
+  form.description = mostra(pipeline.value.description || '')
   form.stages = (pipeline.value.stages || []).map((stage) => ({
     key: `stage-${key++}`,
     name: stage.name,
-    stage: stage.name,
+    stage: mostra(stage.name),
     color: stage.color || 'gray',
     type: stage.type || 'Open',
     probability: stage.probability || 0,
@@ -269,8 +279,10 @@ watch(pipeline, resetForm, { immediate: true })
 
 const isDirty = computed(() => {
   if (!pipeline.value) return false
-  if (form.name !== pipeline.value.name) return true
-  if ((form.description || '') !== (pipeline.value.description || ''))
+  if (daSalvare(form.name, pipeline.value.name) !== pipeline.value.name)
+    return true
+  const descrizione = pipeline.value.description || ''
+  if (daSalvare(form.description || '', descrizione) !== descrizione)
     return true
 
   const saved = pipeline.value.stages || []
@@ -280,7 +292,7 @@ const isDirty = computed(() => {
     const original = saved[index]
     return (
       !original ||
-      original.name !== stage.stage ||
+      original.name !== daSalvare(stage.stage, original.name) ||
       (original.color || 'gray') !== stage.color ||
       (original.type || 'Open') !== stage.type ||
       Number(original.probability || 0) !== Number(stage.probability || 0)
@@ -312,7 +324,7 @@ const moveDeals = reactive({
 const moveTargets = computed(() =>
   form.stages
     .filter((stage) => stage.name && stage.name !== moveDeals.stage)
-    .map((stage) => ({ label: stage.name, value: stage.name })),
+    .map((stage) => ({ label: mostra(stage.name), value: stage.name })),
 )
 
 function askToDeleteStage(stage) {
@@ -366,14 +378,19 @@ async function save() {
 
   saving.value = true
   try {
+    const nome = daSalvare(form.name, pipeline.value.name)
+    const descrizione = daSalvare(
+      form.description || '',
+      pipeline.value.description || '',
+    )
     if (
-      form.name !== pipeline.value.name ||
-      (form.description || '') !== (pipeline.value.description || '')
+      nome !== pipeline.value.name ||
+      descrizione !== (pipeline.value.description || '')
     ) {
       const updated = await call('crm.api.pipeline.update_pipeline', {
         name: currentName.value,
-        pipeline_name: form.name,
-        description: form.description,
+        pipeline_name: nome,
+        description: descrizione,
       })
       currentName.value = updated.name
     }
@@ -382,7 +399,7 @@ async function save() {
       pipeline: currentName.value,
       stages: form.stages.map((stage) => ({
         name: stage.name,
-        stage: stage.stage.trim(),
+        stage: daSalvare(stage.stage.trim(), stage.name),
         color: stage.color,
         type: stage.type,
         probability: Number(stage.probability || 0),
