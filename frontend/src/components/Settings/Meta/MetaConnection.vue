@@ -66,7 +66,7 @@
       <FeatherIcon name="info" class="mt-0.5 size-4 shrink-0" />
       {{
         __(
-          'Meta is not set up on {brand} yet. An administrator has to add it before an account can be connected.',
+          'Meta is not set up on {brand} yet. The agency adds it before an account can be connected.',
         )
       }}
     </div>

@@ -163,7 +163,7 @@ def voice(**kwargs):
 	from_number = uscita.numero_da_mostrare(_get_caller(args.Caller), args.CallFrom)
 	if not from_number:
 		resp = VoiceResponse()
-		resp.say(_("Your account is not configured with a phone number. Please contact your administrator."))
+		resp.say(_("Your account has no number to call from. Ask whoever manages the centre's phone."))
 		return Response(resp.to_xml(), mimetype="text/xml")
 
 	call_details = TwilioCallDetails(args, call_from=from_number)

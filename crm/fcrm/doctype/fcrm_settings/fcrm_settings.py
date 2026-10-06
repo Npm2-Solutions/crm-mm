@@ -86,9 +86,7 @@ class FCRMSettings(Document):
 			return
 		before = self.get_doc_before_save()
 		if cint(self.enable_sales_hierarchy) != cint(before and before.enable_sales_hierarchy):
-			frappe.throw(
-				_("Only a System Manager can turn the sales hierarchy on or off"), frappe.PermissionError
-			)
+			frappe.throw(_("Only the agency can turn the hierarchy on or off"), frappe.PermissionError)
 
 	def do_not_allow_to_delete_if_standard(self):
 		if not self.has_value_changed("dropdown_items"):

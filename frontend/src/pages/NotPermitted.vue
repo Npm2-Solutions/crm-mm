@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex flex-col items-center justify-center min-h-screen bg-surface-gray-1"
@@ -10,7 +13,7 @@
       <p class="text-ink-gray-6 text-p-base">
         {{
           __(
-            'You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error.',
+            'You do not have enough permissions to access {brand}. If you believe this is an error, ask whoever manages the centre.',
           )
         }}
       </p>
