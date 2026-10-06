@@ -89,6 +89,13 @@ senza nessuno in mezzo che le legga.
   della notifica e la segna letta. I messaggi della stessa conversazione prendono
   il posto l'uno dell'altro. Una notifica arrivata su un dispositivo non parte più
   anche per email.
+- **Il messaggio di una persona come in un'app di messaggi** (06/10/2026): per
+  titolo il segno del canale e chi ha scritto, sotto le sue parole: «💬 Laura
+  Bassi» e «Arrivo alle cinque»; con più messaggi da leggere «💬 Laura Bassi (3)».
+  WhatsApp non ha un'emoji sua: il fumetto; 📱 un SMS, ✉️ un'email, 📞 un
+  messaggio in segreteria, che senza parole proprie ha sotto la frase
+  (`spinta_regole.titolo_di_un_messaggio`, il nome dalla frase della notifica).
+  Le altre notifiche restano la frase.
 - **Come**: il messaggio è cifrato per quel solo browser (RFC 8291) e firmato con
   la chiave del sito (VAPID, RFC 8292); lo porta il servizio di chi fa il browser
   (Google, Apple, Mozilla, Microsoft) e solo a quei servizi si scrive. Un
