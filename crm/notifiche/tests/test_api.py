@@ -149,6 +149,12 @@ class UnaConversazione(NotificheCase):
 		messaggio = frappe.db.get_value(NOTIFICA, ultimo, "notification_type_doc")
 		self.assertEqual(riga["route"]["hash"], "#" + messaggio)
 
+	def test_un_messaggio_senza_il_suo_nome_apre_la_chat(self):
+		ultimo = self.whatsapp("Buongiorno")
+		frappe.db.set_value(NOTIFICA, ultimo, "notification_type_doc", None)
+		self.come(BRUNO)
+		self.assertEqual(self.pannello()["rows"][0]["route"]["hash"], "#activity")
+
 	def test_letta_il_messaggio_dopo_e_nuovo(self):
 		self.whatsapp("Buongiorno")
 		self.come(BRUNO)

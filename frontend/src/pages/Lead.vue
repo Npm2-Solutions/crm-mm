@@ -187,6 +187,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
+import LucideLayoutList from '~icons/lucide/layout-list'
 import LucideTicket from '~icons/lucide/ticket'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
@@ -368,13 +369,21 @@ usePageMeta(() => {
 
 const tabs = computed(() => {
   let tabOptions = [
+    // what one needs to know of the person, where their page opens from the
+    // People list and the agenda; the conversations open it on the chat
+    {
+      name: 'Summary',
+      label: __('Summary', null, 'Person tab'),
+      icon: LucideLayoutList,
+    },
     {
       // Email, WhatsApp, SMS and comments used to be four tabs of their own.
       // They are one stream here now, with a channel picker above it: the
       // question anybody asks of a record is what has been said to this person
       // and in what order, and four tabs could only answer it three at a time.
+      // The chat, as the conversations call it: the same one, the other door
       name: 'Activity',
-      label: __('Activity'),
+      label: __('Chat'),
       icon: ActivityIcon,
     },
     {

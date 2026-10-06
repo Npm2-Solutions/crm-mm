@@ -148,6 +148,10 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | 
 	if genere in ("mention", *MESSAGGI) and riga.notification_type_doc:
 		# the comment or the message itself, in the person's history
 		segno = "#" + riga.notification_type_doc
+	elif genere in MESSAGGI:
+		# a message opens the chat, the person's other door: their summary is
+		# where a page opens that says nothing (docs/progetto-ghl/54)
+		segno = "#activity"
 	elif genere == "area":
 		segno = "#area"
 	elif genere == "call":

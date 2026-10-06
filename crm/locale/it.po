@@ -45018,3 +45018,43 @@ msgstr "Fai mandare a Zapier, Make, n8n o a qualsiasi altro sistema una prenotaz
 #: crm/booking_platforms/sync.py
 msgid "Cancelled in {brand}"
 msgstr "Annullato in {brand}"
+
+#. the person's summary: the tab their page opens on (docs/progetto-ghl/54)
+#: frontend/src/pages/Lead.vue frontend/src/pages/MobileLead.vue
+msgctxt "Person tab"
+msgid "Summary"
+msgstr "Riepilogo"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Last message"
+msgstr "Ultimo messaggio"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Nothing booked"
+msgstr "Niente in programma"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Nothing to sum up yet"
+msgstr "Ancora niente da riassumere"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "The next appointment, the last message, what is left to pay and to do: they all show here."
+msgstr "Il prossimo appuntamento, l'ultimo messaggio, cosa resta da pagare e da fare: compare tutto qui."
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "1 draft to issue"
+msgstr "1 bozza da emettere"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "{0} drafts to issue"
+msgstr "{0} bozze da emettere"
+
+#. a task not done by its day
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Late since {0}"
+msgstr "In ritardo dal {0}"
+
+#. a task's day, still to come
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Due by {0}"
+msgstr "Entro il {0}"
