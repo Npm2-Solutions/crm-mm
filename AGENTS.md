@@ -326,6 +326,21 @@ it had before stays as an alias. Its label, its tab and its page's title say the
 same words, in the user's language, and its `description` says in one line what
 one sets up there.
 
+### A person: one page, two doors (docs/progetto-ghl/54)
+| File | Role |
+|---|---|
+| `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`) — tested |
+| `frontend/src/components/Activities/SummaryArea.vue` + `utils/riepilogo.js` | The Summary tab (first on the desk and the phone) and the column beside a conversation (`compatto`): the last message the person carries, the appointments the page's head asked for (the same resource), the server's lines, each a tap from its tab; three lines of a list, the rest on its tab — the pure part tested |
+| `frontend/src/router.js`, `notifiche/api.py` `percorso`, `Conversations/ConversationAside.vue` | The doors: a person opens on `#summary` wherever one comes without naming a tab (not the tab left last time); a message opens the Chat (its notification names it, the conversations' «Open the record» says `#activity`) |
+| `components/ViewControls.vue`, `Mobile/ElencoPersone.vue`, `api/sul_telefono.get_people(relationship=)` | The People list: one list, its step as views (the quick filter drawn as buttons), at `/crm/persone` - the old `/crm/leads` addresses redirect |
+
+A person opens on their summary, from anywhere that names no tab; a message, a
+conversation or its notification, opens their chat; the same summary sits beside
+the chat in Conversations. A module with something to say about a person
+registers a line of the summary, its own key, from its `registra()`; the page
+draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
+server writes (an email, a push, the Desk) says so.
+
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |
 |---|---|
@@ -429,10 +444,10 @@ the clinic is on. DottorCloud connects to no ERP: the ERPNext integration went o
 | `crm/clienti/eventi.py` | `CRM Appointment` and `CRM Invoice` doc_events: a booking moves the deal, a check-in, an attended appointment or an invoice makes a client |
 | `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Deals > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
 | `crm/dashboard/widgets/people.py`, `marketing.py` | "New clients" counts `client_since`, "Cost per new client" divides the ads' spend by the clients they brought; the dashboard's titles in the vertical's words (`verticali.traduttore()`) |
-| `frontend/src/utils/rapporto.js` | Who a person is to the centre, on their page's head (`PersonHeader.vue`: «Cliente dal…», «Paziente dal…», «Contatto»), in the People list's «Rapporto» column and on the phone's line: the step, its tag's tone, the fact with its date — tested |
+| `frontend/src/utils/rapporto.js` | Who a person is to the centre, on their page's head (`PersonHeader.vue`: «Cliente dal…», «Paziente dal…», «Lead»), in the People list's «Rapporto» column and on the phone's line: the step, its tag's tone, the fact with its date; the list's quick views, everybody then each step plural (`vistePerRapporto`: Tutti · Lead · Clienti · Pazienti, the steps' words in the "Relationship" context) — tested |
 
-Three steps, never one renamed as another: a contact (`CRM Lead.relationship`
-"Contact"), a client (whoever came or bought, by the CRM's rules, in every centre:
+Three steps, never one renamed as another: a lead (`CRM Lead.relationship`
+"Contact", read «Lead» in its "Relationship" context, English too: `en.po`), a client (whoever came or bought, by the CRM's rules, in every centre:
 a Pilates class too) and, with the clinic, a patient (`assicura_paziente`: a health
 service, or health data the centre keeps), the step above, which a later client
 fact never takes down. The clinic writes `CRM Lead.patient_since` and "Patient"
@@ -789,7 +804,8 @@ row, the bar's words beside their icons).
 - A record's tabs on a phone are two panels, each mounted the first time it
   opens and then kept (`v-show`): the record's data (a person's Data, a deal's
   Details) and one conversation that draws every other tab (`MobileLead.vue`,
-  `MobileDeal.vue`). A person's data are one tab: the fields of the panel a
+  `MobileDeal.vue`), a person's Summary first and their Chat after it. A
+  person's data are one tab: the fields of the panel a
   computer shows beside the conversation, with their billing details, linked
   people and consents; what they have going (subscriptions, cycles, the waiting
   list) is the Subscriptions tab, where they came from the History, last of
