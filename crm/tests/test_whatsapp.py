@@ -286,10 +286,14 @@ class TestATemplateBelongsToItsNumber(FrappeTestCase):
 	def test_a_template_of_another_account_is_refused_by_name(self):
 		from crm.api.whatsapp import send_whatsapp_template
 
+		# two numbers on two WhatsApp Business accounts: what one approved, the
+		# other cannot send
+		numeri = [{"name": "Vecchio", "waba": "7001"}, {"name": "Nuovo", "waba": "7002"}]
 		with (
 			patch("crm.api.whatsapp.frappe.db.get_value", return_value="Vecchio"),
 			patch("crm.api.whatsapp.sending_account_name", return_value="Nuovo"),
 			patch("crm.api.whatsapp.validate_access"),
+			patch("crm.integrations.whatsapp.templates.numeri", return_value=numeri),
 		):
 			with self.assertRaises(frappe.ValidationError) as caught:
 				send_whatsapp_template("CRM Lead", "LEAD-0001", "promo-it", "+393330000000")
