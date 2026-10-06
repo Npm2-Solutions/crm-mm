@@ -1310,14 +1310,10 @@ def book_place(name: str, start: str, staff: str | None = None, class_session: s
 def get_settings() -> dict:
 	livelli.verifica("agenda.configura")
 	conf = impostazioni()
-	modelli = []
-	if frappe.db.exists("DocType", "WhatsApp Templates"):
-		modelli = frappe.get_all(
-			"WhatsApp Templates",
-			filters={"status": "APPROVED"},
-			fields=["name", "template_name", "template"],
-			order_by="template_name asc",
-		)
+	# the ones the number that sends can send: the offers and the news leave from it
+	from crm.integrations.whatsapp.templates import modelli_inviabili
+
+	modelli = modelli_inviabili()
 	doc = frappe.get_cached_doc(IMPOSTAZIONI)
 	return {
 		"enabled": int(conf.automatiche),

@@ -304,9 +304,10 @@ def get_builder_meta() -> dict:
 		email_templates = frappe.get_all(
 			"Email Template", fields=["name", "subject"], limit=100, order_by="name asc"
 		)
-	whatsapp_templates = []
-	if frappe.db.exists("DocType", "WhatsApp Templates"):
-		whatsapp_templates = frappe.get_all("WhatsApp Templates", pluck="name", limit=100)
+	# the ones the number that sends can send: an automation sends from it
+	from crm.integrations.whatsapp.templates import modelli_inviabili
+
+	whatsapp_templates = [modello.name for modello in modelli_inviabili()]
 	sales_users = frappe.get_all(
 		"Has Role",
 		filters={"role": ["in", ["Sales User", "Sales Manager"]], "parenttype": "User"},

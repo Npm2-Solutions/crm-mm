@@ -208,9 +208,12 @@ def whatsapp_graph_post(endpoint: str, token: str, params: dict | None = None) -
 	return graph_post(endpoint, token, params, secret=get_whatsapp_app_secret())
 
 
-def graph_get_paginated(endpoint: str, token: str, params: dict | None = None, max_pages: int = 50):
+def graph_get_paginated(
+	endpoint: str, token: str, params: dict | None = None, max_pages: int = 50, secret: str | None = None
+):
 	"""Iterate all rows following paging.next (Graph caps page size; never trust
-	a single call to return everything)."""
+	a single call to return everything). `secret` is the issuing app's, as in
+	`graph_get`: a WhatsApp token is signed with the WhatsApp app's."""
 	params = dict(params or {})
 	params.setdefault("limit", 100)
 	url_params = params
@@ -227,7 +230,7 @@ def graph_get_paginated(endpoint: str, token: str, params: dict | None = None, m
 				error = data.get("error") or {}
 				raise MetaAPIError(error.get("message") or "pagination error", code=error.get("code"))
 		else:
-			data = graph_get(endpoint, token, url_params)
+			data = graph_get(endpoint, token, url_params, secret)
 		yield from data.get("data", [])
 		next_url = (data.get("paging") or {}).get("next")
 		if not next_url:
