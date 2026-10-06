@@ -2085,6 +2085,23 @@ msgstr "Compagnie aeree"
 msgid "Albo professionale"
 msgstr "Albo professionale"
 
+#: crm/liste/regole.py
+msgid "Favourite"
+msgstr "Preferito"
+
+#: frontend/src/components/GroupBy.vue
+msgid "Group By: {0}"
+msgstr "Raggruppa per: {0}"
+
+#: crm/liste/regole.py
+msgid "Last Modified By"
+msgstr "Ultima modifica di"
+
+#. Label of the first_touch_referrer (Small Text) field in DocType 'CRM Lead'
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Referrer"
+msgstr "Pagina di provenienza"
+
 #: frontend/src/crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
 msgid "Warn when no expense has reached the Sistema TS for (days)"
 msgstr "Avvisa se nessuna spesa arriva al Sistema TS da (giorni)"
@@ -14661,7 +14678,7 @@ msgstr "Layout"
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:55
 #: frontend/src/pages/Tasks.vue:133
 msgid "Lead"
-msgstr "Lead"
+msgstr "Persona"
 
 #. Label of the lead_data (Code) field in DocType 'Failed Lead Sync Log'
 #: crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json
