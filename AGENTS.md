@@ -250,6 +250,17 @@ never one of the centre's (`personale.del_centro()` in every list of them). An e
 person's, never a new person for somebody known; a module that sends a reminder on
 its own document needs nothing more: the answer reaches the person.
 
+### The centre's archive (docs/progetto-ghl/57)
+| File | Role |
+|---|---|
+| `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<site>/<sha[:2]>/<sha>/<name>`), which files move (private only), what the plan includes (`SPAZIO_COMPRESO`: 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
+| `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link, the bucket's versions and CORS (`imposta_il_bucket`) |
+| `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); `/private/files/…` of an archived one sends whoever the framework lets read it to the bucket for five minutes (`prima_della_richiesta`, its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory |
+
+A private file is read through its `File` (`get_content()`), never by opening its
+path: an archived one is an empty file on the server until something asks for it.
+A public file stays on the server.
+
 ### The centre's Twilio account (docs/progetto-ghl/52)
 | File | Role |
 |---|---|
