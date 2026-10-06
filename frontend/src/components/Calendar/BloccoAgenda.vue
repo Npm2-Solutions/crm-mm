@@ -165,9 +165,9 @@ const hhmm = (minuti) =>
     ? '24:00'
     : `${due(Math.floor(minuti / 60))}:${due(minuti % 60)}`
 const inizio = computed(() => hhmm(props.cosa.startMinutes))
-const orario = computed(
-  () => `${inizio.value} – ${hhmm(props.cosa.endMinutes)}`,
-)
+// «09:00–09:30», as a column's hours and the words read aloud say it: two
+// spaces less where «Adesso · » goes before it
+const orario = computed(() => `${inizio.value}–${hhmm(props.cosa.endMinutes)}`)
 
 const note = computed(() =>
   evento.value
