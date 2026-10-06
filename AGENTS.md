@@ -102,6 +102,19 @@ A column offers a new appointment only where the reader may book it: a
 colleague's column takes no tap and no drop from a practitioner, as the server
 would refuse it.
 
+### The reminders of the appointments (docs/progetto-ghl/59)
+| File | Role |
+|---|---|
+| `crm/scheduling/promemoria_regole.py` | Pure: when one leaves (24 hours before by default, 2 to 72; the night's, 21 to 8, in the morning or the evening before; never in the last hour, nor for what was booked two hours before), by which way (WhatsApp, SMS, email; STOP takes the SMS away), what an answer means (a button's words; an SMS that says only yes, no or move), whether a template has the buttons (`ha_i_pulsanti`), DottorCloud's template in Italian and English (`modello`, a copy) — tested with plain `unittest` |
+| `crm/scheduling/promemoria.py` + `CRM Reminder Settings`, `CRM Appointment Reminder` | Every quarter of an hour the places due get theirs, each person of a class their own, once per time they are booked at; the register written before it leaves; a WhatsApp Meta could not deliver goes by SMS or email; the answers - a WhatsApp button on the message it answers, from the number it went to; an SMS after `sms.ascolta`; «I'll be there» on /prenota (`service_booking.confirm`) - kept on the reminder: «cannot come» cancels the person's place where the centre wants it, «move» gets the booking page's link, the desk and the appointment's staff told (`avvisa`); never the demo's, a platform's or an online request not yet approved; DottorCloud's template made on the sending number's account (`create_template`, `_nome_libero`) |
+| `frontend/src/components/Settings/Scheduling/RemindersSettings.vue` + `utils/promemoriaAppuntamenti.js` | Settings > Agenda > Agenda & reminders > Appointment reminders (off to start with): hours, what a «cannot come» does, the template (only one with the buttons), SMS and email, the last ones; the answer's mark on the agenda's block (`segniDelBlocco`, one person's appointment) and its line in the panel (`get_appointment`, `get_calendar` through `nelle_righe`) — tested |
+
+A reminder is written in its register before it leaves. A template offered for
+it has the buttons to confirm and to cancel, and an answer counts only from its
+own message, from the number it went to (frappe_whatsapp's webhook checks no
+signature). What the person answers is a mark of their place, never the
+appointment's status: «Confirmed» is the centre's yes to an online request.
+
 ### Service booking & external platforms
 | File | Role |
 |---|---|
