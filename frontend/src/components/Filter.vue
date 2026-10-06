@@ -179,7 +179,7 @@ import {
 } from 'frappe-ui'
 import { h, computed, onMounted } from 'vue'
 import { isMobileView } from '@/composables/settings'
-import { CONTESTO } from '@/utils/rapporto'
+import { CONTESTI_DEI_CAMPI } from '@/utils/gruppi'
 
 const typeCheck = ['Check']
 const typeLink = ['Link', 'Dynamic Link']
@@ -191,7 +191,7 @@ const typeDuration = ['Duration']
 const typeRating = ['Rating']
 // the choices a field reads in a context of their own: a person's relationship
 // says «Cliente» where the clinic's words turn the bare «Client» into a patient
-const CONTESTI = { relationship: CONTESTO }
+const CONTESTI = CONTESTI_DEI_CAMPI
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -230,32 +230,9 @@ const filters = computed(() => {
   return convertFilters(filterableFields.data, allFilters)
 })
 
-// `name` is labelled "Name" but holds the document ID, which reads as the
-// record's full name on these doctypes. Mark it with an ID icon.
-const idFieldDoctypes = ['CRM Lead', 'CRM Deal']
-
-const filterFieldOptions = computed(() => {
-  const fields = filterableFields.data || []
-  const markIdField = idFieldDoctypes.includes(props.doctype)
-
-  return fields.map((field) => {
-    // Drop the description: it renders as a second line in the dropdown, and
-    // the popover has no max width, so one long description (CRM Deal's
-    // exchange rate) stretches the whole list.
-    const { description, ...option } = field
-
-    if (markIdField && option.fieldname === 'name') {
-      option.slots = {
-        suffix: () =>
-          h('span', {
-            class: 'lucide-id-card size-4 shrink-0 text-ink-gray-5',
-            title: __('Document ID, not the full name'),
-          }),
-      }
-    }
-    return option
-  })
-})
+// one line each, without the field's description: the popover has no max
+// width, and one long description (a deal's exchange rate) stretched the list
+const filterFieldOptions = computed(() => filterableFields.data || [])
 
 const availableFilters = computed(() => {
   if (!filterableFields.data) return []

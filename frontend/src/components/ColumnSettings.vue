@@ -4,7 +4,15 @@
 <template>
   <Popover placement="bottom-end">
     <template #target="{ togglePopover }">
-      <Button :label="__('Columns')" @click="togglePopover">
+      <Button
+        :label="__('Columns')"
+        @click="
+          () => {
+            carica()
+            togglePopover()
+          }
+        "
+      >
         <template v-if="hideLabel" #icon>
           <ColumnsIcon class="h-4" />
         </template>
@@ -149,7 +157,7 @@ import ColumnsIcon from '@/components/Icons/ColumnsIcon.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DragIcon from '@/components/Icons/DragIcon.vue'
 import ReloadIcon from '@/components/Icons/ReloadIcon.vue'
-import { getMeta } from '@/stores/meta'
+import { useCampiDellaLista } from '@/composables/campiDellaLista'
 import { Combobox, Popover } from 'frappe-ui'
 import Draggable from 'vuedraggable'
 import { computed, ref } from 'vue'
@@ -199,10 +207,11 @@ const rows = computed({
   },
 })
 
-const { getFields } = getMeta(props.doctype)
+// what the list offers as a column, in the reader's words, each field once
+const { campi, carica } = useCampiDellaLista(props.doctype)
 
 const fields = computed(() => {
-  const _fields = getFields({ withStandardFields: true }) || []
+  const _fields = campi.data || []
   if (!_fields.length) return []
 
   let existingFields = []

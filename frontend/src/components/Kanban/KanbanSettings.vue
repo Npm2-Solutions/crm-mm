@@ -6,7 +6,12 @@
     :label="__('Kanban settings')"
     v-bind="$attrs"
     :iconLeft="KanbanIcon"
-    @click="showDialog = true"
+    @click="
+      () => {
+        carica()
+        showDialog = true
+      }
+    "
   />
   <Dialog v-model:open="showDialog" :title="__('Kanban Settings')">
     <template #default>
@@ -24,7 +29,7 @@
             <!-- a plain button did not look like something to pick from -->
             <Button
               class="w-full !justify-between"
-              :label="columnField.label"
+              :label="columnField?.label"
               iconRight="chevron-down"
               @click="setOpen(!open)"
             />
@@ -35,14 +40,14 @@
         </div>
         <Combobox
           :model-value="null"
-          :options="fields"
+          :options="tutti"
           @update:selected-option="(f) => (titleField = f)"
         >
           <template #trigger="{ open, setOpen }">
             <!-- a plain button did not look like something to pick from -->
             <Button
               class="w-full !justify-between"
-              :label="titleField.label"
+              :label="titleField?.label"
               iconRight="chevron-down"
               @click="setOpen(!open)"
             />
@@ -96,14 +101,6 @@
               @click="setOpen(!open)"
             />
           </template>
-          <template #item-label="{ item }">
-            <div class="flex flex-col gap-1 text-ink-gray-9">
-              <div>{{ item.label }}</div>
-              <div class="text-ink-gray-5 text-sm">
-                {{ `${item.fieldname} - ${item.fieldtype}` }}
-              </div>
-            </div>
-          </template>
         </Combobox>
       </div>
     </template>
@@ -112,6 +109,7 @@
         class="w-full"
         variant="solid"
         :label="__('Apply')"
+        :loading="campi.loading"
         @click="apply"
       />
     </template>
@@ -120,7 +118,7 @@
 <script setup>
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
-import { getMeta } from '@/stores/meta'
+import { useCampiDellaLista } from '@/composables/campiDellaLista'
 import { Combobox, Dialog } from 'frappe-ui'
 import Draggable from 'vuedraggable'
 import { ref, computed, nextTick } from 'vue'
@@ -137,12 +135,24 @@ const emit = defineEmits(['update'])
 const list = defineModel({ type: Object })
 const showDialog = ref(false)
 
+// what the list offers on a card, in the reader's words, each field once
+const { campi, carica } = useCampiDellaLista(props.doctype)
+
+const tutti = computed(() =>
+  (campi.data || []).map((field) => ({
+    label: field.label,
+    value: field.fieldname,
+    fieldname: field.fieldname,
+    fieldtype: field.fieldtype,
+  })),
+)
+
 const columnField = computed({
   get: () => {
     let fieldname = list.value?.data?.column_field
-    if (!fieldname) return ''
+    if (!fieldname) return null
 
-    return columnFields.value?.find((field) => field.fieldname === fieldname)
+    return columnFields.value.find((field) => field.fieldname === fieldname)
   },
   set: (val) => {
     list.value.data.column_field = val.fieldname
@@ -152,50 +162,20 @@ const columnField = computed({
 const titleField = computed({
   get: () => {
     let fieldname = list.value?.data?.title_field
-    if (!fieldname) return ''
+    if (!fieldname) return null
 
-    return fields.value?.find((field) => field.fieldname === fieldname)
+    return tutti.value.find((field) => field.fieldname === fieldname)
   },
   set: (val) => {
     list.value.data.title_field = val.fieldname
   },
 })
 
-const columnFields = computed(() => {
-  return (
-    fields.value?.filter((field) =>
-      ['Link', 'Select'].includes(field.fieldtype),
-    ) || []
-  )
-})
+const columnFields = computed(() =>
+  tutti.value.filter((field) => ['Link', 'Select'].includes(field.fieldtype)),
+)
 
-const { getFields } = getMeta(props.doctype)
-
-const fields = computed(() => {
-  const _fields = getFields({ withStandardFields: true }) || []
-  if (!_fields.length) return []
-
-  let existingFields = []
-
-  allFields.value?.forEach((fieldname) => {
-    let field = _fields.find((f) => f.fieldname === fieldname)
-    if (field) existingFields.push(field)
-  })
-
-  return _fields
-    .filter(
-      (field) => !existingFields?.find((f) => f.fieldname === field.fieldname),
-    )
-    .map((field) => {
-      return {
-        label: field.label,
-        value: field.fieldname,
-        fieldname: field.fieldname,
-        fieldtype: field.fieldtype,
-      }
-    })
-})
-
+// the fields on the card, in their order
 const allFields = computed({
   get: () => {
     let rows = list.value?.data?.kanban_fields
@@ -205,16 +185,19 @@ const allFields = computed({
       rows = JSON.parse(rows)
     }
 
-    if (rows && fields.value) {
-      rows = rows.map((row) => {
-        return fields.value.find((field) => field.fieldname === row) || {}
-      })
-    }
-    return rows.filter((row) => row.label)
+    return rows
+      .map((row) => tutti.value.find((field) => field.fieldname === row))
+      .filter(Boolean)
   },
   set: (val) => {
     list.value.data.kanban_fields = val
   },
+})
+
+// the ones still to add: the card's own are not offered again
+const fields = computed(() => {
+  const sullaScheda = new Set(allFields.value.map((field) => field.fieldname))
+  return tutti.value.filter((field) => !sullaScheda.has(field.fieldname))
 })
 
 function reorder() {
@@ -235,11 +218,13 @@ function removeField(field) {
 }
 
 function apply() {
+  // until the list's fields arrive there is nothing to name
+  if (!campi.data) return
   nextTick(() => {
     showDialog.value = false
     emit('update', {
-      column_field: columnField.value.fieldname,
-      title_field: titleField.value.fieldname,
+      column_field: columnField.value?.fieldname,
+      title_field: titleField.value?.fieldname,
       kanban_fields: allFields.value.map((row) => row.fieldname),
     })
   })
