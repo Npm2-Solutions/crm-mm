@@ -127,7 +127,18 @@ export function parseISODate(value) {
 // -- numbers -----------------------------------------------------------------
 
 function number(locale, options) {
-  return new Intl.NumberFormat(locale, options)
+  const formato = new Intl.NumberFormat(locale, options)
+  if (options?.notation !== 'compact') return formato
+  const lingua = formato.resolvedOptions().locale
+  return { format: (n) => abbreviazioni(formato.format(n), lingua) }
+}
+
+// Italian shortens a million and a billion «Mln» and «Mld»: some browsers'
+// Unicode data write «Mio» and «Mrd», the German way («87,2 Mio €» in
+// Chromium 141), others «Mln» - one dashboard, one way of writing it.
+export function abbreviazioni(testo, lingua) {
+  if (!/^it(-|$)/i.test(lingua || '')) return testo
+  return testo.replace(/\bMio\b/g, 'Mln').replace(/\bMrd\b/g, 'Mld')
 }
 
 function durationParts(seconds) {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  abbreviazioni,
   bottomOf,
   describeDelta,
   duplicateItem,
@@ -139,6 +140,18 @@ describe('formatValue', () => {
       currency: 'EUR',
     })
     expect(italian.replace(/\s/g, ' ')).toBe('1,3 Mln €')
+  })
+
+  it('shortens millions and billions the Italian way in every browser', () => {
+    // Chromium 141's Unicode data write them the German way
+    expect(abbreviazioni('87,2\u00a0Mio\u00a0€', 'it-IT')).toBe(
+      '87,2\u00a0Mln\u00a0€',
+    )
+    expect(abbreviazioni('1,3 Mrd', 'it')).toBe('1,3 Mld')
+    expect(abbreviazioni('2,3 Mln', 'it-IT')).toBe('2,3 Mln')
+    // German keeps its own
+    expect(abbreviazioni('87,2 Mio. €', 'de-DE')).toBe('87,2 Mio. €')
+    expect(abbreviazioni('€87.2M', 'en-GB')).toBe('€87.2M')
   })
 
   it('does not break on an unknown currency', () => {
