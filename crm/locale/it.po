@@ -42993,6 +42993,336 @@ msgstr "Un codice per entrare, e nient'altro."
 msgid "Hi {0}, we look forward to seeing you tomorrow at {1}."
 msgstr "Ciao {0}, ti aspettiamo domani alle {1}."
 
+msgid "A window of Fatture in Cloud asks you to sign in and to allow the connection."
+msgstr "Una finestra di Fatture in Cloud ti chiede di accedere e di consentire il collegamento."
+
+msgid "Access expires on"
+msgstr "L'accesso scade il"
+
+msgid "An invoice paid at the desk is recorded paid in Fatture in Cloud, on the account of how it was paid."
+msgstr "Una fattura pagata alla reception risulta pagata anche in Fatture in Cloud, sul conto del metodo con cui è stata pagata."
+
+msgid "CRM Fatture in Cloud"
+msgstr "Collegamento a Fatture in Cloud"
+
+msgid "Choose the VAT rate of Fatture in Cloud that stands for {0}: Settings > Invoicing > Fatture in Cloud"
+msgstr "Scegli l'aliquota IVA di Fatture in Cloud che corrisponde a {0}: Impostazioni > Fatturazione > Fatture in Cloud"
+
+msgid "Choose the VAT rate that stands for {0}."
+msgstr "Scegli l'aliquota IVA che corrisponde a {0}."
+
+msgid "Choose the company in Fatture in Cloud."
+msgstr "Scegli l'azienda in Fatture in Cloud."
+
+msgid "Choose where Fatture in Cloud records the payments made by {0}: Settings > Invoicing > Fatture in Cloud"
+msgstr "Scegli dove Fatture in Cloud registra i pagamenti con {0}: Impostazioni > Fatturazione > Fatture in Cloud"
+
+msgid "Choose where the payments made by {0} go."
+msgstr "Scegli dove vanno i pagamenti con {0}."
+
+msgid "People, appointments, payments and the PDF given to the client stay here as they are."
+msgstr "Persone, appuntamenti, pagamenti e il PDF consegnato al cliente restano qui, come sono."
+
+msgid "People, appointments, payments and the PDF given to the patient stay here as they are."
+msgstr "Persone, appuntamenti, pagamenti e il PDF consegnato al paziente restano qui, come sono."
+
+msgid "Companies to choose from"
+msgstr "Aziende tra cui scegliere"
+
+msgid "Company in Fatture in Cloud"
+msgstr "Azienda in Fatture in Cloud"
+
+msgid "Connect Fatture in Cloud"
+msgstr "Collega Fatture in Cloud"
+
+msgid "Connected by"
+msgstr "Collegato da"
+
+msgid "Connected by {0} on {1}"
+msgstr "Collegato da {0} il {1}"
+
+msgid "Connected on"
+msgstr "Collegato il"
+
+msgid "Connected to Fatture in Cloud"
+msgstr "Collegato a Fatture in Cloud"
+
+msgid "Correct it with a credit note and issue it again."
+msgstr "Correggila con una nota di credito ed emettila di nuovo."
+
+msgid "Could not copy"
+msgstr "Copia non riuscita"
+
+msgid "Disconnect Fatture in Cloud?"
+msgstr "Scollegare Fatture in Cloud?"
+
+msgid "Electronic invoices"
+msgstr "Fatture elettroniche"
+
+msgid "Expense by expense, with the centre’s credentials, as with every invoice: in Fatture in Cloud leave the Sistema TS off."
+msgstr "Spesa per spesa, con le credenziali del centro, come per ogni fattura: in Fatture in Cloud lascia spento il Sistema TS."
+
+msgid "Fatture in Cloud"
+msgstr "Fatture in Cloud"
+
+msgid "Fatture in Cloud answered something unreadable."
+msgstr "Fatture in Cloud ha risposto qualcosa che non si riesce a leggere."
+
+msgid "Fatture in Cloud asks to wait {0} seconds: too many requests in a short time."
+msgstr "Fatture in Cloud chiede di aspettare {0} secondi: troppe richieste in poco tempo."
+
+msgid "Fatture in Cloud connected"
+msgstr "Fatture in Cloud collegato"
+
+msgid "Fatture in Cloud did not accept the access: connect it again."
+msgstr "Fatture in Cloud non ha accettato l'accesso: collegalo di nuovo."
+
+msgid "Fatture in Cloud did not answer in time."
+msgstr "Fatture in Cloud non ha risposto in tempo."
+
+msgid "Fatture in Cloud did not delete it: {0} Cancel it there, or correct it with a credit note."
+msgstr "Fatture in Cloud non l'ha eliminata: {0} Annullala lì, o correggila con una nota di credito."
+
+msgid "Fatture in Cloud disconnected"
+msgstr "Fatture in Cloud scollegato"
+
+msgid "Fatture in Cloud disconnected: the invoices are numbered here again."
+msgstr "Fatture in Cloud scollegato: le fatture si numerano di nuovo qui."
+
+msgid "Fatture in Cloud does not allow it with the access given: connect it again."
+msgstr "Fatture in Cloud non lo consente con l'accesso dato: collegalo di nuovo."
+
+msgid "Fatture in Cloud is not connected: invoice {0} stays there. Delete it in Fatture in Cloud too."
+msgstr "Fatture in Cloud non è collegato: la fattura {0} resta lì. Eliminala anche in Fatture in Cloud."
+
+msgid "Fatture in Cloud found something to correct before sending it:"
+msgstr "Fatture in Cloud ha trovato qualcosa da correggere prima di inviarla:"
+
+msgid "Fatture in Cloud gives the number, on the numbering chosen here."
+msgstr "Il numero lo dà Fatture in Cloud, sulla numerazione scelta qui."
+
+msgid "Fatture in Cloud is given invoices and credit notes from here: make this document in Fatture in Cloud"
+msgstr "Da qui a Fatture in Cloud vanno fatture e note di credito: questo documento fallo in Fatture in Cloud"
+
+msgid "Fatture in Cloud is not answering right now: try again in a few minutes."
+msgstr "Fatture in Cloud non risponde in questo momento: riprova tra qualche minuto."
+
+msgid "Fatture in Cloud is not connected: connect it in Settings > Invoicing > Fatture in Cloud."
+msgstr "Fatture in Cloud non è collegato: collegalo in Impostazioni > Fatturazione > Fatture in Cloud."
+
+msgid "Fatture in Cloud makes the VAT {0}, here it is {1}: nothing was made in Fatture in Cloud"
+msgstr "Per Fatture in Cloud l'IVA è {0}, qui è {1}: in Fatture in Cloud non è stato creato niente"
+
+msgid "Fatture in Cloud makes the amount to pay {0}, here it is {1}: nothing was made in Fatture in Cloud"
+msgstr "Per Fatture in Cloud il totale da pagare è {0}, qui è {1}: in Fatture in Cloud non è stato creato niente"
+
+msgid "Fatture in Cloud makes the withholding {0}, here it is {1}: nothing was made in Fatture in Cloud"
+msgstr "Per Fatture in Cloud la ritenuta è {0}, qui è {1}: in Fatture in Cloud non è stato creato niente"
+
+msgid "Fatture in Cloud no longer recognises the access: connect it again."
+msgstr "Fatture in Cloud non riconosce più l'accesso: collegalo di nuovo."
+
+msgid "Fatture in Cloud refused the request ({0})."
+msgstr "Fatture in Cloud ha rifiutato la richiesta ({0})."
+
+msgid "Fatture in Cloud reports one kind of expense per invoice to the Sistema TS, and this one has {0}: make two invoices, or report the Sistema TS from here (Settings > Invoicing > Fatture in Cloud)"
+msgstr "Fatture in Cloud manda al Sistema TS un solo tipo di spesa per fattura, e questa ne ha {0}: fai due fatture, o manda il Sistema TS da qui (Impostazioni > Fatturazione > Fatture in Cloud)"
+
+msgid "Fatture in Cloud reports the whole invoice to the Sistema TS, and «{0}» does not go there: make two invoices, or report the Sistema TS from here (Settings > Invoicing > Fatture in Cloud)"
+msgstr "Fatture in Cloud manda al Sistema TS l'intera fattura, e «{0}» non ci va: fai due fatture, o manda il Sistema TS da qui (Impostazioni > Fatturazione > Fatture in Cloud)"
+
+msgid "Fatture in Cloud, for the agency"
+msgstr "Fatture in Cloud, per l'agenzia"
+
+msgid "From now on the invoices are issued in Fatture in Cloud."
+msgstr "Da ora le fatture si emettono in Fatture in Cloud."
+
+msgid "From now on the invoices are numbered here again."
+msgstr "Da ora le fatture si numerano di nuovo qui."
+
+msgid "From the next invoice, every real invoice takes its number in Fatture in Cloud and is kept there. The ones issued so far stay as they are."
+msgstr "Dalla prossima fattura, ogni fattura vera prende il numero in Fatture in Cloud e resta anche lì. Quelle emesse finora restano come sono."
+
+msgid "How an issuing company invoices with Fatture in Cloud: the access, the company there, and which of its VAT rates, accounts and numerations stand for the ones here."
+msgstr "Come un'azienda emittente fattura con Fatture in Cloud: l'accesso, l'azienda lì, e quali sue aliquote IVA, conti e numerazioni corrispondono a quelli di qui."
+
+msgid "If the centre invoices with Fatture in Cloud: the invoices are born there."
+msgstr "Se il centro fattura con Fatture in Cloud: le fatture nascono lì."
+
+msgid "If the centre invoices with Fatture in Cloud: the invoices made here are born there, with their number."
+msgstr "Se il centro fattura con Fatture in Cloud: le fatture fatte qui nascono lì, con il loro numero."
+
+msgid "In Fatture in Cloud"
+msgstr "In Fatture in Cloud"
+
+msgid "Invoices are issued in Fatture in Cloud"
+msgstr "Le fatture si emettono in Fatture in Cloud"
+
+msgid "Issue in Fatture in Cloud"
+msgstr "Emetti in Fatture in Cloud"
+
+msgid "Issue in Fatture in Cloud?"
+msgstr "Emettere in Fatture in Cloud?"
+
+msgid "It is on in Fatture in Cloud already. One kind of expense per invoice, the whole invoice reported."
+msgstr "In Fatture in Cloud è già acceso. Un solo tipo di spesa per fattura, che va al Sistema TS per intero."
+
+msgid "It may have been made in Fatture in Cloud all the same: issuing it again first looks for it there."
+msgstr "Potrebbe essere stata creata comunque in Fatture in Cloud: emettendola di nuovo, prima la si cerca lì."
+
+msgid "Its VAT number"
+msgstr "La sua partita IVA"
+
+msgid "Its invoices take their number in Fatture in Cloud and leave for the SdI from there."
+msgstr "Le sue fatture prendono il numero in Fatture in Cloud e partono da lì per lo SdI."
+
+msgid "Main numbering"
+msgstr "Numerazione principale"
+
+msgid "None in Fatture in Cloud: add it there, then read again."
+msgstr "Nessuna in Fatture in Cloud: aggiungila lì, poi rileggi."
+
+msgid "Not ready to issue in Fatture in Cloud"
+msgstr "Non è ancora pronto per emettere in Fatture in Cloud"
+
+msgid "Numeration, credit notes"
+msgstr "Numerazione, note di credito"
+
+msgid "Numeration, electronic invoices"
+msgstr "Numerazione, fatture elettroniche"
+
+msgid "Numeration, paper invoices"
+msgstr "Numerazione, fatture cartacee"
+
+msgid "Off: the invoices are numbered here and leave through Itala."
+msgstr "Spento: le fatture si numerano qui e partono con Itala."
+
+msgid "Paper invoices"
+msgstr "Fatture cartacee"
+
+msgid "Read again from Fatture in Cloud"
+msgstr "Rileggi da Fatture in Cloud"
+
+msgid "Renewed on"
+msgstr "Rinnovato il"
+
+msgid "Reported by Fatture in Cloud"
+msgstr "Lo invia Fatture in Cloud"
+
+msgid "Reported by {brand}"
+msgstr "Lo invia {brand}"
+
+msgid "Sent to the SdI from Fatture in Cloud"
+msgstr "Inviata allo SdI da Fatture in Cloud"
+
+msgid "Switch it on in Fatture in Cloud too. One kind of expense per invoice, the whole invoice reported."
+msgstr "Accendilo anche in Fatture in Cloud. Un solo tipo di spesa per fattura, che va al Sistema TS per intero."
+
+msgid "Test invoices stay here: Fatture in Cloud receives only the real ones."
+msgstr "Le fatture di prova restano qui: a Fatture in Cloud arrivano solo quelle vere."
+
+msgid "That VAT rate of Fatture in Cloud does not say {0}."
+msgstr "Quell'aliquota IVA di Fatture in Cloud non corrisponde a {0}."
+
+msgid "That account is not among the company's in Fatture in Cloud."
+msgstr "Quel conto non è tra quelli dell'azienda in Fatture in Cloud."
+
+msgid "That company is not among the ones of whoever connected Fatture in Cloud."
+msgstr "Quell'azienda non è tra quelle di chi ha collegato Fatture in Cloud."
+
+msgid "The Sistema TS: reported by {brand} or by Fatture in Cloud, as you choose."
+msgstr "Il Sistema TS: lo invia {brand} o Fatture in Cloud, come scegli."
+
+msgid "The VAT number of the company in Fatture in Cloud ({0}) is not the issuing company's ({1})."
+msgstr "La partita IVA dell'azienda in Fatture in Cloud ({0}) non è quella dell'azienda emittente ({1})."
+
+msgid "The access is renewed by itself: a year without renewing and it has to be given again."
+msgstr "L'accesso si rinnova da solo: dopo un anno senza rinnovi va dato di nuovo."
+
+msgid "The access to Fatture in Cloud is gone: connect it again, or no invoice can be issued."
+msgstr "L'accesso a Fatture in Cloud non c'è più: collegalo di nuovo, o nessuna fattura si può emettere."
+
+msgid "The address to write in the app's page on developers.fattureincloud.it, letter by letter."
+msgstr "L'indirizzo da scrivere nella pagina dell'app su developers.fattureincloud.it, lettera per lettera."
+
+msgid "The agency has not set up the connection to Fatture in Cloud on this server yet."
+msgstr "L'agenzia non ha ancora predisposto il collegamento a Fatture in Cloud su questo server."
+
+msgid "The connection did not work: try again, or tell the agency."
+msgstr "Il collegamento non è riuscito: riprova, o avvisa l'agenzia."
+
+msgid "The connection was cancelled in Fatture in Cloud."
+msgstr "Il collegamento è stato annullato in Fatture in Cloud."
+
+msgid "The invoice made in Fatture in Cloud, for a company that issues there."
+msgstr "La fattura creata in Fatture in Cloud, per un'azienda che emette lì."
+
+msgid "The invoices are born in Fatture in Cloud: it gives the number, and the electronic ones leave for the SdI from there."
+msgstr "Le fatture nascono in Fatture in Cloud: dà il numero, e quelle elettroniche partono da lì per lo SdI."
+
+msgid "The invoices issued there stay there and here; the next ones are numbered here again. The states of the ones on their way to the SdI are no longer read."
+msgstr "Le fatture emesse lì restano lì e qui; le prossime si numerano di nuovo qui. Lo stato di quelle in viaggio verso lo SdI non si legge più."
+
+msgid "The invoices take their number in Fatture in Cloud, and the electronic ones leave for the SdI from there."
+msgstr "Le fatture prendono il numero in Fatture in Cloud, e quelle elettroniche partono da lì per lo SdI."
+
+msgid "The public body refused invoice {0}"
+msgstr "L'ente pubblico ha rifiutato la fattura {0}"
+
+msgid "The sign-in took too long or did not come from here: try again."
+msgstr "L'accesso ha richiesto troppo tempo o non è partito da qui: riprova."
+
+msgid "The totals do not match"
+msgstr "I totali non coincidono"
+
+msgid "They take their number there and leave for the SdI from there. Test invoices stay here."
+msgstr "Prendono il numero lì e partono da lì per lo SdI. Le fatture di prova restano qui."
+
+msgid "This invoice was not made in Fatture in Cloud: it cannot leave from there."
+msgstr "Questa fattura non è stata creata in Fatture in Cloud: non può partire da lì."
+
+msgid "To connect again"
+msgstr "Da ricollegare"
+
+msgid "Up to date with Fatture in Cloud"
+msgstr "Aggiornato con Fatture in Cloud"
+
+msgid "VAT rates"
+msgstr "Aliquote IVA"
+
+msgid "VAT rates, accounts, numerations"
+msgstr "Aliquote IVA, conti, numerazioni"
+
+msgid "What Fatture in Cloud said last"
+msgstr "L'ultima cosa detta da Fatture in Cloud"
+
+msgid "What stands for what"
+msgstr "Cosa corrisponde a cosa"
+
+msgid "What the company has in Fatture in Cloud"
+msgstr "Cosa ha l'azienda in Fatture in Cloud"
+
+msgid "Where the payments go"
+msgstr "Dove vanno i pagamenti"
+
+msgid "Which company in Fatture in Cloud"
+msgstr "Quale azienda in Fatture in Cloud"
+
+msgid "Which of the VAT rates in Fatture in Cloud stands for each of the ones here. Where only one can be meant it is chosen already."
+msgstr "Quale aliquota IVA di Fatture in Cloud corrisponde a ciascuna di qui. Dove può essere una sola, è già scelta."
+
+msgid "Who reports the healthcare expenses: one of the two, never both - the same expense twice is refused."
+msgstr "Chi invia le spese sanitarie: uno dei due, mai entrambi - la stessa spesa due volte viene rifiutata."
+
+msgid "Who reports to the Sistema TS"
+msgstr "Chi invia al Sistema TS"
+
+msgid "Whoever connected it sees more than one: choose the one with the VAT number of {0}."
+msgstr "Chi l'ha collegato ne vede più d'una: scegli quella con la partita IVA di {0}."
+
+msgid "You are not allowed to set up invoicing"
+msgstr "Non puoi impostare la fatturazione"
+
 #: frontend/src/utils/modelliWhatsApp.js
 msgctxt "WhatsApp template"
 msgid "Deleted on Meta"

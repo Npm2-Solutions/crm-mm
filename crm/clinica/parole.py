@@ -34,6 +34,10 @@ PAROLE = {
 		"Who issues the invoices: details, tax regime, Sistema TS credentials."
 	),
 	"News in the client area": "News in the patient area",
+	# Settings > Invoicing > Fatture in Cloud: what stays here when invoices are born there
+	"People, appointments, payments and the PDF given to the client stay here as they are.": (
+		"People, appointments, payments and the PDF given to the patient stay here as they are."
+	),
 	# the waiting list: where one joins it
 	"From the client area": "From the patient area",
 	# the notifications one receives by email too (Settings > Your account)
