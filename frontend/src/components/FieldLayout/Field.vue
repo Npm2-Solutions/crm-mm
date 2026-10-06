@@ -542,7 +542,7 @@ function getFieldOverrides(fieldname) {
     const rowOv = rowKey ? ov[rowKey] : null
 
     if (!colOv && !rowOv) return undefined
-    return { ...(colOv || {}), ...(rowOv || {}) }
+    return { ...colOv, ...rowOv }
   }
   return formDocument.value?.fieldPropertyOverrides?.[fieldname]
 }
@@ -589,7 +589,7 @@ const field = computed(() => {
     field.link_filters = JSON.stringify({
       name: ['in', users.data.crmUsers?.map((user) => user.name)],
       ignore_user_type: 1,
-      ...(parseLinkFilters(field.link_filters) || {}),
+      ...parseLinkFilters(field.link_filters),
     })
   }
 
@@ -631,7 +631,7 @@ const field = computed(() => {
   let _field = {
     ...field,
     filters: parseLinkFilters(field.link_filters),
-    placeholder: field.placeholder || field.label,
+    placeholder: field.placeholder,
     display_via_depends_on: displayViaDependsOn,
     mandatory_via_depends_on: evaluateDependsOnValue(
       field.mandatory_depends_on,
@@ -673,15 +673,13 @@ const resolvedHtml = computed(() => {
   return interpolateTemplate(field.value.options || '', data.value)
 })
 
+// the label is above every field: a box says nothing more unless its field has a
+// hint of its own, a choice says to choose
 const getPlaceholder = (field) => {
   if (field.placeholder) {
     return __(field.placeholder)
   }
-  if (['Select', 'Link'].includes(field.fieldtype)) {
-    return __('Select {0}', [__(field.label)])
-  } else {
-    return __('Enter {0}', [__(field.label)])
-  }
+  return ['Select', 'Link'].includes(field.fieldtype) ? __('Choose…') : ''
 }
 
 const getOptions = (options) => {
