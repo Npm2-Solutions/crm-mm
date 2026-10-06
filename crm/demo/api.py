@@ -167,6 +167,9 @@ def crea(utente: str | None = None, scala: float = 1.0) -> dict:
 		frappe.db.set_default(
 			registro.SERIE, frappe.as_json(dict(frappe.db.sql("select name, current from `tabSeries`")))
 		)
+	registro.segna_l_inizio()
+	# kept whatever the first part does: a part that fails rolls its own work back
+	frappe.db.commit()
 	contesto = Contesto(utente=utente, scala=scala)
 	fatte, fallite = [], []
 	try:

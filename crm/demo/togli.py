@@ -29,6 +29,7 @@ import re
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from datetime import datetime
 
 import frappe
 
@@ -104,6 +105,9 @@ IMPOSTAZIONI = frozenset(
 		"CRM Subscription Type",
 		"CRM Billable Service",
 		"CRM Form Template",
+		# a form somebody of the centre's filled keeps the version it was filled
+		# on, and a template the centre kept the version it is published at
+		"CRM Form Template Version",
 		"CRM Consent Type",
 		"CRM Invoicing Company",
 		"CRM Pipeline",
@@ -113,6 +117,11 @@ IMPOSTAZIONI = frozenset(
 		"WhatsApp Templates",
 	}
 )
+
+#: Setup that is part of other setup, by a required link: kept with it, when all
+#: it needs stays too - a version of a form the centre kept, the price a kept
+#: list gives a service that stays.
+PARTI = frozenset({"CRM Form Template Version", "CRM Service Price"})
 
 #: A record that points at one of these is about a person, and goes with them.
 PERSONE = frozenset({"CRM Lead", "CRM Deal", "Contact"})
@@ -151,12 +160,14 @@ def togli(avanza: Callable[[str], None] | None = None) -> dict:
 	tabelle = _tabelle()
 	campi = _campi(tabelle)
 
-	avanza("What the centre uses")
-	tenuti = _tenuti(via, campi, tabelle)
-
+	# what is about the demo first, written down or not (a job's invoice for one of
+	# its people): only the rest says what the centre took over
 	avanza("What is about the demo")
-	figlie = _a_cascata(via, utenti, campi, tabelle)
+	figlie = _a_cascata(via, utenti, campi, tabelle, registro.cominciata())
 	_specchi(via, tabelle)
+
+	avanza("What the centre uses")
+	tenuti = _tenuti(via, campi, tabelle, figlie)
 
 	avanza("Records")
 	file_su_disco = _file(via, tabelle)
@@ -177,7 +188,7 @@ def togli(avanza: Callable[[str], None] | None = None) -> dict:
 	_contatori(via)
 
 	frappe.db.delete(registro.REGISTRO)
-	for chiave in (registro.STATO, registro.FATTE, registro.LAVORO, registro.SERIE):
+	for chiave in (registro.STATO, registro.FATTE, registro.LAVORO, registro.SERIE, registro.INIZIO):
 		frappe.db.set_default(chiave, None)
 	frappe.db.commit()
 
@@ -305,7 +316,11 @@ def _proprietario(campo: Campo, riga) -> tuple[str, str]:
 # -- 1. what the centre took over -----------------------------------------------------------------
 
 
-def _tenuti(via: dict[str, set[str]], campi: list[Campo], tabelle: set[str]) -> dict[str, set[str]]:
+def _tenuti(
+	via: dict[str, set[str]], campi: list[Campo], tabelle: set[str], figlie: dict[str, set[str]]
+) -> dict[str, set[str]]:
+	"""Take out of ``via`` the setup the centre's own records use; ``figlie`` are the
+	rows of its records that are about the demo, and go."""
 	tenuti = defaultdict(set)
 	while True:
 		bersagli = {doctype: via[doctype] for doctype in IMPOSTAZIONI if via.get(doctype)}
@@ -314,12 +329,40 @@ def _tenuti(via: dict[str, set[str]], campi: list[Campo], tabelle: set[str]) -> 
 			chi, nome = _proprietario(campo, riga)
 			if not chi or nome in via.get(chi, ()) or chi in TRACCE or chi == registro.REGISTRO:
 				continue
+			if campo.figlia and str(riga.name) in figlie.get(campo.doctype, ()):
+				continue
 			nuovi[doctype].add(str(riga.bersaglio))
+		for doctype, nomi in _parti(via, campi, tabelle).items():
+			nuovi[doctype] |= nomi
 		if not any(nuovi.values()):
 			return tenuti
 		for doctype, nomi in nuovi.items():
 			via[doctype] -= nomi
 			tenuti[doctype] |= nomi
+
+
+def _parti(via: dict[str, set[str]], campi: list[Campo], tabelle: set[str]) -> dict[str, set[str]]:
+	"""The demo's parts of setup that stays, when everything they need stays too."""
+	parti = defaultdict(set)
+	for doctype in PARTI:
+		if not via.get(doctype) or _tabella(doctype) not in tabelle:
+			continue
+		legami = [
+			campo
+			for campo in campi
+			if campo.doctype == doctype and campo.tipo == "Link" and campo.obbligatorio
+		]
+		colonne = "".join(f", `{campo.fieldname}`" for campo in legami)
+		for pezzo in _a_pezzi(via[doctype]):
+			# nosemgrep: frappe-sql-format-injection — table and columns from the DocTypes' metadata, the names bound
+			for riga in frappe.db.sql(
+				f"select name{colonne} from `{_tabella(doctype)}` where name in %(nomi)s",
+				{"nomi": pezzo},
+				as_dict=True,
+			):
+				if all(str(riga[campo.fieldname]) not in via.get(campo.opzioni, ()) for campo in legami):
+					parti[doctype].add(str(riga.name))
+	return parti
 
 
 # -- 2. what is about the demo -------------------------------------------------------------------
@@ -332,23 +375,44 @@ def _riguarda(campo: Campo, bersaglio: str, chi: str) -> bool:
 	return bersaglio in PERSONE and chi not in ANAGRAFICHE
 
 
+def _da(doctype: str, nomi: set[str], inizio: datetime | None) -> set[str]:
+	"""Of the rows ``nomi``, the ones made since ``inizio``."""
+	if not inizio:
+		return set(nomi)
+	fatti = set()
+	for pezzo in _a_pezzi(nomi):
+		# nosemgrep: frappe-sql-format-injection — a table of the framework's traces, the names bound
+		for nome in frappe.db.sql_list(
+			f"select name from `tab{doctype}` where name in %(nomi)s and creation >= %(inizio)s",
+			{"nomi": pezzo, "inizio": inizio},
+		):
+			fatti.add(str(nome))
+	return fatti
+
+
 def _a_cascata(
-	via: dict[str, set[str]], utenti: set[str], campi: list[Campo], tabelle: set[str]
+	via: dict[str, set[str]],
+	utenti: set[str],
+	campi: list[Campo],
+	tabelle: set[str],
+	inizio: datetime | None = None,
 ) -> dict[str, set[str]]:
 	"""Add to ``via`` what is about the demo; return the child rows of the centre's
-	records that are (a participant, a link in an address book entry)."""
+	records that are (a participant, a link in an address book entry). A trace older
+	than ``inizio`` is not the demo's."""
 	figlie = defaultdict(set)
-	nuovi = {doctype: set(nomi) for doctype, nomi in via.items() if doctype not in IMPOSTAZIONI}
+	nuovi = {doctype: set(nomi) for doctype, nomi in via.items() if doctype not in IMPOSTAZIONI | PARTI}
 	if utenti:
 		nuovi["User"] = set(utenti)
 	while any(nuovi.values()):
 		trovati = defaultdict(set)
+		tracce = defaultdict(set)
 		for campo, riga, bersaglio in _chi_punta(campi, nuovi, tabelle):
 			chi, nome = _proprietario(campo, riga)
 			if not chi or not nome or nome in via.get(chi, ()):
 				continue
 			if chi in TRACCE:
-				trovati[chi].add(nome)
+				tracce[chi].add(nome)
 			elif bersaglio == "User":
 				# the demo's colleagues: a row of theirs in somebody's table goes, a
 				# field naming them is emptied afterwards
@@ -359,6 +423,8 @@ def _a_cascata(
 					figlie[campo.doctype].add(str(riga.name))
 			elif _riguarda(campo, bersaglio, chi):
 				trovati[chi].add(nome)
+		for chi, nomi in tracce.items():
+			trovati[chi] |= _da(chi, nomi, inizio)
 		for tabella_traccia, colonna_tipo, colonna_nome in COPPIE:
 			if _tabella(tabella_traccia) not in tabelle:
 				continue
@@ -366,8 +432,9 @@ def _a_cascata(
 				for pezzo in _a_pezzi(nomi):
 					for nome in frappe.db.sql_list(
 						f"""select name from `tab{tabella_traccia}`
-						where `{colonna_tipo}` = %(doctype)s and `{colonna_nome}` in %(nomi)s""",
-						{"doctype": doctype, "nomi": pezzo},
+						where `{colonna_tipo}` = %(doctype)s and `{colonna_nome}` in %(nomi)s
+						and creation >= %(inizio)s""",
+						{"doctype": doctype, "nomi": pezzo, "inizio": inizio or "1900-01-01"},
 					):
 						if str(nome) not in via.get(tabella_traccia, ()):
 							trovati[tabella_traccia].add(str(nome))
