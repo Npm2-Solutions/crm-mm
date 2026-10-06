@@ -67,6 +67,18 @@
           variant="subtle"
         />
       </RouterLink>
+      <!-- what they answered the reminder of this time: an icon with its words -->
+      <Badge
+        v-if="risposta"
+        :label="risposta.testo"
+        theme="gray"
+        variant="subtle"
+        class="shrink-0"
+      >
+        <template #prefix>
+          <span :class="[risposta.icona, 'size-3']" aria-hidden="true" />
+        </template>
+      </Badge>
       <span
         v-if="participant.status === 'Arrived'"
         class="shrink-0 text-p-sm tabular-nums text-ink-gray-5"
@@ -104,8 +116,9 @@ import {
   timeOf,
   waitingLabel,
 } from '@/utils/oggi'
+import { segnoDelPromemoria } from '@/utils/promemoriaAppuntamenti'
 import { Badge, Button, call, toast } from 'frappe-ui'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   appointment: { type: Object, required: true },
@@ -117,6 +130,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['changed'])
+
+// each person of the appointment answered their own reminder, in a class too
+const risposta = computed(() =>
+  segnoDelPromemoria(props.participant.reminder, __),
+)
 
 // what each outcome is called on its button, and on the badge once given: for
 // one person («Assente»), where the day's tiles count them all («Non venuti»)

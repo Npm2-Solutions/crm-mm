@@ -16,7 +16,7 @@ import frappe
 from frappe.utils import get_datetime, getdate
 
 from crm.permissions import livelli
-from crm.scheduling import cicli, esiti
+from crm.scheduling import cicli, esiti, promemoria
 
 #: How far back the appointments nobody closed are still asked about.
 GIORNI_INDIETRO = 7
@@ -75,6 +75,8 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 				),
 			}
 		)
+	# what each of them answered the reminder of this time (docs/progetto-ghl/59)
+	promemoria.nelle_righe(fuori)
 	return fuori
 
 
