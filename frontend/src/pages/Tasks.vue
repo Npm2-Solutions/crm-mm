@@ -401,7 +401,7 @@ function createTask(column) {
   // one's own unless given to somebody else in the sheet: made without anyone,
   // it was nobody's, and «Mine» stayed empty as if it had not been saved
   const defaults = {
-    status: 'Backlog',
+    status: 'Todo',
     priority: 'Low',
     assigned_to: getUser().name,
   }

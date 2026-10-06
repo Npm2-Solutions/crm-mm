@@ -51,7 +51,7 @@ function showTask(task) {
       reference_docname: props.doc?.name,
       // what the Tasks page and the call panel start a task with: from here
       // the two selects opened empty
-      ...(task?.name ? {} : { status: 'Backlog', priority: 'Low' }),
+      ...(task?.name ? {} : { status: 'Todo', priority: 'Low' }),
     },
     callbacks: {
       afterInsert: (d) => afterDoctype(d, true),
