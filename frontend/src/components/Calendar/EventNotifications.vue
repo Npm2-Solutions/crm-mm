@@ -48,7 +48,7 @@
                 v-model="notification.time"
                 class="flex-1 shrink-0"
                 variant="outline"
-                :placeholder="__('08:00 AM')"
+                placeholder="08:00"
               />
             </div>
             <div class="flex items-center gap-2 w-full">

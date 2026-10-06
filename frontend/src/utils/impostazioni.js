@@ -34,7 +34,7 @@ export const MENU = [
     key: 'account',
     label: 'Your account',
     description:
-      'Your profile, how {brand} looks for you, your notifications by email, the calendar you bring.',
+      'Your profile, how {brand} looks, your notifications, your mailbox, the calendar you bring.',
     items: [
       {
         key: 'Profile',
@@ -47,10 +47,12 @@ export const MENU = [
         description: 'The theme and the language you read {brand} in.',
       },
       {
-        // what reaches you by email too when the panel has not been read
+        // what reaches you outside the panel: this phone or computer, and by
+        // email when the panel has not been read
         key: 'Notifications',
         label: 'Notifications',
-        description: 'What reaches your email too, when you have not read it.',
+        description:
+          'What reaches you on your phone, your computer and by email.',
       },
       {
         // the mailbox one writes to people from, and the signature (doc 51)
