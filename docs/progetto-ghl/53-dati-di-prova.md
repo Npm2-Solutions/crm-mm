@@ -82,6 +82,12 @@ d'attesa, conversazioni.
     offre: un'offerta aspetta la risposta, due sono state confermate e prenotate;
     una persona ha trovato posto altrove, a un'altra sono finiti i giorni. La
     lezione più piena della settimana si riempie e due persone aspettano un posto.
+  - **Promemoria** (`crm/demo/promemoria.py`, doc 59): gli appuntamenti di domani il
+    cui promemoria è già dovuto lo ricevono per email (resta nella parte), e circa
+    metà delle persone ha confermato dalla pagina di prenotazione: in agenda il loro
+    segno, nelle impostazioni gli ultimi promemoria. Solo gli appuntamenti della
+    demo; i promemoria del centro restano come li ha lui. Di notte non ne è dovuto
+    nessuno, e la parte non manda niente.
   - **Conversazioni** (`crm/demo/conversazioni.py`): email tra il centro e le sue
     persone (la prima visita, la fattura per la detrazione, la convenzione, il
     referto, la lezione di prova, una disdetta...), e SMS e WhatsApp dove il centro
