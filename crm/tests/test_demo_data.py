@@ -25,7 +25,17 @@ VOLATILI = {
 
 
 #: The base's parts, in the order they are registered.
-BASE = ("squadra", "agenda", "clienti", "aziende", "lavoro", "abbonamenti", "attese", "conversazioni")
+BASE = (
+	"squadra",
+	"agenda",
+	"clienti",
+	"aziende",
+	"lavoro",
+	"abbonamenti",
+	"attese",
+	"promemoria",
+	"conversazioni",
+)
 #: The parts the CRM's own modules add, whatever the plan.
 DEI_MODULI = ("moduli", "documenti")
 #: Where the centre says which pipelines are the new clients' and the quotes'.
@@ -238,6 +248,11 @@ class TestDatiDiProva(IntegrationTestCase):
 		self.assertTrue(r.get("CRM Session Cycle") or r.get("CRM Quote"))
 		self.assertEqual(len(r.get("CRM Subscription Type", ())), 3)
 		self.assertTrue(r.get("CRM Waiting List Entry"))
+		# tomorrow's reminders due when the demo was made (none at night): its appointments' only
+		for nome in r.get("CRM Appointment Reminder", ()):
+			self.assertIn(
+				frappe.db.get_value("CRM Appointment Reminder", nome, "appointment"), r["CRM Appointment"]
+			)
 		self.assertTrue(r.get("Communication"))
 		if r.get("CRM Quote"):
 			# a quote handed over has its PDF, and moved its deal

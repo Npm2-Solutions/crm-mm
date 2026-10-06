@@ -8,8 +8,8 @@ months ago: its team and their shifts, the rooms and the services with their
 prices, the people who came and keep coming with their cycles and quotes
 (`crm.demo.simulazione`), the companies it has agreements with, the day-to-day -
 things to do, notes, calls - the regulars' subscriptions (`crm.demo.abbonati`),
-the waiting list (`crm.demo.in_attesa`) and the conversations
-(`crm.demo.conversazioni`).
+the waiting list (`crm.demo.in_attesa`), the reminders of tomorrow's appointments
+(`crm.demo.promemoria`) and the conversations (`crm.demo.conversazioni`).
 """
 
 from __future__ import annotations
@@ -20,7 +20,17 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate
 
-from crm.demo import abbonati, conversazioni, dati, in_attesa, marketing, meta, registro, simulazione
+from crm.demo import (
+	abbonati,
+	conversazioni,
+	dati,
+	in_attesa,
+	marketing,
+	meta,
+	promemoria,
+	registro,
+	simulazione,
+)
 from crm.demo.contesto import Contesto, indirizzo, nome_libero
 from crm.demo.registro import Parte, registra_parte
 
@@ -93,6 +103,16 @@ def registra() -> None:
 			dopo=("clienti", "abbonamenti"),
 			descrizione="People waiting for a place with the osteopath, the dietitian or in a full "
 			"class: an offer waiting for its answer, places booked from an offer.",
+		)
+	)
+	registra_parte(
+		Parte(
+			"promemoria",
+			"Appointment reminders",
+			promemoria.crea,
+			dopo=("clienti",),
+			descrizione="The reminders of tomorrow's appointments, by email, and who confirmed from the "
+			"booking page: their mark in the agenda.",
 		)
 	)
 	registra_parte(
