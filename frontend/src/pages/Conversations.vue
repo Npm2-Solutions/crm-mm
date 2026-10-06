@@ -171,6 +171,7 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
+import { useDiNuovoInLinea } from '@/composables/diNuovoInLinea'
 import { usersStore } from '@/stores/users'
 import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import { readReceipts } from '@/composables/conversationState'
@@ -497,6 +498,10 @@ onMounted(() => {
   $socket.on('crm_conversation', refresh)
   window.addEventListener('crm:conversation-read', refresh)
 })
+
+// …and asked again when the app is back in touch: what was said while the
+// phone kept it asleep, or the connection was down, never came
+useDiNuovoInLinea(refresh)
 
 onBeforeUnmount(() => {
   $socket.off('crm_sms_message', refresh)

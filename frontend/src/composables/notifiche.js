@@ -13,6 +13,7 @@
 import { apriImpostazioni } from '@/composables/settings'
 import { useEventNotificationAlert } from '@/data/notifications'
 import { globalStore } from '@/stores/global'
+import { useDiNuovoInLinea } from '@/composables/diNuovoInLinea'
 import {
   notifications,
   notificationsStore,
@@ -121,6 +122,10 @@ export function useAscoltoNotifiche() {
       query: { settings: page, ...(step ? { step } : {}) },
     }).href
   }
+
+  // the count and the panel put right when the app is back in touch: what
+  // arrived while the phone kept it asleep never came as an event
+  useDiNuovoInLinea(() => notifications.reload())
 
   onMounted(() => {
     $socket.on('crm_notification', arrivata)
