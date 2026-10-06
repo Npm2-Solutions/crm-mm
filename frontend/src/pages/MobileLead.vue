@@ -84,15 +84,16 @@
       :tabs="tabs"
       :principali="[
         'Activity',
-        'Details',
+        'Data',
         'Events',
+        'Subscriptions',
         'Clinic',
         'Tasks',
         'Notes',
       ]"
     />
-    <!-- The tabs' content, under the bar above: Details, mounted the first time
-         it opens, and one conversation for every other tab - it draws the tab
+    <!-- The tabs' content, under the bar above: the person's data, mounted the
+         first time they open, and one conversation for every other tab - it draws the tab
          chosen. Both stay once opened. A tab per panel unmounted the one left and
          mounted the next, the conversation and its editor with it: half a second
          a tap on a slow phone, and what one was reading back at its top -->
@@ -122,7 +123,7 @@
               @afterFieldChange="reloadAssignees"
             >
               <!-- below the fields, a screen and more down: they come once the
-                   fields are drawn, not in the first tap on Details (seven
+                   fields are drawn, not in the first tap on Data (seven
                    calls and their sections, a fifth of its time on a slow
                    phone) -->
               <template #after>
@@ -130,9 +131,6 @@
                   <BillingProfileSection partyType="CRM Lead" :party="leadId" />
                   <RelatedPeopleSection :lead="leadId" />
                   <PatientSection :lead="leadId" />
-                  <CyclesSection :lead="leadId" />
-                  <SubscriptionsSection :lead="leadId" />
-                  <WaitingSection :lead="leadId" />
                   <ConsentsSection :lead="leadId" />
                 </DopoIlDisegno>
               </template>
@@ -186,7 +184,6 @@ import Icon from '@/components/Icon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
@@ -195,6 +192,7 @@ import SchedeDelTelefono from '@/components/Mobile/SchedeDelTelefono.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
+import LucideTicket from '~icons/lucide/ticket'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import LucideAppWindow from '~icons/lucide/app-window'
@@ -206,9 +204,6 @@ import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
-import CyclesSection from '@/components/CyclesSection.vue'
-import SubscriptionsSection from '@/components/Subscriptions/SubscriptionsSection.vue'
-import WaitingSection from '@/components/Waiting/WaitingSection.vue'
 import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
 import SLASection from '@/components/SLASection.vue'
@@ -350,9 +345,12 @@ usePageMeta(() => {
 
 const tabs = computed(() => {
   let tabOptions = [
+    // the person's data, one tab: Details showed the fields of the panel on
+    // the side and Data the same fields again, with the ad's first and last
+    // touch, which the history tells
     {
-      name: 'Details',
-      label: __('Details'),
+      name: 'Data',
+      label: __('Data'),
       icon: DetailsIcon,
       condition: () => isMobileView.value,
     },
@@ -365,11 +363,6 @@ const tabs = computed(() => {
       label: __('Activity'),
       icon: ActivityIcon,
     },
-    {
-      name: 'Data',
-      label: __('Data'),
-      icon: DetailsIcon,
-    },
     // a person's appointments and events, as on a desk: the tab was missing on
     // a phone, so nothing booked for them could be seen from one
     {
@@ -377,6 +370,18 @@ const tabs = computed(() => {
       label: __('Events'),
       icon: EventIcon,
       condition: () => puo('agenda.vedi'),
+    },
+    // what the person has going beyond one appointment: subscriptions, cycles
+    // of sessions, what they wait for - once under their data
+    {
+      name: 'Subscriptions',
+      label: __('Subscriptions'),
+      icon: LucideTicket,
+      condition: () =>
+        puo('agenda.vedi') ||
+        puo('agenda.cicli') ||
+        puo('agenda.abbonamenti') ||
+        puo('agenda.attese'),
     },
     {
       name: 'Tasks',
@@ -393,11 +398,6 @@ const tabs = computed(() => {
       name: 'Attachments',
       label: __('Attachments'),
       icon: AttachmentIcon,
-    },
-    {
-      name: 'Tracking',
-      label: __('Tracking'),
-      icon: LucideRadar,
     },
     // the forms the person filled and signed: privacy, consents, questionnaires
     {
@@ -449,18 +449,25 @@ const tabs = computed(() => {
       condition: () =>
         puo('clinica.vedi') || puo('clinica.scrivi') || puo('clinica.accessi'),
     },
+    // where the person came from and what they did before writing: the ad, the
+    // visits to the site, the first and last touch. Last of all: it is looked
+    // at now and then, never every day
+    {
+      name: 'Tracking',
+      label: __('History'),
+      icon: LucideRadar,
+    },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
 })
 
 const { tabIndex } = useActiveTabManager(tabs, 'lastLeadTab')
 
-// Details is a tab of its own; every other one is the conversation, which draws
-// the tab chosen - and while Details is shown stays on the one it drew, hidden
-// as it was. Each is mounted the first time it opens, then kept
-const inDettagli = computed(
-  () => tabs.value[tabIndex.value]?.name === 'Details',
-)
+// the person's data are a tab of their own; every other one is the
+// conversation, which draws the tab chosen - and while the data are shown stays
+// on the one it drew, hidden as it was. Each is mounted the first time it
+// opens, then kept
+const inDettagli = computed(() => tabs.value[tabIndex.value]?.name === 'Data')
 const schedaAttivita = ref(tabIndex.value)
 watch(
   tabIndex,
@@ -535,7 +542,7 @@ function deleteLead() {
 const showConvertToDealModal = ref(false)
 
 // Writing from the card: the Activity tab, its composer on the channel chosen.
-// From Details the tab is not drawn yet: it opens first, then the composer.
+// From the data the tab is not drawn yet: it opens first, then the composer.
 async function scrivi(canale) {
   const indice = tabs.value.findIndex((tab) => tab.name === 'Activity')
   if (indice >= 0 && tabIndex.value !== indice) {

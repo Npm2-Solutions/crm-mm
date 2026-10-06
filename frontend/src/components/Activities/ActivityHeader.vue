@@ -34,8 +34,9 @@
       v-if="title != 'Activity'"
       class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8 max-md:hidden"
     >
-      <!-- the area's tab is named by its words: the clinic's patient area -->
-      {{ title == 'Area' ? __('Client area') : __(title) }}
+      <!-- a tab named otherwise than its key: the area's (the clinic's patient
+           area), the history of where the person came from -->
+      {{ __(NOMI_DELLE_SCHEDE[title] || title) }}
     </div>
     <!--
       The channel picker. It changes the stream *and* the box underneath: picking
@@ -242,6 +243,9 @@ const { puo, solaLettura } = usersStore()
 // the tabs whose buttons are in the record they show
 // the tracking tab too: what the person did on the website is read, not
 // added to, and its one button (the tracking's settings) is in it. The «New»
+// the tabs whose words are not their key
+const NOMI_DELLE_SCHEDE = { Area: 'Client area', Tracking: 'History' }
+
 // it fell to offered every message and record of the Activity tab
 const azioniNelRecord = computed(() =>
   [
@@ -252,6 +256,7 @@ const azioniNelRecord = computed(() =>
     'Quotes',
     'Plans',
     'Tracking',
+    'Subscriptions',
   ].includes(props.title),
 )
 

@@ -34,6 +34,9 @@
     <div v-else-if="title == 'Tracking'" class="h-full">
       <AttributionArea :doctype="doctype" :docname="docname" />
     </div>
+    <div v-else-if="title == 'Subscriptions'" class="h-full overflow-y-auto">
+      <SubscriptionsArea :lead="docname" />
+    </div>
     <div v-else-if="title == 'Clinic'" class="h-full overflow-y-auto">
       <ClinicArea :lead="docname" />
     </div>
@@ -709,6 +712,9 @@ const EventArea = aRichiesta(
 )
 const AttributionArea = aRichiesta(
   () => import('@/components/Activities/AttributionArea.vue'),
+)
+const SubscriptionsArea = aRichiesta(
+  () => import('@/components/Activities/SubscriptionsArea.vue'),
 )
 const ClinicArea = aRichiesta(
   () => import('@/components/Clinic/ClinicArea.vue'),

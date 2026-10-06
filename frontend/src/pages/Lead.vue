@@ -136,9 +136,6 @@
             <BillingProfileSection partyType="CRM Lead" :party="leadId" />
             <RelatedPeopleSection :lead="leadId" />
             <PatientSection :lead="leadId" />
-            <CyclesSection :lead="leadId" />
-            <SubscriptionsSection :lead="leadId" />
-            <WaitingSection :lead="leadId" />
             <ConsentsSection :lead="leadId" />
           </template>
         </SidePanelLayout>
@@ -181,7 +178,6 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
-import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
@@ -191,6 +187,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
+import LucideTicket from '~icons/lucide/ticket'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import LucideAppWindow from '~icons/lucide/app-window'
@@ -203,9 +200,6 @@ import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
-import CyclesSection from '@/components/CyclesSection.vue'
-import SubscriptionsSection from '@/components/Subscriptions/SubscriptionsSection.vue'
-import WaitingSection from '@/components/Waiting/WaitingSection.vue'
 import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
 import SLASection from '@/components/SLASection.vue'
@@ -384,15 +378,22 @@ const tabs = computed(() => {
       icon: ActivityIcon,
     },
     {
-      name: 'Data',
-      label: __('Data'),
-      icon: DetailsIcon,
-    },
-    {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
       condition: () => puo('agenda.vedi'),
+    },
+    // what the person has going beyond one appointment: subscriptions, cycles
+    // of sessions, what they wait for - once under their data
+    {
+      name: 'Subscriptions',
+      label: __('Subscriptions'),
+      icon: LucideTicket,
+      condition: () =>
+        puo('agenda.vedi') ||
+        puo('agenda.cicli') ||
+        puo('agenda.abbonamenti') ||
+        puo('agenda.attese'),
     },
     {
       name: 'Tasks',
@@ -409,11 +410,6 @@ const tabs = computed(() => {
       name: 'Attachments',
       label: __('Attachments'),
       icon: AttachmentIcon,
-    },
-    {
-      name: 'Tracking',
-      label: __('Tracking'),
-      icon: LucideRadar,
     },
     // the forms the person filled and signed: privacy, consents, questionnaires
     {
@@ -464,6 +460,14 @@ const tabs = computed(() => {
       icon: LucideStethoscope,
       condition: () =>
         puo('clinica.vedi') || puo('clinica.scrivi') || puo('clinica.accessi'),
+    },
+    // where the person came from and what they did before writing: the ad, the
+    // visits to the site, the first and last touch. Last of all: it is looked
+    // at now and then, never every day
+    {
+      name: 'Tracking',
+      label: __('History'),
+      icon: LucideRadar,
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
