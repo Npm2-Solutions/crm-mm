@@ -45150,6 +45150,153 @@ msgctxt "Stage type"
 msgid "Lost"
 msgstr "Persa"
 
+#. a mark on an appointment of the agenda: somebody of it has checked in
+#: frontend/src/utils/agenda.js
+msgid "In the waiting room"
+msgstr "In sala d'attesa"
+
+#: frontend/src/utils/agenda.js
+msgid "Booked on a platform"
+msgstr "Prenotato su una piattaforma"
+
+#. the appointment going on now, its hours: «Adesso · 09:30 – 10:00»
+#: frontend/src/components/Calendar/BloccoAgenda.vue
+msgid "Now · {0}"
+msgstr "Adesso · {0}"
+
+#. a colleague's own event in their column of the agenda: when, never what
+#: frontend/src/components/Calendar/GrigliaAgenda.vue
+msgid "Engaged"
+msgstr "Impegno"
+
+#: frontend/src/components/Calendar/FiltriAgenda.vue
+msgid "Filters, {0} on"
+msgstr "Filtri, {0} attivi"
+
+#: frontend/src/components/Calendar/FiltriAgenda.vue
+msgid "Clear all"
+msgstr "Azzera tutto"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "View options"
+msgstr "Opzioni di visualizzazione"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Height of the hours"
+msgstr "Altezza delle ore"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Colours"
+msgstr "Colori"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "By service"
+msgstr "Per servizio"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "By state"
+msgstr "Per stato"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Show who is off duty"
+msgstr "Mostra chi non lavora"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Show cancelled appointments"
+msgstr "Mostra gli appuntamenti annullati"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Agenda settings"
+msgstr "Impostazioni dell'agenda"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgid "Your Google Calendar"
+msgstr "Il tuo Google Calendar"
+
+#. the button of the agenda's options: how it looks
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgctxt "Agenda options"
+msgid "View"
+msgstr "Vista"
+
+#. what the agenda's columns are: its rooms
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgctxt "Agenda columns"
+msgid "Rooms"
+msgstr "Ambulatori"
+
+#. how tall an hour of the agenda is
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgctxt "Agenda height"
+msgid "Compact"
+msgstr "Compatta"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgctxt "Agenda height"
+msgid "Normal"
+msgstr "Normale"
+
+#: frontend/src/components/Calendar/VistaAgenda.vue
+msgctxt "Agenda height"
+msgid "Large"
+msgstr "Ampia"
+
+#: frontend/src/pages/Calendar.vue
+msgid "The week before"
+msgstr "La settimana prima"
+
+#: frontend/src/pages/Calendar.vue
+msgid "The week after"
+msgstr "La settimana dopo"
+
+#: frontend/src/pages/Calendar.vue
+msgid "The month before"
+msgstr "Il mese prima"
+
+#: frontend/src/pages/Calendar.vue
+msgid "The month after"
+msgstr "Il mese dopo"
+
+#. a professional's column of the agenda, on a day they do not work
+#: frontend/src/pages/Calendar.vue
+msgid "Not working"
+msgstr "Non lavora"
+
+#: frontend/src/pages/Calendar.vue
+msgid "All rooms"
+msgstr "Tutti gli ambulatori"
+
+#: frontend/src/pages/Calendar.vue
+msgid "All professionals"
+msgstr "Tutti i professionisti"
+
+#: frontend/src/pages/Calendar.vue
+msgid "{0} rooms"
+msgstr "{0} ambulatori"
+
+#. the agenda's column of whoever reads it, when they are no professional
+#: frontend/src/pages/Calendar.vue
+msgid "Your events"
+msgstr "I tuoi impegni"
+
+#. {0} is a day: «martedì 6 ottobre»
+#: frontend/src/pages/Calendar.vue
+msgid "Every room is closed on {0}"
+msgstr "Tutti gli ambulatori sono chiusi {0}"
+
+#. {0} is a day: «martedì 6 ottobre»
+#: frontend/src/pages/Calendar.vue
+msgid "Nobody works on {0}"
+msgstr "Nessuno lavora {0}"
+
+#: frontend/src/pages/Calendar.vue
+msgid "Nothing is booked on this day."
+msgstr "In questo giorno non c'è niente in agenda."
+
+#: frontend/src/pages/Calendar.vue
+msgid "Show everybody"
+msgstr "Mostra tutti"
+
 #: frontend/src/components/Settings/CalendarSettings.vue
 #: frontend/src/utils/impostazioni.js
 msgid "Agenda & reminders"
