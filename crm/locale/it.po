@@ -23465,9 +23465,10 @@ msgstr "Cerca un campo…"
 msgid "Search imported files"
 msgstr "Cerca tra i file importati"
 
+#. who a record is assigned to: a colleague, never one of the people (clients)
 #: frontend/src/components/AssignToBody.vue
-msgid "Search people…"
-msgstr "Cerca persone…"
+msgid "Search for a colleague…"
+msgstr "Cerca un collega…"
 
 #: frontend/src/components/Modals/WhatsappTemplateSelectorModal.vue
 msgid "Search templates"
