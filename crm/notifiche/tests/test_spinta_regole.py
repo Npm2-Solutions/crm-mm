@@ -165,3 +165,25 @@ class ChiFirma(unittest.TestCase):
 		):
 			with self.subTest(indirizzo=indirizzo):
 				self.assertFalse(S.pubblico(indirizzo))
+
+
+class IlTitoloDiUnMessaggio(unittest.TestCase):
+	"""A person's message on the phone is titled as a messenger titles it: the
+	channel's mark and who wrote."""
+
+	def test_il_segno_del_canale_e_chi_ha_scritto(self):
+		self.assertEqual(S.titolo_di_un_messaggio("whatsapp", "Laura Bassi"), "💬 Laura Bassi")
+		self.assertEqual(S.titolo_di_un_messaggio("sms", "Laura Bassi"), "📱 Laura Bassi")
+		self.assertEqual(S.titolo_di_un_messaggio("email", "Laura Bassi"), "✉️ Laura Bassi")
+		self.assertEqual(S.titolo_di_un_messaggio("call", "+39 333 123 4567"), "📞 +39 333 123 4567")
+
+	def test_quanti_mentre_non_e_letto(self):
+		self.assertEqual(S.titolo_di_un_messaggio("whatsapp", "Laura Bassi", 3), "💬 Laura Bassi (3)")
+		self.assertEqual(S.titolo_di_un_messaggio("whatsapp", "Laura Bassi", 1), "💬 Laura Bassi")
+		self.assertEqual(S.titolo_di_un_messaggio("whatsapp", "Laura Bassi", None), "💬 Laura Bassi")
+
+	def test_altrimenti_la_frase(self):
+		# another kind, or no name: the panel's sentence stays the title
+		self.assertEqual(S.titolo_di_un_messaggio("mention", "Anna"), "")
+		self.assertEqual(S.titolo_di_un_messaggio("whatsapp", " "), "")
+		self.assertEqual(S.titolo_di_un_messaggio(None, "Laura Bassi"), "")

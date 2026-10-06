@@ -304,6 +304,52 @@ class IDispositiviPersi(SpintaCase):
 		self.assertIn("InternalServerError", ultimo.error)
 
 
+class IlTitoloDiUnMessaggio(SpintaCase):
+	"""On the phone a person's message reads as a messenger's: the channel's mark and
+	who wrote as the title, their words below; a conversation's next message takes
+	its place with how many there are."""
+
+	def contenuto(self, nome):
+		servizio = ServizioFinto()
+		self.assertEqual(spinta.manda(nome, servizio), 1)
+		return json.loads(apri(servizio.mandati[-1]["corpo"], self.privata_browser, self.auth))
+
+	def whatsapp(self, testo):
+		from crm.notifiche.avvisi import avvisa
+
+		return avvisa(
+			BRUNO,
+			"WhatsApp",
+			R.WHATSAPP,
+			[self.laura.lead_name],
+			frase_molti=R.WHATSAPP_MOLTI,
+			riguarda=("CRM Lead", self.laura.name),
+			oggetto=("WhatsApp Message", frappe.generate_hash(length=10)),
+			messaggio=testo,
+		)
+
+	def test_un_whatsapp(self):
+		self.iscrive()
+		frappe.set_user("Administrator")
+		dati = self.contenuto(self.whatsapp("Arrivo alle cinque"))
+		self.assertEqual(dati["title"], f"💬 {self.laura.lead_name}")
+		self.assertEqual(dati["body"], "Arrivo alle cinque")
+		dati = self.contenuto(self.whatsapp("Anzi alle sei"))
+		self.assertEqual(dati["title"], f"💬 {self.laura.lead_name} (2)")
+		self.assertEqual(dati["body"], "Anzi alle sei")
+
+	def test_senza_parole_la_frase_sotto(self):
+		# a message on the answering service has no words of its own to show
+		from crm.notifiche.avvisi import avvisa
+
+		self.iscrive()
+		frappe.set_user("Administrator")
+		nome = avvisa(BRUNO, "Call", R.MESSAGGIO_IN_SEGRETERIA, ["Mario Rossi"])
+		dati = self.contenuto(nome)
+		self.assertEqual(dati["title"], "📞 Mario Rossi")
+		self.assertIn("Mario Rossi", dati["body"])
+
+
 class LaProvaEIlServiceWorker(SpintaCase):
 	def test_la_prova_ai_propri_dispositivi(self):
 		self.come(BRUNO)

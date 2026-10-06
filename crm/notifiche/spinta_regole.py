@@ -176,6 +176,27 @@ def firma(endpoint: str, privata: str, contatto: str, adesso: float | None = Non
 	return {"Authorization": f"vapid t={token}, k={b64u(_pubblica(chiave))}"}
 
 
+# ------------------------------------------------------------------ a person's message
+
+#: The mark of a person's message by its channel, before the name of who wrote,
+#: the way a messenger titles one. WhatsApp has no emoji of its own: its speech
+#: balloon; an SMS the phone it came to, an email its envelope, a message on the
+#: answering service the receiver.
+SEGNI = {"whatsapp": "💬", "sms": "📱", "email": "✉️", "call": "📞"}
+
+
+def titolo_di_un_messaggio(genere: str | None, chi: str | None, quanti: int | None = 1) -> str:
+	"""The title a device shows for a person's message: its channel's mark and who
+	wrote, how many while unread ("💬 Laura Bassi (3)"); nothing for another kind,
+	or without a name - the sentence stays the title."""
+	segno = SEGNI.get(genere or "")
+	chi = (chi or "").strip()
+	if not segno or not chi:
+		return ""
+	quanti = int(quanti or 1)
+	return f"{segno} {chi}" + (f" ({quanti})" if quanti > 1 else "")
+
+
 # ------------------------------------------------------------------ a device's name
 
 #: What a browser says it runs on, in the order that tells them apart: an iPad

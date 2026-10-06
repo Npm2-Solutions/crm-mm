@@ -316,17 +316,22 @@ def _abbonamenti(utente: str) -> list[dict]:
 	)
 
 
-def messaggio(riga: dict, notifica: str) -> dict:
+def messaggio(riga: dict, notifica: str, chi: str | None = None) -> dict:
 	"""What a device shows of a panel's row: the sentence, the first words of the
 	message, the page it opens - which marks it read - and one place for a
-	conversation, which a newer message takes."""
+	conversation, which a newer message takes. A person's message is titled as a
+	messenger titles it, its channel's mark and `chi`, who wrote (the sentence's
+	first name): its words, else the sentence, below."""
 	indirizzo = urlsplit(posta.indirizzo(riga.get("route"), riga.get("settings")))
 	parametri = [*parse_qsl(indirizzo.query), ("notifica", notifica)]
 	pagina = urlunsplit(("", "", indirizzo.path, urlencode(parametri), indirizzo.fragment))
 	route = riga.get("route") or {}
+	frase = R.solo_testo(riga.get("text"))
+	parole = R.solo_testo(riga.get("excerpt"))
+	titolo = S.titolo_di_un_messaggio(riga.get("kind"), chi, riga.get("count"))
 	return {
-		"title": R.solo_testo(riga.get("text"))[:TITOLO] or attivo().nome,
-		"body": R.solo_testo(riga.get("excerpt"))[:TESTO],
+		"title": (titolo or frase)[:TITOLO] or attivo().nome,
+		"body": (parole or (frase if titolo else ""))[:TESTO],
 		"url": pagina,
 		"tag": f"{riga.get('kind')}:{json.dumps(route.get('params') or {}, sort_keys=True)}"
 		if riga.get("kind") in R.GRUPPI_EMAIL["messages"]
@@ -348,12 +353,21 @@ def manda(notifica: str, sessione: requests.Session | None = None, contatto: str
 		return 0
 	with posta.nella_lingua_di(riga.to_user):
 		pannello = api.righe_del_pannello([riga], riga.to_user)
-		contenuto = messaggio(pannello[0], notifica)
+		contenuto = messaggio(pannello[0], notifica, _primo_nome(riga.sentence_args))
 	urgenza = SUBITO if pannello[0].get("kind") in R.GRUPPI_EMAIL["messages"] else QUANDO_PUOI
 	arrivate = _spedisci_a_tutti(abbonamenti, contenuto, sessione, urgenza, mittente(contatto))
 	if arrivate:
 		frappe.db.set_value(NOTIFICA, notifica, "email_due", 0, update_modified=False)
 	return arrivate
+
+
+def _primo_nome(argomenti: str | None) -> str | None:
+	"""The first name a sentence carries: who wrote, in a person's message."""
+	try:
+		nomi = json.loads(argomenti or "[]")
+	except ValueError:
+		return None
+	return str(nomi[0]) if isinstance(nomi, list) and nomi else None
 
 
 def _spedisci_a_tutti(
