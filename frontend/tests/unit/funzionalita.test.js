@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 import { describe, expect, it } from 'vitest'
-import { dividi, doveSiImposta } from '@/utils/funzionalita'
+import { dividi, doveSiImposta, spazio } from '@/utils/funzionalita'
 import { menuDi } from '@/utils/impostazioni'
 
 // a manager with the clinic on, and what they do not see when told
@@ -82,5 +82,22 @@ describe('the features page', () => {
 
   it('links a page once', () => {
     expect(doveSiImposta(menu(), ['Telephony', 'Telephony'])).toHaveLength(1)
+  })
+})
+
+describe('the space of the centre’s files', () => {
+  it('reads bytes in the largest unit that keeps a number', () => {
+    expect(spazio(0)).toBe('0 MB')
+    expect(spazio(300 * 1024)).toBe('0,3 MB')
+    expect(spazio(3.25 * 1024 ** 3)).toBe('3,3 GB')
+    expect(spazio(512 * 1024 ** 3)).toBe('512 GB')
+    expect(spazio(1024 ** 4)).toBe('1 TB')
+    expect(spazio(2 * 1024 ** 4, 'en-GB')).toBe('2 TB')
+    expect(spazio(1.5 * 1024 ** 4, 'en-GB')).toBe('1.5 TB')
+  })
+
+  it('takes what is not a number as nothing', () => {
+    expect(spazio(null)).toBe('0 MB')
+    expect(spazio(-5)).toBe('0 MB')
   })
 })

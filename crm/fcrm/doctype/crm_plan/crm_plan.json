@@ -5,6 +5,7 @@
  "engine": "InnoDB",
  "field_order": [
   "size",
+  "storage_gb",
   "column_break_size",
   "agency_email",
   "section_break_modules",
@@ -18,6 +19,13 @@
    "label": "Size",
    "options": "\nSolo\nStudio\nCentre\nPolyclinic\nLarge",
    "description": "How many rooms the plan covers: Solo 1, Studio up to 2, Centre up to 5, Polyclinic up to 10; past ten, each one more is paid. A room is where one visits or treats, as the agenda's rooms."
+  },
+  {
+   "description": "The space for the centre's files, in GB, when it is not what the size includes: 1 TB, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it.",
+   "fieldname": "storage_gb",
+   "fieldtype": "Int",
+   "label": "Storage included (GB)",
+   "non_negative": 1
   },
   {
    "fieldname": "column_break_size",
@@ -52,7 +60,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-06 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Plan",

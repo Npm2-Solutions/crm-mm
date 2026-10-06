@@ -40,6 +40,7 @@ class CRMPlan(Document):
 		modules: DF.Table[CRMPlanModule]
 		notes: DF.SmallText | None
 		size: DF.Literal["", "Solo", "Studio", "Centre", "Polyclinic", "Large"]
+		storage_gb: DF.Int
 	# end: auto-generated types
 
 	def validate(self):

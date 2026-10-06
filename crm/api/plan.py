@@ -22,6 +22,7 @@ from frappe import _
 from frappe.utils import add_days, getdate, now, nowdate
 
 from crm import verticali
+from crm.archivio import regole as archivio_regole
 from crm.fcrm.doctype.crm_plan.crm_plan import (
 	AMBULATORI,
 	AVVISO,
@@ -110,7 +111,7 @@ def get_plan() -> dict:
 			"over": bool(comprese and sale > comprese),
 		},
 		"modules": moduli,
-		"usage": consumi(piano.size, accesi),
+		"usage": consumi(piano.size, accesi, spazio_gb=piano.get("storage_gb")),
 		"agency": livelli.e_agenzia(frappe.session.user),
 		"trial_days": GIORNI_DI_PROVA,
 	}
@@ -191,14 +192,20 @@ def ambulatori() -> int:
 	return frappe.db.count("CRM Resource", {"resource_type": "Room", "enabled": 1})
 
 
-def consumi(taglia: str | None = None, accesi: set[str] = frozenset(), giorno: str | None = None) -> dict:
-	"""What the centre used, as the agency bills it: the SdI credits and the
-	advanced signatures of the year, each with what the plan includes. WhatsApp
+def consumi(
+	taglia: str | None = None,
+	accesi: set[str] = frozenset(),
+	giorno: str | None = None,
+	spazio_gb: int | None = None,
+) -> dict:
+	"""What the centre used, as the agency bills it: the space its files take
+	(doc 57), the SdI credits and the advanced signatures of the year, each with
+	what the plan includes. WhatsApp
 	is not counted, Meta bills the centre; nor are calls and SMS, which Twilio
 	bills to whoever owns the account, and Twilio's page shows what they cost."""
 	giorno = getdate(giorno or nowdate())
 	anno = ["between", [getdate(f"{giorno.year}-01-01"), getdate(f"{giorno.year}-12-31")]]
-	uso = {"sdi_credits": None, "signatures": None}
+	uso = {"storage": _spazio(taglia, spazio_gb), "sdi_credits": None, "signatures": None}
 	if "fatturazione" in accesi:
 		inviate = frappe.get_all(
 			"CRM Invoice",
@@ -219,5 +226,18 @@ def consumi(taglia: str | None = None, accesi: set[str] = frozenset(), giorno: s
 		}
 	for voce in uso.values():
 		if voce and voce.get("included"):
-			voce["warn"] = voce["used"] >= AVVISO * voce["included"]
+			voce["warn"] = archivio_regole.avviso(voce["used"], voce["included"], AVVISO)
 	return uso
+
+
+def _spazio(taglia: str | None, scritto_gb: int | None) -> dict:
+	"""The centre's files, in bytes, against what the plan includes; the agency
+	reads too how much is on the archive and whether the archive is on."""
+	from crm.archivio import archivio
+
+	spazio = archivio.spazio()
+	voce = {"used": spazio["used"], "included": archivio_regole.compreso(taglia, scritto_gb), "bytes": True}
+	if livelli.e_agenzia(frappe.session.user):
+		voce["archived"] = spazio["archived"]
+		voce["archive_on"] = bool(archivio.conf())
+	return voce

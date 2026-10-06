@@ -35,3 +35,24 @@ export function doveSiImposta(menu, pagine = []) {
   }
   return link
 }
+
+const UNITA = ['KB', 'MB', 'GB', 'TB']
+
+// A space in bytes as the reader writes it (doc 57): «3,2 GB», «1 TB», «0 MB»;
+// 1 GB is 1024 MB, as the plan counts it.
+export function spazio(byte, locale = 'it-IT') {
+  let valore = Math.max(Number(byte) || 0, 0) / 1024
+  let unita = 0
+  while (valore >= 1024 && unita < UNITA.length - 1) {
+    valore /= 1024
+    unita += 1
+  }
+  if (unita === 0) {
+    valore /= 1024
+    unita = 1
+  }
+  const numero = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: valore < 10 && valore % 1 ? 1 : 0,
+  }).format(valore)
+  return `${numero} ${UNITA[unita]}`
+}

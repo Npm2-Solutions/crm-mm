@@ -272,14 +272,21 @@
               </span>
             </span>
             <span v-if="item.warn" class="text-p-xs text-ink-amber-8">
-              {{ __('Nearly used up: beyond, they are paid as used') }}
+              {{
+                item.bytes
+                  ? __('Nearly full: beyond, the space is paid as used')
+                  : __('Nearly used up: beyond, they are paid as used')
+              }}
+            </span>
+            <span v-if="item.note" class="text-p-xs text-ink-gray-5">
+              {{ item.note }}
             </span>
           </div>
         </div>
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. WhatsApp messages, calls, numbers and SMS never are, nor are they in the plan: Meta and Twilio bill them to whoever owns the account.',
+              'Beyond what is included, the space for files, SdI credits and advanced signatures are billed by the agency once a month. WhatsApp messages, calls, numbers and SMS never are, nor are they in the plan: Meta and Twilio bill them to whoever owns the account.',
             )
           }}
         </p>
@@ -306,7 +313,8 @@ import { usePrimiPassi } from '@/composables/primiPassi'
 import { showSettings } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
-import { dividi } from '@/utils/funzionalita'
+import { dividi, spazio } from '@/utils/funzionalita'
+import { appLocale } from '@/utils/locale'
 import { Badge, createResource, toast } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -380,12 +388,27 @@ const sizeText = computed(() =>
     : __('No size set yet: the agency sets it with the plan'),
 )
 
-// what the agency bills, each with what the plan includes: the SdI credits with
-// invoicing, the signatures with the advanced signature. Calls and SMS are not
-// here: Twilio bills them to whoever owns the account
+// what the agency bills, each with what the plan includes: the space the
+// centre's files take (doc 57), the SdI credits with invoicing, the signatures
+// with the advanced signature. Calls and SMS are not here: Twilio bills them to
+// whoever owns the account
 const usage = computed(() => {
   const uso = plan.data?.usage || {}
+  const locale = appLocale()
   return [
+    uso.storage && {
+      label: __('Space for files'),
+      ...uso.storage,
+      used: spazio(uso.storage.used, locale),
+      included: spazio(uso.storage.included, locale),
+      // the agency reads where the files are
+      note:
+        uso.storage.archive_on === undefined
+          ? null
+          : uso.storage.archive_on
+            ? __('{0} on the archive', [spazio(uso.storage.archived, locale)])
+            : __('The archive is off: the files stay on the server'),
+    },
     uso.sdi_credits && {
       label: __('SdI credits this year'),
       ...uso.sdi_credits,
