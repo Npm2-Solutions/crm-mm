@@ -64,7 +64,7 @@ def _check_platform(platform: str | None):
 
 	if platform and not is_stable(platform) and not _is_admin():
 		frappe.throw(
-			_("This connection is still in testing: only an administrator can use it"), frappe.PermissionError
+			_("This connection is still in testing: only the agency can use it"), frappe.PermissionError
 		)
 
 

@@ -68,7 +68,7 @@
           <FeatherIcon name="info" class="mt-0.5 size-4 shrink-0" />
           {{
             __(
-              'WhatsApp is not set up on {brand} yet. An administrator has to finish the setup before a number can be connected.',
+              'WhatsApp is not set up on {brand} yet. The agency finishes the setup before a number can be connected.',
             )
           }}
         </div>

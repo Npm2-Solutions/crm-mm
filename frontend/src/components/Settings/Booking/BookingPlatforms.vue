@@ -202,7 +202,7 @@
         >
           {{
             __(
-              'Beta: built from the official documentation but not yet proven on a real account. Visible to administrators only — the team sees it once it is verified.',
+              'Beta: built from the official documentation but not yet proven on a real account. Only the agency sees it — the team sees it once it is verified.',
             )
           }}
         </div>

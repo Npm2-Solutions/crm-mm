@@ -196,7 +196,7 @@ def is_system_manager(user: str | None = None) -> bool:
 
 def check_system_manager() -> None:
 	if not is_system_manager():
-		frappe.throw(_("Only an administrator can do this"), frappe.PermissionError)
+		frappe.throw(_("Only the agency can do this"), frappe.PermissionError)
 
 
 def is_sales_user(user: str | None = None) -> bool:

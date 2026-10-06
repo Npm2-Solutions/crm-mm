@@ -76,7 +76,7 @@
           {{ __('Enable') }}
         </Button>
         <span v-else class="text-center text-p-sm text-ink-gray-5">
-          {{ __('Only a System Manager can turn it on') }}
+          {{ __('Only the agency can turn it on') }}
         </span>
       </div>
     </div>
