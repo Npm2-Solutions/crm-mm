@@ -8,6 +8,14 @@
 -->
 <template>
   <Dropdown :options="voci">
+    <template #item-suffix="{ selected }">
+      <!-- the one on: the brand's cross, as in every menu of ours -->
+      <span
+        v-if="selected"
+        class="dc-scelto lucide-check size-4 text-ink-gray-7"
+        aria-hidden="true"
+      />
+    </template>
     <Button :aria-label="__('View: {0}', [attuale?.label || ''])">
       <template #prefix>
         <span
@@ -47,12 +55,11 @@ const attuale = computed(() =>
   props.viste.find((vista) => vista.value === props.modelValue),
 )
 
-// the one on carries its tick, the others their own mark
 const voci = computed(() =>
   props.viste.map((vista) => ({
     label: vista.label,
-    icon:
-      vista.value === props.modelValue ? 'lucide-check' : ICONE[vista.value],
+    icon: ICONE[vista.value],
+    selected: vista.value === props.modelValue,
     onClick: () => emit('update:modelValue', vista.value),
   })),
 )
