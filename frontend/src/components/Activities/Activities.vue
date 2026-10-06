@@ -755,6 +755,10 @@ const props = defineProps({
   // where the new messages begin, for the line that says so — from the
   // conversations screen, which knows when the conversation was last read
   newMessages: { type: Object, default: null },
+  // the conversations screen is still asking when it was last read: the
+  // conversation waits to be placed until it knows where its new messages
+  // begin. Placed at its end first, it jumped up to the line a moment later
+  waitForNew: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['beforeSave', 'afterSave'])
@@ -847,9 +851,28 @@ watch(
   { immediate: true },
 )
 
+// A message for this record, by WhatsApp or SMS: its list again. Named, so
+// that leaving takes away these two and nothing else: `off` with the event's
+// name alone took every listener of it, the conversations screen's own, and
+// after the first person opened its list said «to read» until a reload.
+function suWhatsApp(data) {
+  if (
+    data.reference_doctype === props.doctype &&
+    data.reference_name === props.docname
+  )
+    whatsappMessages.reload()
+}
+function suSms(data) {
+  if (
+    data.reference_doctype === props.doctype &&
+    data.reference_name === props.docname
+  )
+    smsMessages.reload()
+}
+
 onBeforeUnmount(() => {
-  $socket.off('whatsapp_message')
-  $socket.off('crm_sms_message')
+  $socket.off('whatsapp_message', suWhatsApp)
+  $socket.off('crm_sms_message', suSms)
   $socket.off('docinfo_update', handleDocinfoUpdate)
   $socket.emit('doc_unsubscribe', props.doctype, props.docname)
 })
@@ -857,22 +880,8 @@ onBeforeUnmount(() => {
 onMounted(() => {
   $socket.emit('doc_subscribe', props.doctype, props.docname)
   $socket.on('docinfo_update', handleDocinfoUpdate)
-  $socket.on('whatsapp_message', (data) => {
-    if (
-      data.reference_doctype === props.doctype &&
-      data.reference_name === props.docname
-    ) {
-      whatsappMessages.reload()
-    }
-  })
-  $socket.on('crm_sms_message', (data) => {
-    if (
-      data.reference_doctype === props.doctype &&
-      data.reference_name === props.docname
-    ) {
-      smsMessages.reload()
-    }
-  })
+  $socket.on('whatsapp_message', suWhatsApp)
+  $socket.on('crm_sms_message', suSms)
 
   // the conversation opens where it is read: its end, its new messages, or the
   // message the address names after a tab's place (`target`)
@@ -1215,6 +1224,7 @@ function came(resource) {
 }
 const arrived = computed(
   () =>
+    !props.waitForNew &&
     came(all_activities) &&
     (!whatsappEnabled.value || came(whatsappMessages)) &&
     (!smsEnabled.value || came(smsMessages)),
