@@ -135,6 +135,14 @@ verificare»).
   e la pagina non lo fa scegliere.
 - Le prenotazioni delle piattaforme le ricordano le piattaforme: DottorCloud non
   ne manda un secondo.
+- **Il promemoria dice il servizio** («Trattamento fisioterapico») a chi lo
+  riceve. Le linee guida del Garante sugli SMS ai pazienti (12/02/2026, quelle per
+  gli screening) non parlano del contenuto, ma il loro testo d'esempio è neutro e
+  rimanda al sito: su un telefono condiviso il nome di una visita dice qualcosa
+  della salute di chi ci va. Lo valuta il centro, titolare del trattamento, con il
+  suo DPO; un promemoria che non nomina il servizio vuole un altro testo e un
+  altro modello WhatsApp (oggi la seconda variabile è il servizio), non ancora
+  fatti.
 
 ## Da verificare con un account vero
 
