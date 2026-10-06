@@ -30,7 +30,7 @@ CONF = {
 	"bucket": "dottorcloud-archivio",
 	"access_key": "chiave-di-prova",
 	"secret_key": "segreto-di-prova",
-	"prefix": "aurora",
+	"prefix": "dottorcloud",
 }
 CONTENUTO = b"Consenso firmato da Anna Bianchi, 06/10/2026"
 
@@ -116,7 +116,7 @@ class TestArchivio(IntegrationTestCase):
 
 		record = archivio.archiviato(doc.file_url)
 		self.assertEqual(record.size, len(CONTENUTO))
-		self.assertTrue(record.object_key.startswith("aurora/"))
+		self.assertTrue(record.object_key.startswith(f"dottorcloud/{frappe.local.site}/"))
 		self.assertEqual(self.bucket.oggetti[record.object_key], CONTENUTO)
 		# on the server, an empty file keeps the name
 		self.assertTrue(os.path.exists(self.locale(doc)))

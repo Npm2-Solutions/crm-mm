@@ -104,10 +104,16 @@ class IlBucket(unittest.TestCase):
 		self.assertIsNotNone(R.configurazione(pieno))
 		self.assertIsNone(R.configurazione({**pieno, "enabled": 0}))
 
-	def test_il_prefisso_e_il_sito_dove_non_e_detto(self):
+	def test_la_cartella_del_progetto_poi_quella_del_sito(self):
 		pieno = {"endpoint": "https://x", "bucket": "b", "access_key": "k", "secret_key": "s"}
 		self.assertEqual(R.configurazione(pieno, "aurora.dottorcloud.it").prefisso, "aurora.dottorcloud.it")
-		self.assertEqual(R.configurazione({**pieno, "prefix": "/clienti/"}, "a").prefisso, "clienti")
+		# a bucket shared with other projects: DottorCloud's folder, then each site's,
+		# never one folder for every site of the bench
+		self.assertEqual(
+			R.configurazione({**pieno, "prefix": "/dottorcloud/"}, "aurora.dottorcloud.it").prefisso,
+			"dottorcloud/aurora.dottorcloud.it",
+		)
+		self.assertEqual(R.configurazione({**pieno, "prefix": "dottorcloud"}, "").prefisso, "dottorcloud")
 
 	def test_nel_percorso_o_nel_nome_del_host(self):
 		c = R.Configurazione(
