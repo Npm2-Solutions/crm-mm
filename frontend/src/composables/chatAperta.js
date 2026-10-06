@@ -5,11 +5,10 @@
  * A conversation open on a phone with its box to write in is the screen, as in
  * a phone's own messengers (telefono.css, «11»): while `aperta` is true the
  * page's root says so (`data-chat`), the bar at the bottom steps aside and the
- * box is the screen's bottom; with the keyboard up, what is not the messages
- * nor the words being written (`data-via-scrivendo`: a record's tabs, the
- * channels to read, the channels to write on) steps aside too. The bar and
- * the card above left a person's chat a quarter of an iPhone, and with the
- * keyboard up nearly nothing.
+ * box is the screen's bottom; with the keyboard up only the bottom rises - the
+ * box's own row of channels (`data-via-scrivendo`) steps aside, what is above
+ * the messages stays where it is. The bar and the card above left a person's
+ * chat a quarter of an iPhone.
  */
 import { onBeforeUnmount, toValue, watch } from 'vue'
 

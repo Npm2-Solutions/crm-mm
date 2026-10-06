@@ -867,11 +867,13 @@
        in (a person's Activity, a thread of the Chat:
        `composables/chatAperta.js`), the bar at the bottom steps aside and the
        box is the screen's bottom, above the iPhone's home line, as in a
-       phone's own messengers; with the keyboard up the record's tabs, the
-       channels above the messages and the box's own row of channels
-       (`data-via-scrivendo`) step aside too. The card, the tabs, the
-       channels, the box and the bar left a person's chat a quarter of an
-       iPhone, and with the keyboard up a strip. */
+       phone's own messengers. With the keyboard up only the bottom rises: the
+       header, the tabs and the channels above the messages stay where they
+       are, the messages get shorter and keep their last one in sight, and the
+       box's own row of channels (`data-via-scrivendo`) steps aside. The card,
+       the tabs, the channels, the box and the bar left a person's chat a
+       quarter of an iPhone; hiding what is above the messages as well moved
+       the whole screen at every tap on the box. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   :root[data-chat='aperta'] nav[data-slot='mobile-nav'] {
     display: none;
