@@ -111,6 +111,12 @@ def trasmetti(fattura) -> dict:
 			title=_("Transmission not allowed"),
 		)
 
+	# made in Fatture in Cloud: it leaves from there, with Fatture in Cloud's own file
+	if fattura.fic_document_id:
+		from crm.invoicing.fic import emissione as fic
+
+		return fic.trasmetti(fattura)
+
 	if not fattura.xml_file:
 		frappe.throw(_("The XML has not been generated for this invoice"))
 

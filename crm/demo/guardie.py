@@ -15,9 +15,9 @@ So, while the demo data are in (or being made):
 - a call to one does not leave (`crm.telephony.uscita.perche_no`);
 - a notification about a demo record stays in the panel, never by email;
 - no outside service hears of a demo record (`mai_fuori`): Meta's conversions are
-  never told of a demo person, a demo ad's preview is never asked of Meta, and a demo
+  never told of a demo person, a demo ad's preview is never asked of Meta, a demo
   post is marked published at its time, never handed to a network - as a demo SMS
-  is kept as sent;
+  is kept as sent - and a demo invoice never reaches Fatture in Cloud;
 - the public booking page offers the demo's services only to somebody signed in,
   who is trying the page out: never to a visitor;
 - a message or a call that comes in from a number a demo person has too is never

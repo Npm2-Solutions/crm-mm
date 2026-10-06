@@ -21,6 +21,8 @@ SETTINGS_PAGE = {
 	"google": "Google Calendar",
 	# somebody's own mailbox, signing in with Google or Microsoft (doc 51)
 	"posta": "Your email",
+	# a centre that invoices with Fatture in Cloud
+	"fic": "Fatture in Cloud",
 }
 
 

@@ -247,6 +247,8 @@ def _stato(stato: str | None) -> str:
 		return ""
 	if stato == "prova":
 		return _("Test: checked, not sent")
+	if stato == "fatture_in_cloud":
+		return _("Reported by Fatture in Cloud")
 	parole = stato.replace("_", " ")
 	return parole[:1].upper() + parole[1:]
 
@@ -372,8 +374,13 @@ def issue(data: str | dict, invoice: str | None = None) -> dict:
 		frappe.throw(_("This invoice has already been issued"))
 	if not invoice:
 		doc.insert()
+	# issued at the desk to a person: paid there, on the day the desk wrote. Said
+	# before the issue, for an invoice made in Fatture in Cloud to be made paid
+	doc.flags.pagata_alla_cassa = (
+		doc.recipient_type == "persona_fisica"
+		and (doc.document_type or "TD01") not in incassi.NOTE_DI_CREDITO
+	)
 	doc.submit()
-	# issued at the desk to a person: paid there, on the day the desk wrote
 	incassi.alla_cassa(doc)
 	doc.reload()
 	return _vista(doc)

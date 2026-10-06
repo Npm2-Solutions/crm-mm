@@ -27,6 +27,7 @@ from crm.invoicing import anagrafica, automatico, documento, estensioni, pdf, pr
 from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
+from crm.invoicing.fic import emissione as fic
 
 
 class CRMInvoice(Document):
@@ -70,6 +71,10 @@ class CRMInvoice(Document):
 			)
 		# a company in test issues test invoices, numbered on a series of their own
 		prova.segna(self, preparato["azienda"])
+		# a company that invoices with Fatture in Cloud: the invoice is born there,
+		# with the number it takes there
+		if fic.tocca_a_fic(self):
+			fic.emetti(self, preparato)
 		documento.numera(self)
 		if self.privacy_opposition and not self.opposition_recorded_on:
 			self.opposition_recorded_on = getdate()
@@ -83,7 +88,8 @@ class CRMInvoice(Document):
 			stato=self.channel,
 			payload={"total": self.grand_total, "channel": self.channel},
 		)
-		if self.channel == Canale.SDI:
+		# made in Fatture in Cloud, its e-invoice is Fatture in Cloud's
+		if self.channel == Canale.SDI and not self.fic_document_id:
 			self.genera_xml(preparato)
 		if self.channel == Canale.PDF_TS:
 			self.verifica_tracciato(preparato)
@@ -115,6 +121,9 @@ class CRMInvoice(Document):
 					"cancelled: report a variation or a cancellation for it first."
 				)
 			)
+		# made in Fatture in Cloud: it goes from there too, or it is not cancelled
+		if self.fic_document_id:
+			fic.annulla(self)
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("CRM Invoice Log",)
