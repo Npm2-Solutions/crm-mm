@@ -32,9 +32,10 @@
           @click.stop="togglePopover"
         >
           <!-- with nobody assigned the box was an empty grey rectangle that
-               looked broken; it says what it is for -->
+               looked broken; it says what it is for: a colleague, never one
+               of the «people», who are the centre's clients -->
           <span v-if="!assignees.length" class="px-1 text-base text-ink-gray-5">
-            {{ __('Search people…') }}
+            {{ __('Search for a colleague…') }}
           </span>
           <Tooltip
             v-for="assignee in assignees"
