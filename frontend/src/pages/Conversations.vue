@@ -97,7 +97,7 @@
         v-else-if="!leggibile"
         class="flex flex-1 items-center justify-center"
       >
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
+        <LoaderMark />
       </div>
       <template v-else>
         <ConversationHeader
@@ -162,6 +162,7 @@
 </template>
 
 <script setup>
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import ConversationAside from '@/components/Conversations/ConversationAside.vue'
 import ConversationHeader from '@/components/Conversations/ConversationHeader.vue'
@@ -183,7 +184,6 @@ import {
   Breadcrumbs,
   Button,
   Dialog,
-  LoadingIndicator,
   createResource,
   dayjsLocal,
   debounce,

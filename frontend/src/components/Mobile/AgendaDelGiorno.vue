@@ -182,8 +182,8 @@
         </button>
       </template>
 
-      <div v-if="caricando && !righe.length" class="flex justify-center py-8">
-        <LoadingIndicator class="size-5" />
+      <div v-if="caricando && !righe.length" class="flex justify-center py-10">
+        <LoaderMark />
       </div>
       <EmptyState
         v-else-if="!righe.length"
@@ -200,6 +200,7 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
@@ -213,7 +214,7 @@ import {
   settimanaDi,
   spostaGiorno,
 } from '@/utils/sulTelefono'
-import { Button, LoadingIndicator } from 'frappe-ui'
+import { Button } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref } from 'vue'
 
 const props = defineProps({

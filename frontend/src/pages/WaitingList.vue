@@ -62,11 +62,8 @@
         </StatTile>
       </div>
 
-      <div
-        v-if="list.loading && !list.data"
-        class="flex justify-center py-10 text-ink-gray-5"
-      >
-        <LoadingIndicator class="size-4" />
+      <div v-if="list.loading && !list.data" class="flex justify-center py-10">
+        <LoaderMark />
       </div>
       <!-- the design system's empty list, as every other one -->
       <EmptyState
@@ -161,10 +158,10 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
-import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'

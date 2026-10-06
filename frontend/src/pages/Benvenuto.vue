@@ -37,9 +37,9 @@
 
       <div
         v-if="!dati.data && !dati.error"
-        class="flex flex-1 items-start justify-center py-10 text-ink-gray-5"
+        class="flex flex-1 items-start justify-center py-10"
       >
-        <LoadingIndicator class="size-5" />
+        <LoaderMark />
       </div>
       <ErrorMessage
         v-else-if="dati.error"
@@ -210,6 +210,7 @@
 </template>
 
 <script setup>
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import { BENVENUTO_DOPO } from '@/router'
 import { fusiOrari } from '@/utils/fusiOrari'

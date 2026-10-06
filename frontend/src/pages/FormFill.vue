@@ -46,7 +46,7 @@
        its three rows covered the signature -->
   <div class="flex-1 overflow-y-auto scroll-pb-24 max-md:scroll-pb-44">
     <div v-if="!data" class="flex justify-center py-16">
-      <LoadingIndicator class="w-5" />
+      <LoaderMark />
     </div>
     <div
       v-else
@@ -324,6 +324,7 @@
 </template>
 
 <script setup>
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Link from '@/components/Controls/Link.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
@@ -338,7 +339,6 @@ import {
   Breadcrumbs,
   Button,
   Dropdown,
-  LoadingIndicator,
   call,
   toast,
   usePageMeta,

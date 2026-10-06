@@ -264,7 +264,7 @@
             </div>
 
             <div v-if="context.loading" class="flex justify-center py-10">
-              <LoadingIndicator class="size-5" />
+              <LoaderMark />
             </div>
             <template v-else>
               <DialerContactPanel
@@ -293,6 +293,7 @@
 </template>
 
 <script setup>
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import DialerContactPanel from '@/components/Dialer/DialerContactPanel.vue'
@@ -301,13 +302,7 @@ import QuickAppointmentDialog from '@/components/Dialer/QuickAppointmentDialog.v
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { answeringEnabled, callEnabled } from '@/composables/telephony'
-import {
-  createResource,
-  Breadcrumbs,
-  FormControl,
-  LoadingIndicator,
-  toast,
-} from 'frappe-ui'
+import { createResource, Breadcrumbs, FormControl, toast } from 'frappe-ui'
 import { ref, reactive, computed, watch } from 'vue'
 
 const { makeCall } = globalStore()
