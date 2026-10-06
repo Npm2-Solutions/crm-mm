@@ -106,7 +106,9 @@ verificare»).
   (pollice in su «Ha confermato», calendario barrato «Non può venire», calendario
   con l'orologio «Vorrebbe spostarlo», campanella barrata «Promemoria non
   arrivato»); nel pannello, sotto i recapiti della persona, «Promemoria inviato
-  su WhatsApp · Ha confermato».
+  su WhatsApp · Ha confermato». Sul telefono la lista del giorno lo dice accanto
+  al nome, e l'Accoglienza accanto a ognuno di chi arriva, anche in una lezione:
+  la reception vede chi ha confermato e chi chiamare.
 - **La conferma della persona non cambia lo stato** dell'appuntamento: «Confermato»
   è il sì del centro a una richiesta online. È un segno del posto, per persona.
 - **Impostazioni > Agenda > Agenda e promemoria > Promemoria degli appuntamenti**
