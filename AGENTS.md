@@ -345,13 +345,30 @@ details, its Sistema TS credentials, and the tick that it joined the Agenzia's f
 preservation. Numbering (series never empty, the format picked among examples) and
 the Sistema TS's way and certificate sit on permlevel 1 (the agency's, System
 Manager). What is nobody's choice - the SdI through Itala on the agency's account,
-both directions, paid in the plan's credits; the Agenzia's preservation; a paper
+both directions, paid in the plan's credits (unless the centre invoices with Fatture
+in Cloud, doc 58); the Agenzia's preservation; a paper
 original for a healthcare invoice to a person - the company's controller forces
 (`SEMPRE`) and the DocType hides. `crm.api.doc.get_fields` never draws a field the
 user cannot read, and a settings screen (`buildTabs`) draws no hidden field nor a
 section or tab left empty.
 Anything with a lasting effect (a client, a patient, the area, a report to the
 Sistema TS) leaves a test invoice out (`test_document`); going live takes them away.
+
+### Fatture in Cloud, for a centre that already invoices there (docs/progetto-ghl/58)
+| File | Role |
+|---|---|
+| `crm/invoicing/fic/regole.py` | Pure: a DottorCloud invoice as Fatture in Cloud's document (`documento()`: each line with its rate, the fund or INPS recharge, the withholding, the stamp duty - on an e-invoice the issuer's and a line when recharged, on paper the client's -, the payment on its method's account, a credit note's reference, the Sistema TS's fields), which of its rates and accounts stands for ours (`chiave_iva`, `scegli_tipo`, `conto_suggerito`), the totals compared (`totali_diversi`: VAT, withholding, amount due), `ei_status` in DottorCloud's states — tested with plain `unittest` |
+| `crm/invoicing/fic/client.py` | The calls (`chiama`, `chiedi_token`) and Fatture in Cloud's errors in words (`ErroreFiC`, `incerto` when the answer was lost) |
+| `crm/invoicing/fic/collegamento.py` + `CRM Fatture in Cloud`, `Settings/Invoicing/FattureInCloud.vue`, `utils/fattureInCloud.js` | The agency's app (`fic_client_id`/`fic_client_secret` in `common_site_config.json`, its return address on the hub, `meta_hub_url`) connected by the centre's manager: the signed state carries a nonce the site turns back into its company, for the same session only; the company there with the issuer's VAT number, its rates, accounts and numerations read (`leggi_info`) and chosen by themselves where one fits; the tokens (password fields, the System Manager's) renewed every hour near their end and once on a 401, under a row lock; the switch on only when nothing is missing (`da_fare`), a lost access a blocking row of `prova.mancanze` — the page's states tested |
+| `crm/invoicing/fic/emissione.py` | With the switch on, a real invoice is born there at issue (`before_submit`, before the number): its totals asked first (`/issued_documents/totals`: to the cent, or nothing made), then created, taking Fatture in Cloud's number (`fic_document_id`); a rollback deletes it there (`after_rollback`, the access read before), a lost answer is found again by the marker in its subject; to the SdI from there (`xml_verify`, send, the XML kept), its states every ten minutes (`riconcilia`), a collection marked there too, cancelling deletes it; the Sistema TS sent by DottorCloud or by Fatture in Cloud (`ts_by`: one expense type per invoice) |
+
+With Fatture in Cloud on, the number, the SdI and its keeping are Fatture in Cloud's,
+paid in the centre's own subscription: Itala is not used for that company and the
+plan's SdI credits leave its invoices out. A test invoice and the demo's never reach
+it (`tocca_a_fic`, `guardie.mai_fuori`), and an invoice reaches it only whole, with
+Fatture in Cloud's totals equal to ours. Its ids are numbers, the ordinary rate's
+is 0: never read one as «nothing chosen». The tokens travel in variables named
+`*_token` and are never logged.
 
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
