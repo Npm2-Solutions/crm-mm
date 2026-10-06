@@ -25,6 +25,8 @@ const CAMPI_DELLE_OPZIONI = new Set([
 /** The settings page where a missing row is filled, or '' when there is none. */
 export function paginaDellaMancanza(voce) {
   if (!voce) return ''
+  // a row that names its page (Fatture in Cloud's) is filled there
+  if (voce.page) return voce.page
   const doctype = voce.link?.doctype
   if (doctype) return PAGINA_DEI_RECORD[doctype] || ''
   if (!voce.field) return ''

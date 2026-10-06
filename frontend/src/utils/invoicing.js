@@ -23,7 +23,10 @@ export function invoiceStatusTheme(status) {
   if (['accolto', 'consegnata', 'scaricato'].includes(status)) return 'green'
   if (['scartato', 'scartata', 'errore', 'mancata_consegna'].includes(status))
     return 'red'
-  if (['inviato', 'pronto', 'pronto_export'].includes(status)) return 'blue'
+  if (
+    ['inviato', 'pronto', 'pronto_export', 'fatture_in_cloud'].includes(status)
+  )
+    return 'blue'
   return 'orange'
 }
 
@@ -32,6 +35,8 @@ export function invoiceStatusTheme(status) {
 const PAROLE = {
   pronto_export: 'Nel file da caricare',
   esito_pa: 'Esito PA',
+  // reported to the Sistema TS by Fatture in Cloud, not from here
+  fatture_in_cloud: 'Lo invia Fatture in Cloud',
 }
 
 /**
