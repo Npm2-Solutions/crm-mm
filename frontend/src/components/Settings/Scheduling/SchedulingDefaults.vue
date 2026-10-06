@@ -87,7 +87,10 @@
           {{
             __(
               "{brand} shows every time on the centre's clock ({0}): with {1} here, the working hours appear moved by the difference. Keep the centre's time zone, chosen in The centre › General › Language & time.",
-              [settings.data.site_timezone, form.timezone],
+              [
+                cittaDelFuso(settings.data.site_timezone, appLocale()),
+                cittaDelFuso(form.timezone, appLocale()),
+              ],
             )
           }}
         </p>
@@ -131,7 +134,7 @@
 import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
-import { ITALIA, fusiOrari } from '@/utils/fusiOrari'
+import { ITALIA, cittaDelFuso, fusiOrari } from '@/utils/fusiOrari'
 import { appLocale } from '@/utils/locale'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
@@ -249,7 +252,7 @@ const timezoneOptions = computed(() => {
   return [
     {
       label: __('The centre’s time zone ({0})', [
-        settings.data?.site_timezone || '—',
+        cittaDelFuso(settings.data?.site_timezone, appLocale()) || '—',
       ]),
       value: '',
     },
