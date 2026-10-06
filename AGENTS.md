@@ -190,18 +190,23 @@ is never a menu entry.
 ### Notifications (docs/progetto-ghl/43)
 | File | Role |
 |---|---|
-| `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents, a message on the answering service); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…") |
+| `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents, a message on the answering service); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…"). A person's message (WhatsApp, SMS, email) reaches `chi_segue()`: whoever the person or deal is assigned to, else its owner, else the desk - everyone of the centre who reads conversations and may open the person, never the agency -; one's own mailbox tells only them |
 | `crm/notifiche/regole.py` | The sentences (English, in the catalogue), a sentence with its names in bold, the words of the ones written before and the sentence they said (`frase_di_prima`, which the patch `the_old_notifications_name_the_person` gave them), the kind — pure, tested with plain `unittest` (every sentence in `it.po` with the same places) |
-| `crm/notifiche/api.py` | The panel's page with the unread count, where each row opens (decided here), the message's first words where the reader may read them; read, all read, unread again in one query and one signal |
+| `crm/notifiche/api.py` | The panel's page with the unread count, where each row opens (decided here: the person or deal on the message, a task with nobody behind it in the tasks `?open=`, a message left by an unknown number in the calls `?open=`, a received invoice `?ricevuta=`, a page of the settings), the message's first words where the reader may read them; read, all read, unread again in one query and one signal |
 | `frontend/src/components/Notifications/`, `Notifications.vue`, `pages/MobileNotification.vue`, `stores/notifications.js`, `composables/notifiche.js` + `utils/notifiche.js` | The panel and the phone's page on one list (days, the kind's mark, the dot), listened to once per layout, the brand's toast when one arrives; the look and the days tested |
-| `crm/notifiche/spinta.py` + `spinta_regole.py`, `spinta_sw.js`, `CRM Push Subscription` | On the phone and the computer (Web Push): each device turned on in Settings > Your account > Notifications (an iPhone only as the app on the home screen) keeps how to reach it, its person's own; every notification `avvisa()` writes goes to it in a job, encrypted for that browser (RFC 8291) and signed with the site's key (VAPID, in `FCRM Settings`), only to a browser maker's push service (`SERVIZI`), never about the demo; the kinds by group as the email's, all on; delivered, no email as well; a device gone is forgotten. The service worker over `/crm` only shows and opens, served from `/api/method` with `Service-Worker-Allowed` — `spinta_regole` tested on RFC 8291's own example |
+| `crm/notifiche/spinta.py` + `spinta_regole.py`, `spinta_sw.js`, `CRM Push Subscription` | On the phone and the computer (Web Push): each device turned on in Settings > Your account > Notifications (an iPhone only as the app on the home screen) keeps how to reach it, its person's own; every notification `avvisa()` writes goes to it in a job, encrypted for that browser (RFC 8291) and signed with the site's key (VAPID, in `FCRM Settings`), only to a browser maker's push service (`SERVIZI`), never about the demo; the kinds by group as the email's, all on; delivered, no email as well; a device gone is forgotten. The service worker over `/crm` only shows and opens, served from `/api/method` with `Service-Worker-Allowed`: touched, DottorCloud comes forward and is told where to go (`main.js` answers on the message's port); a page that does not answer (asleep, an old version) is loaded there, none open a new window — `spinta_regole` tested on RFC 8291's own example |
 | `frontend/src/utils/spinta.js`, `composables/spinta.js`, `Settings/NotificationsSettings.vue`, `Mobile/NotificheSulTelefono.vue` | What this device can do in words (`statoDelDispositivo`), turning on and off, the test, the devices, the «Devices» column; synced once the app is idle where permission was given; a touched notification opens its page (`?notifica=` marks it read in the router) — the pure part tested |
 
 A module tells somebody something with `avvisa()`: a sentence of `regole` (a new
 one goes in its `FRASI` and in `it.po`) and its names, never words glued
 together; who it is from (nobody when it is DottorCloud); the person or deal it
 opens and what it is about. The panel works out where it opens: a kind about a
-settings page opens it (`api.IMPOSTAZIONI`, `apriImpostazioni`).
+settings page opens it (`api.IMPOSTAZIONI`, `apriImpostazioni`; by address
+`?settings=&step=`, which the router opens over the page). The panel's row, the
+toast (from anywhere on it: a swipe only dismisses it), the phone's notification
+and the email open the same place; only a notification with nowhere to go opens
+the notifications. A page a notification opens on one thing takes it from its
+query (`?open=`) and leaves the address without it (`history.replaceState`).
 
 ### Emails (docs/progetto-ghl/44)
 | File | Role |

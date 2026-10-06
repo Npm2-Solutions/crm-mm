@@ -96,6 +96,33 @@ senza nessuno in mezzo che le legga.
   worker sta sulle pagine di DottorCloud (`/crm`), mostra la notifica e apre la
   pagina: non tiene niente in cache.
 
+## Chi la riceve, quando, e dove porta un tocco (06/10/2026)
+
+- **Un messaggio arriva sempre a qualcuno.** Un WhatsApp, un SMS o un'email di una
+  persona lo legge chi la segue (a chi è assegnata), altrimenti chi ce l'ha (il
+  proprietario della persona o della trattativa), altrimenti la segreteria: chi nel
+  centro legge le conversazioni e può aprire quella persona, mai l'agenzia
+  (`avvisi.chi_segue()`). Prima lo leggeva solo chi era assegnato: un numero nuovo
+  che scriveva su WhatsApp, o una persona di nessuno, non lo diceva a nessuno.
+  Un'email arrivata nella casella personale di qualcuno lo dice solo a lui.
+- **Quando**: subito nel pannello e, se DottorCloud è aperto, nell'avviso a
+  comparsa; sul telefono e sul computer solo dove le notifiche sono attivate e il
+  tipo è acceso; per email dopo cinque minuti se è ancora da leggere e la si vuole
+  (i messaggi, di solito, no). Mai fuori dal pannello per i dati di prova. Chi
+  scrive non avvisa se stesso; un utente disattivato non le riceve.
+- **Un tocco apre ciò di cui parla**, uguale dal pannello, dall'avviso, dalla
+  notifica del telefono e dall'email: la persona sul messaggio; le cose da fare
+  finché sono tue, e una cosa da fare senza persona apre l'elenco su di lei; un
+  messaggio in segreteria di un numero che nessuno conosce apre il registro delle
+  chiamate su quella chiamata; un avviso di Twilio apre Impostazioni > Telefono; una
+  fattura ricevuta apre le Fatture su di lei; l'agenda apre l'Accoglienza. Solo una
+  notifica che non ha un posto apre le notifiche.
+- **L'avviso a comparsa si apre da tutto l'avviso**, non solo da «Apri»; una
+  passata col dito lo chiude e non apre niente.
+- **Sul telefono**: la notifica toccata porta DottorCloud in primo piano e gli dice
+  dove andare, senza ricaricare; se la pagina non risponde entro due secondi e
+  mezzo (addormentata, o di una versione di prima) viene caricata lì.
+
 ## Come è fatta
 
 - `crm/notifiche/avvisi.py`: `avvisa()`, la porta da cui entra ogni notifica. Ci
