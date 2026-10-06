@@ -71,7 +71,11 @@
                       :key="i"
                       >{{ i ? ' · ' : ''
                       }}<span
-                        :class="pezzo.intero ? 'whitespace-nowrap' : ''"
+                        :class="
+                          pezzo.intero
+                            ? 'inline-block max-w-full truncate align-top'
+                            : ''
+                        "
                         >{{ pezzo.testo }}</span
                       ></template
                     >
@@ -80,12 +84,13 @@
               </button>
             </template>
             <template v-else>
-              <!-- on a phone the name takes the room the face had -->
+              <!-- on a phone, upright or sideways, the name takes the room
+                   the face had (espresso-componenti.css) -->
               <UserAvatar
                 v-if="colonna.tipo === 'persona'"
                 :user="colonna.utente"
                 size="sm"
-                class="shrink-0 max-md:hidden"
+                class="dc-agenda__volto shrink-0"
               />
               <span
                 v-else
@@ -107,9 +112,14 @@
                     v-for="(pezzo, i) in pezziDi(colonna.sottotitolo)"
                     :key="i"
                     >{{ i ? ' · ' : ''
-                    }}<span :class="pezzo.intero ? 'whitespace-nowrap' : ''">{{
-                      pezzo.testo
-                    }}</span></template
+                    }}<span
+                      :class="
+                        pezzo.intero
+                          ? 'inline-block max-w-full truncate align-top'
+                          : ''
+                      "
+                      >{{ pezzo.testo }}</span
+                    ></template
                   >
                 </span>
               </span>
@@ -452,7 +462,8 @@ function inCorso(colonna, blocco) {
 }
 
 // a column's line under its name in pieces: «07:30–09:30 · 17:30–21:00»
-// wraps between its windows, never inside one («07:30–09:30 · 1…»)
+// wraps between its windows, never inside one («07:30–09:30 · 1…»); a window
+// wider than its column ends in an ellipsis, not cut through a figure
 function pezziDi(testo) {
   return String(testo || '')
     .split(' · ')

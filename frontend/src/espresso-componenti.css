@@ -630,6 +630,23 @@
   .dc-agenda {
     --col-min: 9rem;
   }
+  /* a column's face: on a phone the name takes its room */
+  .dc-agenda__volto {
+    display: none;
+  }
+  /* «Now · 17:00–18:00» cut to «Now · 17:0…»: the cross and the ring say
+     now, the hours stay whole */
+  .dc-evento__con-adesso {
+    display: none;
+  }
+}
+.dc-evento__senza-adesso {
+  display: none;
+}
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  .dc-evento__senza-adesso {
+    display: inline;
+  }
 }
 
 /* «All day» beside the hours: on a phone the column is narrower than the

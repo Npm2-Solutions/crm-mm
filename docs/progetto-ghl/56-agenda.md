@@ -37,8 +37,10 @@ Il design system diceva già come va un appuntamento (AgendaEvent, nella
   telefono): quando non ci stanno, scorrono di lato sotto le loro intestazioni,
   mentre le ore restano ferme a sinistra. In testa alla colonna il nome intero,
   l'orario di quel giorno («08:30–13:00 · 14:00–19:00», su due righe quando non
-  ci sta, mai tagliato a metà di una fascia), il motivo di un'eccezione
-  («Ferie») o «Non lavora», e quanti appuntamenti ha.
+  ci sta, mai tagliato a metà di una fascia; una fascia più larga della colonna
+  finisce con i puntini), il motivo di un'eccezione («Ferie») o «Non lavora», e
+  quanti appuntamenti ha. Sul telefono, anche di traverso, il nome prende il
+  posto della faccia.
 - **Settimana**: i giorni di **un** professionista (o di un ambulatorio), scelto
   con lo stesso pulsante «di chi» (da un giorno con uno solo spuntato, la
   settimana è sua; altrimenti la propria, se si è un professionista). Da lunedì a
@@ -77,9 +79,10 @@ apre quel giorno nella vista Giorno.
   d'attesa (qualcuno dell'appuntamento ha fatto il check-in), completato, non
   venuto, prima visita, prenotato online o su una piattaforma. La prima visita è
   anche il blocco pieno del marchio, quello in corso l'anello con la croce
-  («Adesso · 15:30–16:15»; nel tema scuro, sul blocco menta, barretta, croce e
-  anello interno prendono l'inchiostro scuro delle sue parole), un annullato
-  grigio e barrato.
+  («Adesso · 15:30–16:15»; sul telefono, dove la colonna è stretta, croce e
+  anello bastano e l'orario resta intero; nel tema scuro, sul blocco menta,
+  barretta, croce e anello interno prendono l'inchiostro scuro delle sue
+  parole), un annullato grigio e barrato.
 - **Gli annullati** non occupano il posto che hanno liberato: non si disegnano,
   tranne con «Mostra gli appuntamenti annullati» o quando il filtro di stato li
   chiede. L'elenco del telefono li mostra sempre, con il loro stato.
