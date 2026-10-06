@@ -128,3 +128,40 @@ class IlNomeDelDispositivo(unittest.TestCase):
 		self.assertEqual(S.dispositivo(ua, installata=True), "iPhone · app")
 		self.assertEqual(S.dispositivo("", installata=True), "app")
 		self.assertEqual(S.dispositivo(""), "?")
+
+
+class ChiFirma(unittest.TestCase):
+	"""The signature's `sub`: the site as the world reaches it, as https. A job's
+	own address is a local name with a port, which Apple refuses."""
+
+	def test_l_indirizzo_pubblico_prima(self):
+		self.assertEqual(
+			S.contatto(None, "", "https://crm.centro.it/crm/notifications", "http://site:8000"),
+			"https://crm.centro.it",
+		)
+		self.assertEqual(S.contatto("http://localhost:8000", "crm.centro.it"), "https://crm.centro.it")
+		self.assertEqual(
+			S.contatto("http://10.0.0.5:8000", "http://crm.centro.it:8000"), "https://crm.centro.it"
+		)
+
+	def test_senza_un_pubblico_il_primo_senza_porta(self):
+		self.assertEqual(S.contatto("http://dottorcloud.local:8000"), "https://dottorcloud.local")
+		self.assertEqual(S.contatto(), "")
+		self.assertEqual(S.contatto(None, "  "), "")
+
+	def test_pubblico(self):
+		for indirizzo in ("https://crm.centro.it", "crm.centro.it", "http://app.dottorcloud.com:443/x"):
+			with self.subTest(indirizzo=indirizzo):
+				self.assertTrue(S.pubblico(indirizzo))
+		for indirizzo in (
+			"http://dottorcloud.local",
+			"http://localhost:8000",
+			"http://192.168.1.10",
+			"https://test_site",
+			"http://[::1]:8000",
+			"https://frontend.internal",
+			"",
+			None,
+		):
+			with self.subTest(indirizzo=indirizzo):
+				self.assertFalse(S.pubblico(indirizzo))

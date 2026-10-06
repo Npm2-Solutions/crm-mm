@@ -20,6 +20,7 @@ import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from crm.notifiche import regole as R
 from crm.notifiche import spinta
 from crm.notifiche import spinta_regole as S
 from crm.notifiche.tests.test_api import ANNA, BRUNO, NOTIFICA
@@ -31,20 +32,22 @@ IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605
 
 
 class Risposta:
-	def __init__(self, stato):
+	def __init__(self, stato, testo=""):
 		self.status_code = stato
+		self.text = testo
 
 
 class ServizioFinto:
 	"""A push service: what it was sent, and what it answers."""
 
-	def __init__(self, stato=201):
+	def __init__(self, stato=201, testo=""):
 		self.stato = stato
+		self.testo = testo
 		self.mandati = []
 
 	def post(self, indirizzo, data=None, headers=None, timeout=None):
 		self.mandati.append({"url": indirizzo, "corpo": data, "intestazioni": headers})
-		return Risposta(self.stato)
+		return Risposta(self.stato, self.testo)
 
 	def close(self):
 		pass
@@ -154,7 +157,7 @@ class LaNotificaArriva(SpintaCase):
 		)
 		self.assertEqual(
 			jwt.decode(token, pem, algorithms=["ES256"], audience="https://web.push.apple.com")["sub"],
-			frappe.utils.get_url(),
+			spinta.mittente(),
 		)
 		# only Bruno's browser opens it: the sentence, the first words, Laura's page
 		dati = json.loads(apri(mandato["corpo"], self.privata_browser, self.auth))
@@ -199,6 +202,79 @@ class LaNotificaArriva(SpintaCase):
 		self.assertFalse(self.accodati.called)
 
 
+class DaUnJob(SpintaCase):
+	"""What a job sends: no request, and the site's own address a local name with
+	a port. Apple refused the signature (403 BadJwtToken): an iPhone received the
+	test sent from the page and never a person's message."""
+
+	PAGINA = "https://crm.centro-aurora.it"
+	NEL_JOB = "http://dottorcloud.local:8000"
+
+	def setUp(self):
+		super().setUp()
+		frappe.defaults.clear_default(spinta.CONTATTO)
+		self.addCleanup(frappe.defaults.clear_default, spinta.CONTATTO)
+
+	def firmato_da(self, mandato):
+		token = mandato["intestazioni"]["Authorization"][len("vapid t=") :].split(", k=")[0]
+		return jwt.decode(token, options={"verify_signature": False})["sub"]
+
+	def test_firma_con_l_indirizzo_della_pagina(self):
+		# the phone turned on from the page: its address is kept
+		with patch.object(spinta, "get_url", return_value=f"{self.PAGINA}/crm/notifications"):
+			self.iscrive()
+		self.assertEqual(frappe.db.get_default(spinta.CONTATTO), self.PAGINA)
+		frappe.set_user("Administrator")
+		nome = self.menziona()
+		servizio = ServizioFinto()
+		with patch.object(spinta, "get_url", return_value=self.NEL_JOB):
+			self.assertEqual(spinta.manda(nome, servizio), 1)
+		self.assertEqual(self.firmato_da(servizio.mandati[0]), self.PAGINA)
+
+	def test_senza_la_pagina_quello_della_richiesta_che_l_ha_scritta(self):
+		# Meta calling the webhook knows the site's name: the job carries it
+		self.iscrive()
+		frappe.set_user("Administrator")
+		nome = self.menziona()
+		servizio = ServizioFinto()
+		with patch.object(spinta, "get_url", return_value=self.NEL_JOB):
+			spinta.manda(nome, servizio, contatto=f"{self.PAGINA}/api/method/webhook")
+		self.assertEqual(self.firmato_da(servizio.mandati[0]), self.PAGINA)
+
+	def test_mai_http_ne_una_porta(self):
+		self.iscrive()
+		frappe.set_user("Administrator")
+		nome = self.menziona()
+		servizio = ServizioFinto()
+		with (
+			patch.object(spinta, "get_url", return_value=self.NEL_JOB),
+			patch.dict(frappe.local.conf, {"host_name": ""}),
+		):
+			spinta.manda(nome, servizio)
+		self.assertEqual(self.firmato_da(servizio.mandati[0]), "https://dottorcloud.local")
+
+	def test_un_messaggio_arriva_subito(self):
+		from crm.notifiche.avvisi import avvisa
+
+		self.iscrive()
+		frappe.set_user("Administrator")
+		servizio = ServizioFinto()
+		spinta.manda(self.menziona(), servizio)
+		messaggio = avvisa(
+			BRUNO,
+			"SMS",
+			R.SMS,
+			[self.laura.lead_name],
+			riguarda=("CRM Lead", self.laura.name),
+			oggetto=("CRM SMS Message", frappe.generate_hash(length=10)),
+			messaggio="Arrivo con dieci minuti di ritardo",
+		)
+		spinta.manda(messaggio, servizio)
+		self.assertEqual(
+			[m["intestazioni"]["Urgency"] for m in servizio.mandati], [spinta.QUANDO_PUOI, spinta.SUBITO]
+		)
+
+
 class IDispositiviPersi(SpintaCase):
 	def test_quello_che_il_servizio_non_conosce_piu(self):
 		self.iscrive()
@@ -213,13 +289,19 @@ class IDispositiviPersi(SpintaCase):
 		self.iscrive()
 		frappe.set_user("Administrator")
 		nome = self.menziona()
+		rifiuti = {"method": ("like", "Web Push refused: 500%")}
+		prima = frappe.db.count("Error Log", rifiuti)
 		for _volta in range(spinta.TENTATIVI - 1):
-			spinta.manda(nome, ServizioFinto(500))
+			spinta.manda(nome, ServizioFinto(500, '{"reason":"InternalServerError"}'))
 		self.assertEqual(
 			frappe.db.get_value(spinta.ABBONAMENTO, {"user": BRUNO}, "failures"), spinta.TENTATIVI - 1
 		)
 		spinta.manda(nome, ServizioFinto(500))
 		self.assertFalse(frappe.db.exists(spinta.ABBONAMENTO, {"user": BRUNO}))
+		# the push service's own reason, once for the streak
+		self.assertEqual(frappe.db.count("Error Log", rifiuti) - prima, 1)
+		ultimo = frappe.get_last_doc("Error Log", filters=rifiuti)
+		self.assertIn("InternalServerError", ultimo.error)
 
 
 class LaProvaEIlServiceWorker(SpintaCase):
