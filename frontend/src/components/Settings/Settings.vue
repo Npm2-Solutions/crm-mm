@@ -578,14 +578,11 @@ function openSettingsPage(id) {
   showingDetail.value = true
 }
 
-// deep link: /crm?settings=<page> opens the modal on that page (used by OAuth
-// callbacks, e.g. the Meta Lead Ads connect flow)
-const settingsParam = new URLSearchParams(window.location.search).get(
-  'settings',
-)
-if (settingsParam) {
-  showSettings.value = true
-  activeSettingsPage.value = settingsParam
-  setActiveTab(settingsParam)
+// deep link: /crm?settings=<page> opens the modal on that page (an OAuth
+// callback, an email's preferences, a notification touched): the router reads
+// it (router.js), maybe before the modal is drawn - then it opens as it is
+if (showSettings.value && activeSettingsPage.value) {
+  showingDetail.value = true
+  setActiveTab(activeSettingsPage.value)
 }
 </script>

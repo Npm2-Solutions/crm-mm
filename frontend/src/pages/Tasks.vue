@@ -250,8 +250,8 @@ import { formatDate, sanitizeHTML } from '@/utils'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { Tooltip, Avatar, Dropdown } from 'frappe-ui'
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Task')
@@ -259,6 +259,7 @@ const { getUser, solaLettura } = usersStore()
 const { capture } = useTelemetry()
 
 const router = useRouter()
+const route = useRoute()
 
 const tasksListView = ref(null)
 const elencoCose = ref(null)
@@ -290,7 +291,6 @@ const rows = computed(() => {
     return getKanbanRows(tasks.value.data.data, tasks.value.data.fields)
   }
 
-  openTaskFromURL()
   return parseRows(tasks.value?.data.data, tasks.value?.data.columns)
 })
 
@@ -449,14 +449,20 @@ function redirect(doctype, docname) {
   router.push({ name: name, params: params })
 }
 
-const openTaskFromURL = () => {
-  const searchParams = new URLSearchParams(window.location.search)
-  const taskName = searchParams.get('open')
-
-  if (taskName && rows.value?.length) {
-    showTask(parseInt(taskName))
-    searchParams.delete('open')
-    window.history.replaceState(null, '', window.location.pathname)
-  }
-}
+// `?open=<task>`: the task a notification names (one given to the reader with
+// no person behind it), open over the list, on the desk and on the phone. The
+// address goes on without it, past the router: App.vue keys this page on its
+// query, and would draw it again without the task
+onMounted(() => {
+  const open = route.query.open
+  if (!open) return
+  showTask(/^\d+$/.test(open) ? parseInt(open) : open)
+  const indirizzo = new URL(window.location.href)
+  indirizzo.searchParams.delete('open')
+  window.history.replaceState(
+    window.history.state,
+    '',
+    indirizzo.pathname + indirizzo.search + indirizzo.hash,
+  )
+})
 </script>

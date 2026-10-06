@@ -158,3 +158,23 @@ class DoveApre(PostaCase):
 		self.assertTrue(posta.indirizzo({"name": "Today"}).endswith("/crm/accoglienza"))
 		self.assertTrue(posta.indirizzo({"name": "Invoices"}).endswith("/crm/fatture"))
 		self.assertTrue(posta.indirizzo(None).endswith("/crm/notifications"))
+		# what the panel opens, with its question: the invoice received, the call left
+		self.assertTrue(
+			posta.indirizzo({"name": "Invoices", "query": {"ricevuta": "R-1"}}).endswith(
+				"/crm/fatture?ricevuta=R-1"
+			)
+		)
+		self.assertTrue(
+			posta.indirizzo({"name": "Call Logs", "query": {"open": "CL-1"}}).endswith(
+				"/crm/call-logs?open=CL-1"
+			)
+		)
+		self.assertTrue(
+			posta.indirizzo({"name": "Tasks", "query": {"open": "12"}}).endswith("/crm/tasks?open=12")
+		)
+		# a page of the settings, over the page the app starts on
+		self.assertTrue(
+			posta.indirizzo(None, {"page": "Telephony", "step": "twilio-settings"}).endswith(
+				"/crm?settings=Telephony&step=twilio-settings"
+			)
+		)

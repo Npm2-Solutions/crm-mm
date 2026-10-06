@@ -56,11 +56,14 @@ ascoltaLInstallazione()
 ricaricaSeManca()
 
 // a notification touched while DottorCloud is open goes to its page without
-// loading it again (crm/notifiche/spinta_sw.js)
+// loading it again, and says so at once: a page that does not answer is
+// loaded there by the worker (crm/notifiche/spinta_sw.js)
 navigator.serviceWorker?.addEventListener('message', (evento) => {
   if (evento.data?.tipo !== 'apri') return
   const percorso = percorsoDellApp(evento.data.url)
-  if (percorso) router.push(percorso)
+  if (!percorso) return
+  evento.ports?.[0]?.postMessage('andata')
+  router.push(percorso)
 })
 // where they were turned on, the server knows this browser is this person's:
 // once the app is idle, never before the first page (composables/spinta.js)

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 from contextlib import contextmanager
+from urllib.parse import urlencode
 
 import frappe
 from frappe import _
@@ -173,23 +174,34 @@ def _manda(utente: str, righe: list) -> None:
 		)
 
 
-def indirizzo(percorso: dict | None) -> str:
-	"""The address in DottorCloud a notification opens: the person or the deal on
-	what it names, the desk's day (the agenda's reception desk), the invoices; the
-	panel's page without one."""
-	if not percorso:
-		return get_url(PAGINA)
-	nome = percorso.get("name")
-	parametri = percorso.get("params") or {}
-	segno = percorso.get("hash") or ""
-	if nome == "Lead":
-		return get_url(f"/crm/persone/{parametri.get('leadId')}{segno}")
-	if nome == "Deal":
-		return get_url(f"/crm/deals/{parametri.get('dealId')}{segno}")
-	if nome == "Today":
-		return get_url("/crm/accoglienza")
-	if nome == "Invoices":
-		return get_url("/crm/fatture")
+#: The pages a notification opens, by the name the app gives them.
+PAGINE = {
+	"Lead": lambda parametri: f"/crm/persone/{parametri.get('leadId')}",
+	"Deal": lambda parametri: f"/crm/deals/{parametri.get('dealId')}",
+	"Today": lambda parametri: "/crm/accoglienza",
+	"Invoices": lambda parametri: "/crm/fatture",
+	"Tasks": lambda parametri: "/crm/tasks",
+	"Call Logs": lambda parametri: "/crm/call-logs",
+}
+
+
+def indirizzo(percorso: dict | None, impostazioni: dict | None = None) -> str:
+	"""The address in DottorCloud a notification opens, the panel's own: the person
+	or the deal on what it names, the desk's day, the invoices on the one received,
+	the tasks on the one given, the calls on the one left; a page of the settings (`?settings=`, which the app
+	opens over the page it starts on); the panel's page when there is nothing to
+	open."""
+	pagina = PAGINE.get((percorso or {}).get("name"))
+	if pagina:
+		dove = pagina(percorso.get("params") or {})
+		if percorso.get("query"):
+			dove += "?" + urlencode(percorso["query"])
+		return get_url(dove + (percorso.get("hash") or ""))
+	if impostazioni and impostazioni.get("page"):
+		parametri = {"settings": impostazioni["page"]}
+		if impostazioni.get("step"):
+			parametri["step"] = impostazioni["step"]
+		return get_url("/crm?" + urlencode(parametri))
 	return get_url(PAGINA)
 
 
@@ -203,7 +215,7 @@ def _una(riga: dict) -> tuple[str, str, str]:
 			'<p class="dc-citazione" style="border-left:3px solid #ebeeed;padding-left:12px;'
 			f'color:#4e5352 !important">{escape_html(riga["excerpt"])}</p>'
 		)
-	parti.append(pulsante(indirizzo(riga.get("route")), con_nome(_("Open in {brand}"))))
+	parti.append(pulsante(indirizzo(riga.get("route"), riga.get("settings")), con_nome(_("Open in {brand}"))))
 	return titolo, titolo, "".join(parti)
 
 
@@ -214,7 +226,7 @@ def _tante(righe: list) -> tuple[str, str, str]:
 	parti = []
 	for riga in righe[:AL_PIU]:
 		parti.append(
-			f'<p>{riga["text"]}<br><a href="{escape_html(indirizzo(riga.get("route")))}">{escape_html(_("Open it"))}</a></p>'
+			f'<p>{riga["text"]}<br><a href="{escape_html(indirizzo(riga.get("route"), riga.get("settings")))}">{escape_html(_("Open it"))}</a></p>'
 		)
 	if len(righe) > AL_PIU:
 		parti.append(
