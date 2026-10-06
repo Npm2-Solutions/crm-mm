@@ -251,7 +251,8 @@ function whenLine(entry) {
   ]
   if (entry.until)
     parts.push(__('until {0}', [formatDate(entry.until, 'D MMM')]))
-  parts.push(__('since {0}', [formatDate(entry.since, 'D MMM')]))
+  // «dal 5 ott» after «fino al 19 nov» read as a range backwards
+  parts.push(__('on the list since {0}', [formatDate(entry.since, 'D MMM')]))
   return parts.join(' · ')
 }
 

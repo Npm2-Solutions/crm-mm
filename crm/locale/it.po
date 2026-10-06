@@ -46220,3 +46220,6 @@ msgstr "Vuole spostarlo"
 
 msgid "The reminders of tomorrow's appointments, by email, and who confirmed from the booking page: their mark in the agenda."
 msgstr "I promemoria degli appuntamenti di domani, per email, e chi ha confermato dalla pagina di prenotazione: il loro segno in agenda."
+
+msgid "on the list since {0}"
+msgstr "in lista dal {0}"
