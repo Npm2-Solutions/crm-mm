@@ -494,6 +494,22 @@ describe('seguiLaTastiera', () => {
       expect(document.querySelector('[data-sosta-del-fuoco]')).toBeNull()
     })
 
+    it('hands the focus to the next field without Safari scrolling to it', () => {
+      const { win } = finestra({ agente: IPHONE })
+      const smetti = seguiLaTastiera(win)
+      const primo = document.createElement('input')
+      const secondo = document.createElement('input')
+      document.body.append(primo, secondo)
+      primo.focus()
+      spia.mockClear()
+      // the keyboard's arrow, or a tap: the focus leaves for the second
+      primo.dispatchEvent(new FocusEvent('blur', { relatedTarget: secondo }))
+      expect(spia).toHaveBeenCalledTimes(1)
+      expect(spia.mock.contexts[0]).toBe(secondo)
+      expect(spia).toHaveBeenLastCalledWith({ preventScroll: true })
+      smetti()
+    })
+
     it('keeps the focus inside the sheet a tapped field is in', () => {
       const { win } = finestra({ agente: IPHONE })
       const smetti = seguiLaTastiera(win)
