@@ -317,6 +317,7 @@ has_permission = {
 	"CRM Price List": "crm.permissions.documenti.has_permission",
 	"CRM Scheduling Settings": "crm.permissions.documenti.has_permission",
 	"CRM Waiting List Settings": "crm.permissions.documenti.has_permission",
+	"CRM Reminder Settings": "crm.permissions.documenti.has_permission",
 	"CRM Subscription Type": "crm.permissions.documenti.has_permission",
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
@@ -451,6 +452,8 @@ doc_events = {
 		"after_insert": [
 			"crm.automation.engine.on_whatsapp_received",
 			"crm.api.conversations.on_message",
+			# a reminder's button tapped: confirmed, cannot come, would like to move it
+			"crm.scheduling.promemoria.alla_risposta_whatsapp",
 		],
 	},
 	"CRM SMS Message": {
@@ -703,7 +706,11 @@ scheduler_events = {
 		# what is still unread in the panel after a few minutes, by email to who wants it
 		"*/5 * * * *": ["crm.notifiche.posta.manda_le_email"],
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
-		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
+		"*/15 * * * *": [
+			"crm.booking_platforms.sync.sync_all",
+			# the reminders of the appointments, the day before (docs/progetto-ghl/59)
+			"crm.scheduling.promemoria.ogni_quarto_d_ora",
+		],
 	},
 }
 

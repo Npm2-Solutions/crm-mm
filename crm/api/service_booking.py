@@ -881,12 +881,22 @@ def public_view(appointment, token: str) -> dict:
 		else flt(appointment.total_amount)
 	)
 	show_price = _flag(service, "show_price_online")
+	# «I'll be there», from the reminder that linked here (crm.scheduling.promemoria)
+	from crm.scheduling import promemoria
+
+	reminder = (
+		promemoria.stato_per_la_pagina(appointment, mine[0])
+		if active and mine
+		else {"can_confirm": False, "confirmed": False}
+	)
 	return {
 		"token": token,
 		"service": service.service_name,
 		"service_id": service.website_slug or service.name,
 		"status": status,
-		"pending_approval": status == "Scheduled",
+		# waits for the centre's yes: an online booking of a service it approves by hand;
+		# what the desk booked is booked
+		"pending_approval": status == "Scheduled" and appointment.get("source") == "Online",
 		"start": start.isoformat(),
 		"end": end.isoformat(),
 		"timezone": client_tz,
@@ -904,6 +914,7 @@ def public_view(appointment, token: str) -> dict:
 		"can_reschedule": not move_block,
 		"reschedule_block": limit_message(move_block) if move_block and move_block != "inactive" else "",
 		"calendar_links": _calendar_links(service.service_name, start, end, appointment.location),
+		**reminder,
 	}
 
 
@@ -929,6 +940,22 @@ def cancel(token: str, reason: str | None = None) -> dict:
 	send_client_email(appointment, token, "cancelled")
 	notify_staff(appointment, _("Online booking cancelled"))
 	return public_view(appointment, token)
+
+
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential, 20/h
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+@rate_limit(limit=20, seconds=60 * 60)
+def confirm(token: str) -> dict:
+	"""«I'll be there»: the answer to the reminder that linked here."""
+	from crm.scheduling import promemoria
+
+	appointment = _by_token(token)
+	mine = _my_rows(appointment, token)
+	if not mine or not promemoria.stato_per_la_pagina(appointment, mine[0])["can_confirm"]:
+		return public_view(appointment, token)
+	with promemoria._nella_lingua_del_centro():
+		promemoria.conferma_dalla_pagina(appointment, mine[0])
+	return public_view(frappe.get_doc("CRM Appointment", appointment.name), token)
 
 
 def _cancel_rows(appointment, token: str, reason: str | None):

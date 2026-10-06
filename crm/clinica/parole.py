@@ -115,6 +115,8 @@ PAROLE = {
 		"A service for a patient, with who delivers it and where."
 	),
 	"Booked online by the client": "Booked online by the patient",
+	# an appointment cancelled by its reminder's answer (crm.scheduling.promemoria)
+	"Cancelled by the client, answering the reminder": "Cancelled by the patient, answering the reminder",
 	"A client in two places at once": "A patient in two places at once",
 	# online booking and its rules (Settings > Agenda)
 	"Clients can book online": "Patients can book online",

@@ -81,6 +81,12 @@ MESSAGGIO_IN_SEGRETERIA = "{0} left a message on the answering service"
 #: A supplier's invoice arrived through Itala: the Invoices page's «Received» tab.
 FATTURA_FORNITORE = "{0} sent an invoice of {1}"
 
+#: A reminder answered (crm.scheduling.promemoria): the agenda, on the appointment.
+PROMEMORIA_DISDETTO = "{0} cannot come on {1}: the appointment is cancelled"
+PROMEMORIA_NON_VIENE = "{0} cannot come on {1}: cancel the appointment"
+PROMEMORIA_SPOSTA = "{0} would like to move the appointment on {1}"
+PROMEMORIA = frozenset({PROMEMORIA_DISDETTO, PROMEMORIA_NON_VIENE, PROMEMORIA_SPOSTA})
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -119,6 +125,9 @@ FRASI = (
 	NUMERO_NON_VERIFICATO,
 	MESSAGGIO_IN_SEGRETERIA,
 	FATTURA_FORNITORE,
+	PROMEMORIA_DISDETTO,
+	PROMEMORIA_NON_VIENE,
+	PROMEMORIA_SPOSTA,
 )
 
 #: The sentences that take something away: the panel draws them apart.
