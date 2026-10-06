@@ -76,9 +76,10 @@ class IPrimiPassi(IntegrationTestCase):
 				"fatture",
 				"persona",
 				"appuntamento",
+				"promemoria",
 			],
 		)
-		self.assertEqual(fatto["total"], 10)
+		self.assertEqual(fatto["total"], 11)
 		self.assertEqual(fatto["done"], sum(passo["done"] for passo in fatto["steps"]))
 
 	def test_senza_la_fatturazione_niente_passo_delle_fatture(self):
