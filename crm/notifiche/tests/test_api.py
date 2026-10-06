@@ -418,6 +418,49 @@ class ChiLaRiceve(NotificheCase):
 		# somebody's own mailbox tells only them
 		self.assertEqual(chi_segue("CRM Lead", self.laura.name, banco=False), [])
 
+	def test_anche_administrator_se_qualcuno_lo_ha_scelto(self):
+		# whoever works as Administrator and assigns themselves hears of her
+		# messages; the desk hears of them when nobody follows her
+		assign_to.add({"doctype": "CRM Lead", "name": self.laura.name, "assign_to": ["Administrator"]})
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name), ["Administrator"])
+
+	def test_chi_segue_una_sua_trattativa(self):
+		# one conversation on her page and on her deal's: whoever follows either hears
+		azienda = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Notifiche Srl"}
+		).insert(ignore_permissions=True)
+		trattativa = frappe.get_doc(
+			{"doctype": "CRM Deal", "lead": self.laura.name, "organization": azienda.name}
+		).insert(ignore_permissions=True)
+		frappe.db.delete("ToDo", {"reference_name": ("in", [self.laura.name, trattativa.name])})
+		assign_to.add({"doctype": "CRM Deal", "name": trattativa.name, "assign_to": [BRUNO]})
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name), [BRUNO])
+		assign_to.add({"doctype": "CRM Lead", "name": self.laura.name, "assign_to": [ANNA]})
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name), [ANNA, BRUNO])
+		self.assertEqual(chi_segue("CRM Deal", trattativa.name), [BRUNO, ANNA])
+
+	def test_un_messaggio_non_e_di_chi_lo_ha_salvato(self):
+		# a WhatsApp saved as Anna (a job, an import) is Laura's, and Anna follows her
+		from crm.api.whatsapp import notify_agent
+
+		assign_to.add({"doctype": "CRM Lead", "name": self.laura.name, "assign_to": [ANNA]})
+		messaggio = frappe._dict(
+			name=frappe.generate_hash(length=10),
+			type="Incoming",
+			reference_doctype="CRM Lead",
+			reference_name=self.laura.name,
+			owner=ANNA,
+			message="Arrivo alle cinque",
+		)
+		notify_agent(messaggio)
+		riga = frappe.db.get_value(
+			NOTIFICA,
+			{"to_user": ANNA, "notification_type_doc": messaggio.name},
+			["from_user", "message"],
+			as_dict=True,
+		)
+		self.assertEqual(riga, {"from_user": None, "message": "Arrivo alle cinque"})
+
 
 class ChiNonLaRiceve(NotificheCase):
 	def test_ne_se_stessi_ne_un_utente_spento(self):

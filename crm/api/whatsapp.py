@@ -89,7 +89,9 @@ def on_update(doc, method):
 def notify_agent(doc):
 	"""A WhatsApp message from a person: whoever follows them reads it in their
 	panel - the desk, when nobody does yet; the messages after it, while it is
-	unread, add to it."""
+	unread, add to it. It comes from the person, nobody of the centre: whoever
+	saved it (the webhook's Guest, a job's Administrator) is not its sender, and
+	taken for one it was nobody's notification when they followed the person."""
 	if doc.type != "Incoming" or not doc.reference_doctype or not doc.reference_name:
 		return
 	trattativa = doc.reference_doctype == "CRM Deal"
@@ -101,7 +103,6 @@ def notify_agent(doc):
 			R.WHATSAPP_TRATTATIVA if trattativa else R.WHATSAPP,
 			nomi,
 			frase_molti=R.WHATSAPP_TRATTATIVA_MOLTI if trattativa else R.WHATSAPP_MOLTI,
-			da=doc.owner,
 			riguarda=(doc.reference_doctype, doc.reference_name),
 			oggetto=("WhatsApp Message", doc.name),
 			messaggio=doc.message,

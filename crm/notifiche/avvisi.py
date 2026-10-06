@@ -154,14 +154,22 @@ PROPRIETARIO = {"CRM Lead": "lead_owner", "CRM Deal": "deal_owner"}
 
 
 def chi_segue(doctype: str, nome: str, banco: bool = True) -> list[str]:
-	"""Who hears of a person's message: whoever the person or deal is assigned to,
-	else their owner, else - `banco` - the desk: everyone of the centre who reads
-	its conversations and may open this person. A message never reaches nobody: a
-	new number writing on WhatsApp has nobody assigned yet."""
+	"""Who hears of a person's message: whoever the person or one of their deals is
+	assigned to - the conversation is the same on each page -, else their owner,
+	else - `banco` - the desk: everyone of the centre who reads its conversations and
+	may open this person. A message never reaches nobody: a new number writing on
+	WhatsApp has nobody assigned yet.
+
+	Somebody chose whoever a record is assigned to, DottorCloud's own account
+	(Administrator) too: assigned, it hears like anybody. It was left out with the
+	owner, which stands for DottorCloud when it made the record, and whoever had
+	assigned themselves working as Administrator never heard of a message."""
 	from crm.api.doc import assigned_users_of
 	from crm.permissions import livelli
 
-	chi = [u for u in assigned_users_of(doctype, nome) if u not in SISTEMA]
+	chi = []
+	for seguito in stessa_conversazione(doctype, nome):
+		chi += [u for u in assigned_users_of(*seguito) if u != "Guest" and u not in chi]
 	if chi:
 		return chi
 	campo = PROPRIETARIO.get(doctype)
@@ -179,6 +187,19 @@ def chi_segue(doctype: str, nome: str, banco: bool = True) -> list[str]:
 		and livelli.puo("conversazioni.vedi", utente)
 		and frappe.has_permission(doctype, "read", nome, user=utente)
 	]
+
+
+def stessa_conversazione(doctype: str, nome: str) -> list[tuple[str, str]]:
+	"""The records one conversation is read on (`crm.api.whatsapp.whatsapp_thread_of`):
+	a person and their deals, a deal and its person."""
+	if doctype == "CRM Lead":
+		from crm.api.lead import deal_names_of
+
+		return [(doctype, nome), *(("CRM Deal", trattativa) for trattativa in sorted(deal_names_of(nome)))]
+	if doctype == "CRM Deal":
+		persona = frappe.db.get_value(doctype, nome, "lead")
+		return [(doctype, nome), *((("CRM Lead", persona),) if persona else ())]
+	return [(doctype, nome)]
 
 
 def nome_utente(utente: str | None) -> str:

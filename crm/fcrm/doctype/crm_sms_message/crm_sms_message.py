@@ -84,7 +84,8 @@ class CRMSMSMessage(Document):
 
 	def notify_agents(self):
 		"""An SMS from a person: whoever follows them reads it in their panel - the
-		desk, when nobody does yet; the ones after it, while it is unread, add to it."""
+		desk, when nobody does yet; the ones after it, while it is unread, add to it.
+		It comes from the person, never from whoever saved it."""
 		if self.type != "Incoming" or not self.reference_doctype or not self.reference_name:
 			return
 		trattativa = self.reference_doctype == "CRM Deal"
@@ -96,7 +97,6 @@ class CRMSMSMessage(Document):
 				R.SMS_TRATTATIVA if trattativa else R.SMS,
 				nomi,
 				frase_molti=R.SMS_TRATTATIVA_MOLTI if trattativa else R.SMS_MOLTI,
-				da=self.owner,
 				riguarda=(self.reference_doctype, self.reference_name),
 				oggetto=("CRM SMS Message", self.name),
 				messaggio=self.message,
