@@ -36,8 +36,9 @@ Il design system diceva già come va un appuntamento (AgendaEvent, nella
   altri con «Mostra chi non lavora». Ogni colonna è larga almeno 11rem (9rem sul
   telefono): quando non ci stanno, scorrono di lato sotto le loro intestazioni,
   mentre le ore restano ferme a sinistra. In testa alla colonna il nome intero,
-  l'orario di quel giorno («08:30–13:00 · 14:00–19:00»), il motivo di
-  un'eccezione («Ferie») o «Non lavora», e quanti appuntamenti ha.
+  l'orario di quel giorno («08:30–13:00 · 14:00–19:00», su due righe quando non
+  ci sta, mai tagliato a metà di una fascia), il motivo di un'eccezione
+  («Ferie») o «Non lavora», e quanti appuntamenti ha.
 - **Settimana**: i giorni di **un** professionista (o di un ambulatorio), scelto
   con lo stesso pulsante «di chi» (da un giorno con uno solo spuntato, la
   settimana è sua; altrimenti la propria, se si è un professionista). Da lunedì a
@@ -49,6 +50,11 @@ Il design system diceva già come va un appuntamento (AgendaEvent, nella
   l'appuntamento. Sul telefono il numero e quanti ne ha.
 - **Telefono**: il giorno si apre come elenco (come prima); Giorno e Mese sono una
   scelta più in là, la Settimana no (sette colonne su un telefono non dicono niente).
+  La vista si sceglie da un tasto alto come gli altri della riga («Lista»,
+  «Giorno», «Mese», con la sua icona), le viste in un foglio dal basso; «di chi»
+  dice «Tutti» accanto all'icona che dice di chi, Filtri e Vista sono le loro
+  icone (con il loro nome per chi legge con lo schermo): una riga sola, che ci
+  sta anche a 320 px.
 
 Un indirizzo con una data (una notifica, «Prenota» dalla scheda di una persona)
 apre quel giorno nella vista Giorno.
@@ -71,7 +77,9 @@ apre quel giorno nella vista Giorno.
   d'attesa (qualcuno dell'appuntamento ha fatto il check-in), completato, non
   venuto, prima visita, prenotato online o su una piattaforma. La prima visita è
   anche il blocco pieno del marchio, quello in corso l'anello con la croce
-  («Adesso · 15:30 – 16:15»), un annullato grigio e barrato.
+  («Adesso · 15:30–16:15»; nel tema scuro, sul blocco menta, barretta, croce e
+  anello interno prendono l'inchiostro scuro delle sue parole), un annullato
+  grigio e barrato.
 - **Gli annullati** non occupano il posto che hanno liberato: non si disegnano,
   tranne con «Mostra gli appuntamenti annullati» o quando il filtro di stato li
   chiede. L'elenco del telefono li mostra sempre, con il loro stato.
@@ -94,8 +102,9 @@ apre quel giorno nella vista Giorno.
   (aggiunta in testa a chi non è un professionista, «I tuoi impegni»), quelli di
   tutto il giorno sopra le ore.
 - **Adesso**: una linea sola attraverso il giorno e l'ora scritta nella colonna
-  delle ore. All'apertura le ore scorrono a un'ora e mezza prima di adesso, o al
-  primo appuntamento del giorno.
+  delle ore; passa sotto gli appuntamenti, perché sopra un nome lo barrava come
+  un annullato (quello in corso ha già l'anello e la croce). All'apertura le ore
+  scorrono a un'ora e mezza prima di adesso, o al primo appuntamento del giorno.
 - **Un orario libero** apre un appuntamento nuovo (o un evento, come l'ultima
   volta) per quella colonna, all'orario toccato, arrotondato al **passo della
   griglia**. Solo dove chi legge può prenotare: un professionista prenota nella
@@ -112,6 +121,8 @@ scegliere il giorno), quanti appuntamenti e impegni ci sono, poi Giorno ·
 Settimana · Mese, **di chi** («Tutti i professionisti», alcuni spuntati, uno solo
 nella settimana), **Filtri** (servizi, ambulatori o professionisti, stato,
 sorgente, quanti sono attivi accanto) e **Vista**. «Nuovo» resta nell'intestazione.
+Esc chiude il pannello di un appuntamento come quello di un evento (chiedendo
+prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
 
 ### Le configurazioni
 
@@ -156,7 +167,8 @@ Un mese non li chiede.
   settimana, periodi ed etichette, cosa sta in ogni colonna e in ogni giorno del
   mese.
 - `frontend/src/components/Calendar/`: `GrigliaAgenda.vue`, `BloccoAgenda.vue`,
-  `MeseAgenda.vue`, `ChiNellAgenda.vue`, `FiltriAgenda.vue`, `VistaAgenda.vue`; la
+  `MeseAgenda.vue`, `ChiNellAgenda.vue`, `FiltriAgenda.vue`, `VistaAgenda.vue`,
+  `VistaDelTelefono.vue` (le viste sul telefono); la
   pagina `frontend/src/pages/Calendar.vue`. Via `ResourceScheduler.vue` e il
   calendario di frappe-ui da questa pagina.
 - `frontend/src/espresso-componenti.css`, sezione 12: il blocco
