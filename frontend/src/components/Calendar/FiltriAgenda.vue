@@ -70,6 +70,13 @@
               :style="{ backgroundColor: opzione.colore }"
               aria-hidden="true"
             />
+            <!-- one without a colour of its own (its appointments wear their
+                 state's) keeps the names in line with a hollow dot -->
+            <span
+              v-else-if="colorati.has(gruppo.chiave)"
+              class="size-2 shrink-0 rounded-full border border-outline-gray-4"
+              aria-hidden="true"
+            />
             <span class="truncate text-p-sm text-ink-gray-8">
               {{ opzione.label }}
             </span>
@@ -97,6 +104,16 @@ const props = defineProps({
   gruppi: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['cambia', 'azzera'])
+
+// the headings whose options are drawn with their colour
+const colorati = computed(
+  () =>
+    new Set(
+      props.gruppi
+        .filter((gruppo) => gruppo.opzioni.some((opzione) => opzione.colore))
+        .map((gruppo) => gruppo.chiave),
+    ),
+)
 
 const attivi = computed(() =>
   props.gruppi.reduce(
