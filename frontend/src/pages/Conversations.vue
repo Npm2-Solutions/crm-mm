@@ -121,7 +121,7 @@
           doctype="CRM Lead"
           :docname="chosen"
           :newMessages="newMessages"
-          :waitForNew="!opened.ready"
+          :waitForNew="!opened.ready && !person.error"
           @afterSave="reload()"
         />
       </template>
