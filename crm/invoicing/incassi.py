@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import getdate
+from frappe.utils import flt, getdate
+
+from crm.permissions import livelli
 
 FATTURA = "CRM Invoice"
 NOTE_DI_CREDITO = ("TD04", "TD08")
@@ -57,3 +59,59 @@ def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 		_("Collected on {0}").format(frappe.format(giorno, "Date")) if giorno else _("Back to collect"),
 	)
 	return {"collected_on": str(giorno) if giorno else None}
+
+
+#: How many of the invoices still to collect the person's summary names.
+NEL_RIEPILOGO = 3
+
+
+def della_persona(lead: str) -> dict | None:
+	"""What the person is still to pay, for their summary (`crm.persone.riepilogo`):
+	the invoices issued to them and not collected yet, the oldest first - never a
+	credit note, a test invoice or one the SdI sent back - and the drafts waiting
+	to be issued. Only what the session reads: a practitioner the invoices of their
+	own services."""
+	if not livelli.puo("fatture.vedi") or not frappe.has_permission(FATTURA, "read"):
+		return None
+	della = {"party_type": "CRM Lead", "party": lead}
+	aperte = frappe.get_list(
+		FATTURA,
+		filters={
+			**della,
+			"docstatus": 1,
+			"collected_on": ["is", "not set"],
+			"document_type": ["not in", NOTE_DI_CREDITO],
+			"test_document": 0,
+			"sdi_status": ["!=", "scartata"],
+		},
+		fields=["name", "document_number", "posting_date", "grand_total", "net_payable"],
+		order_by="posting_date asc, creation asc",
+		limit_page_length=0,
+	)
+	bozze = frappe.get_list(
+		FATTURA, filters={**della, "docstatus": 0}, pluck="name", order_by="creation asc", limit_page_length=0
+	)
+	if not aperte and not bozze:
+		return None
+
+	# what the client pays: the document less the withholding they pay themselves
+	def da_pagare(riga) -> float:
+		return flt(riga.net_payable) or flt(riga.grand_total)
+
+	return {
+		"count": len(aperte),
+		"total": sum(da_pagare(riga) for riga in aperte),
+		"currency": "EUR",
+		"invoices": [
+			{
+				"name": riga.name,
+				"document_number": riga.document_number,
+				"posting_date": str(riga.posting_date) if riga.posting_date else None,
+				"amount": da_pagare(riga),
+			}
+			for riga in aperte[:NEL_RIEPILOGO]
+		],
+		# the oldest one opens from the summary
+		"drafts": len(bozze),
+		"draft": bozze[0] if bozze else None,
+	}

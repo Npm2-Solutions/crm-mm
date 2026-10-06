@@ -56,6 +56,11 @@ def registra() -> None:
 	registra_tipo(MARKETING)
 	# the advanced signature, an extra of the plan: the simple one is everybody's
 	registra_modulo_piano(firme.MODULO)
+	# the forms a person owes, in their summary
+	from crm.moduli import dovuti
+	from crm.persone import riepilogo
+
+	riepilogo.registra_voce(riepilogo.Voce("forms_due", dovuti.nel_riepilogo))
 	# a first step of every centre: what people fill in and sign
 	from crm.primi_passi import Passo, c_e, registra_passo
 

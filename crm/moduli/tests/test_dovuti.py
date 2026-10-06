@@ -20,6 +20,7 @@ from frappe.utils import add_days, getdate
 from crm.moduli import compilazioni, dovuti, richieste
 from crm.moduli.tests.test_compilazioni import DESK, OTHER, PRIVACY, tratto
 from crm.moduli.tests.test_richieste import RichiesteCase
+from crm.persone import riepilogo
 from crm.tests.test_scheduling import SchedulingCase
 
 OGGI = datetime.date(2026, 9, 30)
@@ -136,6 +137,14 @@ class LaSchedaEOggi(DovutiCase):
 		self.assertNotIn(
 			anamnesi, [f["template"] for f in compilazioni.get_person_forms(self.giulia.name)["due"]["forms"]]
 		)
+
+	def test_il_riepilogo_della_persona_dice_cosa_firmare(self):
+		anamnesi = self.chiedi()
+		appuntamento = self.appuntamento()
+		self.come(DESK)
+		dovuto = riepilogo.get_summary(self.giulia.name)["forms_due"]
+		self.assertEqual(dovuto["appointment"]["name"], appuntamento.name)
+		self.assertIn(anamnesi, [f["template"] for f in dovuto["forms"]])
 
 	def test_oggi_segna_chi_deve_firmare(self):
 		anamnesi = self.chiedi()

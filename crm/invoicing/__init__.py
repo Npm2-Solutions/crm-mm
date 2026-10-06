@@ -23,9 +23,12 @@ def registra() -> None:
 	developer can change. Needs a site, so it is the app that calls it.
 	"""
 	from crm.api import doc
-	from crm.invoicing import capacita, estensioni, registro, scelte
+	from crm.invoicing import capacita, estensioni, incassi, registro, scelte
+	from crm.persone import riepilogo
 
 	estensioni.registra_risolutore(registro.risolutore())
 	capacita.registra()
+	# what a person is still to pay, in their summary
+	riepilogo.registra_voce(riepilogo.Voce("to_collect", incassi.della_persona))
 	# its code selects offer their choices in words, wherever a screen draws them
 	doc.registra_adattatore(scelte.adatta_campi)

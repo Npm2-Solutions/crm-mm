@@ -45,12 +45,15 @@ def carica(*args, **kwargs) -> None:
 		from crm.invoicing import registra as registra_fatturazione
 		from crm.moduli import registra as registra_moduli
 		from crm.permissions import catalogo
+		from crm.persone import riepilogo
 		from crm.piani import registra as registra_piani
 		from crm.preventivi import registra as registra_preventivi
 		from crm.primi_passi import registra as registra_primi_passi
 		from crm.tessera_sanitaria import registra as registra_tessera_sanitaria
 
 		catalogo.registra()
+		# a person's summary, the base's lines; the modules add theirs
+		riepilogo.registra()
 		# the base's first steps; the modules add theirs
 		registra_primi_passi()
 		# the base's demo data; the modules add their parts

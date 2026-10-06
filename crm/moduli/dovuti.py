@@ -232,6 +232,17 @@ def della_persona(lead: str) -> dict:
 	}
 
 
+def nel_riepilogo(lead: str) -> dict | None:
+	"""For the person's summary (`crm.persone.riepilogo`): the forms they owe for
+	their next appointment, or in general - for whoever reads a person's forms."""
+	from crm.permissions import livelli
+
+	if not livelli.puo("moduli.vedi"):
+		return None
+	ora = della_persona(lead)
+	return ora if ora["forms"] else None
+
+
 # ------------------------------------------------------------------ with the booking
 
 #: A link that leaves this close to the visit would not be filled at home.

@@ -59,9 +59,12 @@ CAPACITA = (
 
 def registra() -> None:
 	from crm.area.sezioni import Sezione, registra_sezione
-	from crm.preventivi import area
+	from crm.persone import riepilogo
+	from crm.preventivi import api, area
 
 	for capacita, concessioni in CAPACITA:
 		registra_capacita(capacita, concessioni)
 	# the quotes proposed and going on, in the person's area
 	registra_sezione(Sezione("quotes", area.nell_area))
+	# the ones waiting for an answer and the ones going on, in the person's summary
+	riepilogo.registra_voce(riepilogo.Voce("quotes", api.nel_riepilogo))
