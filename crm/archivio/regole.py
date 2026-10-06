@@ -79,7 +79,9 @@ class Configurazione:
 	``region``: its region as the signature names it (Hetzner ``fsn1``, R2
 	``auto``, B2 ``eu-central-003``); ``virtual``: the bucket in the host name
 	(``bucket.endpoint``) rather than in the path; ``prefisso``: the folder every
-	key of this site starts with, the site's name where not said.
+	key of this site starts with - the bucket's folder for DottorCloud
+	(``prefix``, so a bucket holds other projects too), then the site's name:
+	two sites never share a folder, whatever the common config says.
 	"""
 
 	endpoint: str
@@ -112,7 +114,9 @@ def configurazione(valore, sito: str = "") -> Configurazione | None:
 		return None
 	if valore.get("enabled") in (0, False, "0"):
 		return None
-	prefisso = str(valore.get("prefix") or sito or "").strip("/")
+	prefisso = "/".join(
+		parte for parte in (str(valore.get("prefix") or "").strip("/"), (sito or "").strip("/")) if parte
+	)
 	return Configurazione(
 		endpoint=str(valore["endpoint"]).strip(),
 		bucket=str(valore["bucket"]).strip(),
