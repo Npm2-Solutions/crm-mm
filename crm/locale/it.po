@@ -45225,6 +45225,18 @@ msgctxt "Agenda columns"
 msgid "Rooms"
 msgstr "Ambulatori"
 
+#. a phone's switch between the agenda's views, read with the one on
+#: frontend/src/components/Calendar/VistaDelTelefono.vue
+msgid "View: {0}"
+msgstr "Vista: {0}"
+
+#. on a phone, whose agenda when nobody is ticked: everybody, beside the
+#. icon that says of whom (professionals or rooms)
+#: frontend/src/components/Calendar/ChiNellAgenda.vue
+msgctxt "Agenda whose"
+msgid "All"
+msgstr "Tutti"
+
 #. how tall an hour of the agenda is
 #: frontend/src/components/Calendar/VistaAgenda.vue
 msgctxt "Agenda height"
