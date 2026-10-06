@@ -739,7 +739,7 @@ const EMPTY = {
   email: 'No emails with this person yet',
   sms: 'No text messages with this person yet',
   call: 'No calls with this person yet',
-  comment: 'No notes about this person yet',
+  comment: 'No internal notes about this person yet',
 }
 
 const emptyText = computed(() => __(EMPTY[props.channel] || 'Nothing here yet'))

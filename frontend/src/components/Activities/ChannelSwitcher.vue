@@ -113,7 +113,7 @@ const DETAILS = {
   // written about somebody rather than to them, which is why it is last and
   // why its colour is the note's amber wherever it appears
   comment: {
-    label: 'Note',
+    label: 'Internal note',
     hint: 'A note for the team: the customer will not see it',
     icon: CommentIcon,
   },

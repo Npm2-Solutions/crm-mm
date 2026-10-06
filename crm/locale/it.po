@@ -9303,7 +9303,19 @@ msgstr "Ogni versione resta com'era quando è stata pubblicata, con il suo SHA-2
 
 #: frontend/src/components/Activities/EventArea.vue
 msgid "Earlier"
-msgstr "Prima"
+msgstr "Passati"
+
+#: frontend/src/components/Activities/SummaryArea.vue
+msgid "Last time"
+msgstr "L'ultima volta"
+
+#: frontend/src/utils/conversation.js
+msgid "Internal notes"
+msgstr "Note interne"
+
+#: frontend/src/components/Activities/ConversationView.vue
+msgid "No internal notes about this person yet"
+msgstr "Ancora nessuna nota interna su questa persona"
 
 #: crm/fcrm/doctype/crm_booking_calendar/crm_booking_calendar.json
 msgid "Earliest bookable slot, hours from now"

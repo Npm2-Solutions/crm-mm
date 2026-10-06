@@ -118,7 +118,7 @@
           />
         </div>
         <template v-if="passato">
-          <span :class="gruppo">{{ __('Earlier') }}</span>
+          <span :class="gruppo">{{ __('Last time') }}</span>
           <button type="button" :class="riga" @click="inAgenda(passato)">
             <span class="flex min-w-0 flex-1 flex-col gap-0.5">
               <span class="break-words text-base text-ink-gray-8">
