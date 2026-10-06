@@ -36,7 +36,7 @@ diagnostiche, e per quelli c'è la soglia.
 
 - **Spostare.** Ogni ora (`hourly_long`) i file privati scritti da più di
   un'ora vanno nel bucket, al massimo 500 file o 20 GB per giro. La chiave è
-  `<sito>/<sha256[:2]>/<sha256>/<nome>`: il contenuto riscritto allo stesso
+  `dottorcloud/<sito>/<sha256[:2]>/<sha256>/<nome>`: il contenuto riscritto allo stesso
   indirizzo è un altro oggetto. Il corpo è firmato con il suo SHA-256 (il bucket
   rifiuta un corpo arrivato diverso), poi si controlla la dimensione lì, si
   scrive `CRM Archived File` e solo allora il file sul server si svuota.
@@ -72,9 +72,11 @@ solo l'agenzia) può dire un'altra cifra.
 Hetzner non ha un'API per le credenziali S3 né per i bucket: il token della
 Cloud API non serve. Si fa dalla Console:
 
-1. **Progetto** «DottorCloud Archivio» in [Hetzner Console](https://console.hetzner.com).
+1. **Progetto** «NPM2 Storage» in [Hetzner Console](https://console.hetzner.com):
+   il bucket è di NPM2, non solo di DottorCloud, e serve anche ad altri progetti.
 2. **Object Storage > Create Bucket**: location **Falkenstein (fsn1)** o
-   Nuremberg, nome `dottorcloud-archivio`, visibilità **Private**. Un bucket
+   Nuremberg, nome `npmstorage` (generico: i nomi sono unici in tutta
+   Hetzner), visibilità **Private**. Un bucket
    regge 100 TB e 50 milioni di oggetti, un progetto 100 bucket: cinquanta
    centri pieni a 2 TB stanno in un bucket; oltre, un secondo bucket per i siti
    nuovi (vedi sotto).
@@ -86,20 +88,27 @@ Cloud API non serve. Si fa dalla Console:
    "dottorcloud_archivio": {
      "endpoint": "https://fsn1.your-objectstorage.com",
      "region": "fsn1",
-     "bucket": "dottorcloud-archivio",
+     "bucket": "npmstorage",
+     "prefix": "dottorcloud",
      "access_key": "…",
      "secret_key": "…"
    }
    ```
 
-   `prefix` (facoltativo) è la cartella del sito, il nome del sito se manca;
+   `prefix` è la cartella di DottorCloud nel bucket: ogni sito scrive in
+   `dottorcloud/<sito>/`, mai nella cartella di un altro sito né fuori da
+   quella di DottorCloud, e gli altri progetti usano le loro cartelle;
    `virtual_host: true` mette il bucket nel nome dell'host; `enabled: 0` lo
    spegne senza togliere le chiavi.
 5. Una volta: `bench --site <un sito> execute crm.archivio.archivio.imposta_il_bucket`
    accende le **versioni** (un file cancellato per errore si ritrova) e il
    **CORS** in sola lettura (l'anteprima di un file di testo lo legge dal
    browser).
-6. Hetzner > Object Storage > il bucket > **Lifecycle**: le versioni non
+   Versioni e CORS valgono per tutto il bucket, quindi anche per gli altri
+   progetti: il CORS apre solo la lettura (GET e HEAD) a chi ha un link firmato,
+   le versioni tengono anche i loro file cancellati.
+6. Hetzner > Object Storage > il bucket > **Lifecycle**, con il filtro sul
+   prefisso `dottorcloud/`: le versioni non
    correnti scadono dopo 30 giorni, o le versioni tengono tutto per sempre.
 
 **Scalare.** Lo spazio cresce da solo, si paga a consumo. Un centro che va in
