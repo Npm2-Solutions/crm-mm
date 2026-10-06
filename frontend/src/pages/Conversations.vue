@@ -121,6 +121,7 @@
           doctype="CRM Lead"
           :docname="chosen"
           :newMessages="newMessages"
+          :waitForNew="!opened.ready"
           @afterSave="reload()"
         />
       </template>
@@ -487,15 +488,20 @@ onMounted(() => {
 })
 onBeforeUnmount(() => smettiScheda())
 
+// …and a conversation read, answered (from the phone too), handled or marked
+// unread by somebody else, or on another device: the server says so
+// (`crm_conversation`), and the row and its count follow
 onMounted(() => {
   $socket.on('crm_sms_message', refresh)
   $socket.on('whatsapp_message', refresh)
+  $socket.on('crm_conversation', refresh)
   window.addEventListener('crm:conversation-read', refresh)
 })
 
 onBeforeUnmount(() => {
   $socket.off('crm_sms_message', refresh)
   $socket.off('whatsapp_message', refresh)
+  $socket.off('crm_conversation', refresh)
   window.removeEventListener('crm:conversation-read', refresh)
 })
 </script>
