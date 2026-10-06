@@ -21,7 +21,8 @@
             aria-hidden="true"
           />
         </template>
-        {{ __('Filters') }}
+        <!-- on a phone its icon, so the row of the agenda's keys fits -->
+        <span class="max-md:hidden">{{ __('Filters') }}</span>
         <span
           v-if="attivi"
           class="ml-0.5 rounded-full bg-[var(--brand-action)] px-1.5 text-p-xs tabular-nums text-[var(--on-brand-solid)]"

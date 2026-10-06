@@ -23,7 +23,11 @@
             aria-hidden="true"
           />
         </template>
-        <span class="max-w-[12rem] truncate">{{ etichetta }}</span>
+        <span class="max-w-[12rem] truncate max-md:hidden">{{
+          etichetta
+        }}</span>
+        <!-- on a phone «All» beside the icon that says of whom -->
+        <span class="max-w-[7rem] truncate md:hidden">{{ breve }}</span>
         <template #suffix>
           <span
             class="lucide-chevron-down size-3.5 text-ink-gray-5"
@@ -149,6 +153,11 @@ const etichetta = computed(() => {
   if (props.singolo || !scelti.value.length) return props.tutti
   return props.quanti(scelti.value.length)
 })
+const breve = computed(() =>
+  !unoSolo.value && !props.singolo && !scelti.value.length
+    ? __('All', null, 'Agenda whose')
+    : etichetta.value,
+)
 
 function cambia(valore) {
   emit(

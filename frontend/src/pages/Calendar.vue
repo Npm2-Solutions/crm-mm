@@ -98,15 +98,12 @@
             :buttons="vistePerIlComputer"
             @update:modelValue="cambiaVista"
           />
-          <div v-else class="w-28 shrink-0">
-            <FormControl
-              type="select"
-              :modelValue="vista"
-              :aria-label="__('View')"
-              :options="vistePerIlTelefono"
-              @update:modelValue="cambiaVista"
-            />
-          </div>
+          <VistaDelTelefono
+            v-else
+            :modelValue="vista"
+            :viste="vistePerIlTelefono"
+            @update:modelValue="cambiaVista"
+          />
           <ChiNellAgenda v-bind="chi" @update:modelValue="cambiaChi" />
           <FiltriAgenda
             :modelValue="filters"
@@ -162,15 +159,11 @@
         @open="showDetails"
       >
         <template #vista>
-          <div class="w-28">
-            <FormControl
-              type="select"
-              modelValue="elenco"
-              :aria-label="__('View')"
-              :options="vistePerIlTelefono"
-              @update:modelValue="cambiaVista"
-            />
-          </div>
+          <VistaDelTelefono
+            modelValue="elenco"
+            :viste="vistePerIlTelefono"
+            @update:modelValue="cambiaVista"
+          />
         </template>
       </AgendaDelGiorno>
       <MeseAgenda
@@ -285,6 +278,7 @@ import GrigliaAgenda from '@/components/Calendar/GrigliaAgenda.vue'
 import KindSwitch from '@/components/Calendar/KindSwitch.vue'
 import MeseAgenda from '@/components/Calendar/MeseAgenda.vue'
 import VistaAgenda from '@/components/Calendar/VistaAgenda.vue'
+import VistaDelTelefono from '@/components/Calendar/VistaDelTelefono.vue'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -329,7 +323,6 @@ import {
   createResource,
   dayjs,
   DatePicker,
-  FormControl,
   TabButtons,
   CalendarActiveEvent as activeEvent,
   CalendarColorMap,
