@@ -187,9 +187,11 @@ export const MENU = [
         condition: (c) => c.ambito('agenda.turni') === 'centro',
       },
       {
+        // its key stays: the links are built on it
         key: 'Calendar & reminders',
-        label: 'Calendar & reminders',
-        description: 'How the agenda looks, and the reminders people receive.',
+        label: 'Agenda & reminders',
+        description:
+          'Where the agenda opens, the minutes its grid moves by, the reminders people receive.',
         condition: generali,
       },
       {

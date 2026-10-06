@@ -109,7 +109,7 @@ describe('the settings menu, by who reads it', () => {
     expect(comeSiLegge(menuDi(sessione('manager')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
       'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Features',
-      'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Calendar & reminders, Waiting list, Online booking [Services & people · Page & rules · Platforms]',
+      'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Agenda & reminders, Waiting list, Online booking [Services & people · Page & rules · Platforms]',
       'Clients: Forms, Consents, Client area, Libraries [Exercises · Foods]',
       'Deals: Pipelines, Assignment [Rules · Response times]',
       'Email: Accounts, Templates',
