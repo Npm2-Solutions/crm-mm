@@ -13,6 +13,8 @@ from pypika import Criterion
 
 from crm.api.views import get_views
 from crm.fcrm.doctype.crm_form_script.crm_form_script import get_form_script
+from crm.liste.campi import della_lista
+from crm.liste.regole import nome_della_colonna
 from crm.utils import get_kanban_column_options, is_frappe_version
 
 COUNT_NAME = (
@@ -36,141 +38,33 @@ QUICK_FILTER_DOCTYPES = (
 
 @frappe.whitelist()
 def sort_options(doctype: str):
-	fields = frappe.get_meta(doctype).fields
-	fields = [field for field in fields if field.fieldtype not in no_value_fields]
-	fields = [
-		{
-			"label": _(field.label),
-			"value": field.fieldname,
-			"fieldname": field.fieldname,
-		}
-		for field in fields
-		if field.label and field.fieldname
-	]
-
-	standard_fields = [
-		{"label": "Name", "fieldname": "name"},
-		{"label": "Created On", "fieldname": "creation"},
-		{"label": "Last Modified", "fieldname": "modified"},
-		{"label": "Modified By", "fieldname": "modified_by"},
-		{"label": "Owner", "fieldname": "owner"},
-	]
-
-	for field in standard_fields:
-		field["label"] = _(field["label"])
-		field["value"] = field["fieldname"]
-		fields.append(field)
-
-	return fields
+	# what a list offers to sort by, filter by, group by, add as a column: one
+	# rule for all (crm.liste.regole), each field once and in the reader's words
+	return [{**campo, "value": campo["fieldname"]} for campo in della_lista(doctype, "ordine")]
 
 
 @frappe.whitelist()
 def get_filterable_fields(doctype: str):
-	allowed_fieldtypes = [
-		"Check",
-		"Data",
-		"Float",
-		"Int",
-		"Currency",
-		"Dynamic Link",
-		"Link",
-		"Long Text",
-		"Select",
-		"Small Text",
-		"Text Editor",
-		"Text",
-		"Duration",
-		"Rating",
-		"Date",
-		"Datetime",
-	]
-
 	c = get_controller(doctype)
 	restricted_fields = []
 	if hasattr(c, "get_non_filterable_fields"):
 		restricted_fields = c.get_non_filterable_fields()
 
-	fields = []
-
-	meta = frappe.get_meta(doctype).as_dict()
-
-	# append standard fields (getting error when using frappe.model.std_fields)
-	standard_fields = [
-		{"fieldname": "name", "fieldtype": "Link", "label": "Name", "options": doctype},
-		{"fieldname": "owner", "fieldtype": "Link", "label": "Created By", "options": "User"},
-		{
-			"fieldname": "modified_by",
-			"fieldtype": "Link",
-			"label": "Last Updated By",
-			"options": "User",
-		},
-		{"fieldname": "_user_tags", "fieldtype": "Data", "label": "Tags"},
-		{"fieldname": "_liked_by", "fieldtype": "Data", "label": "Like"},
-		{"fieldname": "_comments", "fieldtype": "Text", "label": "Comments"},
-		{"fieldname": "_assign", "fieldtype": "Text", "label": "Assigned To"},
-		{"fieldname": "creation", "fieldtype": "Datetime", "label": "Created On"},
-		{"fieldname": "modified", "fieldtype": "Datetime", "label": "Last Updated On"},
+	return [
+		{**campo, "name": campo["fieldname"], "value": campo["fieldname"]}
+		for campo in della_lista(doctype, "filtro", togli=restricted_fields)
 	]
-
-	for field in standard_fields + meta.get("fields", []):
-		if field.get("fieldname") not in restricted_fields and field.get("fieldtype") in allowed_fieldtypes:
-			field["name"] = field.get("fieldname")
-			field["label"] = _(field.get("label"))
-			field["value"] = field.get("fieldname")
-			fields.append(field)
-
-	return fields
 
 
 @frappe.whitelist()
 def get_group_by_fields(doctype: str):
-	allowed_fieldtypes = [
-		"Check",
-		"Data",
-		"Float",
-		"Int",
-		"Currency",
-		"Dynamic Link",
-		"Link",
-		"Select",
-		"Duration",
-		"Date",
-		"Datetime",
-	]
+	return della_lista(doctype, "gruppo")
 
-	fields = frappe.get_meta(doctype).fields
-	fields = [
-		field
-		for field in fields
-		if field.fieldtype not in no_value_fields and field.fieldtype in allowed_fieldtypes
-	]
-	fields = [
-		{
-			"label": _(field.label),
-			"fieldname": field.fieldname,
-		}
-		for field in fields
-		if field.label and field.fieldname
-	]
 
-	standard_fields = [
-		{"label": "Name", "fieldname": "name"},
-		{"label": "Created On", "fieldname": "creation"},
-		{"label": "Last Modified", "fieldname": "modified"},
-		{"label": "Modified By", "fieldname": "modified_by"},
-		{"label": "Owner", "fieldname": "owner"},
-		{"label": "Like", "fieldname": "_liked_by"},
-		{"label": "Assigned To", "fieldname": "_assign"},
-		{"label": "Comments", "fieldname": "_comments"},
-		{"label": "Created On", "fieldname": "creation"},
-		{"label": "Modified On", "fieldname": "modified"},
-	]
-
-	for field in standard_fields:
-		field["label"] = _(field["label"])
-		fields.append(field)
-
-	return fields
+@frappe.whitelist()
+def get_list_fields(doctype: str):
+	"""What a list offers as a column, on a board's card, as a quick filter."""
+	return [{**campo, "value": campo["fieldname"]} for campo in della_lista(doctype, "colonna")]
 
 
 @frappe.whitelist()
@@ -370,7 +264,7 @@ def get_data(
 		for column in list(columns):
 			if column.get("key") not in rows:
 				rows.append(column.get("key"))
-			column["label"] = _(column.get("label"))
+			column["label"] = _(nome_della_colonna(column.get("key"), column.get("label")))
 
 			if column.get("key") == "_liked_by" and column.get("width") == "10rem":
 				column["width"] = "50px"
@@ -532,12 +426,16 @@ def get_data(
 					options.sort()
 				return options
 
+		# the groups' heading names the field as the list offered it
+		offerti = {c["fieldname"]: c["label"] for c in della_lista(doctype, "gruppo")}
 		for field in fields:
 			if field.get("fieldname") == group_by_field:
 				group_by_field = {
-					"label": field.get("label"),
+					"label": offerti.get(group_by_field) or field.get("label"),
 					"fieldname": field.get("fieldname"),
 					"fieldtype": field.get("fieldtype"),
+					# what a link points at: a colleague's heading is their name
+					"link_doctype": field.get("options") if field.get("fieldtype") == "Link" else None,
 					"options": get_options(field.get("fieldtype"), field.get("options")),
 				}
 
