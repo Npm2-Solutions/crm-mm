@@ -44,6 +44,18 @@ export function segnoDelPromemoria(promemoria, t = fmt) {
 }
 
 /**
+ * What the person of an appointment of one answered the reminder, as its mark:
+ * the grid's block and the phone's day list say the same. A class says nothing
+ * here: each of its people answered on their own row.
+ */
+export function rispostaDellAppuntamento(appuntamento, t = fmt) {
+  const persone = appuntamento?.participants || []
+  return persone.length === 1
+    ? segnoDelPromemoria(persone[0].reminder, t)
+    : null
+}
+
+/**
  * A reminder in one line, for the appointment's panel and the settings' list:
  * how it went and what was answered - «Reminder sent by WhatsApp · Confirmed
  * they are coming».

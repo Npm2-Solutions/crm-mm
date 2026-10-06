@@ -5,6 +5,7 @@
 import {
   modelliAdatti,
   rigaDelPromemoria,
+  rispostaDellAppuntamento,
   segnoDelPromemoria,
   statoDelNostro,
 } from '@/utils/promemoriaAppuntamenti'
@@ -49,6 +50,25 @@ describe('segnoDelPromemoria', () => {
     expect(segnoDelPromemoria({ answer: 'Confirmed' }, t).testo).toBe(
       '«Confirmed they are coming»',
     )
+  })
+})
+
+describe('rispostaDellAppuntamento', () => {
+  it('is the answer of its one person, for the grid and the phone alike', () => {
+    const confermato = { status: 'Sent', answer: 'Confirmed' }
+    expect(
+      rispostaDellAppuntamento({ participants: [{ reminder: confermato }] })
+        .icona,
+    ).toBe('lucide-thumbs-up')
+    // a class: each of its people answered on their own
+    expect(
+      rispostaDellAppuntamento({
+        participants: [{ reminder: confermato }, { reminder: confermato }],
+      }),
+    ).toBe(null)
+    expect(rispostaDellAppuntamento({ participants: [{}] })).toBe(null)
+    expect(rispostaDellAppuntamento({})).toBe(null)
+    expect(rispostaDellAppuntamento(null)).toBe(null)
   })
 })
 

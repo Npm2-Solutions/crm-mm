@@ -142,7 +142,11 @@
               <!-- a first visit says so and still says how it went: a new
                    patient who did not come read only «First visit» -->
               <span
-                v-if="riga.dati.first_visit || statoDaDire(riga)"
+                v-if="
+                  riga.dati.first_visit ||
+                  statoDaDire(riga) ||
+                  risposte.has(riga.id)
+                "
                 class="flex shrink-0 flex-wrap gap-1"
               >
                 <span
@@ -156,6 +160,18 @@
                   class="rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
                 >
                   {{ __(riga.dati.status) }}
+                </span>
+                <!-- what the person answered the reminder, as the grid's block
+                     says it: an icon with its words -->
+                <span
+                  v-if="risposte.has(riga.id)"
+                  class="flex items-center gap-1 rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+                >
+                  <span
+                    :class="[risposte.get(riga.id).icona, 'size-3 shrink-0']"
+                    aria-hidden="true"
+                  />
+                  {{ risposte.get(riga.id).testo }}
                 </span>
               </span>
             </span>
@@ -188,6 +204,7 @@ import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
 import { chiLoFa } from '@/utils/oggi'
+import { rispostaDellAppuntamento } from '@/utils/promemoriaAppuntamenti'
 import { adessoDelCentro, appointmentColor } from '@/utils/scheduler'
 import {
   chiDellAppuntamentoDelGiorno,
@@ -243,6 +260,16 @@ const settimana = computed(() => settimanaDi(giorno.value))
 const righe = computed(() =>
   elencoDelGiorno(props.appointments, props.events, giorno.value),
 )
+// what the person of each appointment answered its reminder, by row
+const risposte = computed(() => {
+  const mappa = new Map()
+  for (const riga of righe.value) {
+    if (riga.tipo !== 'appointment') continue
+    const segno = rispostaDellAppuntamento(riga.dati, __)
+    if (segno) mappa.set(riga.id, segno)
+  }
+  return mappa
+})
 const adesso = computed(() =>
   doveAdesso(righe.value, giorno.value, adessoOra.value),
 )
