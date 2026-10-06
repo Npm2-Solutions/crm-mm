@@ -21,10 +21,12 @@ from frappe.utils import cint, flt, sbool
 
 from crm.permissions.livelli import CENTRO, ambito, puo, verifica
 from crm.scheduling import abbonamenti, cicli, pricing
+from crm.scheduling import intervals as iv
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
 	find_conflicts,
 	get_slots,
+	resource_working_hours,
 	settings,
 	staff_working_hours,
 )
@@ -104,11 +106,14 @@ def get_calendar(
 	statuses: str | list | None = None,
 	include_events: bool = True,
 	sources: str | list | None = None,
+	with_hours: bool = False,
 ) -> dict:
 	"""Appointments (and optionally plain calendar events) in a date window.
 
 	One call feeds every view — month, week, day and the resource grid — because
-	they only differ in how the same rows are laid out.
+	they only differ in how the same rows are laid out. With `with_hours`, for a
+	day or a week, when each professional and each room works on those days and
+	the professionals' own engagements: the grid greys out the rest.
 	"""
 	window_start = parse_date(start)
 	window_end = parse_date(end)
@@ -188,7 +193,127 @@ def get_calendar(
 		if shows_busy_time()
 		else []
 	)
-	return {"appointments": appointments, "events": events, "busy": busy}
+	feed = {"appointments": appointments, "events": events, "busy": busy}
+	# the grid's days: a day or a week, never a month's worth of shifts
+	if sbool(with_hours) and (window_end - window_start).days < 7:
+		feed.update(_giornate(window_start, window_end, appointments, busy, from_dt, to_dt))
+	return feed
+
+
+def _giornate(first, last, appointments, busy, from_dt, to_dt) -> dict:
+	"""When each professional and each room works on the days the grid draws -
+	their shifts, date overrides and holidays, as the engine books on them - and
+	the professionals' own events as busy time."""
+	days = [first + datetime.timedelta(days=offset) for offset in range((last - first).days + 1)]
+	shown = appointments + busy
+	users = sorted(_professionisti() | {row["user"] for a in shown for row in a["staff"]})
+	rooms = set(frappe.get_all("CRM Resource", filters={"enabled": 1}, pluck="name")) | {
+		row["resource"] for a in shown for row in a["resources"]
+	}
+	tz = scheduling_tz()
+	return {
+		"hours": {
+			"staff": {user: orari_di(staff_working_hours(user), days, tz) for user in users},
+			"resources": {
+				room: orari_di(resource_working_hours(frappe.get_cached_doc("CRM Resource", room)), days, tz)
+				for room in sorted(rooms)
+				# a room an old appointment names, gone since
+				if frappe.db.exists("CRM Resource", room)
+			},
+		},
+		"engaged": _impegni(from_dt, to_dt, users),
+	}
+
+
+def _professionisti() -> set[str]:
+	"""Whoever works a service the centre offers: the agenda's columns."""
+	services = frappe.get_all("CRM Service", filters={"enabled": 1}, pluck="name")
+	if not services:
+		return set()
+	return set(
+		frappe.get_all(
+			"CRM Service Staff",
+			filters={"parent": ["in", services], "parenttype": "CRM Service"},
+			pluck="user",
+		)
+	)
+
+
+def orari_di(hours, days: list[datetime.date], tz) -> dict | None:
+	"""A professional's or a room's open hours on each day, in minutes of the
+	centre's clock - {"2026-10-06": {"open": [[480, 780], [840, 1140]], "note": ""}},
+	the note a date override's reason («Ferie»). None where no hours were ever set:
+	open whenever, and the agenda greys nothing out."""
+	if hours.always and not hours.rows and not hours.exceptions and not hours.holidays:
+		return None
+	out = {}
+	for day in days:
+		midnight = datetime.datetime.combine(day, datetime.time.min)
+
+		def minute(moment, midnight=midnight):
+			seconds = (to_system_naive(moment) - midnight).total_seconds()
+			return max(0, min(24 * 60, round(seconds / 60)))
+
+		# the shifts are kept on the scheduling clock and the grid draws the
+		# centre's: the day's hours may come from the days either side of it
+		windows = iv.clamp(
+			hours.for_span(day - datetime.timedelta(days=1), 3, tz),
+			from_system_naive(midnight),
+			from_system_naive(midnight + datetime.timedelta(days=1)),
+		)
+		note = next(
+			(
+				row.reason
+				for row in hours.exceptions
+				if parse_date(row.date) == day and cint(row.unavailable) and row.reason
+			),
+			"",
+		)
+		out[day.isoformat()] = {
+			"open": [[minute(start), minute(end)] for start, end in windows if minute(start) < minute(end)],
+			"note": note,
+		}
+	return out
+
+
+def _impegni(from_dt, to_dt, users: list[str]) -> list[dict]:
+	"""The professionals' own events (a meeting, a training day) as busy time in
+	their columns: when, never what - as the engine counts them when it books.
+	An appointment's mirror is left out: it is drawn as itself."""
+	if not users:
+		return []
+	rows = [
+		row
+		for row in frappe.get_all(
+			"Event",
+			filters={"status": "Open", "starts_on": ["<", to_dt], "ends_on": [">", from_dt]},
+			fields=["name", "owner", "starts_on", "ends_on", "all_day", "reference_doctype"],
+			limit_page_length=0,
+		)
+		if row.reference_doctype != "CRM Appointment"
+	]
+	if not rows:
+		return []
+	wanted = set(users)
+	whose = {row.name: {row.owner} & wanted for row in rows}
+	for entry in frappe.get_all(
+		"Event Participants",
+		filters={"parent": ["in", list(whose)], "parenttype": "Event", "email": ["in", users]},
+		fields=["parent", "email"],
+		limit_page_length=0,
+	):
+		whose[entry.parent].add(entry.email)
+	return [
+		{
+			"name": row.name,
+			"users": sorted(whose[row.name]),
+			"starts_on": str(row.starts_on),
+			"ends_on": str(row.ends_on),
+			"all_day": cint(row.all_day),
+		}
+		for row in rows
+		if whose[row.name]
+	]
 
 
 def _busy_time(from_dt, to_dt, seen: set[str], wanted_staff: set, wanted_resources: set) -> list[dict]:

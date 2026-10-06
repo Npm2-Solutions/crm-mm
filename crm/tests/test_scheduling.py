@@ -895,6 +895,88 @@ class TestAppointmentApi(SchedulingCase):
 		users = {s["user"] for row in feed["appointments"] for s in row["staff"]}
 		self.assertEqual(users, {bruno})
 
+	def minutes_on(self, day, hour, minute=0):
+		"""Where an hour of the scheduling clock (UTC in these tests) falls on the
+		grid's day, the centre's own clock."""
+		moment = to_system_naive(datetime.datetime.combine(day, datetime.time(hour, minute), tzinfo=UTC))
+		return round((moment - datetime.datetime.combine(day, datetime.time.min)).total_seconds() / 60)
+
+	def test_the_grid_reads_who_works_when(self):
+		anna = self.make_user("anna_sched@example.com")
+		bruno = self.make_user("bruno_sched@example.com")
+		self.make_service("Visita orari", [anna, bruno])
+		day = self.tomorrow().date()
+		after = day + datetime.timedelta(days=1)
+		weekday = ALL_DAYS[day.weekday()]
+		frappe.get_doc(
+			{
+				"doctype": "CRM Staff Schedule",
+				"user": anna,
+				"enabled": 1,
+				"availability": [
+					{"workday": weekday, "start_time": "09:00:00", "end_time": "13:00:00"},
+					{"workday": weekday, "start_time": "14:00:00", "end_time": "18:00:00"},
+				],
+				"exceptions": [{"date": after, "unavailable": 1, "reason": "Ferie"}],
+			}
+		).insert()
+		room = self.make_resource("Studio orari")
+
+		feed = A.get_calendar(day.isoformat(), after.isoformat(), include_events=False, with_hours=True)
+		anna_hours = feed["hours"]["staff"][anna]
+		self.assertEqual(
+			anna_hours[day.isoformat()],
+			{
+				"open": [
+					[self.minutes_on(day, 9), self.minutes_on(day, 13)],
+					[self.minutes_on(day, 14), self.minutes_on(day, 18)],
+				],
+				"note": "",
+			},
+		)
+		# a day off says why
+		self.assertEqual(anna_hours[after.isoformat()], {"open": [], "note": "Ferie"})
+		# without a schedule of their own, the centre's hours: around the clock here,
+		# the whole of the grid's day whichever clock the centre keeps
+		bruno_open = feed["hours"]["staff"][bruno][day.isoformat()]["open"]
+		self.assertEqual(sum(end - start for start, end in bruno_open), 24 * 60)
+		# a room nobody gave hours to is open whenever: nothing to grey out
+		self.assertIsNone(feed["hours"]["resources"][room.name])
+
+	def test_a_colleagues_meeting_is_busy_in_their_column(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita impegni", [anna])
+		start = self.tomorrow(10)
+		meeting = frappe.get_doc(
+			{
+				"doctype": "Event",
+				"subject": "Riunione di équipe",
+				"event_type": "Private",
+				"starts_on": to_system_naive(start),
+				"ends_on": to_system_naive(start + datetime.timedelta(hours=1)),
+			}
+		)
+		meeting.insert(ignore_permissions=True)
+		frappe.db.set_value("Event", meeting.name, "owner", anna)
+		feed = A.get_calendar(
+			start.date().isoformat(), start.date().isoformat(), include_events=False, with_hours=True
+		)
+		engaged = [row for row in feed["engaged"] if row["name"] == meeting.name]
+		self.assertEqual([row["users"] for row in engaged], [[anna]])
+		# when, never what
+		self.assertNotIn("Riunione", frappe.as_json(feed["engaged"]))
+
+	def test_a_month_carries_no_shifts(self):
+		day = self.tomorrow().date()
+		feed = A.get_calendar(
+			day.isoformat(),
+			(day + datetime.timedelta(days=30)).isoformat(),
+			include_events=False,
+			with_hours=True,
+		)
+		self.assertNotIn("hours", feed)
+		self.assertNotIn("hours", A.get_calendar(day.isoformat(), day.isoformat(), include_events=False))
+
 	def test_cancelling_marks_the_participants_too(self):
 		anna = self.make_user("anna_sched@example.com")
 		self.make_service("Visita annulla", [anna])
