@@ -947,6 +947,74 @@ lontane dai fogli di un telefono.
   va a capo, il pallino sulla prima riga (`Today.vue`). Il riepilogo del
   compositore («A … · oggetto») resta su una riga: toccato, si apre coi campi.
 
+## Dodicesima parte: la tastiera (06/10/2026)
+
+«Con la tastiera aperta nella ricerca, appena scorri l'intestazione esce dallo
+schermo, sale la parte sotto, il foglio lagga; scrivendo un messaggio si
+sposta tutto, invece deve salire solo la parte bassa e restringersi la
+conversazione.» Erano tre cose insieme, e una base da rifare, non dieci
+correzioni.
+
+- **iPhone fa scorrere la pagina, non la accorcia.** Con la tastiera su, Safari
+  rimpicciolisce solo la parte che si vede (`visualViewport`), non la pagina:
+  per mostrare il campo toccato fa salire tutta la pagina (l'intestazione esce
+  in alto), e con la tastiera su un dito arrivato in fondo a una lista, o su
+  quello che non scorre, la fa scorrere di nuovo. È il comportamento che
+  react-aria (Adobe) descrive e aggira in `usePreventScroll` per iOS 26;
+  Android, da Chrome 108, fa lo stesso se la pagina non chiede altro.
+- **Il codice inseguiva lo scorrimento a ogni fotogramma.** `tastieraAperta.js`
+  scriveva dove cominciava la parte vista (`--vista-sopra`) sulla radice della
+  pagina a ogni movimento: ricalcolare lo stile di tutta la pagina sotto il
+  dito è il lag del foglio, e la cornice spostata con un fotogramma di
+  ritardo il salto. In più riportava in vista il campo con `scrollIntoView`,
+  che su iPhone fa scorrere la pagina: un giro che si alimentava da sé.
+- **Android: la pagina si accorcia da sé.** Il meta della pagina chiede
+  `interactive-widget=resizes-content` (`index.html`, `area.html`; Chrome 108,
+  Firefox 132): con la tastiera su la pagina è più corta, l'intestazione resta,
+  il fondo è la tastiera, senza codice. `tastieraAperta.js` lo riconosce
+  (l'altezza della pagina rispetto alla sua altezza piena a quella larghezza)
+  e fa solo spostare la barra in basso (`--tastiera` 0). Safari il meta lo
+  ignora: WebKit lo ha scritto in agosto 2026, Safari non lo ha ancora.
+- **iPhone: la pagina non scorre mai.** Un campo prende il fuoco senza che
+  Safari scorra (`focus()` di tutta l'app con `preventScroll`; un campo
+  toccato riceve il fuoco da un posto che lo tiene un istante, la finestra che
+  lo contiene o la «sosta» della pagina, così è un passaggio e non un tocco di
+  Safari; anche le frecce della tastiera); una volta su la tastiera, il campo
+  è portato in vista dentro le sue scatole (`inVista`, mai la pagina), sopra
+  il titolo e i pulsanti di un foglio che restano (`scroll-padding`). Con la
+  tastiera su un dito muove solo una scatola che ha ancora da scorrere: in
+  fondo si ferma lì (`overscroll-behavior: contain` a peso zero, e il
+  `touchmove` fermato dove WebKit lo lascia passare); due dita ingrandiscono,
+  una selezione si allarga. Quello che scorre lo stesso torna in cima quando
+  la pagina è ferma e il dito è via (150 ms), e solo se resta spostato la
+  cornice lo segue, una volta; dopo la chiusura iOS 26 lascia a volte la
+  pagina spostata (WebKit 297779): torna anche quella.
+- **Le variabili cambiano tre volte, non a ogni fotogramma.** Quando la tastiera
+  arriva, se ne va o cambia altezza (la barra dei suggerimenti); mai sotto un
+  dito, mai con la pagina ingrandita a due dita.
+- **In una conversazione sale solo il fondo.** Con la tastiera su si facevano
+  da parte le schede della persona e i filtri dei canali sopra i messaggi
+  (`data-via-scrivendo`): a ogni tocco sulla casella si muoveva tutto lo
+  schermo. Ora restano dove sono; si accorciano i messaggi, che tengono in
+  vista l'ultimo, e la casella sta sulla tastiera; si fa da parte solo la riga
+  dei canali della casella.
+- **I fogli.** Un foglio, quello con la ricerca in cima (un campo che sceglie un
+  record) e quello che scorre stanno sulla tastiera; la ricerca resta in cima,
+  la lista scorre fra la ricerca e la tastiera, il campo portato in vista non
+  finisce sotto i pulsanti.
+
+Provato in Chromium con la tastiera di un iPhone data come la dà Safari
+(390 × 844, 336 punti di tastiera: la parte vista più corta e un `resize`) e
+con quella di Android (la pagina più corta): l'intestazione resta a 0, la
+casella della chat finisce a 508, le schede e i canali restano; la ricerca
+della lista, un foglio, la ricerca di un campo, l'area clienti. Un vero iPhone
+qui non c'è: le regole sono quelle che react-aria usa e prova su iOS 26.
+Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/viewport-resize-behavior),
+[HTMHell, interactive-widget](https://www.htmhell.dev/adventcalendar/2024/4/),
+[Bramus, WebKit e interactive-widget (11/09/2026)](https://www.bram.us/2026/09/11/webkit-supports-interactive-widget-and-hopefully-safari-will-too/),
+[react-aria, usePreventScroll](https://github.com/adobe/react-spectrum/blob/main/packages/%40react-aria/overlays/src/usePreventScroll.ts),
+[Apple Developer Forums, offsetTop dopo la tastiera su iOS 26](https://developer.apple.com/forums/thread/800125).
+
 ## File
 
 | File | Cosa cambia |
@@ -999,7 +1067,7 @@ lontane dai fogli di un telefono.
 | `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
-| `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
+| `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css`, `index.html`, `area.html` | La cornice che segue la tastiera, il tocco da app; Android accorcia la pagina da sé (`interactive-widget`), su iPhone la pagina non scorre mai e un campo si porta in vista nella sua scatola (`inVista`), senza inseguire lo scorrimento (dodicesima parte). Testato in `tests/unit/tastieraAperta.test.js` |
 | `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
 | `frontend/src/components/Invoices/InvoiceDialog.vue`, `pages/Invoices.vue` + `crm/invoicing/emissione.py` | La fattura sul telefono: il «+» della pagina, ogni riga una scheda con le sue etichette e il totale a destra, la riga aggiunta che viene in vista, la fattura che si apre toccandola; le note del motore nella lingua di chi legge |
 | `frontend/src/pages/FormFill.vue` + `telefono.css` (un pulsante d'icona resta quadrato) | Le azioni di un modulo in una riga: «⋯» (gli altri modi di firmare, Scarta), Salva per dopo, Firma e concludi |
@@ -1126,7 +1194,7 @@ lontane dai fogli di un telefono.
 | `src/telefono.css` | Un pulsante di frappe-ui che apre una pagina (`:route`, `:link`) è disegnato come un link con le stesse classi, e restava senza l'anello invisibile: «Giro di chiamate» nella pagina delle chiamate rispondeva su 24 px. Ora ha l'anello come gli altri |
 | `RelatedPeopleSection.vue` | Una persona collegata si apriva solo dal suo nome, una riga da 16 px: ora si apre da tutta la riga, con «Modifica» sopra |
 | `Telephony/PhonePanel.vue` | Nel telefono in alto a destra «Da richiamare adesso» rispondeva su 32 px, una chiamata recente su 30, «Tutte le chiamate» e «Giro di chiamate» su 17: sul telefono sono righe da 44 px. Il campo «Numero o nome» prendeva il fuoco all'apertura: sul telefono apriva la tastiera del telefono sopra il tastierino del pannello e faceva scorrere il foglio mentre saliva. Ora prende il fuoco solo sul computer |
-| `composables/chatAperta.js`, `src/telefono.css` («11»), `pages/MobileLead.vue`, `Conversations.vue`, `Activities/ComposerShell.vue`, `ActivityHeader.vue`, `ChannelSwitcher.vue` | Sulla conversazione di una persona la chat aveva un quarto dell'iPhone: sopra l'intestazione, la scheda della persona con le azioni rapide, le schede, i filtri dei canali; sotto la casella per scrivere e la barra in basso. Ora la conversazione è lo schermo, come nelle app di messaggi del telefono: la barra in basso si fa da parte e la casella è il fondo dello schermo, sopra la linea di iPhone; la scheda della persona aspetta raccolta, e il nome nell'intestazione la apre e la richiude. Con la tastiera aperta si fanno da parte anche le schede, i filtri dei canali e la riga dei canali della casella (`data-via-scrivendo`): il canale è già scelto, e la casella ne tiene il colore. Lo stesso in un filo della pagina Chat. Su un iPhone da 390 × 844 i messaggi passano da circa 230 a 555 px, con la tastiera aperta da quasi niente a 358; su un iPhone SE 378 px, 181 con la tastiera |
+| `composables/chatAperta.js`, `src/telefono.css` («11»), `pages/MobileLead.vue`, `Conversations.vue`, `Activities/ComposerShell.vue`, `ActivityHeader.vue`, `ChannelSwitcher.vue` | Sulla conversazione di una persona la chat aveva un quarto dell'iPhone: sopra l'intestazione, la scheda della persona con le azioni rapide, le schede, i filtri dei canali; sotto la casella per scrivere e la barra in basso. Ora la conversazione è lo schermo, come nelle app di messaggi del telefono: la barra in basso si fa da parte e la casella è il fondo dello schermo, sopra la linea di iPhone; la scheda della persona aspetta raccolta, e il nome nell'intestazione la apre e la richiude. Con la tastiera aperta si fa da parte la riga dei canali della casella (`data-via-scrivendo`): il canale è già scelto, e la casella ne tiene il colore; le schede e i filtri dei canali restano dove sono (dodicesima parte). Lo stesso in un filo della pagina Chat. Su un iPhone da 390 × 844 i messaggi passano da circa 230 a 555 px, con la tastiera aperta da quasi niente a 358; su un iPhone SE 378 px, 181 con la tastiera |
 | `Activities/WhatsAppBox.vue` | Fuori dalle 24 ore l'avviso di WhatsApp sopra la casella era di due righe con il suo pulsante: un terzo della casella. Sul telefono è una riga sola, «Oltre le 24 ore: solo un modello · Scegli», e tutta la riga apre i modelli |
 | `Activities/WhatsAppBox.vue`, `CommunicationArea.vue` | «Scrivi un messaggio WhatsApp…» andava su due righe accanto ai tre tasti della casella, e raddoppiava la casella; «Scrivi una nota per i colleghi…» era tagliato a metà. Sul telefono sono «Messaggio WhatsApp…» e «Nota per i colleghi…» |
 | `Conversations/ConversationHeader.vue` (`inTestata`), `pages/Conversations.vue`, `src/telefono.css` (`icone-a-dito`) | Nella pagina Chat, aperto un filo, sopra la conversazione c'erano due intestazioni: la riga «Conversazioni» con l'aggiorna e quella della persona. Sul telefono quella della persona prende il posto della prima, accanto al telefono in alto a destra: 42 px in più alla chat. I suoi pulsanti (indietro, letta, più tardi, gestita) erano da 28 px attaccati: ora da 40; la persona si apre dal suo nome, come nelle app di messaggi |
