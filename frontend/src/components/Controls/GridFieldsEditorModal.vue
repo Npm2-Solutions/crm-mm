@@ -38,7 +38,7 @@
             >
               <div class="flex items-center gap-2">
                 <DragVerticalIcon class="h-3.5 cursor-grab" />
-                <div>{{ field.label }}</div>
+                <div>{{ __(field.label) }}</div>
               </div>
               <div class="flex items-center gap-2">
                 <TextInput
@@ -71,14 +71,6 @@
               iconLeft="plus"
               @click="setOpen(!open)"
             />
-          </template>
-          <template #item-label="{ item }">
-            <div class="flex flex-col gap-1 text-ink-gray-9">
-              <div>{{ item.label }}</div>
-              <div class="text-ink-gray-5 text-sm">
-                {{ `${item.fieldname} - ${item.fieldtype}` }}
-              </div>
-            </div>
           </template>
         </Combobox>
         <ErrorMessage v-if="error" class="mt-3" :message="error" />
@@ -164,11 +156,18 @@ const dropdownFields = computed(() => {
     getFields({ restrictNoValueFields: false, restrictedFieldTypes }) || []
   if (!_fields.length) return []
 
-  return _fields
-    .filter(
-      (field) => !fields.value.find((f) => f.fieldname === field.fieldname),
-    )
-    .map((field) => ({ ...field, value: field.fieldname }))
+  return (
+    _fields
+      .filter(
+        (field) => !fields.value.find((f) => f.fieldname === field.fieldname),
+      )
+      // in the reader's words, never the field's code and type
+      .map((field) => ({
+        ...field,
+        label: __(field.label),
+        value: field.fieldname,
+      }))
+  )
 })
 
 function reset() {
