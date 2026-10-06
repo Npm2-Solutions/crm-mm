@@ -280,6 +280,19 @@ def adopt_orphans(number: str, doctype: str, reference: str) -> int:
 	return len(orphans)
 
 
+def moment_of(message: dict):
+	"""When it was sent, on the centre's clock: Meta says it in seconds since 1970,
+	in UTC. None when it does not say."""
+	from datetime import datetime, timezone
+
+	from crm.scheduling.timeutils import to_system_naive
+
+	try:
+		return to_system_naive(datetime.fromtimestamp(int(message.get("timestamp")), tz=timezone.utc))
+	except (TypeError, ValueError, OverflowError, OSError):
+		return None
+
+
 def store_message(message: dict, our_number: str, historical: bool = False, account: str = "") -> bool:
 	"""Idempotent by WhatsApp message id. Returns True when a row was written."""
 	message_id = message.get("id")
@@ -359,9 +372,13 @@ def store_message(message: dict, our_number: str, historical: bool = False, acco
 	# the controller did not run, so neither did the hook that keeps the person's
 	# last message up to date — and the Inbox is sorted by it
 	if doc.get("reference_doctype"):
-		from crm.api.conversations import quietly
+		from crm.api.conversations import answered, quiet, quietly
 
 		quietly(doc.reference_doctype, doc.reference_name)
+		# an answer typed on the phone read what it answered, as one written in
+		# DottorCloud does: the conversation stayed «to read» on every screen
+		if outgoing and not historical:
+			quiet(answered, doc.reference_doctype, doc.reference_name, moment_of(message))
 
 	if not historical and doc.get("reference_doctype"):
 		# nosemgrep: frappe-realtime-pick-room — Conversations.vue refreshes wherever the agent is; the payload is two ids, no text
