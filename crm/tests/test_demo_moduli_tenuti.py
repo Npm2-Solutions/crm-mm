@@ -39,9 +39,15 @@ class CioCheIlCentroHaTenuto(IntegrationTestCase):
 		self.prima = _conta()
 		self.avvio = frappe.utils.now_datetime()
 		self.fatti = []
+		# the counters before the test's first record, kept as the demo's job keeps
+		# them (crm.demo.api.crea): taking the demo away puts them back, and drops a
+		# series it started - on a new site, the first form's and the first quote's
+		self.serie = frappe.as_json(dict(frappe.db.sql("select name, current from `tabSeries`")))
+		frappe.db.set_default(registro.SERIE, self.serie)
 
 	def tearDown(self):
 		self._via()
+		frappe.db.set_default(registro.SERIE, None)
 
 	def _via(self):
 		"""What a test made and the removal kept goes the way the demo does, with what
@@ -56,8 +62,9 @@ class CioCheIlCentroHaTenuto(IntegrationTestCase):
 			for doctype, nome in rimasti:
 				registro.annota_a_mano(doctype, nome)
 		# written down now, they count as the demo's from the test's start: what they
-		# left behind since then is theirs
+		# left behind since then is theirs, and so are the counters it moved
 		frappe.db.set_default(registro.INIZIO, str(self.avvio))
+		frappe.db.set_default(registro.SERIE, self.serie)
 		togli()
 
 	def _com_era(self):
