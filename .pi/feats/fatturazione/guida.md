@@ -458,6 +458,19 @@ qualcosa aspetta (una fattura partita senza esito, una alla PA consegnata e non
 ancora accettata, i fornitori se si ricevono). Chi emette soltanto chiede solo le sue
 trasmissioni. Una volta al giorno si registra quello che Itala non ha risposto.
 
+### Fatture in Cloud, per chi fattura gia' li'
+
+Un centro che fattura con Fatture in Cloud lo collega in *Impostazioni >
+Fatturazione > Fatture in Cloud* (doc 58, `crm/invoicing/fic`). Con l'interruttore
+acceso ogni fattura vera nasce li' al momento dell'emissione: Fatture in Cloud la
+somma prima (IVA, ritenuta e totale da pagare devono essere i nostri al centesimo,
+o non si crea niente), le da' il suo numero, la manda allo SdI e ne dice lo stato.
+Per quell'azienda Itala non si usa e i crediti SdI del piano non contano; la prova
+resta qui. Il Sistema TS lo invia DottorCloud, come sempre, oppure Fatture in Cloud:
+uno dei due, mai entrambi. L'app e' dell'agenzia, una per tutti i centri
+(`fic_client_id`, `fic_client_secret` in `common_site_config.json`), con il suo
+indirizzo di ritorno sull'hub.
+
 ### La porta da cui tornano le ricevute
 
 E' un endpoint pubblico, quindi il progetto riguarda soprattutto chi puo' bussare:
