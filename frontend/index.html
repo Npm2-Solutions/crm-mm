@@ -9,10 +9,13 @@
     <meta charset="UTF-8" />
     <!-- two fingers enlarge the page, as on every site: whoever sees little
          needs it (iOS allowed it anyway). A field never zooms by itself, at
-         16px on a phone (telefono.css) -->
+         16px on a phone (telefono.css). The keyboard makes the page shorter
+         where the browser can (Android's Chrome and Firefox): the header
+         stays, what one writes in sits on the keyboard; on an iPhone
+         utils/tastieraAperta.js does it -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
     />
     <!-- the product's brand - the vertical's (crm.marchio), from the server:
          its name, its icons, the phone's manifest -->

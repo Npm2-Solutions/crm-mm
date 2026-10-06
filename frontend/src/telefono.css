@@ -318,6 +318,8 @@
     justify-content: flex-start;
     padding: max(2.75rem, env(safe-area-inset-top, 0px)) 0 0;
   }
+  /* a field brought into view stops below the title and above the actions
+     that stay (utils/tastieraAperta.js `inVista`, and the browser's own) */
   .dialog-content {
     margin: auto 0 0 !important;
     width: 100%;
@@ -326,6 +328,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-y: none;
+    scroll-padding: 4rem 0 5rem;
     border-radius: 1.25rem 1.25rem 0 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -704,14 +707,22 @@
   }
 }
 
-/* 8. Writing. The keyboard covers the bottom of the screen without making the
-      page shorter; while somebody writes, `utils/tastieraAperta.js` says how
-      much of it one sees. The frame of the app is that tall and starts where
-      what one sees starts: the header stays, the bar at the bottom steps
-      aside (as a phone's own apps do), and the box that scrolls - a list, a
-      chat, the agenda's panel - ends on the keyboard with its buttons. A sheet
-      and a list's sheet sit on the keyboard, their Save in sight. */
+/* 8. Writing. While the keyboard is up the page takes what it leaves, as a
+      phone's own apps do: Android makes the page shorter by itself (the
+      viewport's `interactive-widget`), on an iPhone the keyboard covers the
+      bottom of a page as tall as before and `utils/tastieraAperta.js` says
+      how much of it one sees. The frame of the app is that tall: the header
+      stays where it was, the bar at the bottom steps aside, and the box that
+      scrolls - a list, a chat, the agenda's panel - ends on the keyboard with
+      its buttons. A sheet, and a list's sheet with its search on top, sit on
+      the keyboard, their Save in sight. A finger moves only a box with
+      something left to scroll: at its end it stops there, and never slides
+      the page under the keyboard (`overscroll-behavior: contain`, at no
+      weight: a box that says otherwise keeps its own). */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  :where(:root[data-tastiera='aperta']) * {
+    overscroll-behavior: contain;
+  }
   :root[data-tastiera='aperta'] [data-cornice-telefono] {
     position: relative;
     top: var(--vista-sopra, 0px);
