@@ -87,7 +87,15 @@
         </span>
       </router-link>
 
-      <div v-if="carica.loading" class="flex justify-center py-6">
+      <!-- the list's first load is the brand's cross (the design system's
+           Progress); more rows coming under the ones there, a spinner -->
+      <div
+        v-if="carica.loading && !righe.length"
+        class="flex justify-center py-10"
+      >
+        <LoaderMark />
+      </div>
+      <div v-else-if="carica.loading" class="flex justify-center py-6">
         <LoadingIndicator class="size-5" />
       </div>
       <EmptyState
@@ -111,6 +119,7 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import { pipelinesStore } from '@/stores/pipelines'
 import { usersStore } from '@/stores/users'

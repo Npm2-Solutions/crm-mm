@@ -72,7 +72,15 @@
         <span v-else class="mr-2 size-9 shrink-0" />
       </div>
 
-      <div v-if="carica.loading" class="flex justify-center py-6">
+      <!-- the list's first load is the brand's cross (the design system's
+           Progress); more rows coming under the ones there, a spinner -->
+      <div
+        v-if="carica.loading && !righe.length"
+        class="flex justify-center py-10"
+      >
+        <LoaderMark />
+      </div>
+      <div v-else-if="carica.loading" class="flex justify-center py-6">
         <LoadingIndicator class="size-5" />
       </div>
       <p
@@ -101,6 +109,7 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
 import { leggibile } from '@/utils/telefono'

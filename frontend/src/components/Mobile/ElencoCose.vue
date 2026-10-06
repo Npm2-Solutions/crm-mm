@@ -77,9 +77,9 @@
 
       <div
         v-if="carica.loading && !righe.length"
-        class="flex justify-center py-6"
+        class="flex justify-center py-10"
       >
-        <LoadingIndicator class="size-5" />
+        <LoaderMark />
       </div>
       <EmptyState
         v-else-if="!righe.length && carica.fetched"
@@ -110,17 +110,11 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useRitorno } from '@/composables/ritorno'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import { usersStore } from '@/stores/users'
 import { adessoDelCentro } from '@/utils/scheduler'
 import { cosePerGruppo, scadenzaInBreve } from '@/utils/sulTelefono'
-import {
-  Avatar,
-  LoadingIndicator,
-  TabButtons,
-  call,
-  createResource,
-  toast,
-} from 'frappe-ui'
+import { Avatar, TabButtons, call, createResource, toast } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 
 const emit = defineEmits(['apri'])
