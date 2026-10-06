@@ -263,16 +263,24 @@ Dal registro e dal database, non dai controller: un modulo firmato, una fattura 
 prova emessa, la scheda di un paziente, una pipeline con trattative si tolgono come
 il resto, in pochi secondi (circa 6.500 record in meno di 4 secondi).
 
-1. **Quello che il centro ha adottato resta**: un servizio, una stanza, un listino
-   che un record del centro usa è del centro ora, ed esce dal registro.
-2. **Quello che riguarda la demo se ne va con lei, chiunque l'abbia scritto**:
+1. **Quello che riguarda la demo se ne va con lei, chiunque l'abbia scritto**:
    una nota del centro su una persona della demo, un appuntamento prenotato per
-   lei, un'email. Quello che la nomina soltanto resta, senza il riferimento (una
-   persona del centro la cui azienda era della demo).
+   lei, un'email, un modulo chiesto a una sua persona il giorno dopo. Quello che
+   la nomina soltanto resta, senza il riferimento (una persona del centro la cui
+   azienda era della demo).
+2. **Quello che il centro ha adottato resta**: un servizio, una stanza, un listino,
+   un modulo che un record del centro usa è del centro ora, ed esce dal registro,
+   intero (`PARTI`): il modulo con le sue versioni, quella su cui una persona del
+   centro l'ha compilato compresa; il listino con i prezzi dei servizi che restano.
+   Quello che usa soltanto la demo, scritto o no come suo, non tiene niente: per
+   questo si decide dopo il punto 1.
 3. Se ne vanno le righe con le loro tabelle figlie, poi tutto quello che il
    framework tiene accanto: versioni, commenti, comunicazioni, assegnazioni,
    condivisioni, notifiche, log, la ricerca globale, i documenti eliminati, le
-   email in coda verso gli indirizzi della demo; i colleghi della demo con ruoli,
+   email in coda verso gli indirizzi della demo (mai una traccia più vecchia del suo
+   arrivo, `crm_demo_data_since`: il framework ridà il nome dell'ultimo record
+   cancellato, e la riga del cestino del centro con quel nome resta sua); i
+   colleghi della demo con ruoli,
    impostazioni, sessioni e permessi; i file sul disco (i PDF dei preventivi e dei
    moduli firmati, i tratti delle firme, i contratti, le scansioni); le prove di un
    modulo o di una consegna se ne vanno con la loro catena intera; i

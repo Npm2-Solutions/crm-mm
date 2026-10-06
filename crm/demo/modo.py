@@ -67,6 +67,7 @@ def in_prova(parte: str) -> Iterator[registro.Raccolta]:
 	back, and what a step committed on its own anyway is still written down, so
 	that taking the demo away finds it.
 	"""
+	registro.segna_l_inizio()
 	corrente = registro.Raccolta(parte=parte)
 	prima = {flag: frappe.flags.get(flag) for flag in SILENZI}
 	originali = {

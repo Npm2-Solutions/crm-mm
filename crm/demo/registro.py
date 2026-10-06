@@ -21,6 +21,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 
 import frappe
 
@@ -35,6 +36,8 @@ LAVORO = "crm_demo_data_job"
 #: The name counters as they were before the demo first came: what it takes away
 #: goes back to them.
 SERIE = "crm_demo_data_series"
+#: When the demo first came, on the site's clock: nothing older is a trace of it.
+INIZIO = "crm_demo_data_since"
 
 #: Never written down: the register itself.
 NON_ANNOTARE = frozenset({REGISTRO})
@@ -319,3 +322,21 @@ def segna_fatta(chiave: str) -> None:
 def caricati() -> bool:
 	"""Whether the demo data are in."""
 	return frappe.db.get_default(STATO) == "1"
+
+
+def segna_l_inizio() -> None:
+	"""The demo comes now, unless some of it is in already."""
+	if frappe.db.get_default(INIZIO) is None or not frappe.db.count(REGISTRO):
+		frappe.db.set_default(INIZIO, frappe.utils.now())
+
+
+def cominciata() -> datetime | None:
+	"""When the demo first came. The framework gives the name of the last record
+	deleted again: a demo record may carry the name of one the centre threw in the
+	bin before, and what is older than the demo is never its trace. A register
+	written before this was kept starts an hour before its first row."""
+	quando = frappe.db.get_default(INIZIO)
+	if quando:
+		return frappe.utils.get_datetime(quando)
+	prima = frappe.get_all(REGISTRO, fields=["creation"], order_by="creation asc", limit=1)
+	return prima[0].creation - timedelta(hours=1) if prima else None
