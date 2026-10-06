@@ -114,11 +114,7 @@
               min="0"
               :label="__('Base price')"
             />
-            <FormControl
-              v-model="form.currency"
-              type="text"
-              :label="__('Currency')"
-            />
+            <CampoValuta v-model="form.currency" :label="__('Currency')" />
           </div>
           <FormControl
             v-model="form.location"
@@ -452,6 +448,9 @@ import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import { globalStore } from '@/stores/global'
 import TeamMatrix from '@/components/Settings/Scheduling/TeamMatrix.vue'
 import OnlineBookingPanel from '@/components/Settings/Scheduling/OnlineBookingPanel.vue'
+import CampoValuta from '@/components/Controls/CampoValuta.vue'
+import { appLocale } from '@/utils/locale'
+import { prezzo } from '@/utils/valute'
 import {
   INHERITED_RULES,
   ONLINE_DEFAULTS,
@@ -536,7 +535,8 @@ const editorTabs = [
 function ownSettings(row) {
   const parts = []
   if (row.duration) parts.push(`${row.duration}'`)
-  if (row.custom_price) parts.push(`${row.price} ${form.currency || ''}`.trim())
+  if (row.custom_price)
+    parts.push(prezzo(row.price, form.currency, appLocale()))
   if (!row.bookable_online) parts.push(__('not online'))
   return parts.join(' · ')
 }

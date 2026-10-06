@@ -332,7 +332,12 @@
                     :placeholder="__('No alert')"
                   />
                   <span class="text-p-sm text-ink-gray-5">
-                    {{ consumi.data.month?.currency }}
+                    {{
+                      simboloDellaValuta(
+                        consumi.data.month?.currency,
+                        appLocale(),
+                      )
+                    }}
                   </span>
                 </div>
               </div>
@@ -800,6 +805,7 @@ import {
   senzaIlPaese,
 } from '@/utils/chiamate'
 import { appLocale } from '@/utils/locale'
+import { simboloDellaValuta } from '@/utils/valute'
 import {
   nomeDellaRichiesta,
   prezzoAlMese,

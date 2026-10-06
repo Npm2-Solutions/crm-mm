@@ -60,10 +60,10 @@
           </div>
         </div>
         <div>
-          <Link
+          <CampoValuta
             v-model="settings.doc.currency"
-            doctype="Currency"
-            class="w-24 max-md:w-full"
+            class="w-48 max-md:w-full"
+            :aria-label="__('Currency')"
           />
         </div>
       </div>
@@ -166,11 +166,10 @@
 
 <script setup>
 import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
-import Link from '@/components/Controls/Link.vue'
+import CampoValuta from '@/components/Controls/CampoValuta.vue'
 import { getMeta } from '@/stores/meta'
 import {
   Select,
-  Button,
   LoadingIndicator,
   toast,
   createDocumentResource,
