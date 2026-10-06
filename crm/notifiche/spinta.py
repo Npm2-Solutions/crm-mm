@@ -51,6 +51,12 @@ AMBITO = "/crm"
 VITA = 12 * 60 * 60
 #: Failures in a row after which a device is forgotten.
 TENTATIVI = 5
+#: The address DottorCloud's pages are reached at, kept from the browser that
+#: turns a device on or tries it: a job has no request to read it from.
+CONTATTO = "crm_push_contact"
+#: How soon a push service hands a notification over: a person's message at
+#: once, the rest when the phone is awake anyway (an iPhone saves its battery).
+SUBITO, QUANDO_PUOI = "high", "normal"
 #: The push services of the browsers' makers: the only addresses written to.
 SERVIZI = (
 	"fcm.googleapis.com",
@@ -98,6 +104,31 @@ def chiavi() -> tuple[str, str]:
 	set_encrypted_password(IMPOSTAZIONI, IMPOSTAZIONI, privata, "push_private_key")
 	frappe.db.set_single_value(IMPOSTAZIONI, "push_public_key", pubblica)
 	return privata, pubblica
+
+
+def ricorda_l_indirizzo() -> None:
+	"""In a request of the browser's - a device turned on, the test -: the
+	address its pages are reached at, for what a job sends later."""
+	indirizzo = S.contatto(get_url())
+	if S.pubblico(indirizzo) and frappe.db.get_default(CONTATTO) != indirizzo:
+		frappe.db.set_default(CONTATTO, indirizzo)
+
+
+def mittente(della_richiesta: str | None = None) -> str:
+	"""Who signs what the site sends: the address the browser turned its device
+	on from, else the one the site is configured with, else the request's that
+	wrote the notification (Meta calling the webhook knows the site's name),
+	else the site's own (`spinta_regole.contatto`)."""
+	return S.contatto(
+		frappe.db.get_default(CONTATTO),
+		frappe.conf.get("host_name"),
+		della_richiesta,
+		get_url(),
+	)
+
+
+def _in_una_richiesta() -> str | None:
+	return get_url() if getattr(frappe.local, "request", None) else None
 
 
 # ------------------------------------------------------------------ the choices
@@ -205,6 +236,7 @@ def subscribe(subscription: dict | str, installed: int | str = 0) -> dict:
 		frappe.get_doc({"doctype": ABBONAMENTO, "endpoint_hash": segno, **valori}).insert(
 			ignore_permissions=True
 		)
+	ricorda_l_indirizzo()
 	return get_push()
 
 
@@ -250,7 +282,9 @@ def send_test() -> dict:
 		"url": f"{AMBITO}/notifications",
 		"tag": "crm-test",
 	}
-	arrivate = _spedisci_a_tutti(abbonamenti, contenuto)
+	ricorda_l_indirizzo()
+	# as a person's message goes, to see that one would arrive
+	arrivate = _spedisci_a_tutti(abbonamenti, contenuto, urgenza=SUBITO)
 	return {"sent": arrivate, "devices": len(abbonamenti)}
 
 
@@ -269,6 +303,7 @@ def accoda(notifica, solo_nel_pannello: bool = False) -> None:
 		"crm.notifiche.spinta.manda",
 		queue="short",
 		notifica=notifica.name,
+		contatto=_in_una_richiesta(),
 		enqueue_after_commit=True,
 	)
 
@@ -299,9 +334,10 @@ def messaggio(riga: dict, notifica: str) -> dict:
 	}
 
 
-def manda(notifica: str, sessione: requests.Session | None = None) -> int:
+def manda(notifica: str, sessione: requests.Session | None = None, contatto: str | None = None) -> int:
 	"""A notification to its person's devices; how many it reached. One that
-	reached a device does not go by email too."""
+	reached a device does not go by email too. `contatto`: the address of the
+	request that wrote it, when there was one (a job has none)."""
 	from crm.notifiche import api
 
 	riga = frappe.db.get_value(NOTIFICA, notifica, CAMPI_NOTIFICA, as_dict=True)
@@ -313,34 +349,44 @@ def manda(notifica: str, sessione: requests.Session | None = None) -> int:
 	with posta.nella_lingua_di(riga.to_user):
 		pannello = api.righe_del_pannello([riga], riga.to_user)
 		contenuto = messaggio(pannello[0], notifica)
-	arrivate = _spedisci_a_tutti(abbonamenti, contenuto, sessione)
+	urgenza = SUBITO if pannello[0].get("kind") in R.GRUPPI_EMAIL["messages"] else QUANDO_PUOI
+	arrivate = _spedisci_a_tutti(abbonamenti, contenuto, sessione, urgenza, mittente(contatto))
 	if arrivate:
 		frappe.db.set_value(NOTIFICA, notifica, "email_due", 0, update_modified=False)
 	return arrivate
 
 
-def _spedisci_a_tutti(abbonamenti: list[dict], contenuto: dict, sessione=None) -> int:
+def _spedisci_a_tutti(
+	abbonamenti: list[dict],
+	contenuto: dict,
+	sessione=None,
+	urgenza: str = QUANDO_PUOI,
+	chi: str | None = None,
+) -> int:
 	privata, _pubblica = chiavi()
 	dati = json.dumps({k: v for k, v in contenuto.items() if v is not None}, ensure_ascii=False).encode()
+	chi = chi or mittente(_in_una_richiesta())
 	propria = sessione is None
 	sessione = sessione or requests.Session()
 	try:
-		return sum(_spedisci(sessione, a, dati, privata) for a in abbonamenti)
+		return sum(_spedisci(sessione, a, dati, privata, chi, urgenza) for a in abbonamenti)
 	finally:
 		if propria:
 			sessione.close()
 
 
-def _spedisci(sessione, abbonamento: dict, dati: bytes, privata: str) -> bool:
+def _spedisci(
+	sessione, abbonamento: dict, dati: bytes, privata: str, chi: str, urgenza: str = QUANDO_PUOI
+) -> bool:
 	if not servizio_ammesso(abbonamento["endpoint"]):
 		_dimentica(abbonamento["name"])
 		return False
 	try:
 		corpo = S.cifra(dati, abbonamento["p256dh"], abbonamento["auth"])
 		intestazioni = {
-			**S.firma(abbonamento["endpoint"], privata, get_url()),
+			**S.firma(abbonamento["endpoint"], privata, chi),
 			"TTL": str(VITA),
-			"Urgency": "normal",
+			"Urgency": urgenza,
 			"Content-Encoding": "aes128gcm",
 			"Content-Type": "application/octet-stream",
 		}
@@ -360,6 +406,13 @@ def _spedisci(sessione, abbonamento: dict, dati: bytes, privata: str) -> bool:
 		# the browser let it go: the push service no longer knows it
 		_dimentica(abbonamento["name"])
 		return False
+	if not int(abbonamento.get("failures") or 0):
+		# the first refusal of a streak, with the push service's own reason
+		# (Apple's «BadJwtToken»): the agency reads it in the Error Log
+		frappe.log_error(
+			title=f"Web Push refused: {risposta.status_code} {S.origine(abbonamento['endpoint'])}",
+			message=(risposta.text or str(risposta.status_code))[:500],
+		)
 	_fallita(abbonamento)
 	return False
 

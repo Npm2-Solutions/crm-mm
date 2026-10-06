@@ -126,6 +126,39 @@ def origine(endpoint: str) -> str:
 	return f"{parti.scheme}://{parti.netloc}"
 
 
+#: Names no push service can reach: a server's own, a network's at home.
+_LOCALI = (".local", ".localhost", ".internal", ".lan", ".home", ".test", ".invalid")
+_IP = re.compile(r"^[\d.]+$|:")
+
+
+def pubblico(indirizzo: str | None) -> bool:
+	"""Whether an address names the site as the world reaches it: a name with a
+	dot that is no local one, nor a number."""
+	nome = (urlsplit(_con_schema(indirizzo)).hostname or "").lower()
+	return "." in nome and not _IP.search(nome) and not nome.endswith(_LOCALI)
+
+
+def _con_schema(indirizzo: str | None) -> str:
+	indirizzo = (indirizzo or "").strip()
+	return indirizzo if "://" in indirizzo else f"https://{indirizzo}" if indirizzo else ""
+
+
+def contatto(*indirizzi: str | None) -> str:
+	"""Whom the push services write to about what the site sends (RFC 8292 §2.1,
+	the signature's `sub`): the first of `indirizzi` that names the site as the
+	world reaches it, as https, without a port or a path; the first one at all
+	when none does.
+
+	A job has no request: there the site's own address is its local name with
+	the server's port (`http://dottorcloud.local:8000`), and Apple's push service
+	refuses a signature with it (403 BadJwtToken), so an iPhone received the test
+	sent from the page and never what a job sent."""
+	scritti = [_con_schema(i) for i in indirizzi if (i or "").strip()]
+	scelto = next((i for i in scritti if pubblico(i)), scritti[0] if scritti else "")
+	nome = urlsplit(scelto).hostname
+	return f"https://{nome}" if nome else ""
+
+
 def firma(endpoint: str, privata: str, contatto: str, adesso: float | None = None) -> dict:
 	"""The header that says who sends (RFC 8292 §3): a JWT signed with the site's
 	key for the push service's origin, valid `DURATA`, with whom to write to."""
