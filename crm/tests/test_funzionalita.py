@@ -153,7 +153,11 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		uso = plan.get_plan()["usage"]
 		# WhatsApp is not counted, Meta bills the centre; nor calls and SMS,
 		# Twilio bills them to whoever owns the account
-		self.assertEqual(set(uso), {"sdi_credits", "signatures"})
+		self.assertEqual(set(uso), {"storage", "sdi_credits", "signatures"})
+		# the space for files (doc 57): a terabyte for a studio, the manager not
+		# told where the files are, which is the agency's
+		self.assertEqual(uso["storage"]["included"], 1024**4)
+		self.assertNotIn("archive_on", uso["storage"])
 		self.assertEqual(uso["sdi_credits"]["included"], 500)
 		self.assertEqual(uso["signatures"]["included"], 2000)
 		for voce in ("sdi_credits", "signatures"):

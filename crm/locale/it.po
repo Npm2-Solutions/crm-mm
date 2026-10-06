@@ -41106,8 +41106,8 @@ msgid "Name or company"
 msgstr "Nome o azienda"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. WhatsApp messages, calls, numbers and SMS never are, nor are they in the plan: Meta and Twilio bill them to whoever owns the account."
-msgstr "Oltre quello che è incluso, crediti SdI e firme avanzate li fattura l'agenzia una volta al mese. Messaggi WhatsApp, chiamate, numeri e SMS mai, e non sono nemmeno nel piano: li fatturano Meta e Twilio a chi è intestato l'account."
+msgid "Beyond what is included, the space for files, SdI credits and advanced signatures are billed by the agency once a month. WhatsApp messages, calls, numbers and SMS never are, nor are they in the plan: Meta and Twilio bill them to whoever owns the account."
+msgstr "Oltre quello che è incluso, lo spazio per i file, i crediti SdI e le firme avanzate li fattura l'agenzia una volta al mese. Messaggi WhatsApp, chiamate, numeri e SMS mai, e non sono nemmeno nel piano: li fatturano Meta e Twilio a chi è intestato l'account."
 
 #: crm/moduli/modelli.py
 msgid "The consents in the centre's language"
@@ -45479,3 +45479,75 @@ msgstr "Dove si apre l'agenda finché qualcuno non sceglie un'altra vista; ognun
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 msgid "A click on a free time and a moved appointment land on these minutes."
 msgstr "Un clic su un orario libero e un appuntamento spostato cadono su questi minuti."
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Space for files"
+msgstr "Spazio per i file"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Nearly full: beyond, the space is paid as used"
+msgstr "Quasi pieno: oltre, lo spazio si paga a consumo"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "{0} on the archive"
+msgstr "{0} nell'archivio"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "The archive is off: the files stay on the server"
+msgstr "L'archivio è spento: i file restano sul server"
+
+#: crm/archivio/archivio.py
+msgid "This file is in the archive, which this site cannot reach. The agency can tell why."
+msgstr "Questo file è nell'archivio, che da questo sito non si raggiunge. L'agenzia sa dire perché."
+
+#: crm/archivio/archivio.py
+msgid "File in the archive"
+msgstr "File nell'archivio"
+
+#: crm/archivio/archivio.py
+msgid "The file could not be brought back from the archive. Try again in a minute."
+msgstr "Non è stato possibile riprendere il file dall'archivio. Riprova fra un minuto."
+
+#: crm/fcrm/doctype/crm_plan/crm_plan.json
+msgid "Storage included (GB)"
+msgstr "Spazio incluso (GB)"
+
+#: crm/fcrm/doctype/crm_plan/crm_plan.json
+msgid "The space for the centre's files, in GB, when it is not what the size includes: 1 TB, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it."
+msgstr "Lo spazio per i file del centro, in GB, quando non è quello che la dimensione include: 1 TB, 2 TB da Poliambulatorio in su. Oltre non si blocca niente: la pagina avvisa e l'agenzia lo fattura."
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "CRM Archived File"
+msgstr "File nell'archivio"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "A private file of the centre whose content is on the agency's archive: where it is there, and when it was brought back to be read."
+msgstr "Un file privato del centro il cui contenuto è nell'archivio dell'agenzia: dove sta lì, e quando è stato ripreso per leggerlo."
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "File address"
+msgstr "Indirizzo del file"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "Key in the archive"
+msgstr "Chiave nell'archivio"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "The object's key in the bucket: the site's folder, the content's fingerprint, the file's name."
+msgstr "La chiave dell'oggetto nel bucket: la cartella del sito, l'impronta del contenuto, il nome del file."
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "Size (bytes)"
+msgstr "Dimensione (byte)"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "Archived on"
+msgstr "Archiviato il"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "Brought back on"
+msgstr "Ripreso il"
+
+#: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
+msgid "Brought back to the server to be read: it leaves again after an hour."
+msgstr "Riportato sul server per leggerlo: riparte dopo un'ora."
