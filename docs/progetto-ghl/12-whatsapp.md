@@ -468,10 +468,42 @@ quelli creati da noi: normalmente arriva sul webhook
 `message_template_status_update`, e questa è la via di ritorno se uno andasse
 perso.
 
-La `fetch` di frappe_whatsapp scrive con `db_insert`/`db_update` e non con
-`insert`, quindi **non ri-sottopone niente a Meta**: legge soltanto. Se usasse
-`insert` farebbe scattare l'`after_insert`, che rimanderebbe ogni template a
-Meta come se fosse nuovo.
+La sincronizzazione è nostra (`templates.porta_dentro`), non più la `fetch` di
+frappe_whatsapp, che aveva tre difetti: si fermava dopo il **primo** numero
+attivo (il `return` stava dentro il ciclo), leggeva **una pagina** sola della
+lista di Meta, e cercava i template per nome, quindi `hello_world` di due
+account diventava uno solo. La nostra legge ogni account una volta, tutte le
+pagine, riconosce un template dall'`id` di Meta (o, se non l'ha ancora, da nome
+e lingua sullo stesso account) e, come la `fetch`, scrive con
+`db_insert`/`db_update`: **non ri-sottopone niente a Meta**. Un template che Meta
+non ha più resta, segnato «Eliminato su Meta», per i messaggi che lo nominano.
+Un numero che non risponde (token scaduto) lo dice per nome, e gli altri entrano
+lo stesso.
+
+### Un modello sta sull'account, non sul numero
+
+Meta tiene i template sull'**account WhatsApp Business** (il WABA):
+`/<WABA>/message_templates`. Lo può inviare ogni numero di quell'account, e
+nessun altro. Due numeri dello stesso account hanno gli stessi modelli; due
+account diversi possono avere un modello con lo stesso nome, e sono due modelli.
+
+Per questo la pagina **Impostazioni › WhatsApp › Modelli** mostra un numero alla
+volta (le schede compaiono quando i numeri sono più di uno), con una riga che
+dice se quei modelli si possono inviare adesso: DottorCloud invia da un numero
+solo, quello scelto in Impostazioni › WhatsApp. Un modello nuovo si crea sul
+numero mostrato. Chi sceglie un modello — la chat, le automazioni, la lista
+d'attesa, l'area — vede solo quelli del numero che invia
+(`templates.modelli_inviabili`, `crm.api.whatsapp.get_sendable_templates`), e il
+controllo prima dell'invio confronta l'account, non il nome del numero.
+
+### I pulsanti
+
+Un modello può avere fino a 10 pulsanti: **risposte rapide** (la persona tocca
+e la risposta torna in chat con le sue parole), al massimo 2 **link** e 1
+**chiamata**; parole di 25 caratteri al massimo. Meta li vuole raggruppati: prima
+le risposte rapide, poi gli altri — li mettiamo in quell'ordine da soli. Le
+regole sono in `crm/integrations/whatsapp/modelli_regole.py` e si dicono
+**prima** di mandare il modello in revisione.
 
 ### Cosa Meta pretende, e cosa sbagliavamo
 
@@ -521,8 +553,8 @@ per variabile, e ognuno passa da `render()`: si può scrivere
 
 **Fase 2 — quel che resta**
 - finestra 24h: avviso in chat quando serve un template per riaprire;
-- header con media (immagine/video/documento) e bottoni nei template: l'editor
-  fa header di testo, corpo e footer;
+- header con media (immagine/video/documento): l'editor fa header di testo,
+  corpo, footer e pulsanti (un'immagine portata da Meta resta com'è);
 - valori di esempio per le variabili in fase di invio a Meta (li chiede in
   revisione per i template con placeholder);
 - sincronizzazione dello stato di approvazione via webhook
