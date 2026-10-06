@@ -403,16 +403,18 @@ conferme a nome di tutti. Segnarla letta, poi, spostava la riga: l'ordine
 metteva i non letti in cima, e la conversazione appena letta finiva sotto tutte
 le altre, fuori dallo schermo.
 
-Ora letto è un momento solo, e ha tre porte: il pulsante «Segna come letta»,
+Ora letto è un momento solo, e ha quattro porte: il pulsante «Segna come letta»,
 una risposta scritta dal CRM (WhatsApp, template, reazione, SMS, email; non una
-nota interna, non un messaggio mandato da un'automazione) e «Gestita». Aprire
-una conversazione non è una di queste.
+nota interna, non un messaggio mandato da un'automazione), una risposta scritta
+dall'app WhatsApp Business sul telefono (dal 06/10/2026, più sotto) e «Gestita».
+Aprire una conversazione non è una di queste.
 
 | Quando | Badge (per tutto il team) | La riga nella lista | Spunte blu al cliente, se attive |
 |---|---|---|---|
 | Apri la conversazione | Non cambia | Non si muove | No |
 | Arriva un loro messaggio | Si accende; il numero conta quelli arrivati dall'ultima lettura | Sale in cima; se era gestita o rimandata torna fra le Aperte | No |
 | Rispondi dal CRM | Si spegne: «Letta da te · ora» | Sale in cima, perché è un messaggio | Sì |
+| Rispondi dall'app WhatsApp sul telefono | Si spegne: «Letta», al momento della risposta; quello che scrivono dopo resta da leggere | Sale in cima, perché è un messaggio | No: le ha già mostrate il telefono |
 | «Segna come letta» | Si spegne | Resta dov'è | Sì |
 | «Gestita» | Si spegne, se c'era qualcosa da leggere | Resta velata al suo posto, «Gestita · torna quando scrivono», finché non passi a un'altra; il toast ha Annulla | Sì, se c'era qualcosa da leggere |
 | «Rimanda» | Non cambia | Come sopra, «Rimandata a domani 09:00» | No |
@@ -573,3 +575,55 @@ I file: `ComposerShell.vue` (il riquadro), `CommunicationArea.vue`,
 `composables/growingTextarea.js`, `composables/drafts.js`,
 `composables/conversationScroll.js`; `utils/emailDraft.js` (firma, citazione,
 indirizzi di risposta), testato in `tests/unit/emailDraft.test.js`.
+
+## Letta anche dal telefono (06/10/2026)
+
+«Quando seleziono un contatto non scrolla in basso, e resta tutto da leggere
+anche se qualcuno ha risposto da telefono via WhatsApp.» Era una cosa sola, vista
+da due parti.
+
+- **La risposta dal telefono non leggeva niente.** Con la coesistenza, quello che
+  il centro scrive dall'app WhatsApp Business arriva a DottorCloud come «eco»
+  (`smb_message_echoes`) e viene scritto senza il controller, perché non parta
+  una seconda volta (`coexistence.store_message`): nessuno diceva che la
+  conversazione era stata letta. Restava «da leggere» su ogni schermo, con le
+  sue notifiche. Ora una risposta dal telefono legge la conversazione come una
+  scritta dal CRM (`conversations.answered`), al momento della risposta: quello
+  che scrivono dopo resta da leggere, e conta da lì. Nessuno è nominato come chi
+  l'ha letta, il telefono non lo dice; le spunte blu non partono, le ha già
+  mostrate il telefono che ha risposto. La storia importata (sei mesi di chat)
+  non legge niente.
+- **E per questo si apriva in alto.** Una conversazione da leggere si apre sulla
+  riga dei nuovi messaggi, che parte dall'ultima lettura: con le risposte dal
+  telefono mai contate, quel momento era vecchio, o non c'era proprio per le
+  conversazioni nate prima del modello di lettura (la patch che le aveva messe
+  «da leggere» non aveva scritto quando erano state lette). La riga finiva sopra
+  tutta la storia, e la chat si apriva lì. La patch
+  `answers_from_the_phone_read_the_conversation` mette a posto quelle rimaste:
+  una conversazione da leggere con una risposta di qualcuno del centro dopo
+  l'ultima lettura (dal telefono, o scritta da una persona: mai il messaggio di
+  un'automazione) è letta a quel momento; una mai letta e senza risposte conta
+  dall'ultimo messaggio partito da qui, non dall'inizio dei tempi.
+- **Si mette al suo posto una volta sola.** Cambiando contatto la chat arrivava
+  prima di sapere dove cominciavano i nuovi: si metteva in fondo, compariva, e
+  un attimo dopo saltava su alla riga. Ora aspetta di saperlo (`waitForNew`) e
+  compare già sulla riga, o in fondo se non c'è niente di nuovo.
+- **Leggere spegne le notifiche.** Letta è per tutto il team, e lo sono anche le
+  righe che i suoi messaggi avevano lasciato nel pannello di ognuno («3 messaggi
+  WhatsApp da Laura»), e l'email che sarebbe partita cinque minuti dopo
+  (`their_notifications_read`).
+- **Ogni schermo lo sa.** Letta, risposta, gestita, rimessa da leggere, un loro
+  messaggio, anche un'email: il server lo dice a ogni pagina Conversazioni aperta
+  (`crm_conversation`), e la riga e i numeri seguono. E la lista non si ferma
+  più: aprendo il primo contatto, la chat toglieva al socket tutti gli ascolti
+  dei messaggi WhatsApp e SMS, anche quello della lista (`$socket.off` con il
+  solo nome dell'evento), che da lì restava ferma fino a un aggiornamento a mano.
+
+Si apre ancora sulla riga dei nuovi quando ce ne sono, come le app di messaggi:
+con sette messaggi nuovi si leggono dal primo, e «Vai all'ultimo messaggio» è in
+basso a destra. Senza niente di nuovo si apre in fondo.
+
+I file: `crm/api/conversations.py` (`answered`, `their_notifications_read`,
+`announce`), `crm/integrations/whatsapp/coexistence.py`, la patch,
+`pages/Conversations.vue`, `components/Activities/Activities.vue`; i test in
+`crm/tests/test_conversations.py`.
