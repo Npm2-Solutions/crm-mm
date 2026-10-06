@@ -102,13 +102,15 @@ def numeri() -> list[dict]:
 	then the ones taken out of use, each with the WhatsApp Business account its
 	templates are kept on (`waba`: for the server, the ids are what Meta calls
 	things, and a manager choosing a number has no use for them)."""
-	if not frappe.db.exists("DocType", "WhatsApp Account"):
+	# a bench without the WhatsApp app has no table of numbers
+	if not frappe.db.table_exists("WhatsApp Account"):
 		return []
 	from crm.api.whatsapp import sending_account_name
 
 	invia = sending_account_name()
-	campi = {df.fieldname for df in frappe.get_meta("WhatsApp Account").fields}
-	fields = ["name", "status"] + [campo for campo in ("account_name", "business_id") if campo in campi]
+	fields = ["name", "status"] + [
+		campo for campo in ("account_name", "business_id") if frappe.db.has_column("WhatsApp Account", campo)
+	]
 	righe = [
 		{
 			"name": riga.name,
