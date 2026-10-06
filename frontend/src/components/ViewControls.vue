@@ -357,7 +357,7 @@ import { globalStore } from '@/stores/global'
 import { viewsStore } from '@/stores/views'
 import { usersStore } from '@/stores/users'
 import { organizationsStore } from '@/stores/organizations'
-import { getMeta } from '@/stores/meta'
+import { delDocumento, useCampiDellaLista } from '@/composables/campiDellaLista'
 import { isEmoji } from '@/utils'
 import { nomeDellaPagina } from '@/utils/menu'
 import {
@@ -804,11 +804,15 @@ const viewsDropdownOptions = computed(() => {
   return _views
 })
 
-const { getFields } = getMeta(props.doctype)
+// what the list offers, in the reader's words: a quick filter is one of the
+// document's own fields, never its code
+const { campi: campiDellaLista, carica: caricaCampiDellaLista } =
+  useCampiDellaLista(props.doctype)
 
 const customizeQuickFilter = ref(false)
 
 function showCustomizeQuickFilter() {
+  caricaCampiDellaLista()
   customizeQuickFilter.value = true
   setupNewQuickFilters(quickFilters.data)
 }
@@ -859,28 +863,18 @@ function saveQuickFilters() {
 }
 
 const quickFilterOptions = computed(() => {
-  let fields = getFields()
+  let fields = campiDellaLista.data
   if (!fields) return []
 
   let existingQuickFilters = newQuickFilters.value.map((f) => f.fieldname)
-  let options = fields
-    .filter((f) => f.label)
+  return fields
+    .filter(delDocumento)
     .filter((f) => !existingQuickFilters.includes(f.fieldname))
     .map((field) => ({
       label: field.label,
       value: field.fieldname,
       fieldtype: field.fieldtype,
     }))
-
-  if (!options.some((f) => f.fieldname === 'name')) {
-    options.push({
-      label: __('Name'),
-      value: 'name',
-      fieldtype: 'Data',
-    })
-  }
-
-  return options
 })
 
 // the People list's step, drawn as views rather than as a select

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Combobox
     :options="options"
@@ -9,7 +12,7 @@
         :label="
           hideLabel
             ? groupByValue?.label
-            : __('Group By: ') + groupByValue?.label
+            : __('Group By: {0}', [groupByValue?.label])
         "
         :iconLeft="DetailsIcon"
         :iconRight="open ? 'chevron-up' : 'chevron-down'"

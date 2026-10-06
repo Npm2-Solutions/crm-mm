@@ -1,5 +1,6 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
 import { createResource } from 'frappe-ui'
-import { noValueFieldTypes, standardFieldsMeta } from '@/utils/model.js'
+import { noValueFieldTypes } from '@/utils/model.js'
 import {
   cint,
   flt,
@@ -94,7 +95,6 @@ export function getMeta(doctype) {
   function getFields(options = {}) {
     let {
       dt = doctype,
-      withStandardFields = false,
       restrictNoValueFields = true,
       restrictedFieldTypes = [],
     } = options
@@ -130,10 +130,6 @@ export function getMeta(doctype) {
           }
           return f
         }) || []
-
-    if (withStandardFields) {
-      fieldsMeta = fieldsMeta.concat(standardFieldsMeta)
-    }
 
     return fieldsMeta || []
   }

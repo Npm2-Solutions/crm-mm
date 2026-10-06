@@ -313,6 +313,7 @@ import { statusesStore } from '@/stores/statuses'
 import { pipelinesStore } from '@/stores/pipelines'
 import { callEnabled } from '@/composables/telephony'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
+import { intestazioneDelGruppo } from '@/utils/gruppi'
 import { kanbanColumnsForPipeline, pipelineOfColumns } from '@/utils/pipelines'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useTelemetry } from 'frappe-ui/frappe'
@@ -457,7 +458,11 @@ function getGroupedByRows(listRows, groupByField, columns) {
 
     let groupDetail = {
       label: groupByField.label,
-      group: option || __(' '),
+      group: intestazioneDelGruppo(option, groupByField, {
+        t: __,
+        utente: (utente) => getUser(utente)?.full_name,
+        giorno: (giorno) => formatDate(giorno, '', true),
+      }),
       collapsed: false,
       rows: parseRows(filteredRows, columns),
     }
