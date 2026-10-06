@@ -22,6 +22,12 @@ describe('the page a missing row opens', () => {
     )
   })
 
+  it('a row that names its page opens it', () => {
+    expect(
+      paginaDellaMancanza({ page: 'Fatture in Cloud', field: 'tax_id' }),
+    ).toBe('Fatture in Cloud')
+  })
+
   it('records open their own list', () => {
     expect(
       paginaDellaMancanza({

@@ -156,8 +156,22 @@
           {{ __('How invoices leave') }}
         </h3>
         <div class="flex flex-col gap-2 text-p-sm text-ink-gray-7">
+          <!-- a centre that invoices with Fatture in Cloud: they are born there -->
+          <div v-if="stato.data.fic" class="flex items-start gap-2">
+            <LucideSend class="mt-0.5 size-4 shrink-0 text-ink-gray-5" />
+            <span>
+              {{
+                __(
+                  'The invoices are born in Fatture in Cloud: it gives the number, and the electronic ones leave for the SdI from there.',
+                )
+              }}
+            </span>
+          </div>
           <!-- a centre that reports no healthcare expense: every invoice is electronic -->
-          <div v-if="!stato.data.healthcare" class="flex items-start gap-2">
+          <div
+            v-else-if="!stato.data.healthcare"
+            class="flex items-start gap-2"
+          >
             <LucideSend class="mt-0.5 size-4 shrink-0 text-ink-gray-5" />
             <span>
               {{

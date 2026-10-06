@@ -402,6 +402,9 @@ const PAGINE = {
   'Provider connection': aRichiesta(
     () => import('@/components/Settings/Invoicing/ProviderConnection.vue'),
   ),
+  'Fatture in Cloud': aRichiesta(
+    () => import('@/components/Settings/Invoicing/FattureInCloud.vue'),
+  ),
   'Billable services': aRichiesta(
     () =>
       import('@/components/Settings/Invoicing/BillableServicesSettings.vue'),

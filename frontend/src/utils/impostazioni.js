@@ -442,6 +442,13 @@ export const MENU = [
         // the clinic says its Sistema TS credentials too (crm/clinica/parole.py)
         description: 'Who issues the invoices: details, tax regime, numbering.',
       },
+      // a centre that invoices with Fatture in Cloud: its invoices are born there
+      {
+        key: 'Fatture in Cloud',
+        label: 'Fatture in Cloud',
+        description:
+          'If the centre invoices with Fatture in Cloud: the invoices are born there.',
+      },
       {
         key: 'Services & providers',
         label: 'Services & providers',

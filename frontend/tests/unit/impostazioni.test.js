@@ -116,18 +116,18 @@ describe('the settings menu, by who reads it', () => {
       'WhatsApp: Numbers, Templates',
       'Phone: Telephony, Call scripts',
       'Marketing: Website, Social Planner, Tracking [Lead tracking · Tracked links]',
-      'Invoicing: Test and go live, Issuing company, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
+      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
       'Integrations: Meta, Assistant',
     ])
   })
 
-  it('had 48 entries in sixteen groups: now 34 for 50 pages, none alone in its group', () => {
+  it('had 48 entries in sixteen groups: now 35 for 51 pages, none alone in its group', () => {
     const menu = menuDi(sessione('manager'))
     const voci = menu.flatMap((gruppo) => gruppo.items)
-    expect(voci).toHaveLength(34)
-    // every page is still there, as an entry or a tab, the notifications and
-    // the centre's language
-    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(50)
+    expect(voci).toHaveLength(35)
+    // every page is still there, as an entry or a tab, the notifications,
+    // the centre's language and Fatture in Cloud
+    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(51)
     expect(menu.filter((gruppo) => gruppo.items.length === 1)).toEqual([])
   })
 
@@ -175,7 +175,7 @@ describe('the settings menu, by who reads it', () => {
   it('shows accounting the invoicing, and the medical director the forms and the libraries', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
-      'Invoicing: Test and go live, Issuing company, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
+      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
@@ -323,8 +323,9 @@ describe('the pages there are', () => {
     const tutte = pagine()
     expect(new Set(tutte).size).toBe(tutte.length)
     // the 51 pages there were, none lost, the notifications and one's email;
-    // ERPNext gone (02/10/2026); the demo data (doc 53); the centre's language
-    expect(tutte).toHaveLength(54)
+    // ERPNext gone (02/10/2026); the demo data (doc 53); the centre's language;
+    // Fatture in Cloud (06/10/2026)
+    expect(tutte).toHaveLength(55)
   })
 
   it('gives every group, entry and tab a label', () => {
