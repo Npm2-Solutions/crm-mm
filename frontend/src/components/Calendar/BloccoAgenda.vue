@@ -69,9 +69,15 @@
           style="--s: 7px"
           aria-hidden="true"
         />
-        <span class="dc-evento__ora truncate">
-          {{ adesso ? __('Now · {0}', [orario]) : orario }}
+        <!-- on a phone's narrow column the cross and the ring say now, and
+             its hours stay whole (espresso-componenti.css) -->
+        <span v-if="adesso" class="dc-evento__ora truncate">
+          <span class="dc-evento__con-adesso">{{
+            __('Now · {0}', [orario])
+          }}</span>
+          <span class="dc-evento__senza-adesso">{{ orario }}</span>
         </span>
+        <span v-else class="dc-evento__ora truncate">{{ orario }}</span>
         <Segni :segni="segni" class="ml-auto" />
       </span>
       <span class="dc-evento__chi block truncate">{{ testo.chi }}</span>
