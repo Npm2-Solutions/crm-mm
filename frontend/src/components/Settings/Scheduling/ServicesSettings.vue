@@ -172,7 +172,9 @@
 
         <!-- who delivers it: the service's row of the grid; own settings are set there -->
         <template v-else-if="editorTab === 'team'">
-          <div class="grid grid-cols-2 gap-3">
+          <!-- one under the other on a phone: «Uno qualsiasi (a rotazione)»
+               was cut in half a column -->
+          <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
             <FormControl
               v-model="form.staff_selection"
               type="select"

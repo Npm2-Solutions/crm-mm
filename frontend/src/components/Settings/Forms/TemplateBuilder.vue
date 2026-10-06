@@ -549,7 +549,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Each version is kept as it was published, with its SHA-256: what was filled on it points at it, and shows the exact words.',
+              'Each version is kept as it was published, with its fingerprint: what was filled on it points at it, and shows the exact words.',
             )
           }}
         </p>
@@ -598,7 +598,7 @@
             class="truncate text-xs text-ink-gray-5"
             :title="version.schema_hash"
           >
-            SHA-256 {{ version.schema_hash }}
+            {{ __('Fingerprint') }} {{ version.schema_hash }}
           </code>
         </div>
       </div>
