@@ -344,7 +344,7 @@ has_permission = {
 # ---------------
 # Override standard doctype classes
 
-# nosemgrep: override-doctype-class — both overrides only add default_list_data() for the CRM list views, nothing else
+# nosemgrep: override-doctype-class — each override subclasses the framework's class and calls super(): list data, a mailbox's mails, the demo's guard, an archived file brought back before it is read
 override_doctype_class = {
 	"Contact": "crm.overrides.contact.CustomContact",
 	"Email Template": "crm.overrides.email_template.CustomEmailTemplate",
@@ -353,6 +353,8 @@ override_doctype_class = {
 	# a person of the demo data is never written to (crm.demo.guardie); only where
 	# the WhatsApp app is, as the doctype is
 	"WhatsApp Message": "crm.demo.whatsapp.MessaggioWhatsApp",
+	# a private file on the agency's archive is brought back before it is read (crm.archivio)
+	"File": "crm.overrides.file.FileDiDottorCloud",
 }
 
 # Document Events
@@ -595,6 +597,8 @@ doc_events = {
 	# whatever the upload asked
 	"File": {
 		"before_insert": ["crm.clinica.cartella.allegato_privato", "crm.documenti.api.allegato_privato"],
+		# the last File of an address gone, its object leaves the archive (crm.archivio)
+		"on_trash": ["crm.archivio.archivio.al_cestino"],
 	},
 	"User": {
 		"before_validate": ["crm.api.live_demo.validate_user"],
@@ -668,8 +672,12 @@ scheduler_events = {
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
 		"crm.integrations.meta.leads.reconcile_synced_pages",
+		# the private files written a while ago, to the agency's archive (crm.archivio)
+		"crm.archivio.archivio.sposta",
 	],
 	"daily_long": [
+		# what a deletion by the database left in the archive
+		"crm.archivio.archivio.orfani",
 		# where the centre switched it on, the night's reports to the Sistema TS: one
 		# synchronous call per expense, so the long queue
 		"crm.tessera_sanitaria.automatico.ogni_notte",
@@ -876,7 +884,13 @@ standard_dropdown_items = [
 # worker that finds them there never imports this file.
 # Itala pushes its updates with `Authorization: Bearer`: taken away from that one
 # address before Frappe authenticates the request (crm/invoicing/sdi/webhook.py)
-before_request = ["crm.registrazione.carica", "crm.invoicing.sdi.webhook.prima_della_richiesta"]
+# an archived private file is opened from the agency's archive, after the framework's
+# own check (crm/archivio/archivio.py)
+before_request = [
+	"crm.registrazione.carica",
+	"crm.invoicing.sdi.webhook.prima_della_richiesta",
+	"crm.archivio.archivio.prima_della_richiesta",
+]
 before_job = ["crm.registrazione.carica"]
 
 from crm.registrazione import carica as _carica_moduli
