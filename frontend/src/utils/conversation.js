@@ -38,7 +38,8 @@ export const CHANNELS = [
   // call is one of the things said — it does not belong one level up from the
   // conversation it is part of.
   { key: 'call', label: 'Calls' },
-  { key: 'comment', label: 'Comments' },
+  // what colleagues write for each other: the person never reads it
+  { key: 'comment', label: 'Internal notes' },
 ]
 
 /**
