@@ -93,6 +93,8 @@ class TestMarchio(IntegrationTestCase):
 
 	def test_le_impostazioni_prendono_il_marchio_anche_sopra_un_altro_nome(self):
 		# a name somebody wrote is not the product's: the product's is, everywhere
+		del_framework = ("About", "Frappe Support")
+		prima = self.aiuto()
 		frappe.db.set_single_value(
 			"Website Settings", {"app_name": "Centro Aurora", "footer_powered": "Centro Aurora srl"}
 		)
@@ -106,10 +108,14 @@ class TestMarchio(IntegrationTestCase):
 		self.assertEqual(frappe.db.get_single_value("Website Settings", "favicon"), PROVA.favicon)
 		self.assertEqual(frappe.db.get_single_value("Navbar Settings", "app_logo"), PROVA.icona)
 		self.assertEqual(frappe.db.get_single_value("System Settings", "disable_product_suggestion"), 1)
-		# the framework's about page and support link leave the desk's help menu
+		# the framework's about page and support link leave the desk's help menu;
+		# the rest of it stays as the framework ships it, whatever it holds
 		aiuto = self.aiuto()
-		self.assertEqual((aiuto.get("About"), aiuto.get("Frappe Support")), (1, 1))
-		self.assertEqual(aiuto.get("Keyboard Shortcuts"), 0)
+		self.assertEqual(tuple(aiuto.get(voce) for voce in del_framework), (1, 1))
+		self.assertEqual(
+			{voce: nascosta for voce, nascosta in aiuto.items() if voce not in del_framework},
+			{voce: nascosta for voce, nascosta in prima.items() if voce not in del_framework},
+		)
 		marchio.applica()
 		self.assertEqual(frappe.db.get_single_value("Website Settings", "app_name"), marchio.nome())
 
