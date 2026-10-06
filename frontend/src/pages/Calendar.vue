@@ -1,8 +1,13 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-  On a phone the day opens as a list (components/Mobile/AgendaDelGiorno.vue),
-  the hours' grid one choice away.
+  The agenda (docs/progetto-ghl/56-agenda.md). A day of the centre, one column
+  per professional (or per room) who works it; a week of one of them; a month.
+  One bar for every view: the arrows and the date, the view, whose agenda, the
+  filters, how it looks. An appointment reads its person first, in as many
+  whole lines as its height holds. On a phone the day opens as a list
+  (components/Mobile/AgendaDelGiorno.vue), the hours' grid and the month one
+  choice away.
 -->
 <template>
   <LayoutHeader>
@@ -10,49 +15,9 @@
       <ViewBreadcrumbs routeName="Calendar" label="Agenda" />
     </template>
     <template #right-header>
-      <TabButtons
-        v-if="!isMobileView"
-        v-model="viewMode"
-        :buttons="[
-          { label: __('Calendar'), value: 'calendar' },
-          { label: __('Agenda', null, 'Calendar view'), value: 'agenda' },
-        ]"
-      />
-      <Tooltip
-        v-if="!isMobileView"
-        :text="
-          googleConnection.data?.connected
-            ? __('Google Calendar connected — busy slots block bookings')
-            : __(
-                'Connect your Google Calendar to block busy slots on booking pages',
-              )
-        "
-      >
-        <!-- its words on a desk; narrower than 1024px (a tablet held
-             upright) the header had no room for them beside the sisters'
-             switch, which lost «Lista d'attesa»: the icon there, its name
-             still read -->
-        <Button
-          :variant="googleConnection.data?.connected ? 'subtle' : 'outline'"
-          :aria-label="googleLabel"
-          @click="connectGoogle"
-        >
-          <template #prefix>
-            <span
-              class="lucide-calendar-sync size-4 lg:hidden"
-              aria-hidden="true"
-            />
-          </template>
-          <span class="max-lg:hidden">{{ googleLabel }}</span>
-        </Button>
-      </Tooltip>
-      <!--
-        One way in. There were two buttons, «Event» and «Appointment», for two
-        things that land in the same calendar, and a click on an empty slot
-        always made an event. Now «New» opens the panel on whatever was made
-        last, and the panel's first line switches between the two.
-      -->
-      <!-- making one is for who books (doc 30): an event or an appointment -->
+      <!-- making one is for who books (doc 30): an event or an appointment.
+           «New» opens the panel on whatever was made last, and the panel's
+           first line switches between the two. -->
       <ShortcutTooltip v-if="prenota" :label="__('New')" combo="Mod+E">
         <Button
           variant="solid"
@@ -69,307 +34,194 @@
     </template>
   </LayoutHeader>
 
-  <!-- filters. On a phone they are one row that scrolls sideways — wrapped,
-       the five of them took three rows, a seventh of the screen, above every
-       day — fading at the edge so it shows there is more, and they step aside
-       while a panel is open, which takes the screen below the header. -->
-  <div
-    v-show="!(isMobileView && panelOpen)"
-    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:pr-8 max-md:[mask-image:linear-gradient(to_right,#000_calc(100%-2.5rem),transparent)] max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0"
-  >
-    <MultiSelectFilter
-      v-model="filters.services"
-      :label="__('Services')"
-      icon="lucide-sparkles"
-      :options="serviceFilterOptions"
-      :emptyText="__('No services configured yet')"
-      @update:modelValue="reloadScheduler"
-    />
-    <MultiSelectFilter
-      v-model="filters.staff"
-      :label="__('Professionals')"
-      icon="lucide-users"
-      :options="staffFilterOptions"
-      @update:modelValue="reloadScheduler"
-    />
-    <MultiSelectFilter
-      v-model="filters.resources"
-      :label="__('Rooms & equipment')"
-      icon="lucide-door-open"
-      :options="resourceFilterOptions"
-      :emptyText="__('No rooms or equipment yet')"
-      @update:modelValue="reloadScheduler"
-    />
-    <MultiSelectFilter
-      v-model="filters.statuses"
-      :label="__('Status')"
-      icon="lucide-circle-dot"
-      :options="statusFilterOptions"
-      @update:modelValue="reloadScheduler"
-    />
-    <MultiSelectFilter
-      v-model="filters.sources"
-      :label="__('Source')"
-      icon="lucide-plug-zap"
-      :options="sourceFilterOptions"
-      @update:modelValue="reloadScheduler"
-    />
-    <span class="grow" />
-    <span v-if="countLabel" class="whitespace-nowrap text-p-sm text-ink-gray-5">
-      {{ countLabel }}
-    </span>
-    <Button
-      v-if="hasFilters"
-      variant="ghost"
-      :label="__('Reset')"
-      @click="resetFilters"
-    />
-  </div>
-
-  <!--
-    The agenda (one column per professional or per room) or the calendar
-    (month, week, day: appointments and events together), and beside either
-    one the panel of what is open.
-  -->
-  <!-- On a phone the panel takes the whole width: what it opened from steps
-       aside, or its controls - positioned, the view's select and the day's
-       arrows - were drawn over the panel's title. -->
   <div class="flex h-full overflow-hidden">
+    <!-- On a phone the panel takes the whole width: what it opened from steps
+         aside, or its controls were drawn over the panel's title. -->
     <div
-      v-if="viewMode === 'agenda'"
       v-show="!(isMobileView && panelOpen)"
       class="flex min-w-0 flex-1 flex-col overflow-hidden"
     >
-      <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
-        <Button
-          :aria-label="__('Previous day')"
-          variant="ghost"
-          icon="lucide-chevron-left"
-          @click="shiftDay(-1)"
-        />
-        <Button
-          :label="__('Today')"
-          variant="ghost"
-          @click="agendaDate = today()"
-        />
-        <Button
-          :aria-label="__('Next day')"
-          variant="ghost"
-          icon="lucide-chevron-right"
-          @click="shiftDay(1)"
-        />
-        <DatePicker
-          :modelValue="agendaDate"
-          :clearable="false"
-          @update:modelValue="(value) => setAgendaDate(value)"
+      <!-- the bar: when, which view, whose, which, how -->
+      <div
+        v-if="vista !== 'elenco'"
+        class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5"
+      >
+        <div class="flex min-w-0 items-center gap-0.5">
+          <Button
+            variant="ghost"
+            icon="lucide-chevron-left"
+            :aria-label="frecce.prima"
+            @click="sposta(-1)"
+          />
+          <Button
+            :variant="mostraOggi ? 'ghost' : 'subtle'"
+            :label="__('Today')"
+            @click="giorno = today()"
+          />
+          <Button
+            variant="ghost"
+            icon="lucide-chevron-right"
+            :aria-label="frecce.dopo"
+            @click="sposta(1)"
+          />
+          <DatePicker
+            :modelValue="giorno"
+            :clearable="false"
+            @update:modelValue="(valore) => setGiorno(valore)"
+          >
+            <template #target="{ togglePopover }">
+              <Button
+                variant="ghost"
+                class="min-w-0 text-base-medium text-ink-gray-8"
+                iconRight="chevron-down"
+                @click="togglePopover"
+              >
+                <span class="truncate">{{ etichetta }}</span>
+              </Button>
+            </template>
+          </DatePicker>
+          <span
+            v-if="countLabel"
+            class="ml-1 whitespace-nowrap text-p-sm text-ink-gray-5 max-lg:hidden"
+          >
+            {{ countLabel }}
+          </span>
+        </div>
+        <span class="grow max-md:hidden" />
+        <!-- on a phone one row that scrolls sideways, as the filters did -->
+        <div
+          class="flex items-center gap-2 max-md:-mx-3 max-md:w-[calc(100%+1.5rem)] max-md:overflow-x-auto max-md:px-3 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0"
         >
-          <template #target="{ togglePopover }">
-            <Button
-              variant="ghost"
-              class="text-base-medium text-ink-gray-7"
-              :label="agendaLabel"
-              iconRight="chevron-down"
-              @click="togglePopover"
+          <TabButtons
+            v-if="!isMobileView"
+            :modelValue="vista"
+            :buttons="vistePerIlComputer"
+            @update:modelValue="cambiaVista"
+          />
+          <div v-else class="w-28 shrink-0">
+            <FormControl
+              type="select"
+              :modelValue="vista"
+              :aria-label="__('View')"
+              :options="vistePerIlTelefono"
+              @update:modelValue="cambiaVista"
             />
-          </template>
-        </DatePicker>
-        <span class="grow" />
-        <TabButtons
-          v-model="columnMode"
-          :buttons="[
-            { label: __('By professional'), value: 'staff' },
-            { label: __('By room'), value: 'resource' },
-          ]"
-        />
-        <!-- in a box of its own: the select takes all the width it is given,
-             and on its own it took a whole row -->
-        <div class="w-32 shrink-0">
-          <FormControl
-            v-model="zoom"
-            type="select"
-            :aria-label="__('Zoom')"
-            :options="[
-              { label: __('Compact'), value: 0.7 },
-              { label: __('Normal'), value: 1.1 },
-              { label: __('Detailed'), value: 1.8 },
-            ]"
+          </div>
+          <ChiNellAgenda v-bind="chi" @update:modelValue="cambiaChi" />
+          <FiltriAgenda
+            :modelValue="filters"
+            :gruppi="gruppiDeiFiltri"
+            @cambia="cambiaFiltro"
+            @azzera="resetFilters"
+          />
+          <VistaAgenda
+            :colonne="prefs.colonne"
+            :altezza="prefs.altezza"
+            :colore="prefs.colore"
+            :tutti="prefs.tutti"
+            :annullati="prefs.annullati"
+            :conColonne="vista !== 'mese'"
+            :conAltezza="vista !== 'mese'"
+            :conTutti="vista === 'giorno'"
+            :impostazioni="puo('impostazioni.generali')"
+            :google="puo('google_calendar.proprio')"
+            @update:colonne="(valore) => cambiaPreferenza('colonne', valore)"
+            @update:altezza="(valore) => cambiaPreferenza('altezza', valore)"
+            @update:colore="(valore) => cambiaPreferenza('colore', valore)"
+            @update:tutti="(valore) => cambiaPreferenza('tutti', valore)"
+            @update:annullati="
+              (valore) => cambiaPreferenza('annullati', valore)
+            "
           />
         </div>
       </div>
-      <ResourceScheduler
-        class="flex-1"
-        :mode="columnMode"
-        :date="agendaDate"
-        :appointments="appointments"
-        :busy="busy"
-        :columnDefs="schedulerColumns"
+      <!-- a phone's day as a list: whose and which above it; the list has its
+           own week strip and its own switch to the grid -->
+      <div
+        v-else
+        class="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-outline-gray-2 px-3 py-2 [scrollbar-width:none] [&>*]:shrink-0"
+      >
+        <ChiNellAgenda v-bind="chi" @update:modelValue="cambiaChi" />
+        <FiltriAgenda
+          :modelValue="filters"
+          :gruppi="gruppiDeiFiltri"
+          @cambia="cambiaFiltro"
+          @azzera="resetFilters"
+        />
+      </div>
+
+      <AgendaDelGiorno
+        v-if="vista === 'elenco'"
+        v-model:date="giorno"
+        :appointments="appuntamentiDelGiorno"
+        :events="shownEvents"
         :serviceColors="serviceColors"
         :selected="selectedAppointment"
-        :pxPerMinute="Number(zoom)"
-        :modificabile="prenota"
-        @select="(name) => openAppointment(name)"
-        @edit="(name) => openAppointment(name, 'edit')"
-        @create="onGridCreate"
-        @move="onGridMove"
-      />
-    </div>
-    <!-- a phone opens on the day as a list; the hours' grid is one choice away -->
-    <AgendaDelGiorno
-      v-else-if="viewMode === 'elenco'"
-      v-show="!(isMobileView && panelOpen)"
-      v-model:date="agendaDate"
-      :appointments="appointments"
-      :events="shownEvents"
-      :serviceColors="serviceColors"
-      :selected="selectedAppointment"
-      :caricando="scheduler.loading"
-      :aggiorna="ricaricaIlGiorno"
-      @open="showDetails"
-    >
-      <template #vista>
-        <FormControl
-          type="select"
-          class="w-28"
-          modelValue="List"
-          :aria-label="__('View')"
-          :options="vistePerIlTelefono"
-          @update:modelValue="dallElenco"
-        />
-      </template>
-    </AgendaDelGiorno>
-    <Calendar
-      v-else
-      v-show="!(isMobileView && panelOpen)"
-      ref="calendar"
-      class="min-w-0 flex-1 overflow-hidden"
-      :config="{
-        defaultMode: defaultMode,
-        // dragging and resizing move an event: for who books
-        isEditMode: prenota,
-        eventIcons: {},
-        allowCustomClickEvents: true,
-        enableShortcuts: false,
-        noBorder: true,
-        // the system's clock: Frappe only knows it as 24 hours (HH:mm)
-        timeFormat: '24h',
-      }"
-      :events="calendarItems"
-      :onClick="showDetails"
-      :onDblClick="editDetails"
-      :onCellClick="startNew"
-      @create="(event) => createEvent(event)"
-      @update="(event) => updateEvent(event, true)"
-      @delete="(eventID) => deleteEvent(eventID)"
-      @rangeChange="handleRangeChange"
-    >
-      <template
-        #header="{
-          currentMonthYear,
-          activeView,
-          selectedMonthDate,
-          decrement,
-          increment,
-          updateActiveView,
-          onMonthYearChange,
-          setCalendarDate,
-        }"
+        :caricando="scheduler.loading"
+        :aggiorna="ricaricaIlGiorno"
+        @open="showDetails"
       >
-        <div
-          class="mx-3 my-4 flex flex-wrap items-center justify-between gap-2 sm:mx-5"
-        >
-          <!-- left side  -->
-          <!-- Month Year -->
-          <div class="flex items-center">
-            <DatePicker
-              :modelValue="selectedMonthDate"
-              :clearable="false"
-              @update:modelValue="(val) => onMonthYearChange(val)"
-            >
-              <template #target="{ togglePopover }">
-                <Button
-                  variant="ghost"
-                  class="text-lg-medium text-ink-gray-7"
-                  :label="currentMonthYear"
-                  iconRight="chevron-down"
-                  @click="togglePopover"
-                />
-              </template>
-            </DatePicker>
-          </div>
-          <!-- right side -->
-          <!-- actions buttons for calendar -->
-          <div class="flex gap-x-1">
-            <!-- Increment and Decrement Button -->
-
-            <Button
-              :aria-label="__('Previous')"
-              variant="ghost"
-              icon="lucide-chevron-left"
-              @click="decrement"
-            />
-            <Button
-              :label="__('Today')"
-              variant="ghost"
-              @click="setCalendarDate()"
-            />
-            <Button
-              :aria-label="__('Next')"
-              variant="ghost"
-              icon="lucide-chevron-right"
-              @click="increment"
-            />
-
-            <!-- View Buttons -->
+        <template #vista>
+          <div class="w-28">
             <FormControl
               type="select"
-              class="mr-1 w-24"
-              :modelValue="activeView"
-              :options="isMobileView ? vistePerIlTelefono : vistePerIlComputer"
-              :placeholder="__('Operator')"
-              @update:modelValue="
-                (vista) =>
-                  vista === 'List'
-                    ? allElenco(selectedMonthDate)
-                    : updateActiveView(vista)
-              "
+              modelValue="elenco"
+              :aria-label="__('View')"
+              :options="vistePerIlTelefono"
+              @update:modelValue="cambiaVista"
             />
-
-            <Link
-              v-if="!isMobileView"
-              class="form-control"
-              :value="getUser(currentUser).full_name"
-              doctype="User"
-              :placeholder="__('John Doe')"
-              :filters="{
-                name: ['in', users.data.crmUsers?.map((user) => user.name)],
-                ignore_user_type: 1,
-              }"
-              :hideMe="true"
-              @change="(option) => updateUser(option)"
-            >
-              <template #prefix>
-                <UserAvatar class="mr-2 !h-4 !w-4" :user="currentUser" />
-              </template>
-              <template #item-prefix="{ option }">
-                <UserAvatar class="mr-2" :user="option.value" size="sm" />
-              </template>
-              <template #item-label="{ option }">
-                <Tooltip :text="option.value">
-                  <div class="cursor-pointer text-ink-gray-9">
-                    {{ getUser(option.value).full_name }}
-                  </div>
-                </Tooltip>
-              </template>
-            </Link>
           </div>
-        </div>
-      </template>
-    </Calendar>
+        </template>
+      </AgendaDelGiorno>
+      <MeseAgenda
+        v-else-if="vista === 'mese'"
+        class="min-h-0 flex-1"
+        :giorno="giorno"
+        :cose="cosePerIlMese"
+        :colorePer="prefs.colore"
+        :serviceColors="serviceColors"
+        :scelto="scelto"
+        :compatto="isMobileView"
+        @giorno="apriGiorno"
+        @apri="apri"
+      />
+      <GrigliaAgenda
+        v-else
+        class="min-h-0 flex-1"
+        :colonne="colonne"
+        :cose="cosePerColonne"
+        :pxPerMinuto="pxPerMinuto"
+        :modo="prefs.colonne"
+        :settimana="vista === 'settimana'"
+        :passo="passo"
+        :scelto="scelto"
+        :modificabile="prenota"
+        :colorePer="prefs.colore"
+        :serviceColors="serviceColors"
+        :nomeDi="nomeDi"
+        :nomeStanza="nomeStanza"
+        :pronto="pronto"
+        @apri="apri"
+        @modifica="modifica"
+        @crea="creaNellaGriglia"
+        @sposta="spostaNellaGriglia"
+        @giorno="apriGiorno"
+      >
+        <template #vuoto>
+          <div class="flex h-full items-center justify-center p-6">
+            <EmptyState :title="vuoto.titolo" :text="vuoto.testo">
+              <Button
+                v-if="vuoto.azione"
+                :label="vuoto.azione"
+                @click="cambiaPreferenza('tutti', true)"
+              />
+            </EmptyState>
+          </div>
+        </template>
+      </GrigliaAgenda>
+    </div>
 
-    <!--
-      One side panel, for an event or an appointment, in the agenda as in the
-      calendar. An appointment used to open in a dialog over everything.
-    -->
+    <!-- One side panel, for an event or an appointment, in every view. -->
     <div
       ref="pannello"
       class="flex flex-none flex-col overflow-hidden transition-all duration-300 ease-in-out"
@@ -427,43 +279,58 @@
 <script setup>
 import AppointmentPanel from '@/components/Calendar/AppointmentPanel.vue'
 import CalendarEventPanel from '@/components/Calendar/CalendarEventPanel.vue'
+import ChiNellAgenda from '@/components/Calendar/ChiNellAgenda.vue'
+import FiltriAgenda from '@/components/Calendar/FiltriAgenda.vue'
+import GrigliaAgenda from '@/components/Calendar/GrigliaAgenda.vue'
 import KindSwitch from '@/components/Calendar/KindSwitch.vue'
-import MultiSelectFilter from '@/components/Calendar/MultiSelectFilter.vue'
-import ResourceScheduler from '@/components/Calendar/ResourceScheduler.vue'
-import { sourceTag } from '@/utils/onlineBooking'
+import MeseAgenda from '@/components/Calendar/MeseAgenda.vue'
+import VistaAgenda from '@/components/Calendar/VistaAgenda.vue'
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
-import Link from '@/components/Controls/Link.vue'
+import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
-import { isMobileView, viewportWidth } from '@/composables/breakpoints'
-import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import {
+  ALTEZZE,
+  ALTEZZA_PREDEFINITA,
+  colonneDelGiorno,
+  cosePerColonna,
+  cosePerGiorno,
+  daDisegnare,
+  etichettaDelPeriodo,
+  giorniDellaSettimana,
+  meseDi,
+  orarioDelGiorno,
+  periodoDi,
+  spostaPeriodo,
+} from '@/utils/agenda'
+import { appLocale } from '@/utils/locale'
+import {
   adessoDelCentro,
+  dateAtMinutes,
   formatMinutes,
   oggiDelCentro,
   oraDelCentro,
 } from '@/utils/scheduler'
 import {
   NAMED_HEX,
-  appointmentCalendarColor,
   calendarColorName,
   registerCalendarColors,
 } from '@/utils/calendarColors'
 import {
-  Calendar,
   createListResource,
   createResource,
   dayjs,
   DatePicker,
+  FormControl,
   TabButtons,
-  Tooltip,
   CalendarActiveEvent as activeEvent,
   CalendarColorMap,
   call,
@@ -484,79 +351,163 @@ import { useRoute } from 'vue-router'
 
 const { user } = sessionStore()
 const { $dialog } = globalStore()
-
-const googleConnection = createResource({
-  url: 'crm.integrations.google.api.get_status',
-  cache: 'google-calendar-connection',
-  auto: true,
-})
-
-const googleLabel = computed(() =>
-  googleConnection.data?.connected
-    ? __('Google connected')
-    : __('Connect Google Calendar'),
-)
-
-function connectGoogle() {
-  if (googleConnection.data?.connected) {
-    toast.success(__('Google Calendar is already connected'))
-    return
-  }
-  createResource({
-    url: 'crm.integrations.google.oauth.get_login_url',
-    auto: true,
-    onSuccess: (data) => {
-      window.location.href = data.login_url
-    },
-    onError: (e) => {
-      toast.error(e.messages?.[0] || __('Could not start the connection'))
-    },
-  })
-}
 const { settings } = getSettings()
-const { users, getUser, puo } = usersStore()
+const { getUser, puo } = usersStore()
 // booking, and any event in the agenda, is `agenda.prenota`'s (doc 30): who
 // only reads the agenda opens what is there
 const prenota = computed(() => puo('agenda.prenota'))
 const route = useRoute()
+const lingua = appLocale() || 'it-IT'
 
-// grey and red, which the calendar does not know by itself
+// grey and red, which the event panel's colours do not know by themselves
 registerCalendarColors(CalendarColorMap)
 
-const modeMap = {
-  Daily: 'Day',
-  Weekly: 'Week',
-  Monthly: 'Month',
+// ---------------------------------------------------------------------------
+// how the agenda looks to whoever reads it, kept in their browser
+// ---------------------------------------------------------------------------
+
+const VISTE_DEL_COMPUTER = ['giorno', 'settimana', 'mese']
+const PREFERENZE = 'crmAgenda'
+function preferenzeSalvate() {
+  try {
+    return JSON.parse(localStorage.getItem(PREFERENZE) || '{}') || {}
+  } catch {
+    return {}
+  }
+}
+const salvate = preferenzeSalvate()
+const prefs = reactive({
+  vista: VISTE_DEL_COMPUTER.includes(salvate.vista) ? salvate.vista : '',
+  colonne: salvate.colonne === 'resource' ? 'resource' : 'staff',
+  altezza: ALTEZZE[salvate.altezza] ? salvate.altezza : ALTEZZA_PREDEFINITA,
+  colore: salvate.colore === 'stato' ? 'stato' : 'servizio',
+  tutti: Boolean(salvate.tutti),
+  annullati: Boolean(salvate.annullati),
+  // whose week, as a professional's and as a room's
+  settimanaDi:
+    salvate.settimanaDi && typeof salvate.settimanaDi === 'object'
+      ? salvate.settimanaDi
+      : {},
+})
+watch(
+  prefs,
+  () => {
+    try {
+      localStorage.setItem(PREFERENZE, JSON.stringify(prefs))
+    } catch {
+      // a private window: they are only preferences
+    }
+  },
+  { deep: true },
+)
+
+function cambiaPreferenza(chiave, valore) {
+  prefs[chiave] = valore
+  if (chiave === 'colonne') reloadScheduler()
 }
 
-// On a phone the grid opens on the view chosen from the list, the day at first
-const vistaSulTelefono = ref('Day')
-
-const defaultMode = computed(() => {
-  // A seven-column week grid on a 390px screen is a smear; a phone calendar
-  // opens on the day.
-  if (isMobileView.value) return vistaSulTelefono.value
-  // so does a tablet held upright: beside the menu a day of the week was 92px,
-  // a hundred appointments drawn as «Tratt…» over one another; the week is a
-  // choice away
-  if (viewportWidth.value <= 1024) return 'Day'
-  return modeMap[settings.value?.default_calendar_view] || 'Week'
-})
+// ---------------------------------------------------------------------------
+// the view and the day
+// ---------------------------------------------------------------------------
 
 const vistePerIlComputer = [
-  { label: __('Day'), value: 'Day' },
-  { label: __('Week'), value: 'Week' },
-  { label: __('Month'), value: 'Month' },
+  { label: __('Day'), value: 'giorno' },
+  { label: __('Week'), value: 'settimana' },
+  { label: __('Month'), value: 'mese' },
 ]
 // a phone has no week: seven columns of 45px read nothing, not even a name
 const vistePerIlTelefono = [
-  { label: __('List'), value: 'List' },
-  ...vistePerIlComputer.filter((vista) => vista.value !== 'Week'),
+  { label: __('List'), value: 'elenco' },
+  { label: __('Day'), value: 'giorno' },
+  { label: __('Month'), value: 'mese' },
 ]
 
-const calendar = ref(null)
-const activeRangeKey = ref('')
-const currentUser = ref(user)
+// the view one left the agenda on, else the centre's (Settings > Agenda >
+// Calendar & reminders), else the day: the desk's view
+function vistaIniziale() {
+  if (prefs.vista) return prefs.vista
+  return (
+    { Daily: 'giorno', Weekly: 'settimana', Monthly: 'mese' }[
+      settings.value?.default_calendar_view
+    ] || 'giorno'
+  )
+}
+
+// an address that names a day (a notification, a person's «Book») opens on
+// that day, as a day
+const dataDellIndirizzo = /^\d{4}-\d{2}-\d{2}/.test(route.query.date || '')
+  ? String(route.query.date).slice(0, 10)
+  : ''
+const vista = ref(
+  isMobileView.value
+    ? 'elenco'
+    : dataDellIndirizzo
+      ? 'giorno'
+      : vistaIniziale(),
+)
+watch(isMobileView, (mobile) => {
+  if (mobile && vista.value === 'settimana') vista.value = 'elenco'
+  else if (!mobile && vista.value === 'elenco') vista.value = vistaIniziale()
+})
+
+function cambiaVista(nuova) {
+  if (!nuova || nuova === vista.value) return
+  // from a day with one of them ticked, the week is theirs
+  if (nuova === 'settimana') {
+    const scelti =
+      prefs.colonne === 'resource' ? filters.resources : filters.staff
+    if (scelti.length === 1)
+      prefs.settimanaDi = { ...prefs.settimanaDi, [prefs.colonne]: scelti[0] }
+  }
+  vista.value = nuova
+  if (!isMobileView.value) prefs.vista = nuova
+}
+
+// the centre's today: a phone in another time zone opened another day
+function today() {
+  return oggiDelCentro()
+}
+const giorno = ref(dataDellIndirizzo || today())
+
+function setGiorno(valore) {
+  if (valore) giorno.value = dayjs(valore).format('YYYY-MM-DD')
+}
+
+function sposta(verso) {
+  giorno.value = spostaPeriodo(vista.value, giorno.value, verso)
+}
+
+// a week's day or a month's opened: that day
+function apriGiorno(data) {
+  giorno.value = data
+  cambiaVista('giorno')
+}
+
+const periodo = computed(() =>
+  periodoDi(vista.value === 'elenco' ? 'giorno' : vista.value, giorno.value),
+)
+
+const etichetta = computed(() =>
+  etichettaDelPeriodo(vista.value, giorno.value, lingua),
+)
+
+const frecce = computed(
+  () =>
+    ({
+      settimana: { prima: __('The week before'), dopo: __('The week after') },
+      mese: { prima: __('The month before'), dopo: __('The month after') },
+    })[vista.value] || {
+      prima: __('Previous day'),
+      dopo: __('Next day'),
+    },
+)
+
+// «Today» is a way back: quiet where today is already shown
+const mostraOggi = computed(() => {
+  const { start, end } = periodo.value
+  const adesso = today()
+  return start <= adesso && adesso <= end
+})
 
 // ---------------------------------------------------------------------------
 // appointments (services, professionals, rooms, equipment)
@@ -566,16 +517,6 @@ const APPOINTMENT_PREFIX = 'appt:'
 const isAppointmentId = (id) => String(id || '').startsWith(APPOINTMENT_PREFIX)
 const appointmentName = (id) => String(id).slice(APPOINTMENT_PREFIX.length)
 
-// The agenda is one column per professional: never on a phone, which opens on
-// the day as a list ('elenco') and keeps the hours' grid one choice away.
-const viewMode = ref(isMobileView.value ? 'elenco' : 'calendar')
-watch(isMobileView, (mobile) => {
-  if (mobile) viewMode.value = 'elenco'
-  else if (viewMode.value === 'elenco') viewMode.value = 'calendar'
-})
-const columnMode = ref('staff')
-const zoom = ref(1.1)
-const agendaDate = ref(today())
 const selectedAppointment = ref('')
 
 const filters = reactive({
@@ -593,11 +534,27 @@ const scheduler = createResource({
   auto: false,
 })
 
-const appointments = computed(() => scheduler.data?.appointments || [])
+// the period the data that came are of: the grid opens its hours on them
+const caricatoPer = ref('')
+const pronto = computed(
+  () =>
+    caricatoPer.value === `${periodo.value.start}|${periodo.value.end}` &&
+    !scheduler.loading,
+)
+
+// what the grid and the month draw: a cancelled appointment leaves its place
+// free, unless asked for
+const appuntamenti = computed(() =>
+  daDisegnare(scheduler.data?.appointments || [], {
+    annullati: prefs.annullati,
+    stati: filters.statuses,
+  }),
+)
+// the phone's list says how every one went, a cancelled one too
+const appuntamentiDelGiorno = computed(() => scheduler.data?.appointments || [])
 // the rest of the agenda, for who sees only part of it: when, not who or why
 const busy = computed(() => scheduler.data?.busy || [])
-const BUSY_PREFIX = 'busy:'
-const isBusyId = (id) => String(id || '').startsWith(BUSY_PREFIX)
+const ore = computed(() => scheduler.data?.hours || {})
 
 const serviceColors = computed(() =>
   Object.fromEntries(
@@ -605,41 +562,18 @@ const serviceColors = computed(() =>
   ),
 )
 
-const serviceFilterOptions = computed(() =>
-  (meta.data?.services || []).map((service) => ({
-    label: service.service_name,
-    value: service.name,
-    color: service.color,
-  })),
-)
-const staffFilterOptions = computed(() =>
-  (meta.data?.staff || []).map((person) => ({
-    label: person.full_name || person.name,
-    value: person.name,
-  })),
-)
-const resourceFilterOptions = computed(() =>
-  (meta.data?.resources || []).map((resource) => ({
-    label: `${resource.resource_name} · ${__(resource.resource_type)}`,
-    value: resource.name,
-    color: resource.color,
-  })),
-)
-const statusFilterOptions = computed(() =>
-  (meta.data?.statuses || []).map((status) => ({
-    label: __(status),
-    value: status,
-  })),
-)
+const professionisti = computed(() => meta.data?.staff || [])
+const stanze = computed(() => meta.data?.resources || [])
 
-const sourceFilterOptions = computed(() => [
-  { label: __('Created in {brand}'), value: 'Internal' },
-  { label: __('Online booking page'), value: 'Online' },
-  ...(meta.data?.platforms || []).map((platform) => ({
-    label: platform,
-    value: platform,
-  })),
-])
+function nomeDi(utente) {
+  const persona = professionisti.value.find((p) => p.name === utente)
+  return persona?.full_name || getUser(utente)?.full_name || utente
+}
+function nomeStanza(stanza) {
+  return (
+    stanze.value.find((s) => s.name === stanza)?.resource_name || stanza || ''
+  )
+}
 
 const hasFilters = computed(() =>
   Object.values(filters).some((value) => value.length),
@@ -654,73 +588,336 @@ function resetFilters() {
   reloadScheduler()
 }
 
-/** Columns of the agenda grid: professionals, or rooms and equipment. */
-const schedulerColumns = computed(() => {
-  if (columnMode.value === 'resource') {
-    const wanted = filters.resources
-    return (meta.data?.resources || [])
-      .filter((resource) => !wanted.length || wanted.includes(resource.name))
-      .map((resource) => ({
-        key: resource.name,
-        label: resource.resource_name,
-        caption: [
-          __(resource.resource_type),
-          resource.capacity > 1 ? __('{0} at a time', [resource.capacity]) : '',
-          resource.seats ? __('{0} seats', [resource.seats]) : '',
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        color: resource.color,
-        closed: [],
-      }))
-  }
-  const wanted = filters.staff
-  return (meta.data?.staff || [])
-    .filter((person) => !wanted.length || wanted.includes(person.name))
-    .map((person) => ({
-      key: person.name,
-      label: person.full_name || person.name,
-      caption: person.name,
-      closed: [],
-    }))
+function cambiaFiltro(chiave, valori) {
+  filters[chiave] = valori
+  reloadScheduler()
+}
+
+// the other filters, by what the columns are not
+const gruppiDeiFiltri = computed(() => [
+  {
+    chiave: 'services',
+    titolo: __('Services'),
+    vuoto: __('No services configured yet'),
+    opzioni: (meta.data?.services || []).map((service) => ({
+      label: service.service_name,
+      value: service.name,
+      colore: service.color,
+    })),
+  },
+  perStanza.value
+    ? {
+        chiave: 'staff',
+        titolo: __('Professionals'),
+        opzioni: professionisti.value.map((persona) => ({
+          label: persona.full_name || persona.name,
+          value: persona.name,
+        })),
+      }
+    : {
+        chiave: 'resources',
+        titolo: __('Rooms & equipment'),
+        vuoto: __('No rooms or equipment yet'),
+        opzioni: stanze.value.map((stanza) => ({
+          label: stanza.resource_name,
+          value: stanza.name,
+          colore: stanza.color,
+        })),
+      },
+  {
+    chiave: 'statuses',
+    titolo: __('Status'),
+    opzioni: (meta.data?.statuses || []).map((status) => ({
+      label: __(status),
+      value: status,
+    })),
+  },
+  {
+    chiave: 'sources',
+    titolo: __('Source'),
+    opzioni: [
+      { label: __('Created in {brand}'), value: 'Internal' },
+      { label: __('Online booking page'), value: 'Online' },
+      ...(meta.data?.platforms || []).map((platform) => ({
+        label: platform,
+        value: platform,
+      })),
+    ],
+  },
+])
+
+// ---------------------------------------------------------------------------
+// whose agenda: the columns of a day, the one a week is of
+// ---------------------------------------------------------------------------
+
+const perStanza = computed(() => prefs.colonne === 'resource')
+
+// a week is of one of them: the one chosen, else oneself, else the first
+const chiDellaSettimana = computed(() => {
+  const chiavi = perStanza.value
+    ? stanze.value.map((s) => s.name)
+    : professionisti.value.map((p) => p.name)
+  const scelto = prefs.settimanaDi[prefs.colonne]
+  if (chiavi.includes(scelto)) return scelto
+  if (!perStanza.value && chiavi.includes(user)) return user
+  return chiavi[0] || ''
 })
 
-const agendaLabel = computed(() =>
-  dayjs(agendaDate.value).format('dddd D MMMM YYYY'),
+function orariDi(chiave) {
+  return perStanza.value
+    ? ore.value.resources?.[chiave]
+    : ore.value.staff?.[chiave]
+}
+
+// a column's line under its name: its hours that day, why it is off, or that
+// it is off
+function sottotitolo(orari, data) {
+  const delGiorno = orari?.[data]
+  if (!delGiorno) return ''
+  if (delGiorno.note) return delGiorno.note
+  if (!delGiorno.open?.length)
+    return perStanza.value ? __('Closed') : __('Not working')
+  return orarioDelGiorno(delGiorno.open)
+}
+
+const opzioniDiChi = computed(() =>
+  perStanza.value
+    ? stanze.value.map((stanza) => ({
+        value: stanza.name,
+        label: stanza.resource_name,
+        colore: stanza.color,
+        nota: __(stanza.resource_type),
+      }))
+    : professionisti.value.map((persona) => ({
+        value: persona.name,
+        label: persona.full_name || persona.name,
+        utente: persona.name,
+        nota:
+          vista.value === 'giorno'
+            ? sottotitolo(ore.value.staff?.[persona.name], giorno.value)
+            : '',
+      })),
 )
 
-// the centre's today: a phone in another time zone opened another day
-function today() {
-  return oggiDelCentro()
+const chi = computed(() => ({
+  modelValue:
+    vista.value === 'settimana'
+      ? chiDellaSettimana.value
+      : perStanza.value
+        ? filters.resources
+        : filters.staff,
+  singolo: vista.value === 'settimana',
+  opzioni: opzioniDiChi.value,
+  titolo: perStanza.value ? __('Rooms & equipment') : __('Professionals'),
+  tutti: perStanza.value ? __('All rooms') : __('All professionals'),
+  quanti: perStanza.value
+    ? (n) => __('{0} rooms', [n])
+    : (n) => __('{0} professionals', [n]),
+  vuoto: perStanza.value
+    ? __('No rooms or equipment yet')
+    : __('No professionals to show — add them to a service first'),
+  icona: perStanza.value ? 'lucide-door-open' : 'lucide-users',
+}))
+
+function cambiaChi(valore) {
+  if (vista.value === 'settimana')
+    prefs.settimanaDi = { ...prefs.settimanaDi, [prefs.colonne]: valore }
+  else if (perStanza.value) filters.resources = valore
+  else filters.staff = valore
+  reloadScheduler()
 }
 
-function shiftDay(days) {
-  agendaDate.value = dayjs(agendaDate.value)
-    .add(days, 'day')
-    .format('YYYY-MM-DD')
-}
+// ---------------------------------------------------------------------------
+// what the views draw
+// ---------------------------------------------------------------------------
 
-function setAgendaDate(value) {
-  if (value) agendaDate.value = dayjs(value).format('YYYY-MM-DD')
-}
+// one's own events: there are none in a list filtered by what only
+// appointments have (a service, a professional, a room, a state)
+const shownEvents = computed(() =>
+  hasFilters.value ? [] : Array.isArray(events.data) ? events.data : [],
+)
 
-/** Window the appointment feed should cover for the current view. */
-function schedulerRange() {
-  if (viewMode.value === 'agenda' || viewMode.value === 'elenco') {
-    return { start: agendaDate.value, end: agendaDate.value }
+const oggi = computed(() => today())
+
+// whose rows are these: the professionals', or the rooms'
+const diChi = (riga) =>
+  perStanza.value
+    ? (riga.resources || []).map((r) => r.resource)
+    : (riga.staff || []).map((s) => s.user)
+
+// who has something drawn on the day: they show, working or not
+const occupatiNelGiorno = computed(() => {
+  const chiavi = new Set()
+  for (const riga of [...appuntamenti.value, ...busy.value]) {
+    if (String(riga.starts_on).slice(0, 10) > giorno.value) continue
+    if (String(riga.ends_on).slice(0, 10) < giorno.value) continue
+    diChi(riga).forEach((chiave) => chiavi.add(chiave))
   }
-  const range = lastRange.value
-  if (range?.startDate && range?.endDate) {
+  return chiavi
+})
+
+const mieiEventiDelGiorno = computed(() =>
+  shownEvents.value.some(
+    (evento) =>
+      evento.fromDate <= giorno.value &&
+      (evento.toDate || evento.fromDate) >= giorno.value,
+  ),
+)
+
+const nomeDelGiorno = new Intl.DateTimeFormat(lingua, { weekday: 'short' })
+const giornoPerEsteso = new Intl.DateTimeFormat(lingua, {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+})
+const comeData = (data) => {
+  const [a, m, g] = data.split('-').map(Number)
+  return new Date(a, m - 1, g)
+}
+
+// a column's open hours on its day: unknown (undefined), never set (null), or
+// its windows - none when it does not work
+function apertoDi(orari, data) {
+  if (orari === null) return null
+  return orari ? orari[data]?.open ?? [] : undefined
+}
+
+const colonne = computed(() => {
+  if (vista.value === 'settimana') {
+    const chiave = chiDellaSettimana.value
+    const orari = orariDi(chiave)
+    const occupati = new Set()
+    for (const riga of [...appuntamenti.value, ...busy.value])
+      if (diChi(riga).includes(chiave))
+        occupati.add(String(riga.starts_on).slice(0, 10))
+    if (!perStanza.value && chiave === user)
+      shownEvents.value.forEach((evento) => occupati.add(evento.fromDate))
+    return giorniDellaSettimana(giorno.value, { orari, occupati }).map(
+      (data) => ({
+        key: data,
+        tipo: 'giorno',
+        data,
+        oggi: data === oggi.value,
+        nome: nomeDelGiorno.format(comeData(data)).replace('.', ''),
+        numero: comeData(data).getDate(),
+        titolo: giornoPerEsteso.format(comeData(data)),
+        aperto: apertoDi(orari, data),
+        sottotitolo: sottotitolo(orari, data),
+      }),
+    )
+  }
+
+  const tutti = perStanza.value
+    ? stanze.value.map((s) => s.name)
+    : professionisti.value.map((p) => p.name)
+  let chiavi = colonneDelGiorno(tutti, {
+    giorno: giorno.value,
+    orari: (perStanza.value ? ore.value.resources : ore.value.staff) || {},
+    occupati: occupatiNelGiorno.value,
+    scelti: perStanza.value ? filters.resources : filters.staff,
+    mostraTutti: prefs.tutti,
+  })
+  // one's own events need a column: one's own, first
+  if (
+    !perStanza.value &&
+    !filters.staff.length &&
+    mieiEventiDelGiorno.value &&
+    !chiavi.includes(user)
+  )
+    chiavi = [user, ...chiavi]
+  return chiavi.map((chiave) => {
+    const orari = orariDi(chiave)
+    const stanza = perStanza.value
+      ? stanze.value.find((s) => s.name === chiave)
+      : null
+    const professionista = professionisti.value.some((p) => p.name === chiave)
     return {
-      start: dayjs(range.startDate).format('YYYY-MM-DD'),
-      end: dayjs(range.endDate).format('YYYY-MM-DD'),
+      key: chiave,
+      tipo: perStanza.value ? 'stanza' : 'persona',
+      data: giorno.value,
+      oggi: giorno.value === oggi.value,
+      titolo: perStanza.value
+        ? stanza?.resource_name || chiave
+        : nomeDi(chiave),
+      utente: perStanza.value ? '' : chiave,
+      colore: stanza?.color || '',
+      aperto: apertoDi(orari, giorno.value),
+      sottotitolo:
+        !perStanza.value && !professionista
+          ? __('Your events')
+          : sottotitolo(orari, giorno.value),
     }
-  }
+  })
+})
+
+const cosePerColonne = computed(() =>
+  cosePerColonna(colonne.value, {
+    modo: prefs.colonne,
+    settimana: vista.value === 'settimana',
+    chi: chiDellaSettimana.value,
+    io: user,
+    appuntamenti: appuntamenti.value,
+    eventi: shownEvents.value,
+    occupato: busy.value,
+    impegni: scheduler.data?.engaged || [],
+  }),
+)
+
+const cosePerIlMese = computed(() =>
+  cosePerGiorno(meseDi(giorno.value).flat(), {
+    appuntamenti: appuntamenti.value,
+    eventi: shownEvents.value,
+  }),
+)
+
+// nothing to draw on the day: why, and what would show more
+const vuoto = computed(() => {
+  if (perStanza.value && !stanze.value.length)
+    return { titolo: __('No rooms or equipment yet'), testo: '', azione: '' }
+  if (!perStanza.value && !professionisti.value.length)
+    return {
+      titolo: __('No professionals to show — add them to a service first'),
+      testo: '',
+      azione: '',
+    }
+  const quando = giornoPerEsteso.format(comeData(giorno.value))
   return {
-    start: dayjs(adessoDelCentro()).startOf('month').format('YYYY-MM-DD'),
-    end: dayjs(adessoDelCentro()).endOf('month').format('YYYY-MM-DD'),
+    titolo: perStanza.value
+      ? __('Every room is closed on {0}', [quando])
+      : __('Nobody works on {0}', [quando]),
+    testo: __('Nothing is booked on this day.'),
+    azione: prefs.tutti ? '' : __('Show everybody'),
   }
-}
+})
+
+const pxPerMinuto = computed(
+  () => ALTEZZE[prefs.altezza] || ALTEZZE[ALTEZZA_PREDEFINITA],
+)
+// how far a click or a drop snaps, as the centre set it
+const passo = computed(() => Number(settings.value?.calendar_grid_step) || 15)
+
+const scelto = computed(() =>
+  selectedAppointment.value
+    ? `${APPOINTMENT_PREFIX}${selectedAppointment.value}`
+    : showEventPanel.value
+      ? event.value?.id || ''
+      : '',
+)
+
+const countLabel = computed(() => {
+  const booked = appuntamenti.value.filter(
+    (appuntamento) => appuntamento.status !== 'Cancelled',
+  ).length
+  const planned = shownEvents.value.filter((ev) => !isTempEvent(ev.id)).length
+  const parts = []
+  if (booked)
+    parts.push(
+      booked === 1 ? __('1 appointment') : __('{0} appointments', [booked]),
+    )
+  if (planned)
+    parts.push(planned === 1 ? __('1 event') : __('{0} events', [planned]))
+  return parts.join(' · ')
+})
 
 // the day pulled down on a phone: its appointments and its events
 function ricaricaIlGiorno() {
@@ -728,80 +925,32 @@ function ricaricaIlGiorno() {
 }
 
 function reloadScheduler() {
-  const range = schedulerRange()
-  return scheduler.submit({
-    start: range.start,
-    end: range.end,
-    services: filters.services,
-    staff: filters.staff,
-    resources: filters.resources,
-    statuses: filters.statuses,
-    sources: filters.sources,
-    include_events: false,
-  })
+  const { start, end } = periodo.value
+  // a week is of one of them: only theirs come
+  const suoi =
+    vista.value === 'settimana' && chiDellaSettimana.value
+      ? [chiDellaSettimana.value]
+      : null
+  const chiave = `${start}|${end}`
+  return scheduler.submit(
+    {
+      start,
+      end,
+      services: filters.services,
+      staff: !perStanza.value && suoi ? suoi : filters.staff,
+      resources: perStanza.value && suoi ? suoi : filters.resources,
+      statuses: filters.statuses,
+      sources: filters.sources,
+      include_events: false,
+      with_hours: ['giorno', 'settimana'].includes(vista.value),
+    },
+    {
+      onSuccess: () => {
+        caricatoPer.value = chiave
+      },
+    },
+  )
 }
-
-/** Appointments rendered as calendar events, alongside the plain ones. */
-const appointmentItems = computed(() =>
-  appointments.value.map((appointment) => ({
-    id: `${APPOINTMENT_PREFIX}${appointment.name}`,
-    title: sourceTag(appointment)
-      ? `${sourceTag(appointment)} · ${appointment.title || appointment.service}`
-      : appointment.title || appointment.service,
-    description: appointment.notes || '',
-    status: appointment.status,
-    fromDate: dayjs(appointment.starts_on).format('YYYY-MM-DD'),
-    toDate: dayjs(appointment.ends_on).format('YYYY-MM-DD'),
-    fromTime: dayjs(appointment.starts_on).format('HH:mm'),
-    toTime: dayjs(appointment.ends_on).format('HH:mm'),
-    isFullDay: false,
-    location: appointment.location,
-    color: appointmentCalendarColor(appointment, serviceColors.value),
-    attending: 'Yes',
-  })),
-)
-
-// Events have no service, no professional, no room, no status of their own:
-// a filter on any of those is a question about appointments, and events that
-// matched nothing in it kept showing as if they had.
-const shownEvents = computed(() =>
-  hasFilters.value ? [] : Array.isArray(events.data) ? events.data : [],
-)
-
-/** Busy time as calendar items: grey, nothing to open. */
-const busyItems = computed(() =>
-  busy.value.map((block, i) => ({
-    id: `${BUSY_PREFIX}${i}`,
-    title: __('Busy'),
-    description: '',
-    fromDate: dayjs(block.starts_on).format('YYYY-MM-DD'),
-    toDate: dayjs(block.ends_on).format('YYYY-MM-DD'),
-    fromTime: dayjs(block.starts_on).format('HH:mm'),
-    toTime: dayjs(block.ends_on).format('HH:mm'),
-    isFullDay: false,
-    color: 'gray',
-    attending: 'Yes',
-  })),
-)
-
-const calendarItems = computed(() => [
-  ...shownEvents.value,
-  ...appointmentItems.value,
-  ...busyItems.value,
-])
-
-const countLabel = computed(() => {
-  const booked = appointments.value.length
-  const planned = shownEvents.value.filter((ev) => !isTempEvent(ev.id)).length
-  const parts = []
-  if (booked)
-    parts.push(
-      booked === 1 ? __('1 appointment') : __('{0} appointments', [booked]),
-    )
-  if (planned && viewMode.value !== 'agenda')
-    parts.push(planned === 1 ? __('1 event') : __('{0} events', [planned]))
-  return parts.join(' · ')
-})
 
 // ---------------------------------------------------------------------------
 // the side panel: an event, or an appointment
@@ -838,34 +987,18 @@ watch(newKind, (kind) => {
 // where the last «New» was asked for, for switching kinds without losing it
 let newAt = {}
 
-/**
- * Something new, from «New», Mod+E, or a click on an empty slot. `at` is the
- * slot: a date, a time (in whatever form the calendar gives it), all day or
- * not. A click on the all-day row is an event: an appointment has hours.
- */
-// «New» from the header: on the phone's list, on the day it shows
+// «New» from the header: on the day shown, when it is not today
 function nuovo() {
-  if (viewMode.value === 'elenco' && agendaDate.value !== today())
-    return startNew({ date: agendaDate.value })
+  if (giorno.value !== today() && vista.value !== 'mese')
+    return startNew({ date: giorno.value })
   startNew()
 }
 
-// from the list to the hours' grid, on the same day
-async function dallElenco(vista) {
-  if (vista === 'List') return
-  vistaSulTelefono.value = vista
-  viewMode.value = 'calendar'
-  await nextTick()
-  calendar.value?.onMonthYearChange?.(dayjs(agendaDate.value).toDate())
-}
-
-// from the grid back to the list, on the day the grid was on
-function allElenco(dataDellaGriglia) {
-  if (dataDellaGriglia)
-    agendaDate.value = dayjs(dataDellaGriglia).format('YYYY-MM-DD')
-  viewMode.value = 'elenco'
-}
-
+/**
+ * Something new, from «New», Mod+E, or a click on a free time. `at` is the
+ * slot: a date, a time, all day or not, and whose column it was in. A click on
+ * the all-day row is an event: an appointment has hours.
+ */
 function startNew(at = {}) {
   if (!prenota.value) return
   const fromTime = at.time ? getFromToTime(at.time)[0] : nextQuarter()
@@ -873,6 +1006,8 @@ function startNew(at = {}) {
     date: at.date ? dayjs(at.date).format('YYYY-MM-DD') : today(),
     time: fromTime,
     isFullDay: Boolean(at.isFullDay),
+    staff: at.staff,
+    resource: at.resource,
   }
   const kind = hasServices.value && !newAt.isFullDay ? newKind.value : 'event'
   if (kind === 'appointment') openNewAppointment(newAt)
@@ -935,18 +1070,48 @@ function onAppointmentDeleted() {
   reloadScheduler()
 }
 
-function onGridCreate({ date, minutes, mode, key }) {
+// a block of the grid or a line of the month, opened or edited
+function apri(cosa) {
+  if (cosa.tipo === 'appuntamento') openAppointment(cosa.dati.name)
+  else showDetails({ id: cosa.id })
+}
+
+function modifica(cosa) {
+  if (cosa.tipo === 'appuntamento') openAppointment(cosa.dati.name, 'edit')
+  else editDetails({ id: cosa.id })
+}
+
+// a free time of a column: something new there, for its professional or room
+function creaNellaGriglia({ colonna, minuti }) {
   if (!prenota.value) return
-  openNewAppointment({
-    date,
-    time: formatMinutes(minutes),
-    staff: mode === 'staff' ? key : undefined,
-    resource: mode === 'resource' ? key : undefined,
+  const suo =
+    vista.value === 'settimana' ? chiDellaSettimana.value : colonna.key
+  const professionista = professionisti.value.some((p) => p.name === suo)
+  startNew({
+    date: colonna.data,
+    time: formatMinutes(minuti),
+    staff: !perStanza.value && professionista ? suo : undefined,
+    resource: perStanza.value ? suo : undefined,
+  })
+}
+
+// an appointment dropped: another time, another day of the week, another
+// professional's or room's column
+function spostaNellaGriglia({ cosa, da, a, minuti, durata }) {
+  if (cosa.tipo !== 'appuntamento') return
+  const settimana = vista.value === 'settimana'
+  onGridMove({
+    name: cosa.dati.name,
+    startsOn: dateAtMinutes(a.data, minuti),
+    endsOn: dateAtMinutes(a.data, minuti + durata),
+    mode: prefs.colonne,
+    from: settimana ? chiDellaSettimana.value : da,
+    to: settimana ? chiDellaSettimana.value : a.key,
   })
 }
 
 function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
-  const target = appointments.value.find((a) => a.name === name)
+  const target = appuntamenti.value.find((a) => a.name === name)
   if (!target) return
   const sameColumn = from === to
   const reassign =
@@ -1004,27 +1169,22 @@ function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
   })
 }
 
-watch([viewMode, agendaDate], reloadScheduler)
+// whose week changed: theirs
+watch(chiDellaSettimana, () => {
+  if (vista.value === 'settimana') reloadScheduler()
+})
 
 // ---------------------------------------------------------------------------
-// events (the classic calendar)
+// events (one's own calendar)
 // ---------------------------------------------------------------------------
-
-async function updateUser(u) {
-  currentUser.value = u
-  events.update({
-    orFilters: buildEventOrFilters(),
-  })
-  await events.reload()
-}
 
 function buildEventFilters(range) {
   const filters = [['status', '=', 'Open']]
-  if (range?.startDate && range?.endDate) {
-    const start = dayjs(range.startDate)
+  if (range?.start && range?.end) {
+    const start = dayjs(range.start)
       .startOf('day')
       .format('YYYY-MM-DD HH:mm:ss')
-    const end = dayjs(range.endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss')
+    const end = dayjs(range.end).endOf('day').format('YYYY-MM-DD HH:mm:ss')
     filters.push(['starts_on', '<=', end])
     filters.push(['ends_on', '>=', start])
   }
@@ -1033,8 +1193,8 @@ function buildEventFilters(range) {
 
 function buildEventOrFilters() {
   return [
-    ['owner', '=', currentUser.value],
-    ['Event Participants', 'email', '=', currentUser.value],
+    ['owner', '=', user],
+    ['Event Participants', 'email', '=', user],
   ]
 }
 
@@ -1058,9 +1218,8 @@ const events = createListResource({
   filters: buildEventFilters(),
   orFilters: buildEventOrFilters(),
   pageLength: 9999,
-  // asked by what shows them: the grid for its range (`handleRangeChange`),
-  // the phone's list for its day (`eventiDelGiorno`). Asked by itself as well,
-  // it brought every open event of the centre, to 9,999, before either
+  // asked by what shows them, for its period (`eventiDelPeriodo`): asked by
+  // itself as well, it brought every open event of the centre, to 9,999
   transform: (data) =>
     data
       // appointments are mirrored into Event for Google sync; showing both would
@@ -1078,8 +1237,8 @@ const events = createListResource({
         isFullDay: ev.all_day,
         eventType: ev.event_type,
         location: ev.location,
-        // stored as a hex, a design-system variable or a name: the calendar
-        // reads only names and seven hex values, and drew the rest green
+        // stored as a hex, a design-system variable or a name: one name of
+        // the palette, as the panel's colours have them
         color: calendarColorName(ev.color),
         attending: ev.attending,
         referenceDoctype: ev.reference_doctype,
@@ -1092,23 +1251,22 @@ const events = createListResource({
 
 provide('events', events)
 
-// the list asks the events of its day itself: the grid asks its range
-async function eventiDelGiorno() {
-  // when the grid comes back it asks its range again
-  activeRangeKey.value = ''
+// one's events of the period shown
+function eventiDelPeriodo() {
   events.update({
-    filters: buildEventFilters({
-      startDate: agendaDate.value,
-      endDate: agendaDate.value,
-    }),
+    filters: buildEventFilters(periodo.value),
     orFilters: buildEventOrFilters(),
   })
-  await events.reload()
+  return events.reload()
 }
+
+// a period, a view: its appointments, and one's events in it - the first
+// as the page is made
 watch(
-  [viewMode, agendaDate],
-  ([modo]) => {
-    if (modo === 'elenco') eventiDelGiorno()
+  () => [vista.value, periodo.value.start, periodo.value.end],
+  () => {
+    reloadScheduler()
+    eventiDelPeriodo()
   },
   { immediate: true },
 )
@@ -1162,7 +1320,6 @@ watch(
 onBeforeUnmount(() => togliDaIndietro?.())
 const event = ref({})
 const mode = ref('')
-const lastRange = ref(null)
 
 const isCreateDisabled = computed(
   () =>
@@ -1217,7 +1374,7 @@ function createEvent(_event) {
   if (!_event?.title) return
   events.insert.submit(buildEventPayload(_event), {
     onSuccess: async (e) => {
-      await updateUser(user)
+      await eventiDelPeriodo()
       toast.success(__('Event created successfully'))
       showDetails({ id: e.name })
     },
@@ -1228,64 +1385,11 @@ function createEvent(_event) {
   })
 }
 
-async function updateEvent(_event, afterDrag = false) {
+async function updateEvent(_event) {
   if (!_event.id) return
-  // busy time is somebody else's appointment: a drag puts it back where it was
-  if (isBusyId(_event.id)) {
-    scheduler.reload()
-    return
-  }
-
-  // an appointment dragged on the classic calendar reschedules through the
-  // scheduling engine, so conflicts and buffers still apply
-  if (isAppointmentId(_event.id)) {
-    const start = dayjs(
-      `${_event.fromDate} ${_event.fromTime}`,
-      'YYYY-MM-DD HH:mm',
-    )
-    const end = dayjs(`${_event.toDate} ${_event.toTime}`, 'YYYY-MM-DD HH:mm')
-    createResource({
-      url: 'crm.api.appointments.move_appointment',
-      params: {
-        name: appointmentName(_event.id),
-        starts_on: oraDelCentro(start.toDate()),
-        ends_on: oraDelCentro(end.toDate()),
-      },
-      auto: true,
-      onSuccess: () => {
-        toast.success(__('Appointment moved'))
-        reloadScheduler()
-      },
-      onError: (e) => {
-        toast.error(e.messages?.[0] || __('Could not move it'))
-        reloadScheduler()
-      },
-    })
-    return
-  }
 
   _event.fromTime = dayjs(_event.fromTime, 'HH:mm').format('HH:mm')
   _event.toTime = dayjs(_event.toTime, 'HH:mm').format('HH:mm')
-
-  if (
-    ['duplicate', 'new'].includes(mode.value) &&
-    !['duplicate-event', 'new-event'].includes(_event.id) &&
-    afterDrag
-  ) {
-    event.value = { id: _event.id }
-    activeEvent.value = _event.id
-    mode.value = 'details'
-  }
-
-  if (mode.value == 'edit' && afterDrag) {
-    eventPanel.value.updateEvent({
-      fromDate: _event.fromDate,
-      toDate: _event.toDate,
-      fromTime: _event.fromTime,
-      toTime: _event.toTime,
-    })
-    return
-  }
 
   if (!mode.value || mode.value == 'edit' || mode.value === 'details') {
     // Ensure Contacts exist for participants referencing a new/unknown Contact, if not create them
@@ -1317,7 +1421,7 @@ async function updateEvent(_event, afterDrag = false) {
 }
 
 function deleteEvent(eventID) {
-  if (!eventID || isBusyId(eventID)) return
+  if (!eventID) return
 
   if (isAppointmentId(eventID)) {
     openAppointment(appointmentName(eventID))
@@ -1359,45 +1463,19 @@ function syncEvent(eventID, _event) {
   const target = events.data.find((event) => event.id === eventID)
   if (!target) return
   // the panel's own copy is the same object for a new event: its colour stays
-  // what it will be saved as, and the calendar resolves it
+  // what it will be saved as, and the grid resolves it
   if (target === _event) return
   Object.assign(target, _event, { color: calendarColorName(_event.color) })
-}
-
-async function handleRangeChange(range) {
-  if (!range?.startDate || !range?.endDate) return
-  lastRange.value = range
-  const key = `${range.view}-${range.startDate}-${range.endDate}`
-  if (key === activeRangeKey.value) {
-    if (events.list?.loading || events.list?.fetched) return
-  }
-  activeRangeKey.value = key
-  events.update({
-    filters: buildEventFilters(range),
-    orFilters: buildEventOrFilters(),
-  })
-  await events.reload()
-  reloadScheduler()
 }
 
 onMounted(async () => {
   activeEvent.value = ''
   mode.value = ''
   showEventPanel.value = false
-  // the grid asks for its range itself as it is drawn (`handleRangeChange`):
-  // asked here as well, the week's appointments came twice
-  if (viewMode.value !== 'calendar') reloadScheduler()
 
   const { eventId, date, appointment } = route.query
-  if (date) setAgendaDate(date)
-  if (appointment) {
-    openAppointment(appointment)
-    // on its day, not on this week's
-    if (date) {
-      await nextTick()
-      calendar.value?.onMonthYearChange?.(dayjs(date).toDate())
-    }
-  }
+  // an appointment the address names, on its day
+  if (appointment) openAppointment(appointment)
   // «Book an appointment» on a person: a new appointment, for them - of the
   // cycle's service, from a cycle of sessions. The query stays in the address —
   // the page is keyed on it, and taking it away rebuilds the page without the
@@ -1413,10 +1491,6 @@ onMounted(async () => {
   if (eventId && date) {
     await events.promise
     await nextTick()
-
-    // Set calendar date to the event's date
-    calendar.value?.onMonthYearChange?.(dayjs(date).toDate())
-
     showDetails({ id: eventId })
   }
 })
@@ -1438,7 +1512,6 @@ useKeyboardShortcuts({
 
 function showDetails(e, reloadEvent = false) {
   const id = (e?.calendarEvent || e)?.id
-  if (isBusyId(id)) return
   if (isAppointmentId(id)) {
     openAppointment(appointmentName(id))
     return
@@ -1448,7 +1521,6 @@ function showDetails(e, reloadEvent = false) {
 
 function editDetails(e) {
   const id = (e?.calendarEvent || e)?.id
-  if (isBusyId(id)) return
   if (isAppointmentId(id)) {
     openAppointment(appointmentName(id), 'edit')
     return
@@ -1471,7 +1543,7 @@ function buildTempEvent(e = {}, duplicate = false) {
     location: e.location || '',
     isFullDay: e.isFullDay || false,
     eventType: e.eventType || 'Private',
-    // as the panel saves it: the hex, which the calendar reads as green
+    // as the panel saves it: the hex
     color: e.color || NAMED_HEX.green,
     attending: e.attending || 'Yes',
     event_participants: e.event_participants || [],
@@ -1528,20 +1600,10 @@ function getFromToTime(time) {
   let m = Math.floor(now.minute() / 15) * 15
   let fromHour = h
   let fromMinute = m
-  if (time) {
-    if (/am|pm/i.test(time)) {
-      const raw = time.trim().replace(' ', '')
-      const ampm = raw.slice(-2).toLowerCase()
-      let hour = parseInt(raw.slice(0, -2))
-      if (ampm === 'pm' && hour < 12) hour += 12
-      if (ampm === 'am' && hour === 12) hour = 0
-      fromHour = hour
-      fromMinute = 0
-    } else if (/^\d{1,2}:?\d{0,2}$/.test(time)) {
-      const [hh, mm = '00'] = time.split(':')
-      fromHour = parseInt(hh)
-      fromMinute = parseInt(mm) || 0
-    }
+  if (time && /^\d{1,2}:?\d{0,2}$/.test(time)) {
+    const [hh, mm = '00'] = time.split(':')
+    fromHour = parseInt(hh)
+    fromMinute = parseInt(mm) || 0
   }
   const toHour = (fromHour + 1) % 24
   return [

@@ -491,39 +491,59 @@
 }
 
 /* 12. The agenda's appointment (the design system's AgendaEvent,
-       components/Calendar/ResourceScheduler): the cloud's tail, the service's
-       colour as its ground and its bar, the time in that colour; a first visit
+       components/Calendar/BloccoAgenda): the cloud's tail, the service's
+       colour (or its state's) as its ground and its bar, the time in that
+       colour, the person first and what and where under them; a first visit
        the brand's full block, the one going on now ringed with the cross, a
-       cancelled one grey and struck through */
-/* «All day» beside the hours: on a phone the column is narrower than the
-   words, so they take two short lines inside the row instead of spilling over
-   the first hour (the class is put on frappe-ui's label at build) */
-@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
-  .dc-tutto-il-giorno {
-    font-size: 11px;
-    line-height: 1.1;
-  }
-}
-
+       cancelled one grey and struck through. Its lines are 16px each, as many
+       as its height holds (utils/agenda.js `righeDelBlocco`): never half one */
 .dc-evento {
   --evento: var(--surface-gray-6);
   border-radius: 8px 8px 8px var(--radius-tail);
   background-color: color-mix(in srgb, var(--evento) 14%, var(--surface-base));
-  padding-left: 10px;
+  padding: 2px 6px 2px 10px;
+  line-height: 16px;
 }
 .dc-evento::before {
   content: '';
   position: absolute;
   left: 3px;
-  top: 5px;
-  bottom: 5px;
+  top: 4px;
+  bottom: 4px;
   width: 2px;
   border-radius: 2px;
   background: var(--evento);
 }
 .dc-evento__ora {
+  font-size: 11px;
+  font-weight: 500;
   color: color-mix(in srgb, var(--evento) 60%, var(--ink-gray-9));
   font-variant-numeric: tabular-nums;
+}
+.dc-evento__chi {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-gray-9);
+}
+.dc-evento__dettagli {
+  font-size: 12px;
+  color: var(--ink-gray-6);
+}
+.dc-evento__segno {
+  color: color-mix(in srgb, var(--evento) 55%, var(--ink-gray-8));
+}
+/* shorter than a line: its time and its person in small type */
+.dc-evento--sottile {
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 12px;
+}
+.dc-evento--sottile :is(.dc-evento__chi, .dc-evento__ora) {
+  font-size: 10.5px;
+}
+.dc-evento--sottile::before {
+  top: 2px;
+  bottom: 2px;
 }
 .dc-evento--prima {
   background-color: var(--brand-solid);
@@ -531,10 +551,11 @@
 .dc-evento--prima::before {
   background: var(--mint-300);
 }
-.dc-evento--prima .dc-evento__titolo {
+.dc-evento--prima :is(.dc-evento__chi, .dc-evento__titolo) {
   color: var(--on-brand-solid);
 }
-.dc-evento--prima :is(.dc-evento__ora, .text-ink-gray-5) {
+.dc-evento--prima
+  :is(.dc-evento__ora, .dc-evento__dettagli, .dc-evento__segno) {
   color: color-mix(in srgb, var(--on-brand-solid) 80%, var(--brand-solid));
 }
 .dc-evento--adesso {
@@ -552,12 +573,59 @@
 .dc-evento--annullato::before {
   background: var(--surface-gray-5);
 }
-.dc-evento--annullato .dc-evento__titolo {
+.dc-evento--annullato :is(.dc-evento__chi, .dc-evento__titolo) {
   text-decoration: line-through;
   color: var(--ink-gray-5);
 }
 .dc-evento--annullato .dc-evento__ora {
   color: var(--ink-gray-5);
+}
+/* one's own event: its colour, a dashed edge - not an appointment */
+.dc-evento--impegno {
+  background-color: color-mix(in srgb, var(--evento) 9%, var(--surface-base));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evento) 35%, transparent);
+}
+.dc-evento--scelto {
+  box-shadow: 0 0 0 2px var(--outline-gray-4);
+}
+
+/* The agenda's grid (components/Calendar/GrigliaAgenda): where a column is
+   closed, light diagonal lines; busy with what one may not read, or a
+   colleague's engagement, a dashed band */
+.dc-agenda-chiuso {
+  background-color: var(--surface-gray-1);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 7px,
+    color-mix(in srgb, var(--outline-gray-3) 55%, transparent) 7px 8px
+  );
+}
+.dc-agenda-occupato {
+  border: 1px dashed var(--outline-gray-3);
+  background-color: color-mix(in srgb, var(--surface-gray-2) 70%, transparent);
+  border-radius: 6px;
+}
+/* how wide a column is at least: a day's are people, a week's days */
+.dc-agenda {
+  --col-min: 11rem;
+}
+.dc-agenda--settimana {
+  --col-min: 7.5rem;
+}
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  .dc-agenda {
+    --col-min: 9rem;
+  }
+}
+
+/* «All day» beside the hours: on a phone the column is narrower than the
+   words, so they take two short lines inside the row instead of spilling over
+   the first hour (the class is put on frappe-ui's label at build) */
+@media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
+  .dc-tutto-il-giorno {
+    font-size: 11px;
+    line-height: 1.1;
+  }
 }
 
 /* 13. The mark of a notification: its kind in a whole cloud, the category's
