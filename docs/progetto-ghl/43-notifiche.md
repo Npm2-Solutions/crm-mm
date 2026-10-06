@@ -123,6 +123,44 @@ senza nessuno in mezzo che le legga.
   dove andare, senza ricaricare; se la pagina non risponde entro due secondi e
   mezzo (addormentata, o di una versione di prima) viene caricata lì.
 
+## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
+
+Sull'app installata arrivava la prova ma non i messaggi, e i messaggi non
+comparivano da soli.
+
+- **La firma del sito.** Ogni push porta chi la manda (VAPID, RFC 8292: il `sub`
+  della firma, l'indirizzo del sito). La prova parte dalla pagina, che conosce
+  l'indirizzo pubblico del sito (`https://crm.centro.it`); un messaggio parte da un
+  lavoro in coda, che non ha una richiesta, e lì l'indirizzo del sito è il suo nome
+  interno con la porta (`http://sito:8000`). Il servizio di Apple rifiuta una firma
+  così (403 `BadJwtToken`): l'iPhone riceveva la prova e mai un messaggio. Ora la
+  firma porta sempre l'indirizzo con cui il mondo raggiunge il sito, in https e
+  senza porta (`spinta.mittente()`, `spinta_regole.contatto()`): quello da cui un
+  dispositivo è stato attivato o è partita una prova (tenuto in `crm_push_contact`),
+  altrimenti `host_name` della configurazione del sito, altrimenti quello della
+  richiesta che ha scritto la notifica (Meta che chiama il webhook lo conosce).
+- **Subito**: un messaggio (WhatsApp, SMS, email, chiamata) parte con
+  `Urgency: high`, che Apple e Google consegnano anche col telefono a riposo; il
+  resto con `normal`.
+- **Un rifiuto si legge**: il primo di una serie va nel registro degli errori con
+  la ragione del servizio («Web Push refused: 403 https://web.push.apple.com»,
+  `BadJwtToken`), per l'agenzia.
+- **Il tempo reale sul telefono.** La connessione in tempo reale si arrendeva dopo
+  cinque tentativi, una ventina di secondi di rete assente, di telefono a riposo o
+  di server riavviato, e restava sorda finché l'app non si riapriva: sull'app
+  installata, giorni. Ora riprova sempre (al più ogni dieci secondi) e subito
+  quando l'app torna in vista o torna la rete (`socket.js`). E ciò che una pagina
+  mostra dagli eventi (le conversazioni, l'attività di una persona, il conto delle
+  notifiche) viene chiesto di nuovo quando l'app torna dopo più di quindici secondi
+  fuori vista o la connessione torna dopo una caduta: gli eventi di quel tempo non
+  sono mai arrivati (`composables/diNuovoInLinea.js`, `utils/inLinea.js`).
+- **Da controllare su un server**: `/app/system-health-report` (il servizio del
+  tempo reale risponde, i worker girano: le push partono dalla coda «short»), il
+  registro degli errori («Web Push refused»). Dopo l'aggiornamento basta aprire
+  l'app una volta, o mandarsi la prova, perché il sito tenga il suo indirizzo.
+  L'account Administrator non riceve le notifiche dei messaggi delle persone (né
+  da assegnato né da proprietario): serve un utente del centro.
+
 ## Come è fatta
 
 - `crm/notifiche/avvisi.py`: `avvisa()`, la porta da cui entra ogni notifica. Ci
@@ -151,7 +189,8 @@ senza nessuno in mezzo che le legga.
 - Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
   dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
   `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi
-  in `CRM Push Subscription`, l'invio in coda dopo `avvisa()`, il service worker
+  in `CRM Push Subscription`, l'invio in coda dopo `avvisa()` firmato da
+  `mittente()`, il service worker
   servito su `/api/method/…` con `Service-Worker-Allowed: /crm`),
   `crm/notifiche/spinta_sw.js`; nel browser `utils/spinta.js` (provato),
   `composables/spinta.js`, `Settings/NotificationsSettings.vue`,
@@ -164,5 +203,12 @@ senza nessuno in mezzo che le legga.
   i tipi, «Da leggere», «Segna tutto come letto», Esc. Una notifica WhatsApp apre
   la persona sul messaggio anche se la scheda era rimasta sulle email. L'avviso
   arriva in tempo reale e «Apri» porta al messaggio.
+- Sul telefono, col servizio del tempo reale spento 40 secondi e riacceso, la
+  connessione torna da sola (2,6 s dopo) e le notifiche vengono chieste di nuovo;
+  con l'app fuori vista, tornando in vista si riconnette in 0,1 s; dopo 16 secondi
+  fuori vista la pagina chiede di nuovo, dopo 3 no.
+- `tests/test_spinta.py` (`DaUnJob`): un lavoro in coda firma con l'indirizzo della
+  pagina, o della richiesta che l'ha scritto, mai `http` né una porta; un messaggio
+  parte `high`; il primo rifiuto nel registro con la ragione del servizio.
 - `crm.notifiche.tests` (33 test) e i moduli che scrivono notifiche: area, agenda,
   automazioni, WhatsApp, permessi, sola lettura.
