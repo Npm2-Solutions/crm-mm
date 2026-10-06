@@ -84,9 +84,10 @@ verificare»).
   altrimenti dà il link.
 - **La pagina di prenotazione**: ogni promemoria porta il link `/prenota?token=…`
   del posto della persona, dove «Confermo che ci sarò» conferma; lì si sposta o si
-  disdice dove le regole della prenotazione online lo permettono. Riaperta da quel
-  link la pagina non dice più «Prenotazione confermata, ti abbiamo inviato
-  un'email»: dice com'è la prenotazione.
+  disdice dove le regole della prenotazione online lo permettono, e una disdetta lì
+  è la risposta al promemoria («Non può venire», disdetto). Riaperta da quel link
+  la pagina non dice più «Prenotazione confermata, ti abbiamo inviato un'email»:
+  dice com'è la prenotazione.
 - **«Non posso venire»** disdice il posto della persona (in una lezione solo il
   suo) e l'orario va a chi è in lista d'attesa. Con «Un “non posso venire” disdice
   l'appuntamento» spento, la reception riceve la notifica e decide.
@@ -118,6 +119,8 @@ verificare»).
   Su un secondo account prende il nome `promemoria_appuntamento_2`: i nomi di Meta
   sono per account, quelli del sito uno per tutti.
 - **Primi passi**: «Promemoria degli appuntamenti», fatto quando sono accesi.
+- **Nei dati di prova** (doc 53): gli appuntamenti di domani il cui promemoria è
+  già dovuto lo hanno ricevuto per email, e circa metà ha confermato dalla pagina.
 
 ## Da sapere
 
