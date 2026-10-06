@@ -62,6 +62,15 @@ class LeScelteInParole(IntegrationTestCase):
 		# not required: the empty choice first, then the three a practice meets
 		self.assertEqual([s["value"] for s in natura["options"]], ["", "N4", "N2.2", "N1"])
 
+	def test_un_valore_che_il_profilo_nasconde_si_legge_per_nome(self):
+		with _sanitario():
+			categoria = _campo(get_fields("CRM Professional Qualification"), "category")
+		# a company is no health profession: not offered, but a qualification saved
+		# with it reads «Company», never «impresa»
+		self.assertNotIn("impresa", [s["value"] for s in categoria["options"]])
+		self.assertEqual(set(categoria["nomi"]), {voce.valore for voce in voci.tutte("categoria_qualifica")})
+		self.assertTrue(all(nome and nome != valore for valore, nome in categoria["nomi"].items()))
+
 	def test_la_causale_diventa_un_elenco(self):
 		with _sanitario():
 			causale = _campo(get_fields("CRM Professional Qualification"), "payment_reason")

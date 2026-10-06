@@ -36,6 +36,16 @@ describe('a select in words', () => {
     expect(conValoreAttuale(NATURE, '')).toBe(NATURE)
   })
 
+  it('names the kept value from the family the server sends', () => {
+    const nomi = { 'N6.4': 'Inversione contabile: oro e argento' }
+    expect(conValoreAttuale(NATURE, 'N6.4', nomi).at(-1)).toEqual({
+      label: 'Inversione contabile: oro e argento',
+      value: 'N6.4',
+    })
+    expect(conValoreAttuale(NATURE, 'N6.9', nomi).at(-1).label).toBe('N6.9')
+    expect(conValoreAttuale(NATURE, 'N6.4', null).at(-1).label).toBe('N6.4')
+  })
+
   it('names a stored code, or leaves it as it is', () => {
     const vocabolario = { natura: { N4: 'Esente (art. 10)' } }
     expect(nomeDi(vocabolario, 'natura', 'N4')).toBe('Esente (art. 10)')
