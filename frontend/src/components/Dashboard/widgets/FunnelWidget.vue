@@ -16,7 +16,11 @@
         class="flex items-center gap-3"
         :title="stepTitle(step, index)"
       >
-        <span class="w-28 shrink-0 truncate text-xs text-ink-gray-7">
+        <!-- a step's name read whole, on two lines if it must
+             («Proposta/Preventivo» on a phone) -->
+        <span
+          class="w-28 shrink-0 break-words text-xs leading-tight text-ink-gray-7"
+        >
           {{ step.label }}
         </span>
         <span
