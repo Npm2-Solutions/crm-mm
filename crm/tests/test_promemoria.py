@@ -473,6 +473,16 @@ class DallaPagina(PromemoriaCase):
 			frappe.db.get_value("CRM Appointment", self.appuntamento.name, "status"), "Cancelled"
 		)
 
+	def test_la_reception_vede_la_risposta(self):
+		from crm.api import oggi
+
+		self.giro()
+		token = LINK.search(self.sendmail.call_args.kwargs["message"]).group(1)
+		self.ospite(SB.confirm, token)
+		giorno = oggi.get_day(self.inizio.date().isoformat())
+		[appuntamento] = [a for a in giorno["appointments"] if a["name"] == self.appuntamento.name]
+		self.assertEqual(appuntamento["participants"][0]["reminder"]["answer"], R.CONFERMA)
+
 	def test_senza_promemoria_niente_da_confermare(self):
 		token = P._link(frappe.get_doc("CRM Appointment", self.appuntamento.name).participants[0])
 		vista = self.ospite(SB.get_booking, LINK.search(token).group(1))
