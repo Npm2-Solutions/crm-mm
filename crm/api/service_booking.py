@@ -937,6 +937,10 @@ def cancel(token: str, reason: str | None = None) -> dict:
 	if code := _rules(service).check_cancel(start, datetime.datetime.now(UTC)):
 		frappe.throw(limit_message(code))
 	_cancel_rows(appointment, token, reason)
+	# the reminder that linked here, if one did, has its answer
+	from crm.scheduling import promemoria
+
+	promemoria.disdetto_dalla_pagina(appointment, _my_rows(appointment, token))
 	send_client_email(appointment, token, "cancelled")
 	notify_staff(appointment, _("Online booking cancelled"))
 	return public_view(appointment, token)
