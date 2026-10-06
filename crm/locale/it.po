@@ -45149,3 +45149,44 @@ msgstr "Vinta"
 msgctxt "Stage type"
 msgid "Lost"
 msgstr "Persa"
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+#: frontend/src/utils/impostazioni.js
+msgid "Agenda & reminders"
+msgstr "Agenda e promemoria"
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "How the agenda opens, the minutes its grid moves by, when you are reminded of events."
+msgstr "Come si apre l'agenda, di quanti minuti si muove la griglia, quando ricevi i promemoria degli eventi."
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "Opening view"
+msgstr "Vista iniziale"
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "Where the agenda opens until someone picks another view: then each keeps their own."
+msgstr "Dove si apre l'agenda finché qualcuno non sceglie un'altra vista: poi ognuno tiene la sua."
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "Grid step"
+msgstr "Passo della griglia"
+
+#: frontend/src/components/Settings/CalendarSettings.vue
+msgid "A click on a free time and a moved appointment start on these minutes."
+msgstr "Un clic su un orario libero e un appuntamento spostato partono da questi minuti."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Where the agenda opens, the minutes its grid moves by, the reminders people receive."
+msgstr "Dove si apre l'agenda, di quanti minuti si muove la griglia, i promemoria che ricevono le persone."
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Agenda grid step (minutes)"
+msgstr "Passo della griglia dell'agenda (minuti)"
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Where the agenda opens until someone chooses another view; each person keeps their own."
+msgstr "Dove si apre l'agenda finché qualcuno non sceglie un'altra vista; ognuno tiene la sua."
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "A click on a free time and a moved appointment land on these minutes."
+msgstr "Un clic su un orario libero e un appuntamento spostato cadono su questi minuti."

@@ -1,7 +1,8 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-  How the calendar opens and when events are reminded; the fields wait for the
+  How the agenda opens, the minutes its grid moves by (docs/progetto-ghl/
+  56-agenda.md), and when events are reminded; the fields wait for the
   settings, as a page opened from a link draws before they come.
 -->
 <!-- eslint-disable vue/no-v-html -->
@@ -17,11 +18,13 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Calendar & reminders') }}
+          {{ __('Agenda & reminders') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
-            __('How the calendar opens, and when you are reminded of events.')
+            __(
+              'How the agenda opens, the minutes its grid moves by, when you are reminded of events.',
+            )
           }}
         </p>
       </div>
@@ -39,31 +42,24 @@
     <!-- Fields: once the settings have come, or the first draw reads them
          from nothing -->
     <div v-if="settings.doc" class="flex flex-1 flex-col overflow-y-auto">
-      <div class="flex items-center justify-between gap-8 py-3 px-2">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
-            {{ __('Default View') }}
+      <!-- where the agenda opens, and the minutes its grid moves by -->
+      <div
+        v-for="riga in righe"
+        :key="riga.campo"
+        class="flex items-center justify-between gap-8 px-2 py-3 impostazioni-strette:flex-col impostazioni-strette:items-stretch impostazioni-strette:gap-2"
+      >
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
+            {{ riga.etichetta }}
           </div>
-          <div class="text-p-sm text-ink-gray-5">
-            {{
-              __(
-                'Select the default view for your calendar. This will be the initial view when you open the calendar',
-              )
-            }}
-          </div>
+          <div class="text-p-sm text-ink-gray-5">{{ riga.descrizione }}</div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="w-36 shrink-0 impostazioni-strette:w-full">
           <FormControl
-            v-model="settings.doc.default_calendar_view"
+            v-model="settings.doc[riga.campo]"
             type="select"
-            :aria-label="__('Default View')"
-            class="w-28"
-            :options="[
-              { label: __('Daily'), value: 'Daily' },
-              { label: __('Weekly'), value: 'Weekly' },
-              { label: __('Monthly'), value: 'Monthly' },
-            ]"
-            :placeholder="__('Select View')"
+            :aria-label="riga.etichetta"
+            :options="riga.opzioni"
           />
         </div>
       </div>
@@ -301,6 +297,32 @@ import { FormControl, TimePicker } from 'frappe-ui'
 import { computed } from 'vue'
 
 const { _settings: settings } = getSettings()
+
+const righe = [
+  {
+    campo: 'default_calendar_view',
+    etichetta: __('Opening view'),
+    descrizione: __(
+      'Where the agenda opens until someone picks another view: then each keeps their own.',
+    ),
+    opzioni: [
+      { label: __('Day'), value: 'Daily' },
+      { label: __('Week'), value: 'Weekly' },
+      { label: __('Month'), value: 'Monthly' },
+    ],
+  },
+  {
+    campo: 'calendar_grid_step',
+    etichetta: __('Grid step'),
+    descrizione: __(
+      'A click on a free time and a moved appointment start on these minutes.',
+    ),
+    opzioni: ['5', '10', '15', '30'].map((minuti) => ({
+      label: __('{0} minutes', [minuti]),
+      value: minuti,
+    })),
+  },
+]
 
 const notifications = computed({
   get: () => settings.doc?.event_notifications || [],

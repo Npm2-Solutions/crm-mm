@@ -32,6 +32,7 @@
   "calendar_tab",
   "default_reminder_section",
   "default_calendar_view",
+  "calendar_grid_step",
   "event_notifications",
   "all_day_event_notifications",
   "dropdown_items_tab",
@@ -171,11 +172,20 @@
    "options": "Event Notifications"
   },
   {
-   "default": "Weekly",
+   "default": "Daily",
+   "description": "Where the agenda opens until someone chooses another view; each person keeps their own.",
    "fieldname": "default_calendar_view",
    "fieldtype": "Select",
    "label": "Default Calendar View",
    "options": "Daily\nWeekly\nMonthly"
+  },
+  {
+   "default": "15",
+   "description": "A click on a free time and a moved appointment land on these minutes.",
+   "fieldname": "calendar_grid_step",
+   "fieldtype": "Select",
+   "label": "Agenda grid step (minutes)",
+   "options": "5\n10\n15\n30"
   },
   {
    "default": "1",
@@ -259,7 +269,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-05 18:00:00.000000",
+ "modified": "2026-10-06 14:30:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",
