@@ -15,20 +15,21 @@ const STANDARD = [
 ]
 
 /**
- * What a list offers as a column, on a board's card, as a quick filter
- * (`crm.api.doc.get_list_fields`, the rule in crm/liste/regole.py): each
- * field once, in the reader's words, told apart from another of the same
- * name. Asked the first time a picker opens, never while the list loads, and
- * once per document type.
+ * What a list offers as a column, on a board's card, as a quick filter (`uso`
+ * «colonna»), or what a record's layout editors offer («scheda»):
+ * `crm.api.doc.get_list_fields`, the rule in crm/liste/regole.py. Each field
+ * once, in the reader's words, told apart from another of the same name.
+ * Asked the first time a picker opens, never while the list loads, and once
+ * per document type and use.
  */
-export function useCampiDellaLista(doctype) {
-  const chiave = ['listFields', doctype]
+export function useCampiDellaLista(doctype, uso = 'colonna') {
+  const chiave = ['listFields', doctype, uso]
   const campi =
     getCachedResource(chiave) ||
     createResource({
       url: 'crm.api.doc.get_list_fields',
       cache: chiave,
-      params: { doctype },
+      params: { doctype, uso },
     })
 
   function carica() {
@@ -41,4 +42,13 @@ export function useCampiDellaLista(doctype) {
 /** A quick filter is one of the document's own fields. */
 export function delDocumento(campo) {
   return !STANDARD.includes(campo?.fieldname)
+}
+
+/**
+ * A field's name as the list or the layout offers it, else its own words:
+ * a layout keeps the fields with the label their document gives them.
+ */
+export function nomeDelCampo(campi, campo, t = (testo) => testo) {
+  const offerto = (campi || []).find((c) => c.fieldname === campo?.fieldname)
+  return offerto?.label || t(campo?.label || '')
 }

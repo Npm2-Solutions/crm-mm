@@ -210,7 +210,9 @@
                           <DragVerticalIcon
                             class="field-drag-handle h-3.5 cursor-grab"
                           />
-                          <div class="truncate">{{ field.label }}</div>
+                          <div class="truncate">
+                            {{ nomeDelCampo(campi.data, field, __) }}
+                          </div>
                         </div>
                         <Button
                           :aria-label="__('Remove')"
@@ -240,14 +242,6 @@
                         iconLeft="plus"
                         @click="setOpen(!open)"
                       />
-                    </template>
-                    <template #item-label="{ item }">
-                      <div class="flex flex-col gap-1 text-ink-gray-9">
-                        <div>{{ item.label }}</div>
-                        <div class="text-ink-gray-5 text-sm">
-                          {{ `${item.fieldname} - ${item.fieldtype}` }}
-                        </div>
-                      </div>
                     </template>
                   </Combobox>
                 </div>
@@ -288,6 +282,7 @@ import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import Draggable from 'vuedraggable'
 import { getRandom } from '@/utils'
 import { getMeta } from '@/stores/meta'
+import { nomeDelCampo, useCampiDellaLista } from '@/composables/campiDellaLista'
 import { globalStore } from '@/stores/global'
 import { Combobox, Dropdown } from 'frappe-ui'
 import { ref, computed, watch, nextTick } from 'vue'
@@ -331,9 +326,24 @@ const restrictedFieldTypes = [
 
 const { getFields } = getMeta(props.doctype)
 
+// the record's fields in the reader's words, each once, never a code
+const { campi, carica } = useCampiDellaLista(props.doctype, 'scheda')
+carica()
+
+// what must be filled, for a layout of the required fields
+const obbligatori = computed(
+  () =>
+    new Set(
+      (getFields({ restrictNoValueFields: false }) || [])
+        .filter((field) => field.reqd)
+        .map((field) => field.fieldname),
+    ),
+)
+
 const fields = computed(() => {
-  const _fields =
-    getFields({ restrictNoValueFields: false, restrictedFieldTypes }) || []
+  const _fields = (campi.data || []).filter(
+    (field) => !restrictedFieldTypes.includes(field.fieldtype),
+  )
   if (!_fields.length) return []
 
   let existingFields = []
@@ -350,7 +360,7 @@ const fields = computed(() => {
     .filter((field) => {
       return (
         !existingFields.find((f) => f.fieldname === field.fieldname) &&
-        (props.onlyRequired ? field.reqd : true)
+        (props.onlyRequired ? obbligatori.value.has(field.fieldname) : true)
       )
     })
     .map((field) => {

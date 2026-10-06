@@ -80,7 +80,7 @@
                 >
                   <div class="flex items-center gap-2">
                     <DragVerticalIcon class="h-3.5 cursor-grab" />
-                    <div>{{ field.label }}</div>
+                    <div>{{ nomeDelCampo(campi.data, field, __) }}</div>
                   </div>
                   <Button
                     :aria-label="__('Remove')"
@@ -111,14 +111,6 @@
                   iconLeft="plus"
                   @click="setOpen(!open)"
                 />
-              </template>
-              <template #item-label="{ item }">
-                <div class="flex flex-col gap-1 text-ink-gray-9">
-                  <div>{{ item.label }}</div>
-                  <div class="text-ink-gray-5 text-sm">
-                    {{ `${item.fieldname} - ${item.fieldtype}` }}
-                  </div>
-                </div>
               </template>
             </Combobox>
             <div
@@ -155,7 +147,7 @@
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import { getRandom } from '@/utils'
-import { getMeta } from '@/stores/meta'
+import { nomeDelCampo, useCampiDellaLista } from '@/composables/campiDellaLista'
 import Draggable from 'vuedraggable'
 import { Combobox, Input } from 'frappe-ui'
 import { computed } from 'vue'
@@ -176,11 +168,28 @@ const restrictedFieldTypes = [
   'Image',
 ]
 
-const { getFields } = getMeta(props.doctype)
+// the record's fields in the reader's words, each once, never a code
+const { campi, carica } = useCampiDellaLista(props.doctype, 'scheda')
+carica()
+
+// a field is in the panel once: what is there already is not offered again
+const presenti = computed(
+  () =>
+    new Set(
+      sections.value.flatMap((section) =>
+        (section.columns || []).flatMap((column) =>
+          (column.fields || []).map((field) => field.fieldname),
+        ),
+      ),
+    ),
+)
 
 const fields = computed(() => {
-  let _fields =
-    getFields({ restrictNoValueFields: false, restrictedFieldTypes }) || []
+  let _fields = (campi.data || []).filter(
+    (field) =>
+      !restrictedFieldTypes.includes(field.fieldtype) &&
+      !presenti.value.has(field.fieldname),
+  )
   if (!_fields.length) return []
 
   return _fields.map((field) => {
