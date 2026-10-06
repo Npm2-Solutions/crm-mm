@@ -104,7 +104,12 @@
               {{ titleLine }}
             </div>
             <div class="text-p-base text-ink-gray-6">
-              {{ underTitle }}
+              <template v-for="(pezzo, i) in underTitle" :key="i"
+                >{{ i ? ' · ' : ''
+                }}<span :class="pezzo.intero ? 'whitespace-nowrap' : ''">{{
+                  pezzo.testo
+                }}</span></template
+              >
             </div>
           </div>
         </div>
@@ -1056,19 +1061,27 @@ const clients = computed(() =>
 const titleLine = computed(() =>
   clients.value.length === 1 ? clients.value[0] : serviceName.value,
 )
+// in pieces: its day and its hours never break in the middle («07:45 –» and
+// «08:40» on two lines of a phone)
 const underTitle = computed(() => {
   if (clients.value.length === 1)
-    return `${serviceName.value} · ${whenLabel.value}`
+    return [{ testo: serviceName.value }, ...whenParts.value]
   if (clients.value.length > 1)
-    return `${__('{0} people', [clients.value.length])} · ${whenLabel.value}`
-  return whenLabel.value
+    return [
+      { testo: __('{0} people', [clients.value.length]) },
+      ...whenParts.value,
+    ]
+  return whenParts.value
 })
 
-const whenLabel = computed(() => {
-  if (!doc.value) return ''
+const whenParts = computed(() => {
+  if (!doc.value) return []
   const start = dayjs(doc.value.starts_on)
   const end = dayjs(doc.value.ends_on)
-  return `${start.format('ddd D MMM YYYY')} · ${start.format('HH:mm')} – ${end.format('HH:mm')}`
+  return [
+    { testo: start.format('ddd D MMM YYYY'), intero: true },
+    { testo: `${start.format('HH:mm')}–${end.format('HH:mm')}`, intero: true },
+  ]
 })
 
 const heading = computed(() => {
