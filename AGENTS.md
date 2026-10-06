@@ -286,6 +286,16 @@ A call from the browser leaves only after the server's yes (`voice` asks
 `uscita.perche_no` again, whatever the screen did), and shows a number of the
 centre's or the caller's own line: never one the browser made up.
 
+### WhatsApp's templates (docs/progetto-ghl/12)
+| File | Role |
+|---|---|
+| `crm/integrations/whatsapp/modelli_regole.py` | Pure: a template lives on a WhatsApp Business account (WABA), never on a number: the numbers that send it (`numeri_che_possono`, `stesso_account`), its buttons by Meta's rules (10 at most, 2 links, 1 call, 25 characters, quick replies first), Meta's description read into frappe_whatsapp's fields (`da_meta`), the ones Meta no longer has (`spariti`) — tested with plain `unittest` |
+| `crm/integrations/whatsapp/templates.py` + `Settings/WhatsAppTemplates.vue`, `utils/modelliWhatsApp.js` | Settings > WhatsApp > Templates, one number at a time: a new template on the number shown, with its buttons; «Sync from Meta» is ours (`porta_dentro`: every account once, every page, found by Meta's id, written without the hooks that would submit it again), frappe_whatsapp's `fetch` read one number, one page, one template per name; `modelli_inviabili()`: what the number that sends can send, the only templates the chat (`crm.api.whatsapp.get_sendable_templates`), the automations, the waiting list and the area offer |
+
+A template is chosen where it can be sent: whatever offers one asks
+`modelli_inviabili()`, never the whole list, and a check before sending compares the
+account (`stesso_account`), never the number's name.
+
 ### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
