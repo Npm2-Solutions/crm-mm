@@ -98,7 +98,9 @@ apre quel giorno nella vista Giorno.
   primo appuntamento del giorno.
 - **Un orario libero** apre un appuntamento nuovo (o un evento, come l'ultima
   volta) per quella colonna, all'orario toccato, arrotondato al **passo della
-  griglia**. **Trascinare** un appuntamento (non con un dito: sul telefono e sul
+  griglia**. Solo dove chi legge può prenotare: un professionista prenota nella
+  sua agenda (`agenda.prenota` sui suoi), e la colonna di un collega non apre
+  niente né accoglie un appuntamento trascinato, come il server rifiuterebbe. **Trascinare** un appuntamento (non con un dito: sul telefono e sul
   tablet l'orario si cambia dal pannello) lo sposta all'orario e alla colonna
   dove cade, con lo stesso punto preso in mano; nella settimana in un altro
   giorno.
@@ -115,12 +117,16 @@ sorgente, quanti sono attivi accanto) e **Vista**. «Nuovo» resta nell'intestaz
 
 - **Di chi legge**, nel suo browser (menu Vista): colonne per professionista o per
   ambulatorio, altezza delle ore, colori per servizio o per stato, chi non lavora,
-  gli annullati, l'ultima vista usata e di chi è la settimana. Dal menu anche
+  gli annullati, l'ultima vista usata, di chi sono il giorno e il mese (chi è
+  spuntato in «di chi»; «Azzera tutto» torna a tutti) e di chi è la settimana.
+  Chi vede solo la propria agenda (un professionista) apre sulla propria colonna
+  finché non sceglie altri; chi se n'è andato esce dalla scelta da solo. Dal menu anche
   «Impostazioni dell'agenda» e «Il tuo Google Calendar» (Il tuo account), che
   prima era un pulsante nell'intestazione.
 - **Del centro**, in Impostazioni > Agenda > Agenda e promemoria:
   la **vista iniziale** (Giorno, Settimana, Mese: dove si apre finché qualcuno non
-  ne sceglie un'altra) e il **passo della griglia** (5, 10, 15 o 30 minuti), più i
+  ne sceglie un'altra; una pagina aperta prima che arrivino le impostazioni la
+  prende quando arrivano) e il **passo della griglia** (5, 10, 15 o 30 minuti), più i
   promemoria degli eventi come prima. Gli orari mostrati non sono
   un'impostazione: vengono dagli orari del centro e dai turni (Impostazioni >
   Agenda > Orari e turni).

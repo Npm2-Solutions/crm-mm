@@ -177,7 +177,9 @@
           :style="{ ...colonnaStile, height: altezza }"
           :data-colonna="colonna.key"
           @click="crea($event, colonna)"
-          @dragover.prevent="sopra = colonna.key"
+          @dragover.prevent="
+            sopra = colonna.prenotabile === false ? '' : colonna.key
+          "
           @dragleave="sopra = sopra === colonna.key ? '' : sopra"
           @drop.prevent="lascia($event, colonna)"
         >
@@ -453,7 +455,8 @@ function minutoA(evento, sotto = 0) {
 }
 
 function crea(evento, colonna) {
-  if (!props.modificabile) return
+  // a column not one's own to book in (a colleague's, for a practitioner)
+  if (!props.modificabile || colonna.prenotabile === false) return
   emit('crea', { colonna, minuti: minutoA(evento) })
 }
 
@@ -475,7 +478,7 @@ function prendi(evento, cosa, colonna) {
 
 function lascia(evento, colonna) {
   sopra.value = ''
-  if (!props.modificabile) return
+  if (!props.modificabile || colonna.prenotabile === false) return
   let preso
   try {
     preso = JSON.parse(evento.dataTransfer.getData('text/plain'))
