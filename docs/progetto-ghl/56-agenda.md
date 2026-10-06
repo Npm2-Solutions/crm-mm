@@ -141,7 +141,10 @@ prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
   la **vista iniziale** (Giorno, Settimana, Mese: dove si apre finché qualcuno non
   ne sceglie un'altra; una pagina aperta prima che arrivino le impostazioni la
   prende quando arrivano) e il **passo della griglia** (5, 10, 15 o 30 minuti), più i
-  promemoria degli eventi come prima. Gli orari mostrati non sono
+  promemoria degli eventi come prima. Un centro che c'era già non aveva scritto
+  niente per un campo nuovo, e la pagina diceva «Scegli…» sopra una griglia che
+  andava di 15 minuti: la patch `the_agenda_settings_say_what_it_does` scrive il
+  predefinito della DocType dove non c'è niente, mai sopra una scelta. Gli orari mostrati non sono
   un'impostazione: vengono dagli orari del centro e dai turni (Impostazioni >
   Agenda > Orari e turni).
 

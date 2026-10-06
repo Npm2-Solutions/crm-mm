@@ -110,3 +110,4 @@ crm.patches.v1_0.the_register_follows_the_agenzia
 crm.patches.v1_0.the_register_follows_the_funds
 crm.patches.v1_0.the_company_doctor_is_named_in_italian
 crm.patches.v1_0.answers_from_the_phone_read_the_conversation
+crm.patches.v1_0.the_agenda_settings_say_what_it_does
