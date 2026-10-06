@@ -7,7 +7,6 @@ leaving out what a document keeps only for the machine."""
 
 import frappe
 from frappe import _
-from frappe.model import no_value_fields
 
 from crm.liste import regole
 
@@ -81,8 +80,6 @@ def della_lista(doctype: str, uso: str, togli=()) -> list[dict]:
 		# pages, under «First Touch»)
 		if df.fieldtype == "Section Break":
 			sezione = df.label or sezione
-			continue
-		if df.fieldtype in no_value_fields:
 			continue
 		if leggibili is not None and (df.permlevel or 0) > 0 and df.permlevel not in leggibili:
 			continue
