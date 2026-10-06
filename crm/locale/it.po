@@ -45881,3 +45881,339 @@ msgstr "Ripreso il"
 #: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
 msgid "Brought back to the server to be read: it leaves again after an hour."
 msgstr "Riportato sul server per leggerlo: riparte dopo un'ora."
+
+#: crm/scheduling/promemoria.py
+msgid "{0} at {1}"
+msgstr "{0} alle {1}"
+
+#: crm/scheduling/promemoria.py
+msgid "your appointment"
+msgstr "il tuo appuntamento"
+
+#: crm/scheduling/promemoria.py
+msgid "{0} for {1}"
+msgstr "{0} per {1}"
+
+#: crm/scheduling/promemoria.py
+msgid "None of the centre's ways reaches them: call them"
+msgstr "Nessun canale del centro la raggiunge: chiamala"
+
+#: crm/scheduling/promemoria.py
+msgid "{0}: a reminder of your appointment: {1}, {2}. Reply YES to confirm, NO if you cannot come. To move it: {3}"
+msgstr "{0}: ti ricordiamo l'appuntamento: {1}, {2}. Rispondi SI per confermare, NO se non puoi venire. Per spostarlo: {3}"
+
+#: crm/scheduling/promemoria.py
+msgid "{0}: a reminder of your appointment: {1}, {2}. To confirm, move or cancel it: {3}"
+msgstr "{0}: ti ricordiamo l'appuntamento: {1}, {2}. Per confermarlo, spostarlo o disdirlo: {3}"
+
+#: crm/scheduling/promemoria.py
+msgid "a reminder of your appointment at {0}:"
+msgstr "ti ricordiamo il tuo appuntamento presso {0}:"
+
+#: crm/scheduling/promemoria.py
+msgid "Confirm, move or cancel"
+msgstr "Conferma, sposta o disdici"
+
+#: crm/scheduling/promemoria.py
+msgid "If you cannot come, let us know: the time goes to whoever is waiting for one."
+msgstr "Se non puoi venire, avvisaci: l'orario andrà a chi lo aspetta."
+
+#: crm/scheduling/promemoria.py
+msgid "Reminder: {0}, {1}"
+msgstr "Promemoria: {0}, {1}"
+
+#: crm/scheduling/promemoria.py
+msgid "Your appointment"
+msgstr "Il tuo appuntamento"
+
+#: crm/scheduling/promemoria.py
+msgid "WhatsApp did not deliver it"
+msgstr "WhatsApp non l'ha consegnato"
+
+#: crm/scheduling/promemoria.py
+msgid "This appointment has changed in the meantime: for anything, write to us or call us."
+msgstr "Nel frattempo l'appuntamento è cambiato: per qualsiasi cosa scrivici o chiamaci."
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you, {0}: see you {1}."
+msgstr "Grazie, {0}: ti aspettiamo {1}."
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you: see you {0}."
+msgstr "Grazie: ti aspettiamo {0}."
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you for letting us know: the centre will cancel it and help you find another time."
+msgstr "Grazie per averci avvisato: il centro lo disdirà e ti aiuterà a trovare un altro orario."
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you for letting us know: the appointment of {0} is cancelled. To book another one: {1}"
+msgstr "Grazie per averci avvisato: l'appuntamento di {0} è disdetto. Per prenotarne un altro: {1}"
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you for letting us know: the appointment of {0} is cancelled."
+msgstr "Grazie per averci avvisato: l'appuntamento di {0} è disdetto."
+
+#: crm/scheduling/promemoria.py
+msgid "Choose another time here: {0}. The centre knows you would like to move it."
+msgstr "Scegli un altro orario qui: {0}. Il centro sa che vorresti spostarlo."
+
+#: crm/scheduling/promemoria.py
+msgid "Thank you: the centre will get in touch to find another time."
+msgstr "Grazie: il centro ti contatterà per trovare un altro orario."
+
+#: crm/scheduling/promemoria.py
+msgid "Cancelled by the client, answering the reminder"
+msgstr "Disdetto dal cliente, rispondendo al promemoria"
+
+#: crm/scheduling/promemoria.py
+msgid "Cancelled by the patient, answering the reminder"
+msgstr "Disdetto dal paziente, rispondendo al promemoria"
+
+#: crm/scheduling/promemoria.py
+msgid "There is nothing to confirm for this appointment."
+msgstr "Per questo appuntamento non c'è niente da confermare."
+
+#: crm/scheduling/promemoria.py
+msgid "This template has no buttons to confirm and to cancel: the answers would not reach the agenda."
+msgstr "Questo modello non ha i pulsanti per confermare e per disdire: le risposte non arriverebbero in agenda."
+
+#: crm/scheduling/promemoria.py
+msgid "The reminder template is already there: Meta reviews it, then it can be chosen."
+msgstr "Il modello dei promemoria c'è già: Meta lo esamina, poi si può scegliere."
+
+#: crm/notifiche/regole.py
+msgid "{0} cannot come on {1}: the appointment is cancelled"
+msgstr "{0} non può venire {1}: l'appuntamento è disdetto"
+
+#: crm/notifiche/regole.py
+msgid "{0} cannot come on {1}: cancel the appointment"
+msgstr "{0} non può venire {1}: disdici l'appuntamento"
+
+#: crm/notifiche/regole.py
+msgid "{0} would like to move the appointment on {1}"
+msgstr "{0} vorrebbe spostare l'appuntamento di {1}"
+
+#: crm/primi_passi.py
+msgid "Book it in the agenda, for one person or for a class."
+msgstr "Prenotalo in agenda, per una persona o per una classe."
+
+#: crm/primi_passi.py
+msgid "Reminders of the appointments"
+msgstr "I promemoria degli appuntamenti"
+
+#: crm/primi_passi.py
+msgid "The day before, by WhatsApp with a tap to confirm, by SMS or by email."
+msgstr "Il giorno prima, su WhatsApp con un tocco per confermare, per SMS o per email."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Appointment reminders"
+msgstr "Promemoria degli appuntamenti"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The day before, each person gets a reminder of their appointment: by WhatsApp with the buttons to confirm, cancel or move it, else by SMS, else by email. What they answer is in the agenda."
+msgstr "Il giorno prima ognuno riceve il promemoria del suo appuntamento: su WhatsApp con i pulsanti per confermarlo, disdirlo o spostarlo, altrimenti per SMS, altrimenti per email. Quello che risponde si vede in agenda."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Reminders"
+msgstr "Promemoria"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Hours before"
+msgstr "Ore prima"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "At night, from 21 to 8, it leaves in the morning, or the evening before; never in the last hour, nor for what was just booked."
+msgstr "Di notte, dalle 21 alle 8, parte la mattina, o la sera prima; mai nell'ultima ora, né per ciò che è appena stato prenotato."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The first one the person can receive: WhatsApp, then SMS, then email."
+msgstr "Il primo che la persona può ricevere: WhatsApp, poi SMS, poi email."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "An approved template with the buttons to confirm and to cancel. Its variables, in order: the name, what, when, where."
+msgstr "Un modello approvato, con i pulsanti per confermare e per disdire. Le sue variabili, in ordine: il nome, cosa, quando, dove."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "No approved template has the buttons to confirm and to cancel yet."
+msgstr "Nessun modello approvato ha ancora i pulsanti per confermare e per disdire."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Create the reminder template"
+msgstr "Crea il modello dei promemoria"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Ready, with the three buttons, on the number that sends: Meta reviews it, usually within a day, then choose it here."
+msgstr "Pronto, con i tre pulsanti, sul numero che invia: Meta lo esamina, di solito entro un giorno, poi sceglilo qui."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The reminder template is waiting for Meta’s review: once approved, choose it here."
+msgstr "Il modello dei promemoria aspetta l'esame di Meta: appena approvato, sceglilo qui."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Meta refused the reminder template: see why in Settings > WhatsApp > Templates."
+msgstr "Meta ha rifiutato il modello dei promemoria: vedi perché in Impostazioni > WhatsApp > Modelli."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "WhatsApp is not connected: the reminders go by SMS or email. Connect it in Settings > WhatsApp."
+msgstr "WhatsApp non è collegato: i promemoria partono per SMS o per email. Collegalo in Impostazioni > WhatsApp."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The last reminders"
+msgstr "Gli ultimi promemoria"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Someone"
+msgstr "Qualcuno"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Remind of the appointments"
+msgstr "Ricorda gli appuntamenti"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Off: nobody receives them."
+msgstr "Spento: non li riceve nessuno."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "A «cannot come» cancels the appointment"
+msgstr "Un «non posso venire» disdice l'appuntamento"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The time goes to whoever waits for it. Off: the desk is told, and decides."
+msgstr "L'orario va a chi lo aspetta. Spento: la reception viene avvisata e decide."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "By SMS without WhatsApp"
+msgstr "Per SMS senza WhatsApp"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "The SMS need the phone: set it up in Settings > Phone."
+msgstr "Gli SMS hanno bisogno del telefono: configuralo in Impostazioni > Telefono."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "From {0}: the person answers YES or NO."
+msgstr "Da {0}: la persona risponde SI o NO."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "From {0}: the person answers from the link."
+msgstr "Da {0}: la persona risponde dal link."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "By email without WhatsApp or SMS"
+msgstr "Per email senza WhatsApp né SMS"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "With the link to confirm, move or cancel."
+msgstr "Con il link per confermare, spostare o disdire."
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Sent to Meta for review"
+msgstr "Inviato a Meta per l'approvazione"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Confirmed they are coming"
+msgstr "Ha confermato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Cannot come: cancelled"
+msgstr "Non può venire: disdetto"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Cannot come"
+msgstr "Non può venire"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Would like to move it"
+msgstr "Vorrebbe spostarlo"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Reminder not delivered"
+msgstr "Promemoria non arrivato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Reminder sent by WhatsApp"
+msgstr "Promemoria inviato su WhatsApp"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Reminder sent by SMS"
+msgstr "Promemoria inviato per SMS"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Reminder sent by email"
+msgstr "Promemoria inviato per email"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Reminder sent"
+msgstr "Promemoria inviato"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "CRM Reminder Settings"
+msgstr "Impostazioni dei promemoria"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "How the centre reminds clients of their appointments: when, by which way, what a «cannot come» does"
+msgstr "Come il centro ricorda gli appuntamenti: quando, con quale canale, cosa fa un «non posso venire»"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "Remind clients of their appointments"
+msgstr "Ricorda gli appuntamenti"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "By WhatsApp with its buttons, else SMS, else email"
+msgstr "Su WhatsApp con i suoi pulsanti, altrimenti SMS, altrimenti email"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "At night (21 to 8) it leaves in the morning, or the evening before"
+msgstr "Di notte (dalle 21 alle 8) parte la mattina, o la sera prima"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "Who cannot come cancels it"
+msgstr "Chi non può venire lo disdice"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "The time is freed for whoever waits; off: the desk is told and decides"
+msgstr "L'orario si libera per chi aspetta; spento: la reception viene avvisata e decide"
+
+#: crm/fcrm/doctype/crm_reminder_settings/crm_reminder_settings.json
+msgid "Approved, with the buttons to confirm and to cancel"
+msgstr "Approvato, con i pulsanti per confermare e per disdire"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "CRM Appointment Reminder"
+msgstr "Promemoria dell'appuntamento"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "A reminder of an appointment, how it went and what the person answered"
+msgstr "Il promemoria di un appuntamento, com'è andato e cosa ha risposto la persona"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Client type"
+msgstr "Tipo di cliente"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Written to"
+msgstr "Scritto a"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Who received it: the person, or who booked for them"
+msgstr "Chi l'ha ricevuto: la persona, o chi ha prenotato per lei"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Appointment time"
+msgstr "Ora dell'appuntamento"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Message type"
+msgstr "Tipo di messaggio"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "The answer cancelled it"
+msgstr "La risposta l'ha disdetto"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Not sent"
+msgstr "Non inviato"
+
+#: crm/fcrm/doctype/crm_appointment_reminder/crm_appointment_reminder.json
+msgid "Wants to move"
+msgstr "Vuole spostarlo"
