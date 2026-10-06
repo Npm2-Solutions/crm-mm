@@ -145,9 +145,10 @@
             >
               <!-- who first, what and when under it: the title put the
                    service first, and a phone cut the name. Within the last two
-                   weeks, the day needs no year -->
+                   weeks, the day needs no year. A class's people go on a
+                   second line rather than end in «…» -->
               <div class="min-w-0">
-                <div class="truncate text-p-sm-medium text-ink-gray-7">
+                <div class="break-words text-p-sm-medium text-ink-gray-7">
                   {{
                     chiDellAppuntamento(incontro) ||
                     incontro.title ||
