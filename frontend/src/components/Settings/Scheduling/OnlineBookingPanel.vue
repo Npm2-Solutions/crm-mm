@@ -82,18 +82,22 @@
       <div
         class="divide-y divide-outline-elevation-2 rounded-md border border-outline-gray-2"
       >
+        <!-- on a phone the rule's name takes its line, its value and the
+             button under it: in three columns «Personalizza» left the sheet -->
         <div
           v-for="rule in INHERITED_RULES"
           :key="rule.key"
-          class="grid grid-cols-[1fr_180px_120px] items-center gap-3 px-3 py-1.5"
+          class="grid grid-cols-[1fr_180px_120px] items-center gap-3 px-3 py-1.5 max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1"
         >
-          <span class="text-p-sm text-ink-gray-7">{{ __(rule.label) }}</span>
+          <span class="text-p-sm text-ink-gray-7 max-md:col-span-2">{{
+            __(rule.label)
+          }}</span>
           <div>
             <template v-if="isCustomised(form, rule.key)">
               <Switch
-                :aria-label="__(rule.label)"
                 v-if="rule.type === 'check'"
                 v-model="form[rule.key]"
+                :aria-label="__(rule.label)"
                 size="sm"
               />
               <FormControl

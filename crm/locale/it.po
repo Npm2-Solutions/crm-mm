@@ -9298,8 +9298,8 @@ msgid "Each stage opens after the days of the one before, from the first day. Th
 msgstr "Ogni tappa si apre dopo i giorni di quella prima, dal primo giorno. L'ultima può non avere giorni: resta aperta finché il programma si chiude."
 
 #: frontend/src/components/Settings/Forms/TemplateBuilder.vue
-msgid "Each version is kept as it was published, with its SHA-256: what was filled on it points at it, and shows the exact words."
-msgstr "Ogni versione resta com'era quando è stata pubblicata, con il suo SHA-256: ciò che vi è stato compilato rimanda a lei e ne mostra le parole esatte."
+msgid "Each version is kept as it was published, with its fingerprint: what was filled on it points at it, and shows the exact words."
+msgstr "Ogni versione resta com'era quando è stata pubblicata, con la sua impronta: ciò che vi è stato compilato rimanda a lei e ne mostra le parole esatte."
 
 #: frontend/src/components/Activities/EventArea.vue
 msgid "Earlier"
@@ -45123,3 +45123,29 @@ msgstr "Come il listino ({0})"
 #: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
 msgid "{0} an hour"
 msgstr "{0} l'ora"
+
+#. what a deal's stage is, in a pipeline's editor
+#: frontend/src/components/Settings/Pipelines/PipelineView.vue
+msgctxt "Stage type"
+msgid "Open"
+msgstr "Aperta"
+
+#: frontend/src/components/Settings/Pipelines/PipelineView.vue
+msgctxt "Stage type"
+msgid "Ongoing"
+msgstr "In corso"
+
+#: frontend/src/components/Settings/Pipelines/PipelineView.vue
+msgctxt "Stage type"
+msgid "On Hold"
+msgstr "In sospeso"
+
+#: frontend/src/components/Settings/Pipelines/PipelineView.vue
+msgctxt "Stage type"
+msgid "Won"
+msgstr "Vinta"
+
+#: frontend/src/components/Settings/Pipelines/PipelineView.vue
+msgctxt "Stage type"
+msgid "Lost"
+msgstr "Persa"
