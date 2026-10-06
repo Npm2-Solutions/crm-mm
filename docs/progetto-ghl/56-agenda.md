@@ -82,7 +82,9 @@ apre quel giorno nella vista Giorno.
   («Adesso · 15:30–16:15»; sul telefono, dove la colonna è stretta, croce e
   anello bastano e l'orario resta intero; nel tema scuro, sul blocco menta,
   barretta, croce e anello interno prendono l'inchiostro scuro delle sue
-  parole), un annullato grigio e barrato.
+  parole), un annullato grigio e barrato. L'appuntamento di una persona dice
+  anche cosa ha risposto al promemoria (doc 59): ha confermato, non può venire,
+  vorrebbe spostarlo, o che il promemoria non è arrivato.
 - **Gli annullati** non occupano il posto che hanno liberato: non si disegnano,
   tranne con «Mostra gli appuntamenti annullati» o quando il filtro di stato li
   chiede. L'elenco del telefono li mostra sempre, con il loro stato.

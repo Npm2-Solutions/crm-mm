@@ -505,6 +505,10 @@ le risposte rapide, poi gli altri — li mettiamo in quell'ordine da soli. Le
 regole sono in `crm/integrations/whatsapp/modelli_regole.py` e si dicono
 **prima** di mandare il modello in revisione.
 
+Il promemoria degli appuntamenti (doc 59) è un modello con tre risposte rapide,
+«Confermo», «Devo disdire», «Vorrei spostarlo»: il tocco torna come un messaggio
+in risposta al promemoria, e la risposta va sul suo posto in agenda.
+
 ### Cosa Meta pretende, e cosa sbagliavamo
 
 Un template con dei segnaposto viene **rifiutato all'istante** se non gli si dà
