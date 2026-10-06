@@ -149,6 +149,38 @@ def avvisa(
 	return doc.name
 
 
+#: A person's or deal's own field naming whoever follows them.
+PROPRIETARIO = {"CRM Lead": "lead_owner", "CRM Deal": "deal_owner"}
+
+
+def chi_segue(doctype: str, nome: str, banco: bool = True) -> list[str]:
+	"""Who hears of a person's message: whoever the person or deal is assigned to,
+	else their owner, else - `banco` - the desk: everyone of the centre who reads
+	its conversations and may open this person. A message never reaches nobody: a
+	new number writing on WhatsApp has nobody assigned yet."""
+	from crm.api.doc import assigned_users_of
+	from crm.permissions import livelli
+
+	chi = [u for u in assigned_users_of(doctype, nome) if u not in SISTEMA]
+	if chi:
+		return chi
+	campo = PROPRIETARIO.get(doctype)
+	proprietario = frappe.db.get_value(doctype, nome, campo) if campo else None
+	if proprietario and proprietario not in SISTEMA:
+		return [proprietario]
+	if not banco:
+		return []
+	return [
+		utente
+		for utente in frappe.get_all("User", filters={"enabled": 1, "user_type": "System User"}, pluck="name")
+		if utente not in SISTEMA
+		and livelli.nel_crm(utente)
+		and not livelli.e_agenzia(utente)
+		and livelli.puo("conversazioni.vedi", utente)
+		and frappe.has_permission(doctype, "read", nome, user=utente)
+	]
+
+
 def nome_utente(utente: str | None) -> str:
 	"""Somebody of the centre by their name."""
 	if not utente:

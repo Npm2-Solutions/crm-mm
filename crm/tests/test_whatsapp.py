@@ -100,7 +100,7 @@ class TestWhatsAppHooks(FrappeTestCase):
 		doc.reference_doctype = None
 		doc.reference_name = None
 
-		with patch("crm.api.whatsapp.assigned_users_of") as mock_users:
+		with patch("crm.api.whatsapp.chi_segue") as mock_users:
 			notify_agent(doc)  # must not raise
 
 		mock_users.assert_not_called()
@@ -112,7 +112,7 @@ class TestWhatsAppHooks(FrappeTestCase):
 		doc.reference_doctype = ""
 		doc.reference_name = "LEAD-0001"
 
-		with patch("crm.api.whatsapp.assigned_users_of") as mock_users:
+		with patch("crm.api.whatsapp.chi_segue") as mock_users:
 			notify_agent(doc)
 
 		mock_users.assert_not_called()

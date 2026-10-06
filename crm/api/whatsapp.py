@@ -11,12 +11,11 @@ from frappe.permissions import add_permission, update_permission_property
 from frappe.utils import get_url
 from werkzeug.wrappers import Response
 
-from crm.api.doc import assigned_users_of
 from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 from crm.notifiche import regole as R
-from crm.notifiche.avvisi import avvisa
+from crm.notifiche.avvisi import avvisa, chi_segue
 from crm.permissions.livelli import puo
 from crm.utils import stored_value, to_e164
 
@@ -89,12 +88,13 @@ def on_update(doc, method):
 
 def notify_agent(doc):
 	"""A WhatsApp message from a person: whoever follows them reads it in their
-	panel; the messages after it, while it is unread, add to it."""
+	panel - the desk, when nobody does yet; the messages after it, while it is
+	unread, add to it."""
 	if doc.type != "Incoming" or not doc.reference_doctype or not doc.reference_name:
 		return
 	trattativa = doc.reference_doctype == "CRM Deal"
 	nomi = [nome_di(doc.reference_doctype, doc.reference_name)]
-	for user in assigned_users_of(doc.reference_doctype, doc.reference_name):
+	for user in chi_segue(doc.reference_doctype, doc.reference_name):
 		avvisa(
 			user,
 			"WhatsApp",
