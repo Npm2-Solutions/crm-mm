@@ -45,9 +45,9 @@
         >
           <div
             class="border-b pb-2 text-base-semibold truncate"
-            :title="template.name"
+            :title="template.template_name || template.name"
           >
-            {{ template.name }}
+            {{ template.template_name || template.name }}
           </div>
           <!-- content is passed through sanitizeHTML() (DOMPurify) before rendering, so v-html is safe here -->
           <!-- the places to fill are chips with their number, never «{{1}}»;
@@ -60,6 +60,13 @@
             v-html="sanitizeHTML(segnaInHtml(template.template, CHIP))"
           />
           <!-- eslint-enable vue/no-v-html -->
+          <!-- what the person will be able to tap -->
+          <div
+            v-if="template.buttons?.length"
+            class="truncate text-p-sm text-ink-gray-6"
+          >
+            {{ parolePulsanti(template.buttons) }}
+          </div>
         </div>
       </div>
       <div v-else class="mt-2">
@@ -137,16 +144,11 @@
 </template>
 
 <script setup>
-import {
-  createListResource,
-  createResource,
-  Dialog,
-  FormControl,
-  toast,
-} from 'frappe-ui'
-import { ref, computed, nextTick, watch, onMounted } from 'vue'
+import { createResource, Dialog, FormControl } from 'frappe-ui'
+import { ref, computed, nextTick, watch } from 'vue'
 import { sanitizeHTML } from '@/utils'
 import { pezzi, segnaInHtml } from '@/utils/segnaposti'
+import { parolePulsanti } from '@/utils/modelliWhatsApp'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 
@@ -163,56 +165,29 @@ const emit = defineEmits(['send'])
 
 const search = ref('')
 
-// A template is approved **on one WhatsApp Business account** and belongs to it.
-// Sent from another number Meta refuses it. This list used to show every
-// approved template on the site — including the ones left behind by a number no
-// longer in use — and offered Send on all of them, so half the choices were
-// choices that could only fail.
+// A template is approved **on one WhatsApp Business account** and belongs to it:
+// every number of that account sends it, another number cannot, and Meta
+// refuses it. The server says which ones the number that sends can send
+// (`get_sendable_templates`), and how many approved ones only another can.
 const sending = createResource({
-  url: 'crm.api.whatsapp.get_sending_account',
+  url: 'crm.api.whatsapp.get_sendable_templates',
+  params: { doctype: props.doctype },
   auto: true,
-  onSuccess: () => templates.fetch(),
 })
 
-const templates = createListResource({
-  type: 'list',
-  doctype: 'WhatsApp Templates',
-  fields: ['name', 'template', 'footer', 'whatsapp_account'],
-  filters: { status: 'APPROVED', for_doctype: ['in', [props.doctype, '']] },
-  orderBy: 'modified desc',
-  pageLength: 99999,
-})
-
-onMounted(() => {
-  if (templates.data == null && sending.data) templates.fetch()
-})
-
+// found by the name it is shown by, or by its words
 const filteredTemplates = computed(() => {
-  const account = sending.data?.account
-  return (
-    templates.data?.filter((template) => {
-      // an empty account is a template whose owner nobody recorded: it will be
-      // sent from whichever number is sending, so it stays
-      if (
-        account &&
-        template.whatsapp_account &&
-        template.whatsapp_account !== account
-      )
-        return false
-      return template.name.toLowerCase().includes(search.value.toLowerCase())
-    }) ?? []
+  const cerca = search.value.toLowerCase()
+  return (sending.data?.templates || []).filter((template) =>
+    [template.template_name, template.name, template.template].some((testo) =>
+      (testo || '').toLowerCase().includes(cerca),
+    ),
   )
 })
 
 // How many were left out because they belong elsewhere — the difference between
 // "you have no templates" and "you have templates that this number cannot send".
-const hiddenForOtherAccount = computed(() => {
-  const account = sending.data?.account
-  if (!account) return 0
-  return (templates.data || []).filter(
-    (t) => t.whatsapp_account && t.whatsapp_account !== account,
-  ).length
-})
+const hiddenForOtherAccount = computed(() => sending.data?.elsewhere || 0)
 
 const showVariables = ref(false)
 const variables = ref([])
