@@ -341,6 +341,17 @@ registers a line of the summary, its own key, from its `registra()`; the page
 draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
 server writes (an email, a push, the Desk) says so.
 
+### What a list offers to choose (docs/progetto-ghl/55)
+| File | Role |
+|---|---|
+| `crm/liste/regole.py` | Pure: for each use (`filtro`, `ordine`, `gruppo`, `colonna`) the kinds of value it takes, the framework's own columns it offers and their words («Created By», «Last Modified By», «Favourite»), what no list offers (a code, a series, comments, tags); each field once, two of the same name told apart by their section («Sorgente (Primo contatto)»), the document's own field over the framework's of that name; a saved column under the framework's old name read by the new (`nome_della_colonna`) — tested with plain `unittest` |
+| `crm/liste/campi.py` + `crm/api/doc.py` | `della_lista(doctype, uso)`: the fields off the meta that the session reads, with their section and tab, less what a document keeps only for the machine (`SOLO_PER_LA_MACCHINA`); `sort_options`, `get_filterable_fields`, `get_group_by_fields` and `get_list_fields` (columns, a board's card, quick filters) answer from it |
+| `frontend/src/composables/campiDellaLista.js`, `utils/gruppi.js`, `Kanban/KanbanSettings.vue` | The list's fields asked the first time a picker opens, never while the list loads; a group's heading as a row reads the value (`intestazioneDelGruppo`: the reader's words, a step in its context, yes or no, a colleague by name, a day as a date) — tested |
+
+A list's pickers offer what `crm/liste/regole.py` says, never the meta whole: a
+field a document keeps only for the machine goes in `campi.SOLO_PER_LA_MACCHINA`,
+a field's name in a picker is the reader's, never its fieldname or its type.
+
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |
 |---|---|
