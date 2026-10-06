@@ -734,6 +734,24 @@ def conferma_dalla_pagina(appuntamento, riga) -> None:
 	rispondi(registro, R.CONFERMA, R.DALLA_PAGINA)
 
 
+def disdetto_dalla_pagina(appuntamento, righe) -> None:
+	"""Places cancelled on the booking page: their reminder's answer, «cannot come»,
+	kept as done - the page has cancelled them and told the desk already."""
+	for riga in righe:
+		registro = _registro_di(appuntamento, riga)
+		if not registro or registro.status != R.INVIATO or registro.answer == R.NON_VIENE:
+			continue
+		registro.update(
+			{
+				"answer": R.NON_VIENE,
+				"answered_on": now_datetime(),
+				"answered_by": R.DALLA_PAGINA,
+				"cancelled": 1,
+			}
+		)
+		registro.save(ignore_permissions=True)
+
+
 # ------------------------------------------------------------------ the agenda
 
 

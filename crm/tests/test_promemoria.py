@@ -461,6 +461,18 @@ class DallaPagina(PromemoriaCase):
 		self.assertFalse(vista["can_confirm"])
 		self.assertEqual(self.registro().answered_by, R.DALLA_PAGINA)
 
+	def test_disdetto_sulla_pagina_e_la_sua_risposta(self):
+		self.giro()
+		token = LINK.search(self.sendmail.call_args.kwargs["message"]).group(1)
+		self.ospite(SB.cancel, token, "")
+		registro = self.registro()
+		self.assertEqual(
+			(registro.answer, registro.answered_by, registro.cancelled), (R.NON_VIENE, R.DALLA_PAGINA, 1)
+		)
+		self.assertEqual(
+			frappe.db.get_value("CRM Appointment", self.appuntamento.name, "status"), "Cancelled"
+		)
+
 	def test_senza_promemoria_niente_da_confermare(self):
 		token = P._link(frappe.get_doc("CRM Appointment", self.appuntamento.name).participants[0])
 		vista = self.ospite(SB.get_booking, LINK.search(token).group(1))
