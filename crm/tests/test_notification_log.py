@@ -8,7 +8,7 @@ from crm.extends.notification_log import before_insert, get_crm_route
 
 class TestNotificationLogLink(IntegrationTestCase):
 	def test_get_crm_route_lead(self):
-		self.assertEqual(get_crm_route("CRM Lead", "CRM-LEAD-0001"), "/crm/leads/CRM-LEAD-0001")
+		self.assertEqual(get_crm_route("CRM Lead", "CRM-LEAD-0001"), "/crm/persone/CRM-LEAD-0001")
 
 	def test_get_crm_route_deal(self):
 		self.assertEqual(get_crm_route("CRM Deal", "CRM-DEAL-0001"), "/crm/deals/CRM-DEAL-0001")
@@ -33,7 +33,7 @@ class TestNotificationLogLink(IntegrationTestCase):
 	def test_before_insert_sets_crm_link(self):
 		doc = frappe._dict(link=None, document_type="CRM Lead", document_name="CRM-LEAD-0002")
 		before_insert(doc)
-		self.assertEqual(doc.link, frappe.utils.get_url("/crm/leads/CRM-LEAD-0002"))
+		self.assertEqual(doc.link, frappe.utils.get_url("/crm/persone/CRM-LEAD-0002"))
 
 	def test_before_insert_preserves_existing_link(self):
 		doc = frappe._dict(link="/custom/link", document_type="CRM Lead", document_name="CRM-LEAD-0003")

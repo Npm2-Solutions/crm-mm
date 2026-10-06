@@ -1,5 +1,7 @@
 # The framework's own words that name it, said in English with the product's
-# name (crm/marchio.py). Every other English string is its own source.
+# name (crm/marchio.py), and a stored value read otherwise than it is kept: the
+# first step of a person, "Contact", is a lead (docs/progetto-ghl/54). Every
+# other English string is its own source.
 msgid ""
 msgstr ""
 "Project-Id-Version: DottorCloud\n"
@@ -16,3 +18,8 @@ msgstr "Light"
 #: crm/marchio.py
 msgid "Welcome to Frappe!"
 msgstr "Welcome to DottorCloud!"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Contact"
+msgstr "Lead"

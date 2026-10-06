@@ -47,6 +47,16 @@ class LePersone(IntegrationTestCase):
 		self.assertIn(persona.name, _nomi(T.get_people("zefferina.q@")))
 		self.assertNotIn(persona.name, _nomi(T.get_people("Nessunodicosi")))
 
+	def test_one_step_or_everybody(self):
+		lead = self.persona("Passolino")
+		cliente = self.persona("Passolino", last_name="Cliente")
+		frappe.db.set_value("CRM Lead", cliente.name, "relationship", "Client")
+		self.assertEqual(_nomi(T.get_people("Passolino", relationship="Client")), {cliente.name})
+		self.assertEqual(_nomi(T.get_people("Passolino", relationship="Contact")), {lead.name})
+		self.assertEqual(_nomi(T.get_people("Passolino")), {lead.name, cliente.name})
+		# a step the field does not hold narrows nothing
+		self.assertEqual(_nomi(T.get_people("Passolino", relationship="Nobody")), {lead.name, cliente.name})
+
 	def test_marketing_finds_people_by_name_only(self):
 		# they read email and phone masked: a number typed would tell whose it is
 		persona = self.persona("Mascherina", mobile_no="+39 340 555 1212", email="mascherina.m@example.com")

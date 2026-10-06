@@ -161,7 +161,7 @@ class LaNotificaArriva(SpintaCase):
 		self.assertIn("Anna", dati["title"])
 		self.assertIn(self.laura.lead_name, dati["title"])
 		self.assertEqual(dati["body"], "Puoi richiamarla?")
-		self.assertTrue(dati["url"].startswith(f"/crm/leads/{self.laura.name}"))
+		self.assertTrue(dati["url"].startswith(f"/crm/persone/{self.laura.name}"))
 		self.assertIn(f"notifica={nome}", dati["url"])
 		# it reached his phone: no email as well
 		self.assertEqual(frappe.db.get_value(NOTIFICA, nome, "email_due"), 0)

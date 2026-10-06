@@ -2,11 +2,11 @@
 // For license information, please see license.txt
 
 /**
- * Who a person is to the centre (`CRM Lead.relationship`, crm/clienti): a contact
- * until the first time they come or buy, then a client; with the clinic, a
- * patient, a step above (crm/clinica/paziente.py). The words are English,
- * translated where they are drawn; the tone is the design system's tag
- * (`CategoryTag`).
+ * Who a person is to the centre (`CRM Lead.relationship`, crm/clienti): a lead
+ * until the first time they come or buy - stored as "Contact", read «Lead» -,
+ * then a client; with the clinic, a patient, a step above
+ * (crm/clinica/paziente.py). The words are English, translated where they are
+ * drawn; the tone is the design system's tag (`CategoryTag`).
  */
 
 export const CONTATTO = 'Contact'
@@ -46,4 +46,36 @@ export function fattoDel(persona = {}) {
   if (rapporto === CLIENTE && persona.client_since)
     return { frase: 'Client since {0}', data: persona.client_since }
   return { frase: rapporto, data: null }
+}
+
+/**
+ * The People list's quick views (docs/progetto-ghl/54): everybody, then each
+ * step, plural - the leads, the clients, with the clinic its patients. One
+ * list of people, each a step of theirs: never a list of leads beside it.
+ */
+const VISTE = {
+  [CONTATTO]: 'Leads',
+  [CLIENTE]: 'Clients',
+  [PAZIENTE]: 'Patients',
+}
+
+/**
+ * The views, from the steps the field holds here (`opzioni`: its options, as
+ * strings or `{ value }`): «All» first, its value empty. Words to translate:
+ * the steps' in `CONTESTO`.
+ */
+export function vistePerRapporto(opzioni = []) {
+  const passi = (opzioni || [])
+    .map((opzione) =>
+      typeof opzione === 'string' ? opzione : opzione?.value || '',
+    )
+    .filter((valore, i, tutti) => VISTE[valore] && tutti.indexOf(valore) === i)
+  return [
+    { valore: '', etichetta: 'All', contesto: null },
+    ...passi.map((valore) => ({
+      valore,
+      etichetta: VISTE[valore],
+      contesto: CONTESTO,
+    })),
+  ]
 }

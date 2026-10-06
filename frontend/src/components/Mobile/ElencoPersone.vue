@@ -26,6 +26,19 @@
           />
         </template>
       </TextInput>
+      <!-- everybody, or one step: the leads, the clients, the patients - one
+           list of people (docs/progetto-ghl/54) -->
+      <div
+        v-if="viste.length > 2"
+        class="-mx-3 mt-2 overflow-x-auto px-3 [&::-webkit-scrollbar]:h-0"
+      >
+        <TabButtons
+          v-model="rapporto"
+          class="w-max"
+          :options="viste"
+          :aria-label="__('Relationship')"
+        />
+      </div>
     </div>
 
     <div
@@ -122,12 +135,18 @@ import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import CategoryTag from '@/components/Espresso/CategoryTag.vue'
-import { CONTESTO, rapportoDi, tonoDel } from '@/utils/rapporto'
+import {
+  CONTESTO,
+  rapportoDi,
+  tonoDel,
+  vistePerRapporto,
+} from '@/utils/rapporto'
+import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
 import { adessoDelCentro } from '@/utils/scheduler'
 import { contattoDi, quandoTorna } from '@/utils/sulTelefono'
-import { Avatar, LoadingIndicator, TextInput } from 'frappe-ui'
+import { Avatar, LoadingIndicator, TabButtons, TextInput } from 'frappe-ui'
 import { computed } from 'vue'
 
 const { puo, ambito } = usersStore()
@@ -136,8 +155,27 @@ const mascherati = computed(() => ambito('persone.vedi') === 'mascherato')
 // the user's language, the European way (utils/locale.js)
 const lingua = appLocale() || 'it-IT'
 
-const { testo, righe, contenitore, carica, cerca, forseAltre, tira } =
+const { testo, filtri, righe, contenitore, carica, cerca, forseAltre, tira } =
   useElencoDelTelefono('crm.api.sul_telefono.get_people', 'persone')
+
+// the steps a person may be at here, as the field has them (the clinic adds
+// its patients)
+const { doctypeMeta } = getMeta('CRM Lead')
+const viste = computed(() =>
+  vistePerRapporto(
+    (
+      doctypeMeta.value?.fields?.find((f) => f.fieldname === 'relationship')
+        ?.options || ''
+    ).split('\n'),
+  ).map((vista) => ({
+    label: __(vista.etichetta, null, vista.contesto),
+    value: vista.valore,
+  })),
+)
+const rapporto = computed({
+  get: () => filtri.value.relationship || '',
+  set: (valore) => (filtri.value = valore ? { relationship: valore } : {}),
+})
 
 function nomeDi(persona) {
   return persona.lead_name || persona.first_name || persona.name

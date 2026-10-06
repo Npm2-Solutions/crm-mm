@@ -153,9 +153,19 @@
       <div
         v-for="filter in quickFilterList"
         :key="filter.fieldname"
-        class="m-1 min-w-36"
+        class="m-1"
+        :class="vistaDelRapporto(filter) ? 'shrink-0' : 'min-w-36'"
       >
+        <!-- a person's step as views, one tap each: everybody, the leads,
+             the clients, the patients (docs/progetto-ghl/54) -->
+        <TabButtons
+          v-if="vistaDelRapporto(filter)"
+          :options="vistePerRapporto(filter.options)"
+          :modelValue="filter.value || ''"
+          @update:modelValue="(v) => applyQuickFilter(filter, v)"
+        />
         <QuickFilterField
+          v-else
           :filter="filter"
           @applyQuickFilter="(f, v) => applyQuickFilter(f, v)"
         />
@@ -327,6 +337,7 @@ import ListIcon from '@/components/Icons/ListIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import GroupByIcon from '@/components/Icons/GroupByIcon.vue'
 import QuickFilterField from '@/components/QuickFilterField.vue'
+import { vistePerRapporto as vistePerIlRapporto } from '@/utils/rapporto'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DuplicateIcon from '@/components/Icons/DuplicateIcon.vue'
 import CheckIcon from '@/components/Icons/CheckIcon.vue'
@@ -357,6 +368,7 @@ import {
   toast,
   call,
   FeatherIcon,
+  TabButtons,
   usePageMeta,
 } from 'frappe-ui'
 import {
@@ -870,6 +882,18 @@ const quickFilterOptions = computed(() => {
 
   return options
 })
+
+// the People list's step, drawn as views rather than as a select
+function vistaDelRapporto(filter) {
+  return props.doctype === 'CRM Lead' && filter.fieldname === 'relationship'
+}
+
+function vistePerRapporto(opzioni) {
+  return vistePerIlRapporto(opzioni).map((vista) => ({
+    label: __(vista.etichetta, null, vista.contesto),
+    value: vista.valore,
+  }))
+}
 
 const quickFilterList = computed(() => {
   let filters = quickFilters.data || []

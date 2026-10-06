@@ -44095,10 +44095,11 @@ msgstr "Quando è diventato paziente: una prestazione sanitaria, o dati sanitari
 msgid "New patients pipeline"
 msgstr "Pipeline dei nuovi pazienti"
 
+#. the first step of a person: stored "Contact", read «Lead» (docs/progetto-ghl/54)
 #: frontend/src/utils/rapporto.js
 msgctxt "Relationship"
 msgid "Contact"
-msgstr "Contatto"
+msgstr "Lead"
 
 #: frontend/src/utils/rapporto.js
 msgctxt "Relationship"
@@ -45058,3 +45059,19 @@ msgstr "In ritardo dal {0}"
 #: frontend/src/components/Activities/SummaryArea.vue
 msgid "Due by {0}"
 msgstr "Entro il {0}"
+
+#. the People list's quick views: the steps, plural
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Leads"
+msgstr "Lead"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Clients"
+msgstr "Clienti"
+
+#: frontend/src/utils/rapporto.js
+msgctxt "Relationship"
+msgid "Patients"
+msgstr "Pazienti"

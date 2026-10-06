@@ -183,7 +183,7 @@ def indirizzo(percorso: dict | None) -> str:
 	parametri = percorso.get("params") or {}
 	segno = percorso.get("hash") or ""
 	if nome == "Lead":
-		return get_url(f"/crm/leads/{parametri.get('leadId')}{segno}")
+		return get_url(f"/crm/persone/{parametri.get('leadId')}{segno}")
 	if nome == "Deal":
 		return get_url(f"/crm/deals/{parametri.get('dealId')}{segno}")
 	if nome == "Today":

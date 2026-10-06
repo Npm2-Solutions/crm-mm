@@ -99,7 +99,7 @@ class Quando(PostaCase):
 		self.assertEqual(len(code), 1)
 		messaggio = frappe.db.get_value("Email Queue", code[0], "message")
 		self.assertIn("mentioned you in a comment on", messaggio)
-		self.assertIn(f"/crm/leads/{self.laura.name}", messaggio)
+		self.assertIn(f"/crm/persone/{self.laura.name}", messaggio)
 		self.assertNotIn("/app/", messaggio)
 		self.assertEqual(frappe.db.get_value(NOTIFICA, nome, "email_due"), 0)
 		self.assertTrue(frappe.db.get_value(NOTIFICA, nome, "emailed_on"))
@@ -149,7 +149,7 @@ class DoveApre(PostaCase):
 	def test_gli_indirizzi(self):
 		self.assertTrue(
 			posta.indirizzo({"name": "Lead", "params": {"leadId": "L-1"}, "hash": "#c1"}).endswith(
-				"/crm/leads/L-1#c1"
+				"/crm/persone/L-1#c1"
 			)
 		)
 		self.assertTrue(

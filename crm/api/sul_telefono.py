@@ -61,12 +61,15 @@ def _pagina(righe: list, start: int) -> dict:
 
 
 @frappe.whitelist()
-def get_people(text: str | None = None, start: int = 0) -> dict:
-	"""The people the session reads, newest first; found by name, number or email."""
+def get_people(text: str | None = None, start: int = 0, relationship: str | None = None) -> dict:
+	"""The people the session reads, newest first; found by name, number or email,
+	and narrowed to a step of theirs - the leads, the clients, the patients - when
+	one is asked (docs/progetto-ghl/54)."""
 	livelli.verifica_nel_crm("persone.vedi")
 	start = max(cint(start), 0)
 	testo = (text or "").strip()
 	filtri, o_filtri = {}, None
+	passo = _passo(relationship)
 	# whoever reads people masked (Marketing) finds them by name only: a number
 	# or an email typed would tell whose it is
 	mascherato = livelli.ambito("persone.vedi") == livelli.MASCHERATO
@@ -98,6 +101,8 @@ def get_people(text: str | None = None, start: int = 0) -> dict:
 		if not mascherato:
 			o_filtri.append(["email", "like", simile])
 
+	if passo:
+		filtri["relationship"] = passo
 	righe = frappe.get_list(
 		"CRM Lead",
 		filters=filtri,
@@ -125,6 +130,15 @@ def get_people(text: str | None = None, start: int = 0) -> dict:
 		for riga in pagina["rows"]:
 			riga["next_appointment"] = prossimi.get(riga.name)
 	return pagina
+
+
+def _passo(relationship: str | None) -> str | None:
+	"""A step the person field holds here (the clinic adds "Patient"); anything
+	else narrows nothing."""
+	if not relationship:
+		return None
+	opzioni = (frappe.get_meta("CRM Lead").get_field("relationship").options or "").split("\n")
+	return relationship if relationship in opzioni else None
 
 
 def _prossimi_appuntamenti(persone: list[str]) -> dict:
