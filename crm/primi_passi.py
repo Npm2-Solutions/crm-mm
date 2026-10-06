@@ -19,6 +19,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 import frappe
+from frappe.utils import cint
 
 
 @dataclass(frozen=True)
@@ -107,6 +108,10 @@ def c_e(doctype: str, filtri: dict | None = None) -> bool:
 	if della_demo := registro.nomi_di_prova(doctype):
 		condizioni.append(["name", "not in", sorted(della_demo)])
 	return bool(frappe.get_all(doctype, filters=condizioni, limit=1, pluck="name"))
+
+
+def _promemoria_accesi() -> bool:
+	return bool(cint(frappe.db.get_single_value("CRM Reminder Settings", "enabled")))
 
 
 def _ha_un_nome() -> bool:
@@ -216,11 +221,20 @@ PASSI_DELLA_BASE = (
 	Passo(
 		"appuntamento",
 		"Your first appointment",
-		"Book it in the agenda: the reminder goes out by itself.",
+		"Book it in the agenda, for one person or for a class.",
 		lambda: c_e("CRM Appointment"),
 		("agenda.prenota",),
 		rotta="Calendar",
 		ordine=90,
+	),
+	Passo(
+		"promemoria",
+		"Reminders of the appointments",
+		"The day before, by WhatsApp with a tap to confirm, by SMS or by email.",
+		_promemoria_accesi,
+		("agenda.configura",),
+		pagina="Appointment reminders",
+		ordine=95,
 	),
 )
 
