@@ -29292,6 +29292,11 @@ msgstr "Link tracciati"
 msgid "Tracking"
 msgstr "Tracciamento"
 
+#. the person's tab: where they came from (the ad, the visits, the first and
+#. last touch)
+msgid "History"
+msgstr "Cronologia"
+
 #: frontend/src/components/Settings/Website/WebsiteSettings.vue
 msgid "Tracking & consent"
 msgstr "Tracciamento e consenso"

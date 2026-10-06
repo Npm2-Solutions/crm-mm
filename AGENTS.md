@@ -787,8 +787,13 @@ row, the bar's words beside their icons).
   conversation the card waits folded and the name in the header opens it; a
   thread of the Chat draws its own header in the page's (`inTestata`).
 - A record's tabs on a phone are two panels, each mounted the first time it
-  opens and then kept (`v-show`): Details, and one conversation that draws
-  every other tab (`MobileLead.vue`, `MobileDeal.vue`). A panel per tab
+  opens and then kept (`v-show`): the record's data (a person's Data, a deal's
+  Details) and one conversation that draws every other tab (`MobileLead.vue`,
+  `MobileDeal.vue`). A person's data are one tab: the fields of the panel a
+  computer shows beside the conversation, with their billing details, linked
+  people and consents; what they have going (subscriptions, cycles, the waiting
+  list) is the Subscriptions tab, where they came from the History, last of
+  all, on a phone and on a computer alike. A panel per tab
   unmounted the one left and mounted the next, the conversation and its editor
   with it: half a second a tap on a slow phone. The router view is keyed on the
   page without its hash (`App.vue`): the hash names a tab, or the message a
