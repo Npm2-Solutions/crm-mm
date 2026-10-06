@@ -77,10 +77,10 @@
     class="flex h-full flex-col overflow-hidden"
   >
     <!-- the tabs one opens every day, the rest behind More; while somebody
-         writes in the chat they step aside (telefono.css, «11») -->
+         writes in the chat they stay: only the bottom rises with the
+         keyboard (telefono.css, «11») -->
     <SchedeDelTelefono
       v-model="tabIndex"
-      data-via-scrivendo
       :tabs="tabs"
       :principali="[
         'Activity',

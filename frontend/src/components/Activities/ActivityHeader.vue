@@ -16,12 +16,12 @@
     aside, the tab's actions take the row, and a tab whose actions live in its
     own record has no header at all.
   -->
-  <!-- data-via-scrivendo: on the conversation, while somebody writes on a
-       phone, the channels step aside for the messages (telefono.css, «11») -->
+  <!-- on the conversation, while somebody writes on a phone, the channels
+       stay where they are: only the bottom rises with the keyboard
+       (telefono.css, «11») -->
   <div
     v-if="title !== 'Data'"
     ref="header"
-    :data-via-scrivendo="title == 'Activity' ? '' : undefined"
     class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 text-lg-medium"
     :class="[
       title == 'Activity'
