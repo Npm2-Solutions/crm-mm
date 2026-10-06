@@ -427,11 +427,16 @@ router.beforeEach(async (to, from, next) => {
     window.location.href = '/login?redirect-to=/crm'
   } else if (to.matched.length === 0) {
     next({ name: 'Invalid Page' })
-  } else if (['Deal', 'Lead'].includes(to.name) && !to.hash) {
-    let storageKey = to.name === 'Deal' ? 'lastDealTab' : 'lastLeadTab'
-    const activeTab = localStorage.getItem(storageKey) || 'activity'
-    const hash = '#' + activeTab
-    next({ ...to, hash })
+  } else if (to.name === 'Lead' && !to.hash) {
+    // one person, two doors (docs/progetto-ghl/54): a person opens on their
+    // summary from wherever one comes without saying otherwise - the People
+    // list, the agenda, a search -, and the conversations and a message's
+    // notification name the chat. Not the tab left last time: the person a
+    // colleague sends is read from the top
+    next({ ...to, hash: '#summary' })
+  } else if (to.name === 'Deal' && !to.hash) {
+    const activeTab = localStorage.getItem('lastDealTab') || 'activity'
+    next({ ...to, hash: '#' + activeTab })
   } else if (
     [
       'Leads',

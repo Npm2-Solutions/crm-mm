@@ -21,8 +21,13 @@
     was buying was a soft edge; what it was costing was the whole backdrop.
   -->
   <div ref="scroller" class="flex h-full flex-col overflow-y-auto">
+    <!-- what one needs to know of the person, where their page opens: it
+         waits for nothing the conversation loads -->
+    <div v-if="title == 'Summary'" class="h-full overflow-y-auto">
+      <SummaryArea :lead="docname" :persona="doc" @apri="changeTabTo" />
+    </div>
     <div
-      v-if="all_activities?.loading"
+      v-else-if="all_activities?.loading"
       class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-5"
     >
       <LoadingIndicator class="h-6 w-6" />
@@ -703,6 +708,9 @@ import {
 } from 'vue'
 import { useRoute } from 'vue-router'
 import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
+
+// the person's summary is where their page opens: it comes with the page
+import SummaryArea from '@/components/Activities/SummaryArea.vue'
 
 // Each tab but the conversation comes when it is opened, and a dialog the first
 // time it opens: imported here, every tab and every dialog of every module was

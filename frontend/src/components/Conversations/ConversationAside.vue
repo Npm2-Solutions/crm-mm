@@ -9,6 +9,10 @@
   else to reach them, and whose conversation it is. What you decide about the
   conversation itself — read, later, done — moved up to the header, next to the
   thread it is about.
+
+  And the person's summary, the same as on their page: one person, two doors
+  (docs/progetto-ghl/54). «When is my appointment?», «what do I owe?» are
+  answered here, without leaving the chat.
 -->
 <template>
   <div
@@ -27,11 +31,12 @@
           {{ person.organization }}
         </div>
       </div>
+      <!-- on the chat, where one was: the conversations are its door -->
       <Button
         :label="__('Open the record')"
         iconRight="lucide-arrow-up-right"
         size="sm"
-        @click="router.push({ name: 'Lead', params: { leadId: person.name } })"
+        @click="apri('activity')"
       />
     </div>
 
@@ -82,11 +87,21 @@
         @change="(user) => assign(user)"
       />
     </div>
+
+    <SummaryArea
+      v-if="person.name"
+      :key="person.name"
+      :lead="person.name"
+      :persona="person"
+      compatto
+      @apri="apri"
+    />
   </div>
 </template>
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
+import SummaryArea from '@/components/Activities/SummaryArea.vue'
 import PersonAvatar from '@/components/Conversations/PersonAvatar.vue'
 import { useConversationState } from '@/composables/conversationState'
 import { leggibile } from '@/utils/telefono'
@@ -104,6 +119,15 @@ const router = useRouter()
 const { assign } = useConversationState(toRef(props, 'person'), () =>
   emit('changed'),
 )
+
+// the person's page, on the tab a line of the summary names
+function apri(scheda) {
+  router.push({
+    name: 'Lead',
+    params: { leadId: props.person.name },
+    hash: '#' + scheda,
+  })
+}
 
 const title = computed(
   () =>
