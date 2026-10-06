@@ -99,3 +99,11 @@ class LeScelteDelleListe(IntegrationTestCase):
 			view={"view_type": "group_by", "group_by_field": "owner"},
 		)
 		self.assertEqual(dati["group_by_field"]["label"], "Creato da")
+
+	def test_la_scheda_offre_anche_le_tabelle_e_mai_i_codici(self):
+		scheda = {s["fieldname"]: s for s in D.get_list_fields("Contact", "scheda")}
+		self.assertIn("email_ids", scheda)
+		self.assertNotIn("google_contacts_id", scheda)
+		self.assertNotIn("owner", scheda)
+		# an unknown use reads as the columns'
+		self.assertEqual(D.get_list_fields("Contact", "altro"), D.get_list_fields("Contact"))

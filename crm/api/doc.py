@@ -62,9 +62,11 @@ def get_group_by_fields(doctype: str):
 
 
 @frappe.whitelist()
-def get_list_fields(doctype: str):
-	"""What a list offers as a column, on a board's card, as a quick filter."""
-	return [{**campo, "value": campo["fieldname"]} for campo in della_lista(doctype, "colonna")]
+def get_list_fields(doctype: str, uso: str = "colonna"):
+	"""What a list offers as a column, on a board's card, as a quick filter
+	(`colonna`); what a record's layout editors offer (`scheda`)."""
+	uso = uso if uso in ("colonna", "scheda") else "colonna"
+	return [{**campo, "value": campo["fieldname"]} for campo in della_lista(doctype, uso)]
 
 
 @frappe.whitelist()

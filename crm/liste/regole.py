@@ -68,8 +68,14 @@ TIPI = {
 	"gruppo": frozenset({"Check", "Data", "Date", "Link", "Select"}),
 	# a column or a card shows whatever a filter reads, and a time
 	"colonna": _FILTRO | {"Time"},
+	# a record's own layout (its fields, its side panel, a table's columns)
+	# takes any kind of field: the editor that draws it says which it can't
+	"scheda": None,
 }
 USI = tuple(TIPI)
+
+# what lays a document out, never a field of it
+STRUTTURA = frozenset({"Column Break", "Section Break", "Tab Break"})
 
 # what no list offers, on any document: its code and its series, the
 # framework's bookkeeping (comments, tags, who saw it, a child's place)
@@ -128,6 +134,7 @@ STANDARD_PER_USO = {
 	"ordine": ("creation", "modified", "owner", "modified_by"),
 	"gruppo": ("owner",),
 	"colonna": ("_assign", "owner", "creation", "modified_by", "modified", "_liked_by"),
+	"scheda": (),
 }
 
 
@@ -158,7 +165,8 @@ def scegli(
 			or nome in visti
 			or nome in DELLA_MACCHINA
 			or nome in togli
-			or campo.get("fieldtype") not in tipi
+			or campo.get("fieldtype") in STRUTTURA
+			or (tipi is not None and campo.get("fieldtype") not in tipi)
 		):
 			continue
 		visti.add(nome)

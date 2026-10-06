@@ -164,3 +164,18 @@ class IlNomeDiUnaColonna(unittest.TestCase):
 		self.assertEqual(R.nome_della_colonna("owner", "Chi l'ha scritta"), "Chi l'ha scritta")
 		self.assertEqual(R.nome_della_colonna("status", "Status"), "Status")
 		self.assertIsNone(R.nome_della_colonna(None, None))
+
+
+class LaScheda(unittest.TestCase):
+	def test_ogni_tipo_ma_mai_la_struttura_ne_i_campi_del_framework(self):
+		campi = [
+			campo("righe", "Table", "Rows"),
+			campo("nota", "HTML", "Note"),
+			campo("colonna", "Column Break", "Column"),
+			campo("sezione", "Section Break", "Section"),
+			campo("nome", etichetta="First Name"),
+		]
+		self.assertEqual(nomi(R.scegli(campi, "scheda")), ["righe", "nota", "nome"])
+		# a table is never a column, a filter, an order or a group
+		for uso in ("filtro", "ordine", "gruppo", "colonna"):
+			self.assertNotIn("righe", nomi(R.scegli(campi, uso)), uso)
