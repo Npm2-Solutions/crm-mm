@@ -287,8 +287,10 @@ class PerSms(PromemoriaCase):
 
 class PerWhatsApp(PromemoriaCase):
 	def setUp(self):
-		super().setUp()
+		# skipped before anything is made: a setUp that stops gets no tearDown, and
+		# what it made would stay for the next test
 		serve_whatsapp(self)
+		super().setUp()
 		self.modello()
 		self.impostazioni(whatsapp_template=MODELLO, use_email=1)
 		self.mandati = []
