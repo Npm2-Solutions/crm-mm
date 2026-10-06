@@ -111,6 +111,7 @@ import { getCallLogDetail } from '@/utils/callLog'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource } from 'frappe-ui'
 import { computed, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 const callLogsListView = ref(null)
 const elencoChiamate = ref(null)
@@ -184,15 +185,22 @@ function createCallLog() {
   })
 }
 
+// `?open=<call>`: the call a notification names (a message left by a number
+// nobody knows), open over the register. The address goes on without it, past
+// the router: App.vue keys this page on its query, and would draw it again
+// without the call
+const route = useRoute()
 const openCallLogFromURL = () => {
-  const searchParams = new URLSearchParams(window.location.search)
-  const callLogName = searchParams.get('open')
-
-  if (callLogName) {
-    showCallLog(callLogName)
-    searchParams.delete('open')
-    window.history.replaceState(null, '', window.location.pathname)
-  }
+  const open = route.query.open
+  if (!open) return
+  showCallLog(open)
+  const indirizzo = new URL(window.location.href)
+  indirizzo.searchParams.delete('open')
+  window.history.replaceState(
+    window.history.state,
+    '',
+    indirizzo.pathname + indirizzo.search + indirizzo.hash,
+  )
 }
 
 onMounted(() => {

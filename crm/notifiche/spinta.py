@@ -285,7 +285,7 @@ def messaggio(riga: dict, notifica: str) -> dict:
 	"""What a device shows of a panel's row: the sentence, the first words of the
 	message, the page it opens - which marks it read - and one place for a
 	conversation, which a newer message takes."""
-	indirizzo = urlsplit(posta.indirizzo(riga.get("route")))
+	indirizzo = urlsplit(posta.indirizzo(riga.get("route"), riga.get("settings")))
 	parametri = [*parse_qsl(indirizzo.query), ("notifica", notifica)]
 	pagina = urlunsplit(("", "", indirizzo.path, urlencode(parametri), indirizzo.fragment))
 	route = riga.get("route") or {}

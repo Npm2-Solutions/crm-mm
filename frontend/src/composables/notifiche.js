@@ -37,6 +37,35 @@ export function useApriNotifica() {
   }
 }
 
+// The toast's words as a link to what it is about, lying over the whole toast
+// (its `::after`), as a row of the panel opens from anywhere on it: a tap on
+// the toast opens it. A finger that swiped the toast away opens nothing; a
+// click that asks for a new tab is the browser's.
+function paroleCheAprono(testo, indirizzo, apri) {
+  let inizio = null
+  return () =>
+    h(
+      'a',
+      {
+        href: indirizzo,
+        class: "after:absolute after:inset-0 after:content-['']",
+        style: { color: 'inherit', textDecoration: 'none' },
+        onPointerdown: (evento) => {
+          inizio = [evento.clientX, evento.clientY]
+        },
+        onClick: (evento) => {
+          if (evento.metaKey || evento.ctrlKey || evento.shiftKey) return
+          evento.preventDefault()
+          const [x, y] = inizio || [evento.clientX, evento.clientY]
+          inizio = null
+          if (Math.hypot(evento.clientX - x, evento.clientY - y) > 10) return
+          apri()
+        },
+      },
+      testo,
+    )
+}
+
 export function useAscoltoNotifiche() {
   const { $socket } = globalStore()
   const router = useRouter()
@@ -51,21 +80,46 @@ export function useAscoltoNotifiche() {
       return
     const riga = notifications.data?.rows?.find((r) => r.name === data.name)
     if (!riga) return
-    toast(soloTesto(riga.text), {
-      description: riga.excerpt || undefined,
-      duration: 6000,
-      // the kind's mark, as in the panel, in mint on the brand's deep block
-      icon: {
-        render: () => h(NotificationMark, { kind: riga.kind, taglia: 'toast' }),
-      },
-      action:
-        riga.route || riga.settings
+    const testo = soloTesto(riga.text)
+    const apribile = Boolean(riga.route || riga.settings)
+    const avviso = toast(
+      apribile
+        ? paroleCheAprono(testo, indirizzoDi(riga), () => {
+            toast.dismiss(avviso)
+            apri(riga)
+          })
+        : testo,
+      {
+        description: riga.excerpt || undefined,
+        duration: 6000,
+        // the kind's mark, as in the panel, in mint on the brand's deep block
+        icon: {
+          render: () =>
+            h(NotificationMark, { kind: riga.kind, taglia: 'toast' }),
+        },
+        action: apribile
           ? {
               label: __('Open', null, 'Toast action'),
               onClick: () => apri(riga),
             }
           : undefined,
-    })
+        // its buttons above the words that open it
+        classes: {
+          actionButton: 'relative z-10',
+          closeButton: 'relative z-10',
+        },
+      },
+    )
+  }
+
+  // Where a notification opens, as an address: for a new tab, or a long press
+  function indirizzoDi(riga) {
+    if (riga.route) return router.resolve(riga.route).href
+    const { page, step } = riga.settings
+    return router.resolve({
+      path: router.currentRoute.value.path,
+      query: { settings: page, ...(step ? { step } : {}) },
+    }).href
   }
 
   onMounted(() => {

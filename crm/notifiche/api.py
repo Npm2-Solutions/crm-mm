@@ -87,6 +87,7 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 	esistenti = _esistenti(righe)
 	compiti_aperti = _compiti_aperti(righe, utente)
 	conversazioni = _legge_le_conversazioni(utente)
+	chiamate = _legge_le_chiamate(utente)
 	pannello = []
 	for riga in righe:
 		genere = R.genere(riga.type, riga.notification_type_doctype, riga.sentence)
@@ -100,7 +101,7 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 				"read": bool(riga.read),
 				"count": cint(riga.count) or 1,
 				"creation": riga.creation,
-				"route": percorso(riga, genere, esistenti, compiti_aperti),
+				"route": percorso(riga, genere, esistenti, compiti_aperti, chiamate),
 				"settings": IMPOSTAZIONI.get(genere)
 				and IMPOSTAZIONI_DI.get(riga.notification_type_doctype, IMPOSTAZIONI[genere]),
 			}
@@ -129,10 +130,11 @@ def _anteprima(riga, genere: str, conversazioni: bool) -> str:
 	return R.anteprima(riga.message)
 
 
-def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | None:
-	"""Where the notification opens: the desk's day, the invoices, or the person or
-	deal it is about, on the tab or the message it names. Nothing when what it
-	opened is no longer there."""
+def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set, chiamate: bool = False) -> dict | None:
+	"""Where the notification opens: the desk's day, the invoices, the person or
+	deal it is about, on the tab or the message it names, a task with nobody behind
+	it in the tasks, a call nobody knows the caller of in the register. Nothing when
+	what it opened is no longer there."""
 	if genere == "agenda":
 		return {"name": "Today"}
 	if genere == "invoicing":
@@ -141,6 +143,18 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | 
 			return {"name": "Invoices", "query": {"ricevuta": riga.notification_type_doc}}
 		return {"name": "Invoices"}
 	pagina = PAGINE.get(riga.reference_doctype)
+	if not pagina and genere == "task" and riga.notification_type_doc in compiti_aperti:
+		# a task given with nobody behind it: the tasks, on it, while it is the reader's
+		return {"name": "Tasks", "query": {"open": riga.notification_type_doc}}
+	if (
+		not pagina
+		and genere == "call"
+		and chiamate
+		and riga.notification_type_doctype == "CRM Call Log"
+		and riga.notification_type_doc
+	):
+		# a message left by a number nobody knows: the call itself, with its recording
+		return {"name": "Call Logs", "query": {"open": riga.notification_type_doc}}
 	if not pagina or riga.reference_name not in esistenti.get(riga.reference_doctype, ()):
 		return None
 	nome_pagina, parametro = pagina
@@ -207,6 +221,14 @@ def _compiti_aperti(righe: list, utente: str) -> set:
 			pluck="reference_name",
 		)
 	)
+
+
+def _legge_le_chiamate(utente: str) -> bool:
+	"""Whether the reader opens the register of calls: a message left by a number
+	nobody knows opens there."""
+	from crm.permissions.livelli import nel_crm, puo
+
+	return not nel_crm(utente) or puo("telefono.registro", utente)
 
 
 def _legge_le_conversazioni(utente: str | None = None) -> bool:

@@ -8,6 +8,7 @@ import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
 import { viewsStore } from '@/stores/views'
 import { isMobileView } from '@/composables/breakpoints'
+import { apriImpostazioni } from '@/composables/settings'
 import { nomeDellaPagina } from '@/utils/menu'
 import { segnaIRitorni } from '@/utils/ritorno'
 
@@ -297,7 +298,7 @@ async function leadOwning(contactId) {
   if (!contactId) return null
   try {
     return await call('crm.api.contact.get_owning_lead', { contact: contactId })
-  } catch (error) {
+  } catch {
     // fail open: a contact we cannot resolve still opens its own page
     return null
   }
@@ -370,6 +371,14 @@ router.beforeEach(async (to, from, next) => {
     call('crm.notifiche.api.mark_as_read', { names: [notifica] }).catch(
       () => {},
     )
+    return next({ path: to.path, query: resto, hash: to.hash, replace: true })
+  }
+  // a page of the settings a link asks for (`?settings=`, `&step=`): a touched
+  // notification about Twilio, an email's preferences, an OAuth callback. The
+  // settings open over the page, whether the app was open already or not
+  if (to.query.settings) {
+    const { settings, step, ...resto } = to.query
+    apriImpostazioni({ page: settings, step })
     return next({ path: to.path, query: resto, hash: to.hash, replace: true })
   }
 

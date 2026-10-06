@@ -201,6 +201,22 @@ class DoveSiApre(NotificheCase):
 		self.assertEqual(righe["task_removed"]["route"]["hash"], "")
 		self.assertEqual(righe["task"]["route"]["hash"], "")
 
+	def test_un_attivita_senza_persona_apre_le_attivita_su_di_lei(self):
+		compito = frappe.get_doc({"doctype": "CRM Task", "title": "Ordinare le garze"}).insert(
+			ignore_permissions=True
+		)
+		self.come(ANNA)
+		assign_to.add({"doctype": "CRM Task", "name": compito.name, "assign_to": [BRUNO]})
+		self.come(BRUNO)
+		riga = self.pannello()["rows"][0]
+		self.assertEqual(riga["kind"], "task")
+		self.assertEqual(riga["route"], {"name": "Tasks", "query": {"open": str(compito.name)}})
+		# taken back, it is no longer Bruno's to open
+		self.come(ANNA)
+		assign_to.remove("CRM Task", compito.name, BRUNO)
+		self.come(BRUNO)
+		self.assertTrue(all(r["route"] is None for r in self.pannello()["rows"]))
+
 	def test_data_da_nessuno_del_centro_non_ha_un_nome_davanti(self):
 		# an automation, an assignment rule, a job: never «Administrator assigned you»
 		compito = frappe.get_doc(
@@ -238,6 +254,17 @@ class DoveSiApre(NotificheCase):
 		self.assertEqual(righe["invoicing"]["text"], "Invoice 12 was rejected - Centro &amp; figli")
 		self.assertEqual(righe["invoicing"]["excerpt"], "It counts as not issued.")
 		self.assertIsNone(righe["agenda"]["from"])
+
+	def test_un_messaggio_in_segreteria_di_un_numero_nuovo(self):
+		# nobody knows the caller: the call itself, in the register, to whoever reads it
+		avvisa(
+			BRUNO, "Call", R.MESSAGGIO_IN_SEGRETERIA, ["+39 333 123 4567"], oggetto=("CRM Call Log", "CL-1")
+		)
+		self.come(BRUNO)
+		riga = self.pannello()["rows"][0]
+		self.assertEqual(riga["route"], {"name": "Call Logs", "query": {"open": "CL-1"}})
+		with patch("crm.notifiche.api._legge_le_chiamate", return_value=False):
+			self.assertIsNone(self.pannello()["rows"][0]["route"])
 
 	def test_una_persona_tolta_non_apre_niente(self):
 		self.whatsapp("Buongiorno")
