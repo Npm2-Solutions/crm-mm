@@ -781,8 +781,9 @@ row, the bar's words beside their icons).
 - A conversation with its box to write in is the screen, as in a phone's own
   messengers (`useChatAperta`, `telefono.css` «11»): the bar at the bottom
   steps aside and the box (`data-compositore`) is the screen's bottom; with
-  the keyboard up what carries `data-via-scrivendo` (a record's tabs, the
-  channels to read and to write on) steps aside too. On a person's
+  the keyboard up only the bottom rises: what is above the messages stays
+  where it is, the box's row of channels (`data-via-scrivendo`) steps aside.
+  On a person's
   conversation the card waits folded and the name in the header opens it; a
   thread of the Chat draws its own header in the page's (`inTestata`).
 - A record's tabs on a phone are two panels, each mounted the first time it
@@ -839,6 +840,15 @@ row, the bar's words beside their icons).
   `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
   must stay in sight sits at the bottom of the frame or of a sheet, never
   `position: fixed` at the bottom of the screen, which the keyboard covers.
+  Android makes the page shorter by itself (`interactive-widget=resizes-content`
+  in `index.html` and `area.html`, which `--tastiera` 0 says); on an iPhone the
+  page never slides: a focus never scrolls it (`HTMLElement.prototype.focus`
+  takes `preventScroll`, a tap's focus is handed over), a field is shown inside
+  its own boxes (`inVista`, never `scrollIntoView`, which slides the page;
+  a sheet's `scroll-padding` keeps it off its title and actions), and while the
+  keyboard is up a finger moves only a box with something to scroll. Nothing
+  follows a gesture frame by frame: the root's variables change when the
+  keyboard comes, goes or changes height.
 - A field asks for its keyboard (`utils/tastiera.js`): `tastieraDi(field)` for
   a DocType's field, `tastiera('telefono')`, `'email'`, `'url'`, `'codice'`,
   `'cifre'`, `'nome'` (a person's name: a capital to each word, never
