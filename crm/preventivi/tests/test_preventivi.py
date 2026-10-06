@@ -22,6 +22,7 @@ from frappe.utils import add_days, getdate
 
 from crm.area.tests.test_area import DESK, MANAGER, OPERATORE, SALES, AreaCase
 from crm.permissions import utenti
+from crm.persone import riepilogo
 from crm.preventivi import api as preventivi
 from crm.preventivi import area, documento, pipeline
 from crm.preventivi import regole as R
@@ -107,6 +108,20 @@ class IlPreventivo(PreventiviCase):
 		# the lists follow the same rule
 		self.come(SALES)
 		self.assertEqual(frappe.get_list(preventivi.DOCTYPE, pluck="name"), [fatto["name"]])
+
+	def test_il_riepilogo_della_persona_dice_i_preventivi_aperti(self):
+		fatto = self.scrive()
+		# a draft is its author's
+		self.come(DESK)
+		self.assertNotIn("quotes", riepilogo.get_summary(self.anna.name))
+		self.proponi(fatto["name"])
+		self.come(DESK)
+		[riga] = riepilogo.get_summary(self.anna.name)["quotes"]["quotes"]
+		self.assertEqual((riga["name"], riga["status"]), (fatto["name"], R.PROPOSTO))
+		# accepted, it goes on until its last row is done
+		preventivi.accept_quote(fatto["name"])
+		[riga] = riepilogo.get_summary(self.anna.name)["quotes"]["quotes"]
+		self.assertEqual(riga["status"], R.ACCETTATO)
 
 	def test_rifiutato_il_deal_e_perso_e_si_riparte_da_una_nuova_versione(self):
 		fatto = self.scrive()

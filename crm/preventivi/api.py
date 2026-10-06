@@ -350,6 +350,39 @@ def _della_trattativa(lead: str, deal: str | None) -> str | None:
 	return deal if pipeline.prende_preventivi(deal) else None
 
 
+#: The quotes the person's summary names: waiting for an answer, or accepted and
+#: going on.
+APERTI = (R.PROPOSTO, R.ACCETTATO)
+NEL_RIEPILOGO = 3
+
+
+def nel_riepilogo(lead: str) -> dict | None:
+	"""For the person's summary (`crm.persone.riepilogo`): their quotes waiting for
+	an answer and the accepted ones still going on, the ones the session reads -
+	as the Quotes tab lists them."""
+	if not (livelli.puo("preventivi.vedi") or scrive() or gestisce()):
+		return None
+	preventivi = [
+		doc
+		for doc in (
+			frappe.get_doc(DOCTYPE, nome)
+			for nome in frappe.get_all(
+				DOCTYPE,
+				filters={"lead": lead, "status": ["in", APERTI]},
+				pluck="name",
+				order_by="creation desc",
+			)
+		)
+		if puo_leggere(doc)
+	]
+	if not preventivi:
+		return None
+	return {
+		"count": len(preventivi),
+		"quotes": [_riga(doc) for doc in preventivi[:NEL_RIEPILOGO]],
+	}
+
+
 @frappe.whitelist()
 def get_quotes(lead: str, deal: str | None = None) -> dict:
 	"""The person's quotes the session reads, the most recent first; from the page of
