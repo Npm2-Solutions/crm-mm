@@ -99,12 +99,21 @@ senza nessuno in mezzo che le legga.
 ## Chi la riceve, quando, e dove porta un tocco (06/10/2026)
 
 - **Un messaggio arriva sempre a qualcuno.** Un WhatsApp, un SMS o un'email di una
-  persona lo legge chi la segue (a chi è assegnata), altrimenti chi ce l'ha (il
-  proprietario della persona o della trattativa), altrimenti la segreteria: chi nel
-  centro legge le conversazioni e può aprire quella persona, mai l'agenzia
-  (`avvisi.chi_segue()`). Prima lo leggeva solo chi era assegnato: un numero nuovo
-  che scriveva su WhatsApp, o una persona di nessuno, non lo diceva a nessuno.
-  Un'email arrivata nella casella personale di qualcuno lo dice solo a lui.
+  persona lo legge chi la segue (a chi è assegnata la persona o una sua
+  trattativa: la conversazione è la stessa sulle due pagine), altrimenti chi ce
+  l'ha (il proprietario della persona o della trattativa), altrimenti la
+  segreteria: chi nel centro legge le conversazioni e può aprire quella persona,
+  mai l'agenzia (`avvisi.chi_segue()`). Prima lo leggeva solo chi era assegnato:
+  un numero nuovo che scriveva su WhatsApp, o una persona di nessuno, non lo diceva
+  a nessuno. Un'email arrivata nella casella personale di qualcuno lo dice solo a
+  lui.
+- **Anche ad Administrator, se qualcuno l'ha scelto** (06/10/2026). Chi lavorava
+  come Administrator e si assegnava una persona non riceveva mai i suoi messaggi:
+  l'account era escluso da chi segue insieme al proprietario, dove sta per
+  DottorCloud che ha fatto il record. Assegnato, ora li riceve come chiunque; da
+  proprietario resta fuori, e la segreteria resta del centro. Un messaggio è della
+  persona: chi l'ha salvato (il webhook, un lavoro in coda) non ne è il mittente, e
+  scambiato per tale non avvisava chi seguiva la persona proprio quando era lui.
 - **Quando**: subito nel pannello e, se DottorCloud è aperto, nell'avviso a
   comparsa; sul telefono e sul computer solo dove le notifiche sono attivate e il
   tipo è acceso; per email dopo cinque minuti se è ancora da leggere e la si vuole
