@@ -32,8 +32,10 @@
                   :title="__('Actions for {0}', [person.full_name])"
                 >
                   <UserAvatar :user="person.user" size="sm" />
+                  <!-- a name read whole, on two lines if it needs them:
+                       «Dottoressa Verdi» lost its surname to the column -->
                   <span
-                    class="w-full truncate text-p-xs font-medium text-ink-gray-7"
+                    class="line-clamp-2 w-full text-p-xs font-medium text-ink-gray-7 [overflow-wrap:anywhere]"
                     >{{ person.full_name }}</span
                   >
                   <span

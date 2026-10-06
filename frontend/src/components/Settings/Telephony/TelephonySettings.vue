@@ -23,7 +23,7 @@
           />
         </h2>
         <p class="text-p-base text-ink-gray-6">
-          {{ __('Configure telephony settings for {brand}') }}
+          {{ __('The lines {brand} calls and answers on, and what it says when nobody picks up.') }}
         </p>
       </div>
       <div
@@ -144,7 +144,7 @@
           <span class="text-p-sm text-ink-gray-6">
             {{
               __(
-                'Answer incoming calls with an announcement and queue a callback, instead of ringing an agent.',
+                'When nobody picks up, or for every call: an announcement answers and queues a callback.',
               )
             }}
           </span>

@@ -84,27 +84,32 @@
         </div>
         <div
           v-if="notifications?.length"
-          class="rounded-lg flex flex-col gap-2 w-fit"
+          class="rounded-lg flex flex-col gap-2 w-fit impostazioni-strette:w-full"
         >
           <div v-for="notification in notifications" :key="notification.name">
-            <div class="flex items-center gap-2">
-              <FormControl
-                v-model="notification.type"
-                :aria-label="__('Type')"
-                class="w-36 shrink-0"
-                type="select"
-                :options="[
-                  {
-                    label: __('Notification'),
-                    value: 'Notification',
-                  },
-                  {
-                    label: __('Email'),
-                    value: 'Email',
-                  },
-                ]"
-                :placeholder="__('Notification')"
-              />
+            <!-- on a phone the kind takes its line and the rest wraps
+                 under it: in one row the minutes went off the screen -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- a select draws no box of its own: its width is the
+                   box's around it -->
+              <div class="w-36 shrink-0 impostazioni-strette:w-full">
+                <FormControl
+                  v-model="notification.type"
+                  :aria-label="__('Type')"
+                  type="select"
+                  :options="[
+                    {
+                      label: __('Notification'),
+                      value: 'Notification',
+                    },
+                    {
+                      label: __('Email'),
+                      value: 'Email',
+                    },
+                  ]"
+                  :placeholder="__('Notification')"
+                />
+              </div>
               <FormControl
                 v-model.number="notification.before"
                 :aria-label="__('How long before')"
@@ -117,33 +122,36 @@
                 :placeholder="__('10')"
                 @blur="handleIntervalChange(notification)"
               />
-              <FormControl
-                v-model="notification.interval"
-                :aria-label="__('Unit')"
-                class="w-32 shrink-0"
-                type="select"
-                :options="[
-                  {
-                    label:
-                      notification.before == 1 ? __('minute') : __('minutes'),
-                    value: 'minutes',
-                  },
-                  {
-                    label: notification.before == 1 ? __('hour') : __('hours'),
-                    value: 'hours',
-                  },
-                  {
-                    label: notification.before == 1 ? __('day') : __('days'),
-                    value: 'days',
-                  },
-                  {
-                    label: notification.before == 1 ? __('week') : __('weeks'),
-                    value: 'weeks',
-                  },
-                ]"
-                :placeholder="__('minutes')"
-                @update:modelValue="() => handleIntervalChange(notification)"
-              />
+              <div class="w-32 shrink-0">
+                <FormControl
+                  v-model="notification.interval"
+                  :aria-label="__('Unit')"
+                  type="select"
+                  :options="[
+                    {
+                      label:
+                        notification.before == 1 ? __('minute') : __('minutes'),
+                      value: 'minutes',
+                    },
+                    {
+                      label:
+                        notification.before == 1 ? __('hour') : __('hours'),
+                      value: 'hours',
+                    },
+                    {
+                      label: notification.before == 1 ? __('day') : __('days'),
+                      value: 'days',
+                    },
+                    {
+                      label:
+                        notification.before == 1 ? __('week') : __('weeks'),
+                      value: 'weeks',
+                    },
+                  ]"
+                  :placeholder="__('minutes')"
+                  @update:modelValue="() => handleIntervalChange(notification)"
+                />
+              </div>
               <Button
                 :aria-label="__('Remove')"
                 icon="lucide-x"
@@ -185,30 +193,35 @@
         </div>
         <div
           v-if="allDayNotifications?.length"
-          class="rounded-lg flex flex-col gap-2 w-fit"
+          class="rounded-lg flex flex-col gap-2 w-fit impostazioni-strette:w-full"
         >
           <div
             v-for="notification in allDayNotifications"
             :key="notification.name"
           >
-            <div class="flex items-center gap-2">
-              <FormControl
-                v-model="notification.type"
-                :aria-label="__('Type')"
-                class="w-36 shrink-0"
-                type="select"
-                :options="[
-                  {
-                    label: __('Notification'),
-                    value: 'Notification',
-                  },
-                  {
-                    label: __('Email'),
-                    value: 'Email',
-                  },
-                ]"
-                :placeholder="__('Notification')"
-              />
+            <!-- on a phone the kind takes its line and the rest wraps
+                 under it: in one row the minutes went off the screen -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- a select draws no box of its own: its width is the
+                   box's around it -->
+              <div class="w-36 shrink-0 impostazioni-strette:w-full">
+                <FormControl
+                  v-model="notification.type"
+                  :aria-label="__('Type')"
+                  type="select"
+                  :options="[
+                    {
+                      label: __('Notification'),
+                      value: 'Notification',
+                    },
+                    {
+                      label: __('Email'),
+                      value: 'Email',
+                    },
+                  ]"
+                  :placeholder="__('Notification')"
+                />
+              </div>
               <FormControl
                 v-model.number="notification.before"
                 :aria-label="__('How long before')"
@@ -220,31 +233,33 @@
                 :placeholder="__('10')"
                 @blur="handleIntervalChange(notification)"
               />
-              <FormControl
-                v-model="notification.interval"
-                :aria-label="__('Unit')"
-                class="w-32 shrink-0"
-                type="select"
-                :options="[
-                  {
-                    label: notification.before == 1 ? __('day') : __('days'),
-                    value: 'days',
-                  },
-                  {
-                    label: notification.before == 1 ? __('week') : __('weeks'),
-                    value: 'weeks',
-                  },
-                ]"
-                :placeholder="__('minutes')"
-                @update:modelValue="() => handleIntervalChange(notification)"
-              />
+              <div class="w-32 shrink-0">
+                <FormControl
+                  v-model="notification.interval"
+                  :aria-label="__('Unit')"
+                  type="select"
+                  :options="[
+                    {
+                      label: notification.before == 1 ? __('day') : __('days'),
+                      value: 'days',
+                    },
+                    {
+                      label:
+                        notification.before == 1 ? __('week') : __('weeks'),
+                      value: 'weeks',
+                    },
+                  ]"
+                  :placeholder="__('minutes')"
+                  @update:modelValue="() => handleIntervalChange(notification)"
+                />
+              </div>
               <div class="text-p-sm text-ink-gray-5">
                 {{ __('before at') }}
               </div>
               <TimePicker
                 v-model="notification.time"
                 class="w-32 shrink-0"
-                :placeholder="__('08:00 pm')"
+                placeholder="08:00"
               />
               <Button
                 :aria-label="__('Remove')"

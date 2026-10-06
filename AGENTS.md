@@ -546,6 +546,13 @@ DottorCloud is European: English is written the way Europe writes it
 (`appLocale()`), never the browser's (`navigator.language`), the week starts on
 Monday in System Settings too (`per_l_italia`, whatever country), and a
 measure is metric.
+A currency is chosen and read by its name, the code stored («Euro», never «EUR»:
+`components/Controls/CampoValuta.vue`, `utils/valute.js`), a price as the reader
+writes it («65,00 €», `prezzo()`), never «65 EUR»; a time zone by its city in the
+reader's language («Roma · Ora dell'Europa centrale», `utils/fusiOrari.js`),
+never «Europe/Rome». A sentence names the agency for what is the agency's (System
+Manager, `tecnico.*`) and the centre's manager for what is theirs, never «an
+administrator».
 In Italian an article before a date's day 1, 8 or 11 drops its vowel («dall'11
 set», «l'1 ott»): both translators (the SPA's and the area's) put it right once
 the sentence is filled (`conLApostrofo`, `utils/locale.js`), so a sentence keeps

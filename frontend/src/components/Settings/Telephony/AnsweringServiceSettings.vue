@@ -361,7 +361,7 @@
               <span class="text-center text-p-base text-ink-gray-6">
                 {{
                   __(
-                    'Answer incoming calls with an announcement and queue a callback, instead of ringing an agent. Requires Twilio.',
+                    'When nobody picks up, or for every call: an announcement answers and queues a callback. Twilio is needed.',
                   )
                 }}
               </span>

@@ -2608,12 +2608,12 @@ msgid "Answer incoming calls with a recorded announcement and queue a callback i
 msgstr "Risponde alle chiamate in arrivo con un annuncio registrato e mette in coda una richiamata, invece di far squillare un operatore."
 
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue
-msgid "Answer incoming calls with an announcement and queue a callback, instead of ringing an agent."
-msgstr "Risponde alle chiamate in arrivo con un annuncio e mette in coda una richiamata, invece di far squillare un operatore."
+msgid "When nobody picks up, or for every call: an announcement answers and queues a callback."
+msgstr "Quando nessuno risponde, o per ogni chiamata: risponde un annuncio e mette in coda una richiamata."
 
 #: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
-msgid "Answer incoming calls with an announcement and queue a callback, instead of ringing an agent. Requires Twilio."
-msgstr "Risponde alle chiamate in arrivo con un annuncio e mette in coda una richiamata, invece di far squillare un operatore. Serve Twilio."
+msgid "When nobody picks up, or for every call: an announcement answers and queues a callback. Twilio is needed."
+msgstr "Quando nessuno risponde, o per ogni chiamata: risponde un annuncio e mette in coda una richiamata. Serve Twilio."
 
 #: crm/dashboard/widgets/calls.py
 msgid "Answer rate"
@@ -4135,8 +4135,8 @@ msgid "Beta"
 msgstr "Beta"
 
 #: frontend/src/components/Settings/Booking/BookingPlatforms.vue
-msgid "Beta: built from the official documentation but not yet proven on a real account. Visible to administrators only — the team sees it once it is verified."
-msgstr "Beta: costruita sulla documentazione ufficiale, ma non ancora provata su un account reale. La vedono solo gli amministratori — gli altri utenti la vedranno quando sarà verificata."
+msgid "Beta: built from the official documentation but not yet proven on a real account. Only the agency sees it — the team sees it once it is verified."
+msgstr "Beta: costruita sulla documentazione ufficiale, ma non ancora provata su un account reale. La vede solo l'agenzia — gli altri utenti la vedranno quando sarà verificata."
 
 #: frontend/src/components/Filter.vue:356
 msgid "Between"
@@ -6740,8 +6740,8 @@ msgid "Configure it"
 msgstr "Configuralo"
 
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue
-msgid "Configure telephony settings for {brand}"
-msgstr "Configura la telefonia di {brand}"
+msgid "The lines {brand} calls and answers on, and what it says when nobody picks up."
+msgstr "Le linee su cui {brand} chiama e risponde, e cosa dice quando nessuno risponde."
 
 #: frontend/src/components/Settings/DashboardSettings.vue:102
 msgid "Configure the Exchange Rate Provider for your CRM"
@@ -15628,8 +15628,8 @@ msgid "Meta is not sending this number's messages to the app"
 msgstr "Meta non manda all'app i messaggi di questo numero"
 
 #: frontend/src/components/Settings/Meta/MetaConnection.vue
-msgid "Meta is not set up on {brand} yet. An administrator has to add it before an account can be connected."
-msgstr "L'integrazione con Meta non è ancora configurata in {brand}. Prima che si possa collegare un account, deve aggiungerla un amministratore."
+msgid "Meta is not set up on {brand} yet. The agency adds it before an account can be connected."
+msgstr "L'integrazione con Meta non è ancora configurata in {brand}. Prima che si possa collegare un account, deve aggiungerla l'agenzia."
 
 #: frontend/src/components/Settings/WhatsAppSettings.vue
 msgid "Meta is notifying this hub, but not about everything"
@@ -18116,7 +18116,7 @@ msgstr "Notifiche applicate"
 #: frontend/src/components/Settings/CalendarSettings.vue:184
 #: frontend/src/components/Settings/CalendarSettings.vue:192
 msgid "Notification"
-msgstr "Notifiche"
+msgstr "Notifica"
 
 #: crm/fcrm/doctype/crm_booking_connection/crm_booking_connection.json
 msgid "Notification Mailbox"
@@ -18773,12 +18773,12 @@ msgid "Only System Managers can modify other System Managers"
 msgstr "Solo un amministratore di sistema può modificare un altro amministratore di sistema"
 
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue
-msgid "Only a System Manager can turn it on"
-msgstr "Solo un amministratore di sistema può attivarla"
+msgid "Only the agency can turn it on"
+msgstr "Solo l'agenzia può attivarla"
 
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.py
-msgid "Only a System Manager can turn the sales hierarchy on or off"
-msgstr "Solo un amministratore di sistema può attivare o disattivare la gerarchia"
+msgid "Only the agency can turn the hierarchy on or off"
+msgstr "Solo l'agenzia può attivare o disattivare la gerarchia"
 
 #: crm/moduli/doctype/crm_consent/crm_consent.py
 msgid "Only a consent given can be withdrawn"
@@ -18837,8 +18837,8 @@ msgid "Only an accepted quote is closed"
 msgstr "Puoi chiudere solo un preventivo accettato"
 
 #: crm/utils/__init__.py
-msgid "Only an administrator can do this"
-msgstr "Solo un amministratore può farlo"
+msgid "Only the agency can do this"
+msgstr "Solo l'agenzia può farlo"
 
 #: crm/invoicing/documento.py
 msgid "Only an issued invoice can be reopened"
@@ -28247,8 +28247,8 @@ msgid "This connection attempt is invalid or has expired, please retry"
 msgstr "Questo tentativo di collegamento non è valido o è scaduto: riprova"
 
 #: crm/api/booking_platforms.py
-msgid "This connection is still in testing: only an administrator can use it"
-msgstr "Questo collegamento è ancora in prova: può usarlo solo un amministratore"
+msgid "This connection is still in testing: only the agency can use it"
+msgstr "Questo collegamento è ancora in prova: può usarlo solo l'agenzia"
 
 #: crm/www/whatsapp_connect.py
 msgid "This connection link is invalid or has expired. Go back to {brand} and press Connect again."
@@ -31267,8 +31267,8 @@ msgid "WhatsApp does not accept .{0} here. It takes: {1}."
 msgstr "WhatsApp qui non accetta .{0}. Accetta: {1}."
 
 #: frontend/src/components/Settings/WhatsAppSettings.vue
-msgid "WhatsApp is not set up on {brand} yet. An administrator has to finish the setup before a number can be connected."
-msgstr "WhatsApp non è ancora configurato su {brand}. Prima di collegare un numero, un amministratore deve completare la configurazione."
+msgid "WhatsApp is not set up on {brand} yet. The agency finishes the setup before a number can be connected."
+msgstr "WhatsApp non è ancora configurato su {brand}. Prima di collegare un numero, l'agenzia deve completare la configurazione."
 
 #: crm/dashboard/widgets/whatsapp.py
 msgid "WhatsApp messages received and sent"
@@ -32300,8 +32300,8 @@ msgid "You cannot take the Manager level away from yourself: ask another manager
 msgstr "Non puoi toglierti da solo il livello Responsabile: chiedilo a un altro responsabile"
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error."
-msgstr "Non hai i permessi per accedere a {brand}. Se pensi che sia un errore, contatta il tuo amministratore."
+msgid "You do not have enough permissions to access {brand}. If you believe this is an error, ask whoever manages the centre."
+msgstr "Non hai i permessi per accedere a {brand}. Se pensi che sia un errore, chiedi al responsabile del centro."
 
 #: crm/www/crm.py:18
 msgid "You do not have permission to access {brand}"
@@ -32396,8 +32396,8 @@ msgid "Your account is not configured with a Twilio number. Please contact your 
 msgstr "Al tuo account non è associato un numero Twilio. Contatta l'amministratore."
 
 #: crm/integrations/twilio/api.py
-msgid "Your account is not configured with a phone number. Please contact your administrator."
-msgstr "Il tuo account non ha un numero di telefono. Contatta il tuo amministratore."
+msgid "Your account has no number to call from. Ask whoever manages the centre's phone."
+msgstr "Il tuo account non ha un numero da cui chiamare. Chiedi a chi gestisce il telefono del centro."
 
 #: crm/dashboard/widgets/agenda.py
 msgid "Your agenda for today"
@@ -35656,12 +35656,12 @@ msgid "The choice was not saved"
 msgstr "La scelta non è stata salvata"
 
 #: frontend/src/utils/impostazioni.js
-msgid "What reaches your email too, when you have not read it."
-msgstr "Cosa ti arriva anche per email, quando non l'hai letto."
+msgid "What reaches you on your phone, your computer and by email."
+msgstr "Cosa ti arriva sul telefono, sul computer e per email."
 
 #: frontend/src/utils/impostazioni.js
-msgid "Your profile, how {brand} looks for you, your notifications by email, the calendar you bring."
-msgstr "Il tuo profilo, come vedi {brand}, le notifiche per email, il calendario che porti."
+msgid "Your profile, how {brand} looks, your notifications, your mailbox, the calendar you bring."
+msgstr "Il tuo profilo, come vedi {brand}, le tue notifiche, la tua casella, il calendario che porti."
 
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 msgid "By email if unread"
@@ -45104,3 +45104,22 @@ msgstr "Clienti"
 msgctxt "Relationship"
 msgid "Patients"
 msgstr "Pazienti"
+
+#. the dashboard's currency: none chosen counts in the country's
+#: frontend/src/components/Settings/DashboardSettings.vue
+msgid "The currency the dashboard and the deals count in. Until one is chosen it is the centre’s country’s; once chosen, it stays."
+msgstr "La valuta in cui contano la dashboard e le trattative. Finché non la scegli è quella del paese del centro; una volta scelta, resta."
+
+#: frontend/src/components/Settings/DashboardSettings.vue
+msgid "The currency of the centre’s country"
+msgstr "La valuta del paese del centro"
+
+#. a price rule without a currency of its own counts in its list's
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "As the price list ({0})"
+msgstr "Come il listino ({0})"
+
+#. a room's or a piece of equipment's hourly rate, «60,00 € l'ora»
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "{0} an hour"
+msgstr "{0} l'ora"
