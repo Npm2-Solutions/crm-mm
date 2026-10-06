@@ -27,7 +27,7 @@ from crm.api import comment as commenti
 from crm.fcrm.doctype.crm_notification.crm_notification import CRMNotification
 from crm.notifiche import api
 from crm.notifiche import regole as R
-from crm.notifiche.avvisi import avvisa
+from crm.notifiche.avvisi import avvisa, chi_segue
 from crm.permissions import documenti, livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
 
@@ -367,6 +367,29 @@ class LeggerleTutte(NotificheCase):
 		self.come(CARLO)
 		self.assertTrue(documenti.sola_lettura(frappe.get_doc(NOTIFICA, nome), "write"))
 		self.assertEqual(api.mark_as_read([nome])["unread"], 0)
+
+
+class ChiLaRiceve(NotificheCase):
+	"""A person's message reaches whoever follows them, and somebody always: a new
+	number writing on WhatsApp has nobody assigned yet."""
+
+	def test_chi_la_segue(self):
+		assign_to.add({"doctype": "CRM Lead", "name": self.laura.name, "assign_to": [ANNA]})
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name), [ANNA])
+
+	def test_altrimenti_chi_la_ha(self):
+		frappe.db.set_value("CRM Lead", self.laura.name, "lead_owner", ANNA)
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name), [ANNA])
+
+	def test_altrimenti_la_segreteria(self):
+		frappe.db.set_value("CRM Lead", self.laura.name, "lead_owner", None)
+		chi = chi_segue("CRM Lead", self.laura.name)
+		# the desk reads the conversations and may open her; never DottorCloud itself
+		self.assertIn(BRUNO, chi)
+		self.assertNotIn("Administrator", chi)
+		self.assertTrue(all(livelli.puo("conversazioni.vedi", utente) for utente in chi))
+		# somebody's own mailbox tells only them
+		self.assertEqual(chi_segue("CRM Lead", self.laura.name, banco=False), [])
 
 
 class ChiNonLaRiceve(NotificheCase):

@@ -155,18 +155,23 @@ def destinatari(doc, seguono: list[str]) -> list[str]:
 
 
 def avvisa(doc) -> None:
-	"""Whoever follows the person reads it in their panel; the emails after it, while
-	it is unread, add to it."""
-	from crm.api.doc import assigned_users_of
+	"""Whoever follows the person reads it in their panel - the desk, when nobody does
+	yet and it came to one of the centre's mailboxes; the emails after it, while it is
+	unread, add to it."""
 	from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
 	from crm.notifiche import regole as R
 	from crm.notifiche.avvisi import avvisa as scrivi
+	from crm.notifiche.avvisi import chi_segue
 
 	if doc.reference_doctype not in DELLE_PERSONE or not doc.reference_name:
 		return
 	trattativa = doc.reference_doctype == "CRM Deal"
 	nomi = [nome_di(doc.reference_doctype, doc.reference_name)]
-	for user in destinatari(doc, assigned_users_of(doc.reference_doctype, doc.reference_name)):
+	# somebody's own mailbox tells them, never the desk
+	seguono = chi_segue(
+		doc.reference_doctype, doc.reference_name, banco=not personale.di_chi(doc.email_account)
+	)
+	for user in destinatari(doc, seguono):
 		scrivi(
 			user,
 			"Email",

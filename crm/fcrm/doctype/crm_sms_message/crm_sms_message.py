@@ -5,10 +5,9 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from crm.api.doc import assigned_users_of
 from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
 from crm.notifiche import regole as R
-from crm.notifiche.avvisi import avvisa
+from crm.notifiche.avvisi import avvisa, chi_segue
 
 
 class CRMSMSMessage(Document):
@@ -84,13 +83,13 @@ class CRMSMSMessage(Document):
 			frappe.log_error(frappe.get_traceback(), "CRM SMS: automation trigger failed")
 
 	def notify_agents(self):
-		"""An SMS from a person: whoever follows them reads it in their panel; the
-		ones after it, while it is unread, add to it."""
+		"""An SMS from a person: whoever follows them reads it in their panel - the
+		desk, when nobody does yet; the ones after it, while it is unread, add to it."""
 		if self.type != "Incoming" or not self.reference_doctype or not self.reference_name:
 			return
 		trattativa = self.reference_doctype == "CRM Deal"
 		nomi = [nome_di(self.reference_doctype, self.reference_name)]
-		for user in assigned_users_of(self.reference_doctype, self.reference_name):
+		for user in chi_segue(self.reference_doctype, self.reference_name):
 			avvisa(
 				user,
 				"SMS",
