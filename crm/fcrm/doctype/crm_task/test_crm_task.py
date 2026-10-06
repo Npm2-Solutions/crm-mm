@@ -1,4 +1,5 @@
 # Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and Contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # See license.txt
 
 import frappe
@@ -22,6 +23,12 @@ class TestCRMTask(IntegrationTestCase):
 		self.assertEqual(task.title, "Test Task")
 		self.assertEqual(task.status, "Todo")
 		self.assertEqual(task.priority, "Medium")
+
+	def test_a_new_task_is_to_do(self):
+		"""A thing to do starts as to do, wherever it is made (an automation
+		gives none): never «Backlog», which reads as on hold"""
+		task = frappe.get_doc({"doctype": "CRM Task", "title": "Richiamare"}).insert(ignore_permissions=True)
+		self.assertEqual(task.status, "Todo")
 
 	def test_task_assignment_on_creation(self):
 		"""Test that task is assigned to user on creation"""
