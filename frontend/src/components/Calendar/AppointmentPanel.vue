@@ -930,6 +930,7 @@ import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import Link from '@/components/Controls/Link.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { buildEndTimeOptions } from '@/composables/event'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { rigaDelPosto } from '@/utils/abbonamenti'
@@ -1880,6 +1881,12 @@ function discardFirst(then) {
 function close() {
   discardFirst(() => emit('close'))
 }
+
+// Escape closes it, as it does an event's panel: asking first over what was
+// changed, never from inside a field
+useKeyboardShortcuts({
+  shortcuts: [{ keys: 'Escape', action: () => close() }],
+})
 
 function backToDetails() {
   discardFirst(() => emit('mode', 'details'))
