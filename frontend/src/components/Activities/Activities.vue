@@ -679,6 +679,7 @@ import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { isContentEmpty, startCase } from '@/utils'
 import { useDraft } from '@/composables/drafts'
 import { globalStore } from '@/stores/global'
+import { useDiNuovoInLinea } from '@/composables/diNuovoInLinea'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import {
@@ -883,6 +884,14 @@ function suSms(data) {
   )
     smsMessages.reload()
 }
+
+// back in touch after a while - the phone put the app to sleep, the
+// connection dropped -: what arrived meanwhile never came, so it is asked again
+useDiNuovoInLinea(() => {
+  all_activities.reload()
+  if (whatsappEnabled.value) whatsappMessages.reload()
+  if (smsEnabled.value) smsMessages.reload()
+})
 
 onBeforeUnmount(() => {
   $socket.off('whatsapp_message', suWhatsApp)
