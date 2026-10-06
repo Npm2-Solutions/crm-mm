@@ -23,7 +23,11 @@
           />
         </h2>
         <p class="text-p-base text-ink-gray-6">
-          {{ __('The lines {brand} calls and answers on, and what it says when nobody picks up.') }}
+          {{
+            __(
+              'The lines {brand} calls and answers on, and what it says when nobody picks up.',
+            )
+          }}
         </p>
       </div>
       <div
@@ -61,8 +65,8 @@
             :placeholder="__('Select Medium')"
           />
           <Button
-            :aria-label="__('Clear')"
             v-if="telephonyAgent.doc.default_medium"
+            :aria-label="__('Clear')"
             icon="lucide-x"
             :tooltip="__('Clear')"
             @click="telephonyAgent.doc.default_medium = ''"
