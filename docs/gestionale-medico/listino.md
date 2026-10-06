@@ -88,6 +88,7 @@ parte: chi fattura con DottorCloud ce l'ha.
 | Crediti SdI oltre quelli inclusi | 0,10 € a credito, pacchetti da 500 (50 €) | nella fattura del mese |
 | SMS sull'account dell'agenzia, con la segreteria | a consumo | nella fattura del mese |
 | Firme avanzate oltre le 2.000 l'anno | a consumo | nella fattura del mese |
+| Spazio per i file oltre l'incluso (1 TB; 2 TB da Poliambulatorio) | 10 € al TB al mese (proposta) | nella fattura del mese |
 
 Un credito vale una fattura trasmessa allo SdI o ricevuta; una fattura alla PA ne
 vale 3. Le fatture scartate per errori di formato non consumano crediti. Quando i
