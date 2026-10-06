@@ -144,6 +144,34 @@ describe('segniDelBlocco and statoDelBlocco', () => {
     expect(segni.at(-1).testo).toBe('Booked on MioDottore')
   })
 
+  it('says what the person answered the reminder, in words', () => {
+    const conRisposta = (reminder) => ({
+      ...visita,
+      participants: [{ participant_name: 'Mario Rossi', reminder }],
+    })
+    const confermato = segniDelBlocco(
+      conRisposta({ status: 'Sent', answer: 'Confirmed' }),
+    )
+    expect(confermato.map((s) => [s.chiave, s.icona])).toEqual([
+      ['promemoria', 'lucide-thumbs-up'],
+    ])
+    expect(confermato[0].testo).toBe('Confirmed they are coming')
+    // sent and not answered yet: no bell on every block of tomorrow
+    expect(segniDelBlocco(conRisposta({ status: 'Sent', answer: '' }))).toEqual(
+      [],
+    )
+    // a class: each person's answer is in the panel, not on the block
+    expect(
+      segniDelBlocco({
+        ...visita,
+        participants: [
+          { reminder: { status: 'Sent', answer: 'Confirmed' } },
+          { reminder: { status: 'Sent', answer: 'Cannot come' } },
+        ],
+      }),
+    ).toEqual([])
+  })
+
   it('reads the whole block for a screen reader', () => {
     expect(paroleDelBlocco({ ...visita, first_visit: true })).toBe(
       '09:00–09:30, Mario Rossi, Controllo nutrizionale, Studio 1, First visit',

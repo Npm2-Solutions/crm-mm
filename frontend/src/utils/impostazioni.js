@@ -192,7 +192,15 @@ export const MENU = [
         label: 'Agenda & reminders',
         description:
           'Where the agenda opens, the minutes its grid moves by, the reminders people receive.',
-        condition: generali,
+        tabs: [
+          { key: 'Calendar & reminders', label: 'Agenda', condition: generali },
+          // the day before, by WhatsApp with its buttons, SMS or email (doc 59)
+          {
+            key: 'Appointment reminders',
+            label: 'Appointment reminders',
+            condition: agenda,
+          },
+        ],
       },
       {
         // a place that frees up goes to who waits for it

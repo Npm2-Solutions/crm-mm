@@ -331,6 +331,9 @@ const PAGINE = {
   'Calendar & reminders': aRichiesta(
     () => import('@/components/Settings/CalendarSettings.vue'),
   ),
+  'Appointment reminders': aRichiesta(
+    () => import('@/components/Settings/Scheduling/RemindersSettings.vue'),
+  ),
   'Waiting list': aRichiesta(
     () => import('@/components/Settings/Scheduling/WaitingListSettings.vue'),
   ),
