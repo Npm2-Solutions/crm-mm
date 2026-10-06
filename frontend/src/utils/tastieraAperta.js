@@ -475,9 +475,18 @@ export function seguiLaTastiera(win = window) {
 
   // the focus leaves for a field: the field takes it from DottorCloud, so
   // Safari does not scroll to it (the keyboard's arrows too)
+  let passando = false
   function perdeIlFuoco(evento) {
     const verso = evento.relatedTarget
-    if (verso && verso !== doc.activeElement && siScrive(verso)) verso.focus()
+    if (passando || !verso || verso === doc.activeElement) return
+    if (!siScrive(verso)) return
+    // once: the focus this hands over must not be handed over again
+    passando = true
+    try {
+      verso.focus()
+    } finally {
+      passando = false
+    }
   }
 
   // every focus asked of a field never scrolls the page: the field is shown
