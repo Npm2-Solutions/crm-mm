@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-06 20:00:00.000000",
+ "description": "How the centre reminds clients of their appointments: when, by which way, what a «cannot come» does",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reminders_section",
+  "enabled",
+  "hours_before",
+  "column_break_when",
+  "cancel_on_reply",
+  "channels_section",
+  "whatsapp_template",
+  "column_break_channels",
+  "use_sms",
+  "use_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "reminders_section",
+   "fieldtype": "Section Break",
+   "label": "Reminders"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Remind clients of their appointments",
+   "description": "By WhatsApp with its buttons, else SMS, else email"
+  },
+  {
+   "default": "24",
+   "fieldname": "hours_before",
+   "fieldtype": "Int",
+   "label": "Hours before",
+   "non_negative": 1,
+   "description": "At night (21 to 8) it leaves in the morning, or the evening before"
+  },
+  {
+   "fieldname": "column_break_when",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "cancel_on_reply",
+   "fieldtype": "Check",
+   "label": "Who cannot come cancels it",
+   "description": "The time is freed for whoever waits; off: the desk is told and decides"
+  },
+  {
+   "fieldname": "channels_section",
+   "fieldtype": "Section Break",
+   "label": "Channels"
+  },
+  {
+   "fieldname": "whatsapp_template",
+   "fieldtype": "Data",
+   "label": "WhatsApp template",
+   "description": "Approved, with the buttons to confirm and to cancel"
+  },
+  {
+   "fieldname": "column_break_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_sms",
+   "fieldtype": "Check",
+   "label": "By SMS without WhatsApp"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_email",
+   "fieldtype": "Check",
+   "label": "By email without WhatsApp or SMS"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-06 20:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Reminder Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

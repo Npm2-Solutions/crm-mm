@@ -136,6 +136,9 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set, chiamate: 
 	it in the tasks, a call nobody knows the caller of in the register. Nothing when
 	what it opened is no longer there."""
 	if genere == "agenda":
+		# a reminder answered: the agenda, on the appointment
+		if riga.sentence in R.PROMEMORIA and riga.notification_type_doc:
+			return {"name": "Calendar", "query": {"appointment": riga.notification_type_doc}}
 		return {"name": "Today"}
 	if genere == "invoicing":
 		# a supplier's invoice opens on itself, in the «Received» tab

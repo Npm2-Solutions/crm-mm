@@ -465,14 +465,19 @@ def incoming_sms_handler(**kwargs):
 		frappe.db.rollback()
 		frappe.log_error(title="Error while creating Twilio SMS log")
 
-	# a STOP stops the centre's automatic SMS, a START has them again (doc 52):
-	# the answer says what it did, and stays in the conversation like any other;
-	# one that fails takes nothing of the message with it
+	# a STOP stops the centre's automatic SMS, a START has them again (doc 52), a
+	# «SI» or a «NO» answers a reminder (doc 59): the answer says what it did, and
+	# stays in the conversation like any other; one that fails takes nothing of
+	# the message with it
 	risposta = ""
 	if messaggio:
 		frappe.db.savepoint("stop_o_start")
 		try:
 			risposta = sms_del_centro.ascolta(messaggio)
+			if not risposta:
+				from crm.scheduling import promemoria
+
+				risposta = promemoria.alla_risposta_sms(messaggio)
 			if risposta:
 				create_sms(
 					type="Outgoing",
@@ -486,7 +491,7 @@ def incoming_sms_handler(**kwargs):
 		except Exception:
 			frappe.db.rollback(save_point="stop_o_start")
 			risposta = ""
-			frappe.log_error(title="DottorCloud: a STOP or START by SMS not taken")
+			frappe.log_error(title="DottorCloud: a STOP, a START or a reminder's answer by SMS not taken")
 
 	resp = MessagingResponse()
 	if risposta:

@@ -283,7 +283,8 @@
           addGoogle: "Aggiungi a Google Calendar", addOutlook: "Aggiungi a Outlook", manageSave: "Salva questo link per gestire la prenotazione:",
           another: "Prenota un altro servizio", manageTitle: "La tua prenotazione", cancelBtn: "Annulla prenotazione",
           moveBtn: "Cambia data o orario", cancelReason: "Motivo (facoltativo)", cancelConfirm: "Confermi l'annullamento?",
-          yesCancel: "Sì, annulla", keep: "No, mantieni", status: "Stato", stConfirmed: "Confermata", stScheduled: "In attesa di conferma",
+          yesCancel: "Sì, annulla", keep: "No, mantieni", status: "Stato", stConfirmed: "Confermata", stScheduled: "In attesa di conferma", stBooked: "Prenotata",
+          confirmBtn: "Confermo che ci sarò", confirmedNote: "Hai confermato: ti aspettiamo.",
           stCancelled: "Annullata", stCompleted: "Completata", "stNo Show": "Assente", instructions: "Indicazioni", genericError: "Qualcosa è andato storto. Riprova.",
           required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: {{ ("Con tecnologia " ~ marchio.name) | tojson }},
           firstFree: "Primo orario libero", servicesOf: "Servizi di", allServices: "Tutti i servizi",
@@ -318,7 +319,8 @@
           addGoogle: "Add to Google Calendar", addOutlook: "Add to Outlook", manageSave: "Keep this link to manage your booking:",
           another: "Book another service", manageTitle: "Your booking", cancelBtn: "Cancel booking",
           moveBtn: "Change date or time", cancelReason: "Reason (optional)", cancelConfirm: "Cancel this booking?",
-          yesCancel: "Yes, cancel", keep: "No, keep it", status: "Status", stConfirmed: "Confirmed", stScheduled: "Awaiting confirmation",
+          yesCancel: "Yes, cancel", keep: "No, keep it", status: "Status", stConfirmed: "Confirmed", stScheduled: "Awaiting confirmation", stBooked: "Booked",
+          confirmBtn: "I'll be there", confirmedNote: "You confirmed: see you then.",
           stCancelled: "Cancelled", stCompleted: "Completed", "stNo Show": "No show", instructions: "Instructions", genericError: "Something went wrong. Please try again.",
           required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: {{ ("Powered by " ~ marchio.name) | tojson }},
           firstFree: "First free time", servicesOf: "Services by", allServices: "All services",
@@ -871,8 +873,10 @@
       }
       function readCookie(name) { const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; }
 
-      function outcome(b) {
+      function outcome(b, gestione = false) {
         const kind = b.status === "Cancelled" ? "cancelled" : b.pending_approval ? "pending" : "";
+        // opened again from its link (an email, a reminder): no «booking confirmed, we emailed you»
+        if (gestione && !kind && S.result !== b) return null;
         const title = kind === "cancelled" ? T("cancelledTitle") : kind === "pending" ? T("pendingTitle") : T("doneTitle");
         const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : T("doneSub");
         return h("div", { class: "done-hero " + kind }, h("div", { class: "badge", "aria-hidden": "true" }, kind === "cancelled" ? "✕" : kind === "pending" ? "…" : "✓"), h("h2", {}, title), sub ? h("div", { class: "hint" }, sub) : null);
@@ -889,7 +893,8 @@
         add(T("where"), b.location);
         if (b.seats > 1) add(T("people"), String(b.seats));
         add(T("price"), b.formatted_price);
-        add(T("status"), T("st" + b.status));
+        // what the desk booked is booked: only an online request waits for the centre's yes
+        add(T("status"), T(b.status === "Scheduled" && !b.pending_approval ? "stBooked" : "st" + b.status));
         return dl;
       }
 
@@ -917,11 +922,14 @@
 
       function viewManage() {
         const b = S.manage;
-        const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b), details(b));
+        const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b, true), details(b));
         if (b.instructions && b.status !== "Cancelled") wrap.append(h("div", { class: "msg warn" }, b.instructions));
+        if (b.confirmed && b.status !== "Cancelled") wrap.append(h("div", { class: "msg success", role: "status" }, T("confirmedNote")));
         if (b.status !== "Cancelled") {
           const actions = h("div", { class: "actions" });
-          if (b.can_reschedule) actions.append(h("button", { class: "primary", onclick: startMove }, T("moveBtn")));
+          // the reminder linked here: «I'll be there» first
+          if (b.can_confirm) actions.append(h("button", { class: "primary", onclick: confirmVisit }, T("confirmBtn")));
+          if (b.can_reschedule) actions.append(h("button", { class: b.can_confirm ? "" : "primary", onclick: startMove }, T("moveBtn")));
           if (b.can_cancel) actions.append(h("button", { class: "danger", onclick: askCancel }, T("cancelBtn")));
           wrap.append(actions);
           const notes = [b.reschedule_block, b.cancel_block].filter(Boolean);
@@ -932,6 +940,13 @@
         }
         wrap.append(h("div", { class: "actions" }, h("button", { class: "ghost", onclick: restart }, T("another"))));
         return wrap;
+      }
+
+      async function confirmVisit(e) {
+        e.target.disabled = true;
+        try { S.manage = await api("confirm", { token: S.manage.token }, true); S.error = ""; }
+        catch (err) { S.error = err.message; }
+        go("manage");
       }
 
       function askCancel() {
