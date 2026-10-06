@@ -18,7 +18,7 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Agenda & reminders') }}
+          {{ __('Agenda') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{

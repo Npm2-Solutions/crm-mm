@@ -8,6 +8,7 @@
  * network - the grid and the month draw what these say.
  */
 
+import { segnoDelPromemoria } from '@/utils/promemoriaAppuntamenti'
 import { appointmentColor, formatMinutes } from '@/utils/scheduler'
 import { chiDellAppuntamentoDelGiorno, settimanaDi } from '@/utils/sulTelefono'
 
@@ -104,6 +105,12 @@ export function segniDelBlocco(appuntamento = {}, { t = fmt } = {}) {
       icona: DEL_STATO[stato][0],
       testo: t(DEL_STATO[stato][1]),
     })
+  // what the person answered the reminder, on an appointment of one person
+  const persone = appuntamento.participants || []
+  if (persone.length === 1) {
+    const risposta = segnoDelPromemoria(persone[0].reminder, t)
+    if (risposta) segni.push(risposta)
+  }
   if (appuntamento.first_visit)
     segni.push({
       chiave: 'prima',

@@ -277,6 +277,22 @@
                 }}</template
               >
             </div>
+            <!-- the reminder of this time: how it went, what they answered -->
+            <div
+              v-if="row.reminder"
+              class="mt-0.5 flex items-start gap-1.5 text-p-sm text-ink-gray-6"
+            >
+              <span
+                :class="[
+                  segnoDelPromemoria(row.reminder, __)?.icona || 'lucide-bell',
+                  'mt-0.5 size-3.5 shrink-0',
+                ]"
+                aria-hidden="true"
+              />
+              <span class="min-w-0">
+                {{ rigaDelPromemoria(row.reminder, __) }}
+              </span>
+            </div>
           </div>
           <div class="ms-auto flex shrink-0 items-center gap-3">
             <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
@@ -939,6 +955,10 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { rigaDelPosto } from '@/utils/abbonamenti'
+import {
+  rigaDelPromemoria,
+  segnoDelPromemoria,
+} from '@/utils/promemoriaAppuntamenti'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import {

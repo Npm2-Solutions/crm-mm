@@ -1,0 +1,91 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// The reminders of the appointments as the screens read them: an answer as a
+// mark with its words, a reminder in one line, the templates that carry the
+// answers, where DottorCloud's own template is with Meta.
+import {
+  modelliAdatti,
+  rigaDelPromemoria,
+  segnoDelPromemoria,
+  statoDelNostro,
+} from '@/utils/promemoriaAppuntamenti'
+
+describe('segnoDelPromemoria', () => {
+  it('says each answer with its icon', () => {
+    expect(segnoDelPromemoria({ status: 'Sent', answer: 'Confirmed' })).toEqual(
+      {
+        chiave: 'promemoria',
+        icona: 'lucide-thumbs-up',
+        testo: 'Confirmed they are coming',
+      },
+    )
+    expect(
+      segnoDelPromemoria({ status: 'Sent', answer: 'Cannot come' }).testo,
+    ).toBe('Cannot come')
+    expect(
+      segnoDelPromemoria({
+        status: 'Sent',
+        answer: 'Cannot come',
+        cancelled: true,
+      }).testo,
+    ).toBe('Cannot come: cancelled')
+    expect(
+      segnoDelPromemoria({ status: 'Sent', answer: 'Wants to move' }).icona,
+    ).toBe('lucide-calendar-clock')
+  })
+
+  it('calls for a call when it did not arrive, nothing while it waits', () => {
+    expect(segnoDelPromemoria({ status: 'Not delivered' }).icona).toBe(
+      'lucide-bell-off',
+    )
+    expect(segnoDelPromemoria({ status: 'Not sent' }).testo).toBe(
+      'Reminder not delivered',
+    )
+    expect(segnoDelPromemoria({ status: 'Sent', answer: '' })).toBeNull()
+    expect(segnoDelPromemoria(null)).toBeNull()
+  })
+
+  it('goes through the translator it is given', () => {
+    const t = (s) => `«${s}»`
+    expect(segnoDelPromemoria({ answer: 'Confirmed' }, t).testo).toBe(
+      '«Confirmed they are coming»',
+    )
+  })
+})
+
+describe('rigaDelPromemoria', () => {
+  it('says the way it left, and what was answered', () => {
+    expect(rigaDelPromemoria({ status: 'Sent', channel: 'SMS' })).toBe(
+      'Reminder sent by SMS',
+    )
+    expect(
+      rigaDelPromemoria({
+        status: 'Sent',
+        channel: 'WhatsApp',
+        answer: 'Confirmed',
+      }),
+    ).toBe('Reminder sent by WhatsApp · Confirmed they are coming')
+    expect(rigaDelPromemoria({ status: 'Not sent', channel: '' })).toBe(
+      'Reminder not delivered',
+    )
+    expect(rigaDelPromemoria(null)).toBe('')
+  })
+})
+
+describe('modelliAdatti and statoDelNostro', () => {
+  it('offers only the templates with the buttons', () => {
+    expect(
+      modelliAdatti([
+        { name: 'a', suitable: true },
+        { name: 'b', suitable: false },
+      ]).map((m) => m.name),
+    ).toEqual(['a'])
+    expect(modelliAdatti(undefined)).toEqual([])
+  })
+
+  it('tells where our template is with Meta', () => {
+    expect(statoDelNostro(null)).toBe('da_fare')
+    expect(statoDelNostro({ status: 'PENDING' })).toBe('in_attesa')
+    expect(statoDelNostro({ status: 'approved' })).toBe('approvato')
+    expect(statoDelNostro({ status: 'REJECTED' })).toBe('rifiutato')
+  })
+})

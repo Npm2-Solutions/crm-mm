@@ -109,7 +109,7 @@ describe('the settings menu, by who reads it', () => {
     expect(comeSiLegge(menuDi(sessione('manager')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
       'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Features',
-      'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Agenda & reminders, Waiting list, Online booking [Services & people · Page & rules · Platforms]',
+      'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Agenda & reminders [Agenda · Appointment reminders], Waiting list, Online booking [Services & people · Page & rules · Platforms]',
       'Clients: Forms, Consents, Client area, Libraries [Exercises · Foods]',
       'Deals: Pipelines, Assignment [Rules · Response times]',
       'Email: Accounts, Templates',
@@ -121,13 +121,13 @@ describe('the settings menu, by who reads it', () => {
     ])
   })
 
-  it('had 48 entries in sixteen groups: now 35 for 51 pages, none alone in its group', () => {
+  it('had 48 entries in sixteen groups: now 35 for 52 pages, none alone in its group', () => {
     const menu = menuDi(sessione('manager'))
     const voci = menu.flatMap((gruppo) => gruppo.items)
     expect(voci).toHaveLength(35)
     // every page is still there, as an entry or a tab, the notifications,
     // the centre's language and Fatture in Cloud
-    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(51)
+    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(52)
     expect(menu.filter((gruppo) => gruppo.items.length === 1)).toEqual([])
   })
 
@@ -253,7 +253,12 @@ describe('a page asked for by its name', () => {
       ['Price Lists', 'Services', 'Price Lists'],
       ['Waiting list', 'Waiting list', null],
       ['Subscriptions', 'Services', 'Subscriptions'],
-      ['Calendar & reminders', 'Calendar & reminders', null],
+      ['Calendar & reminders', 'Calendar & reminders', 'Calendar & reminders'],
+      [
+        'Appointment reminders',
+        'Calendar & reminders',
+        'Appointment reminders',
+      ],
       ['Online booking', 'Online booking', 'Online booking'],
       ['Page & rules', 'Online booking', 'Page & rules'],
       ['Booking platforms', 'Online booking', 'Booking platforms'],
@@ -325,7 +330,7 @@ describe('the pages there are', () => {
     // the 51 pages there were, none lost, the notifications and one's email;
     // ERPNext gone (02/10/2026); the demo data (doc 53); the centre's language;
     // Fatture in Cloud (06/10/2026)
-    expect(tutte).toHaveLength(55)
+    expect(tutte).toHaveLength(56)
   })
 
   it('gives every group, entry and tab a label', () => {
