@@ -1005,3 +1005,305 @@ class TestWhereAnInvoiceSitsInTheHistory(FrappeTestCase):
 
 		row = frappe._dict({"posting_date": None, "creation": "2026-09-25 14:32:00"})
 		self.assertEqual(invoice_moment(row), "2026-09-25 14:32:00")
+
+
+class TestAnAnswerFromThePhoneReadsIt(FrappeTestCase):
+	"""An answer typed in the WhatsApp Business app on the phone reached DottorCloud
+	and read nothing: the conversation stayed «to read» on every screen, with its
+	notifications, until somebody pressed the button."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Eco", "last_name": "Telefono"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _sms(self, direction, minutes_ago):
+		from frappe.utils import add_to_date
+
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM SMS Message",
+				"type": direction,
+				"message": "ciao",
+				"from": "+390000000001",
+				"to": "+390000000002",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.lead.name,
+			}
+		).insert(ignore_permissions=True)
+		moment = add_to_date(None, minutes=-minutes_ago)
+		frappe.db.set_value(
+			"CRM SMS Message", doc.name, {"creation": moment, "modified": moment}, update_modified=False
+		)
+		return moment
+
+	def _state(self):
+		return frappe.db.get_value(
+			"CRM Lead",
+			self.lead.name,
+			["conversation_unread", "conversation_seen_until", "conversation_seen_by"],
+			as_dict=True,
+		)
+
+	def test_the_answer_reads_what_it_answered(self):
+		from frappe.utils import add_to_date, get_datetime
+
+		from crm.api.conversations import answered
+
+		self._sms("Incoming", 10)
+		at = add_to_date(None, minutes=-5)
+		self.assertTrue(answered("CRM Lead", self.lead.name, at))
+		state = self._state()
+		self.assertEqual(state.conversation_unread, 0)
+		self.assertEqual(get_datetime(state.conversation_seen_until), get_datetime(at))
+		# nobody here is named: the phone does not say who held it
+		self.assertFalse(state.conversation_seen_by)
+
+	def test_what_they_wrote_after_the_answer_is_still_new(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import answered, unread
+
+		self._sms("Incoming", 10)
+		self._sms("Incoming", 2)
+		self.assertFalse(answered("CRM Lead", self.lead.name, add_to_date(None, minutes=-5)))
+		self.assertEqual(self._state().conversation_unread, 1)
+		# and counted from the answer: one, not two
+		key = f"CRM Lead:{self.lead.name}"
+		self.assertEqual(unread([["CRM Lead", self.lead.name]]).get(key), 1)
+
+	def test_an_older_answer_does_not_move_a_later_reading_back(self):
+		from frappe.utils import add_to_date, get_datetime
+
+		from crm.api.conversations import answered, mark_read
+
+		self._sms("Incoming", 10)
+		mark_read("CRM Lead", self.lead.name)
+		read_at = self._state().conversation_seen_until
+		answered("CRM Lead", self.lead.name, add_to_date(None, minutes=-8))
+		state = self._state()
+		self.assertEqual(get_datetime(state.conversation_seen_until), get_datetime(read_at))
+		self.assertEqual(state.conversation_seen_by, "Administrator")
+
+	def test_every_screen_hears_of_it(self):
+		from unittest.mock import patch
+
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import answered
+
+		self._sms("Incoming", 10)
+		with patch("frappe.publish_realtime") as published:
+			answered("CRM Lead", self.lead.name, add_to_date(None, minutes=-5))
+		events = [call.args[0] for call in published.call_args_list]
+		self.assertIn("crm_conversation", events)
+
+
+class TestReadingClearsTheirNotifications(FrappeTestCase):
+	"""Read is shared: once somebody here has read a conversation, the line its
+	messages left in each panel is not waiting for anybody either."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Avviso", "last_name": "Letto"}
+		).insert(ignore_permissions=True)
+		self.other = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Altro", "last_name": "Avviso"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _notification(self, user, kind, lead):
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Notification",
+				"to_user": user,
+				"type": kind,
+				"notification_text": "x",
+				"reference_doctype": "CRM Lead",
+				"reference_name": lead.name,
+				"read": 0,
+			}
+		)
+		doc.flags.ignore_links = True
+		doc.insert(ignore_permissions=True)
+		return doc.name
+
+	def test_their_message_notifications_go_from_every_panel(self):
+		from crm.api.conversations import mark_read, mark_unread
+
+		mark_unread("CRM Lead", self.lead.name)
+		mine = self._notification("Administrator", "WhatsApp", self.lead)
+		theirs = self._notification("Guest", "SMS", self.lead)
+		# a task about them, or another person's message, is not this conversation
+		task = self._notification("Administrator", "Task", self.lead)
+		other = self._notification("Administrator", "WhatsApp", self.other)
+
+		mark_read("CRM Lead", self.lead.name)
+
+		read = dict(frappe.get_all("CRM Notification", fields=["name", "read"], as_list=True))
+		self.assertEqual(read[mine], 1)
+		self.assertEqual(read[theirs], 1)
+		self.assertEqual(read[task], 0)
+		self.assertEqual(read[other], 0)
+
+	def test_a_reading_tells_every_conversations_screen(self):
+		from unittest.mock import patch
+
+		from crm.api.conversations import mark_read, mark_unread
+
+		with patch("frappe.publish_realtime") as published:
+			mark_unread("CRM Lead", self.lead.name)
+			mark_read("CRM Lead", self.lead.name)
+		events = [call.args[0] for call in published.call_args_list]
+		self.assertEqual(events.count("crm_conversation"), 2)
+
+
+class TestTheAnswersAlreadyGivenAreRead(FrappeTestCase):
+	"""The patch: conversations left «to read» though answered since."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Patch", "last_name": "Risposte"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _sms(self, direction, minutes_ago, owner="Administrator"):
+		from frappe.utils import add_to_date
+
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM SMS Message",
+				"type": direction,
+				"message": "ciao",
+				"from": "+390000000001",
+				"to": "+390000000002",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.lead.name,
+			}
+		).insert(ignore_permissions=True)
+		moment = add_to_date(None, minutes=-minutes_ago)
+		frappe.db.set_value(
+			"CRM SMS Message",
+			doc.name,
+			{"creation": moment, "modified": moment, "owner": owner},
+			update_modified=False,
+		)
+
+	def _unread(self):
+		return frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread")
+
+	def test_an_answer_somebody_wrote_reads_it(self):
+		from crm.patches.v1_0.answers_from_the_phone_read_the_conversation import execute
+
+		self._sms("Incoming", 10)
+		self._sms("Outgoing", 5, owner="crm.manager@example.com")
+		self.assertEqual(self._unread(), 1)
+		execute()
+		self.assertEqual(self._unread(), 0)
+
+	def test_an_automations_message_does_not(self):
+		from crm.patches.v1_0.answers_from_the_phone_read_the_conversation import execute
+
+		self._sms("Incoming", 10)
+		self._sms("Outgoing", 5, owner="Administrator")
+		execute()
+		self.assertEqual(self._unread(), 1)
+
+	def test_what_they_wrote_after_the_answer_keeps_it_to_read(self):
+		from crm.patches.v1_0.answers_from_the_phone_read_the_conversation import execute
+
+		self._sms("Incoming", 10)
+		self._sms("Outgoing", 5, owner="crm.manager@example.com")
+		self._sms("Incoming", 2)
+		execute()
+		self.assertEqual(self._unread(), 1)
+
+
+class TestAnEchoFromThePhone(FrappeTestCase):
+	"""What the webhook writes when somebody answers in the WhatsApp Business app."""
+
+	def setUp(self):
+		from crm.tests import serve_whatsapp
+
+		serve_whatsapp(self)
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Eco", "last_name": "Webhook"}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value("CRM Lead", self.lead.name, "conversation_unread", 1, update_modified=False)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _echo(self, seconds_ago, historical=False):
+		import time
+		from unittest.mock import patch
+
+		from crm.integrations.whatsapp.coexistence import store_message
+
+		ours = "390000000009"
+		with patch(
+			"crm.integrations.whatsapp.coexistence.get_contact_lead_or_deal_from_number",
+			return_value=(self.lead.name, "CRM Lead"),
+		):
+			return store_message(
+				{
+					"id": "wamid." + frappe.generate_hash(length=12),
+					"from": ours,
+					"to": "393401112233",
+					"timestamp": str(int(time.time()) - seconds_ago),
+					"type": "text",
+					"text": {"body": "arrivo tra dieci minuti"},
+				},
+				ours,
+				historical=historical,
+			)
+
+	def test_an_answer_typed_on_the_phone_reads_the_conversation(self):
+		self.assertTrue(self._echo(30))
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 0)
+
+	def test_six_months_of_history_read_nothing(self):
+		self.assertTrue(self._echo(3600, historical=True))
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 1)
+
+
+class TestNeverReadCountsFromTheLastMessageThatLeft(FrappeTestCase):
+	"""The patch, on a conversation nobody here ever read nor answered."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Mai", "last_name": "Letta"}).insert(
+			ignore_permissions=True
+		)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_new_is_what_came_after_the_last_message_that_left(self):
+		from frappe.utils import add_to_date, get_datetime
+
+		from crm.patches.v1_0.answers_from_the_phone_read_the_conversation import execute
+
+		left = add_to_date(None, minutes=-30)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.lead.name,
+			{"conversation_unread": 1, "conversation_seen_until": None, "last_answered_on": left},
+			update_modified=False,
+		)
+		execute()
+		seen = frappe.db.get_value("CRM Lead", self.lead.name, "conversation_seen_until")
+		self.assertEqual(get_datetime(seen), get_datetime(left))
+		# still to read: only somebody saying so takes that off
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 1)

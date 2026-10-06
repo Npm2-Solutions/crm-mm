@@ -20,10 +20,13 @@ to ignore.
 
 And read is one moment, with everything that depends on it happening in it. A
 conversation becomes read when somebody here says so — the button, a reply
-written from the composer, marking it handled — and never because it was
-opened. Then, and only then, the badge goes for everybody, who read it and when
-is written down, and, where the site has asked for it, WhatsApp is told: the blue
-ticks on the customer's phone. Looking is not reading, on either side of the chat.
+written from the composer, marking it handled, a reply typed in the WhatsApp
+Business app on the phone (`answered`) — and never because it was opened. Then,
+and only then, the badge goes for everybody, the notifications its messages
+brought go from every panel, who read it and when is written down, every
+conversations screen open hears of it, and, where the site has asked for it,
+WhatsApp is told: the blue ticks on the customer's phone. Looking is not
+reading, on either side of the chat.
 """
 
 import html
@@ -258,6 +261,7 @@ def on_the_pile(reference_doctype: str, reference_name: str) -> None:
 			},
 			update_modified=False,
 		)
+	announce(reference_doctype, reference_name)
 
 
 def on_message(doc, method: str | None = None) -> None:
@@ -660,6 +664,8 @@ def set_state(
 	answer = {"state": values["conversation_status"], "until": values["conversation_snoozed_until"]}
 	if state == HANDLED and not settled and is_unread(reference_doctype, reference_name):
 		answer.update(read_now(reference_doctype, reference_name))
+	else:
+		announce(reference_doctype, reference_name)
 	return answer
 
 
@@ -685,7 +691,108 @@ def read_now(reference_doctype: str, reference_name: str) -> dict:
 	values = {"conversation_seen_until": seen, "conversation_seen_by": who, "conversation_unread": 0}
 	for doctype, name in also_the_person(reference_doctype, reference_name):
 		frappe.db.set_value(doctype, name, values, update_modified=False)
+	quiet(their_notifications_read, reference_doctype, reference_name)
+	announce(reference_doctype, reference_name)
 	return {"seen_until": seen, "seen_by": who, "receipts": tell_whatsapp(reference_doctype, reference_name)}
+
+
+# The notifications a person's messages bring (`crm.notifiche`): one line per
+# person and kind in each panel, «3 WhatsApp messages from Laura».
+MESSAGE_KINDS = ("WhatsApp", "SMS", "Email")
+
+
+def their_notifications_read(reference_doctype: str, reference_name: str, tell: bool = True) -> int:
+	"""The notifications of this person's messages read, for everybody they went to.
+
+	Read is shared: once somebody here has read the conversation, or answered it,
+	it is not waiting for anybody - and the line in each panel that said so, and
+	the email that would have gone in five minutes, would be the badge arguing
+	with the desk. Returns how many there were.
+	"""
+	person = person_of(reference_doctype, reference_name) or (reference_doctype, reference_name)
+	rows = []
+	for doctype, name in scope(*person):
+		rows += frappe.get_all(
+			"CRM Notification",
+			filters={
+				"reference_doctype": doctype,
+				"reference_name": name,
+				"type": ["in", MESSAGE_KINDS],
+				"read": 0,
+			},
+			fields=["name", "to_user"],
+		)
+	if not rows:
+		return 0
+	frappe.db.set_value(
+		"CRM Notification",
+		{"name": ["in", [row.name for row in rows]]},
+		{"read": 1, "email_due": 0},
+		update_modified=False,
+	)
+	if tell:
+		for user in {row.to_user for row in rows if row.to_user}:
+			frappe.publish_realtime("crm_notification", {"event": "read"}, user=user, after_commit=True)
+	return len(rows)
+
+
+def announce(reference_doctype: str, reference_name: str) -> None:
+	"""Every conversations screen open hears that this conversation changed - read,
+	unread, handled, written to - and redraws its row and its count. Without it a
+	colleague's list, or one's own on the other device, said «to read» until it
+	was reloaded by hand."""
+	# nosemgrep: frappe-realtime-pick-room — every Chat page refreshes its own list; the payload is two ids, no text
+	frappe.publish_realtime(
+		"crm_conversation",
+		{"reference_doctype": reference_doctype, "reference_name": reference_name},
+		after_commit=True,
+	)
+
+
+def they_wrote_after(where: list[tuple[str, str]], moment) -> bool:
+	"""Whether anything they sent arrived after `moment`, by any channel."""
+	for spec in available_channels().values():
+		filters = belongs_to(where)
+		filters[spec["direction"]] = spec["incoming"]
+		if spec["doctype"] == "Communication":
+			filters["communication_type"] = "Communication"
+		filters["creation"] = [">", moment]
+		if frappe.get_all(spec["doctype"], filters=filters, pluck="name", limit=1):
+			return True
+	return False
+
+
+def answered(reference_doctype: str, reference_name: str, at=None, tell: bool = True) -> bool:
+	"""Somebody here answered from outside DottorCloud - from the WhatsApp Business
+	app on the phone - and nobody replies to what they have not read: read as of the
+	answer, as an answer from the composer reads it (`mark_read`).
+
+	As of the answer, not now: what they wrote after it is still new, and keeps the
+	conversation unread. Nobody here is named as its reader, the phone does not say
+	who held it; and WhatsApp is not told, the phone that answered has shown the
+	blue ticks already. Returns whether the conversation is now read.
+	"""
+	if reference_doctype not in RECORDS or not reference_name:
+		return False
+	if not frappe.db.exists(reference_doctype, reference_name):
+		return False
+	moment = get_datetime(at) if at else now_datetime()
+	person = person_of(reference_doctype, reference_name) or (reference_doctype, reference_name)
+	still_new = they_wrote_after(scope(*person), moment)
+	for doctype, name in also_the_person(reference_doctype, reference_name):
+		seen = frappe.db.get_value(doctype, name, "conversation_seen_until")
+		values = {}
+		if not seen or get_datetime(seen) < moment:
+			values.update({"conversation_seen_until": moment, "conversation_seen_by": None})
+		if not still_new:
+			values["conversation_unread"] = 0
+		if values:
+			frappe.db.set_value(doctype, name, values, update_modified=False)
+	if not still_new:
+		their_notifications_read(reference_doctype, reference_name, tell=tell)
+	if tell:
+		announce(reference_doctype, reference_name)
+	return not still_new
 
 
 @frappe.whitelist(methods=["POST"])
@@ -741,6 +848,7 @@ def mark_unread(reference_doctype: str, reference_name: str) -> dict:
 	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
 	for doctype, name in also_the_person(reference_doctype, reference_name):
 		frappe.db.set_value(doctype, name, "conversation_unread", 1, update_modified=False)
+	announce(reference_doctype, reference_name)
 	return {"unread": 1}
 
 
@@ -787,6 +895,7 @@ def restore(reference_doctype: str, reference_name: str, was: dict | str) -> dic
 	}
 	for doctype, name in also_the_person(reference_doctype, reference_name):
 		frappe.db.set_value(doctype, name, values, update_modified=False)
+	announce(reference_doctype, reference_name)
 	return {"state": status, "until": values["conversation_snoozed_until"]}
 
 
