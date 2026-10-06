@@ -53,6 +53,11 @@ def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	if giorno and doc.posting_date and giorno < getdate(doc.posting_date) and not doc.advance_payment:
 		frappe.throw(_("Collected before it was issued: mark it as paid before the invoice instead."))
 	doc.db_set("collected_on", giorno, update_modified=False)
+	# made in Fatture in Cloud: the payment is marked there too
+	if doc.get("fic_document_id"):
+		from crm.invoicing.fic import emissione as fic
+
+		fic.segna_incasso(doc)
 	documento.registra(
 		doc,
 		"collected",

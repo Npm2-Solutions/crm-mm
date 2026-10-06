@@ -209,7 +209,8 @@ def consumi(
 	if "fatturazione" in accesi:
 		inviate = frappe.get_all(
 			"CRM Invoice",
-			filters={"channel": "sdi", "sdi_sent_on": anno},
+			# the ones that left from Fatture in Cloud are paid to Fatture in Cloud
+			filters={"channel": "sdi", "sdi_sent_on": anno, "fic_document_id": ["is", "not set"]},
 			fields=["sdi_status", "recipient_type"],
 		)
 		ricevute = frappe.db.count("CRM Supplier Invoice", {"creation": anno})

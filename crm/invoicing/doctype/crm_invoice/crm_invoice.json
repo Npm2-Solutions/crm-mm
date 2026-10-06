@@ -93,6 +93,7 @@
   "sdi_status",
   "sdi_identifier",
   "sdi_provider_id",
+  "fic_document_id",
   "sdi_filename",
   "sdi_sent_on",
   "sdi_message",
@@ -679,6 +680,14 @@
    "read_only": 1
   },
   {
+   "description": "The invoice made in Fatture in Cloud, for a company that issues there.",
+   "fieldname": "fic_document_id",
+   "fieldtype": "Data",
+   "label": "In Fatture in Cloud",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "sdi_filename",
    "fieldtype": "Data",
    "label": "XML file name",
@@ -725,7 +734,7 @@
    "fieldtype": "Select",
    "label": "Sistema TS",
    "no_copy": 1,
-   "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato\nprova",
+   "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato\nprova\nfatture_in_cloud",
    "read_only": 1
   },
   {
@@ -910,7 +919,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-05 20:00:00.000000",
+ "modified": "2026-10-06 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

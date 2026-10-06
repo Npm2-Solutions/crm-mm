@@ -23,7 +23,9 @@ from crm.invoicing.engine.numerazione import FORMATO_DEFAULT, FormatoNonCompatib
 #: leave through Itala on the agency's account and come back the same way, in both
 #: directions, paid in the plan's SdI credits; the Agenzia's free service keeps the
 #: SdI documents; a healthcare invoice to a person stays a paper original with its
-#: copy. The fields stay, hidden: the code that reads them reads these.
+#: copy. The fields stay, hidden: the code that reads them reads these. A centre
+#: that invoices with Fatture in Cloud (06/10/2026) issues there instead, Itala
+#: unused: `crm.invoicing.fic`.
 SEMPRE = {
 	"sdi_mode": "provider",
 	"sdi_flow": "entrambi",

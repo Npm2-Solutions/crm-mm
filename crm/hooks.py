@@ -651,6 +651,8 @@ scheduler_events = {
 		"crm.telephony.numeri.aggiorna_le_richieste",
 		# the exercises' pictures on this server, the missing ones fetched by themselves
 		"crm.piani.immagini.assicura",
+		# a centre that invoices with Fatture in Cloud: its access renewed before it ends
+		"crm.invoicing.fic.collegamento.rinnova_i_token",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
@@ -694,6 +696,8 @@ scheduler_events = {
 			# the SdI's outcomes from Itala: one account for every centre has no
 			# webhook to call each site, so each site asks, and only when it waits
 			"crm.invoicing.monitoraggio.riconcilia_provider",
+			# the same, for the invoices that left from Fatture in Cloud
+			"crm.invoicing.fic.emissione.riconcilia",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 		# what is still unread in the panel after a few minutes, by email to who wants it

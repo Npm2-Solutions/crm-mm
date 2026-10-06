@@ -1,0 +1,234 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "creation": "2026-10-06 18:00:00.000000",
+ "description": "How an issuing company invoices with Fatture in Cloud: the access, the company there, and which of its VAT rates, accounts and numerations stand for the ones here.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "active",
+  "column_head",
+  "fic_company_id",
+  "fic_company_name",
+  "fic_vat_number",
+  "access_section",
+  "access_token",
+  "refresh_token",
+  "access_expires_on",
+  "refreshed_on",
+  "column_access",
+  "connected_by",
+  "connected_on",
+  "needs_reconnect",
+  "last_error",
+  "companies",
+  "mapping_section",
+  "vat_map",
+  "accounts_map",
+  "column_mapping",
+  "numeration_sdi",
+  "numeration_paper",
+  "numeration_credit",
+  "ts_by",
+  "info_section",
+  "info",
+  "info_fetched_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Issuing company",
+   "options": "CRM Invoicing Company",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Invoices are issued in Fatture in Cloud",
+   "default": "0",
+   "in_list_view": 1,
+   "description": "Its invoices take their number in Fatture in Cloud and leave for the SdI from there."
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fic_company_id",
+   "fieldtype": "Int",
+   "label": "Company in Fatture in Cloud",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fic_company_name",
+   "fieldtype": "Data",
+   "label": "Its name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "fic_vat_number",
+   "fieldtype": "Data",
+   "label": "Its VAT number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "access_section",
+   "fieldtype": "Section Break",
+   "label": "Access"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access token"
+  },
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh token"
+  },
+  {
+   "fieldname": "access_expires_on",
+   "fieldtype": "Datetime",
+   "label": "Access expires on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "refreshed_on",
+   "fieldtype": "Datetime",
+   "label": "Renewed on",
+   "read_only": 1,
+   "description": "The access is renewed by itself: a year without renewing and it has to be given again."
+  },
+  {
+   "fieldname": "column_access",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connected_by",
+   "fieldtype": "Link",
+   "label": "Connected by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "connected_on",
+   "fieldtype": "Datetime",
+   "label": "Connected on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "needs_reconnect",
+   "fieldtype": "Check",
+   "label": "To connect again",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "What Fatture in Cloud said last",
+   "read_only": 1
+  },
+  {
+   "fieldname": "companies",
+   "fieldtype": "Code",
+   "label": "Companies to choose from",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mapping_section",
+   "fieldtype": "Section Break",
+   "label": "What stands for what"
+  },
+  {
+   "fieldname": "vat_map",
+   "fieldtype": "Code",
+   "label": "VAT rates",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "accounts_map",
+   "fieldtype": "Code",
+   "label": "Where the payments go",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "column_mapping",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "numeration_sdi",
+   "fieldtype": "Data",
+   "label": "Numeration, electronic invoices"
+  },
+  {
+   "fieldname": "numeration_paper",
+   "fieldtype": "Data",
+   "label": "Numeration, paper invoices"
+  },
+  {
+   "fieldname": "numeration_credit",
+   "fieldtype": "Data",
+   "label": "Numeration, credit notes"
+  },
+  {
+   "fieldname": "ts_by",
+   "fieldtype": "Select",
+   "label": "Who reports to the Sistema TS",
+   "options": "dottorcloud\nfatture_in_cloud",
+   "default": "dottorcloud"
+  },
+  {
+   "fieldname": "info_section",
+   "fieldtype": "Section Break",
+   "label": "What the company has in Fatture in Cloud"
+  },
+  {
+   "fieldname": "info",
+   "fieldtype": "Code",
+   "label": "VAT rates, accounts, numerations",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "info_fetched_on",
+   "fieldtype": "Datetime",
+   "label": "Read on",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-06 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Fatture in Cloud",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

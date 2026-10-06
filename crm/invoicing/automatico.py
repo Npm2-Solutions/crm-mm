@@ -29,11 +29,17 @@ def attivo(campo: str) -> bool:
 
 def da_inviare_allo_sdi(doc) -> bool:
 	"""Whether an issued invoice leaves for the SdI by itself: the switch is on, it
-	goes through the SdI at all, through Itala, and has not left yet."""
+	goes through the SdI at all, through Itala or Fatture in Cloud, and has not left
+	yet."""
 	if not attivo("auto_send_sdi") or doc.channel != Canale.SDI:
 		return False
 	if doc.sdi_status not in ("da_inviare", "", None):
 		return False
+	# made in Fatture in Cloud: it leaves from there, while the access holds
+	if doc.get("fic_document_id"):
+		from crm.invoicing.fic import emissione as fic
+
+		return fic.pronta(doc.company)
 	from crm.invoicing import documento
 	from crm.invoicing.sdi import itala
 

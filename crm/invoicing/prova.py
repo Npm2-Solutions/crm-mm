@@ -28,6 +28,7 @@ from frappe.utils import cint, now_datetime
 
 from crm.invoicing import connessione, estensioni
 from crm.invoicing.engine.numerazione import PREFISSO_PROVA
+from crm.invoicing.fic import collegamento as fic
 from crm.invoicing.sdi import itala
 from crm.invoicing.sdi.base import ErroreCanale
 from crm.permissions.livelli import puo, richiede
@@ -75,10 +76,11 @@ def _riga(
 	blocca: bool = False,
 	agenzia: bool = False,
 	doctype: str = "",
+	pagina: str = "",
 ) -> dict:
 	"""One gap. `field` is the company's field that fills it, `link` the records
-	that do (with a `name`, the one record, opened on its `field`): the screen takes
-	whoever reads it there."""
+	that do (with a `name`, the one record, opened on its `field`), `page` the
+	settings page that does: the screen takes whoever reads it there."""
 	riga = {
 		"title": titolo,
 		"consequence": conseguenza,
@@ -88,6 +90,8 @@ def _riga(
 	}
 	if doctype:
 		riga["link"] = {"doctype": doctype}
+	if pagina:
+		riga["page"] = pagina
 	return riga
 
 
@@ -142,7 +146,19 @@ def mancanze(emittente: dict, agenzia: bool | None = None) -> list[dict]:
 		doctype="CRM Billable Service",
 	)
 
-	modo = emittente.get("sdi_mode") or itala.CODICE
+	# a company that invoices with Fatture in Cloud needs Fatture in Cloud, not Itala
+	con_fic = fic.emette_con_fic(emittente.get("name"))
+	if con_fic:
+		manca(
+			not fic.collegata(emittente.get("name")),
+			_("Fatture in Cloud"),
+			_("The access to Fatture in Cloud is gone: connect it again, or no invoice can be issued."),
+			blocca=True,
+			pagina=fic.PAGINA,
+		)
+		for testo in fic.da_fare(emittente.get("name")):
+			manca(True, _("Fatture in Cloud"), testo, blocca=True, pagina=fic.PAGINA)
+	modo = "fatture_in_cloud" if con_fic else (emittente.get("sdi_mode") or itala.CODICE)
 	manca(
 		modo == itala.CODICE and not itala.pronta(emittente),
 		_("Itala"),
@@ -232,6 +248,8 @@ def get_status(company: str | None = None) -> dict:
 		"missing": righe,
 		"ready": not any(riga["blocking"] for riga in righe),
 		"itala": (emittente.get("sdi_mode") or itala.CODICE) == itala.CODICE and itala.pronta(emittente),
+		# invoices born in Fatture in Cloud: they leave from there
+		"fic": fic.emette_con_fic(nome),
 		# how its expenses reach the Sistema TS: the invoices page offers to send them
 		"ts_mode": emittente.get("ts_mode") or "export",
 		# whether it reports healthcare expenses: the Sistema TS is said only then
@@ -316,7 +334,11 @@ def go_live(company: str) -> dict:
 	# wait for it. If it cannot be done now, the first invoice does it.
 	nota = ""
 	emittente = doc.as_dict()
-	if (emittente.get("sdi_mode") or itala.CODICE) == itala.CODICE and itala.pronta(emittente):
+	if (
+		(emittente.get("sdi_mode") or itala.CODICE) == itala.CODICE
+		and itala.pronta(emittente)
+		and not fic.emette_con_fic(company)
+	):
 		try:
 			itala.registra_azienda(emittente, connessione.PRODUZIONE)
 		except (ErroreCanale, connessione.ErroreProvider) as errore:
