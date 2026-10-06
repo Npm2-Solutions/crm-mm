@@ -16,12 +16,14 @@ import { ref, watch } from 'vue'
 /**
  * The list the server's `url` gives a page of (`{ rows, more, start }`),
  * remembered as `chiave`. Gives back what the screen draws: `testo` (the
- * search), `righe`, `altre`, `contenitore` (the box that scrolls), `carica`,
+ * search), `filtri` (what else narrows it, sent as they are: the People list's
+ * step), `righe`, `altre`, `contenitore` (the box that scrolls), `carica`,
  * `cerca()`, `forseAltre()` (on the box's scroll) and `tira` (the pull's
  * mark).
  */
 export function useElencoDelTelefono(url, chiave) {
   const testo = ref('')
+  const filtri = ref({})
   const righe = ref([])
   const altre = ref(false)
   const contenitore = ref(null)
@@ -44,7 +46,11 @@ export function useElencoDelTelefono(url, chiave) {
   })
 
   function cerca() {
-    return carica.submit({ text: testo.value.trim(), start: 0 })
+    return carica.submit({
+      ...filtri.value,
+      text: testo.value.trim(),
+      start: 0,
+    })
   }
 
   // the list put back, brought up to date page by page and in silence: what
@@ -52,9 +58,10 @@ export function useElencoDelTelefono(url, chiave) {
   // what it shows, where it was
   async function rinfresca() {
     const parole = testo.value.trim()
+    const scelti = { ...filtri.value }
     try {
       const pagine = await Promise.all(
-        inizi.map((start) => call(url, { text: parole, start })),
+        inizi.map((start) => call(url, { ...scelti, text: parole, start })),
       )
       if (testo.value.trim() !== parole) return
       righe.value = senzaDoppioni(pagine.flatMap((pagina) => pagina.rows))
@@ -68,12 +75,14 @@ export function useElencoDelTelefono(url, chiave) {
     contenitore,
     stato: () => ({
       testo: testo.value,
+      filtri: filtri.value,
       righe: righe.value,
       altre: altre.value,
       inizi: [...inizi],
     }),
     rimetti: (salvato) => {
       testo.value = salvato.testo
+      filtri.value = salvato.filtri || {}
       righe.value = salvato.righe
       altre.value = salvato.altre
       inizi = [...salvato.inizi]
@@ -84,6 +93,7 @@ export function useElencoDelTelefono(url, chiave) {
 
   // listening once the search is put back: putting it back asks for nothing
   watch(testo, debounce(cerca, 300))
+  watch(filtri, () => cerca(), { deep: true })
   if (tornata && righe.value.length) rinfresca()
   else cerca()
 
@@ -92,8 +102,22 @@ export function useElencoDelTelefono(url, chiave) {
     const el = contenitore.value
     if (!el || !altre.value || carica.loading) return
     if (el.scrollTop + el.clientHeight < el.scrollHeight - 300) return
-    carica.submit({ text: testo.value.trim(), start: righe.value.length })
+    carica.submit({
+      ...filtri.value,
+      text: testo.value.trim(),
+      start: righe.value.length,
+    })
   }
 
-  return { testo, righe, altre, contenitore, carica, cerca, forseAltre, tira }
+  return {
+    testo,
+    filtri,
+    righe,
+    altre,
+    contenitore,
+    carica,
+    cerca,
+    forseAltre,
+    tira,
+  }
 }

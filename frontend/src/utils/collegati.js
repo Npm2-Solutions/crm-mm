@@ -9,7 +9,7 @@
  * note, and the Desk for a notification.
  */
 const PAGINE = {
-  'CRM Lead': (nome) => `/crm/leads/${nome}`,
+  'CRM Lead': (nome) => `/crm/persone/${nome}`,
   'CRM Deal': (nome) => `/crm/deals/${nome}`,
   Contact: (nome) => `/crm/contacts/${nome}`,
   'CRM Organization': (nome) => `/crm/organizations/${nome}`,

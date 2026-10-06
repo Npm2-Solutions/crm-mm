@@ -9,6 +9,7 @@ import {
   fattoDel,
   rapportoDi,
   tonoDel,
+  vistePerRapporto,
 } from '@/utils/rapporto'
 
 describe('rapportoDi', () => {
@@ -64,5 +65,45 @@ describe('fattoDel', () => {
       frase: 'Patient',
       data: null,
     })
+  })
+})
+
+describe('vistePerRapporto', () => {
+  it('is everybody, then each step the field holds, plural', () => {
+    expect(
+      vistePerRapporto(['', 'Contact', 'Client']).map((v) => [
+        v.valore,
+        v.etichetta,
+      ]),
+    ).toEqual([
+      ['', 'All'],
+      ['Contact', 'Leads'],
+      ['Client', 'Clients'],
+    ])
+  })
+
+  it('with the clinic, its patients too; the options as the server gives them', () => {
+    const viste = vistePerRapporto([
+      { label: '', value: '' },
+      { label: 'Contatto', value: 'Contact' },
+      { label: 'Cliente', value: 'Client' },
+      { label: 'Paziente', value: 'Patient' },
+    ])
+    expect(viste.map((v) => v.etichetta)).toEqual([
+      'All',
+      'Leads',
+      'Clients',
+      'Patients',
+    ])
+    // the steps read in their context: a client is never a patient's word
+    expect(viste[2].contesto).toBe('Relationship')
+    expect(viste[0].contesto).toBeNull()
+  })
+
+  it('leaves out what is no step, and a step said twice', () => {
+    expect(
+      vistePerRapporto(['Client', 'Other', 'Client']).map((v) => v.valore),
+    ).toEqual(['', 'Client'])
+    expect(vistePerRapporto().map((v) => v.valore)).toEqual([''])
   })
 })

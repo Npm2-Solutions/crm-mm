@@ -12,7 +12,7 @@ describe('indirizzoDelCollegato', () => {
     expect(indirizzoDelCollegato(di('CRM Deal', 'CRM-DEAL-2026-00033'))).toBe(
       '/crm/deals/CRM-DEAL-2026-00033',
     )
-    expect(indirizzoDelCollegato(di('CRM Lead'))).toBe('/crm/leads/X-1')
+    expect(indirizzoDelCollegato(di('CRM Lead'))).toBe('/crm/persone/X-1')
     expect(indirizzoDelCollegato(di('Contact', 'Anna Bianchi'))).toBe(
       '/crm/contacts/Anna%20Bianchi',
     )

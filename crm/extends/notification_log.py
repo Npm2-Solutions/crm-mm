@@ -2,7 +2,7 @@ import frappe
 
 # CRM doctype -> frontend list route. Records live at /crm/<route>/<name>.
 CRM_ROUTES = {
-	"CRM Lead": "leads",
+	"CRM Lead": "persone",
 	"CRM Deal": "deals",
 }
 

@@ -118,18 +118,36 @@ const routes = [
     meta: { richiede: 'sito.gestisci' },
   },
   {
-    alias: '/leads',
-    path: '/leads/view/:viewType?',
+    // everybody the centre has heard from, in one list: a lead is a step of
+    // theirs, not another list (docs/progetto-ghl/54)
+    alias: '/persone',
+    path: '/persone/view/:viewType?',
     name: 'Leads',
     meta: { richiede: 'persone.vedi' },
     component: () => import('@/pages/Leads.vue'),
   },
   {
-    path: '/leads/:leadId',
+    path: '/persone/:leadId',
     name: 'Lead',
     meta: { richiede: 'persone.vedi' },
     component: () => import(`@/pages/${handleMobileView('Lead')}.vue`),
     props: true,
+  },
+  // the addresses the people had before: a link in an email sent last month,
+  // a bookmark, still opens its person
+  {
+    path: '/leads/view/:viewType?',
+    redirect: (to) => ({ name: 'Leads', params: to.params, query: to.query }),
+  },
+  { path: '/leads', redirect: (to) => ({ name: 'Leads', query: to.query }) },
+  {
+    path: '/leads/:leadId',
+    redirect: (to) => ({
+      name: 'Lead',
+      params: to.params,
+      query: to.query,
+      hash: to.hash,
+    }),
   },
   {
     alias: '/deals',

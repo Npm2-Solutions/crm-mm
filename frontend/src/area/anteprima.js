@@ -19,6 +19,6 @@ export async function chiudi() {
     // it ends by itself within half an hour
   }
   window.location.href = anteprima
-    ? `/crm/leads/${encodeURIComponent(anteprima.lead)}`
+    ? `/crm/persone/${encodeURIComponent(anteprima.lead)}`
     : '/crm'
 }

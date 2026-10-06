@@ -27,8 +27,8 @@ const route = useRoute()
 const doctypeMap = {
   'CRM Lead': {
     title: __('People'),
-    listRoute: '/crm/leads',
-    pageRoute: `/crm/leads/docname`,
+    listRoute: '/crm/persone',
+    pageRoute: `/crm/persone/docname`,
   },
   'CRM Deal': {
     title: __('Deals'),
