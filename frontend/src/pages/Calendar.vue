@@ -352,10 +352,13 @@ import { useRoute } from 'vue-router'
 const { user } = sessionStore()
 const { $dialog } = globalStore()
 const { settings } = getSettings()
-const { getUser, puo } = usersStore()
+const { getUser, puo, ambito } = usersStore()
 // booking, and any event in the agenda, is `agenda.prenota`'s (doc 30): who
 // only reads the agenda opens what is there
 const prenota = computed(() => puo('agenda.prenota'))
+// a practitioner books in their own agenda, nobody else's: a colleague's
+// column takes no new appointment from them
+const prenotaSoloPerSe = computed(() => ambito('agenda.prenota') === 'suoi')
 const route = useRoute()
 const lingua = appLocale() || 'it-IT'
 
@@ -388,6 +391,9 @@ const prefs = reactive({
     salvate.settimanaDi && typeof salvate.settimanaDi === 'object'
       ? salvate.settimanaDi
       : {},
+  // whose day and month: the professionals or the rooms ticked, by what the
+  // columns are
+  chi: salvate.chi && typeof salvate.chi === 'object' ? salvate.chi : {},
 })
 watch(
   prefs,
@@ -445,6 +451,23 @@ const vista = ref(
       ? 'giorno'
       : vistaIniziale(),
 )
+// the centre's view comes with its settings: a page opened before they
+// arrived takes it then, unless somebody chose meanwhile
+if (
+  !isMobileView.value &&
+  !dataDellIndirizzo &&
+  !prefs.vista &&
+  !settings.value?.default_calendar_view
+) {
+  const smetti = watch(
+    () => settings.value?.default_calendar_view,
+    (delCentro) => {
+      if (!delCentro) return
+      smetti()
+      if (!prefs.vista && !isMobileView.value) vista.value = vistaIniziale()
+    },
+  )
+}
 watch(isMobileView, (mobile) => {
   if (mobile && vista.value === 'settimana') vista.value = 'elenco'
   else if (!mobile && vista.value === 'elenco') vista.value = vistaIniziale()
@@ -519,10 +542,18 @@ const appointmentName = (id) => String(id).slice(APPOINTMENT_PREFIX.length)
 
 const selectedAppointment = ref('')
 
+// whose agenda opens: the one chosen last; else, for who reads only their
+// own, theirs
+const sceltiPrima = (colonne, altrimenti) => {
+  const scelti = prefs.chi[colonne]
+  return Array.isArray(scelti)
+    ? scelti.filter((s) => typeof s === 'string')
+    : altrimenti
+}
 const filters = reactive({
   services: [],
-  staff: [],
-  resources: [],
+  staff: sceltiPrima('staff', ambito('agenda.vedi') === 'suoi' ? [user] : []),
+  resources: sceltiPrima('resource', []),
   statuses: [],
   sources: [],
 })
@@ -585,6 +616,7 @@ function resetFilters() {
   filters.resources = []
   filters.statuses = []
   filters.sources = []
+  prefs.chi = { staff: [], resource: [] }
   reloadScheduler()
 }
 
@@ -724,8 +756,32 @@ function cambiaChi(valore) {
     prefs.settimanaDi = { ...prefs.settimanaDi, [prefs.colonne]: valore }
   else if (perStanza.value) filters.resources = valore
   else filters.staff = valore
+  if (vista.value !== 'settimana')
+    prefs.chi = { ...prefs.chi, [prefs.colonne]: [...valore] }
   reloadScheduler()
 }
+
+// whoever was kept as chosen and is no longer there (a professional who left)
+watch([professionisti, stanze], ([persone, ambulatori]) => {
+  if (!meta.data) return
+  const ancora = (scelti, chiavi) => scelti.filter((s) => chiavi.includes(s))
+  const staff = ancora(
+    filters.staff,
+    persone.map((p) => p.name),
+  )
+  const resources = ancora(
+    filters.resources,
+    ambulatori.map((r) => r.name),
+  )
+  if (
+    staff.length === filters.staff.length &&
+    resources.length === filters.resources.length
+  )
+    return
+  filters.staff = staff
+  filters.resources = resources
+  reloadScheduler()
+})
 
 // ---------------------------------------------------------------------------
 // what the views draw
@@ -803,6 +859,8 @@ const colonne = computed(() => {
         titolo: giornoPerEsteso.format(comeData(data)),
         aperto: apertoDi(orari, data),
         sottotitolo: sottotitolo(orari, data),
+        prenotabile:
+          !prenotaSoloPerSe.value || perStanza.value || chiave === user,
       }),
     )
   }
@@ -846,6 +904,8 @@ const colonne = computed(() => {
         !perStanza.value && !professionista
           ? __('Your events')
           : sottotitolo(orari, giorno.value),
+      prenotabile:
+        !prenotaSoloPerSe.value || perStanza.value || chiave === user,
     }
   })
 })
@@ -1086,11 +1146,20 @@ function creaNellaGriglia({ colonna, minuti }) {
   if (!prenota.value) return
   const suo =
     vista.value === 'settimana' ? chiDellaSettimana.value : colonna.key
-  const professionista = professionisti.value.some((p) => p.name === suo)
+  const professionista = (chi) =>
+    professionisti.value.some((p) => p.name === chi)
+  // in a room, who books only for themselves books with themselves
+  const persona = perStanza.value
+    ? prenotaSoloPerSe.value && professionista(user)
+      ? user
+      : undefined
+    : professionista(suo)
+      ? suo
+      : undefined
   startNew({
     date: colonna.data,
     time: formatMinutes(minuti),
-    staff: !perStanza.value && professionista ? suo : undefined,
+    staff: persona,
     resource: perStanza.value ? suo : undefined,
   })
 }

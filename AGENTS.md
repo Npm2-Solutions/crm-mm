@@ -91,13 +91,16 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | File | Role |
 |---|---|
 | `frontend/src/utils/agenda.js` | Pure: an hour's height (`ALTEZZE`), the whole lines a block holds (`righeDelBlocco`, `formaDelBlocco`), what it says, the person first (`testoDelBlocco`, `segniDelBlocco`, `paroleDelBlocco`), the colour by service or by state, a column's hours and where it is closed (`orarioDelGiorno`, `chiusure`), the hours a grid shows, a day's columns (who works or has something) and a week's days, the periods and their headings, what each column and each day of the month draws (`cosePerColonna`, `cosePerGiorno`) — tested |
-| `frontend/src/pages/Calendar.vue` + `components/Calendar/GrigliaAgenda.vue`, `BloccoAgenda.vue`, `MeseAgenda.vue`, `ChiNellAgenda.vue`, `FiltriAgenda.vue`, `VistaAgenda.vue` | One bar for every view (‹ Today › and the date, Day · Week · Month, whose, Filters, View); the day one column per professional or room that works it, at least `--col-min` wide, scrolling sideways under its headers while the hours stay; a week of one of them; the month; what the reader chose kept in their browser (`crmAgenda`), the centre's (opening view, grid step: `FCRM Settings.calendar_grid_step`) in Settings > Agenda > Agenda & reminders |
+| `frontend/src/pages/Calendar.vue` + `components/Calendar/GrigliaAgenda.vue`, `BloccoAgenda.vue`, `MeseAgenda.vue`, `ChiNellAgenda.vue`, `FiltriAgenda.vue`, `VistaAgenda.vue` | One bar for every view (‹ Today › and the date, Day · Week · Month, whose, Filters, View); the day one column per professional or room that works it, at least `--col-min` wide, scrolling sideways under its headers while the hours stay; a week of one of them; the month; what the reader chose kept in their browser (`crmAgenda`: the view, whose day and month, whose week, columns, height, colours), the centre's (opening view, grid step: `FCRM Settings.calendar_grid_step`) in Settings > Agenda > Agenda & reminders; who books only for themselves (`ambito('agenda.prenota') === 'suoi'`) books in their own column (`prenotabile`), who reads only their own agenda opens on it |
 | `crm/api/appointments.py` `get_calendar(with_hours=1)` | For a day or a week, each professional's and room's open windows in the centre's minutes (`orari_di`, from the engine's own shifts, overrides and holidays; `null` where no hours were set) and the professionals' events as busy time (`engaged`: when, never what) |
 
 An appointment in the agenda reads its person first, then what and where, in whole
 lines (`righeDelBlocco`), never half of one; a mark is an icon with its words,
 never a colour alone. A view draws its columns from `cosePerColonna`; what a column
 does not work is greyed from the server's hours, never guessed in the browser.
+A column offers a new appointment only where the reader may book it: a
+colleague's column takes no tap and no drop from a practitioner, as the server
+would refuse it.
 
 ### Service booking & external platforms
 | File | Role |
