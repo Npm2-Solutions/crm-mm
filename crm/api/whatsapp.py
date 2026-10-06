@@ -623,6 +623,26 @@ def get_sending_account() -> dict:
 
 
 @frappe.whitelist()
+def get_sendable_templates(doctype: str | None = None) -> dict:
+	"""The approved templates the number that sends can send (for `doctype`'s
+	records), and how many approved ones only another number can send: the
+	difference between «no templates» and «templates this number cannot send»."""
+	validate_access()
+	from crm.integrations.whatsapp.templates import _pulsanti_di, modelli_approvati, modelli_inviabili
+
+	inviabili = modelli_inviabili(("footer",), doctype)
+	# what the person will be able to tap, read before it is sent
+	pulsanti = _pulsanti_di([modello.name for modello in inviabili])
+	for modello in inviabili:
+		modello["buttons"] = pulsanti.get(modello.name, [])
+	return {
+		"account": sending_account_name(),
+		"templates": inviabili,
+		"elsewhere": len(modelli_approvati((), doctype)) - len(inviabili),
+	}
+
+
+@frappe.whitelist()
 def send_whatsapp_template(
 	reference_doctype: str,
 	reference_name: str,
@@ -646,7 +666,8 @@ def send_whatsapp_template(
 	# somebody to read it.
 	owner = frappe.db.get_value("WhatsApp Templates", template, "whatsapp_account")
 	sender = sending_account_name()
-	if owner and sender and owner != sender:
+	# two numbers of one WhatsApp Business account send the same templates
+	if owner and sender and owner != sender and not _stesso_account(owner, sender):
 		frappe.throw(
 			_(
 				"«{0}» belongs to the number {1}, and messages go out from {2}. A template can "
@@ -676,6 +697,13 @@ def send_whatsapp_template(
 		if values:
 			doc.set(fieldname, json.dumps(values))
 	return insert_and_send(doc)
+
+
+def _stesso_account(uno: str, altro: str) -> bool:
+	from crm.integrations.whatsapp.modelli_regole import stesso_account
+	from crm.integrations.whatsapp.templates import numeri
+
+	return stesso_account(uno, altro, numeri())
 
 
 def manda_modello(

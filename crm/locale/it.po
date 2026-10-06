@@ -42993,6 +42993,135 @@ msgstr "Un codice per entrare, e nient'altro."
 msgid "Hi {0}, we look forward to seeing you tomorrow at {1}."
 msgstr "Ciao {0}, ti aspettiamo domani alle {1}."
 
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp template"
+msgid "Deleted on Meta"
+msgstr "Eliminato su Meta"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp button"
+msgid "Quick reply"
+msgstr "Risposta rapida"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp button"
+msgid "Opens a link"
+msgstr "Apre un link"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgctxt "WhatsApp button"
+msgid "Calls"
+msgstr "Chiama"
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "Not in use: its templates can no longer be sent."
+msgstr "Non è più in uso: i suoi modelli non si possono più inviare."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "Messages go out from this number."
+msgstr "I messaggi partono da questo numero."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "It shares its templates with {0}."
+msgstr "Ha gli stessi modelli di {0}."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "Messages go out from {0}, which can send these templates too."
+msgstr "I messaggi partono da {0}, che può inviare anche questi modelli."
+
+#: frontend/src/utils/modelliWhatsApp.js
+msgid "Messages go out from {0}: these templates can be sent once this number is the one that sends."
+msgstr "I messaggi partono da {0}: questi modelli si potranno inviare quando sarà questo numero a inviare."
+
+#. a template lives on the WhatsApp Business account, not on one number
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Every number of the same WhatsApp Business account can send it."
+msgstr "Lo possono inviare tutti i numeri dello stesso account WhatsApp Business."
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Buttons (optional)"
+msgstr "Pulsanti (facoltativi)"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "A quick reply comes back in the chat with its words. The quick replies come first, then the links and the call."
+msgstr "Una risposta rapida torna in chat con le sue parole. Prima vengono le risposte rapide, poi i link e la chiamata."
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "What it does"
+msgstr "Cosa fa"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Words on the button"
+msgstr "Parole sul pulsante"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Remove the button"
+msgstr "Togli il pulsante"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Number to call"
+msgstr "Numero da chiamare"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "Add a button"
+msgstr "Aggiungi un pulsante"
+
+#: crm/integrations/whatsapp/templates.py
+msgid "Its WhatsApp Business account is not known: connect the number again."
+msgstr "Non si conosce il suo account WhatsApp Business: collega di nuovo il numero."
+
+#: crm/integrations/whatsapp/templates.py
+msgid "Choose the WhatsApp number the template is for"
+msgstr "Scegli il numero WhatsApp del modello"
+
+#: crm/integrations/whatsapp/templates.py
+msgid "{0} is no longer in use: its templates cannot be sent"
+msgstr "{0} non è più in uso: i suoi modelli non si possono inviare"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "A template has at most {0} buttons"
+msgstr "Un modello ha al massimo {0} pulsanti"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "At most {0} buttons open a link"
+msgstr "Al massimo {0} pulsanti aprono un link"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Only one button can call"
+msgstr "Un solo pulsante può chiamare"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: choose what it does"
+msgstr "Pulsante {0}: scegli cosa fa"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: write what it says"
+msgstr "Pulsante {0}: scrivi cosa dice"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: at most {1} characters"
+msgstr "Pulsante {0}: al massimo {1} caratteri"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Two buttons say «{0}»"
+msgstr "Due pulsanti dicono «{0}»"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: the link starts with https://"
+msgstr "Pulsante {0}: il link comincia con https://"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: the link is too long"
+msgstr "Pulsante {0}: il link è troppo lungo"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: Meta wants an example of the link"
+msgstr "Pulsante {0}: Meta vuole un esempio del link"
+
+#: crm/integrations/whatsapp/modelli_regole.py
+msgid "Button {0}: write the number with its country code, as +39 02 1234567"
+msgstr "Pulsante {0}: scrivi il numero col prefisso del paese, come +39 02 1234567"
+
 #: frontend/src/components/Settings/Sla/SlaPriorityList.vue
 msgid "Replied"
 msgstr "Risposto"
