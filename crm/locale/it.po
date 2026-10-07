@@ -46484,4 +46484,4 @@ msgid "You have no qualification yet: the centre’s manager sets it in Settings
 msgstr "Non hai ancora una qualifica: la imposta il responsabile del centro in Impostazioni › Fatturazione › Servizi e professionisti."
 
 msgid "{0}: written by {1}."
-msgstr "{0}: lo scrive {1}."
+msgstr "{0}: solo con la qualifica di {1}."
