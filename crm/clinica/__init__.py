@@ -337,6 +337,11 @@ def registra() -> None:
 	# new clients pipeline, in its words, is the one to the first visit
 	clienti.registra_nomi(PIANO, pipeline.NUOVI_PAZIENTI)
 	engine.registra_evento(paziente.EVENTO, paziente.TRIGGER, disponibile=clinica_accesa)
+	# somebody brought over from the previous software was the clinic's patient
+	# there: the import rule (regola 5)
+	from crm.importazione import importa
+
+	importa.registra_dopo(paziente.dall_importazione)
 	_registra_dashboard(clinica_accesa)
 	registra_ruolo(
 		"Medical Director",

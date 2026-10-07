@@ -130,13 +130,13 @@ export const MENU = [
         condition: puo('piano.vedi'),
       },
       {
-        // the centre's data are the centre's: all of them in one archive
-        // (crm/esportazione)
+        // the centre's data are the centre's: brought over from the previous
+        // software (crm/importazione), taken away in one archive (crm/esportazione)
         key: 'Your data',
         label: 'Your data',
         description:
-          "Take all the centre's data away in one archive, whenever you want.",
-        condition: puo('dati.esporta'),
+          "Bring your people over from the previous software, take all the centre's data away whenever you want.",
+        condition: (c) => c.puo('dati.esporta') || c.puo('persone.importa'),
       },
       {
         // a centre full of life to look around in, taken away in one tap

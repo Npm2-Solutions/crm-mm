@@ -46331,3 +46331,91 @@ msgstr "Non è stato possibile preparare l'archivio: l'agenzia è stata avvisata
 #: crm/esportazione/esporta.py
 msgid "An archive is already being made: it is ready in a few minutes"
 msgstr "Un archivio è già in preparazione: sarà pronto tra pochi minuti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Bring your people over from the previous software, take all the centre's data away whenever you want."
+msgstr "Porta qui le tue persone dal gestionale di prima, porta via tutti i dati del centro quando vuoi."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The centre's data are the centre's: bring them over from the previous software, take them all away whenever you want."
+msgstr "I dati del centro sono del centro: portali qui dal gestionale di prima, portali via tutti quando vuoi."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bring your people over"
+msgstr "Porta qui le tue persone"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Export the patients or clients from the previous software as Excel or CSV, and upload the file here. {brand} recognises the columns, shows what it found row by row, and writes nothing until you confirm. Somebody already here, by fiscal code, email or mobile, is not made twice."
+msgstr "Esporta i pazienti o i clienti dal gestionale di prima in Excel o CSV e carica qui il file. {brand} riconosce le colonne, ti mostra riga per riga cosa ha trovato e non scrive niente finché non confermi. Chi c'è già, per codice fiscale, email o cellulare, non viene creato due volte."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0}: not read"
+msgstr "{0}: non letta"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0} rows: {1} already here, completed only where empty; {2} with something to check."
+msgstr "{0} righe: {1} già presenti, completate solo dove mancava qualcosa; {2} con qualcosa da controllare."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "What happens"
+msgstr "Cosa succede"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Already here"
+msgstr "Già presente"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bring them in"
+msgstr "Portale qui"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bringing them in… you can keep working."
+msgstr "Le sto portando qui… puoi continuare a lavorare."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0} new people, {1} completed, {2} rows left out, {3} not brought in"
+msgstr "{0} persone nuove, {1} completate, {2} righe saltate, {3} non portate qui"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Take the centre's data away"
+msgstr "Porta via i dati del centro"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "One archive with people, appointments, records, documents, invoices and their files, in formats any program reads."
+msgstr "Un archivio con persone, appuntamenti, cartelle, documenti, fatture e i loro file, in formati che ogni programma legge."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Street number"
+msgstr "Numero civico"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Code in the previous software"
+msgstr "Codice nel gestionale di prima"
+
+#: crm/importazione/regole.py
+msgid "The email {0} is not an email"
+msgstr "{0} non è un'email"
+
+#: crm/importazione/regole.py
+msgid "The fiscal code {0} is not valid"
+msgstr "Il codice fiscale {0} non è valido"
+
+#: crm/importazione/regole.py
+msgid "The date {0} is not a date"
+msgstr "{0} non è una data"
+
+#: crm/importazione/importa.py
+msgid "The sheet is empty"
+msgstr "Il foglio è vuoto"
+
+#: crm/importazione/importa.py
+msgid "A sheet is already being brought in"
+msgstr "Un foglio è già in importazione"
+
+#: crm/importazione/importa.py
+msgid "From the previous software"
+msgstr "Dal gestionale di prima"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Row"
+msgstr "Riga"

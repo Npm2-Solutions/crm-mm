@@ -745,6 +745,13 @@ the Frappe site's public pages: those belong to each centre.
 A new document type of DottorCloud's goes in the archive by itself; one that holds
 only keys or fingerprints goes in `regole.SOLO_PER_LA_MACCHINA`.
 
+### People brought over from the previous software (crm/importazione)
+| File | Role |
+|---|---|
+| `crm/importazione/foglio.py` | Pure: a sheet's first page, Excel or CSV, in the encodings Italian programs write (the clinic's food tables read it too) |
+| `crm/importazione/regole.py` | Pure: a column by the names it goes by (`COLONNE`, Italian first), a row as a person (dates as an Italian sheet writes them, +39, a fiscal code's sex and birth, «ROSSI MARIO» surname first), what is wrong with it, the keys that find somebody already here (fiscal code, email, mobile) — tested with plain `unittest` |
+| `crm/importazione/importa.py` + `Settings/YourDataSettings.vue` | Settings > The centre > Your data (`persone.importa`): the preview before anything is written, then a job; somebody already here only gets what was missing, somebody new their billing details and their notes; a module does its part with `registra_dopo` (the clinic: a patient by the import rule, `paziente.dall_importazione`) |
+
 ### The demo data (docs/progetto-ghl/53)
 | File | Role |
 |---|---|
