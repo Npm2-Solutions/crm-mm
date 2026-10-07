@@ -96,7 +96,7 @@ UTENTI = {"Solo": 1}
 CREDITI_SDI = {"Solo": 300, "Studio": 300, "Centre": 600, "Polyclinic": 1200, "Large": 1200}
 
 #: Signatures a year that come with the advanced signature, an add-on in every
-#: plan, never included. The phone counts nothing: a year's fee switches it on,
+#: plan, never included. The phone counts nothing: a monthly fee switches it on,
 #: and calls, numbers and SMS are paid to Twilio by whoever owns the account.
 FIRME_INCLUSE = 2000
 

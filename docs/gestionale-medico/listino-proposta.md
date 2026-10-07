@@ -73,10 +73,19 @@ Costano uguale su ogni livello: si prendono solo se servono, e ognuna si prova
 
 | Aggiunta | Prezzo | Cosa comprende | Perché è a parte |
 |---|---|---|---|
-| **Telefono** | 50 € l'anno | il centralino nel browser e sul telefono, i richiami, la segreteria | non tutti vogliono il centralino; numeri, chiamate e SMS li paga il centro a Twilio |
+| **Telefono** | 15 € al mese (150 € l'anno) | il centralino nel browser e sul telefono per tutti gli utenti, lo squillo a tutti insieme, la segreteria con il messaggio, i richiami, il giro di chiamate | non tutti vogliono il centralino; numeri, chiamate e SMS li paga il centro a Twilio |
 | **Marketing** | 29 € al mese | automazioni, campagne, Meta, social, 5.000 email al mese; oltre, pacchetti | serve solo a chi cerca pazienti nuovi |
 | **Assistente** | 19 € al mese per ogni professionista che lo usa | la prova ha **50 richieste**, per tutto il centro; finite, si compra | costa a noi a ogni richiesta |
 | **Firma avanzata** | 39 € al mese | 2.000 firme l'anno; oltre, pacchetti | costa a noi (circa 30 € al mese a centro) e la vuole chi lo chiede il suo lavoro |
+
+**Il telefono e Twilio (deciso il 07/10).** Il centro collega il suo account Twilio
+(Impostazioni > Telefono) e paga a Twilio numero, chiamate e SMS: DottorCloud non
+rivende traffico, finché NPM2 non è abilitata alla rivendita. Per un centro che
+risponde a 50 chiamate al giorno e ne fa 20 la spesa a Twilio è sui 30-50 € al mese
+(stima: in uscita 0,0168 $/min verso un fisso, 0,0445 $/min verso un cellulare; il
+resto da verificare sul listino di Twilio). Più avanti, da abilitati, il credito
+DottorCloud: ricariche prepagate al costo di Twilio più il 15% circa, sul nostro
+account.
 
 Nessuna aggiunta è compresa in un livello: la firma avanzata e l'assistente
 nemmeno nel Poliambulatorio.
