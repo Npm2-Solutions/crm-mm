@@ -496,6 +496,33 @@ def _scrivania(marchio: Marchio) -> None:
 		frappe.cache.delete_key("desktop_icons")
 		frappe.cache.delete_key("bootinfo")
 
+	_navigazione_del_desk(marchio)
+
+
+def _navigazione_del_desk(marchio: Marchio) -> None:
+	"""The desk's navigation from Frappe 16.50: a module opens in its shell, a `Sidebar`
+	whose title is its address (`/desk/dottorcloud`); the old Workspace Sidebars are
+	only the archive it was converted from. The CRM's module ships its own
+	(`fcrm/sidebar/dottorcloud`): a sidebar the conversion made for it besides, named
+	after the old product or the module, would be a second shell of the same things,
+	and a rail entry that named one opens the product's."""
+	if not frappe.db.exists("DocType", "Sidebar") or not frappe.db.exists("Sidebar", SPAZIO):
+		return
+	convertite = frappe.get_all(
+		"Sidebar",
+		filters={"standard": 0, "name": ("!=", SPAZIO)},
+		or_filters={"module": "FCRM", "title": ("like", "%Frappe CRM%")},
+		pluck="name",
+	)
+	for sidebar in convertite:
+		frappe.delete_doc("Sidebar", sidebar, force=True, ignore_permissions=True)
+	if frappe.db.exists("DocType", "Dock Item"):
+		# the module's own name was its shell while no sidebar was shipped for it
+		for sidebar in [*convertite, "FCRM"]:
+			frappe.db.set_value("Dock Item", {"link_type": "Sidebar", "link_to": sidebar}, "link_to", SPAZIO)
+		frappe.db.set_value("Dock Item", {"title": ("like", "%Frappe CRM%")}, "title", marchio.nome)
+		frappe.cache.delete_key("dock_layers")
+
 
 def _autori() -> None:
 	"""The desk shows who created and last changed a DocType: some of the CRM's came
