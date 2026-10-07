@@ -10,16 +10,22 @@ Cosa cambia rispetto al listino del 01/10:
 3. **I team pagano per ambulatori**, con utenti illimitati, come prima.
 4. **I prezzi sono al mese; l'anno pagato in anticipo costa 10 mensilità.**
 5. **Al lancio c'è l'offerta per i centri fondatori** invece di un listino più basso.
+6. **Livelli e aggiunte (deciso il 07/10):** i livelli cambiano solo per la taglia,
+   le aggiunte costano uguale su ogni livello e si prendono solo se servono.
 
 ## I piani
 
-| Piano | Per chi | Utenti | Ambulatori | Al mese | L'anno | Crediti SdI l'anno |
-|---|---|---|---|---|---|---|
-| **Professionista** | chi lavora da solo, anche su più sedi | 1 | fino a 3 | **59 €** | 590 € | 300 |
-| **Studio** | 2 o 3 professionisti insieme | illimitati | fino a 3 | **99 €** | 990 € | 600 |
-| **Centro** | centri e piccoli poliambulatori | illimitati | fino a 5 | **149 €** | 1.490 € | 1.200 |
-| **Poliambulatorio** | strutture con molti specialisti | illimitati | fino a 10 | **249 €** | 2.490 € | 2.400 |
-| Oltre 10 ambulatori | | illimitati | | +25 € ad ambulatorio | +250 € | 2.400 |
+| Piano | Per chi | Utenti | Ambulatori | Al mese | L'anno | Crediti SdI l'anno | Archivio |
+|---|---|---|---|---|---|---|---|
+| **Professionista** | chi lavora da solo, anche su più sedi | 1 | fino a 3 | **59 €** | 590 € | 300 | 300 GB |
+| **Studio** | 2 o 3 professionisti insieme | illimitati | fino a 3 | **99 €** | 990 € | 300 | 600 GB |
+| **Centro** | centri e piccoli poliambulatori | illimitati | fino a 5 | **149 €** | 1.490 € | 600 | 1 TB |
+| **Poliambulatorio** | strutture con molti specialisti | illimitati | fino a 10 | **249 €** | 2.490 € | 1.200 | 2 TB |
+| Oltre 10 ambulatori | | illimitati | | +25 € ad ambulatorio | +250 € | 1.200 | 2 TB |
+
+I crediti SdI servono per le fatture alle aziende e a chi ha la partita IVA, e per
+quelle ricevute: le fatture sanitarie ai pazienti vanno al Sistema TS e non li
+consumano. Per questo il Professionista e lo Studio ne hanno gli stessi.
 
 Prezzi IVA esclusa. Pagando l'anno in anticipo il mese costa 49, 82, 124 e 207 €.
 
@@ -60,55 +66,37 @@ ambulatori in prima riga. Il resto (crediti SdI, extra) sta sotto, per chi lo ce
 - **Il prezzo per ambulatorio scende salendo:** 33 € allo Studio, 30 € al Centro,
   25 € al Poliambulatorio e oltre. Ogni passaggio conviene.
 
-### Variante B: i piani più grandi comprendono più cose
+### Le aggiunte
 
-Come fanno molti software in abbonamento (e Claude, con Pro e Max): pochi piani,
-e salendo ognuno ha dentro più cose, non solo più spazio. La taglia la danno
-ancora gli ambulatori. Gli extra si comprano a parte sui piani piccoli e sono
-compresi in quelli grandi.
+Costano uguale su ogni livello: si prendono solo se servono, e ognuna si prova
+14 giorni prima di comprarla.
 
-| | Professionista | Studio | Centro | Poliambulatorio |
-|---|---|---|---|---|
-| Al mese | 59 € | 99 € | **169 €** | **299 €** |
-| L'anno | 590 € | 990 € | 1.690 € | 2.990 € |
-| Fatture e Sistema TS | ✓ | ✓ | ✓ | ✓ |
-| Telefono | +50 € l'anno | ✓ | ✓ | ✓ |
-| Marketing | +29 € | +39 € | ✓ | ✓ |
-| Firma avanzata | +39 € | +39 € | +39 € | ✓ (2.000 l'anno) |
-| Assistente | +19 € a professionista | +19 € | +19 € | 3 professionisti compresi, poi +19 € |
+| Aggiunta | Prezzo | Cosa comprende | Perché è a parte |
+|---|---|---|---|
+| **Telefono** | 50 € l'anno | il centralino nel browser e sul telefono, i richiami, la segreteria | non tutti vogliono il centralino; numeri, chiamate e SMS li paga il centro a Twilio |
+| **Marketing** | 29 € al mese | automazioni, campagne, Meta, social, 5.000 email al mese; oltre, pacchetti | serve solo a chi cerca pazienti nuovi |
+| **Assistente** | 19 € al mese per ogni professionista che lo usa | la prova ha **50 richieste**, per tutto il centro; finite, si compra | costa a noi a ogni richiesta |
+| **Firma avanzata** | 39 € al mese | 2.000 firme l'anno; oltre, pacchetti | costa a noi (circa 30 € al mese a centro) e la vuole chi lo chiede il suo lavoro |
 
-**Perché così:**
+Nessuna aggiunta è compresa in un livello: la firma avanzata e l'assistente
+nemmeno nel Poliambulatorio.
 
-- **Ogni piano ha un motivo per salire.** Il Professionista lavora da solo, lo
-  Studio ha la segreteria al telefono, il Centro fa crescere i pazienti con il
-  marketing, il Poliambulatorio ha tutto.
-- **Costa poco a noi.**
-  - telefono e marketing hanno i consumi pagati dal centro a Twilio e a Meta, e
-    dentro un piano pesano solo l'assistenza;
-  - la firma avanzata costa circa 30 € al mese a centro (Namirial), quindi entra
-    solo dal Poliambulatorio;
-  - l'assistente consuma il modello a ogni uso, quindi è compreso solo per 3
-    professionisti.
-- **Il centro paga meno che con gli extra a parte:**
-  - il Centro varrebbe 149 + 59 + telefono = circa 212 € al mese, e costa 169 €;
-  - il Poliambulatorio varrebbe 249 + 89 + 39 + 57 = 434 €, e costa 299 €.
-- **Chi non vuole il marketing paga 20 € in più al Centro, 50 € al
-  Poliambulatorio.** Nelle taglie grandi, però, il marketing è il motivo per cui
-  arrivano dall'agenzia.
+### Perché livelli e aggiunte
 
-La variante B incassa di più a centro e si spiega con una frase per piano.
-La variante A (tutto a parte) costa meno per chi vuole solo il gestionale.
-**Proposta: la B**, perché il lancio passa dall'agenzia e i suoi centri vogliono
-marketing e telefono.
+- **Si spiega in due righe:** «Scegli il piano per quanto è grande il tuo centro.
+  Aggiungi solo quello che ti serve.»
+- **Si torna indietro in un verso solo.** Un'aggiunta che quasi tutti prendono
+  può entrare in un livello domani, ed è un regalo; una cosa compresa che esce
+  per diventare un'aggiunta fa andare via i clienti. Senza ancora un cliente,
+  si parte da dove si può solo migliorare.
+- **È quello che il codice fa già:** gli extra (telefono, marketing, assistente,
+  firma) con la loro prova di 14 giorni.
 
-### Gli extra (variante A)
+Fra sei mesi si guardano i dati: se quasi tutti i Centri prendono il marketing,
+entra nel Centro con 10-20 € in più, annunciato come una novità.
 
-| Extra | Professionista | Studio | Centro | Poliambulatorio |
-|---|---|---|---|---|
-| Marketing | 29 € | 39 € | 59 € | 89 € |
-| Telefono | 50 € l'anno | 50 € l'anno | 50 € l'anno | 50 € l'anno |
-| Assistente | 19 € al mese per ogni professionista che lo usa | | | |
-| Firma avanzata | 39 € al mese, 2.000 firme l'anno | | | |
+La variante B (i piani grandi comprendono più cose: 59 / 99 / 169 / 299 €) è
+scartata per questo.
 
 I consumi sono come nel listino del 01/10: WhatsApp a Meta, chiamate e SMS a
 Twilio, crediti SdI oltre gli inclusi a 0,10 € (pacchetti da 500), spazio oltre
@@ -185,7 +173,7 @@ sopra sono più recenti.
 | 1 | Il Professionista, il conteggio degli utenti, il secondo invito che propone lo Studio | ✅ fatto: `UTENTI`, `chi_conta()`, `verifica_utenti()` all'invito e a chi prende un livello, «Chiedi il piano Studio» nella pagina Funzionalità |
 | 2 | La fatturazione compresa in ogni piano | ✅ fatto: la base la comprende (`catalogo.BASE`), una riga «spenta» del vecchio listino non la toglie più |
 | 3 | I numeri del listino nel codice: ambulatori, crediti SdI | ✅ fatto (`crm_plan.py`: 3 / 3 / 5 / 10 ambulatori, 300 / 600 / 1.200 / 2.400 crediti); i prezzi non stanno nel codice |
-| 4 | La pagina Funzionalità con i nuovi piani | ✅ fatto per taglie e utenti; da rivedere se si sceglie la variante B (gli extra compresi nei piani grandi) |
+| 4 | La pagina Funzionalità con i nuovi piani | ✅ fatto per taglie, utenti e la prova dell'assistente; le aggiunte sono gli extra che c'erano già |
 | 5 | **Portare via i propri dati**: un archivio con persone, appuntamenti, cartelle, documenti e fatture | ✅ fatto: Impostazioni > Il centro > I tuoi dati (`crm/esportazione`), solo il responsabile, registro degli accessi, una settimana e poi sparisce |
 | 6 | **Importare dal vecchio gestionale**: anagrafiche, appuntamenti futuri e saldi | 🟡 le persone sì: Impostazioni > Il centro > I tuoi dati (`crm/importazione`) legge un Excel o CSV di qualunque gestionale, riconosce le colonne, mostra riga per riga cosa succede, non crea doppioni (codice fiscale, email, cellulare), tiene i dati di fatturazione e le note; con la clinica sono pazienti per la regola «importazione». Da fare: appuntamenti futuri e saldi, e la prova con un'esportazione vera di GipoNext e AlfaDocs |
 | 7 | Annuale, mensile e fondatore sul piano del centro, per fatturarli | da decidere dove: dipende da chi emette le fatture di NPM2 |
@@ -209,8 +197,12 @@ Quando la proposta è approvata:
 - `crm/fcrm/doctype/crm_plan/crm_plan.py`:
   - `AMBULATORI = {"Solo": 3, "Studio": 3, "Centre": 5, "Polyclinic": 10, "Large": None}`;
   - `UTENTI = {"Solo": 1}`;
-  - `CREDITI_SDI = 300 / 600 / 1.200 / 2.400`;
+  - `CREDITI_SDI = 300 / 300 / 600 / 1.200` (fatto);
+  - `RICHIESTE_DI_PROVA = 50`: l'assistente in prova le conta e, finite,
+    rimanda alle Funzionalità (`crm/assistente/modello.py`, fatto);
   - «Solo» si legge «Professionista».
+- `crm/archivio/regole.py`: `SPAZIO_COMPRESO` 300 GB / 600 GB / 1 TB / 2 TB (fatto).
+- Il contatore delle email di marketing (5.000 al mese) e i pacchetti: da fare.
 - `crm/api/plan.py` conta gli utenti accanto alle sale. `invite_by_email`
   (`crm/api/__init__.py`) non manda il secondo invito di un Professionista.
 - La fatturazione esce dagli extra e entra in ciò che il piano comprende
@@ -221,9 +213,7 @@ Quando la proposta è approvata:
 
 ## Da decidere
 
-1. Come sono fatti i piani:
-   - variante A, tutto a parte: 59 / 99 / 149 / 249 €, oppure il Centro a 139 €;
-   - variante B, i piani grandi comprendono più cose: 59 / 99 / 169 / 299 €.
+1. Il Centro a 149 € o a 139 €.
 2. Il Professionista con una segretaria. Le possibilità:
    - (a) si passa allo Studio;
    - (b) un utente di segreteria a 15 € al mese, con il solo livello Accoglienza.
