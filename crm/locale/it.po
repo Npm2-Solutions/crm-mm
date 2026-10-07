@@ -46333,8 +46333,8 @@ msgid "An archive is already being made: it is ready in a few minutes"
 msgstr "Un archivio è già in preparazione: sarà pronto tra pochi minuti"
 
 #: frontend/src/utils/impostazioni.js
-msgid "Bring your people over from the previous software, take all the centre's data away whenever you want."
-msgstr "Porta qui le tue persone dal gestionale di prima, porta via tutti i dati del centro quando vuoi."
+msgid "Bring your people over from the previous software, take all your data away."
+msgstr "Porta qui le tue persone dal gestionale di prima, porta via tutti i tuoi dati."
 
 #: frontend/src/components/Settings/YourDataSettings.vue
 msgid "The centre's data are the centre's: bring them over from the previous software, take them all away whenever you want."

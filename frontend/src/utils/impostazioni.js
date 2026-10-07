@@ -135,7 +135,7 @@ export const MENU = [
         key: 'Your data',
         label: 'Your data',
         description:
-          "Bring your people over from the previous software, take all the centre's data away whenever you want.",
+          'Bring your people over from the previous software, take all your data away.',
         condition: (c) => c.puo('dati.esporta') || c.puo('persone.importa'),
       },
       {

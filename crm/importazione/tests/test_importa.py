@@ -29,6 +29,12 @@ class LePersoneDalGestionaleDiPrima(IntegrationTestCase):
 		utenti.assegna_livelli(MANAGER, ["manager"])
 		livelli.dimentica_cache()
 		frappe.cache.delete_value(importa.CHIAVE)
+		# the job commits each person: what an earlier run left goes first
+		for email in ("maria.importata@example.com", "luca.importato@example.com"):
+			for nome in frappe.get_all("CRM Lead", filters={"email": email}, pluck="name"):
+				frappe.db.delete("CRM Billing Profile", {"party_type": "CRM Lead", "party": nome})
+				frappe.db.delete("FCRM Note", {"reference_docname": nome})
+				frappe.delete_doc("CRM Lead", nome, force=True, ignore_permissions=True)
 		# uploaded by whoever brings the people over: a private file of theirs
 		frappe.set_user(MANAGER)
 		self.file = frappe.get_doc(
