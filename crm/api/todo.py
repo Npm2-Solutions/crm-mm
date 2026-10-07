@@ -5,6 +5,19 @@ from crm.notifiche import regole as R
 from crm.notifiche.avvisi import SISTEMA, avvisa, nome_utente
 
 
+def validate(doc, method):
+	"""A new assignment makes its user the person's or the deal's owner (`after_insert`):
+	whoever writes one must be able to write the record. `assign_to` and the
+	assignment rules insert with `ignore_permissions` after their own check."""
+	if (
+		doc.is_new()
+		and doc.reference_type in ["CRM Lead", "CRM Deal"]
+		and doc.reference_name
+		and not doc.flags.ignore_permissions
+	):
+		frappe.get_doc(doc.reference_type, doc.reference_name).check_permission("write")
+
+
 def after_insert(doc, method):
 	if doc.reference_type in ["CRM Lead", "CRM Deal"] and doc.reference_name and doc.allocated_to:
 		fieldname = "lead_owner" if doc.reference_type == "CRM Lead" else "deal_owner"
