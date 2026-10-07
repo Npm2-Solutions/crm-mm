@@ -442,6 +442,6 @@ function stateTheme(module) {
 }
 
 function openDesk() {
-  window.open('/app/crm-plan', '_blank')
+  window.open('/desk/crm-plan', '_blank')
 }
 </script>

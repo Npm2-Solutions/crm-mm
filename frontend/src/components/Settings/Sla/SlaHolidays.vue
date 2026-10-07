@@ -249,7 +249,7 @@ const workDayOptions = [
 ]
 
 const createNewHolidayList = () => {
-  window.open(`${window.location.origin}/app/crm-holiday-list`)
+  window.open(`${window.location.origin}/desk/crm-holiday-list`)
 }
 
 const deleteWorkDay = (workDay) => {
@@ -292,7 +292,7 @@ const addWorkDay = () => {
 
 const editHolidayList = (holidayList) => {
   window.open(
-    `${window.location.origin}/app/crm-holiday-list/${holidayList.name}`,
+    `${window.location.origin}/desk/crm-holiday-list/${holidayList.name}`,
   )
 }
 

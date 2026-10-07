@@ -11,7 +11,7 @@ def before_insert(doc, method=None):
 	"""Point CRM notification emails at the CRM UI instead of the Desk form.
 
 	Notification Log's email builder uses `doc.link` when set, otherwise it
-	falls back to a Desk (`/app/...`) form URL. CRM users often have Desk
+	falls back to a Desk (`/desk/...`) form URL. CRM users often have Desk
 	access restricted, so build a CRM frontend link for CRM documents.
 	See https://github.com/frappe/crm/issues/705.
 	"""

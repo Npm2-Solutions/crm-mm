@@ -303,7 +303,7 @@ const step = inject('step')
 const updateStep = inject('updateStep')
 
 // its name escaped: the link is written into the sentence as HTML
-const deskUrl = `${window.location.origin}/app/crm-service-level-agreement/${encodeURIComponent(step.value.data?.name || '')}`
+const deskUrl = `${window.location.origin}/desk/crm-service-level-agreement/${encodeURIComponent(step.value.data?.name || '')}`
 
 const getSlaResource = createResource({
   url: 'frappe.client.get',
