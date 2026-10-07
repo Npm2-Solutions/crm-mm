@@ -161,6 +161,51 @@ class TestMarchio(IntegrationTestCase):
 		self.assertEqual(bootinfo.app_data[0]["app_logo_url"], PROVA.icona)
 		self.assertEqual(bootinfo.app_logo_url, PROVA.icona)
 
+	def test_il_desk_apre_il_crm_nel_guscio_del_prodotto(self):
+		if not frappe.db.exists("DocType", "Sidebar"):
+			self.skipTest("the desk's navigation before Frappe 16.50")
+		# the app ships it: the desk's address of the CRM's module is the product's
+		guscio = frappe.get_doc("Sidebar", marchio.SPAZIO)
+		self.assertEqual((guscio.module, guscio.title, guscio.standard), ("FCRM", marchio.SPAZIO, 1))
+		self.assertIn("CRM Lead", [riga.link_to for riga in guscio.items])
+
+		# what the conversion of the old Workspace Sidebars made besides it
+		frappe.flags.in_patch = True
+		try:
+			for titolo, modulo in (("Frappe CRM", "Invoicing"), ("Vendite", "FCRM")):
+				frappe.get_doc(
+					{"doctype": "Sidebar", "module": modulo, "title": titolo, "standard": 0}
+				).insert(ignore_permissions=True, ignore_links=True)
+		finally:
+			frappe.flags.in_patch = False
+		dock = None
+		if frappe.db.exists("DocType", "Dock"):
+			dock = frappe.get_doc(
+				{
+					"doctype": "Dock",
+					"app": "crm",
+					"user": "",
+					"standard": 0,
+					"items": [
+						{"link_type": "Sidebar", "link_to": "FCRM", "title": "Frappe CRM", "icon": "x"},
+						{"link_type": "Sidebar", "link_to": "Vendite", "title": "Vendite", "icon": "x"},
+					],
+				}
+			).insert(ignore_permissions=True, ignore_links=True)
+
+		marchio._navigazione_del_desk(marchio.attivo())
+
+		self.assertFalse(frappe.db.exists("Sidebar", "Frappe CRM"))
+		self.assertFalse(frappe.db.exists("Sidebar", "Vendite"))
+		self.assertTrue(frappe.db.exists("Sidebar", marchio.SPAZIO))
+		if dock:
+			righe = frappe.get_doc("Dock", dock.name).items
+			self.assertEqual(
+				[(riga.link_to, riga.title) for riga in righe],
+				[(marchio.SPAZIO, marchio.nome()), (marchio.SPAZIO, "Vendite")],
+			)
+			frappe.delete_doc("Dock", dock.name, force=True, ignore_permissions=True)
+
 	def test_il_nome_del_software_non_e_quello_del_centro(self):
 		for nome in ("", "Frappe", "frappe crm", "DottorCloud", "  dottorcloud "):
 			self.assertEqual(marchio.nome_scelto(nome), "")
