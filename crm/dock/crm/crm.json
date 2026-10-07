@@ -1,0 +1,120 @@
+{
+ "app": "crm",
+ "creation": "2026-10-07 12:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Dock",
+ "idx": 0,
+ "items": [
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "stethoscope",
+   "link_to": "DottorCloud",
+   "link_type": "Sidebar",
+   "title": "DottorCloud"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "receipt-text",
+   "link_to": "Invoicing",
+   "link_type": "Sidebar",
+   "title": "Invoicing"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "id-card",
+   "link_to": "Tessera Sanitaria",
+   "link_type": "Sidebar",
+   "title": "Sistema TS"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "clipboard-pen-line",
+   "link_to": "Moduli",
+   "link_type": "Sidebar",
+   "title": "Forms"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "folder-open",
+   "link_to": "Documenti",
+   "link_type": "Sidebar",
+   "title": "Documents"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "file-text",
+   "link_to": "Preventivi",
+   "link_type": "Sidebar",
+   "title": "Quotes"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "list-checks",
+   "link_to": "Piani",
+   "link_type": "Sidebar",
+   "title": "Plans"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "smartphone",
+   "link_to": "Area",
+   "link_type": "Sidebar",
+   "title": "Client area"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "hospital",
+   "link_to": "Clinica",
+   "link_type": "Sidebar",
+   "title": "Clinic"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "sparkles",
+   "link_to": "Assistente",
+   "link_type": "Sidebar",
+   "title": "Assistant"
+  },
+  {
+   "added": 0,
+   "hidden": 1,
+   "icon": "user-check",
+   "link_to": "Clienti",
+   "link_type": "Sidebar",
+   "title": "New clients"
+  },
+  {
+   "added": 0,
+   "hidden": 1,
+   "icon": "download",
+   "link_to": "Lead Syncing",
+   "link_type": "Sidebar",
+   "title": "Lead syncing"
+  },
+  {
+   "added": 0,
+   "hidden": 1,
+   "icon": "globe",
+   "link_to": "Domain Enrichment",
+   "link_type": "Sidebar",
+   "title": "Enrichment"
+  }
+ ],
+ "modified": "2026-10-07 12:00:00.000000",
+ "modified_by": "Administrator",
+ "mount_on": "",
+ "name": "crm",
+ "owner": "Administrator",
+ "standard": 1,
+ "user": ""
+}

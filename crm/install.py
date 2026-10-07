@@ -81,10 +81,12 @@ def add_exercise_library():
 
 
 def add_brand():
-	"""The product's name in the framework's settings: login, desk, public pages."""
-	from crm.marchio import applica
+	"""The product's name in the framework's settings: login, desk, public pages,
+	and the desk's desktop as the app ships it."""
+	from crm.marchio import applica, desktop_ad_app
 
 	applica()
+	desktop_ad_app()
 
 
 def add_levels():

@@ -233,6 +233,22 @@ class TestMarchio(IntegrationTestCase):
 			)
 			frappe.delete_doc("Dock", dock.name, force=True, ignore_permissions=True)
 
+	def test_il_desk_si_apre_sulle_app_col_dock_di_dottorcloud(self):
+		if not frappe.db.exists("DocType", "Dock"):
+			self.skipTest("the desk's navigation before Frappe 16.50")
+		# the app ships its rail: the product's shell first, then its modules
+		dock = frappe.get_doc("Dock", "crm")
+		self.assertEqual((dock.app, dock.standard), ("crm", 1))
+		self.assertEqual((dock.items[0].link_type, dock.items[0].link_to), ("Sidebar", marchio.SPAZIO))
+		moduli = set(frappe.get_all("Module Def", filters={"app_name": "crm"}, pluck="name"))
+		self.assertLessEqual({riga.link_to for riga in dock.items[1:]}, moduli)
+
+		# a site that kept the grid of icons opens on the apps, and is invited to nothing
+		frappe.db.set_single_value("Desktop Settings", "desktop_page", "Desktop Icons")
+		marchio.desktop_ad_app()
+		self.assertEqual(frappe.db.get_single_value("Desktop Settings", "desktop_page"), "Apps")
+		self.assertTrue(frappe.utils.cint(frappe.defaults.get_global_default("skip_new_navigation_prompt")))
+
 	def test_il_nome_del_software_non_e_quello_del_centro(self):
 		for nome in ("", "Frappe", "frappe crm", "DottorCloud", "  dottorcloud "):
 			self.assertEqual(marchio.nome_scelto(nome), "")
