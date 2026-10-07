@@ -1,7 +1,7 @@
 # Where the site is published: one domain per line.
 # The "Pubblica il sito" workflow (.github/workflows/sito-pubblica.yml) adds each
 # one in HestiaCP if missing, gives it its certificate once its DNS points to
-# the server, and copies the site there with sito/deploy.sh. A preview
+# the server, and copies the site there with siti/dottorcloud/deploy.sh. A preview
 # (*.preview.*) stays out of search engines.
 dottorcloud.preview.npm2solutions.com
 dottorcloud.com

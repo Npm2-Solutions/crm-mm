@@ -5,7 +5,7 @@
 > switch, radio e campi obbligatori. Restavano i componenti che frappe-ui non ha
 > (StatTile, EmptyState, Tag, "in corso", il percorso, l'evento dell'agenda) e i segni
 > sui componenti che ha (avatar, menu, liste, calendario, finestre). Ora ci sono
-> tutti, e in `brand/` c'è il kit grafico completo con gli script che lo rifanno.
+> tutti, e in `brand/dottorcloud/` c'è il kit grafico completo con gli script che lo rifanno.
 
 ## Com'è
 
@@ -42,7 +42,7 @@ Laura Consenso
   Dopo → A casa in testa alla scheda della persona. **Tolto il 01/10/2026**: in
   testa alla scheda non serviva, e ripeteva quello che la scheda dice già (gli
   appuntamenti, i documenti, i piani). Il PatientJourney resta nel design system
-  (`brand/design-system/espresso/componenti/PatientJourney`), non nel gestionale.
+  (`brand/dottorcloud/design-system/espresso/componenti/PatientJourney`), non nel gestionale.
 - **L'evento dell'agenda**: nella vista per professionista o ambulatorio
   l'appuntamento ha la coda, il fondo e la barretta nel colore del servizio e l'ora
   in quel colore; il **primo appuntamento** di una persona (con la clinica, la prima
@@ -77,22 +77,22 @@ E sui componenti di frappe-ui, senza riscriverli (`espresso.css`, regole segnate
 - Il pulsante tenue del marchio (`dc-brand`) per l'azione secondaria che riguarda la
   persona.
 
-## Il kit del marchio (`brand/`)
+## Il kit del marchio (`brand/dottorcloud/`)
 
 Consegnato come `dottorcloud-kit.zip`, entra nel repo così:
 
 | Nel kit | Nel repo | |
 |---|---|---|
-| `01-marchio/logo` | `brand/logo` | identici, già c'erano |
-| `01-marchio/font` | `brand/font` | Inter variabile, latino (48 KB) |
-| `01-marchio/icone` | `brand/icone` | le 32 icone Lucide più usate, come immagini |
-| `02-token` | `brand/design-system/espresso/tokens.*` | quelli del repo, con il grigio delle etichette corretto (4.5:1) |
-| `03-forme`, `04-composizioni` | `brand/forme`, `brand/composizioni` | croce, motivo, nuvola-D, gobba, avatar; copertina, hero e chiusura del sito, stato vuoto, og:image |
-| `05-gestionale/espresso` | `brand/design-system/espresso` | quello del repo è più nuovo (le correzioni del doc 33); dal kit arriva `sito.md`, sito e gestionale a confronto |
-| `06-sito` | `brand/sito` | lo strato CSS del sito, le due righe di HTML, gli screenshot prima e dopo |
-| `07-generatori` | `brand/generatori` | con i percorsi del repo (`percorsi.py`) e le correzioni portate dentro: rigenerano esattamente i file del repo |
+| `01-marchio/logo` | `brand/dottorcloud/logo` | identici, già c'erano |
+| `01-marchio/font` | `brand/dottorcloud/font` | Inter variabile, latino (48 KB) |
+| `01-marchio/icone` | `brand/dottorcloud/icone` | le 32 icone Lucide più usate, come immagini |
+| `02-token` | `brand/dottorcloud/design-system/espresso/tokens.*` | quelli del repo, con il grigio delle etichette corretto (4.5:1) |
+| `03-forme`, `04-composizioni` | `brand/dottorcloud/forme`, `brand/dottorcloud/composizioni` | croce, motivo, nuvola-D, gobba, avatar; copertina, hero e chiusura del sito, stato vuoto, og:image |
+| `05-gestionale/espresso` | `brand/dottorcloud/design-system/espresso` | quello del repo è più nuovo (le correzioni del doc 33); dal kit arriva `sito.md`, sito e gestionale a confronto |
+| `06-sito` | `brand/dottorcloud/sito` | lo strato CSS del sito, le due righe di HTML, gli screenshot prima e dopo |
+| `07-generatori` | `brand/dottorcloud/generatori` | con i percorsi del repo (`percorsi.py`) e le correzioni portate dentro: rigenerano esattamente i file del repo |
 
-Le logiche del marchio e come rigenerare stanno nel [README di `brand/`](../../brand/README.md).
+Le logiche del marchio e come rigenerare stanno nel [README di `brand/dottorcloud/`](../../brand/dottorcloud/README.md).
 
 ## Come è fatto
 
@@ -114,7 +114,7 @@ Con la clinica "Primo appuntamento" diventa "Prima visita" (`crm/clinica/parole.
   annullata, non le successive, non chi era cliente da prima.
 - `tests/unit/dashboard.test.js`, `cicli.test.js`.
 - I generatori del marchio rigenerano i 28 componenti e i token del repo senza
-  differenze (solo il percorso del font, ora `brand/font`).
+  differenze (solo il percorso del font, ora `brand/dottorcloud/font`).
 - Nel browser, in chiaro, in scuro e sul telefono: Oggi, la dashboard, le liste con
   le righe scelte, la scheda della persona, i piani e i documenti, il toast, la
   vista per professionista dell'agenda.

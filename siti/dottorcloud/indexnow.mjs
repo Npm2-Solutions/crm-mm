@@ -6,8 +6,8 @@
 // for their crawlers. The key is public by design: the site serves it at
 // /<key>.txt to prove the request comes from its owner.
 //
-//   node sito/indexnow.mjs https://dottorcloud.com            the pages changed today
-//   node sito/indexnow.mjs https://dottorcloud.com 2026-10-01 changed since that day
+//   node siti/dottorcloud/indexnow.mjs https://dottorcloud.com            the pages changed today
+//   node siti/dottorcloud/indexnow.mjs https://dottorcloud.com 2026-10-01 changed since that day
 
 export const INDEXNOW_KEY = 'f9568769b55a1cfa3783654cb910d25d'
 

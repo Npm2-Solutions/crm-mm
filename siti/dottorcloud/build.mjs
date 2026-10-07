@@ -2,20 +2,20 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // For license information, please see license.txt
 
-// Builds the DottorCloud website into sito/dist, with no dependencies:
+// Builds the DottorCloud website into siti/dottorcloud/dist, with no dependencies:
 //
-//   node sito/build.mjs
+//   node siti/dottorcloud/build.mjs
 //
 // Each page in pagine/ goes inside parti/layout.html; {{> name}} pulls in a
 // part, {{icon name}} a Lucide icon from risorse/icone, {{current key}} marks
 // the menu's page. Images get their width and height from the file, so nothing
-// jumps while they load. Logo, font and video come from brand/, the tokens of
+// jumps while they load. Logo, font and video come from brand/dottorcloud/, the tokens of
 // the design system go in front of the stylesheet and the brand's layer
-// (brand/sito/sito-marchio.css) after it: one source for each.
+// (brand/dottorcloud/sito/sito-marchio.css) after it: one source for each.
 //
 //   SITO_URL=https://dottorcloud.com   the address the site answers to
 //   SITO_ANTEPRIMA=1                  a preview: noindex, and robots.txt says no
-//   SITO_DIST=/some/folder            where to write (default sito/dist)
+//   SITO_DIST=/some/folder            where to write (default siti/dottorcloud/dist)
 
 import { execFileSync } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -37,7 +37,7 @@ import {
 import { INDEXNOW_KEY } from './indexnow.mjs'
 
 const SITE = path.dirname(fileURLToPath(import.meta.url))
-const ROOT = path.dirname(SITE)
+const ROOT = path.dirname(path.dirname(SITE))
 const OUT = path.resolve(process.env.SITO_DIST || path.join(SITE, 'dist'))
 const ORIGIN = (process.env.SITO_URL || 'https://dottorcloud.com').replace(
   /\/+$/,
@@ -58,14 +58,14 @@ export const COMPANY = {
 
 // files that come from elsewhere in the repository: published path -> source
 const FROM_REPO = {
-  'img/logo.svg': 'brand/logo/dottorcloud-orizzontale.svg',
-  'img/logo-negativo.svg': 'brand/logo/dottorcloud-orizzontale-negativo.svg',
-  'img/marchio.svg': 'brand/logo/dottorcloud-marchio.svg',
-  'favicon.svg': 'brand/logo/dottorcloud-icona-app.svg',
+  'img/logo.svg': 'brand/dottorcloud/logo/dottorcloud-orizzontale.svg',
+  'img/logo-negativo.svg': 'brand/dottorcloud/logo/dottorcloud-orizzontale-negativo.svg',
+  'img/marchio.svg': 'brand/dottorcloud/logo/dottorcloud-marchio.svg',
+  'favicon.svg': 'brand/dottorcloud/logo/dottorcloud-icona-app.svg',
   'apple-touch-icon.png': 'crm/public/manifest/apple-icon-180.png',
-  'font/inter.woff2': 'brand/font/Inter-Variable-latin.woff2',
-  'img/stato-vuoto.svg': 'brand/composizioni/stato-vuoto.svg',
-  'video/dottorcloud.mp4': 'brand/video/DottorCloud.mp4',
+  'font/inter.woff2': 'brand/dottorcloud/font/Inter-Variable-latin.woff2',
+  'img/stato-vuoto.svg': 'brand/dottorcloud/composizioni/stato-vuoto.svg',
+  'video/dottorcloud.mp4': 'brand/dottorcloud/video/DottorCloud.mp4',
 }
 
 const read = (file) => fs.readFileSync(file, 'utf8')
@@ -275,13 +275,13 @@ export function build() {
     copy(path.join(ROOT, from), path.join(OUT, to))
   write(
     path.join(OUT, 'favicon.ico'),
-    ico(fs.readFileSync(path.join(ROOT, 'brand/logo/png/favicon-32.png'))),
+    ico(fs.readFileSync(path.join(ROOT, 'brand/dottorcloud/logo/png/favicon-32.png'))),
   )
   copyDir(path.join(SITE, 'api'), path.join(OUT, 'api'))
 
-  const tokens = read(path.join(ROOT, 'brand/design-system/tokens.css'))
+  const tokens = read(path.join(ROOT, 'brand/dottorcloud/design-system/tokens.css'))
   // the brand's layer goes last: it restyles the site without touching its rules
-  const layer = read(path.join(ROOT, 'brand/sito/sito-marchio.css'))
+  const layer = read(path.join(ROOT, 'brand/dottorcloud/sito/sito-marchio.css'))
   const css = `${tokens}\n${read(path.join(SITE, 'risorse/css/sito.css'))}\n${layer}`
   const js = read(path.join(SITE, 'risorse/js/sito.js'))
   write(path.join(OUT, 'css/sito.css'), css)
@@ -383,14 +383,14 @@ export function build() {
     path.join(OUT, 'llms.txt'),
     llms(pages.filter((page) => !page.noindex)),
   )
-  // IndexNow's proof of ownership (sito/indexnow.mjs), never on a preview
+  // IndexNow's proof of ownership (siti/dottorcloud/indexnow.mjs), never on a preview
   if (!PREVIEW) write(path.join(OUT, `${INDEXNOW_KEY}.txt`), `${INDEXNOW_KEY}\n`)
   // the deploy script looks for this before it replaces a folder's contents
   write(path.join(OUT, '.sito-dottorcloud'), `${version}\n`)
   return pages
 }
 
-// --- articles: sito/approfondimenti/<slug>.html, newest first ---
+// --- articles: siti/dottorcloud/approfondimenti/<slug>.html, newest first ---
 
 export const CATEGORIES = ['Guide', 'Norme', 'Organizzazione']
 

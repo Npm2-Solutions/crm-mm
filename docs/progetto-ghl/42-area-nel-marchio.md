@@ -5,7 +5,7 @@
 ## Il bisogno
 
 Il kit del marchio ha già le schermate del telefono del paziente: il video, le
-pubblicità «A casa» e la presentazione (`brand/presentazione/sorgenti/img/
+pubblicità «A casa» e la presentazione (`brand/dottorcloud/presentazione/sorgenti/img/
 telefono-*.png`). L'area vera era più spoglia: carte grigie senza segni, titoli
 piccoli, link sottolineati, la barra in basso in nero. Due cose diverse per lo
 stesso prodotto.

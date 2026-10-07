@@ -7,9 +7,9 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const lu = require('react-icons/lu');
 const sharp = require('sharp');
 
-const ROOT = path.resolve(__dirname, '../../..');
+const ROOT = path.resolve(__dirname, '../../../..');
 const IMG = (n) => path.join(__dirname, 'img', n + '.png');
-const LOGO = (n) => path.join(ROOT, 'brand/logo/png', n + '.png');
+const LOGO = (n) => path.join(ROOT, 'brand/dottorcloud/logo/png', n + '.png');
 
 const C = {
   night: '111413', ink: '16201E', teal: '12A594', tealD: '0B6F64', tealS: 'E1F5F1', mint: '5FE0CC',

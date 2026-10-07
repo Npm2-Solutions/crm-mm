@@ -3,14 +3,14 @@
 # For license information, please see license.txt
 #
 # Publishes the DottorCloud site on the HestiaCP server: builds it for the
-# domain, then copies sito/dist into the domain's public_html.
+# domain, then copies siti/dottorcloud/dist into the domain's public_html.
 #
-#   sito/deploy.sh dottorcloud.preview.npm2solutions.com   # a preview, kept out of search engines
-#   sito/deploy.sh dottorcloud.com                          # the site
-#   sito/deploy.sh dottorcloud.com --crea                   # also add the domain in the panel if missing,
+#   siti/dottorcloud/deploy.sh dottorcloud.preview.npm2solutions.com   # a preview, kept out of search engines
+#   siti/dottorcloud/deploy.sh dottorcloud.com                          # the site
+#   siti/dottorcloud/deploy.sh dottorcloud.com --crea                   # also add the domain in the panel if missing,
 #                                                          # with its certificate once the DNS points here
-#   sito/deploy.sh dottorcloud.com --nginx                  # also install server/nginx.ssl.conf_sito
-#   sito/deploy.sh dottorcloud.com --prova                  # only show what would change
+#   siti/dottorcloud/deploy.sh dottorcloud.com --nginx                  # also install server/nginx.ssl.conf_sito
+#   siti/dottorcloud/deploy.sh dottorcloud.com --prova                  # only show what would change
 #
 #   SITO_SSH=root@hosting.npm2solutions.com   who to connect as (the default)
 #   SITO_SSH_KEY=~/.ssh/chiave                the key, when ssh-agent or ~/.ssh/config do not have it
@@ -171,7 +171,7 @@ mkdir -p "$web/private"
 if [[ ! -e "$web/private/sito.ini" ]]; then
 	sender="sito@${domain#www.}"
 	cat >"$web/private/sito.ini" <<INI
-; The demo form of the DottorCloud site (sito/api/richiesta-demo.php)
+; The demo form of the DottorCloud site (siti/dottorcloud/api/richiesta-demo.php)
 destinatario = "info@npm2solutions.com"
 mittente = "$sender"
 cartella = "$web/private"

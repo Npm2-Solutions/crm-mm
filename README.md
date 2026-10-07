@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="brand/logo/dottorcloud-orizzontale.svg" height="56" alt="DottorCloud">
+<img src="brand/dottorcloud/logo/dottorcloud-orizzontale.svg" height="56" alt="DottorCloud">
 
 **Il gestionale per i centri medici** · NPM2 Solutions Srl
 
@@ -23,8 +23,8 @@ dalla sua area, il marketing e le sue campagne.
 | Prenotazioni online e piattaforme esterne | [docs/prenotazioni/](./docs/prenotazioni/) |
 | Le pagine del prodotto, il telefono, la dashboard | [docs/progetto-ghl/](./docs/progetto-ghl/) |
 | Contratti stabili e storia delle decisioni | [.pi/SPEC.md](./.pi/SPEC.md) · [.pi/ARCHIVE.md](./.pi/ARCHIVE.md) |
-| Logo, design system, video, presentazione, inserzioni | [brand/](./brand/) |
-| Il sito di DottorCloud (`dottorcloud.com`) | [sito/](./sito/) |
+| I marchi: logo, design system, video, presentazione, inserzioni (uno per cartella) | [brand/](./brand/) · DottorCloud in [brand/dottorcloud/](./brand/dottorcloud/) |
+| I siti dei marchi (uno per cartella) | [siti/](./siti/) · `dottorcloud.com` in [siti/dottorcloud/](./siti/dottorcloud/) |
 
 ## Sviluppo
 

@@ -4,7 +4,7 @@
 > DottorCloud in cima alla barra laterale, nell'area clienti e su ogni pagina
 > pubblica: due loghi affiancati, quello del centro schiacciato in un quadratino.
 > Ora ogni posto ha un segno solo. La barra laterale è di DottorCloud, come vuole
-> il design system ([Espresso](../../brand/design-system/espresso/README.md)): il
+> il design system ([Espresso](../../brand/dottorcloud/design-system/espresso/README.md)): il
 > suo logo in testa. Dove una persona ha a che fare con il centro (prenotazione,
 > moduli, documenti, la sua area) in alto c'è il centro, disegnato com'è il suo
 > logo, e DottorCloud firma in fondo, piccolo.

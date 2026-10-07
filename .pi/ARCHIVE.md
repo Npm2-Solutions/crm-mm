@@ -2044,7 +2044,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > pagine pubbliche, email) e i documenti dicono DottorCloud: `crm/marchio.py`, gli hook
 > in testa a `crm/hooks.py`, la patch `dottorcloud_in_the_framework_screens`, l'icona
 > (`CRMLogo.vue`), l'About, il pannello "Getting started", le icone e le schermate
-> d'avvio del telefono generate da `brand/logo`, il README.
+> d'avvio del telefono generate da `brand/dottorcloud/logo`, il README.
 
 ### Decisioni
 

@@ -3,7 +3,7 @@
 //
 // The video's phones, upright and without their shadow, for the website:
 // node telefoni.mjs [name #phone seconds] → ../../presentazione/sorgenti/img/telefono-<name>.png
-// (then python3 sito/immagini.py makes the WebP)
+// (then python3 siti/dottorcloud/immagini.py makes the WebP)
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 const OUT = '../../presentazione/sorgenti/img/telefono-';
 // [name, phone, seconds into the phone's scene]: the moments grab.mjs takes

@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The design system's Tag (brand/design-system/espresso/componenti/Tag): what
+  The design system's Tag (brand/dottorcloud/design-system/espresso/componenti/Tag): what
   kind of thing it is, square with the cloud's tail - never a state's pill,
   which is a Badge. Blue documents, violet exercises and marketing, amber the
   waiting list and internal notes, rose specialties and allergies, green

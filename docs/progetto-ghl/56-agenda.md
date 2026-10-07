@@ -24,7 +24,7 @@ barre diverse:
   il Programma.
 
 Il design system diceva già come va un appuntamento (AgendaEvent, nella
-`brand/design-system/espresso`): l'orario piccolo nel colore della categoria,
+`brand/dottorcloud/design-system/espresso`): l'orario piccolo nel colore della categoria,
 **il nome della persona** come titolo, sotto «Visita cardiologica · Studio 2».
 
 ## Come funziona

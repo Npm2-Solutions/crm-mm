@@ -365,14 +365,14 @@ T = {
 		"basedOn": "frappe-ui 1.0.0-beta.29 (Espresso)",
 		"paths": {
 			"tokens": [
-				"brand/design-system/tokens.css",
+				"brand/dottorcloud/design-system/tokens.css",
 				"frontend/src/utils/marchio.js",
 				"frontend/src/marchio.css",
 				"frontend/package.json (frappe-ui)",
 			],
-			"fonts": ["brand/font/Inter-Variable-latin.woff2"],
-			"assets": ["brand/logo/"],
-			"docs": ["brand/design-system/README.md", "brand/logo/README.md"],
+			"fonts": ["brand/dottorcloud/font/Inter-Variable-latin.woff2"],
+			"assets": ["brand/dottorcloud/logo/"],
+			"docs": ["brand/dottorcloud/design-system/README.md", "brand/dottorcloud/logo/README.md"],
 		},
 		"synced": "2026-10-01",
 		"note": "Espresso di frappe-ui con il marchio DottorCloud: grigi tinti, colore d'azione del marchio, nuvola e croce come segni.",

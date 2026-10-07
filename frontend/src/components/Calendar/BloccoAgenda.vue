@@ -3,7 +3,7 @@
   For license information, please see license.txt
 
   An appointment, or one's own event, in the agenda's grid: the design
-  system's AgendaEvent (brand/design-system/espresso). The person first, then
+  system's AgendaEvent (brand/dottorcloud/design-system/espresso). The person first, then
   what and where, in as many whole lines as its height holds
   (utils/agenda.js): a half-hour that drew its time and the top half of
   «Servizio — Persona» says «09:00 Mario Rossi» and «Visita · Studio 2».

@@ -1,7 +1,7 @@
 # 33 — Il design system nel gestionale: DottorCloud su Espresso
 
 > ✅ **FATTO (01/10/2026)**. Il design system del gestionale
-> ([`brand/design-system/espresso`](../../brand/design-system/espresso/README.md))
+> ([`brand/dottorcloud/design-system/espresso`](../../brand/dottorcloud/design-system/espresso/README.md))
 > è applicato: i grigi di Espresso tinti del verde del marchio, il focus e le ombre
 > nel suo colore, la menta come azione nel tema scuro, la coda della nuvola su
 > quello con cui si agisce, la croce dove si sceglie e dove si deve compilare.
@@ -22,7 +22,7 @@ importato dal gestionale (`index.css`) e dall'area clienti (`area/area.css`) dop
   croce (pomello dello switch acceso, radio scelto, campi obbligatori), la linea e
   l'icona della scheda aperta, il riempimento dell'avanzamento, il toast in verde
   profondo. Sono segnate **(markup)**: dopo un aggiornamento di frappe-ui vanno
-  ricontrollate ([`frappe-ui.md`](../../brand/design-system/espresso/frappe-ui.md)).
+  ricontrollate ([`frappe-ui.md`](../../brand/dottorcloud/design-system/espresso/frappe-ui.md)).
 - **Tutto sta sotto `[data-marchio='dottorcloud']`**: `indossa()` (`utils/marchio.js`)
   mette sulla pagina la chiave del marchio acceso. Un altro verticale, con un altro
   marchio, tiene i grigi neutri di Espresso e il suo colore d'azione.
@@ -40,7 +40,7 @@ importato dal gestionale (`index.css`) e dall'area clienti (`area/area.css`) dop
 Il sistema era preciso: le luminosità dei grigi tinti coincidono con quelle di
 Espresso entro 0,2 punti in entrambi i temi, e le coppie di colore degli stati e
 delle categorie stanno sopra 4,5:1. Le correzioni, tutte scritte anche nel sistema
-([`frappe-ui.md`](../../brand/design-system/espresso/frappe-ui.md#sistemato-applicandolo)):
+([`frappe-ui.md`](../../brand/dottorcloud/design-system/espresso/frappe-ui.md#sistemato-applicandolo)):
 
 | Cosa | Prima | Ora |
 |---|---|---|

@@ -25,7 +25,7 @@ from frappe.utils import get_url
 from crm import marchio
 
 #: The brand's surfaces and inks in the light theme: no mail client is asked to
-#: draw the dark one (Espresso's tokens, brand/design-system/espresso/tokens.css).
+#: draw the dark one (Espresso's tokens, brand/dottorcloud/design-system/espresso/tokens.css).
 CANVAS = "#f6f9f8"
 CARTA = "#ffffff"
 FILO = "#ebeeed"

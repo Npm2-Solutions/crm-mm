@@ -4,23 +4,23 @@
 """The site's images, made from the brand's.
 
 The product screens are the ones the video and the presentation use
-(brand/presentazione/sorgenti/img, taken with brand/video/sorgenti/grab.mjs):
+(brand/dottorcloud/presentazione/sorgenti/img, taken with brand/dottorcloud/video/sorgenti/grab.mjs):
 here they become WebP at twice the size the page shows them. The picture for
-link previews is the brand's composition (brand/composizioni/condivisione-og.png).
+link previews is the brand's composition (brand/dottorcloud/composizioni/condivisione-og.png).
 
     pip install pillow
-    python3 sito/immagini.py
+    python3 siti/dottorcloud/immagini.py
 
-Writes sito/risorse/img/. Run it again when a screen in brand/ changes.
+Writes siti/dottorcloud/risorse/img/. Run it again when a screen in brand/dottorcloud/ changes.
 """
 
 from pathlib import Path
 
 from PIL import Image
 
-RADICE = Path(__file__).resolve().parent.parent
-SCHERMATE = RADICE / "brand/presentazione/sorgenti/img"
-USCITA = RADICE / "sito/risorse/img"
+RADICE = Path(__file__).resolve().parents[2]
+SCHERMATE = RADICE / "brand/dottorcloud/presentazione/sorgenti/img"
+USCITA = RADICE / "siti/dottorcloud/risorse/img"
 
 # name -> width in pixels: twice the widest the page shows it
 LARGHEZZE = {
@@ -49,7 +49,7 @@ LARGHEZZE = {
 RIDOTTE = (800, 1200)
 
 
-# the phones, upright (brand/video/sorgenti/telefoni.mjs makes telefono-<name>.png)
+# the phones, upright (brand/dottorcloud/video/sorgenti/telefoni.mjs makes telefono-<name>.png)
 TELEFONI = {nome: 640 for nome in ("login", "home", "firma", "dieta", "esercizio", "esercizi", "staff")}
 
 
@@ -62,13 +62,13 @@ def webp(sorgente: Path, destinazione: Path, larghezza: int) -> None:
 
 
 def condivisione() -> None:
-	"""The brand's composition for shared links (brand/composizioni), at 1200x630."""
-	og = Image.open(RADICE / "brand/composizioni/condivisione-og.png").convert("RGB")
+	"""The brand's composition for shared links (brand/dottorcloud/composizioni), at 1200x630."""
+	og = Image.open(RADICE / "brand/dottorcloud/composizioni/condivisione-og.png").convert("RGB")
 	og.resize((1200, 630), Image.LANCZOS).save(
 		USCITA / "condivisione.jpg", "JPEG", quality=88, optimize=True, progressive=True
 	)
 	# the same cover, smaller, as the poster of the video on the page
-	poster = Image.open(RADICE / "brand/video/DottorCloud.jpg").convert("RGB")
+	poster = Image.open(RADICE / "brand/dottorcloud/video/DottorCloud.jpg").convert("RGB")
 	poster = poster.resize((1600, round(poster.height * 1600 / poster.width)), Image.LANCZOS)
 	poster.save(USCITA / "video.webp", "WEBP", quality=80, method=6)
 

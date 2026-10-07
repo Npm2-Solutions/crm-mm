@@ -36,7 +36,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
 | Any screen a phone will see (rules below) | [docs/progetto-ghl/29-telefono.md](./docs/progetto-ghl/29-telefono.md) |
-| How DottorCloud looks: tokens, the brand's marks, components | [brand/design-system/espresso](./brand/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
+| How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
 
 ---
 
@@ -453,7 +453,7 @@ into an appointment with a contact is found or made the same way
 | `crm/area/collegamento.py` + `CRM Area Link` | The link every email of the area's carries: it enters once, within seven days, only its fingerprint kept; the door's «Enter» spends it (a POST: a mail scanner opening links never does), it counts as a code just read, an old one leads to the code. A new document told by email where the centre wants it (`CRM Area Settings.email_new_documents`, off to start with): an invoice to a person, never a test one, the area opened if there was none (the parent's for a minor), never for the demo |
 | `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The area's app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js`, the vertical's first |
-| `frontend/src/area/area.css` + `aspetto.js`, `components/AreaChip.vue`, `NextAppointment.vue` | The area as the brand draws the patient's phone (doc 42, `brand/presentazione/sorgenti/img/telefono-*.png`): `area-*` classes on Espresso's tokens - titles, small-capital labels, cards with the tail, a kind in its category's cloud (a plan kind's `colore` and `icona`), the next appointment the one deep block, the days, the one-tap tick, the code's boxes; five places at the bottom, the open one in the brand's colour; light or dark as the phone is set, and following it (`utils/temaDelTelefono.js`), the centre's wide logo on a white card in the dark; the dates and a day's progress pure, tested |
+| `frontend/src/area/area.css` + `aspetto.js`, `components/AreaChip.vue`, `NextAppointment.vue` | The area as the brand draws the patient's phone (doc 42, `brand/dottorcloud/presentazione/sorgenti/img/telefono-*.png`): `area-*` classes on Espresso's tokens - titles, small-capital labels, cards with the tail, a kind in its category's cloud (a plan kind's `colore` and `icona`), the next appointment the one deep block, the days, the one-tap tick, the code's boxes; five places at the bottom, the open one in the brand's colour; light or dark as the phone is set, and following it (`utils/temaDelTelefono.js`), the centre's wide logo on a white card in the dark; the dates and a day's progress pure, tested |
 | `frontend/src/components/Area/` | The person's "Client area" tab: who enters, the board, the plans, the preview |
 | `crm/area/anteprima.py` + `frontend/src/area/anteprima.js` | The centre's preview of a person's area (doc 41): `start` from the person's page ties it to the session for half an hour, before the invitation too, nothing sent; the area shows only what whoever previews reads in DottorCloud (`vede`, `filtra`: the rest keeps its place empty, `HiddenCard`), health data read go in the access log |
 
@@ -668,22 +668,22 @@ The same for a word a pure helper hands to the translator it is given
 ### The brand
 | File | Role |
 |---|---|
-| `brand/` | The logo, the design system (`tokens.css`; Espresso and its 28 components in `design-system/espresso`), the font, icons, shapes, compositions, the website's layer, video, presentation, ads, and the generators that remake them (`brand/generatori`, paths in `percorsi.py`) — `brand/README.md` |
+| `brand/dottorcloud/` | The logo, the design system (`tokens.css`; Espresso and its 28 components in `design-system/espresso`), the font, icons, shapes, compositions, the website's layer, video, presentation, ads, and the generators that remake them (`brand/dottorcloud/generatori`, paths in `percorsi.py`) — `brand/dottorcloud/README.md` |
 | `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()` (with the centre's mark: `centre_logo`, `centre_logo_shape`, `centre_name`), `contesto()` (every web page), `manifest()` (the phone's). `forma_di()` measures a logo of the site's ("wide" on its own, "square" beside the name). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes); the desk of Frappe 16.50 opens a module in its shell, a `Sidebar` whose title is its address: the CRM's module ships `fcrm/sidebar/dottorcloud` (`/desk/dottorcloud`), and `_navigazione_del_desk` takes away the one the conversion of the old Workspace Sidebars made beside it. The desktop is the apps' screen (`desktop_ad_app`, at install and once by a patch: a later choice in Desktop Settings stays), the app's rail its shipped `Dock` (`crm/dock/crm`: the product's shell, then its modules; a module's shell is computed unless it ships a `Sidebar`). A link to the desk is `/desk/…` (`/app/…` only redirects), `boot()` names the apps in the desk (the framework's is «Administration», under the gear `amministrazione.svg`, its desktop icon too: never a second app named after the product), `nome_scelto()` keeps the software's name from passing for a centre's |
 | `crm/verticali.py` | A vertical names its brand (`Verticale.marchio`): the clinic wears DottorCloud |
 | `crm/hooks.py` (top) | `app_title`, `app_logo_url` (fallbacks), `update_website_context` (`marchio.contesto`), `extend_bootinfo`, the apps screen |
-| `frontend/src/espresso.css` | The design system on frappe-ui (`brand/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through rules on frappe-ui's markup (avatars, menus, lists and their bar, the date's calendar, dialogs, toast, spinner), under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio`, our chosen items `dc-scelto` |
+| `frontend/src/espresso.css` | The design system on frappe-ui (`brand/dottorcloud/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through rules on frappe-ui's markup (avatars, menus, lists and their bar, the date's calendar, dialogs, toast, spinner), under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio`, our chosen items `dc-scelto` |
 | `frontend/src/espresso-componenti.css` + `components/Espresso/` | The components frappe-ui has not (doc 39): `StatTile` (Today; the dashboard's numbers, the first of each row a deep block, `highlightedNumbers`), `EmptyState`/`EmptyArt` (every empty list), `CategoryTag`, `InProgressBadge`, `LoaderMark`; the agenda's `dc-evento` (first visit: `first_visit` in `crm.api.appointments.get_calendar`), the cycles' `dc-steps`; their tokens on the brand that is on |
 | `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); the centre's mark: `formaDelLogo()`, `misureSvg()`, `iniziali()`, `nomeDelCentro()`; primary buttons, switches and ticks in its colour — tested |
 | `frontend/src/components/CentreTile.vue`, `composables/formaDelLogo.js` | The centre's tile (a square logo, the initials, the product's icon) in the client area and the previews; a logo's shape, from the server or measured |
 | `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices |
 | `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent, the centre's mark at the top (`marchio_segni`) and the product's signature at the foot (`marchio_piede`); the framework's sign-in, new password and message in the brand's action colour and a phone's sizes (`marchio_framework`, added to their head by `contesto()` for `PAGINE_DEL_FRAMEWORK`) |
-| `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
+| `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/dottorcloud/logo` |
 | `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
 
 One mark per place, never two side by side. The product's brand - the
 vertical's - heads the sidebar (its horizontal logo, as the design system wants,
-`brand/design-system/espresso`) and is the tab's (title, favicon), the framework's
+`brand/dottorcloud/design-system/espresso`) and is the tab's (title, favicon), the framework's
 screens', the emails', the PDFs' producer's, the phone's manifest's; its colours
 are everywhere. Where a person deals with the centre - the client area, the public
 pages - the centre's mark leads (Settings > The centre > General > Name & logo, the
@@ -694,7 +694,7 @@ fills it in the browser, `con_nome(_("…"))` on the server (before any `.format
 A public page's title names the centre (`FCRM Settings.brand_name`) beside the
 product's name: `nome_scelto()` treats every brand's name as no name of the centre's.
 
-A screen looks the way the design system says (`brand/design-system/espresso`):
+A screen looks the way the design system says (`brand/dottorcloud/design-system/espresso`):
 frappe-ui's components with its variables, the brand's action colour for what one
 acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
 that is not under words (progress), a required field's mark `segno-obbligatorio`.
@@ -721,16 +721,22 @@ A module with steps of its own registers them from its `registra()`; a step is
 done by the data, never by a click, so a centre that already works sees nothing.
 The data are the centre's own: `c_e` leaves out what the demo made.
 
-### The website (`sito/`)
+### The brands' websites (`siti/<brand>/`, today `siti/dottorcloud/`)
 | File | Role |
 |---|---|
-| `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
-| `sito/approfondimenti/`, `sito/seo.mjs` | The articles (guides, rules with their sources, organisation) and the glossary; `seo.mjs` writes each page's schema.org graph (company, breadcrumbs, FAQ from `<details>`, product, article, glossary), the sitemap with dates, the RSS feed — pure, tested |
-| `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/`, sitemap |
-| `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
-| `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
-| `.github/workflows/sito-pubblica.yml`, `sito/domini.txt` | Publishing from GitHub on every push that changes `sito/` or `brand/`: tests, then `deploy.sh --crea --nginx` for each domain listed; needs the `HOSTING_SSH_KEY` secret |
-| `sito/test/sito.test.mjs` | `node --test sito/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
+| `siti/dottorcloud/pagine/`, `siti/dottorcloud/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
+| `siti/dottorcloud/approfondimenti/`, `siti/dottorcloud/seo.mjs` | The articles (guides, rules with their sources, organisation) and the glossary; `seo.mjs` writes each page's schema.org graph (company, breadcrumbs, FAQ from `<details>`, product, article, glossary), the sitemap with dates, the RSS feed — pure, tested |
+| `siti/dottorcloud/build.mjs` | Builds into `siti/dottorcloud/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/dottorcloud/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/dottorcloud/`, sitemap |
+| `siti/dottorcloud/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
+| `siti/dottorcloud/deploy.sh`, `siti/dottorcloud/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
+| `.github/workflows/sito-pubblica.yml`, `siti/dottorcloud/domini.txt` | Publishing from GitHub on every push that changes `siti/` or `brand/`: every site's tests, then its `deploy.sh --crea --nginx` for each domain its `domini.txt` lists; needs the `HOSTING_SSH_KEY` secret |
+| `siti/dottorcloud/test/sito.test.mjs` | `node --test siti/dottorcloud/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
+
+One brand, one folder, by the key `crm/marchio.py` gives it: its material in
+`brand/<brand>/` (the same subfolders as `brand/dottorcloud/`, `brand/README.md`),
+its website in `siti/<brand>/` (`build.mjs`, `test/`, `deploy.sh`, `domini.txt`:
+`siti/README.md`), its images in `crm/public/images/<brand>-*`; nothing of one brand
+in another's folder, nor at the top of `brand/` or `siti/`.
 
 The site promises the finished product as the marketing material does, and shows no
 plan and no price. It sets no cookie and loads nothing from other sites. It is not

@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The design system's EmptyState (brand/design-system/espresso/componenti/
+  The design system's EmptyState (brand/dottorcloud/design-system/espresso/componenti/
   EmptyState): a small composition of the cover's blocks, the state in a
   title, a sentence with the real names that proposes what to do, the actions.
 -->

@@ -28,4 +28,7 @@ jobs:
               run: php --version
 
             - name: Test
-              run: node --test sito/test/sito.test.mjs
+              run: |
+                  for sito in siti/*/; do
+                      node --test "$sito"test/*.test.mjs
+                  done

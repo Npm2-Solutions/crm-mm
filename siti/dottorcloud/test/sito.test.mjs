@@ -4,7 +4,7 @@
 // The site, built in a temporary folder and checked: every link and image
 // leads somewhere, every page has its title and one <h1>, no price and no
 // framework's name slip in; then the demo form's PHP, run with `php -S`, on
-// the cases that matter. Run with: node --test sito/test/
+// the cases that matter. Run with: node --test siti/dottorcloud/test/
 
 import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
