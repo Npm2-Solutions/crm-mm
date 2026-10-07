@@ -23,7 +23,7 @@ from crm.area import messaggi
 from crm.area.tests.test_area import DESK, MANAGER, OPERATORE, SALES, AreaCase
 from crm.piani import api as piani
 from crm.piani import area as area_piani
-from crm.piani import librerie, programmi
+from crm.piani import librerie, modelli, programmi
 from crm.piani import programmi_regole as P
 from crm.piani import regole as r
 
@@ -263,3 +263,82 @@ class LaLibreria(PianiCase):
 		fatto = piani.add_exercise("Plank", body_part="Core")
 		self.assertEqual(fatto["exercise_name"], "Plank")
 		self.assertIn("Plank", [e["exercise_name"] for e in piani.search_exercises("Pla")])
+
+
+class IModelli(PianiCase):
+	def test_un_piano_diventa_un_modello_e_un_modello_un_piano(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Forza base")
+		[modello] = modelli.get_templates(r.ALLENAMENTO)
+		self.assertEqual((modello["name"], modello["mine"], modello["items"]), (salvato["name"], True, 2))
+		usato = modelli.use_template(salvato["name"])
+		self.assertEqual((usato["plan_type"], usato["left_out"]), (r.ALLENAMENTO, 0))
+		# new keys, the exercise read from its library
+		[momento] = usato["moments"]
+		self.assertNotEqual(momento["key"], "seduta")
+		esercizio = next(v for v in usato["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual(esercizio["moment"], momento["key"])
+		self.assertEqual(esercizio["exercise_name"], "Squat")
+		# what the editor makes of it is saved as any plan
+		fatto = piani.save_plan(
+			self.anna.name,
+			json.dumps({"plan_type": r.ALLENAMENTO, "moments": usato["moments"], "items": usato["items"]}),
+		)
+		self.assertEqual(len(fatto["items"]), 2)
+		# saved again under its title, it is the same template
+		di_nuovo = modelli.save_template(json.dumps(self.allenamento()), "Forza base", shared=1)
+		self.assertEqual(di_nuovo["name"], salvato["name"])
+		self.assertEqual(len(modelli.get_templates(r.ALLENAMENTO)), 1)
+
+	def test_quello_che_la_libreria_non_offre_resta_fuori(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Forza base")
+		frappe.set_user("Administrator")
+		frappe.db.set_value(piani.ESERCIZIO, self.squat.name, "enabled", 0)
+		self.come(OPERATORE)
+		usato = modelli.use_template(salvato["name"])
+		self.assertEqual(usato["left_out"], 1)
+		self.assertEqual([v["kind"] for v in usato["items"]], [r.ABITUDINE])
+
+	def test_un_modello_e_del_suo_autore_o_del_centro(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Solo mio")
+		# whoever does not write plans has none
+		self.come(DESK)
+		with self.assertRaises(frappe.PermissionError):
+			modelli.get_templates()
+		# another writer sees it only once shared, and never removes it
+		frappe.set_user("Administrator")
+		frappe.db.set_value(modelli.MODELLO, salvato["name"], "practitioner", "Administrator")
+		self.come(OPERATORE)
+		self.assertEqual(modelli.get_templates(), [])
+		frappe.set_user("Administrator")
+		frappe.db.set_value(modelli.MODELLO, salvato["name"], "shared", 1)
+		self.come(OPERATORE)
+		self.assertEqual([m["name"] for m in modelli.get_templates()], [salvato["name"]])
+		with self.assertRaises(frappe.PermissionError):
+			modelli.delete_template(salvato["name"])
+
+	def test_un_modello_vuoto_non_si_salva(self):
+		self.come(OPERATORE)
+		with self.assertRaises(frappe.ValidationError):
+			modelli.save_template(json.dumps({**self.allenamento(), "items": []}), "Vuoto")
+
+
+class IlCatalogo(PianiCase):
+	def test_quello_che_si_usa_viene_prima(self):
+		self.come(OPERATORE)
+		frappe.set_user("Administrator")
+		frappe.get_doc({"doctype": piani.ESERCIZIO, "exercise_name": "Affondo", "body_part": "Legs"}).insert(
+			ignore_permissions=True
+		)
+		self.come(OPERATORE)
+		self.scrive()
+		[primo, *_altri] = piani.browse_exercises(body_part="Legs")["rows"]
+		self.assertEqual(primo["name"], self.squat.name)
+		self.assertEqual(primo["uses"], {"mine": 1, "all": 1})
+		# the pages go on after the used ones, none twice
+		tutti = piani.browse_exercises(body_part="Legs")
+		nomi = [riga["name"] for riga in tutti["rows"]]
+		self.assertEqual(len(nomi), len(set(nomi)))
+		self.assertEqual(len(nomi), min(tutti["total"], piani.PER_PAGINA))
