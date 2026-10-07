@@ -154,12 +154,39 @@ class TestMarchio(IntegrationTestCase):
 		)
 		with con_il_verticale(PROVA.chiave):
 			marchio.boot(bootinfo)
+		# the framework's tools are the desk's administration, never a second product
 		self.assertEqual(
 			[app["app_title"] for app in bootinfo.app_data],
-			[PROVA.nome, PROVA.nome, "WhatsApp", "Helpdesk"],
+			[frappe._("Administration"), PROVA.nome, "WhatsApp", "Helpdesk"],
 		)
-		self.assertEqual(bootinfo.app_data[0]["app_logo_url"], PROVA.icona)
+		self.assertEqual(
+			[app.get("app_logo_url") for app in bootinfo.app_data[:2]],
+			[marchio.ICONA_AMMINISTRAZIONE, PROVA.icona],
+		)
 		self.assertEqual(bootinfo.app_logo_url, PROVA.icona)
+
+	def test_l_icona_del_framework_e_l_amministrazione(self):
+		if not frappe.get_meta("Desktop Icon").has_field("icon_type"):
+			self.skipTest("the desk's icons before Frappe 16.50")
+		if not frappe.db.exists("Desktop Icon", {"icon_type": "App", "app": "frappe"}):
+			frappe.get_doc(
+				{
+					"doctype": "Desktop Icon",
+					"label": "Frappe Framework",
+					"icon_type": "App",
+					"app": "frappe",
+					"link_type": "External",
+					"link": "/desk",
+				}
+			).insert(ignore_permissions=True, ignore_links=True)
+		marchio.applica()
+		icona = frappe.db.get_value(
+			"Desktop Icon", {"icon_type": "App", "app": "frappe"}, ["name", "label", "logo_url"], as_dict=True
+		)
+		self.assertEqual(
+			(icona.name, icona.label, icona.logo_url),
+			(marchio.AMMINISTRAZIONE, marchio.AMMINISTRAZIONE, marchio.ICONA_AMMINISTRAZIONE),
+		)
 
 	def test_il_desk_apre_il_crm_nel_guscio_del_prodotto(self):
 		if not frappe.db.exists("DocType", "Sidebar"):

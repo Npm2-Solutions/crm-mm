@@ -38,7 +38,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import frappe
-from frappe import _lt
+from frappe import _, _lt
 
 
 @dataclass(frozen=True)
@@ -141,6 +141,8 @@ PAROLE_DEL_FRAMEWORK = (_lt("Frappe Light"), _lt("Welcome to Frappe!"))
 VECCHIO_SPAZIO = "Frappe CRM"
 #: The desk's own tools (users, settings, printing) under a gear, not the framework's logo.
 ICONA_AMMINISTRAZIONE = "/assets/crm/images/amministrazione.svg"
+#: What the framework's own app is called in the desk: its tools, the desk's administration.
+AMMINISTRAZIONE = "Administration"
 #: The desk's workspace of the product, as the app ships it.
 SPAZIO = "DottorCloud"
 
@@ -375,18 +377,21 @@ def manifest(app: str = "crm") -> None:
 
 
 def boot(bootinfo) -> None:
-	"""`extend_bootinfo`: the desk's sidebar names the app a page belongs to by its
-	hooks' title - "Frappe Framework" for users and settings - and draws its logo."""
+	"""`extend_bootinfo`: the desk names the apps by their hooks' titles - the
+	framework's "Frappe Framework" - in its apps screen and the header's switcher.
+	The framework's tools (users, settings, printing) are the desk's administration,
+	under the gear its desktop icon wears: never a second app named after the product."""
 	marchio = attivo()
-	titoli = {"frappe": marchio.nome, "crm": marchio.nome, "frappe_whatsapp": "WhatsApp"}
+	titoli = {"frappe": _("Administration"), "crm": marchio.nome, "frappe_whatsapp": "WhatsApp"}
+	loghi = {"frappe": ICONA_AMMINISTRAZIONE, "crm": marchio.icona}
 	for app in bootinfo.get("app_data") or []:
 		titolo = titoli.get(app.get("app_name"))
 		if titolo:
 			app["app_title"] = titolo
 		elif "Frappe" in (app.get("app_title") or ""):
 			app["app_title"] = app["app_title"].replace("Frappe", "").strip() or marchio.nome
-		if app.get("app_name") in ("frappe", "crm"):
-			app["app_logo_url"] = marchio.icona
+		if app.get("app_name") in loghi:
+			app["app_logo_url"] = loghi[app["app_name"]]
 	# the desk's own logo is the brand's, whatever the hooks or a third app say
 	bootinfo["app_logo_url"] = marchio.icona
 
@@ -493,6 +498,21 @@ def _scrivania(marchio: Marchio) -> None:
 			"Desktop Icon", filters={"logo_url": ["like", "%frappe-framework%"]}, pluck="name"
 		):
 			frappe.db.set_value("Desktop Icon", icona, "logo_url", ICONA_AMMINISTRAZIONE)
+		# the framework's app icon is named after its hooks' title, "Frappe Framework"
+		del_framework = frappe.get_meta("Desktop Icon").has_field("icon_type") and frappe.db.get_value(
+			"Desktop Icon", {"icon_type": "App", "app": "frappe"}
+		)
+		if (
+			del_framework
+			and del_framework != AMMINISTRAZIONE
+			and not frappe.db.exists("Desktop Icon", AMMINISTRAZIONE)
+		):
+			frappe.rename_doc("Desktop Icon", del_framework, AMMINISTRAZIONE, force=True)
+			frappe.db.set_value(
+				"Desktop Icon",
+				AMMINISTRAZIONE,
+				{"label": AMMINISTRAZIONE, "logo_url": ICONA_AMMINISTRAZIONE},
+			)
 		frappe.cache.delete_key("desktop_icons")
 		frappe.cache.delete_key("bootinfo")
 

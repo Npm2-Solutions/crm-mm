@@ -35229,6 +35229,10 @@ msgid "⚠️ No row found for idx: {0} in parent field: {1}"
 msgstr "⚠️ Nessuna riga con idx {0} nel campo padre: {1}"
 
 #: crm/marchio.py
+msgid "Administration"
+msgstr "Amministrazione"
+
+#: crm/marchio.py
 msgid "Frappe Light"
 msgstr "Chiaro"
 
