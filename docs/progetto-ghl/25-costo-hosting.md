@@ -36,9 +36,11 @@ viene **rifiutato** se gli assegni un piano normale
 piani esistono e sono economici, ma **il loro prezzo non e' pubblicato** e non
 sono riuscito a trovarlo.
 
-> **L'unica voce aperta del preventivo.** Da chiedere a Frappe Cloud prima di
-> firmare: *quanto costa un site plan per siti ospitati su un server dedicato?*
-> Tutto il resto di questo documento e' verificato; questo no.
+> ✅ **Chiusa (07/10/2026).** Sul proprio server di Frappe Cloud i siti non si
+> pagano a parte: se ne mettono quanti ne regge il server, senza costi in più
+> (NPM2, dal pannello di Frappe Cloud). Si paga solo il server: 70 $ al mese il
+> cpx32 condiviso (4 vCPU, 8 GB), 140 $ il cpx42, 170 $ il ccx23 dedicato; il
+> taglio si cambia al volo.
 
 ## Il conto
 

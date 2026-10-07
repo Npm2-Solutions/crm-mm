@@ -199,7 +199,7 @@ sopra sono più recenti.
 | 10 | Parere legale su dispositivo medico ed EHDS (regolamento UE 2025/327) | da chiedere: le domande sono pronte in [legale/README.md](./legale/README.md#le-domande-per-il-legale) |
 | 11 | Una pagina «I tuoi dati»: dove stanno (Hetzner, Germania), backup cifrati, chi legge la cartella, come si esce | ✍️ testo pronto: [legale/i-tuoi-dati.md](./legale/i-tuoi-dati.md); da confermare i backup |
 | 12 | Condizioni di servizio e pagamento (carta o SEPA, rinnovo, disdetta) | ✍️ bozza: [legale/condizioni.md](./legale/condizioni.md); da scegliere il fornitore dei pagamenti |
-| 13 | Prezzo del piano sito di Frappe Cloud su server dedicato | l'unica voce aperta del costo ([doc 25](../progetto-ghl/25-costo-hosting.md)) |
+| 13 | Prezzo del piano sito di Frappe Cloud su server dedicato | ✅ chiuso: sul proprio server i siti non costano niente in più, si paga solo il server (70 $ al mese il cpx32, circa 3 € a centro con 20–25 centri; [doc 25](../progetto-ghl/25-costo-hosting.md)) |
 | 14 | **Prezzi sul sito**: oggi `sito/` non mostra piani né prezzi, per scelta | i prezzi pubblici sono un vantaggio sui concorrenti: va deciso se cambiare la regola |
 
 ## Cosa cambia nel codice
