@@ -64,8 +64,9 @@ MODULI = (
 		"booking and platforms, reminders; conversations; quotes; forms with a simple signature, "
 		"consents and documents; the client area; dashboards, users and levels",
 		ordine=1,
-		# every centre gives its people their area: the documents are everybody's
-		comprende=("area",),
+		# every centre gives its people their area: the documents are everybody's;
+		# and invoices with the Sistema TS, in every plan (the listino, 07/10/2026)
+		comprende=("area", "fatturazione"),
 		impostazioni=("Services", "Hours & shifts", "Online booking", "Users"),
 	),
 	ModuloPiano(

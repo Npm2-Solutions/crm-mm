@@ -173,6 +173,10 @@ def invite_by_email(emails: str, role: str | None = None, levels: str | list | N
 	)
 
 	to_invite = list(set(email_list) - set(existing_members) - set(existing_invites))
+	# the Professional plan is one person's (the listino, 07/10/2026)
+	from crm.api.plan import verifica_utenti
+
+	verifica_utenti(len(to_invite))
 
 	for email in to_invite:
 		invitation = {"doctype": "CRM Invitation", "email": email}

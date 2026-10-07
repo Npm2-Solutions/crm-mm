@@ -86,7 +86,8 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 	def test_con_la_clinica_il_prodotto_e_la_base_la_clinica_e_l_area(self):
 		moduli = self.moduli()
 		compresi = {chiave for chiave, modulo in moduli.items() if modulo["included"]}
-		self.assertEqual(compresi, {"base", "clinica", "area"})
+		# invoicing with the Sistema TS is in every plan (the listino, 07/10/2026)
+		self.assertEqual(compresi, {"base", "clinica", "area", "fatturazione"})
 		# included is on: nothing to try
 		for chiave in compresi:
 			self.assertEqual(moduli[chiave]["state"], "active")
@@ -108,10 +109,11 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 	def test_gli_extra_si_provano(self):
 		moduli = self.moduli()
 		extra = {chiave for chiave, modulo in moduli.items() if not modulo["included"]}
-		# the listino's extras (01/10/2026)
-		self.assertEqual(extra, {"fatturazione", "marketing", "telefono", "assistente", "firma"})
-		# invoicing was every site's before plans: on until the plan says otherwise
+		# the listino's extras (07/10/2026): invoicing is in every plan
+		self.assertEqual(extra, {"marketing", "telefono", "assistente", "firma"})
+		self.assertTrue(moduli["fatturazione"]["included"])
 		self.assertEqual(moduli["fatturazione"]["state"], "active")
+		self.assertIn("Base", moduli["fatturazione"]["comprised_by"])
 		# the assistant and the advanced signature are off until the centre wants them
 		for chiave in ("assistente", "firma"):
 			self.assertEqual(moduli[chiave]["state"], "off")
@@ -123,7 +125,8 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		piano.size = "Solo"
 		piano.save()
 		prima = frappe.db.count("CRM Resource", {"resource_type": "Room", "enabled": 1})
-		for nome in ("Ambulatorio 1 dei test", "Ambulatorio 2 dei test"):
+		nomi = [f"Ambulatorio {numero} dei test" for numero in range(1, 5)]
+		for nome in nomi:
 			frappe.get_doc(
 				{"doctype": "CRM Resource", "resource_name": nome, "resource_type": "Room"}
 			).insert()
@@ -133,7 +136,41 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		).insert()
 		frappe.set_user(MANAGER)
 		sale = plan.get_plan()["rooms"]
-		self.assertEqual(sale, {"count": prima + 2, "included": 1, "over": True})
+		# the Professional plan covers three
+		self.assertEqual(sale, {"count": prima + 4, "included": 3, "over": True})
+
+	def test_il_professionista_e_una_persona(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.size = "Solo"
+		piano.save()
+		frappe.db.delete("CRM Invitation", {"status": "Pending"})
+		# the plan counts who works with a level: not the agency
+		contati = plan.chi_conta()
+		self.assertIn(MANAGER, contati)
+		self.assertNotIn("Administrator", contati)
+		frappe.set_user(MANAGER)
+		utenti_nel_piano = plan.get_plan()["users"]
+		self.assertEqual(utenti_nel_piano["included"], 1)
+		self.assertEqual(utenti_nel_piano["count"], len(contati))
+		self.assertTrue(utenti_nel_piano["full"])
+		# a second person is not invited: the Studio is asked for instead
+		from crm.api import invite_by_email
+
+		with self.assertRaises(frappe.ValidationError):
+			invite_by_email("collega.professionista@example.com", levels=["segreteria"])
+		self.assertFalse(frappe.db.exists("CRM Invitation", {"email": "collega.professionista@example.com"}))
+		# the agency moves the size, and is never stopped
+		frappe.set_user("Administrator")
+		invite_by_email("collega.agenzia@example.com", levels=["segreteria"])
+		self.assertTrue(frappe.db.exists("CRM Invitation", {"email": "collega.agenzia@example.com"}))
+		# in the Studio users are unlimited
+		piano.size = "Studio"
+		piano.save()
+		frappe.set_user(MANAGER)
+		self.assertIsNone(plan.get_plan()["users"]["included"])
+		invite_by_email("collega.studio@example.com", levels=["segreteria"])
+		self.assertTrue(frappe.db.exists("CRM Invitation", {"email": "collega.studio@example.com"}))
 
 	def test_i_consumi_come_li_conta_il_listino(self):
 		frappe.set_user("Administrator")
@@ -158,17 +195,18 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		# told where the files are, which is the agency's
 		self.assertEqual(uso["storage"]["included"], 1024**4)
 		self.assertNotIn("archive_on", uso["storage"])
-		self.assertEqual(uso["sdi_credits"]["included"], 500)
+		self.assertEqual(uso["sdi_credits"]["included"], 600)
 		self.assertEqual(uso["signatures"]["included"], 2000)
 		for voce in ("sdi_credits", "signatures"):
 			self.assertIn("warn", uso[voce])
-		# without invoicing there are no credits to count
+		# invoicing is in every plan: a row of the old listino that says off takes
+		# nothing away
 		frappe.set_user("Administrator")
 		piano.append("modules", {"module": "fatturazione", "status": "Off"})
 		piano.save()
 		livelli.dimentica_cache()
 		frappe.set_user(MANAGER)
-		self.assertIsNone(plan.get_plan()["usage"]["sdi_credits"])
+		self.assertEqual(plan.get_plan()["usage"]["sdi_credits"]["included"], 600)
 
 	def test_ogni_modulo_si_legge_nella_lingua_del_centro(self):
 		# the page draws a module's name and words through __(): their English is

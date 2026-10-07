@@ -920,8 +920,8 @@ msgid "A required field was missing from the message. That is ours to fix."
 msgstr "Nel messaggio mancava un campo obbligatorio. Tocca a noi correggerlo."
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited."
-msgstr "Un ambulatorio è una stanza in cui si visita o si tratta, come uno studio o un box; la palestra di fisioterapia conta come uno. Sono le sale dell'agenda: specialisti e utenti sono illimitati."
+msgid "A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited, but in the Professional plan."
+msgstr "Un ambulatorio è una stanza in cui si visita o si tratta, come uno studio o un box; la palestra di fisioterapia conta come uno. Sono le sale dell'agenda: specialisti e utenti sono illimitati, tranne nel piano Professionista."
 
 #: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
 msgid "A room or machine over capacity"
@@ -24868,8 +24868,8 @@ msgid "Solo"
 msgstr "Solo"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Solo, one room"
-msgstr "Solo, un ambulatorio"
+msgid "Professional, one user and up to 3 rooms"
+msgstr "Professionista, un utente e fino a 3 ambulatori"
 
 #: frontend/src/utils/moduliStarters.js
 msgid "Some days"
@@ -25422,8 +25422,8 @@ msgid "Studio hours"
 msgstr "Orari del centro"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Studio, up to 2 rooms"
-msgstr "Studio, fino a 2 ambulatori"
+msgid "Studio, up to 3 rooms"
+msgstr "Studio, fino a 3 ambulatori"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:68
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:68
@@ -46227,3 +46227,47 @@ msgstr "I promemoria degli appuntamenti di domani, per email, e chi ha confermat
 
 msgid "on the list since {0}"
 msgstr "in lista dal {0}"
+
+#: crm/api/plan.py
+msgid "{0} asks for the {1} plan on {2}"
+msgstr "{0} chiede il piano {1} su {2}"
+
+#: crm/api/plan.py
+msgid "A centre asks for a bigger plan"
+msgstr "Un centro chiede un piano più grande"
+
+#: crm/api/plan.py
+msgid "{0} ({1}) asks to move {2} to the {3} plan. Change the size in the site's plan (Settings > Plan) and bill it from next month."
+msgstr "{0} ({1}) chiede di passare {2} al piano {3}. Cambia la taglia nel piano del sito (Impostazioni > Piano) e fatturala dal mese dopo."
+
+#: crm/api/plan.py
+msgid "{0} is not a size of the plan"
+msgstr "{0} non è una taglia del piano"
+
+#: crm/api/plan.py
+msgid "The Professional plan is for one person. To work with colleagues, ask for the Studio plan from Settings > Features: users are unlimited there."
+msgstr "Il piano Professionista è per una persona. Per lavorare con dei colleghi chiedi il piano Studio da Impostazioni > Funzionalità: lì gli utenti sono illimitati."
+
+#: crm/api/plan.py
+msgid "One user in the plan"
+msgstr "Un utente nel piano"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "{0} of {1} users"
+msgstr "{0} utenti su {1}"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "The Professional plan is for one person. To work with colleagues, the Studio plan has unlimited users and the same rooms."
+msgstr "Il piano Professionista è per una persona. Per lavorare con dei colleghi c'è il piano Studio, con utenti illimitati e gli stessi ambulatori."
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Ask for the Studio plan"
+msgstr "Chiedi il piano Studio"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Asked: the agency will move your plan"
+msgstr "Richiesta inviata: l'agenzia sposterà il tuo piano"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "The agency could not be emailed: let them know"
+msgstr "Non è stato possibile scrivere all'agenzia: avvisala tu"
