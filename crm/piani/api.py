@@ -37,6 +37,7 @@ from crm.piani import regole as R
 from crm.utils import count_field
 
 PIANO = "CRM Personal Plan"
+VOCE = "CRM Personal Plan Item"
 ESERCIZIO = "CRM Exercise"
 REGISTRO = "CRM Personal Plan Log"
 BOZZA, PUBBLICATO, CHIUSO = "Draft", "Published", "Closed"
@@ -835,6 +836,34 @@ def cerca(doctype: str, campo: str, testo: str | None, filtri: dict, campi: list
 PER_PAGINA = 48
 
 
+def usi(campo_della_voce: str, user: str | None = None) -> dict[str, tuple[int, int]]:
+	"""How often each entry of a library is in the centre's plans, by the item's
+	field that names it: (in the session's own plans, in all of them)."""
+	user = user or frappe.session.user
+	if not frappe.get_meta(VOCE).has_field(campo_della_voce):
+		return {}
+	voce = frappe.qb.DocType(VOCE)
+	piano = frappe.qb.DocType(PIANO)
+	from frappe.query_builder.functions import Count, Sum
+	from pypika.terms import Case
+
+	righe = (
+		frappe.qb.from_(voce)
+		.join(piano)
+		.on(voce.parent == piano.name)
+		.select(
+			voce[campo_della_voce],
+			Sum(Case().when(piano.practitioner == user, 1).else_(0)),
+			Count("*"),
+		)
+		.where(voce.parenttype == PIANO)
+		.where(voce[campo_della_voce].isnotnull())
+		.groupby(voce[campo_della_voce])
+		.run()
+	)
+	return {nome: (cint(miei), cint(tutti)) for nome, miei, tutti in righe if nome}
+
+
 def sfoglia(
 	doctype: str,
 	campo: str,
@@ -843,11 +872,18 @@ def sfoglia(
 	campi: list[str],
 	faccette: tuple[str, ...],
 	start: int = 0,
+	uso: str | None = None,
+	in_fondo: dict | None = None,
 ) -> dict:
-	"""A page of a library to browse while writing a plan: the entries with these
-	words and filters (the ones whose name starts with the words first), how many
-	there are, and for each facet its values with how many entries each has under
-	the other filters - a body part, an equipment, a food group."""
+	"""A page of a library to browse while writing a plan, with how many there are
+	and, for each facet, its values with how many entries each has under the other
+	filters - a body part, an equipment, a food group.
+
+	What is used comes first: the entries in the session's own plans, then in the
+	centre's (``uso``, the plan item's field that names them), each saying how
+	often; then the others by name, with what is seldom wanted (``in_fondo``: the
+	drinks among the foods) at the end. With words, the names that start with them
+	first, the used ones before the others."""
 	livelli.verifica("piani.scrivi")
 	attivi = {k: v for k, v in filtri.items() if v}
 	parole = (testo or "").strip()
@@ -858,13 +894,19 @@ def sfoglia(
 			o_filtri.append(["name_in_source", "like", f"%{parole}%"])
 	inizio = max(cint(start), 0)
 	base = {"enabled": 1, **attivi}
+	usati = usi(uso) if uso else {}
+
+	def peso(nome: str) -> tuple[int, int]:
+		miei, tutti = usati.get(nome, (0, 0))
+		return (-miei, -tutti)
+
 	if parole:
-		# ranked in Python: the names that start with the words first, then the shortest
 		righe = frappe.get_all(doctype, filters=base, or_filters=o_filtri, fields=campi, limit=2000)
 		chiave = parole.lower()
 		righe.sort(
 			key=lambda r: (
 				not (r.get(campo) or "").lower().startswith(chiave),
+				*peso(r.name),
 				len(r.get(campo) or ""),
 				r.get(campo) or "",
 			)
@@ -872,10 +914,10 @@ def sfoglia(
 		totale = len(righe)
 		righe = righe[inizio : inizio + PER_PAGINA]
 	else:
-		righe = frappe.get_all(
-			doctype, filters=base, fields=campi, order_by=f"{campo} asc", start=inizio, limit=PER_PAGINA
-		)
-		totale = frappe.db.count(doctype, base)
+		righe, totale = _a_pezzi(doctype, campo, base, campi, inizio, usati, peso, in_fondo or {})
+	for riga in righe:
+		miei, tutti = usati.get(riga.name, (0, 0))
+		riga["uses"] = {"mine": miei, "all": tutti}
 	valori = {}
 	for faccetta in faccette:
 		altri = {"enabled": 1, **{k: v for k, v in attivi.items() if k != faccetta}}
@@ -893,6 +935,40 @@ def sfoglia(
 			if riga[0]
 		]
 	return {"rows": righe, "total": totale, "facets": valori}
+
+
+def _a_pezzi(doctype, campo, base, campi, inizio, usati, peso, in_fondo) -> tuple[list, int]:
+	"""A page of the library without words, in three pieces one after the other:
+	the used entries, the others by name, then what goes at the end."""
+	usate = []
+	if usati:
+		usate = frappe.get_all(
+			doctype, filters={**base, "name": ("in", list(usati))}, fields=campi, limit=len(usati)
+		)
+		usate.sort(key=lambda r: (*peso(r.name), r.get(campo) or ""))
+	nomi_usati = [r.name for r in usate]
+	escludi = {"name": ("not in", nomi_usati)} if nomi_usati else {}
+	in_coda = {k: v for k, v in in_fondo.items() if k not in base}
+	pezzi = [{**base, **escludi}]
+	if in_coda:
+		[(c, valori)] = in_coda.items()
+		pezzi = [{**base, **escludi, c: ("not in", valori)}, {**base, **escludi, c: ("in", valori)}]
+	conti = [frappe.db.count(doctype, filtri) for filtri in pezzi]
+	totale = len(usate) + sum(conti)
+	righe = usate[inizio : inizio + PER_PAGINA]
+	da = max(inizio - len(usate), 0)
+	for filtri, quanti in zip(pezzi, conti, strict=True):
+		manca = PER_PAGINA - len(righe)
+		if manca <= 0:
+			break
+		if da >= quanti:
+			da -= quanti
+			continue
+		righe += frappe.get_all(
+			doctype, filters=filtri, fields=campi, order_by=f"{campo} asc", start=da, limit=manca
+		)
+		da = 0
+	return righe, totale
 
 
 @frappe.whitelist()
@@ -928,6 +1004,7 @@ def browse_exercises(
 		],
 		("body_part", "equipment"),
 		start,
+		uso="exercise",
 	)
 	pagina["rows"] = [{**riga, **media(riga)} for riga in pagina["rows"]]
 	# the library's pictures are there once the server has them, or a CDN is named

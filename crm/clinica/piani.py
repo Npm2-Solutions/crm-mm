@@ -208,6 +208,9 @@ def browse_foods(text: str | None = None, group: str | None = None, start: int |
 		["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI, "source"],
 		("food_group",),
 		start,
+		uso="food",
+		# the drinks are hundreds of mineral waters: after the foods
+		in_fondo={"food_group": ["Drinks"]},
 	)
 
 

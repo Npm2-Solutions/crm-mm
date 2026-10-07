@@ -227,6 +227,14 @@
                 <span class="line-clamp-2 text-p-xs text-ink-gray-5">
                   {{ describe(row) }}
                 </span>
+                <!-- what is used comes first, and says so -->
+                <span
+                  v-if="usato(row)"
+                  class="mt-0.5 flex items-center gap-1 text-p-xs text-ink-gray-6"
+                >
+                  <span class="lucide-history size-3" aria-hidden="true" />
+                  {{ usato(row) }}
+                </span>
               </span>
             </button>
             <span
@@ -432,6 +440,20 @@ function describe(row) {
   ]
     .filter(Boolean)
     .join(' · ')
+}
+
+// how often it is in the plans: one's own first, then the centre's
+function usato(row) {
+  const { mine = 0, all = 0 } = row.uses || {}
+  if (mine)
+    return mine === 1
+      ? __('In one of your plans')
+      : __('In {0} of your plans', [mine])
+  if (all)
+    return all === 1
+      ? __('In one plan of the centre')
+      : __('In {0} plans of the centre', [all])
+  return ''
 }
 
 // the still picture in the list, the animation when it is read whole

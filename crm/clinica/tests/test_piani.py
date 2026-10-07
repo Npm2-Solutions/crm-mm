@@ -116,6 +116,27 @@ class ChiScrive(PianiCase):
 		with self.assertRaises(frappe.PermissionError):
 			piani_clinica.browse_foods()
 
+	def test_le_bevande_in_fondo_e_le_usate_prima(self):
+		frappe.set_user("Administrator")
+		acqua = frappe.get_doc(
+			{"doctype": piani_clinica.CIBO, "food_name": "Acqua minerale", "food_group": "Drinks", "kcal": 0}
+		).insert(ignore_permissions=True)
+		frappe.get_doc(
+			{"doctype": piani_clinica.CIBO, "food_name": "Albicocca", "food_group": "Fruit", "kcal": 48}
+		).insert(ignore_permissions=True)
+		self.scrive(DOC1)
+		self.come(DOC1)
+		pagina = piani_clinica.browse_foods()
+		nomi = [riga["name"] for riga in pagina["rows"]]
+		# the pasta of the menu written first, the drinks after every food
+		self.assertEqual(nomi[0], self.pasta.name)
+		self.assertEqual(pagina["rows"][0]["uses"]["mine"], 1)
+		if acqua.name in nomi:
+			gruppi = [riga["food_group"] for riga in pagina["rows"]]
+			self.assertEqual(
+				gruppi[nomi.index(acqua.name) :], ["Drinks"] * (len(nomi) - nomi.index(acqua.name))
+			)
+
 	def test_esercizi_a_casa_al_fisioterapista(self):
 		dati = {
 			"plan_type": R.ESERCIZI,
