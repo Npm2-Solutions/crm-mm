@@ -194,11 +194,11 @@ sopra sono più recenti.
 
 | # | Cosa | Perché |
 |---|---|---|
-| 8 | Nomina a responsabile del trattamento (art. 28 GDPR) da firmare con ogni centro | ospitiamo dati sanitari ([README](./README.md#voi-come-fornitore)) |
-| 9 | Valutazione d'impatto (DPIA) del modulo clinico | obbligatoria per i dati sanitari |
-| 10 | Parere legale su dispositivo medico ed EHDS (regolamento UE 2025/327) | prima di vendere la cartella come prodotto |
-| 11 | Una pagina «I tuoi dati»: dove stanno (Hetzner, Germania), backup cifrati, chi legge la cartella, come si esce | per i centri è la prima domanda |
-| 12 | Condizioni di servizio e pagamento (carta o SEPA, rinnovo, disdetta) | non ci sono |
+| 8 | Nomina a responsabile del trattamento (art. 28 GDPR) da firmare con ogni centro | ✍️ bozza: [legale/nomina-responsabile.md](./legale/nomina-responsabile.md), da far rivedere |
+| 9 | Valutazione d'impatto (DPIA) del modulo clinico | ✍️ bozza: [legale/dpia-cartella.md](./legale/dpia-cartella.md), da far rivedere |
+| 10 | Parere legale su dispositivo medico ed EHDS (regolamento UE 2025/327) | da chiedere: le domande sono pronte in [legale/README.md](./legale/README.md#le-domande-per-il-legale) |
+| 11 | Una pagina «I tuoi dati»: dove stanno (Hetzner, Germania), backup cifrati, chi legge la cartella, come si esce | ✍️ testo pronto: [legale/i-tuoi-dati.md](./legale/i-tuoi-dati.md); da confermare i backup |
+| 12 | Condizioni di servizio e pagamento (carta o SEPA, rinnovo, disdetta) | ✍️ bozza: [legale/condizioni.md](./legale/condizioni.md); da scegliere il fornitore dei pagamenti |
 | 13 | Prezzo del piano sito di Frappe Cloud su server dedicato | l'unica voce aperta del costo ([doc 25](../progetto-ghl/25-costo-hosting.md)) |
 | 14 | **Prezzi sul sito**: oggi `sito/` non mostra piani né prezzi, per scelta | i prezzi pubblici sono un vantaggio sui concorrenti: va deciso se cambiare la regola |
 
