@@ -544,6 +544,22 @@ def _navigazione_del_desk(marchio: Marchio) -> None:
 		frappe.cache.delete_key("dock_layers")
 
 
+def desktop_ad_app() -> None:
+	"""The desk's desktop as DottorCloud ships it: the apps' screen, each app with its
+	dock and each module with its sidebar (`dock/crm`, `fcrm/sidebar/dottorcloud`),
+	not the grid of icons Frappe 16.50 keeps for a site that had one. At install and
+	once by the patch: a later choice in Desktop Settings stays, and nobody is
+	invited to try what is already on."""
+	if not frappe.db.exists("DocType", "Desktop Settings"):
+		return
+	if not frappe.get_meta("Desktop Settings").has_field("desktop_page"):
+		return
+	if frappe.db.get_single_value("Desktop Settings", "desktop_page") != "Apps":
+		frappe.db.set_single_value("Desktop Settings", "desktop_page", "Apps")
+		frappe.clear_cache()
+	frappe.defaults.set_global_default("skip_new_navigation_prompt", 1)
+
+
 def _autori() -> None:
 	"""The desk shows who created and last changed a DocType: some of the CRM's came
 	with the old product's authors' addresses."""
