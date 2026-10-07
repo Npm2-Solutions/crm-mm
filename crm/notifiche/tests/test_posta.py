@@ -100,7 +100,9 @@ class Quando(PostaCase):
 		messaggio = frappe.db.get_value("Email Queue", code[0], "message")
 		self.assertIn("mentioned you in a comment on", messaggio)
 		self.assertIn(f"/crm/persone/{self.laura.name}", messaggio)
+		# never the Desk, under its old address or its own
 		self.assertNotIn("/app/", messaggio)
+		self.assertNotIn("/desk/", messaggio)
 		self.assertEqual(frappe.db.get_value(NOTIFICA, nome, "email_due"), 0)
 		self.assertTrue(frappe.db.get_value(NOTIFICA, nome, "emailed_on"))
 		# and only once

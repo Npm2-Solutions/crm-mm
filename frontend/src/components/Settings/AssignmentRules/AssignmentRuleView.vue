@@ -370,7 +370,7 @@ const documentType = computed(() =>
     ? __('leads')
     : __('deals'),
 )
-const deskUrl = `${window.location.origin}/app/assignment-rule/${step.value.data?.name}`
+const deskUrl = `${window.location.origin}/desk/assignment-rule/${step.value.data?.name}`
 
 const defaultAssignmentDays = [
   'Monday',
