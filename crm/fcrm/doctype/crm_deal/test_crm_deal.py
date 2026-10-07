@@ -200,6 +200,38 @@ class TestCRMDeal(IntegrationTestCase):
 		assign_remove("CRM Deal", deal.name, "crm.user1@example.com")  # remove a non-owner assignee
 		self.assertIsNone(frappe.db.get_value("CRM Deal", deal.name, "deal_owner"))
 
+	def _todo(self, deal, allocated_to, **kwargs):
+		return frappe.get_doc(
+			{
+				"doctype": "ToDo",
+				"description": "x",
+				"status": "Open",
+				"reference_type": "CRM Deal",
+				"reference_name": deal.name,
+				"allocated_to": allocated_to,
+			}
+		).insert(**kwargs)
+
+	def test_an_assignment_needs_the_deal_written(self):
+		"""Whoever cannot write the deal cannot take it over by writing a ToDo on it."""
+		deal = create_test_deal(organization="ToDo Org", deal_owner="crm.user1@example.com")
+		estraneo = "deal-estraneo@example.com"
+		if not frappe.db.exists("User", estraneo):
+			frappe.get_doc(
+				{"doctype": "User", "email": estraneo, "first_name": "Estraneo", "send_welcome_email": 0}
+			).insert(ignore_permissions=True)
+		frappe.set_user(estraneo)
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				self._todo(deal, estraneo)
+		finally:
+			frappe.set_user("Administrator")
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "deal_owner"), "crm.user1@example.com")
+
+		# a trusted flow (assign_to, an assignment rule) still moves the owner
+		self._todo(deal, "crm.user2@example.com", ignore_permissions=True)
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "deal_owner"), "crm.user2@example.com")
+
 	def test_task_unassign_does_not_touch_owner(self):
 		"""Cancelling a CRM Task assignment is a no-op for owner fields"""
 		deal = create_test_deal(organization="Task Org")
