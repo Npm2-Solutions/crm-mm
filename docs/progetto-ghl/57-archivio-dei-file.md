@@ -8,7 +8,7 @@
 I file privati di un centro (moduli firmati, referti, documenti, allegati delle
 conversazioni) dopo un'ora vanno in un **bucket S3 dell'agenzia** su Hetzner
 Object Storage, una cartella per sito. Sul server resta un file vuoto con lo
-stesso nome. Ogni centro ha **1 TB incluso**, **2 TB** da Poliambulatorio in su;
+stesso nome. Lo spazio incluso cresce con la taglia: **300 GB** il Professionista, **600 GB** lo Studio, **1 TB** il Centro, **2 TB** da Poliambulatorio in su (listino del 07/10);
 oltre non si blocca niente, la pagina avvisa all'80% e l'agenzia fattura lo
 spazio in più.
 

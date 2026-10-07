@@ -191,11 +191,11 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		# WhatsApp is not counted, Meta bills the centre; nor calls and SMS,
 		# Twilio bills them to whoever owns the account
 		self.assertEqual(set(uso), {"storage", "sdi_credits", "signatures"})
-		# the space for files (doc 57): a terabyte for a studio, the manager not
+		# the space for files (doc 57): 600 GB for a studio, the manager not
 		# told where the files are, which is the agency's
-		self.assertEqual(uso["storage"]["included"], 1024**4)
+		self.assertEqual(uso["storage"]["included"], 600 * 1024**3)
 		self.assertNotIn("archive_on", uso["storage"])
-		self.assertEqual(uso["sdi_credits"]["included"], 600)
+		self.assertEqual(uso["sdi_credits"]["included"], 300)
 		self.assertEqual(uso["signatures"]["included"], 2000)
 		for voce in ("sdi_credits", "signatures"):
 			self.assertIn("warn", uso[voce])
@@ -206,7 +206,7 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		piano.save()
 		livelli.dimentica_cache()
 		frappe.set_user(MANAGER)
-		self.assertEqual(plan.get_plan()["usage"]["sdi_credits"]["included"], 600)
+		self.assertEqual(plan.get_plan()["usage"]["sdi_credits"]["included"], 300)
 
 	def test_ogni_modulo_si_legge_nella_lingua_del_centro(self):
 		# the page draws a module's name and words through __(): their English is

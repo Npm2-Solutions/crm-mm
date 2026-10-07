@@ -28,6 +28,7 @@ from crm.fcrm.doctype.crm_plan.crm_plan import (
 	AVVISO,
 	CREDITI_SDI,
 	FIRME_INCLUSE,
+	RICHIESTE_DI_PROVA,
 	UTENTI,
 	crediti_sdi,
 )
@@ -120,7 +121,12 @@ def get_plan() -> dict:
 			"full": bool(ammessi and persone >= ammessi),
 		},
 		"modules": moduli,
-		"usage": consumi(piano.size, accesi, spazio_gb=piano.get("storage_gb")),
+		"usage": consumi(
+			piano.size,
+			accesi,
+			spazio_gb=piano.get("storage_gb"),
+			in_prova={modulo["key"] for modulo in moduli if modulo["state"] == "trial"},
+		),
 		"agency": livelli.e_agenzia(frappe.session.user),
 		"trial_days": GIORNI_DI_PROVA,
 	}
@@ -290,6 +296,7 @@ def consumi(
 	accesi: set[str] = frozenset(),
 	giorno: str | None = None,
 	spazio_gb: int | None = None,
+	in_prova: set[str] = frozenset(),
 ) -> dict:
 	"""What the centre used, as the agency bills it: the space its files take
 	(doc 57), the SdI credits and the advanced signatures of the year, each with
@@ -318,6 +325,11 @@ def consumi(
 			),
 			"included": FIRME_INCLUSE,
 		}
+	if "assistente" in in_prova:
+		# the assistant's trial is a few requests, then it is an add-on
+		from crm.assistente import modello
+
+		uso["assistant_trial"] = {"used": modello.richieste_usate(), "included": RICHIESTE_DI_PROVA}
 	for voce in uso.values():
 		if voce and voce.get("included"):
 			voce["warn"] = archivio_regole.avviso(voce["used"], voce["included"], AVVISO)

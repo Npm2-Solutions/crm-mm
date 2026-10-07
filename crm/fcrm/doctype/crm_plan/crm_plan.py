@@ -91,13 +91,17 @@ AMBULATORI = {"Solo": 3, "Studio": 3, "Centre": 5, "Polyclinic": 10, "Large": No
 #: not here has them unlimited. The Professional plan is one person's.
 UTENTI = {"Solo": 1}
 
-#: SdI credits a year that come with invoicing - in every plan - by size.
-CREDITI_SDI = {"Solo": 300, "Studio": 600, "Centre": 1200, "Polyclinic": 2400, "Large": 2400}
+#: SdI credits a year that come with invoicing - in every plan - by size: the
+#: Professional and the Studio the same (the listino, 07/10/2026).
+CREDITI_SDI = {"Solo": 300, "Studio": 300, "Centre": 600, "Polyclinic": 1200, "Large": 1200}
 
-#: Signatures a year that come with the advanced signature. The phone counts
-#: nothing: a year's fee switches it on, and calls, numbers and SMS are paid to
-#: Twilio by whoever owns the account (the listino, 03/10/2026).
+#: Signatures a year that come with the advanced signature, an add-on in every
+#: plan, never included. The phone counts nothing: a year's fee switches it on,
+#: and calls, numbers and SMS are paid to Twilio by whoever owns the account.
 FIRME_INCLUSE = 2000
+
+#: Requests the assistant's trial has, the centre's whole: then it is an add-on.
+RICHIESTE_DI_PROVA = 50
 
 #: Used past this share of what is included, the page warns (the listino: at 80%).
 AVVISO = 0.8

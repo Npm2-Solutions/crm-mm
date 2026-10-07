@@ -229,6 +229,35 @@ class IlRegistro(AssistenteCase):
 			frappe.delete_doc(modello.EVENTO, risposta.evento, ignore_permissions=True)
 
 
+class LaProva(AssistenteCase):
+	def test_la_prova_ha_le_sue_richieste(self):
+		# on trial the assistant answers a few requests, the centre's whole; a
+		# failed one cost nothing; then it is an add-on to buy
+		piano = frappe.get_single("CRM Plan")
+		piano.set("modules", [{"module": "assistente", "status": "Trial", "trial_until": "2099-12-31"}])
+		piano.save()
+		livelli.dimentica_cache()
+		self.come(MANAGER)
+		self.assertTrue(modello.in_prova())
+		self.assertFalse(modello.mancano())
+		with mock.patch.object(modello, "RICHIESTE_DI_PROVA", modello.richieste_usate() + 1):
+			with mock.patch.object(requests, "post", side_effect=requests.ConnectionError()):
+				modello.chiedi("form_from_paper", "istruzioni", "testo")
+			self.assertNotIn(modello.TRIAL_FINITA, modello.mancano())
+			with mock.patch.object(requests, "post", return_value=risposta_anthropic("ciao")):
+				modello.chiedi("form_from_paper", "istruzioni", "testo")
+			self.assertIn(modello.TRIAL_FINITA, modello.mancano())
+			self.assertRaises(
+				frappe.ValidationError, modello.chiedi, "form_from_paper", "istruzioni", "testo"
+			)
+
+	def test_comprato_non_si_conta(self):
+		self.come(MANAGER)
+		self.assertFalse(modello.in_prova())
+		with mock.patch.object(modello, "RICHIESTE_DI_PROVA", 0):
+			self.assertFalse(modello.mancano())
+
+
 class DalModuloDiCarta(AssistenteCase):
 	def test_la_proposta_diventa_una_bozza_controllata(self):
 		url = self.carica_pdf()

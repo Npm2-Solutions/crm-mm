@@ -304,9 +304,11 @@
             </span>
             <span v-if="item.warn" class="text-p-xs text-ink-amber-8">
               {{
-                item.bytes
-                  ? __('Nearly full: beyond, the space is paid as used')
-                  : __('Nearly used up: beyond, they are paid as used')
+                item.prova
+                  ? __('Nearly used up: then the assistant is an add-on')
+                  : item.bytes
+                    ? __('Nearly full: beyond, the space is paid as used')
+                    : __('Nearly used up: beyond, they are paid as used')
               }}
             </span>
             <span v-if="item.note" class="text-p-xs text-ink-gray-5">
@@ -436,7 +438,7 @@ const sizeText = computed(() =>
 
 // what the agency bills, each with what the plan includes: the space the
 // centre's files take (doc 57), the SdI credits with invoicing, the signatures
-// with the advanced signature. Calls and SMS are not here: Twilio bills them to
+// with the advanced signature, the assistant's trial. Calls and SMS are not here: Twilio bills them to
 // whoever owns the account
 const usage = computed(() => {
   const uso = plan.data?.usage || {}
@@ -462,6 +464,12 @@ const usage = computed(() => {
     uso.signatures && {
       label: __('Advanced signatures this year'),
       ...uso.signatures,
+    },
+    // the assistant's trial: a few requests, then an add-on
+    uso.assistant_trial && {
+      label: __("Assistant's trial requests"),
+      ...uso.assistant_trial,
+      prova: true,
     },
   ].filter(Boolean)
 })

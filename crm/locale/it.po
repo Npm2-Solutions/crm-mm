@@ -45847,8 +45847,8 @@ msgid "Storage included (GB)"
 msgstr "Spazio incluso (GB)"
 
 #: crm/fcrm/doctype/crm_plan/crm_plan.json
-msgid "The space for the centre's files, in GB, when it is not what the size includes: 1 TB, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it."
-msgstr "Lo spazio per i file del centro, in GB, quando non è quello che la dimensione include: 1 TB, 2 TB da Poliambulatorio in su. Oltre non si blocca niente: la pagina avvisa e l'agenzia lo fattura."
+msgid "The space for the centre's files, in GB, when it is not what the size includes: 300 GB for Solo, 600 GB for Studio, 1 TB for Centre, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it."
+msgstr "Lo spazio per i file del centro, in GB, quando non è quello che la dimensione include: 300 GB per Solo, 600 GB per Studio, 1 TB per Centro, 2 TB da Poliambulatorio in su. Oltre non si blocca niente: la pagina avvisa e l'agenzia lo fattura."
 
 #: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
 msgid "CRM Archived File"
@@ -46419,3 +46419,12 @@ msgstr "Dal gestionale di prima"
 #: frontend/src/components/Settings/YourDataSettings.vue
 msgid "Row"
 msgstr "Riga"
+
+msgid "The trial's requests are used up: add the assistant to the plan in Settings > The centre > Features"
+msgstr "Le richieste di prova sono finite: aggiungi l'assistente al piano in Impostazioni > Il centro > Funzionalità"
+
+msgid "Assistant's trial requests"
+msgstr "Richieste di prova dell'assistente"
+
+msgid "Nearly used up: then the assistant is an add-on"
+msgstr "Quasi finite: poi l'assistente si aggiunge al piano"

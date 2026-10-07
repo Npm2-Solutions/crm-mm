@@ -163,7 +163,8 @@ class LeChiavi(unittest.TestCase):
 
 class LoSpazio(unittest.TestCase):
 	def test_quello_che_include_il_piano(self):
-		self.assertEqual(R.compreso("Solo"), R.TB)
+		self.assertEqual(R.compreso("Solo"), 300 * R.GB)
+		self.assertEqual(R.compreso("Studio"), 600 * R.GB)
 		self.assertEqual(R.compreso("Centre"), R.TB)
 		self.assertEqual(R.compreso("Polyclinic"), 2 * R.TB)
 		self.assertEqual(R.compreso("Large"), 2 * R.TB)
