@@ -304,3 +304,18 @@ export function testoDellaSpesa(lista, t = (s, a) => format(s, a), locale) {
   }
   return righe.join('\n')
 }
+
+// who writes a kind the reader's qualification does not, in one line: «Medico
+// chirurgo, Biologo o Dietista», as the reader's language lists them
+export function chiLoScrive(nomi, locale = 'en-GB') {
+  const elenco = (nomi || []).filter(Boolean)
+  if (!elenco.length) return ''
+  try {
+    return new Intl.ListFormat(locale, {
+      style: 'long',
+      type: 'disjunction',
+    }).format(elenco)
+  } catch {
+    return elenco.join(', ')
+  }
+}

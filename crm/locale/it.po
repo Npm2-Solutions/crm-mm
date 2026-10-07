@@ -15364,7 +15364,7 @@ msgstr "Pasto"
 
 #: crm/clinica/piani_regole.py
 msgid "Meal plan"
-msgstr "Menu"
+msgstr "Piano alimentare"
 
 #: frontend/src/frontend/src/utils/moduliStarters.js
 msgid "Measures, allergies, medications, habits"
@@ -46428,3 +46428,60 @@ msgstr "Richieste di prova dell'assistente"
 
 msgid "Nearly used up: then the assistant is an add-on"
 msgstr "Quasi finite: poi l'assistente si aggiunge al piano"
+
+msgid "Choose the foods"
+msgstr "Scegli gli alimenti"
+
+msgid "Choose the exercises"
+msgstr "Scegli gli esercizi"
+
+msgid "For «{0}»"
+msgstr "Per «{0}»"
+
+msgid "Muscles"
+msgstr "Muscoli"
+
+msgid "Also"
+msgstr "Anche"
+
+msgid "The video"
+msgstr "Il video"
+
+msgid "Search a food: pasta, apple, yogurt…"
+msgstr "Cerca un alimento: pasta, mela, yogurt…"
+
+msgid "Search an exercise: squat, plank, stretching…"
+msgstr "Cerca un esercizio: squat, plank, allungamento…"
+
+msgid "The library’s pictures are not on the server yet: they arrive by themselves within a few hours. The exercises can be chosen already."
+msgstr "Le immagini della libreria non sono ancora sul server: arrivano da sole entro qualche ora. Gli esercizi si possono già scegliere."
+
+msgid "Add «{0}» to the library"
+msgstr "Aggiungi «{0}» alla libreria"
+
+msgid "How it is done: {0}"
+msgstr "Come si fa: {0}"
+
+msgid "Chosen"
+msgstr "Scelto"
+
+msgid "Choose it"
+msgstr "Sceglilo"
+
+msgid "Add {0}"
+msgstr "Aggiungi {0}"
+
+msgid "Any equipment"
+msgstr "Qualsiasi attrezzo"
+
+msgid "No exercise chosen"
+msgstr "Nessun esercizio scelto"
+
+msgid "Your qualification is {0}. The centre’s manager sets it in Settings › Invoicing › Services & providers."
+msgstr "La tua qualifica è {0}. La imposta il responsabile del centro in Impostazioni › Fatturazione › Servizi e professionisti."
+
+msgid "You have no qualification yet: the centre’s manager sets it in Settings › Invoicing › Services & providers."
+msgstr "Non hai ancora una qualifica: la imposta il responsabile del centro in Impostazioni › Fatturazione › Servizi e professionisti."
+
+msgid "{0}: written by {1}."
+msgstr "{0}: lo scrive {1}."

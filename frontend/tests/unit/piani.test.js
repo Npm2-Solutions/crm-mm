@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  chiLoScrive,
   ABITUDINE,
   CIBO,
   ESERCIZIO,
@@ -265,5 +266,22 @@ describe('the shopping list', () => {
         'Fish: 3 portions',
       ].join('\n'),
     )
+  })
+})
+
+describe('chiLoScrive', () => {
+  it('lists who writes a kind, one or the other', () => {
+    expect(chiLoScrive(['Medico chirurgo', 'Biologo', 'Dietista'], 'it')).toBe(
+      'Medico chirurgo, Biologo o Dietista',
+    )
+    expect(chiLoScrive(['Doctor', 'Dietitian'], 'en-GB')).toBe(
+      'Doctor or Dietitian',
+    )
+    expect(chiLoScrive(['Fisioterapista'], 'it')).toBe('Fisioterapista')
+  })
+
+  it('says nothing without names', () => {
+    expect(chiLoScrive([], 'it')).toBe('')
+    expect(chiLoScrive(null)).toBe('')
   })
 })

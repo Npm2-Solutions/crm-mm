@@ -49,23 +49,58 @@
     </div>
 
     <template v-else-if="item.kind === ESERCIZIO">
-      <!-- the chosen exercise's picture is the picker's own, its credit under it -->
-      <LibraryPicker
-        v-model="item.exercise"
-        kind="exercise"
-        :label="item.exercise_name"
-        :picture="item.exercise_detail?.picture || ''"
-        @picked="scelto"
-      />
+      <!-- the exercise chosen, with its picture; changed from the library -->
+      <div class="flex min-w-0 items-center gap-3">
+        <span
+          class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white ring-1 ring-outline-gray-1"
+        >
+          <img
+            v-if="picture && !rotta"
+            :src="picture"
+            alt=""
+            loading="lazy"
+            class="size-full object-contain"
+            @error="rotta = true"
+          />
+          <span
+            v-else
+            class="lucide-dumbbell size-6 text-ink-gray-4"
+            aria-hidden="true"
+          />
+        </span>
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="break-words text-base text-ink-gray-8">
+            {{ item.exercise_name || __('No exercise chosen') }}
+          </span>
+          <span
+            v-if="item.exercise_detail?.body_part"
+            class="text-p-sm text-ink-gray-5"
+          >
+            {{ __(item.exercise_detail.body_part, null, 'Body part') }}
+            <template v-if="item.exercise_detail.equipment">
+              · {{ item.exercise_detail.equipment }}
+            </template>
+          </span>
+        </div>
+        <Button
+          class="shrink-0"
+          :label="item.exercise ? __('Change') : __('Choose')"
+          @click="browsing = true"
+        />
+      </div>
       <p
-        v-if="
-          item.exercise_detail?.picture &&
-          item.exercise_detail?.media_attribution
-        "
+        v-if="picture && !rotta && item.exercise_detail?.media_attribution"
         class="text-p-xs text-ink-gray-5"
       >
         {{ item.exercise_detail.media_attribution }}
       </p>
+      <LibraryBrowser
+        v-if="opened"
+        v-model="browsing"
+        kind="exercise"
+        :multiple="false"
+        @choose="([row]) => scelto(row)"
+      />
       <div class="grid grid-cols-5 gap-2 max-md:grid-cols-2">
         <FormControl
           v-model="item.sets"
@@ -113,18 +148,30 @@
 </template>
 
 <script setup>
+import LibraryBrowser from '@/components/Plans/LibraryBrowser.vue'
 import LibraryPicker from '@/components/Plans/LibraryPicker.vue'
 import { CIBO, ESERCIZIO, GRUPPI, GRUPPO } from '@/utils/piani'
 import { Badge, Button, FormControl } from 'frappe-ui'
+import { computed, ref, watch } from 'vue'
 
 defineEmits(['remove'])
 const item = defineModel({ type: Object, required: true })
 
 // an exercise picked from the library brings its picture and whose it is
 function scelto(row) {
+  item.value.exercise = row.name
   item.value.exercise_name = row.exercise_name
   item.value.exercise_detail = row
 }
+
+const browsing = ref(false)
+// the library is mounted the first time it is browsed, and stays
+const opened = ref(false)
+watch(browsing, (open) => open && (opened.value = true))
+const picture = computed(() => item.value.exercise_detail?.picture || '')
+// a picture that did not load leaves its place to the exercise's mark
+const rotta = ref(false)
+watch(picture, () => (rotta.value = false))
 
 const groups = GRUPPI.map((g) => ({ label: __(g), value: g }))
 

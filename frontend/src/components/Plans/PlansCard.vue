@@ -38,6 +38,30 @@
       </Dropdown>
     </div>
 
+    <!-- what the reader's qualification does not write: whose it is, and
+         where the qualification is set - never a kind gone without a word -->
+    <div
+      v-if="bloccati.length"
+      class="flex gap-2 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+    >
+      <span class="lucide-lock mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <div class="flex min-w-0 flex-col gap-1">
+        <p v-for="riga in bloccati" :key="riga">{{ riga }}</p>
+        <p>
+          {{
+            plans.data.qualification
+              ? __(
+                  'Your qualification is {0}. The centre’s manager sets it in Settings › Invoicing › Services & providers.',
+                  [plans.data.qualification],
+                )
+              : __(
+                  'You have no qualification yet: the centre’s manager sets it in Settings › Invoicing › Services & providers.',
+                )
+          }}
+        </p>
+      </div>
+    </div>
+
     <!-- a published plan reaches the person only through their area -->
     <div
       v-if="avvisoArea"
@@ -239,6 +263,8 @@ import DescrizioneRipiegata from '@/components/Mobile/DescrizioneRipiegata.vue'
 import PlanDialog from '@/components/Plans/PlanDialog.vue'
 import ProgrammeDialog from '@/components/Plans/ProgrammeDialog.vue'
 import CategoryTag from '@/components/Espresso/CategoryTag.vue'
+import { appLocale } from '@/utils/locale'
+import { chiLoScrive } from '@/utils/piani'
 import { Badge, Button, Dropdown, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
 
@@ -299,6 +325,16 @@ const nascosti = computed(() => {
       __('{0} programmes with protected health data', [programmi]),
   ].filter(Boolean)
 })
+
+// the kinds switched on that the reader's qualification does not write
+const bloccati = computed(() =>
+  (plans.data?.locked_kinds || []).map((kind) =>
+    __('{0}: written by {1}.', [
+      __(kind.key),
+      chiLoScrive(kind.written_by, appLocale()),
+    ]),
+  ),
+)
 
 // none yet, of plans or programmes
 const vuoto = computed(

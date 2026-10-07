@@ -148,14 +148,15 @@
             @remove="removeItem(item)"
           />
           <div class="flex flex-wrap items-center gap-2">
-            <Dropdown :options="addOptions(moment)" placement="left">
-              <Button
-                size="sm"
-                icon-left="plus"
-                class="w-fit"
-                :label="__('Add')"
-              />
-            </Dropdown>
+            <!-- the libraries open to be browsed, the rest goes in as it is -->
+            <Button
+              v-for="genere in plan.item_kinds || []"
+              :key="genere"
+              size="sm"
+              :icon-left="ADD[genere]?.icon || 'plus'"
+              :label="ADD[genere] ? ADD[genere].label : __(genere)"
+              @click="add(genere, moment)"
+            />
             <Button
               v-if="offre(tipo, 'recipes') && plan.recipes?.on"
               size="sm"
@@ -190,6 +191,13 @@
           :missing="missing"
         />
         <ErrorMessage :message="error" />
+        <LibraryBrowser
+          v-if="browser.opened"
+          v-model="browser.show"
+          :kind="browser.kind"
+          :moment="browser.moment?.label || ''"
+          @choose="addChosen"
+        />
         <!-- inside the plan's dialog: one layer on the other, for the eye and
              for a screen reader -->
         <RecipeDialog
@@ -252,16 +260,28 @@
             :key="item.key"
             class="flex flex-wrap items-center justify-between gap-2 border-b border-outline-gray-1 pb-2 last:border-0"
           >
-            <div class="flex min-w-0 flex-col">
-              <span class="text-p-base text-ink-gray-8">
-                {{ describe(item) }}
-              </span>
-              <span
-                v-if="item.alternatives || item.note"
-                class="text-p-sm text-ink-gray-5"
-              >
-                {{ [item.alternatives, item.note].filter(Boolean).join(' · ') }}
-              </span>
+            <div class="flex min-w-0 items-center gap-3">
+              <img
+                v-if="item.exercise_detail?.picture && !rotte.has(item.key)"
+                :src="item.exercise_detail.picture"
+                alt=""
+                loading="lazy"
+                class="size-12 shrink-0 rounded-md bg-white object-contain ring-1 ring-outline-gray-1"
+                @error="rotte.add(item.key)"
+              />
+              <div class="flex min-w-0 flex-col">
+                <span class="text-p-base text-ink-gray-8">
+                  {{ describe(item) }}
+                </span>
+                <span
+                  v-if="item.alternatives || item.note"
+                  class="text-p-sm text-ink-gray-5"
+                >
+                  {{
+                    [item.alternatives, item.note].filter(Boolean).join(' · ')
+                  }}
+                </span>
+              </div>
             </div>
             <div v-if="plan.status !== 'Draft'" class="flex shrink-0 gap-0.5">
               <span
@@ -350,6 +370,7 @@
 </template>
 
 <script setup>
+import LibraryBrowser from '@/components/Plans/LibraryBrowser.vue'
 import PlanItemEditor from '@/components/Plans/PlanItemEditor.vue'
 import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
@@ -358,6 +379,7 @@ import { dateFormat, formatDate } from '@/utils'
 import { hhmm } from '@/utils/scheduler'
 import {
   CIBO,
+  ESERCIZIO,
   ESITI,
   GIORNI,
   GRUPPO,
@@ -378,7 +400,6 @@ import {
   Button,
   Checkbox,
   Dialog,
-  Dropdown,
   ErrorMessage,
   FormControl,
   call,
@@ -497,12 +518,61 @@ function removeItem(item) {
   plan.items = plan.items.filter((i) => i !== item)
 }
 
-function addOptions(moment) {
-  return (plan.item_kinds || []).map((kind) => ({
-    label: __(kind),
-    onClick: () => plan.items.push(nuovaVoce(kind, moment.key)),
-  }))
+// what a moment adds: an exercise or a food from its library, browsed and
+// chosen several at once; a habit, a food group as they are
+const ADD = {
+  [ESERCIZIO]: { label: __('Exercises'), icon: 'lucide-dumbbell' },
+  [CIBO]: { label: __('Foods'), icon: 'lucide-apple' },
 }
+const LIBRERIA = { [ESERCIZIO]: 'exercise', [CIBO]: 'food' }
+const browser = reactive({
+  opened: false,
+  show: false,
+  kind: 'exercise',
+  moment: null,
+})
+
+function add(kind, moment) {
+  if (!LIBRERIA[kind]) {
+    plan.items.push(nuovaVoce(kind, moment.key))
+    return
+  }
+  Object.assign(browser, {
+    opened: true,
+    show: true,
+    kind: LIBRERIA[kind],
+    moment,
+  })
+}
+
+function addChosen(rows) {
+  const moment = browser.moment
+  if (!moment) return
+  for (const row of rows) {
+    const item = nuovaVoce(
+      browser.kind === 'food' ? CIBO : ESERCIZIO,
+      moment.key,
+    )
+    if (browser.kind === 'food')
+      Object.assign(item, {
+        food: row.name,
+        food_name: row.food_name,
+        food_detail: row,
+        // the library's portion to start from, changed as the diet wants
+        quantity_g: row.portion_g || '',
+      })
+    else
+      Object.assign(item, {
+        exercise: row.name,
+        exercise_name: row.exercise_name,
+        exercise_detail: row,
+      })
+    plan.items.push(item)
+  }
+}
+
+// the pictures that did not load leave their place
+const rotte = reactive(new Set())
 
 function describe(item) {
   return descrivi(item, (text, args) => __(text, args))

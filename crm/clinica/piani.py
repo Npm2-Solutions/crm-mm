@@ -196,6 +196,21 @@ def search_foods(text: str | None = None, group: str | None = None) -> list[dict
 	)
 
 
+@frappe.whitelist()
+def browse_foods(text: str | None = None, group: str | None = None, start: int | str = 0) -> dict:
+	"""The foods' library a page at a time, filtered by group, with their values for
+	100 g: what a diet's editor browses."""
+	return piani.sfoglia(
+		CIBO,
+		"food_name",
+		text,
+		{"food_group": group},
+		["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI, "source"],
+		("food_group",),
+		start,
+	)
+
+
 @frappe.whitelist(methods=["POST"])
 def add_food(
 	food_name: str,

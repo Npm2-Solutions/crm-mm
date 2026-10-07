@@ -92,6 +92,13 @@ class ChiScrive(PianiCase):
 		with self.assertRaises(frappe.PermissionError):
 			self.scrive({**self.allenamento(), "plan_type": "Meal plan"})
 
+	def test_senza_la_clinica_niente_di_bloccato(self):
+		# the diets are not there at all: nothing to say about whose they are
+		self.come(OPERATORE)
+		risposta = piani.get_plans(self.anna.name)
+		self.assertEqual(risposta["locked_kinds"], [])
+		self.assertIsNone(risposta["qualification"])
+
 	def test_quello_che_un_tipo_offre(self):
 		self.come(OPERATORE)
 		[allenamento, abitudini] = piani.get_plans(self.anna.name)["kinds"]
@@ -230,6 +237,26 @@ class LaLibreria(PianiCase):
 			self.come(user)
 			with self.assertRaises(frappe.PermissionError):
 				librerie.get_exercises()
+
+	def test_si_sfogliano_con_i_filtri_e_le_immagini(self):
+		self.come(OPERATORE)
+		pagina = piani.browse_exercises(text="squ", body_part="Legs")
+		self.assertIn(self.squat.name, [riga["name"] for riga in pagina["rows"]])
+		self.assertGreaterEqual(pagina["total"], 1)
+		# each row with its picture's address, or none, and the facets counted
+		self.assertIn("picture", pagina["rows"][0])
+		parti = {f["value"]: f["count"] for f in pagina["facets"]["body_part"]}
+		self.assertGreaterEqual(parti["Legs"], 1)
+		self.assertIn("has_media", pagina)
+		# a switched-off exercise is not offered
+		frappe.set_user("Administrator")
+		frappe.db.set_value(piani.ESERCIZIO, self.squat.name, "enabled", 0)
+		self.come(OPERATORE)
+		self.assertNotIn(self.squat.name, [r["name"] for r in piani.browse_exercises(text="Squat")["rows"]])
+		# whoever does not write plans does not browse the library
+		self.come(DESK)
+		with self.assertRaises(frappe.PermissionError):
+			piani.browse_exercises()
 
 	def test_chi_scrive_piani_aggiunge_un_esercizio(self):
 		self.come(OPERATORE)

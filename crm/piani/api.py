@@ -34,6 +34,7 @@ from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
 from crm.permissions import livelli, org_hierarchy, sanitari
 from crm.piani import regole as R
+from crm.utils import count_field
 
 PIANO = "CRM Personal Plan"
 ESERCIZIO = "CRM Exercise"
@@ -181,6 +182,35 @@ def tipi_consentiti(user: str | None = None) -> list[str]:
 	return R.tipi_per(qualifica_di(user), tipi_accesi())
 
 
+def tipi_bloccati(user: str | None = None) -> list[dict]:
+	"""The kinds switched on here that the session's qualification does not write,
+	with whose they are: a diet is a dietitian's, a nutritionist's or a doctor's,
+	and somebody without one is told so, never left looking for it."""
+	user = user or frappe.session.user
+	if not livelli.puo("piani.scrivi", user):
+		return []
+	scritti = set(tipi_consentiti(user))
+	bloccati = []
+	for tipo in tipi_accesi():
+		if tipo.chiave in scritti:
+			continue
+		nomi = dict(
+			frappe.get_all(
+				"CRM Professional Qualification",
+				filters={"name": ("in", sorted(tipo.chi_scrive))},
+				fields=["name", "qualification_name"],
+				as_list=True,
+			)
+		)
+		bloccati.append(
+			{
+				**descrivi_tipo(tipo.chiave),
+				"written_by": [nomi.get(codice) or codice for codice in sorted(tipo.chi_scrive)],
+			}
+		)
+	return bloccati
+
+
 def descrivi_tipo(chiave: str) -> dict:
 	"""A kind as the screens use it: what it holds and what they offer for it."""
 	tipo = R.tipo(chiave)
@@ -294,8 +324,17 @@ def get_plans(lead: str) -> dict:
 			filtri={"status": ("!=", BOZZA), "programme": ("is", "not set")},
 		),
 		"kinds": [descrivi_tipo(tipo) for tipo in tipi_consentiti()],
+		# the ones the session's qualification does not write, and whose they are
+		"locked_kinds": tipi_bloccati(),
+		"qualification": _nome_della_qualifica(qualifica_di(frappe.session.user)),
 		"area": _nell_area(lead),
 	}
+
+
+def _nome_della_qualifica(codice: str | None) -> str | None:
+	if not codice:
+		return None
+	return frappe.db.get_value("CRM Professional Qualification", codice, "qualification_name") or codice
 
 
 def _nell_area(lead: str) -> dict:
@@ -790,6 +829,110 @@ def cerca(doctype: str, campo: str, testo: str | None, filtri: dict, campi: list
 	"""A library's entries whose name has these words, for whoever writes plans."""
 	livelli.verifica("piani.scrivi")
 	return _cerca(doctype, campo, testo, filtri, campi)
+
+
+#: Entries a page of the library's browser shows.
+PER_PAGINA = 48
+
+
+def sfoglia(
+	doctype: str,
+	campo: str,
+	testo: str | None,
+	filtri: dict,
+	campi: list[str],
+	faccette: tuple[str, ...],
+	start: int = 0,
+) -> dict:
+	"""A page of a library to browse while writing a plan: the entries with these
+	words and filters (the ones whose name starts with the words first), how many
+	there are, and for each facet its values with how many entries each has under
+	the other filters - a body part, an equipment, a food group."""
+	livelli.verifica("piani.scrivi")
+	attivi = {k: v for k, v in filtri.items() if v}
+	parole = (testo or "").strip()
+	o_filtri = None
+	if parole:
+		o_filtri = [[campo, "like", f"%{parole}%"]]
+		if frappe.get_meta(doctype).has_field("name_in_source"):
+			o_filtri.append(["name_in_source", "like", f"%{parole}%"])
+	inizio = max(cint(start), 0)
+	base = {"enabled": 1, **attivi}
+	if parole:
+		# ranked in Python: the names that start with the words first, then the shortest
+		righe = frappe.get_all(doctype, filters=base, or_filters=o_filtri, fields=campi, limit=2000)
+		chiave = parole.lower()
+		righe.sort(
+			key=lambda r: (
+				not (r.get(campo) or "").lower().startswith(chiave),
+				len(r.get(campo) or ""),
+				r.get(campo) or "",
+			)
+		)
+		totale = len(righe)
+		righe = righe[inizio : inizio + PER_PAGINA]
+	else:
+		righe = frappe.get_all(
+			doctype, filters=base, fields=campi, order_by=f"{campo} asc", start=inizio, limit=PER_PAGINA
+		)
+		totale = frappe.db.count(doctype, base)
+	valori = {}
+	for faccetta in faccette:
+		altri = {"enabled": 1, **{k: v for k, v in attivi.items() if k != faccetta}}
+		valori[faccetta] = [
+			{"value": riga[0], "count": riga[1]}
+			for riga in frappe.get_all(
+				doctype,
+				filters=altri,
+				or_filters=o_filtri,
+				fields=[faccetta, count_field("quanti")],
+				group_by=faccetta,
+				order_by=f"{faccetta} asc",
+				as_list=True,
+			)
+			if riga[0]
+		]
+	return {"rows": righe, "total": totale, "facets": valori}
+
+
+@frappe.whitelist()
+def browse_exercises(
+	text: str | None = None,
+	body_part: str | None = None,
+	equipment: str | None = None,
+	start: int | str = 0,
+) -> dict:
+	"""The exercises' library a page at a time, with their pictures, filtered by body
+	part and equipment: what the plan's editor browses."""
+	from crm.piani.librerie import _base_media, media
+
+	pagina = sfoglia(
+		ESERCIZIO,
+		"exercise_name",
+		text,
+		{"body_part": body_part, "equipment": equipment},
+		[
+			"name",
+			"exercise_name",
+			"body_part",
+			"equipment",
+			"primary_muscles",
+			"secondary_muscles",
+			"instructions",
+			"image",
+			"video_url",
+			"attribution",
+			"source",
+			"media_path",
+			"animation_path",
+		],
+		("body_part", "equipment"),
+		start,
+	)
+	pagina["rows"] = [{**riga, **media(riga)} for riga in pagina["rows"]]
+	# the library's pictures are there once the server has them, or a CDN is named
+	pagina["has_media"] = bool(_base_media())
+	return pagina
 
 
 @frappe.whitelist()
