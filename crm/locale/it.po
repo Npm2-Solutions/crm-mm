@@ -46485,3 +46485,186 @@ msgstr "Non hai ancora una qualifica: la imposta il responsabile del centro in I
 
 msgid "{0}: written by {1}."
 msgstr "{0}: solo con la qualifica di {1}."
+
+msgid "In one of your plans"
+msgstr "In uno dei tuoi piani"
+
+msgid "In {0} of your plans"
+msgstr "In {0} dei tuoi piani"
+
+msgid "In one plan of the centre"
+msgstr "In un piano del centro"
+
+msgid "In {0} plans of the centre"
+msgstr "In {0} piani del centro"
+
+msgid "From the food tables"
+msgstr "Dalle tabelle degli alimenti"
+
+msgid "Change the exercise: {0}"
+msgstr "Cambia l'esercizio: {0}"
+
+msgid "Reps"
+msgstr "Ripet."
+
+msgid "More about this item"
+msgstr "Altro su questa voce"
+
+msgid "Or instead"
+msgstr "Oppure"
+
+msgid "Another food, how much"
+msgstr "Un altro alimento, quanto"
+
+msgid "How often"
+msgstr "Quante volte"
+
+msgid "Or instead: {0}"
+msgstr "Oppure: {0}"
+
+msgid "Plus one moment of every day."
+msgstr "Più un momento di ogni giorno."
+
+msgid "Plus {0} moments of every day."
+msgstr "Più {0} momenti di ogni giorno."
+
+msgid "{0}, with every day’s moments"
+msgstr "{0}, con i momenti di ogni giorno"
+
+msgid "More about the moment"
+msgstr "Altro sul momento"
+
+msgid "Add a moment of every day"
+msgstr "Aggiungi un momento di ogni giorno"
+
+msgid "Add a moment on {0}"
+msgstr "Aggiungi un momento ({0})"
+
+msgid "Copy this day into…"
+msgstr "Copia questo giorno in…"
+
+msgid "Save as a template"
+msgstr "Salva come modello"
+
+msgid "Add a note"
+msgstr "Aggiungi una nota"
+
+msgid "Copy into other days…"
+msgstr "Copia in altri giorni…"
+
+msgid "Duplicate here"
+msgstr "Duplica qui"
+
+msgid "Move to…"
+msgstr "Sposta in…"
+
+msgid "Copy «{0}» into…"
+msgstr "Copia «{0}» in…"
+
+msgid "Copy {0} into…"
+msgstr "Copia {0} in…"
+
+msgid "Copied into {0}"
+msgstr "Copiato in {0}"
+
+msgid "Copied into {0} days"
+msgstr "Copiato in {0} giorni"
+
+msgid "{0} of {1} kcal"
+msgstr "{0} di {1} kcal"
+
+msgid "{0} left"
+msgstr "ne mancano {0}"
+
+msgid "{0} over"
+msgstr "{0} oltre"
+
+msgid "Proteins"
+msgstr "Proteine"
+
+msgid "Carbohydrates"
+msgstr "Carboidrati"
+
+msgid "Fats"
+msgstr "Grassi"
+
+msgid "Fibre"
+msgstr "Fibre"
+
+msgid "All the days"
+msgstr "Tutti i giorni"
+
+msgid "Start from a template"
+msgstr "Parti da un modello"
+
+msgid "one moment"
+msgstr "un momento"
+
+msgid "{0} moments"
+msgstr "{0} momenti"
+
+msgid "one item"
+msgstr "una voce"
+
+msgid "{0} items"
+msgstr "{0} voci"
+
+msgid "for the whole centre"
+msgstr "per tutto il centro"
+
+msgid "Remove the template {0}"
+msgstr "Togli il modello {0}"
+
+msgid "One item was left out: the library no longer offers it"
+msgstr "Una voce è rimasta fuori: la libreria non la offre più"
+
+msgid "{0} items were left out: the library no longer offers them"
+msgstr "{0} voci sono rimaste fuori: la libreria non le offre più"
+
+msgid "The moments and what is in them, to start the next plans from. Nothing about the person goes with it."
+msgstr "I momenti e quello che c'è dentro, per partire da qui nei prossimi piani. Della persona non va niente."
+
+msgid "For the whole centre"
+msgstr "Per tutto il centro"
+
+msgid "Save the template"
+msgstr "Salva il modello"
+
+msgid "A template has a title"
+msgstr "Un modello ha un titolo"
+
+msgid "A template has something in it"
+msgstr "Un modello ha qualcosa dentro"
+
+msgid "A template is changed by who wrote it"
+msgstr "Un modello lo cambia chi l'ha scritto"
+
+msgid "A template is removed by who wrote it"
+msgstr "Un modello lo toglie chi l'ha scritto"
+
+msgid "CRM Plan Template"
+msgstr "Modello di piano"
+
+msgid "Kind of plan"
+msgstr "Tipo di piano"
+
+msgid "What it holds"
+msgstr "Cosa contiene"
+
+msgid "Offered to whoever of the centre writes plans of its kind, not only to who wrote it"
+msgstr "Offerto a chiunque nel centro scriva piani di questo tipo, non solo a chi l'ha scritto"
+
+msgid "The moments, the items, what the person reads and a diet's targets, as the plan's editor writes them"
+msgstr "I momenti, le voci, quello che la persona legge e gli obiettivi di una dieta, come li scrive l'editor del piano"
+
+msgid "A plan kept to start others from: its moments and items, without a person (crm.piani.modelli)"
+msgstr "Un piano tenuto per partire da lì con altri: i suoi momenti e le voci, senza una persona"
+
+msgid "One for each day of the week"
+msgstr "Uno per ogni giorno della settimana"
+
+msgid "«{0}» is now one for each day: change the days that differ"
+msgstr "«{0}» ora è uno per ogni giorno: cambia i giorni diversi"
+
+msgid "The days chosen take its moments in place of their own."
+msgstr "I giorni scelti prendono i suoi momenti al posto dei loro."
