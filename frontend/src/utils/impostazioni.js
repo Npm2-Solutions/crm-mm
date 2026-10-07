@@ -130,6 +130,15 @@ export const MENU = [
         condition: puo('piano.vedi'),
       },
       {
+        // the centre's data are the centre's: all of them in one archive
+        // (crm/esportazione)
+        key: 'Your data',
+        label: 'Your data',
+        description:
+          "Take all the centre's data away in one archive, whenever you want.",
+        condition: puo('dati.esporta'),
+      },
+      {
         // a centre full of life to look around in, taken away in one tap
         // (doc 53)
         key: 'Demo data',

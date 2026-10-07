@@ -663,6 +663,8 @@ scheduler_events = {
 		"crm.integrations.meta.insights.sync_ad_spend",
 		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
+		# the centre's archive holds everything: it goes after a week
+		"crm.esportazione.esporta.togli_le_vecchie",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
 		"crm.api.tracking.purge_old_data",
 		"crm.telephony.transcription.expire_transcripts",

@@ -46271,3 +46271,63 @@ msgstr "Richiesta inviata: l'agenzia sposterà il tuo piano"
 #: frontend/src/components/Settings/PlanSettings.vue
 msgid "The agency could not be emailed: let them know"
 msgstr "Non è stato possibile scrivere all'agenzia: avvisala tu"
+
+#: crm/permissions/catalogo.py
+msgid "Take all the centre's data away in one archive, health data included"
+msgstr "Portare via tutti i dati del centro in un archivio, dati sanitari compresi"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Take all the centre's data away in one archive, whenever you want."
+msgstr "Porta via tutti i dati del centro in un archivio, quando vuoi."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The centre's data are the centre's. Take them all away in one archive, whenever you want: people, appointments, records, documents, invoices and their files."
+msgstr "I dati del centro sono del centro. Portali via tutti in un archivio, quando vuoi: persone, appuntamenti, cartelle, documenti, fatture e i loro file."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Make the archive"
+msgstr "Prepara l'archivio"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "With the files"
+msgstr "Con i file"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The attached files too: reports, signed forms, images. A centre with many takes longer."
+msgstr "Anche i file allegati: referti, moduli firmati, immagini. Un centro che ne ha molti ci mette di più."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Making the archive…"
+msgstr "Preparo l'archivio…"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "You can keep working: the archive appears here when it is ready."
+msgstr "Puoi continuare a lavorare: l'archivio compare qui quando è pronto."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Archives ready"
+msgstr "Archivi pronti"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "None yet."
+msgstr "Ancora nessuno."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "kept until {0}"
+msgstr "resta fino al {0}"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Made by a colleague"
+msgstr "Preparato da un collega"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The archive holds health data: keep it as you keep the clinical record. Each archive made stays in the access log, and goes after {0} days."
+msgstr "L'archivio contiene dati sanitari: conservalo come la cartella clinica. Ogni archivio preparato resta nel registro degli accessi, e sparisce dopo {0} giorni."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The archive could not be made: the agency has been told"
+msgstr "Non è stato possibile preparare l'archivio: l'agenzia è stata avvisata"
+
+#: crm/esportazione/esporta.py
+msgid "An archive is already being made: it is ready in a few minutes"
+msgstr "Un archivio è già in preparazione: sarà pronto tra pochi minuti"

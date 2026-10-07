@@ -306,6 +306,9 @@ const PAGINE = {
     () => import('@/components/Settings/Hierarchy/Hierarchy.vue'),
   ),
   Plan: aRichiesta(() => import('@/components/Settings/PlanSettings.vue')),
+  'Your data': aRichiesta(
+    () => import('@/components/Settings/YourDataSettings.vue'),
+  ),
   'Demo data': aRichiesta(
     () => import('@/components/Settings/DemoDataSettings.vue'),
   ),

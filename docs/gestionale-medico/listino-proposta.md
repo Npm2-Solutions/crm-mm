@@ -186,7 +186,7 @@ sopra sono più recenti.
 | 2 | La fatturazione compresa in ogni piano | ✅ fatto: la base la comprende (`catalogo.BASE`), una riga «spenta» del vecchio listino non la toglie più |
 | 3 | I numeri del listino nel codice: ambulatori, crediti SdI | ✅ fatto (`crm_plan.py`: 3 / 3 / 5 / 10 ambulatori, 300 / 600 / 1.200 / 2.400 crediti); i prezzi non stanno nel codice |
 | 4 | La pagina Funzionalità con i nuovi piani | ✅ fatto per taglie e utenti; da rivedere se si sceglie la variante B (gli extra compresi nei piani grandi) |
-| 5 | **Portare via i propri dati**: un archivio con persone, appuntamenti, cartelle, documenti e fatture | da fare: oggi c'è solo lo ZIP mensile delle fatture per il commercialista |
+| 5 | **Portare via i propri dati**: un archivio con persone, appuntamenti, cartelle, documenti e fatture | ✅ fatto: Impostazioni > Il centro > I tuoi dati (`crm/esportazione`), solo il responsabile, registro degli accessi, una settimana e poi sparisce |
 | 6 | **Importare dal vecchio gestionale**: modelli pronti per anagrafiche, appuntamenti futuri e saldi, almeno da GipoNext, AlfaDocs e un foglio Excel | da fare: c'è l'importazione generica del framework, non guidata |
 | 7 | Annuale, mensile e fondatore sul piano del centro, per fatturarli | da decidere dove: dipende da chi emette le fatture di NPM2 |
 

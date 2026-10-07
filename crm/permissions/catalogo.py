@@ -360,6 +360,16 @@ CAPACITA = (
 		"piano.vedi", scrive=False, manager=CENTRO, descrizione="The plan, its modules and this month's usage"
 	),
 	_c("piano.amplia", manager=CENTRO, descrizione="Start the trial of a module"),
+	# the whole centre in one archive, health data included: the manager's, never
+	# the agency's for being the agency (crm.esportazione)
+	(
+		Capacita(
+			"dati.esporta",
+			clinica=True,
+			descrizione="Take all the centre's data away in one archive, health data included",
+		),
+		{"manager": CENTRO},
+	),
 	# Phone
 	_c(
 		"telefono.chiama",

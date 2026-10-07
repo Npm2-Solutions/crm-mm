@@ -736,6 +736,15 @@ The site promises the finished product as the marketing material does, and shows
 plan and no price. It sets no cookie and loads nothing from other sites. It is not
 the Frappe site's public pages: those belong to each centre.
 
+### The centre's data, taken away (crm/esportazione)
+| File | Role |
+|---|---|
+| `crm/esportazione/regole.py` | Pure: which document types go (DottorCloud's and the framework's that go with them, `DEL_FRAMEWORK`; never a child table, a single, a virtual one or `SOLO_PER_LA_MACCHINA`), a record as a row with its child tables, JSON lines and an Excel table, the names in the ZIP — tested with plain `unittest` |
+| `crm/esportazione/esporta.py` + `Settings/YourDataSettings.vue` | Settings > The centre > Your data (`dati.esporta`, the manager's, a clinical capability: never the agency's for being the agency): one archive at a time in a job, the demo's records left out, the attached files brought back from the bucket first, a private file of whoever asked, the framework's access log, gone after a week (`togli_le_vecchie`) |
+
+A new document type of DottorCloud's goes in the archive by itself; one that holds
+only keys or fingerprints goes in `regole.SOLO_PER_LA_MACCHINA`.
+
 ### The demo data (docs/progetto-ghl/53)
 | File | Role |
 |---|---|
