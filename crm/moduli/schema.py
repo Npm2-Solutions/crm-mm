@@ -5,7 +5,7 @@
 
 A template is a versioned schema - sections, fields, the text to read, the
 components - and a form the patient fills, a clinical sheet and a plan are the
-same object with three uses (docs/gestionale-medico/design.md, "Il motore dei
+same object with three uses (docs/verticali/clinica/design.md, "Il motore dei
 modelli"). This module is the one place that says what a schema may hold and what
 a set of answers means for it: which questions show, which are required, what the
 calculations give, when to stop and tell the operator.

@@ -3,7 +3,7 @@
 
 """The first seam, from marketing to the centre: a medical centre's two pipelines.
 
-Both are the CRM's (docs/gestionale-medico, "Due pipeline"):
+Both are the CRM's (docs/verticali/clinica, "Due pipeline"):
 
 - **New patients**: the CRM's new clients pipeline (`crm.clienti.pipeline`), in
   the clinic's words. Requests from ads, forms and calls, to call back until the

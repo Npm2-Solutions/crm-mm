@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  A record's tabs on a phone (docs/progetto-ghl/29): a row of fifteen tabs
+  A record's tabs on a phone (docs/crm/29): a row of fifteen tabs
   scrolled sideways hides most of them, so the bar holds the few one opens every
   day - the ones asked for, in that order, the first four there are - and "More"
   holds the rest. When the open tab is one of those, "More" says its name. Each

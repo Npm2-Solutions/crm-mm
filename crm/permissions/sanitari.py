@@ -5,7 +5,7 @@
 reads it.
 
 A person's plans, programmes and documents are the CRM's, for any centre; some of
-them are health data - a diet, a test result, a report (docs/gestionale-medico/
+them are health data - a diet, a test result, a report (docs/verticali/clinica/
 design.md, "Tre strati"). They carry the mark (`clinical`), and the module that
 knows health data says who reads them and what else carries it: the clinic
 registers its reader here, the dossier and "whatever a health professional

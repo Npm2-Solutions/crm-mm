@@ -6,7 +6,7 @@
 Every centre works its own way - the one with a front desk, the doctor who opens
 the page and starts writing, the one that only issues invoices - so there is no
 compulsory step, but a list of rules: **the first that fires converts, and that is
-it** (`docs/gestionale-medico/README.md`, "Come si diventa paziente"). None
+it** (`docs/verticali/clinica/README.md`, "Come si diventa paziente"). None
 excludes the others, none is required, and a patient stays a patient: the clinical
 record has to be kept.
 

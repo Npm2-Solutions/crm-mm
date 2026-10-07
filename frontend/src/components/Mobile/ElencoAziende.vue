@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The companies on a phone (docs/progetto-ghl/29): found by typing a name, a
+  The companies on a phone (docs/crm/29): found by typing a name, a
   website or what they do; one line each - who, what they do and where they are
   online, how many deals - the whole line opening the company. The list grows as
   it scrolls.

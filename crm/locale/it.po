@@ -44588,7 +44588,7 @@ msgstr "Quando è diventato paziente: una prestazione sanitaria, o dati sanitari
 msgid "New patients pipeline"
 msgstr "Pipeline dei nuovi pazienti"
 
-#. the first step of a person: stored "Contact", read «Lead» (docs/progetto-ghl/54)
+#. the first step of a person: stored "Contact", read «Lead» (docs/crm/54)
 #: frontend/src/utils/rapporto.js
 msgctxt "Relationship"
 msgid "Contact"
@@ -45513,7 +45513,7 @@ msgstr "Fai mandare a Zapier, Make, n8n o a qualsiasi altro sistema una prenotaz
 msgid "Cancelled in {brand}"
 msgstr "Annullato in {brand}"
 
-#. the person's summary: the tab their page opens on (docs/progetto-ghl/54)
+#. the person's summary: the tab their page opens on (docs/crm/54)
 #: frontend/src/pages/Lead.vue frontend/src/pages/MobileLead.vue
 msgctxt "Person tab"
 msgid "Summary"

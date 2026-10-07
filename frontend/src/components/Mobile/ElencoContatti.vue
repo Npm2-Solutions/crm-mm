@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The contacts on a phone (docs/progetto-ghl/29): the people of the companies,
+  The contacts on a phone (docs/crm/29): the people of the companies,
   found by typing a name, a company, an email or a number written any way; one
   line each - who, where they work or how to reach them - and the call a thumb
   away. The list grows as it scrolls.

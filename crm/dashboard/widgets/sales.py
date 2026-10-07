@@ -3,7 +3,7 @@
 
 """Deals: what came in, what was won and lost, what is on the table now.
 
-The deal is where the sale lives (docs/progetto-ghl/26): stage, value, owner,
+The deal is where the sale lives (docs/crm/26): stage, value, owner,
 outcome. Amounts are converted to the dashboard currency with the deal's own
 exchange rate, as the original dashboard did.
 

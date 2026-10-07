@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Dental care plans (docs/gestionale-medico, phase 3): the dentist's chart, and a
+"""Dental care plans (docs/verticali/clinica, phase 3): the dentist's chart, and a
 care plan as a quote of the CRM's (`crm.preventivi`) with a tooth on its rows.
 
 The dentist writes Anna's chart, and a care plan of two phases - two fillings, then

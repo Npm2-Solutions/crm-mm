@@ -10,7 +10,7 @@
 > ognuno i link alle pagine dove si imposta.
 >
 > **Con il listino finale** (01/10/2026,
-> [listino](../gestionale-medico/listino.md#nel-crm)): la taglia conta gli
+> [listino](../marchi/dottorcloud/listino.md#nel-crm)): la taglia conta gli
 > ambulatori, la fatturazione e la firma avanzata sono extra, e i consumi sono
 > quelli che l'agenzia fattura.
 

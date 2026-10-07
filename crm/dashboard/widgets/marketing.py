@@ -6,12 +6,12 @@
 Three sources of truth, each offered only when the site has it:
 
 - the visitor tracker (``CRM Visitor Session``): traffic, channels, landing
-  pages, campaigns — docs/progetto-ghl/15;
+  pages, campaigns — docs/crm/15;
 - Meta Lead Ads: every form filled on Facebook or Instagram, from the import
   ledger that survives the person being deleted (``Facebook Lead Import``);
 - Meta ad spend (``Facebook Ad Insight``, one row per ad per day) crossed with
   the deals of the people each ad brought — the cost per customer and the return
-  that neither Meta nor the CRM know alone (docs/progetto-ghl/23). Same rules
+  that neither Meta nor the CRM know alone (docs/crm/23). Same rules
   as ``crm.integrations.meta.insights.performance``, over the dashboard's period.
 
 Marketing numbers belong to the business, not to a salesperson: these widgets

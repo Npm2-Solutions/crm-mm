@@ -711,7 +711,7 @@ scheduler_events = {
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
 		"*/15 * * * *": [
 			"crm.booking_platforms.sync.sync_all",
-			# the reminders of the appointments, the day before (docs/progetto-ghl/59)
+			# the reminders of the appointments, the day before (docs/crm/59)
 			"crm.scheduling.promemoria.ogni_quarto_d_ora",
 		],
 	},

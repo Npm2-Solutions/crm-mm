@@ -4,7 +4,7 @@
 
   A person's summary: what one needs to know of them at a glance, the page
   they open on from the People list and the agenda - one person, two doors
-  (docs/progetto-ghl/54). From the conversations they open on the chat, and
+  (docs/crm/54). From the conversations they open on the chat, and
   this sits beside it (`compatto`). Who they are and their next appointment are
   in the head of the page; this says the rest, each line a tap from the tab
   that holds it: the last thing said, the appointments, what they have going,

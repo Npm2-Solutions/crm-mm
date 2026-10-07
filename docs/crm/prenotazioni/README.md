@@ -56,14 +56,14 @@ chi li possiede: conferme e promemoria arrivano a chi ha prenotato, e l'email lo
 ("L'appuntamento è per Luca Rossi"). Anche senza la scelta, un nome diverso sulla stessa
 email non finisce mai sul record di un altro: è una persona collegata. I limiti per
 cliente contano chi viene. Le regole sono in
-[gestionale-medico](../gestionale-medico/README.md#le-persone-collegate).
+[gestionale medico](../../verticali/clinica/README.md#le-persone-collegate).
 
 **Quando nessun orario va bene** (01/10/2026). Sotto gli orari, e su una lezione piena,
 la pagina offre la lista d'attesa: giorni e parti del giorno in cui si può, fino a
 quando, nome, email, cellulare e consensi. Quando un posto si libera arriva una proposta
 con un link: il primo che conferma lo prende, e l'appuntamento è prenotato come da qui.
 Come funziona, chi la vede e le impostazioni sono in
-[gestionale-medico](../gestionale-medico/README.md#le-liste-dattesa-il-posto-che-si-libera-va-a-chi-aspetta).
+[gestionale medico](../../verticali/clinica/README.md#le-liste-dattesa-il-posto-che-si-libera-va-a-chi-aspetta).
 
 ## 2. Dove stanno le regole
 

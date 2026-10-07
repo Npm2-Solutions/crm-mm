@@ -3,12 +3,20 @@
 ## What this project is
 
 DottorCloud, the management software for medical centres of NPM2 Solutions Srl,
-built as the `crm` app. Vue 3 + frappe-ui frontend; the backend is Python on the
+built as the `crm` app, in three layers: a neutral **CRM** any business that works
+with people uses (clients, appointments, conversations, invoices, the client area);
+**verticals** on it, one management software per service (`crm/verticali.py`; today
+the clinic, `crm/clinica`); and **brands** that sell them (`crm/marchio.py`; today
+DottorCloud, which wears the clinic). The docs, the brands' material and their
+websites follow the same layers: `docs/crm/` (the numbered docs, "doc 57"),
+`docs/verticali/<vertical>/`, `docs/marchi/<brand>/`; `brand/<brand>/`;
+`siti/<brand>/` (`docs/README.md`). Vue 3 + frappe-ui frontend; the backend is Python on the
 Frappe framework. Scripts in `frontend/` only; Python in `crm/`. No build step for
 Form Scripts — they run as evaluated strings in the browser.
 
-The company is **NPM2 Solutions Srl**, the brand is **DottorCloud**. Everything a
-user sees says DottorCloud: never "Frappe" nor "Frappe CRM", in the CRM, the
+The company is **NPM2 Solutions Srl**, the brand is **DottorCloud** (the one on
+today; the words say `{brand}`, the brand that is on). Everything a
+user sees says the brand: never "Frappe" nor "Frappe CRM", in the CRM, the
 framework's screens (login, desk, public pages, emails) or a document, and never
 "the CRM" for the product ("CRM" stays for the category and in technical names).
 The framework's name stays where only code sees it (imports, API paths).
@@ -35,8 +43,8 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | Form scripting user guide | [feats/form-scripting/guide.md](./.pi/feats/form-scripting/guide.md) |
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
-| Any screen a phone will see (rules below) | [docs/progetto-ghl/29-telefono.md](./docs/progetto-ghl/29-telefono.md) |
-| How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
+| Any screen a phone will see (rules below) | [docs/crm/29-telefono.md](./docs/crm/29-telefono.md) |
+| How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/dottorcloud/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
 
 ---
 
@@ -85,9 +93,9 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
 | `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |
-| `docs/progetto-ghl/28-dashboard.md` | What it does and why |
+| `docs/crm/28-dashboard.md` | What it does and why |
 
-### The agenda's screen (docs/progetto-ghl/56)
+### The agenda's screen (docs/crm/56)
 | File | Role |
 |---|---|
 | `frontend/src/utils/agenda.js` | Pure: an hour's height (`ALTEZZE`), the whole lines a block holds (`righeDelBlocco`, `formaDelBlocco`), what it says, the person first (`testoDelBlocco`, `segniDelBlocco`, `paroleDelBlocco`), the colour by service or by state, a column's hours and where it is closed (`orarioDelGiorno`, `chiusure`), the hours a grid shows, a day's columns (who works or has something) and a week's days, the periods and their headings, what each column and each day of the month draws (`cosePerColonna`, `cosePerGiorno`) — tested |
@@ -102,7 +110,7 @@ A column offers a new appointment only where the reader may book it: a
 colleague's column takes no tap and no drop from a practitioner, as the server
 would refuse it.
 
-### The reminders of the appointments (docs/progetto-ghl/59)
+### The reminders of the appointments (docs/crm/59)
 | File | Role |
 |---|---|
 | `crm/scheduling/promemoria_regole.py` | Pure: when one leaves (24 hours before by default, 2 to 72; the night's, 21 to 8, in the morning or the evening before; never in the last hour, nor for what was booked two hours before), by which way (WhatsApp, SMS, email; STOP takes the SMS away), what an answer means (a button's words; an SMS that says only yes, no or move), whether a template has the buttons (`ha_i_pulsanti`), DottorCloud's template in Italian and English (`modello`, a copy) — tested with plain `unittest` |
@@ -131,11 +139,11 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 | `frontend/src/pages/WaitingList.vue`, `components/Waiting/` + `utils/attese.js` | The desk: the whole line, the person's section, an entry with its free places; the words, tested; `area/components/WaitingCard.vue`, `WaitingJoinDialog.vue` in the client area |
 | `crm/scheduling/abbonamenti_regole.py` + `abbonamenti.py` | Subscriptions (`CRM Subscription Type`, `CRM Subscription`, `agenda.abbonamenti`): a type sold from a day, its terms copied on the subscription; a person's place in a comprised service uses an entry of their own by itself (the participant's `subscription`: in a class each person uses theirs, the others pay; `aggancia` and `prezzo` in the appointment's `validate`, after its cycle) while its week or month has one left, and costs them nothing; a suspension moves the end; the daily `ogni_giorno` invoices the instalments due (`invoicing.api.issue_from_subscription`, issued where the type says so), reminds of the end, renews. The rules pure, tested with plain `unittest` |
 | `frontend/src/components/Subscriptions/`, `Settings/Scheduling/SubscriptionTypesSettings.vue` + `utils/abbonamenti.js` | The person's subscriptions, selling and following one, the types in Settings > Agenda > Services; the words and the instalments as the server makes them, tested; `area/components/SubscriptionCard.vue` in the client area |
-| `docs/prenotazioni/` | User guide + platform API research |
+| `docs/crm/prenotazioni/` | User guide + platform API research |
 
 ---
 
-### Forms to fill and sign (crm/moduli, docs/gestionale-medico phase 2)
+### Forms to fill and sign (crm/moduli, docs/verticali/clinica phase 2)
 | File | Role |
 |---|---|
 | `crm/moduli/schema.py` | Pure: what a template schema may hold, conditions, formulas, scores, `valuta()`, `pulisci()`, `valida_schema()`, SHA-256 |
@@ -194,7 +202,7 @@ A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_perm
 which asks the controllers too) before offering a write; reading and writing are
 separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 
-### The main menu (docs/progetto-ghl/34)
+### The main menu (docs/crm/34)
 | File | Role |
 |---|---|
 | `frontend/src/utils/menu.js` | The menu as data: the day's group (no label, the dashboard last where the day opens on the reception desk), then marketing; each entry its page, icon and `condition` on the session; the pages that live together (`SORELLE`: the reception desk, the agenda and the waiting list; People and the companies; Tasks and the notes); `menuDi()`, `paginaSorelle()`, `barraDelTelefono()` (the phone's four places) — tested |
@@ -206,7 +214,7 @@ work, with the capability that opens it; never straight into the sidebar. A page
 that belongs with another goes in `SORELLE`, not in the menu; an action (calling)
 is never a menu entry.
 
-### The phone's own screens (docs/progetto-ghl/29, second part)
+### The phone's own screens (docs/crm/29, second part)
 | File | Role |
 |---|---|
 | `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number; notes by their title or words, their first words in plain text — tested in `crm/tests/test_sul_telefono.py` |
@@ -215,7 +223,7 @@ is never a menu entry.
 | `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
 | `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
 
-### Notifications (docs/progetto-ghl/43)
+### Notifications (docs/crm/43)
 | File | Role |
 |---|---|
 | `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents, a message on the answering service); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…"). A person's message (WhatsApp, SMS, email) reaches `chi_segue()`: whoever the person or one of their deals is assigned to (`stessa_conversazione`: one conversation on each page; Administrator too when somebody chose it), else its owner, else the desk - everyone of the centre who reads conversations and may open the person, never the agency -; one's own mailbox tells only them. It comes from the person: whoever saved it is never its sender |
@@ -237,7 +245,7 @@ and the email open the same place; only a notification with nowhere to go opens
 the notifications. A page a notification opens on one thing takes it from its
 query (`?open=`) and leaves the address without it (`history.replaceState`).
 
-### Emails (docs/progetto-ghl/44)
+### Emails (docs/crm/44)
 | File | Role |
 |---|---|
 | `crm/templates/emails/standard.html`, `email_header.html`, `email_footer.html` | Every email's layout over the framework's (its classes kept): with a `header` or `with_container`, the brand's canvas, the white card with the cloud's tail, the centre's mark at the top (its PNG/JPEG logo, else its name; the product's only for a centre with neither), "Powered by" under the card; light theme only. A plain email somebody wrote stays plain |
@@ -250,7 +258,7 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
-### The sending service and the centre's mailboxes (docs/progetto-ghl/51)
+### The sending service and the centre's mailboxes (docs/crm/51)
 | File | Role |
 |---|---|
 | `crm/posta/servizio.py` | The agency's sending service (`dottorcloud_posta` in `common_site_config.json`) as each site's "DottorCloud" account, the default outgoing one: `assicura()` after migrate and hourly, saved only when it changes, a failure undoes only its own save; `intestazioni()` (`make_email_body_message`): From the centre's name on the service's address (the envelope too), "Anna Bianchi · Centro Aurora" for somebody without a mailbox, Reply-To the centre's (`FCRM Settings.reply_to_email`, else its main mailbox); the page's calls, syncing the agency's |
@@ -264,7 +272,7 @@ never one of the centre's (`personale.del_centro()` in every list of them). An e
 person's, never a new person for somebody known; a module that sends a reminder on
 its own document needs nothing more: the answer reaches the person.
 
-### The centre's archive (docs/progetto-ghl/57)
+### The centre's archive (docs/crm/57)
 | File | Role |
 |---|---|
 | `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<prefix>/<site>/<sha[:2]>/<sha>/<name>`: the bucket is NPM2's, shared with other projects, and every site has its own folder), which files move (private only), what the plan includes (`SPAZIO_COMPRESO` by size: 300 GB, 600 GB, 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
@@ -275,7 +283,7 @@ A private file is read through its `File` (`get_content()`), never by opening it
 path: an archived one is an empty file on the server until something asks for it.
 A public file stays on the server.
 
-### The centre's Twilio account (docs/progetto-ghl/52)
+### The centre's Twilio account (docs/crm/52)
 | File | Role |
 |---|---|
 | `crm/telephony/collegamento_regole.py` | Pure: the two codes before Twilio is asked, a SID masked, the space's name, what a number and the app need to reach DottorCloud (a SIP trunk's number left alone), Twilio's answers in words — tested with plain `unittest` |
@@ -311,7 +319,7 @@ A call from the browser leaves only after the server's yes (`voice` asks
 `uscita.perche_no` again, whatever the screen did), and shows a number of the
 centre's or the caller's own line: never one the browser made up.
 
-### WhatsApp's templates (docs/progetto-ghl/12)
+### WhatsApp's templates (docs/crm/12)
 | File | Role |
 |---|---|
 | `crm/integrations/whatsapp/modelli_regole.py` | Pure: a template lives on a WhatsApp Business account (WABA), never on a number: the numbers that send it (`numeri_che_possono`, `stesso_account`), its buttons by Meta's rules (10 at most, 2 links, 1 call, 25 characters, quick replies first), Meta's description read into frappe_whatsapp's fields (`da_meta`), the ones Meta no longer has (`spariti`) — tested with plain `unittest` |
@@ -321,7 +329,7 @@ A template is chosen where it can be sent: whatever offers one asks
 `modelli_inviabili()`, never the whole list, and a check before sending compares the
 account (`stesso_account`), never the number's name.
 
-### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
+### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/crm/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
 | `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
@@ -368,7 +376,7 @@ section or tab left empty.
 Anything with a lasting effect (a client, a patient, the area, a report to the
 Sistema TS) leaves a test invoice out (`test_document`); going live takes them away.
 
-### Fatture in Cloud, for a centre that already invoices there (docs/progetto-ghl/58)
+### Fatture in Cloud, for a centre that already invoices there (docs/crm/58)
 | File | Role |
 |---|---|
 | `crm/invoicing/fic/regole.py` | Pure: a DottorCloud invoice as Fatture in Cloud's document (`documento()`: each line with its rate, the fund or INPS recharge, the withholding, the stamp duty - on an e-invoice the issuer's and a line when recharged, on paper the client's -, the payment on its method's account, a credit note's reference, the Sistema TS's fields), which of its rates and accounts stands for ours (`chiave_iva`, `scegli_tipo`, `conto_suggerito`), the totals compared (`totali_diversi`: VAT, withholding, amount due), `ei_status` in DottorCloud's states — tested with plain `unittest` |
@@ -384,7 +392,7 @@ Fatture in Cloud's totals equal to ours. Its ids are numbers, the ordinary rate'
 is 0: never read one as «nothing chosen». The tokens travel in variables named
 `*_token` and are never logged.
 
-### The settings (docs/progetto-ghl/31, 35)
+### The settings (docs/crm/31, 35)
 | File | Role |
 |---|---|
 | `frontend/src/utils/impostazioni.js` | The menu as data: groups (your account, the centre, agenda, clients, deals, email, WhatsApp, phone, marketing, invoicing, integrations), their entries, an entry's tabs, who sees each (`condition` on `puo`, `ambito`, `whatsapp`, `verticale`), the line on what each group and entry is for (`description`); `menuDi()`, `trova()` (the entry and tab a page's name opens), `pagine()` — tested |
@@ -398,7 +406,7 @@ it had before stays as an alias. Its label, its tab and its page's title say the
 same words, in the user's language, and its `description` says in one line what
 one sets up there.
 
-### A person: one page, two doors (docs/progetto-ghl/54)
+### A person: one page, two doors (docs/crm/54)
 | File | Role |
 |---|---|
 | `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`) — tested |
@@ -413,7 +421,7 @@ registers a line of the summary, its own key, from its `registra()`; the page
 draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
 server writes (an email, a push, the Desk) says so.
 
-### What a list offers to choose (docs/progetto-ghl/55)
+### What a list offers to choose (docs/crm/55)
 | File | Role |
 |---|---|
 | `crm/liste/regole.py` | Pure: for each use (`filtro`, `ordine`, `gruppo`, `colonna`, and `scheda` for a record's layout editors: any kind of field, never the layout's structure) the kinds of value it takes, the framework's own columns it offers and their words («Created By», «Last Modified By», «Favourite»), what no list offers (a code, a series, comments, tags); each field once, two of the same name told apart by their section («Sorgente (Primo contatto)»), the document's own field over the framework's of that name; a saved column under the framework's old name read by the new (`nome_della_colonna`) — tested with plain `unittest` |
@@ -595,7 +603,7 @@ the draft with `modello.accetta`.
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
 
-### The language (docs/progetto-ghl/40)
+### The language (docs/crm/40)
 | File | Role |
 |---|---|
 | `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
@@ -710,7 +718,7 @@ An element whose tag is chosen while drawing is `ElementoNativo`
 the name to frappe-ui's Button, registered for the whole app, and the card becomes
 a 28px-high button with its words cut to one line.
 
-### The first steps (docs/progetto-ghl/37)
+### The first steps (docs/crm/37)
 | File | Role |
 |---|---|
 | `crm/benvenuto.py` + `pages/Benvenuto.vue` | The centre's first opening, before anything else for whoever sets it up (`impostazioni.generali`, the boot's `benvenuto`): its language, Italian or English, each said in its own words, then its name, its clock and maybe the demo data; offered while the centre has no name and nobody finished it (`FATTO`), «Later» for that tab; it marks the framework's setup wizard done |
@@ -758,7 +766,7 @@ only keys or fingerprints goes in `regole.SOLO_PER_LA_MACCHINA`.
 | `crm/importazione/regole.py` | Pure: a column by the names it goes by (`COLONNE`, Italian first), a row as a person (dates as an Italian sheet writes them, +39, a fiscal code's sex and birth, «ROSSI MARIO» surname first), what is wrong with it, the keys that find somebody already here (fiscal code, email, mobile) — tested with plain `unittest` |
 | `crm/importazione/importa.py` + `Settings/YourDataSettings.vue` | Settings > The centre > Your data (`persone.importa`): the preview before anything is written, then a job; somebody already here only gets what was missing, somebody new their billing details and their notes; a module does its part with `registra_dopo` (the clinic: a patient by the import rule, `paziente.dall_importazione`) |
 
-### The demo data (docs/progetto-ghl/53)
+### The demo data (docs/crm/53)
 | File | Role |
 |---|---|
 | `crm/demo/registro.py` | The parts (`Parte`, `registra_parte`: a module's share, its plan module, the parts it needs, the ones that take what it makes, `prima`) and the register (`CRM Demo Record`): every record made while a part runs, written down by the `"*"` `after_insert` (`annota`), with a key a later part finds it by (`ricorda`, `trova`); `fuori_dal_registro` for what is the product's (the new clients pipeline) |
@@ -806,7 +814,7 @@ and the registries (`engine.registra_evento`, dashboard features, widgets and te
 patient, the record and reports, dossier and obscuring, the summary, the dental
 chart, diets and rehabilitation. What a beauty centre or a gym would use the same
 way belongs in the CRM, and the clinic registers its rules on it, with the "health
-data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
+data" mark deciding who reads (docs/verticali/clinica/design.md, "Tre strati",
 30/09/2026). The client area moved there first (`crm/area`), then plans,
 programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`),
 quotes (`crm/preventivi`), the new clients pipeline (`crm/clienti`) and one forms
@@ -1106,6 +1114,12 @@ Pre-commit hooks run prettier + eslint + oxlint automatically. If they modify a 
 ---
 
 ## Docs structure
+
+`docs/` follows the layers (`docs/README.md`): `docs/crm/` the base's numbered
+docs (00-59, a number never changes: code cites "doc 57" or `docs/crm/57`) with
+`prenotazioni/`; `docs/verticali/<vertical>/` (the clinic's: `docs/verticali/clinica/`,
+its design in three layers); `docs/marchi/<brand>/` (DottorCloud's listino and legal
+drafts). A new doc goes in the lowest layer it is true for. In `.pi/`:
 
 ```
 PLAN.md          — future only (phases 3B, 4, 5, 6)

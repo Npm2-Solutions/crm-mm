@@ -35,7 +35,7 @@ Il filo esiste già: dalla PR #101 la cronologia della persona è "una chat sola
 dalla PR #104 ha la grammatica di un messenger: il riempimento dice chi scrive
 (loro a sinistra in bianco, noi a destra nel blu di casa, su ogni canale), il glifo
 accanto all'ora dice il canale, la nota interna sta in mezzo in ambra
-([doc 17](../progetto-ghl/17-timeline-unificata.md)). Il design la estende con un
+([doc 17](../../crm/17-timeline-unificata.md)). Il design la estende con un
 terzo asse, **chi può vederlo**: un nodo clinico porta il lucchetto e compare solo
 nello sguardo degli operatori; un nodo "visibile al paziente" compare anche nella
 sua area.
@@ -563,7 +563,7 @@ modulo del piano si vende è una scelta commerciale.
 - Il listino finale (01/10/2026) vende alle cliniche un piano solo, con dentro
   la clinica e l'area pazienti; la fatturazione è un extra. Il prezzo dell'Area
   clienti da sola, per chi non è una clinica, resta da decidere
-  ([listino](./listino.md#da-decidere)).
+  ([listino](../../marchi/dottorcloud/listino.md#da-decidere)).
 
 ### L'ordine
 
@@ -576,7 +576,7 @@ Una PR per riga, ognuna utile da sola:
 3. il marchio del verticale: nome, logo, colori, icona e favicon dappertutto, il
    logo del centro al massimo accanto (fatto il 30/09/2026); poi un segno per
    posto, il centro in alto e DottorCloud in fondo
-   ([doc 32](../progetto-ghl/32-un-segno-per-posto.md), 01/10/2026);
+   ([doc 32](../../crm/32-un-segno-per-posto.md), 01/10/2026);
 4. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
    clinica (fatto il 30/09/2026);
 5. i documenti della persona e la consegna nel CRM; i referti restano alla clinica
@@ -706,7 +706,7 @@ Livelli, Sito, fatture, consensi, modelli e firma sono del CRM: sono PR del CRM,
 utili a ogni cliente anche prima che la clinica esista. La fase 0 si divide in
 PR piccole, ognuna utile da sola:
 
-1. i livelli e la gestione dei ruoli nel CRM ([doc 30](../progetto-ghl/30-ruoli-e-permessi.md));
+1. i livelli e la gestione dei ruoli nel CRM ([doc 30](../../crm/30-ruoli-e-permessi.md));
 2. il Sito nascosto senza Builder, e le fatture viste solo da chi deve;
 3. l'anagrafica fiscale sola, nella fatturazione;
 4. il registro dei consensi, compreso quello di `/prenota`;

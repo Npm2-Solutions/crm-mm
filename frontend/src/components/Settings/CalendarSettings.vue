@@ -1,7 +1,7 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-  How the agenda opens, the minutes its grid moves by (docs/progetto-ghl/
+  How the agenda opens, the minutes its grid moves by (docs/crm/
   56-agenda.md), and when events are reminded; the fields wait for the
   settings, as a page opened from a link draws before they come.
 -->

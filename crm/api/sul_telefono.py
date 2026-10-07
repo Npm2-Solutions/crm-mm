@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What the phone's own screens read (docs/progetto-ghl/29, the phone).
+"""What the phone's own screens read (docs/crm/29, the phone).
 
 On a phone a list is not the desk's table squeezed into cards: it is one line
 per thing, found by typing, with what one does next. These calls give exactly
@@ -64,7 +64,7 @@ def _pagina(righe: list, start: int) -> dict:
 def get_people(text: str | None = None, start: int = 0, relationship: str | None = None) -> dict:
 	"""The people the session reads, newest first; found by name, number or email,
 	and narrowed to a step of theirs - the leads, the clients, the patients - when
-	one is asked (docs/progetto-ghl/54)."""
+	one is asked (docs/crm/54)."""
 	livelli.verifica_nel_crm("persone.vedi")
 	start = max(cint(start), 0)
 	testo = (text or "").strip()

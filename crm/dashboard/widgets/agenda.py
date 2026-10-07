@@ -98,7 +98,7 @@ def today_bounds(ctx: Context) -> tuple[datetime.datetime, datetime.datetime]:
 	keywords=("recall", "follow-up", "patients", "last visit"),
 )
 def recall_due(ctx: Context):
-	"""The second seam (docs/gestionale-medico): who to invite back, chosen by when
+	"""The second seam (docs/verticali/clinica): who to invite back, chosen by when
 	they last came and by their yes, never by what they came for."""
 	Lead = DocType("CRM Lead")
 	soglia = ctx.today - datetime.timedelta(days=365)

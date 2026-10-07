@@ -135,7 +135,7 @@ class CRMAppointment(Document):
 
 	def update_last_visit(self):
 		"""The person's last visit and its service: administrative data the recalls
-		pick people by (docs/gestionale-medico, the second seam), never the record."""
+		pick people by (docs/verticali/clinica, the second seam), never the record."""
 		if self.status == "Cancelled":
 			return
 		giorno = getdate(self.starts_on)
@@ -181,7 +181,7 @@ class CRMAppointment(Document):
 				row.arrived_at = now_datetime()
 
 	def close_from_attendance(self):
-		"""The participants say how it went (docs/gestionale-medico, fase 1): once each
+		"""The participants say how it went (docs/verticali/clinica, fase 1): once each
 		of them came or did not, it is Completed, or No Show when nobody came. The
 		visit, the check-in and the invoice close it this way, without somebody
 		remembering to. Cancelled stays cancelled, and one still waiting stays open."""

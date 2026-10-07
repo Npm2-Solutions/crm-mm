@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  What is left to do, on a phone (docs/progetto-ghl/29): one's own or
+  What is left to do, on a phone (docs/crm/29): one's own or
   everybody's, by when it is due - late, today, tomorrow, later, without a day
   - with whom it is about. One tap on the circle marks it done, with a moment
   to take it back; a tap on the words opens it.

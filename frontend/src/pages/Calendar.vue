@@ -1,7 +1,7 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-  The agenda (docs/progetto-ghl/56-agenda.md). A day of the centre, one column
+  The agenda (docs/crm/56-agenda.md). A day of the centre, one column
   per professional (or per room) who works it; a week of one of them; a month.
   One bar for every view: the arrows and the date, the view, whose agenda, the
   filters, how it looks. An appointment reads its person first, in as many

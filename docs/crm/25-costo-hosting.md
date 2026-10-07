@@ -133,7 +133,7 @@ l'avvio.
 quando serve. Si passa a **Hetzner diretto** quando succede una di queste cose:
 
 1. il legale dice che l'accesso dall'India è un trasferimento che le clausole
-   tipo non coprono ([domanda 3](../gestionale-medico/legale/README.md#le-domande-per-il-legale));
+   tipo non coprono ([domanda 3](../marchi/dottorcloud/legale/README.md#le-domande-per-il-legale));
 2. i centri superano 30–40, e la differenza di costo diventa centinaia di euro;
 3. NPM2 ha chi gestisce i server.
 
@@ -152,8 +152,8 @@ decine di centri basta un bench con i siti e qualche script.
 3. Il ripristino: in quanto tempo, e se si può provare.
 
 Le risposte chiudono i «da verificare» della
-[nomina](../gestionale-medico/legale/nomina-responsabile.md) e della
-[DPIA](../gestionale-medico/legale/dpia-cartella.md).
+[nomina](../marchi/dottorcloud/legale/nomina-responsabile.md) e della
+[DPIA](../marchi/dottorcloud/legale/dpia-cartella.md).
 
 ### Fonti dell'aggiornamento
 

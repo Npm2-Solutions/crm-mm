@@ -209,7 +209,7 @@ cognome, e al paziente che torna si riscriveva tutto il resto ogni volta.
   le parole dei due nomi, non i campi, perché un modulo web scrive "Mario Rossi"
   tutto nel nome e la cassa lo divide.
 - **Chi paga per un altro** (29/09/2026). Se sulla pagina della persona c'è chi paga
-  per lei (il genitore, fra le [persone collegate](../../../docs/gestionale-medico/README.md#le-persone-collegate)),
+  per lei (il genitore, fra le [persone collegate](../../../docs/verticali/clinica/README.md#le-persone-collegate)),
   la fattura nuova è intestata a lui: i suoi dati fiscali, il suo nome, e nella
   causale "Prestazione resa a Giulia Rossi" con il codice fiscale della figlia. Se la
   cassa scrive il nome o il codice fiscale della figlia, la fattura resta sua e niente

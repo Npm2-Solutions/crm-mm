@@ -4,7 +4,7 @@
 """The clinic: the vertical that makes the CRM a medical centre's management software.
 
 Switched on, it turns the CRM into the centre's software, all of it
-(docs/gestionale-medico/design.md, "Tre strati"): its words - patients, visits, the
+(docs/verticali/clinica/design.md, "Tre strati"): its words - patients, visits, the
 patient area (`parole.py`, through `crm.verticali`); what exists only for health
 data or medical practice - who is a patient (`regole.py`, `paziente.py`), the
 record and its reports, the dossier, the summary, the dental chart, diets; and its

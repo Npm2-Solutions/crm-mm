@@ -3,7 +3,7 @@
 
 """A person's documents, on their page: what they bring, what arrives in a
 conversation, what the centre makes - a signed form, a contract; with the clinic
-a report, a test, an image (docs/gestionale-medico/design.md, "Tre strati").
+a report, a test, an image (docs/verticali/clinica/design.md, "Tre strati").
 
 Each one has its type, its date, where it comes from and whom it is for; the file
 private, its SHA-256 kept.

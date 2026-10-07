@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The notes on a phone (docs/progetto-ghl/29): found by typing their title or
+  The notes on a phone (docs/crm/29): found by typing their title or
   their words; one line each - the title, the first words, who wrote it, about
   whom and when - the whole line opening the note. The list grows as it
   scrolls; its data from `crm.api.sul_telefono.get_notes`.

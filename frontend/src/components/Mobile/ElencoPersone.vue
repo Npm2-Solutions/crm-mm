@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The people on a phone (docs/progetto-ghl/29): found by typing a name, a number
+  The people on a phone (docs/crm/29): found by typing a name, a number
   written any way, or an email; one line each - who, how to reach them, when
   they come next - and the call a thumb away. The list grows as it scrolls.
 -->
@@ -27,7 +27,7 @@
         </template>
       </TextInput>
       <!-- everybody, or one step: the leads, the clients, the patients - one
-           list of people (docs/progetto-ghl/54) -->
+           list of people (docs/crm/54) -->
       <div
         v-if="viste.length > 2"
         class="-mx-3 mt-2 overflow-x-auto px-3 [&::-webkit-scrollbar]:h-0"

@@ -421,7 +421,7 @@ function iconaDi(modulo) {
   return ICONE[modulo.key] || LucidePackage
 }
 
-// the listino's levels (docs/gestionale-medico/listino.md)
+// the listino's levels (docs/marchi/dottorcloud/listino.md)
 const SIZES = {
   Solo: __('Professional, one user and up to 3 rooms'),
   Studio: __('Studio, up to 3 rooms'),

@@ -6,7 +6,7 @@
 The first time a person comes - checked in at the desk, an appointment attended - or
 their first confirmed invoice, they are a client (`CRM Lead.client_since`), once:
 the first fact writes the moment, the ones after do nothing. A beauty centre, a gym
-and a medical centre work the same way (docs/gestionale-medico/design.md, "Cosa
+and a medical centre work the same way (docs/verticali/clinica/design.md, "Cosa
 passa dalla clinica al CRM"), so it is the CRM's:
 
 - **The rules** (`regole`): which facts say a person came, without a site.

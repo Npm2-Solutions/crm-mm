@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Cycles of sessions on the site (docs/gestionale-medico, phase 3: "cicli di sedute
+"""Cycles of sessions on the site (docs/verticali/clinica, phase 3: "cicli di sedute
 (fisioterapia)"): ten sessions of physiotherapy, six of laser. The rules are
 `cicli_regole`; here, the appointments.
 

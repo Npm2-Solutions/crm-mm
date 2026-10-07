@@ -1,5 +1,5 @@
 <!--
-  A signature drawn with a finger, a pen or the mouse (docs/gestionale-medico,
+  A signature drawn with a finger, a pen or the mouse (docs/verticali/clinica,
   design, "La firma").
 
   Only the picture of the stroke leaves this component, as a PNG: no pressure, no

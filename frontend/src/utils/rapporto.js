@@ -49,7 +49,7 @@ export function fattoDel(persona = {}) {
 }
 
 /**
- * The People list's quick views (docs/progetto-ghl/54): everybody, then each
+ * The People list's quick views (docs/crm/54): everybody, then each
  * step, plural - the leads, the clients, with the clinic its patients. One
  * list of people, each a step of theirs: never a list of leads beside it.
  */

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The demo's reminders (docs/progetto-ghl/59): tomorrow's appointments whose
+"""The demo's reminders (docs/crm/59): tomorrow's appointments whose
 reminder is due by now have it, by email - the email stays in the part
 (`crm.demo.modo`) - and about half of the people said «I'll be there» on the
 booking page it linked to. The agenda shows their mark, Settings > Agenda >

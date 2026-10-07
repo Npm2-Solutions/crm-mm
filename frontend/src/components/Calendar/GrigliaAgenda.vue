@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda's hours as a grid (docs/progetto-ghl/56-agenda.md): a day's
+  The agenda's hours as a grid (docs/crm/56-agenda.md): a day's
   columns are its professionals or its rooms, a week's the days of one of
   them. Each column at least as wide as a name reads (`--col-min`), the
   columns scroll sideways under their headers and the hours stay where they

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Which forms a person owes, and when (docs/gestionale-medico, "quando si chiede").
+"""Which forms a person owes, and when (docs/verticali/clinica, "quando si chiede").
 
 A template says when it is asked (``ask_on``: by hand, at the first appointment,
 for some services) and how long a signed one counts (``validity``: for ever, a

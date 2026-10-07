@@ -5,7 +5,7 @@
 
 Any business that works by appointments gives it to the people it looks after - a
 beauty centre, a gym, a medical centre - so it is the CRM's, not the clinic's
-(docs/gestionale-medico/design.md, "Tre strati"). Who enters is a user of the site
+(docs/verticali/clinica/design.md, "Tre strati"). Who enters is a user of the site
 with the area's role, never staff, invited by the centre for one or more people:
 themselves, a child, an elderly parent who said yes (`CRM Area Access`). Every call
 derives "my people" on the server from that list and never takes a person the

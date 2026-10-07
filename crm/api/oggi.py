@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The desk's day (docs/gestionale-medico, "La giornata della segreteria").
+"""The desk's day (docs/verticali/clinica, "La giornata della segreteria").
 
 Who is coming today, who is in the waiting room and since when, what the last days
 left without an outcome, and whether there is anything still to invoice. Saying
@@ -75,7 +75,7 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 				),
 			}
 		)
-	# what each of them answered the reminder of this time (docs/progetto-ghl/59)
+	# what each of them answered the reminder of this time (docs/crm/59)
 	promemoria.nelle_righe(fuori)
 	return fuori
 

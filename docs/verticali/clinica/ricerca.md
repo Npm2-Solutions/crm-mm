@@ -282,7 +282,7 @@ commercialista del centro pilota prima di essere scritte nel codice.
 - **Non coperti da questa ricerca:** i fornitori di firma avanzata e qualificata,
   da scegliere prima della fase 2. La conservazione a norma delle fatture la
   gestisce già la fatturazione, divisa fra ramo SdI e ramo fuori SdI
-  ([guida](../../.pi/feats/fatturazione/guida.md), "La conservazione si divide in
+  ([guida](../../../.pi/feats/fatturazione/guida.md), "La conservazione si divide in
   due").
 
 ---

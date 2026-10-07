@@ -4,7 +4,7 @@
 """A person's summary: what one needs to know of them at a glance.
 
 A person's page opens on it from the People list, the agenda, a search: one
-person, two doors (docs/progetto-ghl/54). From the conversations and from a
+person, two doors (docs/crm/54). From the conversations and from a
 message's notification the page opens on the chat instead, and the same summary
 sits beside the conversation. Who the person is and their next appointment are in
 the head of the page; the summary says the rest in a few lines, each a tap from the

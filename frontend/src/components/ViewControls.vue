@@ -157,7 +157,7 @@
         :class="vistaDelRapporto(filter) ? 'shrink-0' : 'min-w-36'"
       >
         <!-- a person's step as views, one tap each: everybody, the leads,
-             the clients, the patients (docs/progetto-ghl/54) -->
+             the clients, the patients (docs/crm/54) -->
         <TabButtons
           v-if="vistaDelRapporto(filter)"
           :options="vistePerRapporto(filter.options)"

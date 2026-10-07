@@ -120,7 +120,7 @@ const routes = [
   },
   {
     // everybody the centre has heard from, in one list: a lead is a step of
-    // theirs, not another list (docs/progetto-ghl/54)
+    // theirs, not another list (docs/crm/54)
     alias: '/persone',
     path: '/persone/view/:viewType?',
     name: 'Leads',
@@ -455,7 +455,7 @@ router.beforeEach(async (to, from, next) => {
   } else if (to.matched.length === 0) {
     next({ name: 'Invalid Page' })
   } else if (to.name === 'Lead' && !to.hash) {
-    // one person, two doors (docs/progetto-ghl/54): a person opens on their
+    // one person, two doors (docs/crm/54): a person opens on their
     // summary from wherever one comes without saying otherwise - the People
     // list, the agenda, a search -, and the conversations and a message's
     // notification name the chat. Not the tab left last time: the person a

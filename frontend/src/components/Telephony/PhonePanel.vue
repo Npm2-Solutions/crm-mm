@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The phone at hand (docs/progetto-ghl/34), what the phone button at the top of
+  The phone at hand (docs/crm/34), what the phone button at the top of
   every page opens: a number or a name, the keypad, the call; the last calls,
   the ones nobody took in red; the way to the callbacks owed, the round of
   calls and the whole register. Calling goes through the centre's telephony

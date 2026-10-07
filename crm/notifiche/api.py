@@ -167,7 +167,7 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set, chiamate: 
 		segno = "#" + riga.notification_type_doc
 	elif genere in MESSAGGI:
 		# a message opens the chat, the person's other door: their summary is
-		# where a page opens that says nothing (docs/progetto-ghl/54)
+		# where a page opens that says nothing (docs/crm/54)
 		segno = "#activity"
 	elif genere == "area":
 		segno = "#area"

@@ -177,7 +177,7 @@ def get_calendar(
 	)
 	appointments = _decorate(rows)
 	_first_visits(appointments)
-	# each person's reminder: sent, answered (docs/progetto-ghl/59)
+	# each person's reminder: sent, answered (docs/crm/59)
 	from crm.scheduling.promemoria import nelle_righe
 
 	nelle_righe(appointments)
@@ -512,7 +512,7 @@ def get_appointment(name: str) -> dict:
 	doc = frappe.get_doc("CRM Appointment", name)
 	doc.check_permission("read")
 	data = doc.as_dict()
-	# each person's reminder, read on the rows as they are stored (docs/progetto-ghl/59)
+	# each person's reminder, read on the rows as they are stored (docs/crm/59)
 	from crm.scheduling.promemoria import nelle_righe
 
 	nelle_righe([data])

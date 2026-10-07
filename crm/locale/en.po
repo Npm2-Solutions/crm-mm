@@ -1,6 +1,6 @@
 # The framework's own words that name it, said in English with the product's
 # name (crm/marchio.py), and a stored value read otherwise than it is kept: the
-# first step of a person, "Contact", is a lead (docs/progetto-ghl/54). Every
+# first step of a person, "Contact", is a lead (docs/crm/54). Every
 # other English string is its own source.
 msgid ""
 msgstr ""

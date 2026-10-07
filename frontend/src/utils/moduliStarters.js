@@ -1,5 +1,5 @@
 /**
- * Forms to start from: the ones every centre needs (docs/gestionale-medico,
+ * Forms to start from: the ones every centre needs (docs/verticali/clinica,
  * requisiti §4). The words are placeholders: the centre's own texts are checked
  * by whoever answers for privacy there before a version is published. ``use`` is
  * the kind of template each one starts: a form of the desk (the default) or one

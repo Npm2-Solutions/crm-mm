@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A quote, without a site (docs/gestionale-medico/design.md, "Tre strati": "Il
+"""A quote, without a site (docs/verticali/clinica/design.md, "Tre strati": "Il
 preventivo").
 
 - **What it holds**: services from the price list, each with its quantity, price

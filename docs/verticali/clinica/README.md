@@ -1,7 +1,7 @@
 # Il gestionale per i centri medici: come farlo stare in Frappe
 
 **Stato:** 🚧 in costruzione. Fase 0: livelli, capacità e piano (la PR 1 del
-[doc 30](../progetto-ghl/30-ruoli-e-permessi.md#la-pr-1-comè-fatta)) fatti il
+[doc 30](../../crm/30-ruoli-e-permessi.md#la-pr-1-comè-fatta)) fatti il
 29/09/2026; il Sito nascosto senza Builder e le fatture lette solo da chi deve,
 anche nella cronologia della persona, lo stesso giorno; poi
 [l'anagrafica fiscale sola](#unanagrafica-fiscale-sola), letta dalla fattura e
@@ -15,7 +15,7 @@ rivisto: quello che serve a ogni attività passa al CRM
 ([decisione 5](#decisione-5--il-motore-nel-crm-la-clinica-aggiunge-le-sue-regole)).
 Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in `develop`.
 Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
-`crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
+`crm/tessera_sanitaria`, [guida](../../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
 scrivere codice vanno chiuse le [domande](#le-domande-da-chiudere-prima) in fondo.
 Le richieste puntuali (livelli, Sito senza Builder, moduli con firma, archivio,
@@ -23,8 +23,8 @@ area cliente), verificate sul codice, sono in [requisiti.md](./requisiti.md).
 Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
 [ricerca.md](./ricerca.md). Il design, con i tre strati (CRM, fatturazione,
 clinica), è in [design.md](./design.md); il listino in
-[listino.md](./listino.md); ruoli e permessi nel
-[doc 30](../progetto-ghl/30-ruoli-e-permessi.md).
+[listino.md](../../marchi/dottorcloud/listino.md); ruoli e permessi nel
+[doc 30](../../crm/30-ruoli-e-permessi.md).
 
 ## Il problema in una riga
 
@@ -189,7 +189,7 @@ sito o di Meta diventa persona e deal, perché qualcuno lo deve richiamare
 già uno aperto (`open_deal_of`); a mano sì.
 
 Per un centro medico bastano due pipeline, che il CRM supporta già
-([guida](../../.pi/feats/pipelines/guide.md)):
+([guida](../../../.pi/feats/pipelines/guide.md)):
 
 - **Nuovi pazienti:** le richieste da pubblicità, moduli e telefonate, da
   richiamare fino alla prima visita.
@@ -207,8 +207,8 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 
 | Area | Oggi nel repo | Cosa manca per un centro medico |
 |---|---|---|
-| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola); genitore, figlio, chi paga e chi prenota sono [persone collegate](#le-persone-collegate) (29/09/2026) | ~~La scheda paziente, il tutore o il genitore per i minori~~: fatti il 29/09/2026 ([scheda](#lo-scheletro-della-clinica), [persone collegate](#le-persone-collegate)) |
-| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
+| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../../crm/18-persona-unica.md), [21](../../crm/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola); genitore, figlio, chi paga e chi prenota sono [persone collegate](#le-persone-collegate) (29/09/2026) | ~~La scheda paziente, il tutore o il genitore per i minori~~: fatti il 29/09/2026 ([scheda](#lo-scheletro-della-clinica), [persone collegate](#le-persone-collegate)) |
+| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../../crm/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
 | Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. L'archivio dei documenti, il registro degli accessi anche sull'archivio, dossier e oscuramento, la consegna del referto a mano e online: fatti il 30/09/2026 |
@@ -439,7 +439,7 @@ CRM](#i-nuovi-clienti-passano-al-crm-diventare-paziente-è-diventare-cliente).
 Fatta il 29/09/2026 (fase 1), in `crm/scheduling/esiti.py`, `crm/api/oggi.py` e nella
 pagina **Oggi** (`/crm/oggi`, per chi ha `agenda.presenze`), che dal 03/10/2026 è
 l'**Accoglienza** (`/crm/accoglienza`), una vista dell'agenda accanto alla griglia e
-alla lista d'attesa (doc 34 di progetto-ghl):
+alla lista d'attesa (doc 34 del CRM, [docs/crm](../../crm/34-menu-principale.md)):
 
 - **L'accettazione.** Al banco si dice che qualcuno è arrivato: il partecipante
   passa a "Arrived" e la sala d'attesa conta da quel momento. Con la clinica accesa
@@ -1815,9 +1815,9 @@ per tre motivi.
 1. **Porta una seconda agenda e una seconda anagrafica.** `Patient`,
    `Patient Appointment`, `Healthcare Practitioner`, `Practitioner Schedule`,
    `Healthcare Service Unit`: proprio la dualità da evitare, accanto
-   all'agenda appena unificata ([sistema-unico](../prenotazioni/sistema-unico.md)).
+   all'agenda appena unificata ([sistema-unico](../../crm/prenotazioni/sistema-unico.md)).
 2. **Vuole ERPNext su ogni sito.** Un server da $40 regge 8–12 siti perché il limite
-   è la RAM e lo scheduler di ogni sito ([25](../progetto-ghl/25-costo-hosting.md)).
+   è la RAM e lo scheduler di ogni sito ([25](../../crm/25-costo-hosting.md)).
    ERPNext più Marley su ogni sito medico cambiano quel conto.
 3. **La parte italiana ce l'avete già, e meglio.** Marley non sa niente di Sistema
    TS, esenzioni, bollo e divieto SDI; `crm/invoicing` sì.
@@ -2015,7 +2015,7 @@ Le scelte Frappe che contano:
 ## Le fasi
 
 Stime in settimane-persona (sp) per un senior Frappe, come in
-[08](../progetto-ghl/08-roadmap.md). Il collo di bottiglia non sarà il codice ma la
+[08](../../crm/08-roadmap.md). Il collo di bottiglia non sarà il codice ma la
 prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |

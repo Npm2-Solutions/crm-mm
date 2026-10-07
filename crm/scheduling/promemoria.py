@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The reminders of the appointments (docs/progetto-ghl/59): the day before, by
+"""The reminders of the appointments (docs/crm/59): the day before, by
 WhatsApp with three buttons, else SMS, else email; and what the person answers.
 
 Every quarter of an hour (`ogni_quarto_d_ora`) the places whose reminder is due

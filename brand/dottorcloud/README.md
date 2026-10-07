@@ -79,7 +79,7 @@ le quinte (permessi, persone, dati protetti).
 ## Prima di usarlo con i clienti
 
 - Cartella clinica, area paziente, piani, esercizi e lista d'attesa vengono dal
-  design (`docs/gestionale-medico/`) e sono mostrati come funzionanti: solo
+  design (`docs/verticali/clinica/`) e sono mostrati come funzionanti: solo
   l'assistente IA ha l'etichetta "Presto".
 - Da confermare: "ogni accesso registrato", "i dati non escono dall'Unione
   europea", "senza addestramento sui dati" per l'IA, la registrazione delle

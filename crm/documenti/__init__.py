@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """A person's documents, and giving them: the CRM's, for any centre
-(docs/gestionale-medico/design.md, "Tre strati": "I documenti della persona").
+(docs/verticali/clinica/design.md, "Tre strati": "I documenti della persona").
 
 A beauty centre keeps a signed consent and a photo, a gym a contract and a
 certificate, a medical centre a report and a test result: each one a document

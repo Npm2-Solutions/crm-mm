@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A person's summary (crm/persone/riepilogo.py, docs/progetto-ghl/54).
+"""A person's summary (crm/persone/riepilogo.py, docs/crm/54).
 
 Mario has a cycle of physiotherapy going on, two things left to do - one done is not
 among them - and an invoice issued and not collected yet: a collected one, a test

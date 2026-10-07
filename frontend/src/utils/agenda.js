@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 /**
- * The agenda, read (docs/progetto-ghl/56-agenda.md): how tall an hour is, what
+ * The agenda, read (docs/crm/56-agenda.md): how tall an hour is, what
  * an appointment's block says at its height, who works when, which columns a
  * day or a week shows, the period a view covers. Pure: no DOM, no Vue, no
  * network - the grid and the month draw what these say.

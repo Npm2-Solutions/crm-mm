@@ -228,7 +228,7 @@ aperto di quella pipeline — la stessa semantica di GoHighLevel.
 ## Dashboard — un cruscotto per ogni modulo
 
 > **Completato** (24/09/2026). Documento di progetto:
-> [docs/progetto-ghl/28-dashboard.md](../docs/progetto-ghl/28-dashboard.md).
+> [docs/crm/28-dashboard.md](../docs/crm/28-dashboard.md).
 
 166 widget in 16 categorie (`crm/dashboard/widgets/`), dieci dashboard pronte che
 seguono il sito finche' nessuno le risistema, builder a griglia nel frontend.
@@ -254,7 +254,7 @@ La fatturazione si e' aggiunta dopo (25/09/2026): 19 widget e la sua dashboard.
 ## Chat — chi, dove, quando
 
 > **Completato** (28/09/2026). Documento di progetto:
-> [docs/progetto-ghl/17-timeline-unificata.md](../docs/progetto-ghl/17-timeline-unificata.md),
+> [docs/crm/17-timeline-unificata.md](../docs/crm/17-timeline-unificata.md),
 > sezione «La chat rifatta».
 
 Redesign della vista «Tutto», del composer e della pagina Conversazioni, dopo
@@ -965,7 +965,7 @@ console stampa l'SQL intero.
 > Manager amministrativo, e Commerciale facoltativo) invece di ruoli, e il codice
 > chiede **capacità** con un nome invece di confrontare ruoli. Una capacità vale se
 > il livello la dà e il suo modulo è attivo nel **piano** del centro. La matrice è
-> quella del [doc 30](../docs/progetto-ghl/30-ruoli-e-permessi.md), che ha la
+> quella del [doc 30](../docs/crm/30-ruoli-e-permessi.md), che ha la
 > sezione "La PR 1, com'è fatta". È il primo passo della fase 0 del gestionale
 > medico: la clinica porterà il suo livello (Direzione sanitaria) e le sue capacità
 > nello stesso registro.
@@ -1429,7 +1429,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (29/09/2026). Le due pipeline del centro medico, la prenotazione che
 > sposta la richiesta, il paziente che la vince, l'evento "Became Patient" e i widget
-> dei nuovi pazienti. `docs/gestionale-medico/README.md`, "La prima cucitura".
+> dei nuovi pazienti. `docs/verticali/clinica/README.md`, "La prima cucitura".
 
 ### Decisioni
 
@@ -1446,7 +1446,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (29/09/2026). L'accettazione con la sala d'attesa, l'appuntamento che
 > si chiude da solo, il "sono venuti?" di fine giornata e la pagina Oggi.
-> `docs/gestionale-medico/README.md`, "La seconda cucitura".
+> `docs/verticali/clinica/README.md`, "La seconda cucitura".
 
 ### Decisioni
 
@@ -1464,7 +1464,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (29/09/2026). Ultima visita e servizio sulla persona, automazioni con
 > il consenso al marketing, la ricetta del richiamo, la dashboard "Medical centre".
-> Con questa la fase 1 è completa. `docs/gestionale-medico/README.md`, "La terza cucitura".
+> Con questa la fase 1 è completa. `docs/verticali/clinica/README.md`, "La terza cucitura".
 
 ### Decisioni
 
@@ -1484,7 +1484,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). Lo schema dei modelli e la sua logica, in Python e in
 > JavaScript sugli stessi casi; bozza e versioni immutabili con impronta e testi dei
 > consensi congelati; il builder in Impostazioni → Forms con quattro modelli di
-> partenza e la prova dal vivo. `docs/gestionale-medico/README.md`, "Il motore dei modelli".
+> partenza e la prova dal vivo. `docs/verticali/clinica/README.md`, "Il motore dei modelli".
 
 ### Decisioni
 
@@ -1508,7 +1508,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). Il modulo compilato (`CRM Form`) con le firme
 > (`CRM Signature`), la firma semplice col dito, il PDF/A con la pagina delle prove,
 > i consensi nel registro, il registro degli eventi a catena (`CRM Audit Log`), la
-> scheda "Forms" della persona. `docs/gestionale-medico/README.md`, "Compilare e firmare".
+> scheda "Forms" della persona. `docs/verticali/clinica/README.md`, "Compilare e firmare".
 
 ### Decisioni
 
@@ -1530,7 +1530,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (30/09/2026). `CRM Form Request`: moduli dati alla persona da
 > compilare da sola, con un link per email o sul tablet del banco; la pagina
-> `/modulo/<link>`; "On their own" nella scheda Forms. `docs/gestionale-medico/README.md`,
+> `/modulo/<link>`; "On their own" nella scheda Forms. `docs/verticali/clinica/README.md`,
 > "Dove si firma".
 
 ### Decisioni
@@ -1555,7 +1555,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). La firma su carta con la scansione attestata
 > dall'operatore; l'adattatore dei fornitori di firma avanzata e qualificata
 > (`crm/moduli/firme.py`, `CRM Signature Settings`), con un fornitore finto nei
-> test. `docs/gestionale-medico/README.md`, "Su carta e con un fornitore di firma".
+> test. `docs/verticali/clinica/README.md`, "Su carta e con un fornitore di firma".
 
 ### Decisioni
 
@@ -1576,7 +1576,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (30/09/2026). Quando un modulo si chiede e quanto vale uno
 > firmato (`crm/moduli/dovuti.py`), nella scheda Forms, nella pagina Oggi e con
-> la prenotazione. `docs/gestionale-medico/README.md`, "I moduli dovuti".
+> la prenotazione. `docs/verticali/clinica/README.md`, "I moduli dovuti".
 
 ### Decisioni
 
@@ -1597,7 +1597,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > firmata con il suo referto in PDF/A (`crm/clinica/referto.py`); la sintesi del
 > paziente con le proposte dai moduli e dalle schede firmati
 > (`crm/clinica/sintesi.py`, `Clinic Summary Value`).
-> `docs/gestionale-medico/README.md`, "La scheda clinica, il referto e la sintesi".
+> `docs/verticali/clinica/README.md`, "La scheda clinica, il referto e la sintesi".
 
 ### Decisioni
 
@@ -1637,7 +1637,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). L'archivio (`crm/clinica/archivio.py`,
 > `Clinic Document`) con i documenti caricati, il referto di ogni visita firmata e
 > i file ricevuti in una conversazione. Il registro degli accessi mette insieme la
-> cartella, l'archivio e i file scaricati. `docs/gestionale-medico/README.md`,
+> cartella, l'archivio e i file scaricati. `docs/verticali/clinica/README.md`,
 > "L'archivio clinico e il registro degli accessi".
 
 ### Decisioni
@@ -1663,7 +1663,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). Le regole del Garante sul dossier (4/6/2015) in
 > `crm/clinica/dossier.py`: il dossier vuole il consenso e la cura, l'oscuramento
 > degli episodi, la visibilità per disciplina, l'apertura fuori équipe con un
-> motivo (`Clinic Access Grant`). `docs/gestionale-medico/README.md`, "Il
+> motivo (`Clinic Access Grant`). `docs/verticali/clinica/README.md`, "Il
 > dossier, l'oscuramento e l'apertura con motivo".
 
 ### Decisioni
@@ -1687,7 +1687,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). Il referto al paziente, a mano o online per 45
 > giorni con il consenso (`crm/clinica/consegna.py`, `Clinic Report Delivery`,
 > `/referto/<link>`). Con questa la fase 2 è completa.
-> `docs/gestionale-medico/README.md`, "La consegna del referto".
+> `docs/verticali/clinica/README.md`, "La consegna del referto".
 
 ### Decisioni
 
@@ -1708,7 +1708,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). `/area`, un'app a parte con le API in
 > `crm/clinica/area`: l'invito del centro (`Clinic Area Access`), l'accesso con un
 > codice per email, gli appuntamenti con il link della prenotazione, i documenti
-> dati online, le fatture. `docs/gestionale-medico/README.md`, "L'area del
+> dati online, le fatture. `docs/verticali/clinica/README.md`, "L'area del
 > paziente: la porta e le prime stanze".
 
 ### Decisioni
@@ -1729,7 +1729,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). "Prepara la visita" nell'Inizio dell'area, con i
 > moduli compilati sulla pagina `/modulo` già aperta; la bacheca dei messaggi del
 > centro (`Clinic Message`, `crm/clinica/area/messaggi.py`).
-> `docs/gestionale-medico/README.md`, "Prepara la visita e i messaggi del centro".
+> `docs/verticali/clinica/README.md`, "Prepara la visita e i messaggi del centro".
 
 ### Decisioni
 
@@ -1749,7 +1749,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). `Clinic Plan` con i suoi momenti e le sue voci, le
 > librerie `Clinic Food` e `Clinic Exercise`, le regole pure in
 > `crm/clinica/piani_regole.py`, l'editor nella scheda Clinica.
-> `docs/gestionale-medico/README.md`, "I piani, nel CRM".
+> `docs/verticali/clinica/README.md`, "I piani, nel CRM".
 
 ### Decisioni
 
@@ -1767,7 +1767,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (30/09/2026). La pagina "Piani" dell'area con il giorno del piano
 > e un tocco per voce (`crm/clinica/area/piani.py`, `Clinic Plan Log`).
-> `docs/gestionale-medico/README.md`, "I piani nell'area del paziente".
+> `docs/verticali/clinica/README.md`, "I piani nell'area del paziente".
 
 ### Decisioni
 
@@ -1785,7 +1785,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (30/09/2026). `crm/assistente`: il modulo del piano, l'adattatore
 > del modello, `CRM Assistant Settings`, il registro `CRM AI Event`, "Dal modulo di
-> carta". `docs/gestionale-medico/README.md`, "L'assistente: le fondamenta e il
+> carta". `docs/verticali/clinica/README.md`, "L'assistente: le fondamenta e il
 > modulo di carta".
 
 ### Decisioni
@@ -1806,7 +1806,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). `crm/clinica/assistente.py` (bozze dalla nota
 > firmata), `dettatura.py` (la visita dettata nei campi della scheda),
 > `riassunto.py` (il riassunto prima della visita con le fonti); il consenso
-> `ai_assistant`. `docs/gestionale-medico/README.md`, "L'assistente nella
+> `ai_assistant`. `docs/verticali/clinica/README.md`, "L'assistente nella
 > clinica".
 
 ### Decisioni
@@ -1831,7 +1831,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > firmato (`crm/moduli/pdf.py`) e sul referto della visita (`crm/clinica/referto.py`);
 > i campi in `CRM Signature Settings`; la pagina dell'agenzia
 > `frontend/src/components/Settings/SealSettings.vue`.
-> `docs/gestionale-medico/README.md`, "Il sigillo del centro e la marca temporale".
+> `docs/verticali/clinica/README.md`, "Il sigillo del centro e la marca temporale".
 
 ### Decisioni
 
@@ -1852,7 +1852,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > nutrienti dalle tabelle (`crm/clinica/piani_regole.py` e
 > `frontend/src/utils/piani.js`, sui casi di `crm/clinica/tests/casi_nutrienti.json`),
 > le ricette dell'assistente (`crm/clinica/menu.py`), la nota del pasto nell'area.
-> `docs/gestionale-medico/README.md`, "Il menù per il nutrizionista".
+> `docs/verticali/clinica/README.md`, "Il menù per il nutrizionista".
 
 ### Decisioni
 
@@ -1872,7 +1872,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > il resto: pure), `crm/clinica/area/chat.py` (la chat dell'area, il passaggio al
 > centro), la domanda "Question" sulla bacheca (`Clinic Message`), l'avviso "Area"
 > alla segreteria, "Answered" nel registro, le domande frequenti del centro nelle
-> impostazioni dell'assistente. `docs/gestionale-medico/README.md`, "La chat del
+> impostazioni dell'assistente. `docs/verticali/clinica/README.md`, "La chat del
 > paziente". Con questa, la fase 4 è completa.
 
 ### Decisioni
@@ -1893,7 +1893,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 
 > **Completato** (30/09/2026). `crm/clinica/area/passkey.py` (py_webauthn), `Clinic
 > Area Passkey`, `frontend/src/area/passkey.js` (le conversioni, provate),
-> `PasskeyCard.vue` e "Enter with a passkey" sulla porta. `docs/gestionale-medico/README.md`,
+> `PasskeyCard.vue` e "Enter with a passkey" sulla porta. `docs/verticali/clinica/README.md`,
 > "La passkey per entrare nell'area".
 
 ### Decisioni
@@ -1914,7 +1914,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). `crm/clinica/area/avvisi.py`, `Clinic Area Notice`, i
 > campi dell'area in `Clinic Settings`, `AreaNoticeSettings.vue` (Impostazioni > News
 > in the patient area), `NoticeCard.vue` nei Messaggi dell'area.
-> `docs/gestionale-medico/README.md`, "Le novità dell'area su WhatsApp e SMS".
+> `docs/verticali/clinica/README.md`, "Le novità dell'area su WhatsApp e SMS".
 
 ### Decisioni
 
@@ -1933,7 +1933,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > gruppi, esercizi), `crm/clinica/librerie.py`, `Clinic Library Import`, i campi di
 > origine su `Clinic Food` e `Clinic Exercise`, `exercise_media_url` in `Clinic
 > Settings`, `frontend/src/components/Settings/Clinic/` (Impostazioni > Clinic >
-> Libraries). `docs/gestionale-medico/README.md`, "Le librerie: le tabelle e gli
+> Libraries). `docs/verticali/clinica/README.md`, "Le librerie: le tabelle e gli
 > esercizi".
 
 ### Decisioni
@@ -1955,7 +1955,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > **Completato** (30/09/2026). `piani_regole.giorni_del_periodo` e `spesa` (pure),
 > `piani.shopping_list` e `area/piani.area_shopping_list`, `ShoppingListDialog.vue` nel
 > CRM, `PlanShopping.vue` nell'area; `utils/piani.js` arrotonda e scrive la lista.
-> `docs/gestionale-medico/README.md`, "La lista della spesa".
+> `docs/verticali/clinica/README.md`, "La lista della spesa".
 
 ### Decisioni
 
@@ -1975,7 +1975,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > `crm/clinica/programmi.py`, `Clinic Programme` e `Clinic Programme Stage`, il
 > programma e la tappa su `Clinic Plan`, `ProgrammeDialog.vue`, `ProgrammeCard.vue`
 > nell'area, il lavoro del giorno `programmi.apri_del_giorno`.
-> `docs/gestionale-medico/README.md`, "I programmi a tappe".
+> `docs/verticali/clinica/README.md`, "I programmi a tappe".
 
 ### Decisioni
 
@@ -1997,7 +1997,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > `crm/scheduling/cicli.py`, `CRM Session Cycle`, il ciclo su `CRM Appointment` e su
 > `CRM Invoice`, la capacità `agenda.cicli`, `invoicing.api.issue_from_cycle`,
 > `CyclesSection.vue` e `CycleDialog.vue` nel CRM, `CycleCard.vue` nell'area.
-> `docs/gestionale-medico/README.md`, "I cicli di sedute".
+> `docs/verticali/clinica/README.md`, "I cicli di sedute".
 
 ### Decisioni
 
@@ -2022,7 +2022,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 > `Clinic Care Plan Item`, le capacità `cure.scrivi` e `cure.preventivi`, il preventivo
 > `templates/preventivo.html`, la cucitura con la pipeline "Preventivi",
 > `DentalCard.vue`, `DentalChart.vue`, `CarePlanDialog.vue` nel CRM, `CarePlanCard.vue`
-> nell'area. `docs/gestionale-medico/README.md`, "I piani di cura (odontoiatria)".
+> nell'area. `docs/verticali/clinica/README.md`, "I piani di cura (odontoiatria)".
 
 ### Decisioni
 

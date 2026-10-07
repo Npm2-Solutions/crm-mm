@@ -368,7 +368,7 @@ DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **ver
    Twilio. DottorCloud non conta più minuti né SMS (via `MINUTI_INCLUSI`): nella
    pagina Funzionalità restano crediti SdI e firme avanzate, la spesa del telefono
    sta nella pagina di Twilio
-   ([listino](../gestionale-medico/listino.md#gli-extra)). Con la segreteria
+   ([listino](../marchi/dottorcloud/listino.md#gli-extra)). Con la segreteria
    dell'agenzia resta nel prezzo del servizio.
 2. **Exotel è tolto.** Era il fornitore per l'India arrivato con il progetto
    originale: per i centri italiani non serviva. Via le sue impostazioni con la

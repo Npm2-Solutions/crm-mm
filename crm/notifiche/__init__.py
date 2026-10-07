@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Notifications: what reaches somebody of the centre in DottorCloud's panel, and
-how it reads (docs/progetto-ghl/43-notifiche.md).
+how it reads (docs/crm/43-notifiche.md).
 
 - **One door** (`avvisi.avvisa`): every module tells somebody something the same
   way - a mention, an assignment, a task, a WhatsApp or an SMS of a person they

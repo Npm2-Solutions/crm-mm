@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The emails: how every email DottorCloud sends looks, and the words of the ones
-it sends to the centre's people (docs/progetto-ghl/44-email.md).
+it sends to the centre's people (docs/crm/44-email.md).
 
 - **One layout** (`templates/emails/standard.html`, `email_header.html`,
   `email_footer.html`, over the framework's): every email - a patient's code, a

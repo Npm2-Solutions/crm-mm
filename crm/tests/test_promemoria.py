@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The reminders of the appointments, on a real site (docs/progetto-ghl/59).
+"""The reminders of the appointments, on a real site (docs/crm/59).
 
 Anna has a visit the day after tomorrow at half past nine. Tomorrow at ten the
 round finds it, and the reminder leaves - by email, with the booking page's link,

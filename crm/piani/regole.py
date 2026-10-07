@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """What a plan is, without a site: its kinds, what goes in it, and how the person's
-week reads (docs/gestionale-medico/design.md, "I piani").
+week reads (docs/verticali/clinica/design.md, "I piani").
 
 - **The kinds are registered** (`TipoPiano`): the CRM's own - a training, habits -
   and the ones a module brings, with who writes them and what they hold: the

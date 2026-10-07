@@ -13,7 +13,7 @@
 @import './marchio.css';
 @import './espresso.css';
 @import './espresso-componenti.css';
-/* the app on a phone: sheets, fields, targets (docs/progetto-ghl/29) */
+/* the app on a phone: sheets, fields, targets (docs/crm/29) */
 @import './telefono.css';
 
 @layer utilities {

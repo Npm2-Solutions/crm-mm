@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The demo data (docs/progetto-ghl/53): a centre full of life to look around in,
+"""The demo data (docs/crm/53): a centre full of life to look around in,
 and taken away without a trace.
 
 The base's parts are here (`base`, `simulazione`); a module adds its own part from

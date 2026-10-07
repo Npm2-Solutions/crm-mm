@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The second seam, from the centre to marketing: the recall (docs/gestionale-medico).
+"""The second seam, from the centre to marketing: the recall (docs/verticali/clinica).
 
 People are picked by administrative data - when they last came, what they booked -
 never by the clinical record, and only with their yes to marketing. An automation

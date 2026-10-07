@@ -53,7 +53,7 @@ Frappe stessa non lo usa.
 **Web Form nativi** — erano il motore di submission (i form CRM usavano `Web Form`
 come storage con `crm_published`). *Dal 30/09/2026 non più*: un campo per ogni campo del
 DocType non basta per le domande di un centro, e i moduli del sito sono modelli
-(`crm/moduli/sito.py`, [design](../gestionale-medico/design.md#il-motore-dei-modelli)).
+(`crm/moduli/sito.py`, [design](../verticali/clinica/design.md#il-motore-dei-modelli)).
 
 ## 4. Come lo fa Frappe — letto nel codice di Builder
 

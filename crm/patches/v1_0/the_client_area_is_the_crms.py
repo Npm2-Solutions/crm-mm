@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The client area moves from the clinic to the CRM (docs/gestionale-medico/design.md,
+"""The client area moves from the clinic to the CRM (docs/verticali/clinica/design.md,
 "Tre strati"): any centre gives its people their area, the clinic only adds to it.
 
 Before the models are synced, its DocTypes take the CRM's names and the "Area"

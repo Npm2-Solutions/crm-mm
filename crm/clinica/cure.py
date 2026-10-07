@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The teeth, and what dentistry adds to the CRM's quotes (docs/gestionale-medico,
+"""The teeth, and what dentistry adds to the CRM's quotes (docs/verticali/clinica,
 phase 3: "piani di cura (odontoiatria)"); the rules without a site are `cure_regole`.
 
 - **The chart** (`Clinic Dental Chart`, one per person): what each tooth is now, one

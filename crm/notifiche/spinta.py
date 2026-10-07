@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Notifications on the phone and the computer (Web Push), with nobody in between
-who reads them (docs/progetto-ghl/43).
+who reads them (docs/crm/43).
 
 - **Where**: each browser, or the app put on a phone's home screen, that somebody
   turns on in Settings > Your account > Notifications subscribes with its maker's

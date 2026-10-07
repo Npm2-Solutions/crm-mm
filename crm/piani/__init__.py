@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Plans and programmes: what the centre writes for a person to follow in their
-area, one tap at a time (docs/gestionale-medico/design.md, "I piani").
+area, one tap at a time (docs/verticali/clinica/design.md, "I piani").
 
 A gym's trainer, a beauty centre's therapist, a medical centre's nutritionist: each
 writes plans, so they are the CRM's, not the clinic's ("Tre strati").

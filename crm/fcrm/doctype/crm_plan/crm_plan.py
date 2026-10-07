@@ -80,7 +80,7 @@ STATI = {
 	"Off": livelli.SPENTO,
 }
 
-# What the listino says (docs/gestionale-medico/listino-proposta.md, 07/10/2026).
+# What the listino says (docs/marchi/dottorcloud/listino-proposta.md, 07/10/2026).
 # "Solo" is the Professional plan: one person working alone, on up to three rooms.
 
 #: Ambulatori each size covers - rooms where one visits or treats, as the agenda's

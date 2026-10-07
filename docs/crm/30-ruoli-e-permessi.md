@@ -395,13 +395,13 @@ fra quello che decide il centro e quello che resta all'agenzia.
 
 I centri comprano moduli, e un servizio dell'agenzia ne sblocca alcuni (la
 segreteria sblocca il telefono, le campagne il marketing; i prezzi sono nel
-[listino](../gestionale-medico/listino.md)). Quindi una capacità
+[listino](../marchi/dottorcloud/listino.md)). Quindi una capacità
 vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
 livello della persona la prevede.
 
 Il listino finale (01/10/2026) misura la taglia in ambulatori e fa della
 fatturazione e della firma avanzata due extra, e il codice conta così dallo
-stesso giorno ([listino, Nel CRM](../gestionale-medico/listino.md#nel-crm),
+stesso giorno ([listino, Nel CRM](../marchi/dottorcloud/listino.md#nel-crm),
 [doc 36](./36-funzionalita.md)). Il piano qui sotto parla ancora di agende: vale
 quello che dice il listino.
 

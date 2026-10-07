@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The reminders of the appointments without a site (docs/progetto-ghl/59). The
+"""The reminders of the appointments without a site (docs/crm/59). The
 engine is `crm.scheduling.promemoria`; here, what it decides.
 
 - **The day before, never at night**: a reminder leaves the hours before its

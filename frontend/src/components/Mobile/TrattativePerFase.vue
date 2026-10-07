@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The deals on a phone (docs/progetto-ghl/29): a board of columns does not fit a
+  The deals on a phone (docs/crm/29): a board of columns does not fit a
   hand, so the stages are a row of chips with how many deals each holds, and the
   deals of the stage chosen are cards one under the other - who, what they are
   worth when there is a value, who follows them, when they last moved. It opens

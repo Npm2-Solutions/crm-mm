@@ -18,7 +18,7 @@
   «Trattativa»). In italiano «offerta» vuol dire quasi «preventivo», da qui il
   doppione apparente.
 - **I documenti veri sono i preventivi** (`crm/preventivi`,
-  [«Il preventivo»](../gestionale-medico/design.md)):
+  [«Il preventivo»](../verticali/clinica/design.md)):
   - righe di servizi dal listino, fasi, il PDF, accettato o rifiutato, le versioni;
   - accettato, le righe diventano appuntamenti e poi fatture;
   - con la clinica accesa, i piani di cura del dentista.

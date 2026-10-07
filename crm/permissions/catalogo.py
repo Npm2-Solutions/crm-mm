@@ -4,7 +4,7 @@
 """What the CRM itself brings to the registry: its plan modules, levels, roles and
 capabilities.
 
-The matrix is doc 30's (`docs/progetto-ghl/30-ruoli-e-permessi.md`), column by
+The matrix is doc 30's (`docs/crm/30-ruoli-e-permessi.md`), column by
 column. Invoicing adds its own capabilities from `crm.invoicing`, and the clinic
 will add its levels and capabilities from its own module: this file never names
 them.
@@ -227,7 +227,7 @@ CAPACITA = (
 		descrizione="Record an answer given at the desk, on paper, by phone; record a withdrawal",
 	),
 	_c("consensi.configura", manager=CENTRO, descrizione="The kinds of consent and their texts"),
-	# Forms to fill and sign (docs/gestionale-medico, phase 2): what they ask, in versions
+	# Forms to fill and sign (docs/verticali/clinica, phase 2): what they ask, in versions
 	_c("moduli.configura", manager=CENTRO, descrizione="The centre's form templates and their versions"),
 	# a person's forms follow the person, like their consents
 	_c("moduli.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),

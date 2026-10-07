@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  "More" on a phone (docs/progetto-ghl/29): what the bar at the bottom has no
+  "More" on a phone (docs/crm/29): what the bar at the bottom has no
   room for, as a page of an app rather than the desk's sidebar in a drawer.
   Who one is, the notifications, the rest of the menu (utils/menu.js), the saved
   views, the first steps, the account's entries (composables/vociAccount.js) and

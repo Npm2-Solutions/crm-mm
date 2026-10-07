@@ -61,7 +61,7 @@ Le funzioni sono le stesse in tutti i livelli: cambia solo la taglia.
   tracciamento, costo per nuovo paziente, sito.
 - **Telefono**: 50 € l'anno per attivarlo, per ogni taglia, e nient'altro.
   Centralino nel browser, dialer, registrazioni e trascrizioni sull'account Twilio
-  del centro, collegato da DottorCloud ([doc 52](../progetto-ghl/52-twilio-del-centro.md)):
+  del centro, collegato da DottorCloud ([doc 52](../../crm/52-twilio-del-centro.md)):
   chiamate, numeri e SMS il centro li paga a Twilio, al prezzo di Twilio, e la
   spesa la vede nella pagina di Twilio. Con la segreteria dell'agenzia è nel
   prezzo del servizio.
@@ -69,9 +69,9 @@ Le funzioni sono le stesse in tutti i livelli: cambia solo la taglia.
   dalla nota, mette la visita dettata nei campi, riassume prima della visita.
 - **Firma avanzata**: 39 € al mese per centro, fino a 2.000 firme l'anno.
   Consenso informato e preventivi si firmano con un codice SMS e valgono come su
-  carta ([design](./design.md#la-firma)). Il fornitore costa circa 30 € al mese
+  carta ([design](../../verticali/clinica/design.md#la-firma)). Il fornitore costa circa 30 € al mese
   (Namirial, 360 € l'anno per 2.000 documenti,
-  [ricerca](./ricerca-design.md#34-i-fornitori)).
+  [ricerca](../../verticali/clinica/ricerca-design.md#34-i-fornitori)).
 
 **Il Sistema TS sta sempre nella fatturazione.** Chi fattura prestazioni sanitarie
 a privati le deve comunicare al Sistema TS e non le può mandare allo SdI: lo sa il
@@ -138,7 +138,7 @@ CRM avvisa all'80%.
 - **Gli ambulatori, non le agende.** Contare le agende vuol dire contare i medici,
   come fanno i concorrenti: un poliambulatorio con venti specialisti a giornata
   pagherebbe per venti. Il prezzo che sale a ogni operatore in più è la lamentela
-  più comune ([ricerca](./ricerca-design.md#12-di-cosa-si-lamentano-i-clienti)).
+  più comune ([ricerca](../../verticali/clinica/ricerca-design.md#12-di-cosa-si-lamentano-i-clienti)).
   Le stanze sono un numero stabile, e il CRM le conosce dall'agenda.
 - **La clinica dentro.** L'agenzia lavora soprattutto con le cliniche: un piano
   solo, senza un modulo clinico da aggiungere, si spiega in una riga.
@@ -146,7 +146,7 @@ CRM avvisa all'80%.
   prende paga 64, 124, 228 o 378 €, chi no 49, 99, 189 o 319 €.
 - **I costi vivi sono bassi.** Un credito SdI costa 0,05 €, quindi i crediti
   inclusi costano 1–10 € al mese. WhatsApp non si rivende. Il server costa circa
-  4 € al mese per sito ([doc 25](../progetto-ghl/25-costo-hosting.md)); con backup
+  4 € al mese per sito ([doc 25](../../crm/25-costo-hosting.md)); con backup
   e dati clinici si contano 10 €. Il costo vero è l'assistenza e l'avvio.
 - **Prezzi pubblici.** Doctolib, MioDottore, GipoNext e AlfaDocs lavorano su
   preventivo: un listino chiaro è già un vantaggio.
@@ -169,8 +169,8 @@ strumento per WhatsApp, spende facilmente 250–450 € al mese.
 
 ✅ **Allineato (01/10/2026).** Il piano nel CRM (`CRM Plan`, la pagina
 Funzionalità:
-[doc 30](../progetto-ghl/30-ruoli-e-permessi.md#il-piano-del-centro-la-seconda-chiave),
-[doc 36](../progetto-ghl/36-funzionalita.md)) conta come questo listino:
+[doc 30](../../crm/30-ruoli-e-permessi.md#il-piano-del-centro-la-seconda-chiave),
+[doc 36](../../crm/36-funzionalita.md)) conta come questo listino:
 
 1. **La taglia conta gli ambulatori**: le sale attive dell'agenda (Agenda › Sale e
    attrezzature, di tipo sala), non più le agende del mese. Superarla non blocca
@@ -199,7 +199,7 @@ I numeri stanno in `crm/fcrm/doctype/crm_plan/crm_plan.py` (`AMBULATORI`,
    specialisti hanno di solito i centri dell'agenzia.
 2. Chi non è una clinica (centri estetici, palestre): il piano senza la parte
    clinica e l'Area clienti da sola, e i loro prezzi
-   ([i tre strati](./design.md#tre-strati-crm-fatturazione-clinica)).
+   ([i tre strati](../../verticali/clinica/design.md#tre-strati-crm-fatturazione-clinica)).
 
 ## Fonti
 

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Quotes on the person's page (docs/gestionale-medico/design.md, "Tre strati": "Il
+"""Quotes on the person's page (docs/verticali/clinica/design.md, "Tre strati": "Il
 preventivo"); the rules without a site are `regole`.
 
 - **A draft is its author's**: services from the price list, each with its
