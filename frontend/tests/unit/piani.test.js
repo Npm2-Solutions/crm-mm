@@ -3,6 +3,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   chiLoScrive,
+  copiaGiorno,
+  copiaMomento,
+  grammiIniziali,
+  momentiDelGiorno,
+  momentiPerGiorno,
+  perOgniGiorno,
+  totaleDelGiorno,
+  versoGliObiettivi,
   ABITUDINE,
   CIBO,
   ESERCIZIO,
@@ -283,5 +291,120 @@ describe('chiLoScrive', () => {
   it('says nothing without names', () => {
     expect(chiLoScrive([], 'it')).toBe('')
     expect(chiLoScrive(null)).toBe('')
+  })
+})
+
+describe('the week', () => {
+  const casuale = (() => {
+    let n = 0
+    return () => (n++ % 97) / 97
+  })()
+  const momenti = [
+    { key: 'cola', label: 'Colazione', day: 'Every day' },
+    { key: 'pran', label: 'Pranzo', day: 'Monday' },
+    { key: 'cena', label: 'Cena', day: 'Monday' },
+  ]
+  const voci = [
+    { key: 'a', moment: 'cola', kind: 'Food', food: 'latte', quantity_g: 200 },
+    { key: 'b', moment: 'pran', kind: 'Food', food: 'pasta', quantity_g: 80 },
+    { key: 'c', moment: 'cena', kind: 'Food', food: 'pasta', quantity_g: 50 },
+  ]
+  const cibi = {
+    latte: { kcal: 50, protein_g: 3.3 },
+    pasta: { kcal: 350, protein_g: 12 },
+  }
+
+  it('shows a day its own moments, and counts them', () => {
+    expect(momentiDelGiorno(momenti, 'Monday').map((m) => m.key)).toEqual([
+      'pran',
+      'cena',
+    ])
+    expect(momentiDelGiorno(momenti, 'Every day')).toHaveLength(1)
+    const conti = momentiPerGiorno(momenti)
+    expect(conti[0]).toEqual({ day: 'Every day', count: 1 })
+    expect(conti.find((c) => c.day === 'Monday').count).toBe(2)
+    expect(conti.find((c) => c.day === 'Sunday').count).toBe(0)
+  })
+
+  it('copies a meal with new keys, its items with it', () => {
+    const { momento, voci: nuove } = copiaMomento(
+      momenti[1],
+      voci,
+      'Tuesday',
+      casuale,
+    )
+    expect(momento.day).toBe('Tuesday')
+    expect(momento.key).not.toBe('pran')
+    expect(momento.label).toBe('Pranzo')
+    expect(nuove).toHaveLength(1)
+    expect(nuove[0].moment).toBe(momento.key)
+    expect(nuove[0].key).not.toBe('b')
+    expect(nuove[0].quantity_g).toBe(80)
+  })
+
+  it('copies a day into others, never into itself', () => {
+    const copia = copiaGiorno(
+      momenti,
+      voci,
+      'Monday',
+      ['Monday', 'Wednesday', 'Friday'],
+      casuale,
+    )
+    expect(copia.momenti.map((m) => m.day)).toEqual([
+      'Wednesday',
+      'Wednesday',
+      'Friday',
+      'Friday',
+    ])
+    expect(copia.voci).toHaveLength(4)
+  })
+
+  it('starts a food from its portion, its group’s, else 100 g', () => {
+    expect(grammiIniziali({ portion_g: 80 })).toBe(80)
+    expect(
+      grammiIniziali({ portion_g: null, food_group: 'Oils and fats' }),
+    ).toBe(10)
+    expect(grammiIniziali({ food_group: 'Fruit' })).toBe(150)
+    expect(grammiIniziali({ portion_g: null, food_group: 'Other' })).toBe(100)
+    expect(grammiIniziali(null)).toBe(100)
+  })
+
+  it('makes an every-day moment one of each weekday', () => {
+    const { momenti: nuovi, voci: sue } = perOgniGiorno(
+      momenti[0],
+      voci,
+      casuale,
+    )
+    expect(nuovi.map((m) => m.day)).toEqual([
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ])
+    expect(new Set(nuovi.map((m) => m.key)).size).toBe(7)
+    expect(sue).toHaveLength(7)
+  })
+
+  it('counts a weekday with every day’s moments', () => {
+    expect(totaleDelGiorno(momenti, voci, cibi, 'Monday').kcal).toBe(
+      100 + 280 + 175,
+    )
+    expect(totaleDelGiorno(momenti, voci, cibi, 'Tuesday').kcal).toBe(100)
+    expect(totaleDelGiorno(momenti, voci, cibi, 'Every day').kcal).toBe(100)
+  })
+
+  it('says how far the day is from its targets', () => {
+    const [kcal, proteine, carboidrati] = versoGliObiettivi(
+      { kcal: 1500, protein_g: 90, carbs_g: 10 },
+      { kcal: 1800, protein_g: 80, carbs_g: '' },
+    )
+    expect(kcal).toMatchObject({ value: 1500, target: 1800, left: 300 })
+    expect(kcal.share).toBeCloseTo(1500 / 1800)
+    // over the target: the bar full, what is over said as a negative left
+    expect(proteine).toMatchObject({ share: 1, left: -10 })
+    expect(carboidrati).toMatchObject({ target: null, share: null })
   })
 })

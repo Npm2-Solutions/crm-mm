@@ -319,3 +319,116 @@ export function chiLoScrive(nomi, locale = 'en-GB') {
     return elenco.join(', ')
   }
 }
+
+// ------------------------------------------------------------------ the week
+// A plan's moments are every day's or one weekday's: the editor shows one day at
+// a time, copies a meal or a session into other days, a day into others.
+
+// the moments the editor shows for a day: that day's own (every day's are
+// their own day too)
+export function momentiDelGiorno(momenti, giorno) {
+  return (momenti || []).filter((m) => (m.day || OGNI_GIORNO) === giorno)
+}
+
+// how many moments each day holds, every day's first
+export function momentiPerGiorno(momenti) {
+  return [OGNI_GIORNO, ...GIORNI].map((giorno) => ({
+    day: giorno,
+    count: momentiDelGiorno(momenti, giorno).length,
+  }))
+}
+
+// a moment and its items copied into a day: new keys, nothing shared with the
+// original, so a check-in stays with the item it was made on
+export function copiaMomento(momento, voci, giorno, random) {
+  const nuovo = { ...momento, key: nuovaChiave(random), day: giorno }
+  const sue = (voci || [])
+    .filter((v) => v.moment === momento.key)
+    .map((v) => ({ ...v, key: nuovaChiave(random), moment: nuovo.key }))
+  return { momento: nuovo, voci: sue }
+}
+
+// an every-day moment made one of each weekday, to change day by day: seven
+// copies in its place, in the order of the week
+export function perOgniGiorno(momento, voci, random) {
+  const nuovi = { momenti: [], voci: [] }
+  for (const giorno of GIORNI) {
+    const copia = copiaMomento(momento, voci, giorno, random)
+    nuovi.momenti.push(copia.momento)
+    nuovi.voci.push(...copia.voci)
+  }
+  return nuovi
+}
+
+// a day copied into others: each of its moments, with their items
+export function copiaGiorno(momenti, voci, da, verso, random) {
+  const nuovi = { momenti: [], voci: [] }
+  for (const giorno of verso || []) {
+    if (giorno === da) continue
+    for (const momento of momentiDelGiorno(momenti, da)) {
+      const copia = copiaMomento(momento, voci, giorno, random)
+      nuovi.momenti.push(copia.momento)
+      nuovi.voci.push(...copia.voci)
+    }
+  }
+  return nuovi
+}
+
+// a group's standard portion, in grams, as the LARN (SINU, 2014) tables give
+// them: what a food without a portion of its own starts from
+export const PORZIONI = {
+  'Cereals and tubers': 80,
+  Legumes: 150,
+  Meat: 100,
+  Fish: 150,
+  Eggs: 50,
+  'Milk and dairy': 125,
+  Vegetables: 200,
+  Fruit: 150,
+  'Oils and fats': 10,
+  'Nuts and seeds': 30,
+  Sweets: 30,
+  Drinks: 200,
+}
+
+// the grams a food starts from in a plan: the library's portion, else its
+// group's standard one, else 100 g; the nutritionist changes it
+export function grammiIniziali(cibo) {
+  const porzione = valore(cibo?.portion_g)
+  if (porzione && porzione > 0) return porzione
+  return PORZIONI[cibo?.food_group] || 100
+}
+
+// what a day gives: every day's moments and, for a weekday, its own
+export function totaleDelGiorno(momenti, voci, cibi, giorno) {
+  const chiavi = new Set(
+    (momenti || [])
+      .filter((m) => {
+        const suo = m.day || OGNI_GIORNO
+        return suo === OGNI_GIORNO || suo === giorno
+      })
+      .map((m) => m.key),
+  )
+  return nutrienti(
+    (voci || []).filter((v) => chiavi.has(v.moment)),
+    cibi,
+  )
+}
+
+// each nutrient next to its target: how far the day has come, as a share the
+// bar draws (capped at 1) and what is left or over; no target, no share
+export function versoGliObiettivi(totale, obiettivi) {
+  return NUTRIENTI.map((nome) => {
+    const fatto = valore(totale?.[nome]) || 0
+    const obiettivo = valore(obiettivi?.[nome])
+    if (!obiettivo || obiettivo <= 0)
+      return { key: nome, value: fatto, target: null, share: null, left: null }
+    return {
+      key: nome,
+      value: fatto,
+      target: obiettivo,
+      share: Math.min(fatto / obiettivo, 1),
+      left: mezzoSu(obiettivo - fatto, nome === 'kcal' ? 0 : 1),
+    }
+  })
+}
