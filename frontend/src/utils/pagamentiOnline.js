@@ -5,6 +5,8 @@
 // key before it is sent, the connection in words, a payment in words. The same
 // rules as crm/pagamenti/regole.py. `t` is the translator (`__`).
 
+import { nomeDellaValuta } from '@/utils/valute'
+
 /** What is wrong with what was pasted, before Stripe is asked; '' when nothing. */
 export function problemaDellaChiave(chiave, t) {
   const pulita = (chiave || '').replace(/\s+/g, '')
@@ -47,14 +49,15 @@ export function modoInParole(modo, t) {
   return { label: '', theme: 'gray', riga: '' }
 }
 
-/** The connected account, as the page lists it: [label, value]. */
-export function righeDelCollegamento(stato, t, giorno) {
+/** The connected account, as the page lists it: [label, value]; its currency by
+ * its name in `lingua`, never Stripe's code nor its id. */
+export function righeDelCollegamento(stato, t, giorno, lingua = 'it') {
   if (!stato?.connected) return []
   return [
-    [t('Account'), stato.account_name || stato.account_id],
+    [t('Account'), stato.account_name || t('No name on Stripe yet')],
     [t('Mode'), modoInParole(stato.mode, t).label],
     [t('Key'), stato.key],
-    [t('Currency'), stato.currency],
+    [t('Currency'), nomeDellaValuta(stato.currency, lingua)],
     [
       t('Connected'),
       [stato.connected_on ? giorno(stato.connected_on) : '', stato.connected_by]

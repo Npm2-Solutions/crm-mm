@@ -239,6 +239,7 @@ import Password from '@/components/Controls/Password.vue'
 import { globalStore } from '@/stores/global'
 import { chiedi } from '@/utils/chiedi'
 import { formatDate } from '@/utils'
+import { appLocale } from '@/utils/locale'
 import {
   modoInParole,
   oreValide,
@@ -298,8 +299,11 @@ function prendi(dati) {
 
 const modo = computed(() => modoInParole(stato.value?.mode, __))
 const righe = computed(() =>
-  righeDelCollegamento(stato.value, __, (giorno) =>
-    formatDate(giorno, 'D MMMM YYYY'),
+  righeDelCollegamento(
+    stato.value,
+    __,
+    (giorno) => formatDate(giorno, 'D MMMM YYYY'),
+    appLocale(),
   ),
 )
 const modificato = computed(() => JSON.stringify(regola) !== salvata.value)

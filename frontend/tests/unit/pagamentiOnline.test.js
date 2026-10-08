@@ -46,14 +46,28 @@ test('the account in rows, nothing empty', () => {
     },
     t,
     (g) => `il ${g}`,
+    'it',
   )
   expect(righe).toEqual([
     ['Account', 'Centro Aurora'],
     ['Mode', 'Test mode'],
     ['Key', 'sk_test_…1234'],
-    ['Currency', 'EUR'],
+    ['Currency', 'Euro'],
     ['Connected', 'il 2026-10-08'],
   ])
+})
+
+test('an account without a name is not shown by its id', () => {
+  const righe = righeDelCollegamento(
+    { connected: true, account_id: 'acct_1AbC', currency: 'usd' },
+    t,
+    (g) => g,
+    'it',
+  )
+  expect(righe[0]).toEqual(['Account', 'No name on Stripe yet'])
+  expect(righe.find(([chi]) => chi === 'Currency')[1]).toBe(
+    'Dollaro statunitense',
+  )
 })
 
 test('the hours: a whole number from zero', () => {

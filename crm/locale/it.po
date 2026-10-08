@@ -48585,3 +48585,6 @@ msgstr "Collegare Stripe, la regola degli acconti"
 
 msgid "Live payments"
 msgstr "Pagamenti reali"
+
+msgid "No name on Stripe yet"
+msgstr "Ancora senza nome su Stripe"
