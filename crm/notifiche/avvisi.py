@@ -106,6 +106,9 @@ def avvisa(
 				"type": tipo,
 				"reference_doctype": doctype_riguarda,
 				"reference_name": nome_riguarda,
+				# the same news: a kind tells other news too (the area: a message,
+				# a quote signed), which never take each other's place
+				"sentence": ("in", (frase, frase_molti)),
 				"read": 0,
 			},
 			["name", "count", "emailed_on"],

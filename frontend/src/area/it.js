@@ -348,4 +348,17 @@ export default {
   Clear: 'Cancella',
   'To sign we send you a code again: it says the signature is yours.':
     'Per firmare ti mandiamo di nuovo un codice: dice che la firma è tua.',
+  // writing to the centre from Messages (crm.area.messaggi)
+  'Write to the centre': 'Scrivi al centro',
+  'A question, a document to send…': 'Una domanda, un documento da mandare…',
+  'The centre answers here. For an emergency do not write: call 112.':
+    'Il centro ti risponde qui. Per un’emergenza non scrivere: chiama il 112.',
+  'Remove the file': 'Togli il file',
+  'Attach a photo or a PDF': 'Allega una foto o un PDF',
+  'Your message': 'Il tuo messaggio',
+  'Only a photo or a PDF can be attached':
+    'Si può allegare solo una foto o un PDF',
+  'The file is larger than {0} MB': 'Il file è più grande di {0} MB',
+  'seen by the centre': 'visto dal centro',
+  'not seen by the centre yet': 'non ancora visto dal centro',
 }

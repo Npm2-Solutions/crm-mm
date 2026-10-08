@@ -47758,3 +47758,39 @@ msgstr "Ogni prestazione si fattura quando è fatta, al prezzo indicato."
 
 msgid "For acceptance"
 msgstr "Per accettazione"
+
+msgid "The file could not be read: attach it again"
+msgstr "Non si riesce a leggere il file: allegalo di nuovo"
+
+msgid "Write the message or attach a file"
+msgstr "Scrivi il messaggio o allega un file"
+
+msgid "A message is at most {0} characters"
+msgstr "Un messaggio ha al massimo {0} caratteri"
+
+msgid "The file is larger than {0} MB"
+msgstr "Il file è più grande di {0} MB"
+
+msgid "Only a photo or a PDF can be attached"
+msgstr "Si può allegare solo una foto o un PDF"
+
+msgid "{0} wrote to the centre from their area"
+msgstr "{0} ha scritto al centro dalla sua area"
+
+msgid "{0} wrote {1} messages to the centre from their area"
+msgstr "{0} ha scritto {1} messaggi al centro dalla sua area"
+
+msgid "Attachment's name"
+msgstr "Nome dell'allegato"
+
+msgid "From the person"
+msgstr "Dalla persona"
+
+msgid "The file is no longer there"
+msgstr "Il file non c'è più"
+
+msgid "Written in the area"
+msgstr "Scritto nell'area"
+
+msgid "From the desk: a reminder, a document to bring. The person reads it in their area, and writes back here."
+msgstr "Dalla segreteria: un promemoria, un documento da portare. La persona lo legge nella sua area, e risponde qui."

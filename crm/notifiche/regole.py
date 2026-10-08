@@ -95,6 +95,11 @@ ARRIVATO_DALL_AREA = "{0} is in the waiting room: they checked in from their pho
 PREVENTIVO_FIRMATO = "{0} accepted and signed a quote in their area"
 PREVENTIVO_RIFIUTATO = "{0} declined a quote in their area"
 
+#: What the person wrote from the Messages of their area (`crm.area.messaggi`):
+#: never its words, which may say something about their health.
+MESSAGGIO_AREA = "{0} wrote to the centre from their area"
+MESSAGGIO_AREA_MOLTI = "{0} wrote {1} messages to the centre from their area"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -139,6 +144,8 @@ FRASI = (
 	ARRIVATO_DALL_AREA,
 	PREVENTIVO_FIRMATO,
 	PREVENTIVO_RIFIUTATO,
+	MESSAGGIO_AREA,
+	MESSAGGIO_AREA_MOLTI,
 )
 
 #: The sentences that take something away: the panel draws them apart.
