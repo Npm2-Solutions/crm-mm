@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 11:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "payment_method",
+  "method_name",
+  "collected",
+  "refunded",
+  "invoices"
+ ],
+ "fields": [
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Data",
+   "label": "Payment method code",
+   "in_list_view": 0,
+   "hidden": 1
+  },
+  {
+   "fieldname": "method_name",
+   "fieldtype": "Data",
+   "label": "Payment method",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "collected",
+   "fieldtype": "Currency",
+   "label": "Collected",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "refunded",
+   "fieldtype": "Currency",
+   "label": "Given back",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "invoices",
+   "fieldtype": "Int",
+   "label": "Invoices",
+   "in_list_view": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-08 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Cash Closing Method",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

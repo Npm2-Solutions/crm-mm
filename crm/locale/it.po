@@ -46884,3 +46884,84 @@ msgstr "Sollecitata una volta, il {0}"
 
 msgid "Reminded {0} times, the last on {1}"
 msgstr "Sollecitata {0} volte, l'ultima il {1}"
+
+msgid "A day that has not come yet cannot be closed"
+msgstr "Non si chiude un giorno che non è ancora arrivato"
+
+msgid "Write the cash counted in the drawer"
+msgstr "Scrivi i contanti contati in cassa"
+
+msgid "The cash counted cannot be below zero"
+msgstr "I contanti contati non possono essere sotto zero"
+
+msgid "CRM Cash Closing"
+msgstr "Chiusura di cassa"
+
+msgid "CRM Cash Closing Method"
+msgstr "Chiusura di cassa per metodo"
+
+msgid "Given back"
+msgstr "Restituito"
+
+msgid "Cash expected"
+msgstr "Contanti attesi"
+
+msgid "Cash counted"
+msgstr "Contanti contati"
+
+msgid "The cash counted less the cash expected: above zero there is more, below zero less."
+msgstr "I contanti contati meno quelli attesi: sopra zero ce n'è di più, sotto zero di meno."
+
+msgid "By payment method"
+msgstr "Per metodo di pagamento"
+
+msgid "Payment method code"
+msgstr "Codice del metodo di pagamento"
+
+msgid "Cash closing"
+msgstr "Chiusura di cassa"
+
+msgid "Nothing collected on this day."
+msgstr "Niente incassato in questo giorno."
+
+msgid "1 invoice"
+msgstr "1 fattura"
+
+msgid "{0} invoices"
+msgstr "{0} fatture"
+
+msgid "{0} given back"
+msgstr "{0} restituiti"
+
+msgid "By who issued them"
+msgstr "Per chi le ha emesse"
+
+msgid "Cash counted in the drawer"
+msgstr "Contanti contati in cassa"
+
+msgid "What explains a difference, if any"
+msgstr "Cosa spiega una differenza, se c'è"
+
+msgid "Closed by {0} at {1}"
+msgstr "Chiusa da {0} alle {1}"
+
+msgid "Close it again"
+msgstr "Richiudi"
+
+msgid "Close the cash"
+msgstr "Chiudi la cassa"
+
+msgid "The cash is closed"
+msgstr "La cassa è chiusa"
+
+msgid "The drawer is right"
+msgstr "La cassa torna"
+
+msgid "{0} missing"
+msgstr "Mancano {0}"
+
+msgid "{0} more than expected"
+msgstr "{0} in più del previsto"
+
+msgid "What the day collected, by way of paying, and the cash in the drawer."
+msgstr "Cosa ha incassato la giornata, per metodo di pagamento, e i contanti in cassa."

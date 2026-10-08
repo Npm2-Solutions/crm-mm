@@ -32,6 +32,11 @@ def da_incassare(doc) -> bool:
 	return doc.docstatus == 1 and (doc.document_type or "TD01") not in NOTE_DI_CREDITO
 
 
+def da_pagare(riga) -> float:
+	"""What the client pays: the document less the withholding they pay themselves."""
+	return flt(riga.get("net_payable")) or flt(riga.get("grand_total"))
+
+
 def alla_cassa(doc) -> None:
 	"""An invoice to a person, issued at the desk, was paid at the desk."""
 	if da_incassare(doc) and doc.recipient_type == "persona_fisica" and not doc.collected_on:
@@ -98,10 +103,6 @@ def della_persona(lead: str) -> dict | None:
 	)
 	if not aperte and not bozze:
 		return None
-
-	# what the client pays: the document less the withholding they pay themselves
-	def da_pagare(riga) -> float:
-		return flt(riga.net_payable) or flt(riga.grand_total)
 
 	from crm.invoicing import solleciti
 

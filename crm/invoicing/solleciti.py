@@ -63,11 +63,6 @@ def come_pagare() -> str:
 	return (frappe.db.get_single_value(IMPOSTAZIONI, "how_to_pay") or "").strip()
 
 
-def da_pagare(riga) -> float:
-	"""What the client pays: the document less the withholding they pay themselves."""
-	return flt(riga.get("net_payable")) or flt(riga.get("grand_total"))
-
-
 # ------------------------------------------------------------------ what each invoice had
 
 
@@ -145,7 +140,7 @@ def dovute(conf=None, oggi=None) -> list[frappe._dict]:
 			oggi,
 			scade,
 			inviati.get(riga.name, []),
-			da_pagare(riga),
+			incassi.da_pagare(riga),
 			primo=conf.primo,
 			ogni=conf.ogni,
 			massimo=conf.massimo,
@@ -293,7 +288,7 @@ def _testo(fattura, dove, conf) -> dict:
 
 	numero = fattura.document_number or fattura.name
 	giorno = frappe.format(getdate(fattura.posting_date), "Date")
-	importo = in_euro(Decimal(str(da_pagare(fattura))))
+	importo = in_euro(Decimal(str(incassi.da_pagare(fattura))))
 	return {
 		"nome": dove.nome,
 		"centro": nome_del_centro() or _("the centre"),

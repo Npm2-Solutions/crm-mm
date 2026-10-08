@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-08 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "closed_by",
+  "closed_on",
+  "column_head",
+  "collected_total",
+  "refunded_total",
+  "cash_section",
+  "expected_cash",
+  "counted_cash",
+  "column_cash",
+  "difference",
+  "note",
+  "methods_section",
+  "methods"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Day",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_by",
+   "fieldtype": "Link",
+   "label": "Closed by",
+   "options": "User",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "collected_total",
+   "fieldtype": "Currency",
+   "label": "Collected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "refunded_total",
+   "fieldtype": "Currency",
+   "label": "Given back",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cash_section",
+   "fieldtype": "Section Break",
+   "label": "Cash"
+  },
+  {
+   "fieldname": "expected_cash",
+   "fieldtype": "Currency",
+   "label": "Cash expected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "counted_cash",
+   "fieldtype": "Currency",
+   "label": "Cash counted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_cash",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "difference",
+   "fieldtype": "Currency",
+   "label": "Difference",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "The cash counted less the cash expected: above zero there is more, below zero less."
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
+  },
+  {
+   "fieldname": "methods_section",
+   "fieldtype": "Section Break",
+   "label": "By payment method"
+  },
+  {
+   "fieldname": "methods",
+   "fieldtype": "Table",
+   "label": "By payment method",
+   "options": "CRM Cash Closing Method",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-08 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Cash Closing",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "date",
+ "track_changes": 1
+}

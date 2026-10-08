@@ -801,6 +801,7 @@ guards know: never a real domain, never a real person's number.
 | `crm/scheduling/esiti.py` | How an appointment went: check-in (`Arrived`, `arrived_at`), who may mark (`agenda.presenze`), visit and invoice close it, the end-of-day "did they come?" |
 | `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The reception desk («Accoglienza», `/accoglienza`, once Today at `/oggi`): arrivals, waiting room, days left open, what is left to invoice; a view of the agenda, beside it and the waiting list in the header's switch |
 | `frontend/src/utils/oggi.js` | Pure: waiting time, next outcomes, summary, days — tested |
+| `crm/invoicing/cassa.py` + `cassa_regole.py`, `CRM Cash Closing`, `Today/CashClosingDialog.vue`, `utils/cassa.js` | The cash closing at the reception desk (`fatture.incassi`, `oggi.get_cash_summary`, `close_cash_day`): the day's `collected_on` by payment method in words (`voci.etichetta`) and by who issued (the log's «issued»), the credit notes of the day out, the cash expected (MP01) against the cash counted, to the cent; one closing a day, closed again on the same record (its versions keep the rest); never a test invoice. The arithmetic pure, tested on both sides |
 
 An automation for marketing asks `marketing_consent`: `engine.enroll` skips whoever
 did not agree (an enrollment `Skipped`, once, never counted as having been through

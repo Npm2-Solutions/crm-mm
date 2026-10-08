@@ -135,3 +135,26 @@ def set_outcome(appointment: str, participant: str, outcome: str) -> dict:
 		],
 		"now": str(get_datetime()),
 	}
+
+
+# ------------------------------------------------------------------ the cash closing
+
+
+@frappe.whitelist()
+def get_cash_summary(date: str | None = None) -> dict:
+	"""The day's money at the desk: collected by way of paying and by who issued it,
+	the credit notes, the cash the drawer should hold, and the closing if it was
+	closed (`crm.invoicing.cassa`)."""
+	livelli.verifica_nel_crm("fatture.incassi")
+	from crm.invoicing import cassa
+
+	return cassa.riepilogo_del_giorno(getdate(date) if date else getdate())
+
+
+@frappe.whitelist(methods=["POST"])
+def close_cash_day(date: str, counted_cash: float, note: str | None = None) -> dict:
+	"""The day closed with the cash counted in the drawer."""
+	livelli.verifica_nel_crm("fatture.incassi")
+	from crm.invoicing import cassa
+
+	return cassa.chiudi(date, counted_cash, note)

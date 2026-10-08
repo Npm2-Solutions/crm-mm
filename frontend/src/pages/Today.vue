@@ -225,6 +225,37 @@
         />
       </section>
 
+      <!-- the day's money, and the cash in the drawer: for whoever records
+           payments -->
+      <button
+        v-if="puo('fatture.incassi')"
+        type="button"
+        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 px-4 py-3 text-left hover:bg-surface-gray-1"
+        @click="cassaAperta = true"
+      >
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="text-p-base text-ink-gray-8">
+            {{ __('Cash closing') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'What the day collected, by way of paying, and the cash in the drawer.',
+              )
+            }}
+          </span>
+        </span>
+        <span
+          class="lucide-chevron-right size-4 shrink-0 text-ink-gray-5"
+          aria-hidden="true"
+        />
+      </button>
+      <CashClosingDialog
+        v-if="cassaMontata"
+        v-model="cassaAperta"
+        :date="day.data?.date || date"
+      />
+
       <!-- and what is left to invoice -->
       <RouterLink
         v-if="toInvoice.data?.length"
@@ -251,6 +282,7 @@ import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
 import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
@@ -273,6 +305,14 @@ import { Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 const { puo } = usersStore()
+
+// the cash closing: downloaded the first time it opens
+const CashClosingDialog = aRichiesta(
+  () => import('@/components/Today/CashClosingDialog.vue'),
+  { attesa: false },
+)
+const cassaAperta = ref(false)
+const cassaMontata = apertoUnaVolta(cassaAperta)
 // whoever reads, as the store gives it: the user's name, not a ref
 const { user } = sessionStore()
 
