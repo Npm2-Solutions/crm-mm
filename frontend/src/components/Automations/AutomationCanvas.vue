@@ -48,7 +48,7 @@
                   {{ __(trigger.event) }}
                 </div>
                 <div class="truncate text-sm text-ink-gray-5">
-                  {{ triggerSummary(trigger) }}
+                  {{ triggerSummary(trigger, editor?.fields?.value) }}
                 </div>
               </div>
               <Button

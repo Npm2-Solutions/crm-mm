@@ -38,7 +38,7 @@
           />
         </div>
         <div class="truncate text-sm text-ink-gray-5">
-          {{ stepSummary(step) }}
+          {{ stepSummary(step, editor?.fields?.value) }}
         </div>
         <div
           v-if="gateSummary"
@@ -113,7 +113,10 @@ const stats = computed(() => editor.stats.value?.nodes?.[props.step.id] || null)
 
 const gateSummary = computed(() => {
   if (!props.step.condition_groups?.length) return ''
-  const summary = groupsSummary(props.step.condition_groups)
+  const summary = groupsSummary(
+    props.step.condition_groups,
+    editor?.fields?.value,
+  )
   return summary === __('Always') ? '' : summary
 })
 

@@ -835,18 +835,24 @@ export function operatorsForFieldtype(fieldtype) {
   return CONDITION_OPERATORS
 }
 
-export function conditionSummary(condition) {
+/** A condition in words: the field by its label where the editor's fields know it,
+ * never its fieldname (`mobile_no`). */
+export function conditionSummary(condition, fields = []) {
   if (!condition?.field) return ''
+  const campo = (fields || []).find((f) => f.fieldname === condition.field)
+  const nome = campo?.label || condition.field
   const operator = operatorLabel(condition.operator)
-  if (!needsValue(condition.operator)) return `${condition.field} ${operator}`
-  return `${condition.field} ${operator} ${condition.value ?? ''}`.trim()
+  if (!needsValue(condition.operator)) return `${nome} ${operator}`
+  return `${nome} ${operator} ${condition.value ?? ''}`.trim()
 }
 
-export function groupsSummary(groups) {
+export function groupsSummary(groups, fields = []) {
   const cleaned = cleanGroups(groups)
   if (!cleaned) return __('Always')
   return cleaned
-    .map((group) => group.map(conditionSummary).join(` ${__('and')} `))
+    .map((group) =>
+      group.map((c) => conditionSummary(c, fields)).join(` ${__('and')} `),
+    )
     .join(` ${__('or')} `)
 }
 
@@ -871,7 +877,7 @@ export function waitSummary(step) {
 }
 
 /** What a trigger listens to, in one line: its filters and its conditions. */
-export function triggerSummary(trigger) {
+export function triggerSummary(trigger, fields = []) {
   const parts = []
   const config = trigger?.config || {}
   if (config.tag) parts.push(__('tag «{0}»', [config.tag]))
@@ -888,7 +894,7 @@ export function triggerSummary(trigger) {
     )
   }
   const groups = cleanGroups(trigger?.condition_groups)
-  if (groups) parts.push(groupsSummary(groups))
+  if (groups) parts.push(groupsSummary(groups, fields))
   return parts.join(' · ') || __('every record')
 }
 
@@ -911,7 +917,7 @@ export function segnapostiInParole(testo) {
   )
 }
 
-export function stepSummary(step) {
+export function stepSummary(step, fields = []) {
   switch (step.type) {
     case 'send_email':
       return (
@@ -957,7 +963,7 @@ export function stepSummary(step) {
     case 'exit':
       return __('The record leaves here')
     case 'stop_if':
-      return groupsSummary(step.condition_groups)
+      return groupsSummary(step.condition_groups, fields)
     case 'if_else':
       return __('{0} branch(es) + None', [(step.branches || []).length])
     case 'split':
@@ -1221,7 +1227,8 @@ export const RECIPES = [
   },
   {
     // off until the centre switches it on, as every recipe: an SMS a minute after
-    // a call nobody answered, with the booking page; STOP is never written to
+    // a call nobody answered, with the booking page on a line of its own (left out
+    // where the centre takes no booking online); STOP is never written to
     key: 'missed_call',
     title: 'We missed you… missed call',
     description:
@@ -1232,7 +1239,7 @@ export const RECIPES = [
       newStep('wait', { mode: 'duration', days: 0, hours: 0, minutes: 1 }),
       newStep('send_sms', {
         message: __(
-          'Hi {{ first_name }}, sorry we missed your call. We will call you back; to book now: {{ booking_link }}',
+          'Hi {{ first_name }}, sorry we missed your call. We will call you back.\nTo book now: {{ booking_link }}',
         ),
       }),
     ],

@@ -50,7 +50,8 @@ Conditions: a group is a list of {field, operator, value} ANDed together;
 contains, is_set, is_not_set, greater_than, less_than.
 
 Text fields render Jinja against the record: "Ciao {{ first_name }}"; tracked
-links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }}, a
+links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }} (where
+the centre takes no booking online, the line that carries it is left out), a
 review on Google via {{ review_link }}: a message that carries it asks how a visit
 went, and leaves only past `crm.recensioni.chiedi.perche_no` (who agreed, how
 long since the last request, which service).
@@ -58,6 +59,7 @@ long since the last request, which service).
 
 import json
 import random
+import re
 
 import frappe
 from frappe import _
@@ -744,6 +746,8 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 					frappe.flags.crm_review_link = recensioni.prepara(step, enrollment, ref_doc, payload)
 				detail = execute_step(step, ref_doc, enrollment)
 				log_step(enrollment, enrollment.current_step, step_type, "Success", detail)
+			except PassoNonRiuscito as non_riuscito:
+				log_step(enrollment, enrollment.current_step, step_type, "Failed", str(non_riuscito))
 			except Exception:
 				frappe.log_error(frappe.get_traceback(), f"CRM Automation: step failed ({automation.name})")
 				log_step(enrollment, enrollment.current_step, step_type, "Failed", _("See error log"))
@@ -1042,8 +1046,11 @@ def render(text: str, ref_doc, preview: bool = False, extra: dict | None = None)
 
 	context = ref_doc.as_dict()
 	context["tracked_link"] = tracked_link
-	# the booking page, where the centre takes bookings online (the missed call's recipe)
-	context["booking_link"] = frappe.utils.get_url("/prenota")
+	# the booking page, where the centre takes bookings online (the missed call's
+	# recipe); where it takes none, the line that offers it is left out
+	context["booking_link"] = _pagina_di_prenotazione()
+	if not context["booking_link"]:
+		text = senza_le_righe_di(text, "booking_link")
 	# the review request's own link, written before the message leaves; a preview
 	# shows Google's page itself
 	context["review_link"] = (recensioni.link_di_google() if preview else frappe.flags.crm_review_link) or ""
@@ -1054,6 +1061,28 @@ def render(text: str, ref_doc, preview: bool = False, extra: dict | None = None)
 		except Exception:
 			return text
 	return _automation_jenv().from_string(text).render(context)
+
+
+def _pagina_di_prenotazione() -> str:
+	from crm.scheduling.availability import settings as agenda
+
+	return frappe.utils.get_url("/prenota") if cint(agenda().get("online_booking_enabled")) else ""
+
+
+def senza_le_righe_di(text: str, variabile: str) -> str:
+	"""``text`` without its lines that print ``variabile``, when something else is left
+	to say: «To book now: {{ booking_link }}» goes, a message of one line stays."""
+	segno = re.compile(r"\{\{\s*" + re.escape(variabile) + r"\s*\}\}")
+	righe = text.split("\n")
+	altre = [riga for riga in righe if not segno.search(riga)]
+	if len(altre) == len(righe) or not any(riga.strip() for riga in altre):
+		return text
+	return "\n".join(altre).rstrip()
+
+
+class PassoNonRiuscito(Exception):
+	"""A step that ran and did not do its work (an SMS Twilio refused): logged Failed
+	with its words, never Success."""
 
 
 def step_send_email(step, ref_doc) -> str:
@@ -1088,7 +1117,9 @@ def step_send_sms(step, ref_doc) -> str:
 		reference_doctype=ref_doc.doctype,
 		reference_name=ref_doc.name,
 	)
-	return _("SMS sent to {0}").format(number) if ok else _("SMS send failed (see error log)")
+	if not ok:
+		raise PassoNonRiuscito(_("SMS send failed (see error log)"))
+	return _("SMS sent to {0}").format(number)
 
 
 def step_send_whatsapp_template(step, ref_doc) -> str:
@@ -1178,7 +1209,9 @@ def step_send_form(step, ref_doc, enrollment=None) -> str:
 		reference_doctype=ref_doc.doctype,
 		reference_name=ref_doc.name,
 	)
-	return _("SMS sent to {0}").format(dove["mobile_no"]) if ok else _("SMS send failed (see error log)")
+	if not ok:
+		raise PassoNonRiuscito(_("SMS send failed (see error log)"))
+	return _("SMS sent to {0}").format(dove["mobile_no"])
 
 
 def step_create_task(step, ref_doc) -> str:

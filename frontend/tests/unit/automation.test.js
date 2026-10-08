@@ -171,6 +171,12 @@ describe('summaries', () => {
     expect(groupsSummary([])).toBe('Always')
   })
 
+  it('names a field by its label where the editor knows it', () => {
+    const groups = [[{ field: 'mobile_no', operator: 'is_set', value: '' }]]
+    const fields = [{ fieldname: 'mobile_no', label: 'Mobile No' }]
+    expect(groupsSummary(groups, fields)).toBe('Mobile No is set')
+  })
+
   it('summarises steps for the canvas', () => {
     expect(
       stepSummary(newStep('set_field', { field: 'status', value: 'Won' })),

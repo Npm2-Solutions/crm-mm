@@ -90,7 +90,7 @@ function columnsOf(step) {
   const columns = (step.branches || []).map((branch, index) => ({
     key: branch.id || index,
     label: branch.label || __('Branch {0}', [index + 1]),
-    hint: groupsSummary(branch.condition_groups),
+    hint: groupsSummary(branch.condition_groups, editor?.fields?.value),
     steps: branch.steps,
   }))
   columns.push({

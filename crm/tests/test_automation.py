@@ -257,6 +257,48 @@ class TestAutomation(IntegrationTestCase):
 		self.assertEqual(enr.logs[0].status, "Failed")
 		self.assertEqual(enr.logs[1].status, "Success")
 
+	def test_un_sms_che_non_parte_e_un_passo_fallito(self):
+		auto = make_automation("sms-rifiutato", [{"type": "send_sms", "message": "Ciao {{ first_name }}"}])
+		with mock.patch("crm.api.sms.send_automation_sms", return_value=False):
+			lead = make_lead(email="rifiutato@example.com")
+		[riga] = get_enrollment(auto.name, lead.name).logs
+		self.assertEqual(riga.status, "Failed")
+		self.assertIn("SMS", riga.detail)
+
+
+class IlLinkDiPrenotazione(IntegrationTestCase):
+	"""{{ booking_link }}: the booking page where the centre takes bookings online,
+	its line left out where it takes none."""
+
+	TESTO = "Ciao {{ first_name }}, ti richiameremo.\nPer prenotare subito: {{ booking_link }}"
+
+	def tearDown(self):
+		frappe.db.rollback()
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+
+	def prenotazioni(self, accese):
+		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", accese)
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+
+	def test_con_le_prenotazioni_online_il_link(self):
+		self.prenotazioni(1)
+		testo = engine.render(self.TESTO, frappe.get_doc({"doctype": "CRM Lead", "first_name": "Piera"}))
+		self.assertTrue(testo.endswith("/prenota"))
+
+	def test_senza_la_riga_non_c_e(self):
+		self.prenotazioni(0)
+		testo = engine.render(self.TESTO, frappe.get_doc({"doctype": "CRM Lead", "first_name": "Piera"}))
+		self.assertEqual(testo, "Ciao Piera, ti richiameremo.")
+
+	def test_un_messaggio_di_una_riga_resta(self):
+		self.assertEqual(
+			engine.senza_le_righe_di("Prenota: {{ booking_link }}", "booking_link"),
+			"Prenota: {{ booking_link }}",
+		)
+		self.assertEqual(engine.senza_le_righe_di("Ciao\n\n{{booking_link}}", "booking_link"), "Ciao")
+
 
 class LaFinestraOraria(IntegrationTestCase):
 	"""The hours an automation may write in: Time fields come from the database
