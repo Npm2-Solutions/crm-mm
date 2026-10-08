@@ -314,6 +314,18 @@
               />
               <span v-else />
             </div>
+            <!-- what the line says on the invoice, when it says more than the
+                 service: a fund's pratica (doc 61), its patient and number -->
+            <p
+              v-if="
+                modificabile &&
+                riga.description &&
+                riga.description !== riga.service_label
+              "
+              class="col-span-full text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]"
+            >
+              {{ riga.description }}
+            </p>
           </div>
           <Button
             v-if="modificabile"
