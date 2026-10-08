@@ -67,7 +67,7 @@ class Uso:
 
 
 _usi: dict[str, Uso] = {
-	FORMA: Uso(FORMA, "Form", "Filled in by the person: a privacy notice, consents, a questionnaire"),
+	FORMA: Uso(FORMA, "Form", "Filled in and signed by the person: a privacy notice, consents, a contract"),
 	SCHEDA: Uso(
 		SCHEDA,
 		"Sheet",
@@ -150,8 +150,9 @@ def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
 			{"code": codice, "field": campo.get("id") if campo else None, "message": messaggio}
 		)
 
-	for campo in S.campi(schema):
-		etichetta = campo.get("label") or campo.get("id")
+	for numero, campo in enumerate(S.campi(schema), 1):
+		# a question without words (a signature) by its place, never its key
+		etichetta = campo.get("label") or _("Question {0}").format(numero)
 		if voce.senza_codice and campo.get("type") in ("consent", "signature", "attachment"):
 			# opened by the link alone: nobody checked who holds it
 			problema(

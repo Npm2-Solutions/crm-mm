@@ -160,6 +160,9 @@
         "Something went wrong: try again.": "Qualcosa non è andato: riprova.",
         "Nothing is left to fill here.": "Qui non c'è più niente da compilare.",
         "Back to your area": "Torna alla tua area",
+        "Thank you, you have already answered.": "Grazie, hai già risposto.",
+        "Your answers reached {0}: nothing else is needed.": "Le tue risposte sono arrivate a {0}: non serve altro.",
+        "Your answers reached the centre: nothing else is needed.": "Le tue risposte sono arrivate al centro: non serve altro.",
       };
       window.WORDS = (window.BOOT.lang || "it").startsWith("it") ? { ...WORDS_IT, ...IT } : {};
       const t = window.__;
@@ -221,8 +224,20 @@
       async function start() {
         try { view = await api("open_request"); } catch (error) { return fail(error); }
         if (view.session) keep(view.session);
+        // a survey answered already: its link opens nothing more, and says so
+        if (view.done && !view.needs_code && !view.session) return answered();
         if (view.needs_code && !session) return askCode();
         showForms();
+      }
+
+      function answered() {
+        keep(null);
+        screen(
+          h("h1", {}, t("Thank you, you have already answered.")),
+          h("p", { class: "lede" }, view.centre
+            ? t("Your answers reached {0}: nothing else is needed.", [view.centre])
+            : t("Your answers reached the centre: nothing else is needed.")),
+          fromArea ? h("a", { class: "action primary", href: "/area" }, t("Back to your area")) : null);
       }
 
       function askCode(problem = "", sentTo = null) {

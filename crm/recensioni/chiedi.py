@@ -257,6 +257,9 @@ def save_settings(
 	excluded_services: list | str | None = None,
 ) -> dict:
 	livelli.verifica(CAPACITA)
+	if not regole.mesi_validi(months_between):
+		# a 0 typed is refused where it is typed, never kept as twelve in silence
+		frappe.throw(_("From {0} to {1} months").format(1, regole.MESI_MASSIMI))
 	esclusi = (
 		frappe.parse_json(excluded_services) if isinstance(excluded_services, str) else excluded_services
 	)

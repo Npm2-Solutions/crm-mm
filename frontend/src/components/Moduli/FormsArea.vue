@@ -166,7 +166,7 @@
               form.docstatus
                 ? form.use === 'Sheet'
                   ? __('Completed')
-                  : form.channel === 'Website'
+                  : form.channel === 'Website' || form.without_code
                     ? __('Sent')
                     : __('Signed')
                 : __('To finish')
@@ -321,7 +321,9 @@ function describe(form) {
         ? __('completed {0}', [when])
         : form.channel === 'Website'
           ? __('sent {0}', [when])
-          : __('signed {0}', [when]),
+          : form.without_code
+            ? __('answered {0}', [when])
+            : __('signed {0}', [when]),
     )
   } else {
     parts.push(__('started {0}', [formatDate(form.modified, 'D MMM YYYY')]))

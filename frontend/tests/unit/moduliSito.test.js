@@ -68,6 +68,17 @@ describe('what a use allows', () => {
     )
   })
 
+  it('a question without words is named by its place, never its key', () => {
+    const [wrong] = useProblems(
+      form([
+        { id: 'voto', type: 'scale', label: 'Voto', min: 0, max: 10 },
+        { id: 'signature', type: 'signature' },
+      ]),
+      { withoutCode: true },
+    )
+    expect(wrong.args).toEqual(['Question 2'])
+  })
+
   it('a sheet records no consent; a form of the desk says nothing of the person', () => {
     const consent = { id: 'ok', type: 'consent', label: 'Privacy' }
     expect(

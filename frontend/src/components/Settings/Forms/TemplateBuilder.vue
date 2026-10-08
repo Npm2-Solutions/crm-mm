@@ -438,13 +438,17 @@
                   ? __(
                       'Off, it is not on the website any more; what was sent stays.',
                     )
-                  : forThePerson
+                  : withoutCode
                     ? __(
-                        'Off, it is not asked any more; what was signed on it stays.',
+                        'Off, it is not sent any more; the answers given stay.',
                       )
-                    : __(
-                        'Off, it is not offered any more; what was written on it stays.',
-                      )
+                    : forThePerson
+                      ? __(
+                          'Off, it is not asked any more; what was signed on it stays.',
+                        )
+                      : __(
+                          'Off, it is not offered any more; what was written on it stays.',
+                        )
               }}
             </span>
           </span>

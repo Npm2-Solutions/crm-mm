@@ -85,6 +85,18 @@ def mesi_tra(mesi) -> int:
 	return min(valore, MESI_MASSIMI)
 
 
+def mesi_validi(mesi) -> bool:
+	"""Whether the months a centre typed can be kept: a whole number from 1 to 60.
+	Nothing typed keeps the default; a 0 is refused, never read as twelve."""
+	if mesi is None or str(mesi).strip() == "":
+		return True
+	try:
+		valore = float(mesi)
+	except (TypeError, ValueError):
+		return False
+	return valore.is_integer() and 1 <= valore <= MESI_MASSIMI
+
+
 def servizi(valore) -> list[str]:
 	"""The services excluded, as the settings keep them: one per line."""
 	if isinstance(valore, list | tuple):

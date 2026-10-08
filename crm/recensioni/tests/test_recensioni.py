@@ -205,3 +205,8 @@ class Recensioni(IntegrationTestCase):
 		doc = frappe.get_single(chiedi.IMPOSTAZIONI)
 		self.assertEqual(doc.months_between, 12)
 		self.assertEqual(doc.excluded_services, "A\nB")
+		# typed on the settings page, 0 or 61 months are refused, not read as twelve
+		for mesi in (0, 61):
+			with self.assertRaises(frappe.ValidationError):
+				chiedi.save_settings(google_review_link=LINK, months_between=mesi)
+		self.assertEqual(chiedi.save_settings(google_review_link=LINK, months_between=6)["months_between"], 6)

@@ -103,14 +103,14 @@
       tapped and leaves it zoomed. A line one types on is 40px tall. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
-      [type='checkbox'],
-      [type='radio'],
-      [type='range'],
-      [type='color'],
-      [type='file'],
-      [type='button'],
-      [type='submit']
-    ),
+    [type='checkbox'],
+    [type='radio'],
+    [type='range'],
+    [type='color'],
+    [type='file'],
+    [type='button'],
+    [type='submit']
+  ),
   textarea,
   select,
   [contenteditable='true'] {
@@ -551,7 +551,9 @@
   }
   /* a choice is read whole: a long name goes on under itself, where the row
      cut it («Massaggiatore capo bagnino degli stabi…», 360px) */
-  [role='listbox'] [role='option'] .truncate {
+  [role='listbox'] [role='option'] .truncate,
+  /* an action too: «Physiotherapy assessment: start from the last visit», 320px */
+  [role='menu'] [role='menuitem'] [data-slot='item-label'] .truncate {
     white-space: normal;
     overflow-wrap: break-word;
   }

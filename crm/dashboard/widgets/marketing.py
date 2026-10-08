@@ -357,7 +357,10 @@ def satisfaction_nps(ctx: Context):
 	ora = regole.nps(_voti(ctx))
 	prima = regole.nps(_voti(ctx, previous=True))
 	if ora["score"] is None:
-		return charts.number(0, hint=_("No survey answered in this period"))
+		# no answer is no score, never a 0 that reads as half promoters, half detractors
+		vuoto = charts.number(0, hint=_("No answers"))
+		vuoto["value"] = None
+		return vuoto
 	return charts.number(
 		ora["score"],
 		prima["score"],

@@ -50,6 +50,12 @@ class OgniQuanto(UnitTestCase):
 		self.assertEqual(r.mesi_tra(6), 6)
 		self.assertEqual(r.mesi_tra(500), r.MESI_MASSIMI)
 
+	def test_mesi_scritti_da_1_a_60(self):
+		for buoni in (None, "", 1, "12", 60):
+			self.assertTrue(r.mesi_validi(buoni), buoni)
+		for sbagliati in (0, -3, 61, 1.5, "x"):
+			self.assertFalse(r.mesi_validi(sbagliati), sbagliati)
+
 
 class IlServizioEIlLink(UnitTestCase):
 	def test_servizi_esclusi_uno_per_riga(self):

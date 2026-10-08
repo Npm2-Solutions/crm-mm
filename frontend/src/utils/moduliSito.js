@@ -31,8 +31,9 @@ export function useProblems(
   const problems = []
   const fields = fieldsOf(schema)
   const known = new Map(personFields.map((f) => [f.value, f.label]))
-  for (const field of fields) {
-    const label = field.label || field.id
+  for (const [index, field] of fields.entries()) {
+    // a question without words (a signature) by its place, never its key
+    const label = field.label || __('Question {0}', [index + 1])
     // a survey opens with its link alone: nobody checked who holds it
     if (
       withoutCode &&

@@ -97,11 +97,20 @@ class IlQuestionario(RichiesteCase):
 			LINK, richiesta.name, json.dumps({"recommend": 9, "comment": "Bene"}), "{}", sessione
 		)
 		self.assertTrue(fatto["done"])
+		# opened again: answered already, the page says thank you (no session to refuse)
+		vista = richieste.open_request(LINK)
+		self.assertTrue(vista["done"])
+		self.assertFalse(vista["needs_code"])
+		self.assertNotIn("session", vista)
 		frappe.set_user("Administrator")
 		self.assertEqual(frappe.db.get_value(richieste.RICHIESTA, richiesta.name, "status"), "Signed")
 
-		# the dashboard: one answer, a promoter
+		# the dashboard: no answer is no score, then one answer, a promoter
 		widget = registry.get("satisfaction_nps")
+		prima = Context.build(
+			add_to_date(nowdate(), days=-400), add_to_date(nowdate(), days=-370), scope=widget.scope
+		)
+		self.assertIsNone(widget.fn(prima)["value"])
 		ctx = Context.build(add_to_date(nowdate(), days=-7), nowdate(), scope=widget.scope)
 		numero = widget.fn(ctx)
 		self.assertEqual(numero["value"], 100)
