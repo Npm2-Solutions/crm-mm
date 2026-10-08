@@ -387,6 +387,7 @@ const {
   scripts,
   error,
   canWrite,
+  pronto,
 } = useDocument('CRM Deal', props.dealId)
 
 const doc = computed(() => document.doc || {})
@@ -665,8 +666,9 @@ const dealContacts = createResource({
     })
   },
 })
-// a deal one may not open refuses it too: its page says why, no uncaught error
-dealContacts.fetch().catch(() => {})
+// once the deal came: a deal one may not open asks nothing more, and its page
+// says why
+pronto.then((venuto) => venuto && dealContacts.fetch().catch(() => {}))
 
 function updateField(name, value) {
   value = Array.isArray(name) ? '' : value

@@ -69,9 +69,22 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
             },
           },
           ...resourceOverrides,
+          // asked below, not by the resource: its own fetch left a refusal as an
+          // uncaught rejection over the page that says why
+          auto: false,
         },
         vm,
       )
+      // whether the record came: what is asked about it waits for this, so a
+      // record one may not open asks nothing more (its side calls were refused
+      // beside it); the page says why it is closed from `error`
+      documentsCache[doctype][docname].pronto =
+        resourceOverrides.auto === false
+          ? Promise.resolve(true)
+          : documentsCache[doctype][docname].get.fetch().then(
+              () => !documentsCache[doctype][docname].get.error,
+              () => false,
+            )
       if (!documentsCache[doctype][docname].fieldHtmlMap) {
         documentsCache[doctype][docname].fieldHtmlMap = {}
       }
@@ -109,8 +122,7 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
     assigneesCache[doctype][docname || ''] = createResource({
       url: 'crm.api.doc.get_assigned_users',
       cache: `assignees:${doctype}:${docname}`,
-      // asked beside the document, never after it; a record one may not open
-      // refuses it too, and its page says why: no uncaught error over it
+      // asked once the record came: a record one may not open asks nothing more
       auto: false,
       params: {
         doctype: doctype,
@@ -118,7 +130,12 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
       },
       transform: (data) => parseAssignees(data),
     })
-    if (docname) assigneesCache[doctype][docname].fetch().catch(() => {})
+    if (docname) {
+      const assegnati = assigneesCache[doctype][docname]
+      documentsCache[doctype][docname].pronto.then(
+        (venuto) => venuto && assegnati.fetch().catch(() => {}),
+      )
+    }
   }
 
   permissionsCache[doctype] = permissionsCache[doctype] || {}
@@ -134,6 +151,8 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
       },
       initialData: { permissions: {} },
     })
+    // beside the record, never after it: the server answers it for a record one
+    // may not open too, and what may be done is drawn with the record
     if (docname) permissionsCache[doctype][docname].fetch().catch(() => {})
   }
 
@@ -366,6 +385,10 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
 
   return {
     document: documentsCache[doctype][docname || ''],
+    // resolves true once the record came, false when it was refused: a page asks
+    // what is about the record after it (`pronto.then((venuto) => venuto && …)`)
+    pronto:
+      documentsCache[doctype][docname || '']?.pronto || Promise.resolve(true),
     assignees: assigneesCache[doctype][docname || ''],
     permissions: permissionsCache[doctype][docname || ''],
     // As the server judges it: a level that sees a record but may not change it

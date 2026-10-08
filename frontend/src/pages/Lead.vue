@@ -259,9 +259,6 @@ const deals = createResource({
   url: 'crm.api.lead.get_deals',
   params: { lead: props.leadId },
 })
-// beside the person, not after: a person one does not follow refuses it too,
-// and the page says why without an uncaught error over it
-deals.fetch().catch(() => {})
 
 const dealOptions = computed(() => [
   ...(deals.data || []).map((deal) => ({
@@ -288,7 +285,11 @@ const {
   scripts,
   error,
   canWrite,
+  pronto,
 } = useDocument('CRM Lead', props.leadId)
+// once the person came: a person one does not follow asks nothing more, and the
+// page says why
+pronto.then((venuto) => venuto && deals.fetch().catch(() => {}))
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
 // opening a deal writes the person too (doc 30): whoever reads it does not
