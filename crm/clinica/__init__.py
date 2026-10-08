@@ -372,6 +372,10 @@ def registra() -> None:
 	from crm.moduli import andamenti
 
 	andamenti.registra_fonte(cartella.punteggi)
+	# its ready sheets, to start a clinical sheet from (`schede_pronte`)
+	from crm.clinica import schede_pronte
+
+	modelli.registra_partenze(schede_pronte.partenze)
 	# the lines of the patient's summary a field of a template may answer
 	from crm.clinica import sintesi
 

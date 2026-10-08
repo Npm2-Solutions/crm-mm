@@ -1,0 +1,2487 @@
+{
+ "_what": "The clinical sheets DottorCloud ships (crm/clinica/schede_pronte.py): written by NPM2 for DottorCloud, their own questions - no validated scale nor anybody's questionnaire. Each sheet is a draft of the centre's, never published by itself; the English words are the sheets', «words» gives them in Italian.",
+ "sheets": [
+  {
+   "key": "physio_assessment",
+   "title": "Physiotherapy assessment",
+   "specialty": "Physiotherapy",
+   "description": "The first session: the problem, where it hurts, the signs to send to the doctor, the examination, daily life and the plan",
+   "schema": {
+    "sections": [
+     {
+      "id": "reason",
+      "title": "Why they came",
+      "fields": [
+       {
+        "id": "reason",
+        "type": "text",
+        "label": "What brings the patient",
+        "multiline": true,
+        "required": true,
+        "placeholder": "In the patient's words"
+       },
+       {
+        "id": "onset",
+        "type": "choice",
+        "label": "How it started",
+        "options": [
+         {
+          "label": "Suddenly, after an injury"
+         },
+         {
+          "label": "Suddenly, without a cause"
+         },
+         {
+          "label": "Little by little"
+         },
+         {
+          "label": "After surgery"
+         },
+         {
+          "label": "Does not know"
+         }
+        ]
+       },
+       {
+        "id": "since",
+        "type": "text",
+        "label": "Since when",
+        "placeholder": "Three weeks"
+       },
+       {
+        "id": "treated_before",
+        "type": "yesno",
+        "label": "Treated for this before"
+       },
+       {
+        "id": "treated_how",
+        "type": "text",
+        "label": "What was done, and how it went",
+        "multiline": true,
+        "show_if": [
+         [
+          {
+           "field": "treated_before",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ]
+       }
+      ]
+     },
+     {
+      "id": "pain",
+      "title": "Where it hurts",
+      "fields": [
+       {
+        "id": "pain_map",
+        "type": "body_chart",
+        "label": "Where it hurts",
+        "description": "A tap for each place that hurts, with how much; draw where the pain spreads.",
+        "views": [
+         "front",
+         "back"
+        ],
+        "drawing": true
+       },
+       {
+        "id": "pain_now",
+        "type": "scale",
+        "label": "Pain now",
+        "min": 0,
+        "max": 10,
+        "min_label": "No pain",
+        "max_label": "The worst imaginable"
+       },
+       {
+        "id": "pain_worst",
+        "type": "scale",
+        "label": "Pain at its worst, in the last week",
+        "min": 0,
+        "max": 10,
+        "min_label": "No pain",
+        "max_label": "The worst imaginable"
+       },
+       {
+        "id": "pain_when",
+        "type": "choice",
+        "label": "When it hurts",
+        "options": [
+         {
+          "label": "All the time"
+         },
+         {
+          "label": "It comes and goes"
+         },
+         {
+          "label": "Moving"
+         },
+         {
+          "label": "At rest"
+         },
+         {
+          "label": "At night"
+         },
+         {
+          "label": "In the morning, then it eases"
+         }
+        ],
+        "multiple": true
+       },
+       {
+        "id": "worse",
+        "type": "text",
+        "label": "What makes it worse",
+        "phrases": [
+         "Sitting",
+         "Standing",
+         "Walking",
+         "Bending forward",
+         "Lifting",
+         "Climbing stairs"
+        ]
+       },
+       {
+        "id": "better",
+        "type": "text",
+        "label": "What eases it",
+        "phrases": [
+         "Rest",
+         "Moving",
+         "Heat",
+         "Cold",
+         "Medicines"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "red_flags",
+      "title": "Signs to send to the doctor",
+      "description": "Ask each one. A yes stops the session: the patient sees a doctor first.",
+      "fields": [
+       {
+        "id": "rf_weight",
+        "type": "yesno",
+        "label": "Weight lost without trying",
+        "stop_if": [
+         [
+          {
+           "field": "rf_weight",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to their doctor before treating"
+       },
+       {
+        "id": "rf_night",
+        "type": "yesno",
+        "label": "Pain at night that does not change with position",
+        "stop_if": [
+         [
+          {
+           "field": "rf_night",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to their doctor before treating"
+       },
+       {
+        "id": "rf_fever",
+        "type": "yesno",
+        "label": "Fever, or feeling unwell, with the pain",
+        "stop_if": [
+         [
+          {
+           "field": "rf_fever",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to their doctor before treating"
+       },
+       {
+        "id": "rf_trauma",
+        "type": "yesno",
+        "label": "A recent fall or blow, with severe pain",
+        "stop_if": [
+         [
+          {
+           "field": "rf_trauma",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to their doctor before treating"
+       },
+       {
+        "id": "rf_cancer",
+        "type": "yesno",
+        "label": "Cancer, now or in the past",
+        "stop_if": [
+         [
+          {
+           "field": "rf_cancer",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to their doctor before treating"
+       },
+       {
+        "id": "rf_bladder",
+        "type": "yesno",
+        "label": "New trouble holding or passing urine or stools",
+        "stop_if": [
+         [
+          {
+           "field": "rf_bladder",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to the emergency department now"
+       },
+       {
+        "id": "rf_saddle",
+        "type": "yesno",
+        "label": "Numbness between the legs or around the back passage",
+        "stop_if": [
+         [
+          {
+           "field": "rf_saddle",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Send the patient to the emergency department now"
+       }
+      ]
+     },
+     {
+      "id": "exam",
+      "title": "Examination",
+      "fields": [
+       {
+        "id": "posture",
+        "type": "text",
+        "label": "Posture and what is seen",
+        "multiline": true
+       },
+       {
+        "id": "rom",
+        "type": "table",
+        "label": "Range of movement",
+        "columns": [
+         {
+          "id": "movement",
+          "label": "Movement",
+          "type": "text"
+         },
+         {
+          "id": "left",
+          "label": "Left (°)",
+          "type": "number"
+         },
+         {
+          "id": "right",
+          "label": "Right (°)",
+          "type": "number"
+         },
+         {
+          "id": "notes",
+          "label": "Notes",
+          "type": "text"
+         }
+        ]
+       },
+       {
+        "id": "strength",
+        "type": "table",
+        "label": "Strength, from 0 to 5",
+        "columns": [
+         {
+          "id": "muscle",
+          "label": "Muscle or movement",
+          "type": "text"
+         },
+         {
+          "id": "left",
+          "label": "Left",
+          "type": "number"
+         },
+         {
+          "id": "right",
+          "label": "Right",
+          "type": "number"
+         }
+        ]
+       },
+       {
+        "id": "tests",
+        "type": "table",
+        "label": "Tests",
+        "columns": [
+         {
+          "id": "test",
+          "label": "Test",
+          "type": "text"
+         },
+         {
+          "id": "side",
+          "label": "Side",
+          "type": "text"
+         },
+         {
+          "id": "result",
+          "label": "Result",
+          "type": "text"
+         }
+        ]
+       },
+       {
+        "id": "neuro",
+        "type": "choice",
+        "label": "Sensation and reflexes",
+        "options": [
+         {
+          "label": "No changes"
+         },
+         {
+          "label": "Changed"
+         },
+         {
+          "label": "Not tested"
+         }
+        ]
+       },
+       {
+        "id": "neuro_notes",
+        "type": "text",
+        "label": "What changed",
+        "multiline": true,
+        "show_if": [
+         [
+          {
+           "field": "neuro",
+           "operator": "equals",
+           "value": "Changed"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "palpation",
+        "type": "text",
+        "label": "Palpation",
+        "multiline": true
+       }
+      ]
+     },
+     {
+      "id": "daily_life",
+      "title": "Daily life",
+      "description": "How hard each one is now, from 0 (no difficulty) to 10 (cannot do it). The total is followed over time, visit after visit.",
+      "fields": [
+       {
+        "id": "f_walk",
+        "type": "scale",
+        "label": "Walking",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_sit",
+        "type": "scale",
+        "label": "Sitting for half an hour",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_stand",
+        "type": "scale",
+        "label": "Standing for half an hour",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_sleep",
+        "type": "scale",
+        "label": "Sleeping",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_lift",
+        "type": "scale",
+        "label": "Lifting or carrying",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_dress",
+        "type": "scale",
+        "label": "Getting dressed",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_work",
+        "type": "scale",
+        "label": "Work or study",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_leisure",
+        "type": "scale",
+        "label": "Sport and free time",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "difficulty",
+        "type": "score",
+        "label": "Difficulty in daily life",
+        "sources": [
+         "f_walk",
+         "f_sit",
+         "f_stand",
+         "f_sleep",
+         "f_lift",
+         "f_dress",
+         "f_work",
+         "f_leisure"
+        ],
+        "bands": [
+         {
+          "from": 0,
+          "to": 16,
+          "label": "Little"
+         },
+         {
+          "from": 17,
+          "to": 40,
+          "label": "Moderate"
+         },
+         {
+          "from": 41,
+          "to": 80,
+          "label": "Marked"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "plan",
+      "title": "Assessment and plan",
+      "fields": [
+       {
+        "id": "assessment",
+        "type": "text",
+        "label": "Physiotherapy assessment",
+        "multiline": true,
+        "required": true
+       },
+       {
+        "id": "goals",
+        "type": "table",
+        "label": "Goals",
+        "columns": [
+         {
+          "id": "goal",
+          "label": "Goal",
+          "type": "text"
+         },
+         {
+          "id": "by",
+          "label": "By",
+          "type": "date"
+         }
+        ]
+       },
+       {
+        "id": "treatment",
+        "type": "text",
+        "label": "Treatment plan",
+        "multiline": true,
+        "phrases": [
+         "Manual therapy",
+         "Therapeutic exercise",
+         "Exercises at home",
+         "Postural education",
+         "Taping",
+         "Instrumental therapy"
+        ]
+       },
+       {
+        "id": "sessions",
+        "type": "number",
+        "label": "Sessions planned",
+        "min": 1,
+        "max": 60,
+        "decimals": 0
+       },
+       {
+        "id": "frequency",
+        "type": "choice",
+        "label": "How often",
+        "options": [
+         {
+          "label": "Once a week"
+         },
+         {
+          "label": "Twice a week"
+         },
+         {
+          "label": "Three times a week"
+         },
+         {
+          "label": "Other"
+         }
+        ],
+        "display": "dropdown"
+       },
+       {
+        "id": "today",
+        "type": "text",
+        "label": "Done today",
+        "multiline": true
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "physio_followup",
+   "title": "Physiotherapy follow-up",
+   "specialty": "Physiotherapy",
+   "description": "A session after the first: how it went since last time, where it hurts today, daily life and what was done",
+   "schema": {
+    "sections": [
+     {
+      "id": "progress",
+      "title": "Since last time",
+      "fields": [
+       {
+        "id": "change",
+        "type": "choice",
+        "label": "Compared with the last session",
+        "options": [
+         {
+          "label": "Much better"
+         },
+         {
+          "label": "Better"
+         },
+         {
+          "label": "The same"
+         },
+         {
+          "label": "Worse"
+         },
+         {
+          "label": "Much worse"
+         }
+        ]
+       },
+       {
+        "id": "exercises",
+        "type": "choice",
+        "label": "Exercises at home",
+        "options": [
+         {
+          "label": "Done as agreed"
+         },
+         {
+          "label": "Done now and then"
+         },
+         {
+          "label": "Not done"
+         },
+         {
+          "label": "None given"
+         }
+        ]
+       },
+       {
+        "id": "news",
+        "type": "yesno",
+        "label": "Anything new: a fall, fever, numbness, trouble with urine or stools",
+        "stop_if": [
+         [
+          {
+           "field": "news",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Check it before treating: send the patient to their doctor if needed"
+       },
+       {
+        "id": "pain_now",
+        "type": "scale",
+        "label": "Pain now",
+        "min": 0,
+        "max": 10,
+        "min_label": "No pain",
+        "max_label": "The worst imaginable"
+       },
+       {
+        "id": "pain_map",
+        "type": "body_chart",
+        "label": "Where it hurts today",
+        "views": [
+         "front",
+         "back"
+        ],
+        "drawing": true
+       }
+      ]
+     },
+     {
+      "id": "daily_life",
+      "title": "Daily life",
+      "description": "How hard each one is now, from 0 (no difficulty) to 10 (cannot do it). The total is followed over time, visit after visit.",
+      "fields": [
+       {
+        "id": "f_walk",
+        "type": "scale",
+        "label": "Walking",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_sit",
+        "type": "scale",
+        "label": "Sitting for half an hour",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_stand",
+        "type": "scale",
+        "label": "Standing for half an hour",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_sleep",
+        "type": "scale",
+        "label": "Sleeping",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_lift",
+        "type": "scale",
+        "label": "Lifting or carrying",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_dress",
+        "type": "scale",
+        "label": "Getting dressed",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_work",
+        "type": "scale",
+        "label": "Work or study",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "f_leisure",
+        "type": "scale",
+        "label": "Sport and free time",
+        "min": 0,
+        "max": 10,
+        "min_label": "No difficulty",
+        "max_label": "Cannot do it"
+       },
+       {
+        "id": "difficulty",
+        "type": "score",
+        "label": "Difficulty in daily life",
+        "sources": [
+         "f_walk",
+         "f_sit",
+         "f_stand",
+         "f_sleep",
+         "f_lift",
+         "f_dress",
+         "f_work",
+         "f_leisure"
+        ],
+        "bands": [
+         {
+          "from": 0,
+          "to": 16,
+          "label": "Little"
+         },
+         {
+          "from": 17,
+          "to": 40,
+          "label": "Moderate"
+         },
+         {
+          "from": 41,
+          "to": 80,
+          "label": "Marked"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "session",
+      "title": "This session",
+      "fields": [
+       {
+        "id": "done",
+        "type": "text",
+        "label": "Done today",
+        "multiline": true,
+        "required": true,
+        "phrases": [
+         "Manual therapy",
+         "Therapeutic exercise",
+         "Exercises at home reviewed",
+         "Taping",
+         "Instrumental therapy"
+        ]
+       },
+       {
+        "id": "response",
+        "type": "text",
+        "label": "How the patient responded",
+        "multiline": true
+       },
+       {
+        "id": "plan",
+        "type": "choice",
+        "label": "The plan",
+        "options": [
+         {
+          "label": "Goes on as planned"
+         },
+         {
+          "label": "It changes"
+         },
+         {
+          "label": "Ends: goals reached"
+         },
+         {
+          "label": "Ends: sent to the doctor"
+         }
+        ]
+       },
+       {
+        "id": "plan_change",
+        "type": "text",
+        "label": "What changes",
+        "multiline": true,
+        "show_if": [
+         [
+          {
+           "field": "plan",
+           "operator": "equals",
+           "value": "It changes"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "next",
+        "type": "text",
+        "label": "Next time",
+        "multiline": true
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "nutrition_first",
+   "title": "First nutrition visit",
+   "specialty": "Nutrition",
+   "description": "Why they came, health, measures, habits, what they eat and the plan",
+   "schema": {
+    "sections": [
+     {
+      "id": "reason",
+      "title": "Why they came",
+      "fields": [
+       {
+        "id": "reasons",
+        "type": "choice",
+        "label": "Reasons",
+        "options": [
+         {
+          "label": "Lose weight"
+         },
+         {
+          "label": "Gain weight"
+         },
+         {
+          "label": "Sport"
+         },
+         {
+          "label": "A condition to manage"
+         },
+         {
+          "label": "Pregnancy or breastfeeding"
+         },
+         {
+          "label": "Intolerances or allergies"
+         },
+         {
+          "label": "Eat better"
+         }
+        ],
+        "multiple": true
+       },
+       {
+        "id": "reason_words",
+        "type": "text",
+        "label": "In the patient's words",
+        "multiline": true
+       },
+       {
+        "id": "goal_weight",
+        "type": "number",
+        "label": "The weight they would like",
+        "unit": "kg",
+        "decimals": 1,
+        "min": 1,
+        "max": 400
+       }
+      ]
+     },
+     {
+      "id": "health",
+      "title": "Health",
+      "fields": [
+       {
+        "id": "conditions",
+        "type": "choice",
+        "label": "Conditions",
+        "options": [
+         {
+          "label": "Diabetes"
+         },
+         {
+          "label": "High blood pressure"
+         },
+         {
+          "label": "High cholesterol"
+         },
+         {
+          "label": "Thyroid"
+         },
+         {
+          "label": "Bowel problems"
+         },
+         {
+          "label": "Kidney problems"
+         },
+         {
+          "label": "None"
+         }
+        ],
+        "multiple": true,
+        "summary": "conditions"
+       },
+       {
+        "id": "medications",
+        "type": "table",
+        "label": "Medications",
+        "columns": [
+         {
+          "id": "name",
+          "label": "Medicine",
+          "type": "text"
+         },
+         {
+          "id": "dose",
+          "label": "Dose and when",
+          "type": "text"
+         }
+        ],
+        "summary": "medications"
+       },
+       {
+        "id": "allergies",
+        "type": "text",
+        "label": "Food allergies and intolerances",
+        "summary": "allergies",
+        "placeholder": "None known"
+       },
+       {
+        "id": "tests",
+        "type": "text",
+        "label": "Recent blood tests",
+        "multiline": true
+       }
+      ]
+     },
+     {
+      "id": "measures",
+      "title": "Measures",
+      "fields": [
+       {
+        "id": "weight",
+        "type": "number",
+        "label": "Weight",
+        "unit": "kg",
+        "decimals": 1,
+        "min": 1,
+        "max": 400,
+        "summary": "weight",
+        "required": true
+       },
+       {
+        "id": "height",
+        "type": "number",
+        "label": "Height",
+        "unit": "cm",
+        "decimals": 0,
+        "min": 40,
+        "max": 250,
+        "summary": "height"
+       },
+       {
+        "id": "bmi",
+        "type": "calc",
+        "label": "BMI",
+        "formula": "weight / (height / 100) ^ 2",
+        "decimals": 1,
+        "unit": "kg/m²"
+       },
+       {
+        "id": "waist",
+        "type": "number",
+        "label": "Waist",
+        "unit": "cm",
+        "decimals": 1,
+        "min": 20,
+        "max": 250
+       },
+       {
+        "id": "hips",
+        "type": "number",
+        "label": "Hips",
+        "unit": "cm",
+        "decimals": 1,
+        "min": 20,
+        "max": 250
+       },
+       {
+        "id": "waist_height",
+        "type": "calc",
+        "label": "Waist to height",
+        "formula": "waist / height",
+        "decimals": 2
+       },
+       {
+        "id": "body_fat",
+        "type": "number",
+        "label": "Body fat, if measured",
+        "unit": "%",
+        "decimals": 1,
+        "min": 1,
+        "max": 80
+       }
+      ]
+     },
+     {
+      "id": "habits",
+      "title": "Habits",
+      "fields": [
+       {
+        "id": "meals",
+        "type": "number",
+        "label": "Meals a day",
+        "min": 1,
+        "max": 10,
+        "decimals": 0
+       },
+       {
+        "id": "breakfast",
+        "type": "yesno",
+        "label": "Breakfast every day"
+       },
+       {
+        "id": "snacks",
+        "type": "choice",
+        "label": "Snacks between meals",
+        "options": [
+         {
+          "label": "Never"
+         },
+         {
+          "label": "Sometimes"
+         },
+         {
+          "label": "Every day"
+         }
+        ]
+       },
+       {
+        "id": "water",
+        "type": "number",
+        "label": "Water a day",
+        "unit": "L",
+        "decimals": 1,
+        "min": 0,
+        "max": 10
+       },
+       {
+        "id": "alcohol",
+        "type": "choice",
+        "label": "Alcohol",
+        "options": [
+         {
+          "label": "Never"
+         },
+         {
+          "label": "At weekends"
+         },
+         {
+          "label": "A glass a day"
+         },
+         {
+          "label": "More"
+         }
+        ]
+       },
+       {
+        "id": "activity",
+        "type": "choice",
+        "label": "Physical activity",
+        "options": [
+         {
+          "label": "None"
+         },
+         {
+          "label": "Walking"
+         },
+         {
+          "label": "Sport now and then"
+         },
+         {
+          "label": "Sport regularly"
+         }
+        ]
+       },
+       {
+        "id": "activity_minutes",
+        "type": "number",
+        "label": "Minutes of activity a week",
+        "unit": "min",
+        "decimals": 0,
+        "min": 0,
+        "max": 3000
+       },
+       {
+        "id": "sleep",
+        "type": "number",
+        "label": "Hours of sleep",
+        "unit": "h",
+        "decimals": 1,
+        "min": 0,
+        "max": 16
+       },
+       {
+        "id": "eating_out",
+        "type": "choice",
+        "label": "Meals out of home",
+        "options": [
+         {
+          "label": "Rarely"
+         },
+         {
+          "label": "A few a week"
+         },
+         {
+          "label": "Most days"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "diet",
+      "title": "What they eat",
+      "fields": [
+       {
+        "id": "usual_day",
+        "type": "text",
+        "label": "A usual day: what and when",
+        "multiline": true,
+        "placeholder": "Breakfast at 7: coffee and biscuits"
+       },
+       {
+        "id": "likes",
+        "type": "text",
+        "label": "Foods they like",
+        "multiline": true
+       },
+       {
+        "id": "dislikes",
+        "type": "text",
+        "label": "Foods they will not eat",
+        "multiline": true
+       },
+       {
+        "id": "cooks",
+        "type": "choice",
+        "label": "Who cooks",
+        "options": [
+         {
+          "label": "The patient"
+         },
+         {
+          "label": "Somebody at home"
+         },
+         {
+          "label": "They mostly eat out"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "plan",
+      "title": "Assessment and plan",
+      "fields": [
+       {
+        "id": "assessment",
+        "type": "text",
+        "label": "Nutritional assessment",
+        "multiline": true,
+        "required": true
+       },
+       {
+        "id": "plan",
+        "type": "text",
+        "label": "Plan",
+        "multiline": true,
+        "phrases": [
+         "Menu",
+         "Exchange diet",
+         "Advice on healthy eating",
+         "Food diary",
+         "Blood tests"
+        ]
+       },
+       {
+        "id": "next",
+        "type": "choice",
+        "label": "Next visit",
+        "options": [
+         {
+          "label": "In two weeks"
+         },
+         {
+          "label": "In a month"
+         },
+         {
+          "label": "In two months"
+         }
+        ],
+        "display": "dropdown"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "nutrition_followup",
+   "title": "Nutrition follow-up",
+   "specialty": "Nutrition",
+   "description": "The measures again, how the plan went, and what changes",
+   "schema": {
+    "sections": [
+     {
+      "id": "measures",
+      "title": "Measures",
+      "fields": [
+       {
+        "id": "weight",
+        "type": "number",
+        "label": "Weight",
+        "unit": "kg",
+        "decimals": 1,
+        "min": 1,
+        "max": 400,
+        "summary": "weight",
+        "required": true
+       },
+       {
+        "id": "height",
+        "type": "number",
+        "label": "Height, for the BMI",
+        "unit": "cm",
+        "decimals": 0,
+        "min": 40,
+        "max": 250
+       },
+       {
+        "id": "bmi",
+        "type": "calc",
+        "label": "BMI",
+        "formula": "weight / (height / 100) ^ 2",
+        "decimals": 1,
+        "unit": "kg/m²"
+       },
+       {
+        "id": "waist",
+        "type": "number",
+        "label": "Waist",
+        "unit": "cm",
+        "decimals": 1,
+        "min": 20,
+        "max": 250
+       }
+      ]
+     },
+     {
+      "id": "progress",
+      "title": "How it went",
+      "fields": [
+       {
+        "id": "adherence",
+        "type": "scale",
+        "label": "How closely the plan was followed",
+        "min": 0,
+        "max": 10,
+        "min_label": "Not at all",
+        "max_label": "Fully"
+       },
+       {
+        "id": "hunger",
+        "type": "choice",
+        "label": "Hunger",
+        "options": [
+         {
+          "label": "Less than before"
+         },
+         {
+          "label": "As before"
+         },
+         {
+          "label": "More than before"
+         }
+        ]
+       },
+       {
+        "id": "energy",
+        "type": "choice",
+        "label": "Energy during the day",
+        "options": [
+         {
+          "label": "Better"
+         },
+         {
+          "label": "The same"
+         },
+         {
+          "label": "Worse"
+         }
+        ]
+       },
+       {
+        "id": "digestion",
+        "type": "choice",
+        "label": "Digestion",
+        "options": [
+         {
+          "label": "Better"
+         },
+         {
+          "label": "The same"
+         },
+         {
+          "label": "Worse"
+         }
+        ]
+       },
+       {
+        "id": "hard",
+        "type": "text",
+        "label": "What was hard",
+        "multiline": true
+       }
+      ]
+     },
+     {
+      "id": "plan",
+      "title": "What changes",
+      "fields": [
+       {
+        "id": "changes",
+        "type": "text",
+        "label": "Changes to the plan",
+        "multiline": true
+       },
+       {
+        "id": "next",
+        "type": "choice",
+        "label": "Next visit",
+        "options": [
+         {
+          "label": "In two weeks"
+         },
+         {
+          "label": "In a month"
+         },
+         {
+          "label": "In two months"
+         }
+        ],
+        "display": "dropdown"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "dental_first",
+   "title": "First dental visit",
+   "specialty": "Dentistry",
+   "description": "Why they came, the health questions before any treatment, habits, the examination and the plan",
+   "schema": {
+    "sections": [
+     {
+      "id": "reason",
+      "title": "Why they came",
+      "fields": [
+       {
+        "id": "reason",
+        "type": "text",
+        "label": "What brings the patient",
+        "multiline": true,
+        "required": true
+       },
+       {
+        "id": "pain",
+        "type": "yesno",
+        "label": "Pain now"
+       },
+       {
+        "id": "pain_level",
+        "type": "scale",
+        "label": "How much",
+        "min": 0,
+        "max": 10,
+        "min_label": "No pain",
+        "max_label": "The worst imaginable",
+        "show_if": [
+         [
+          {
+           "field": "pain",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "pain_where",
+        "type": "text",
+        "label": "Where",
+        "show_if": [
+         [
+          {
+           "field": "pain",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "last_visit",
+        "type": "choice",
+        "label": "Last visit to a dentist",
+        "options": [
+         {
+          "label": "Within a year"
+         },
+         {
+          "label": "One to three years ago"
+         },
+         {
+          "label": "More than three years ago"
+         },
+         {
+          "label": "Never"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "health",
+      "title": "Health",
+      "description": "Before any treatment: ask each one.",
+      "fields": [
+       {
+        "id": "blood_thinners",
+        "type": "yesno",
+        "label": "Takes blood thinners",
+        "stop_if": [
+         [
+          {
+           "field": "blood_thinners",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Check the blood thinner before an extraction or surgery"
+       },
+       {
+        "id": "bone_medicines",
+        "type": "yesno",
+        "label": "Takes, or took, medicines for the bones (bisphosphonates, denosumab)",
+        "stop_if": [
+         [
+          {
+           "field": "bone_medicines",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Risk for the jaw bone: check before extractions and implants"
+       },
+       {
+        "id": "anaesthetic",
+        "type": "yesno",
+        "label": "A problem with a local anaesthetic before",
+        "stop_if": [
+         [
+          {
+           "field": "anaesthetic",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "Ask what happened before giving an anaesthetic"
+       },
+       {
+        "id": "heart",
+        "type": "yesno",
+        "label": "Heart condition, valve or pacemaker"
+       },
+       {
+        "id": "diabetes",
+        "type": "yesno",
+        "label": "Diabetes"
+       },
+       {
+        "id": "pregnant",
+        "type": "yesno",
+        "label": "Pregnant, or might be",
+        "stop_if": [
+         [
+          {
+           "field": "pregnant",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ],
+        "stop_message": "No X-rays, and check the medicines"
+       },
+       {
+        "id": "allergies",
+        "type": "text",
+        "label": "Allergies: medicines, latex",
+        "summary": "allergies",
+        "placeholder": "None known"
+       },
+       {
+        "id": "medications",
+        "type": "table",
+        "label": "Medications",
+        "columns": [
+         {
+          "id": "name",
+          "label": "Medicine",
+          "type": "text"
+         },
+         {
+          "id": "dose",
+          "label": "Dose and when",
+          "type": "text"
+         }
+        ],
+        "summary": "medications"
+       }
+      ]
+     },
+     {
+      "id": "habits",
+      "title": "Habits",
+      "fields": [
+       {
+        "id": "smoking",
+        "type": "choice",
+        "label": "Smoking",
+        "options": [
+         {
+          "label": "No"
+         },
+         {
+          "label": "Used to"
+         },
+         {
+          "label": "Yes"
+         }
+        ]
+       },
+       {
+        "id": "cigarettes",
+        "type": "number",
+        "label": "Cigarettes a day",
+        "min": 0,
+        "max": 100,
+        "decimals": 0,
+        "show_if": [
+         [
+          {
+           "field": "smoking",
+           "operator": "equals",
+           "value": "Yes"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "brushing",
+        "type": "choice",
+        "label": "Brushing",
+        "options": [
+         {
+          "label": "Once a day"
+         },
+         {
+          "label": "Twice a day"
+         },
+         {
+          "label": "More"
+         }
+        ]
+       },
+       {
+        "id": "floss",
+        "type": "choice",
+        "label": "Floss or interdental brushes",
+        "options": [
+         {
+          "label": "Every day"
+         },
+         {
+          "label": "Sometimes"
+         },
+         {
+          "label": "Never"
+         }
+        ]
+       },
+       {
+        "id": "grinding",
+        "type": "yesno",
+        "label": "Grinds or clenches the teeth"
+       }
+      ]
+     },
+     {
+      "id": "exam",
+      "title": "Examination",
+      "fields": [
+       {
+        "id": "soft_tissues",
+        "type": "text",
+        "label": "Soft tissues",
+        "multiline": true
+       },
+       {
+        "id": "hygiene",
+        "type": "choice",
+        "label": "Oral hygiene",
+        "options": [
+         {
+          "label": "Good"
+         },
+         {
+          "label": "Fair"
+         },
+         {
+          "label": "Poor"
+         }
+        ]
+       },
+       {
+        "id": "plaque",
+        "type": "choice",
+        "label": "Plaque and tartar",
+        "options": [
+         {
+          "label": "Little"
+         },
+         {
+          "label": "Some"
+         },
+         {
+          "label": "A lot"
+         }
+        ]
+       },
+       {
+        "id": "bleeding",
+        "type": "yesno",
+        "label": "Gums bleed on probing"
+       },
+       {
+        "id": "mobility",
+        "type": "text",
+        "label": "Loose teeth"
+       },
+       {
+        "id": "bite",
+        "type": "choice",
+        "label": "Bite",
+        "options": [
+         {
+          "label": "Normal"
+         },
+         {
+          "label": "Deep bite"
+         },
+         {
+          "label": "Crossbite"
+         },
+         {
+          "label": "Open bite"
+         },
+         {
+          "label": "Other"
+         }
+        ],
+        "display": "dropdown"
+       },
+       {
+        "id": "jaw",
+        "type": "choice",
+        "label": "Jaw joint",
+        "options": [
+         {
+          "label": "Normal"
+         },
+         {
+          "label": "Clicks"
+         },
+         {
+          "label": "Pain"
+         },
+         {
+          "label": "Opens little"
+         }
+        ],
+        "multiple": true
+       },
+       {
+        "id": "xrays",
+        "type": "choice",
+        "label": "X-rays",
+        "options": [
+         {
+          "label": "Panoramic"
+         },
+         {
+          "label": "Bitewings"
+         },
+         {
+          "label": "Periapical"
+         },
+         {
+          "label": "Cone beam CT"
+         },
+         {
+          "label": "None"
+         }
+        ],
+        "multiple": true
+       }
+      ]
+     },
+     {
+      "id": "plan",
+      "title": "Diagnosis and plan",
+      "fields": [
+       {
+        "id": "diagnosis",
+        "type": "text",
+        "label": "Diagnosis",
+        "multiline": true,
+        "required": true
+       },
+       {
+        "id": "plan",
+        "type": "text",
+        "label": "Treatment plan",
+        "multiline": true,
+        "phrases": [
+         "Hygiene session",
+         "Fillings",
+         "Root canal",
+         "Extraction",
+         "Crown",
+         "Implant",
+         "Orthodontic assessment"
+        ]
+       },
+       {
+        "id": "urgent",
+        "type": "yesno",
+        "label": "Something urgent to treat first"
+       },
+       {
+        "id": "urgent_what",
+        "type": "text",
+        "label": "What",
+        "show_if": [
+         [
+          {
+           "field": "urgent",
+           "operator": "equals",
+           "value": "1"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "general_history",
+   "title": "General medical history",
+   "specialty": "General medicine",
+   "description": "Family and past health, medicines and allergies, habits and the measures: the history any specialty starts from",
+   "schema": {
+    "sections": [
+     {
+      "id": "family",
+      "title": "Family",
+      "fields": [
+       {
+        "id": "family",
+        "type": "choice",
+        "label": "Illnesses in the family",
+        "options": [
+         {
+          "label": "Heart disease"
+         },
+         {
+          "label": "Diabetes"
+         },
+         {
+          "label": "Cancer"
+         },
+         {
+          "label": "Stroke"
+         },
+         {
+          "label": "High blood pressure"
+         },
+         {
+          "label": "Mental illness"
+         },
+         {
+          "label": "None known"
+         }
+        ],
+        "multiple": true
+       },
+       {
+        "id": "family_notes",
+        "type": "text",
+        "label": "Who, and at what age",
+        "multiline": true
+       }
+      ]
+     },
+     {
+      "id": "past",
+      "title": "Past health",
+      "fields": [
+       {
+        "id": "conditions",
+        "type": "choice",
+        "label": "Conditions",
+        "options": [
+         {
+          "label": "High blood pressure"
+         },
+         {
+          "label": "Diabetes"
+         },
+         {
+          "label": "Heart disease"
+         },
+         {
+          "label": "Asthma or lung disease"
+         },
+         {
+          "label": "Thyroid"
+         },
+         {
+          "label": "Kidney disease"
+         },
+         {
+          "label": "Liver disease"
+         },
+         {
+          "label": "Cancer"
+         },
+         {
+          "label": "Depression or anxiety"
+         },
+         {
+          "label": "None"
+         }
+        ],
+        "multiple": true,
+        "summary": "conditions"
+       },
+       {
+        "id": "other_conditions",
+        "type": "text",
+        "label": "Other conditions",
+        "multiline": true
+       },
+       {
+        "id": "surgeries",
+        "type": "table",
+        "label": "Operations and stays in hospital",
+        "columns": [
+         {
+          "id": "what",
+          "label": "What",
+          "type": "text"
+         },
+         {
+          "id": "when",
+          "label": "When",
+          "type": "text"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "now",
+      "title": "Medicines and allergies",
+      "fields": [
+       {
+        "id": "medications",
+        "type": "table",
+        "label": "Medications",
+        "columns": [
+         {
+          "id": "name",
+          "label": "Medicine",
+          "type": "text"
+         },
+         {
+          "id": "dose",
+          "label": "Dose and when",
+          "type": "text"
+         }
+        ],
+        "summary": "medications"
+       },
+       {
+        "id": "allergies",
+        "type": "choice",
+        "label": "Allergies",
+        "options": [
+         {
+          "label": "None known"
+         },
+         {
+          "label": "Yes"
+         }
+        ]
+       },
+       {
+        "id": "allergies_which",
+        "type": "text",
+        "label": "Which, and what happens",
+        "summary": "allergies",
+        "show_if": [
+         [
+          {
+           "field": "allergies",
+           "operator": "equals",
+           "value": "Yes"
+          }
+         ]
+        ],
+        "required_if": [
+         [
+          {
+           "field": "allergies",
+           "operator": "equals",
+           "value": "Yes"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "vaccinations",
+        "type": "text",
+        "label": "Vaccinations to note"
+       }
+      ]
+     },
+     {
+      "id": "habits",
+      "title": "Habits",
+      "fields": [
+       {
+        "id": "smoking",
+        "type": "choice",
+        "label": "Smoking",
+        "options": [
+         {
+          "label": "Never"
+         },
+         {
+          "label": "Used to"
+         },
+         {
+          "label": "Yes"
+         }
+        ]
+       },
+       {
+        "id": "cigarettes",
+        "type": "number",
+        "label": "Cigarettes a day",
+        "min": 0,
+        "max": 100,
+        "decimals": 0,
+        "show_if": [
+         [
+          {
+           "field": "smoking",
+           "operator": "equals",
+           "value": "Yes"
+          }
+         ]
+        ]
+       },
+       {
+        "id": "alcohol",
+        "type": "choice",
+        "label": "Alcohol",
+        "options": [
+         {
+          "label": "Never"
+         },
+         {
+          "label": "Now and then"
+         },
+         {
+          "label": "Every day"
+         }
+        ]
+       },
+       {
+        "id": "activity",
+        "type": "choice",
+        "label": "Physical activity",
+        "options": [
+         {
+          "label": "Little"
+         },
+         {
+          "label": "Some"
+         },
+         {
+          "label": "Regular"
+         }
+        ]
+       },
+       {
+        "id": "sleep",
+        "type": "choice",
+        "label": "Sleep",
+        "options": [
+         {
+          "label": "Well"
+         },
+         {
+          "label": "Badly now and then"
+         },
+         {
+          "label": "Badly"
+         }
+        ]
+       },
+       {
+        "id": "work",
+        "type": "text",
+        "label": "Work"
+       }
+      ]
+     },
+     {
+      "id": "measures",
+      "title": "Measures",
+      "fields": [
+       {
+        "id": "weight",
+        "type": "number",
+        "label": "Weight",
+        "unit": "kg",
+        "decimals": 1,
+        "min": 1,
+        "max": 400,
+        "summary": "weight"
+       },
+       {
+        "id": "height",
+        "type": "number",
+        "label": "Height",
+        "unit": "cm",
+        "decimals": 0,
+        "min": 40,
+        "max": 250,
+        "summary": "height"
+       },
+       {
+        "id": "bmi",
+        "type": "calc",
+        "label": "BMI",
+        "formula": "weight / (height / 100) ^ 2",
+        "decimals": 1,
+        "unit": "kg/m²"
+       },
+       {
+        "id": "blood_pressure",
+        "type": "text",
+        "label": "Blood pressure (mmHg)",
+        "placeholder": "120/80",
+        "summary": "blood_pressure"
+       },
+       {
+        "id": "heart_rate",
+        "type": "number",
+        "label": "Heart rate",
+        "unit": "bpm",
+        "decimals": 0,
+        "min": 20,
+        "max": 250,
+        "summary": "heart_rate"
+       }
+      ]
+     },
+     {
+      "id": "notes",
+      "title": "Notes",
+      "fields": [
+       {
+        "id": "notes",
+        "type": "text",
+        "label": "Notes",
+        "multiline": true
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "words": {
+  "it": {
+   "Physiotherapy assessment": "Valutazione fisioterapica",
+   "Physiotherapy": "Fisioterapia",
+   "The first session: the problem, where it hurts, the signs to send to the doctor, the examination, daily life and the plan": "La prima seduta: il problema, dove fa male, i segnali per cui mandare dal medico, l'esame, la vita di ogni giorno e il piano",
+   "Physiotherapy follow-up": "Controllo fisioterapico",
+   "A session after the first: how it went since last time, where it hurts today, daily life and what was done": "Una seduta dopo la prima: com'è andata dall'ultima volta, dove fa male oggi, la vita di ogni giorno e cosa si è fatto",
+   "First nutrition visit": "Prima visita nutrizionale",
+   "Nutrition": "Nutrizione",
+   "Why they came, health, measures, habits, what they eat and the plan": "Perché è venuto, la salute, le misure, le abitudini, cosa mangia e il piano",
+   "Nutrition follow-up": "Controllo nutrizionale",
+   "The measures again, how the plan went, and what changes": "Di nuovo le misure, com'è andato il piano e cosa cambia",
+   "First dental visit": "Prima visita odontoiatrica",
+   "Dentistry": "Odontoiatria",
+   "Why they came, the health questions before any treatment, habits, the examination and the plan": "Perché è venuto, le domande sulla salute prima di ogni cura, le abitudini, l'esame e il piano",
+   "General medical history": "Anamnesi generale",
+   "General medicine": "Medicina generale",
+   "Family and past health, medicines and allergies, habits and the measures: the history any specialty starts from": "Famiglia e salute passata, farmaci e allergie, abitudini e misure: l'anamnesi da cui parte ogni specialità",
+   "Why they came": "Perché è venuto",
+   "Where it hurts": "Dove fa male",
+   "Signs to send to the doctor": "Segnali per cui mandare dal medico",
+   "Ask each one. A yes stops the session: the patient sees a doctor first.": "Chiedili tutti. Un sì ferma la seduta: prima il paziente va dal medico.",
+   "Examination": "Esame obiettivo",
+   "Daily life": "Vita di ogni giorno",
+   "How hard each one is now, from 0 (no difficulty) to 10 (cannot do it). The total is followed over time, visit after visit.": "Quanto è difficile ognuna adesso, da 0 (nessuna difficoltà) a 10 (non ci riesce). Il totale si segue nel tempo, visita dopo visita.",
+   "Assessment and plan": "Valutazione e piano",
+   "Since last time": "Dall'ultima volta",
+   "This session": "Questa seduta",
+   "Health": "Salute",
+   "Measures": "Misure",
+   "Habits": "Abitudini",
+   "What they eat": "Cosa mangia",
+   "How it went": "Com'è andata",
+   "What changes": "Cosa cambia",
+   "Before any treatment: ask each one.": "Prima di ogni cura: chiedile tutte.",
+   "Diagnosis and plan": "Diagnosi e piano",
+   "Family": "Famiglia",
+   "Past health": "Salute passata",
+   "Medicines and allergies": "Farmaci e allergie",
+   "Notes": "Note",
+   "What brings the patient": "Cosa porta il paziente",
+   "In the patient's words": "Con le parole del paziente",
+   "How it started": "Come è iniziato",
+   "Suddenly, after an injury": "All'improvviso, dopo un trauma",
+   "Suddenly, without a cause": "All'improvviso, senza una causa",
+   "Little by little": "Poco a poco",
+   "After surgery": "Dopo un intervento",
+   "Does not know": "Non lo sa",
+   "Since when": "Da quando",
+   "Three weeks": "Tre settimane",
+   "Treated for this before": "Già curato per questo",
+   "What was done, and how it went": "Cosa si è fatto, e come è andata",
+   "A tap for each place that hurts, with how much; draw where the pain spreads.": "Un tocco per ogni punto che fa male, con quanto; disegna dove il dolore si allarga.",
+   "Pain now": "Dolore adesso",
+   "None": "Nessuna",
+   "No pain": "Nessun dolore",
+   "The worst imaginable": "Il peggiore immaginabile",
+   "Pain at its worst, in the last week": "Dolore al suo peggio, nell'ultima settimana",
+   "When it hurts": "Quando fa male",
+   "All the time": "Sempre",
+   "It comes and goes": "Va e viene",
+   "Moving": "Muovendosi",
+   "At rest": "A riposo",
+   "At night": "Di notte",
+   "In the morning, then it eases": "Al mattino, poi passa",
+   "What makes it worse": "Cosa lo peggiora",
+   "Sitting": "Stare seduto",
+   "Standing": "Stare in piedi",
+   "Walking": "Camminare",
+   "Bending forward": "Piegarsi in avanti",
+   "Lifting": "Sollevare pesi",
+   "Climbing stairs": "Fare le scale",
+   "What eases it": "Cosa lo allevia",
+   "Rest": "Il riposo",
+   "Heat": "Il caldo",
+   "Cold": "Il freddo",
+   "Medicines": "I farmaci",
+   "Weight lost without trying": "Peso perso senza volerlo",
+   "Pain at night that does not change with position": "Dolore di notte che non cambia con la posizione",
+   "Fever, or feeling unwell, with the pain": "Febbre, o malessere, insieme al dolore",
+   "A recent fall or blow, with severe pain": "Una caduta o un colpo recente, con dolore forte",
+   "Cancer, now or in the past": "Un tumore, ora o in passato",
+   "New trouble holding or passing urine or stools": "Difficoltà nuove a trattenere o fare urina o feci",
+   "Numbness between the legs or around the back passage": "Formicolio o insensibilità tra le gambe o intorno all'ano",
+   "Send the patient to their doctor before treating": "Manda il paziente dal suo medico prima di trattarlo",
+   "Send the patient to the emergency department now": "Manda subito il paziente al pronto soccorso",
+   "Posture and what is seen": "Postura e osservazione",
+   "Range of movement": "Escursione articolare",
+   "Movement": "Movimento",
+   "Left (°)": "Sinistra (°)",
+   "Right (°)": "Destra (°)",
+   "Strength, from 0 to 5": "Forza, da 0 a 5",
+   "Muscle or movement": "Muscolo o movimento",
+   "Left": "Sinistra",
+   "Right": "Destra",
+   "Tests": "Test",
+   "Test": "Test",
+   "Side": "Lato",
+   "Result": "Esito",
+   "Sensation and reflexes": "Sensibilità e riflessi",
+   "No changes": "Nessuna alterazione",
+   "Changed": "Con alterazioni",
+   "Normal": "Normale",
+   "It changes": "Cambia",
+   "Not tested": "Non valutati",
+   "What changed": "Cosa è alterato",
+   "Palpation": "Palpazione",
+   "No difficulty": "Nessuna difficoltà",
+   "Cannot do it": "Non ci riesce",
+   "Sitting for half an hour": "Stare seduto mezz'ora",
+   "Standing for half an hour": "Stare in piedi mezz'ora",
+   "Sleeping": "Dormire",
+   "Lifting or carrying": "Sollevare o portare pesi",
+   "Getting dressed": "Vestirsi",
+   "Work or study": "Lavoro o studio",
+   "Sport and free time": "Sport e tempo libero",
+   "Difficulty in daily life": "Difficoltà nella vita di ogni giorno",
+   "Little": "Poca",
+   "Moderate": "Moderata",
+   "Marked": "Marcata",
+   "Goals": "Obiettivi",
+   "Goal": "Obiettivo",
+   "By": "Entro",
+   "Treatment plan": "Piano di trattamento",
+   "Manual therapy": "Terapia manuale",
+   "Therapeutic exercise": "Esercizio terapeutico",
+   "Exercises at home": "Esercizi a casa",
+   "Postural education": "Educazione posturale",
+   "Taping": "Taping",
+   "Instrumental therapy": "Terapia fisica strumentale",
+   "Sessions planned": "Sedute previste",
+   "How often": "Ogni quanto",
+   "Once a week": "Una volta a settimana",
+   "Twice a week": "Due volte a settimana",
+   "Three times a week": "Tre volte a settimana",
+   "Other": "Altro",
+   "Done today": "Fatto oggi",
+   "Compared with the last session": "Rispetto all'ultima seduta",
+   "Much better": "Molto meglio",
+   "Better": "Meglio",
+   "The same": "Uguale",
+   "Worse": "Peggio",
+   "Much worse": "Molto peggio",
+   "Done as agreed": "Fatti come concordato",
+   "Done now and then": "Fatti ogni tanto",
+   "Not done": "Non fatti",
+   "None given": "Nessuno assegnato",
+   "Anything new: a fall, fever, numbness, trouble with urine or stools": "Novità: una caduta, febbre, formicolii, difficoltà con urina o feci",
+   "Check it before treating: send the patient to their doctor if needed": "Verifica prima di trattare: se serve, manda il paziente dal suo medico",
+   "Where it hurts today": "Dove fa male oggi",
+   "Exercises at home reviewed": "Esercizi a casa rivisti",
+   "How the patient responded": "Come ha risposto il paziente",
+   "The plan": "Il piano",
+   "Goes on as planned": "Prosegue come previsto",
+   "Ends: goals reached": "Finisce: obiettivi raggiunti",
+   "Ends: sent to the doctor": "Finisce: mandato dal medico",
+   "Next time": "La prossima volta",
+   "Reasons": "Motivi",
+   "Lose weight": "Perdere peso",
+   "Gain weight": "Prendere peso",
+   "Sport": "Sport",
+   "A condition to manage": "Una condizione da gestire",
+   "Pregnancy or breastfeeding": "Gravidanza o allattamento",
+   "Intolerances or allergies": "Intolleranze o allergie",
+   "Eat better": "Mangiare meglio",
+   "The weight they would like": "Il peso che vorrebbe",
+   "Conditions": "Patologie",
+   "Diabetes": "Diabete",
+   "High blood pressure": "Pressione alta",
+   "High cholesterol": "Colesterolo alto",
+   "Thyroid": "Tiroide",
+   "Bowel problems": "Problemi intestinali",
+   "Kidney problems": "Problemi renali",
+   "Medications": "Farmaci",
+   "Medicine": "Farmaco",
+   "Dose and when": "Dose e quando",
+   "Food allergies and intolerances": "Allergie e intolleranze alimentari",
+   "None known": "Nessuna nota",
+   "Recent blood tests": "Esami del sangue recenti",
+   "Weight": "Peso",
+   "Height": "Altezza",
+   "BMI": "IMC",
+   "Waist": "Vita",
+   "Hips": "Fianchi",
+   "Waist to height": "Rapporto vita/altezza",
+   "Body fat, if measured": "Massa grassa, se misurata",
+   "Meals a day": "Pasti al giorno",
+   "Breakfast every day": "Colazione ogni giorno",
+   "Snacks between meals": "Spuntini fuori pasto",
+   "Never": "Mai",
+   "Sometimes": "A volte",
+   "Every day": "Ogni giorno",
+   "Water a day": "Acqua al giorno",
+   "Alcohol": "Alcol",
+   "At weekends": "Nel fine settimana",
+   "A glass a day": "Un bicchiere al giorno",
+   "More": "Di più",
+   "Physical activity": "Attività fisica",
+   "Sport now and then": "Sport ogni tanto",
+   "Sport regularly": "Sport con regolarità",
+   "Minutes of activity a week": "Minuti di attività a settimana",
+   "Hours of sleep": "Ore di sonno",
+   "Meals out of home": "Pasti fuori casa",
+   "Rarely": "Raramente",
+   "A few a week": "Qualcuno a settimana",
+   "Most days": "Quasi ogni giorno",
+   "A usual day: what and when": "Una giornata tipo: cosa e quando",
+   "Breakfast at 7: coffee and biscuits": "Colazione alle 7: caffè e biscotti",
+   "Foods they like": "Cibi che piacciono",
+   "Foods they will not eat": "Cibi che non mangia",
+   "Who cooks": "Chi cucina",
+   "The patient": "Il paziente",
+   "Somebody at home": "Qualcuno in casa",
+   "They mostly eat out": "Mangia soprattutto fuori",
+   "Nutritional assessment": "Valutazione nutrizionale",
+   "Plan": "Piano",
+   "Menu": "Menù",
+   "Exchange diet": "Dieta a scambi",
+   "Advice on healthy eating": "Consigli di sana alimentazione",
+   "Food diary": "Diario alimentare",
+   "Blood tests": "Esami del sangue",
+   "Next visit": "Prossima visita",
+   "In two weeks": "Tra due settimane",
+   "In a month": "Tra un mese",
+   "In two months": "Tra due mesi",
+   "Height, for the BMI": "Altezza, per l'IMC",
+   "How closely the plan was followed": "Quanto ha seguito il piano",
+   "Not at all": "Per niente",
+   "Fully": "Del tutto",
+   "Hunger": "Fame",
+   "Less than before": "Meno di prima",
+   "As before": "Come prima",
+   "More than before": "Più di prima",
+   "Energy during the day": "Energia durante il giorno",
+   "Digestion": "Digestione",
+   "What was hard": "Cosa è stato difficile",
+   "Changes to the plan": "Cambi al piano",
+   "How much": "Quanto",
+   "Where": "Dove",
+   "Last visit to a dentist": "Ultima visita dal dentista",
+   "Within a year": "Entro un anno",
+   "One to three years ago": "Da uno a tre anni fa",
+   "More than three years ago": "Più di tre anni fa",
+   "Takes blood thinners": "Prende anticoagulanti o antiaggreganti",
+   "Check the blood thinner before an extraction or surgery": "Verifica la terapia anticoagulante prima di un'estrazione o di un intervento",
+   "Takes, or took, medicines for the bones (bisphosphonates, denosumab)": "Prende, o ha preso, farmaci per le ossa (bifosfonati, denosumab)",
+   "Risk for the jaw bone: check before extractions and implants": "Rischio per l'osso delle mascelle: verifica prima di estrazioni e impianti",
+   "A problem with a local anaesthetic before": "Un problema con un'anestesia locale in passato",
+   "Ask what happened before giving an anaesthetic": "Chiedi cosa è successo prima di fare un'anestesia",
+   "Heart condition, valve or pacemaker": "Malattie del cuore, valvole o pacemaker",
+   "Pregnant, or might be": "In gravidanza, o potrebbe esserlo",
+   "No X-rays, and check the medicines": "Niente radiografie, e verifica i farmaci",
+   "Allergies: medicines, latex": "Allergie: farmaci, lattice",
+   "Smoking": "Fumo",
+   "No": "No",
+   "Used to": "In passato",
+   "Yes": "Sì",
+   "Cigarettes a day": "Sigarette al giorno",
+   "Brushing": "Spazzolino",
+   "Once a day": "Una volta al giorno",
+   "Twice a day": "Due volte al giorno",
+   "Floss or interdental brushes": "Filo o scovolini",
+   "Grinds or clenches the teeth": "Digrigna o serra i denti",
+   "Soft tissues": "Tessuti molli",
+   "Oral hygiene": "Igiene orale",
+   "Good": "Buona",
+   "Fair": "Discreta",
+   "Poor": "Scarsa",
+   "Plaque and tartar": "Placca e tartaro",
+   "Some": "Un po'",
+   "A lot": "Molta",
+   "Gums bleed on probing": "Gengive che sanguinano al sondaggio",
+   "Loose teeth": "Denti mobili",
+   "Bite": "Occlusione",
+   "Deep bite": "Morso profondo",
+   "Crossbite": "Morso crociato",
+   "Open bite": "Morso aperto",
+   "Jaw joint": "Articolazione temporo-mandibolare",
+   "Clicks": "Schiocchi",
+   "Pain": "Dolore",
+   "Opens little": "Apre poco",
+   "X-rays": "Radiografie",
+   "Panoramic": "Panoramica",
+   "Bitewings": "Bitewing",
+   "Periapical": "Endorali",
+   "Cone beam CT": "Cone beam",
+   "Diagnosis": "Diagnosi",
+   "Hygiene session": "Seduta di igiene",
+   "Fillings": "Otturazioni",
+   "Root canal": "Devitalizzazione",
+   "Extraction": "Estrazione",
+   "Crown": "Corona",
+   "Implant": "Impianto",
+   "Orthodontic assessment": "Valutazione ortodontica",
+   "Something urgent to treat first": "Qualcosa di urgente da curare prima",
+   "What": "Cosa",
+   "Illnesses in the family": "Malattie in famiglia",
+   "Heart disease": "Malattie del cuore",
+   "Cancer": "Tumori",
+   "Stroke": "Ictus",
+   "Mental illness": "Malattie psichiatriche",
+   "Who, and at what age": "Chi, e a che età",
+   "Asthma or lung disease": "Asma o malattie dei polmoni",
+   "Kidney disease": "Malattie dei reni",
+   "Liver disease": "Malattie del fegato",
+   "Depression or anxiety": "Depressione o ansia",
+   "Other conditions": "Altre patologie",
+   "Operations and stays in hospital": "Interventi e ricoveri",
+   "When": "Quando",
+   "Allergies": "Allergie",
+   "Which, and what happens": "Quali, e cosa succede",
+   "Vaccinations to note": "Vaccinazioni da segnalare",
+   "Now and then": "Ogni tanto",
+   "Regular": "Regolare",
+   "Sleep": "Sonno",
+   "Well": "Bene",
+   "Badly now and then": "Male ogni tanto",
+   "Badly": "Male",
+   "Work": "Lavoro",
+   "Blood pressure (mmHg)": "Pressione arteriosa (mmHg)",
+   "Heart rate": "Frequenza cardiaca",
+   "120/80": "120/80"
+  }
+ }
+}

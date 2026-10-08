@@ -155,6 +155,8 @@ setup_wizard_complete = [
 	"crm.invoicing.install.qualifiche_nella_lingua",
 	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	"crm.clinica.librerie.dopo_la_configurazione",
+	# the clinic's ready sheets, drafts in the centre's language
+	"crm.clinica.schede_pronte.in_seguito",
 	"crm.demo.api.create_demo_data",
 ]
 # The centre chose another language (Settings > The centre > General > Language &
@@ -167,6 +169,7 @@ crm_lingua_del_centro = [
 	"crm.invoicing.install.qualifiche_nella_lingua",
 	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	"crm.clinica.librerie.dopo_la_configurazione",
+	"crm.clinica.schede_pronte.in_seguito",
 ]
 # setup_wizard_test = "crm.setup.setup_wizard.test_setup_wizard.run_setup_wizard_test"
 
@@ -186,6 +189,8 @@ after_install = [
 	"crm.lingue.euro_come_si_scrive",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
+	# the clinic's ready sheets, drafts of the centre's where the clinic is on
+	"crm.clinica.schede_pronte.carica_schede",
 	# nothing about the centre's use leaves for Frappe's servers
 	"crm.telemetria.spegni",
 ]
@@ -827,6 +832,8 @@ after_migrate = [
 	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
 	"crm.clinica.librerie.carica_libreria",
+	# the clinic's ready sheets, when their file or the centre's language is a new one
+	"crm.clinica.schede_pronte.carica_schede",
 	# whose own mailbox an account is (doc 51)
 	"crm.install.add_email_account_custom_field",
 	# DottorCloud's own emails leave through the agency's sending service

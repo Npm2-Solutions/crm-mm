@@ -182,6 +182,10 @@ def piano_aggiornato(doc, method=None) -> None:
 		_senza_fermare(_("Medical centre pipelines not created"), doc, pipeline.crea_pipeline)
 		# and the centre's dashboard
 		_senza_fermare(_("Medical centre dashboard not created"), doc, _cruscotto_del_centro)
+		# and its ready clinical sheets, drafts in the centre's language
+		from crm.clinica import schede_pronte
+
+		schede_pronte.in_seguito()
 	if paziente.clinica_accesa() and not frappe.db.get_default(paziente.RECUPERO_FATTO):
 		frappe.enqueue(
 			"crm.clinica.paziente.recupera",

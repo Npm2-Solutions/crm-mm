@@ -101,6 +101,26 @@ CAMPI_PERSONA = {
 _dato_clinico: list[Callable[[], bool]] = []
 
 
+#: What modules ship to start a template from (the clinic's sheets): () -> list of
+#: {key, use, title, description, specialty, clinical, schema}.
+_partenze: list[Callable[[], list[dict]]] = []
+
+
+def registra_partenze(fonte: Callable[[], list[dict]]) -> None:
+	if fonte not in _partenze:
+		_partenze.append(fonte)
+
+
+@frappe.whitelist()
+def get_starters() -> list[dict]:
+	"""The templates the modules ship to start from, in the centre's language, for
+	the uses the session builds: offered beside the builder's own."""
+	trovate = []
+	for fonte in _partenze:
+		trovate += [partenza for partenza in fonte() if puo_costruire(partenza.get("use"))]
+	return trovate
+
+
 def registra_uso(uso: Uso) -> None:
 	_usi[uso.chiave] = uso
 
