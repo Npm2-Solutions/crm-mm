@@ -131,6 +131,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
@@ -267,10 +268,9 @@ const timezoneOptions = computed(() => {
 
 function save() {
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_scheduling_settings',
     params: { scheduling_settings: { ...form } },
-    auto: true,
     onSuccess: () => {
       saving.value = false
       toast.success(__('Hours & rules saved'))

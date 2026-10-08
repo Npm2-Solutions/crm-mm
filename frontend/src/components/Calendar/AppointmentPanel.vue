@@ -1010,6 +1010,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import DescriptionIcon from '@/components/Icons/DescriptionIcon.vue'
 import MapIcon from '@/components/Icons/MapIcon.vue'
@@ -1104,21 +1105,23 @@ function load(name) {
   repeatOpen.value = false
   repeat.rule = ''
   cancelling.open = false
-  appointment.submit(
-    { name },
-    {
-      onSuccess: (data) => {
-        doc.value = data
-        // asked to edit (a double click) one it may not change: it reads
-        if (props.mode === 'edit' && !data.can_write) emit('mode', 'details')
-        else if (props.mode !== 'details') loadInto(data)
+  appointment
+    .submit(
+      { name },
+      {
+        onSuccess: (data) => {
+          doc.value = data
+          // asked to edit (a double click) one it may not change: it reads
+          if (props.mode === 'edit' && !data.can_write) emit('mode', 'details')
+          else if (props.mode !== 'details') loadInto(data)
+        },
+        onError: (e) => {
+          toast.error(e.messages?.[0] || __('Could not open the appointment'))
+          emit('close')
+        },
       },
-      onError: (e) => {
-        toast.error(e.messages?.[0] || __('Could not open the appointment'))
-        emit('close')
-      },
-    },
-  )
+    )
+    .catch(() => {})
 }
 
 const services = computed(() => props.meta?.services || [])
@@ -1214,10 +1217,9 @@ const changing = ref(false)
 
 function apply(url, params, done) {
   changing.value = true
-  createResource({
+  chiedi({
     url,
     params,
-    auto: true,
     onSuccess: (data) => {
       changing.value = false
       doc.value = data
@@ -1318,10 +1320,9 @@ const cycleActions = computed(() => {
 
 function moveToCycle(cycle) {
   changing.value = true
-  createResource({
+  chiedi({
     url: 'crm.scheduling.cicli.attach',
     params: { appointment: doc.value.name, cycle },
-    auto: true,
     onSuccess: () => {
       changing.value = false
       toast.success(
@@ -1367,10 +1368,9 @@ function subscriptionActions(who) {
 
 function moveToSubscription(who, subscription) {
   changing.value = who.party
-  createResource({
+  chiedi({
     url: 'crm.scheduling.abbonamenti.attach',
     params: { appointment: doc.value.name, subscription, party: who.party },
-    auto: true,
     onSuccess: () => {
       changing.value = false
       toast.success(
@@ -1402,14 +1402,13 @@ const repeatOptions = [
 
 function createSeries() {
   repeating.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.create_series',
     params: {
       name: doc.value.name,
       repeat: repeat.rule,
       occurrences: repeat.occurrences,
     },
-    auto: true,
     onSuccess: (data) => {
       repeating.value = false
       repeat.rule = ''
@@ -1634,14 +1633,16 @@ function snapshot() {
 
 function refreshPrice() {
   if (!form.service) return
-  quote.submit({
-    service: form.service,
-    when: oraDelCentro(startsOn.value),
-    price_list: form.price_list || null,
-    staff: form.staff,
-    resources: form.resources.map((row) => row.resource).filter(Boolean),
-    participants: form.participants.length || 1,
-  })
+  quote
+    .submit({
+      service: form.service,
+      when: oraDelCentro(startsOn.value),
+      price_list: form.price_list || null,
+      staff: form.staff,
+      resources: form.resources.map((row) => row.resource).filter(Boolean),
+      participants: form.participants.length || 1,
+    })
+    .catch(() => {})
 }
 
 function refreshConflicts() {
@@ -1649,37 +1650,41 @@ function refreshConflicts() {
     conflicts.value = []
     return
   }
-  conflictCheck.submit(
-    { appointment: { ...payload(), name: form.name } },
-    { onSuccess: (data) => (conflicts.value = data || []) },
-  )
+  conflictCheck
+    .submit(
+      { appointment: { ...payload(), name: form.name } },
+      { onSuccess: (data) => (conflicts.value = data || []) },
+    )
+    .catch(() => {})
 }
 
 function findSlots() {
   if (!form.service) return
   slotHint.value = ''
-  slots.submit(
-    {
-      service: form.service,
-      start_date: form.date,
-      end_date: dayjs(form.date).add(6, 'day').format('YYYY-MM-DD'),
-      staff: form.staff,
-      resources: form.resources.map((row) => row.resource).filter(Boolean),
-      participants: Math.max(form.participants.length, 1),
-      exclude_appointment: form.name || null,
-    },
-    {
-      onSuccess: (data) => {
-        slotDaysOpen.clear()
-        slotList.value = data || []
-        slotHint.value = slotList.value.length
-          ? __('{0} free times in the next 7 days', [data.length])
-          : __('No free time in the next 7 days')
+  slots
+    .submit(
+      {
+        service: form.service,
+        start_date: form.date,
+        end_date: dayjs(form.date).add(6, 'day').format('YYYY-MM-DD'),
+        staff: form.staff,
+        resources: form.resources.map((row) => row.resource).filter(Boolean),
+        participants: Math.max(form.participants.length, 1),
+        exclude_appointment: form.name || null,
       },
-      onError: (e) =>
-        toast.error(e.messages?.[0] || __('Could not load free times')),
-    },
-  )
+      {
+        onSuccess: (data) => {
+          slotDaysOpen.clear()
+          slotList.value = data || []
+          slotHint.value = slotList.value.length
+            ? __('{0} free times in the next 7 days', [data.length])
+            : __('No free time in the next 7 days')
+        },
+        onError: (e) =>
+          toast.error(e.messages?.[0] || __('Could not load free times')),
+      },
+    )
+    .catch(() => {})
 }
 
 // the time alone: the day is said once, above its times
@@ -1726,36 +1731,38 @@ function toggleStaff(person) {
 
 function autoAssign() {
   if (!form.service) return
-  slots.submit(
-    {
-      service: form.service,
-      start_date: form.date,
-      end_date: form.date,
-      participants: Math.max(form.participants.length, 1),
-      exclude_appointment: form.name || null,
-    },
-    {
-      onSuccess: (data) => {
-        const wanted = `${form.date} ${form.time}`
-        const match =
-          (data || []).find((slot) => {
-            const inizio = delCentro(slot.start)
-            return inizio && `${inizio.giorno} ${inizio.ora}` === wanted
-          }) || null
-        if (!match) {
-          toast.error(__('Nobody is free at this time'))
-          return
-        }
-        form.staff = [...(match.staff || [])]
-        if (
-          match.resources?.length &&
-          !form.resources.some((r) => r.resource)
-        ) {
-          form.resources = match.resources.map((row) => ({ ...row }))
-        }
+  slots
+    .submit(
+      {
+        service: form.service,
+        start_date: form.date,
+        end_date: form.date,
+        participants: Math.max(form.participants.length, 1),
+        exclude_appointment: form.name || null,
       },
-    },
-  )
+      {
+        onSuccess: (data) => {
+          const wanted = `${form.date} ${form.time}`
+          const match =
+            (data || []).find((slot) => {
+              const inizio = delCentro(slot.start)
+              return inizio && `${inizio.giorno} ${inizio.ora}` === wanted
+            }) || null
+          if (!match) {
+            toast.error(__('Nobody is free at this time'))
+            return
+          }
+          form.staff = [...(match.staff || [])]
+          if (
+            match.resources?.length &&
+            !form.resources.some((r) => r.resource)
+          ) {
+            form.resources = match.resources.map((row) => ({ ...row }))
+          }
+        },
+      },
+    )
+    .catch(() => {})
 }
 
 function participantRow(values = {}) {
@@ -1795,19 +1802,21 @@ function pickParty(row, value) {
   }
   // a child without a contact of their own is reached through whoever books for
   // them: the reminders go to the parent
-  partyDetails.submit(
-    { lead: value },
-    {
-      onSuccess: (data) => {
-        row.participant_name = data?.lead_name || value
-        row.email = data?.email || ''
-        row.phone = data?.phone || ''
-        row.booked_by = data?.booked_by || ''
-        row.booked_by_name = data?.booked_by_name || ''
+  partyDetails
+    .submit(
+      { lead: value },
+      {
+        onSuccess: (data) => {
+          row.participant_name = data?.lead_name || value
+          row.email = data?.email || ''
+          row.phone = data?.phone || ''
+          row.booked_by = data?.booked_by || ''
+          row.booked_by_name = data?.booked_by_name || ''
+        },
+        onError: () => (row.participant_name = value),
       },
-      onError: () => (row.participant_name = value),
-    },
-  )
+    )
+    .catch(() => {})
 }
 
 function loadInto(data) {
@@ -1942,10 +1951,9 @@ function save() {
     return
   }
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_appointment',
     params: { appointment: payload(), name: form.name || null },
-    auto: true,
     onSuccess: (data) => {
       saving.value = false
       toast.success(
@@ -2019,10 +2027,9 @@ function confirmDelete() {
         theme: 'red',
         onClick: (closeDialog) => {
           closeDialog()
-          createResource({
+          chiedi({
             url: 'crm.api.appointments.delete_appointment',
             params: { name: doc.value.name },
-            auto: true,
             onSuccess: () => {
               toast.success(__('Appointment deleted'))
               emit('deleted', doc.value.name)

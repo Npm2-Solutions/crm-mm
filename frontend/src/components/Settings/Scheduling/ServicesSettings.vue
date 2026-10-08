@@ -468,6 +468,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
@@ -667,10 +668,9 @@ function openEditor(name = null) {
     showEditor.value = true
     return
   }
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.get_service',
     params: { name },
-    auto: true,
     onSuccess: (data) => {
       Object.assign(form, data, onlineFieldsFrom(data), {
         enabled: Boolean(data.enabled),
@@ -707,7 +707,7 @@ function openEditor(name = null) {
 
 function save() {
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_service',
     params: {
       name: editingName.value,
@@ -724,7 +724,6 @@ function save() {
         online_visit: form.online_visit ? 1 : 0,
       },
     },
-    auto: true,
     onSuccess: () => {
       saving.value = false
       showEditor.value = false
@@ -751,10 +750,9 @@ function remove(service) {
         variant: 'solid',
         onClick: (close) => {
           close()
-          createResource({
+          chiedi({
             url: 'crm.api.appointments.delete_service',
             params: { name: service.name },
-            auto: true,
             onSuccess: () => grid.value?.reload(),
             onError: (e) =>
               toast.error(e.messages?.[0] || __('Failed to delete')),

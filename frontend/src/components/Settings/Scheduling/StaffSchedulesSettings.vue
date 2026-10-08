@@ -370,6 +370,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import Link from '@/components/Controls/Link.vue'
 import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
@@ -543,7 +544,7 @@ function save() {
     return
   }
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_schedule',
     params: {
       schedule: {
@@ -557,7 +558,6 @@ function save() {
         video_link: (form.video_link || '').trim(),
       },
     },
-    auto: true,
     onSuccess: () => {
       saving.value = false
       showEditor.value = false

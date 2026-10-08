@@ -171,6 +171,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
@@ -246,10 +247,9 @@ function openEditor(name = null) {
     showEditor.value = true
     return
   }
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.get_resource',
     params: { name },
-    auto: true,
     onSuccess: (data) => {
       Object.assign(form, data, {
         enabled: Boolean(data.enabled),
@@ -263,10 +263,9 @@ function openEditor(name = null) {
 
 function save() {
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_resource',
     params: { name: editingName.value, resource: { ...form } },
-    auto: true,
     onSuccess: () => {
       saving.value = false
       showEditor.value = false
@@ -281,10 +280,9 @@ function save() {
 }
 
 function remove(resource) {
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.delete_resource',
     params: { name: resource.name },
-    auto: true,
     onSuccess: () => resources.reload(),
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
   })

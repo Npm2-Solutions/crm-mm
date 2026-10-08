@@ -112,6 +112,10 @@ would refuse it. An appointment's calendar copy (`Event`, `sync_event`) is its f
 professional's, every professional of it a participant by their user; the people who
 come are linked by their record, never by their email (it would read the copy to
 the area's user and get the framework's reminders).
+A call asked once whose refusal its `onError` says is `chiedi()` (`utils/chiedi.js`),
+and a resource's `submit()` so answered ends in `.catch(() => {})`: frappe-ui throws
+again what it handed to `onError`, and a `createResource({ auto: true })` refused
+left an uncaught rejection over the page that had said why.
 
 ### The reminders of the appointments (docs/crm/59)
 | File | Role |
