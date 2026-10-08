@@ -42039,8 +42039,8 @@ msgid "From a person’s page, put them on the list when there is no place: what
 msgstr "Dalla pagina di una persona, mettila in lista quando non c'è posto: quello che si libera va a lei."
 
 #: crm/moduli/modelli.py
-msgid "Filled in by the person: a privacy notice, consents, a questionnaire"
-msgstr "Lo compila la persona: un'informativa, dei consensi, un questionario"
+msgid "Filled in and signed by the person: a privacy notice, consents, a contract"
+msgstr "Lo compila e lo firma la persona: un'informativa, dei consensi, un contratto"
 
 #: crm/moduli/modelli.py
 msgid "Written by the operator during an appointment: a treatment sheet, an assessment"
@@ -47102,7 +47102,7 @@ msgid "Booking page link"
 msgstr "Link alla pagina di prenotazione"
 
 msgid "We missed you… missed call"
-msgstr "Ti abbiamo cercato… richiamata persa"
+msgstr "Ti abbiamo cercato… chiamata persa"
 
 msgid "A minute after a call nobody answered, texts the caller the link to book online."
 msgstr "Un minuto dopo una chiamata a cui nessuno ha risposto, manda a chi ha chiamato un SMS con il link per prenotare online."
@@ -47454,3 +47454,87 @@ msgstr "L'importo minimo non può essere sotto zero"
 
 msgid "A cash closing is made from the reception desk"
 msgstr "Una chiusura di cassa si fa dall'accoglienza"
+
+msgid "When a call counts as missed. From somebody the centre knows, the automations hear it («Missed call»); a number nobody knows can get an SMS."
+msgstr "Quando una chiamata conta come persa. Da chi il centro conosce, la sentono le automazioni («Chiamata persa»); un numero che nessuno conosce può ricevere un SMS."
+
+msgid "Nobody answers"
+msgstr "Nessuno risponde"
+
+msgid "Everyone who answers the number rang and nobody picked up."
+msgstr "Hanno squillato tutti quelli che rispondono al numero e nessuno ha risposto."
+
+msgid "There is nobody to ring"
+msgstr "Non c'è nessuno da far squillare"
+
+msgid "At that moment nobody answers the number, so nobody rang."
+msgstr "In quel momento nessuno risponde al numero, quindi non squilla nessuno."
+
+msgid "The answering service takes every call"
+msgstr "La segreteria prende tutte le chiamate"
+
+msgid "With the answering service answering every call, each call counts as missed."
+msgstr "Con la segreteria che risponde a ogni chiamata, ogni chiamata conta come persa."
+
+msgid "A number the centre does not know whose call counts as missed gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number."
+msgstr "Un numero che il centro non conosce, la cui chiamata conta come persa, riceve un SMS: il centro richiamerà, con la pagina di prenotazione se il centro prende prenotazioni online. Solo a un cellulare dei paesi che il centro chiama, al massimo una volta al giorno per numero."
+
+msgid "Hi {{ first_name }}, sorry we missed your call. We will call you back.\nTo book now: {{ booking_link }}"
+msgstr "Ciao {{ first_name }}, ci dispiace non averti risposto. Ti richiameremo.\nPer prenotare subito: {{ booking_link }}"
+
+msgid "Question {0}"
+msgstr "Domanda {0}"
+
+msgid "Choice"
+msgstr "Scelta"
+
+msgid "Scale"
+msgstr "Scala"
+
+msgid "Left and right"
+msgstr "Destra e sinistra"
+
+msgid "Text to read"
+msgstr "Testo da leggere"
+
+msgid "Calculation"
+msgstr "Calcolo"
+
+msgid "Signing"
+msgstr "Firme"
+
+msgid "From {0} to {1} months"
+msgstr "Da {0} a {1} mesi"
+
+msgid "Needed only without the link above: {brand} makes the review link from it."
+msgstr "Serve solo senza il link qui sopra: {brand} ne ricava il link per la recensione."
+
+msgid "answered {0}"
+msgstr "risposto il {0}"
+
+msgid "Off, it is not sent any more; the answers given stay."
+msgstr "Disattivato, non si manda più; le risposte date restano."
+
+msgid "No answers"
+msgstr "Nessuna risposta"
+
+msgid "Missed Calls"
+msgstr "Chiamate perse"
+
+msgid "When a call counts as missed: whoever the centre knows is heard by the automations (\"Missed Call\"), a number nobody knows may get an SMS. Whether the answering service is on or not."
+msgstr "Quando una chiamata conta come persa: per chi il centro conosce la sentono le automazioni («Chiamata persa»), un numero che nessuno conosce può ricevere un SMS. Che la segreteria sia attiva o no."
+
+msgid "Nobody Answers"
+msgstr "Nessuno risponde"
+
+msgid "Nobody to Ring"
+msgstr "Non c'è nessuno da far squillare"
+
+msgid "Nobody answers the number at that moment, so nobody rang."
+msgstr "In quel momento nessuno risponde al numero, quindi non squilla nessuno."
+
+msgid "Answering Service Takes Every Call"
+msgstr "La segreteria prende tutte le chiamate"
+
+msgid "The answering service answers every call: each call counts as missed."
+msgstr "La segreteria risponde a ogni chiamata: ogni chiamata conta come persa."
