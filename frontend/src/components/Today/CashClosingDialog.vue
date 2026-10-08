@@ -5,7 +5,8 @@
   The cash closing at the reception desk (crm/invoicing/cassa.py): what the day
   collected by way of paying and by who issued it, the credit notes that gave
   money back, the cash the drawer should hold; the cash counted, the difference,
-  and the closing once saved. A day closed is counted again the same way.
+  and the closing once saved. A day closed is counted again the same way. Where
+  the centre has more than one location, the desk's location's (docs/crm/62).
 -->
 <template>
   <Dialog v-model="show" :options="{ title: __('Cash closing'), size: 'xl' }">
@@ -16,6 +17,7 @@
       <div v-else class="flex flex-col gap-5">
         <p class="text-p-base text-ink-gray-6">
           {{ formatDate(conti.date, 'dddd D MMMM YYYY') }}
+          <template v-if="locationName"> · {{ locationName }}</template>
         </p>
         <!-- the day at a glance: on a phone one short row -->
         <div class="cassa-numeri dc-stat-row grid grid-cols-3 gap-3">
@@ -174,6 +176,9 @@ import { computed, ref, watch } from 'vue'
 const props = defineProps({
   // the day the desk shows; nothing is today
   date: { type: String, default: null },
+  // the location whose desk closes (docs/crm/62); nothing is the whole centre
+  location: { type: String, default: '' },
+  locationName: { type: String, default: '' },
 })
 const show = defineModel({ type: Boolean })
 
@@ -199,7 +204,12 @@ watch(
     errore.value = ''
     conti.value = null
     try {
-      prendi(await call('crm.api.oggi.get_cash_summary', { date: props.date }))
+      prendi(
+        await call('crm.api.oggi.get_cash_summary', {
+          date: props.date,
+          location: props.location || undefined,
+        }),
+      )
     } catch (e) {
       errore.value = e.messages?.join(' ') || e.message
     }
@@ -230,6 +240,7 @@ async function chiudi() {
         date: conti.value.date,
         counted_cash: contato.value ?? contati.value,
         note: nota.value,
+        location: props.location || undefined,
       }),
     )
     toast.success(__('The cash is closed'))

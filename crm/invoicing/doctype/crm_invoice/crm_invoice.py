@@ -28,6 +28,7 @@ from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.fic import emissione as fic
+from crm.scheduling import sedi
 
 
 class CRMInvoice(Document):
@@ -132,6 +133,12 @@ class CRMInvoice(Document):
 	# ------------------------------------------------------------------- defaults
 
 	def risolvi_azienda(self):
+		if cint(self.docstatus) == 0:
+			# where it was made (docs/crm/62): the cash closing of that desk counts it
+			self.centre_location = sedi.della_fattura(self)
+		if not self.company:
+			# a location that invoices under a company of its own
+			self.company = sedi.azienda_per(self)
 		if not self.company:
 			self.company = frappe.db.get_value(
 				"CRM Invoicing Company", {"is_default": 1, "enabled": 1}, "name"

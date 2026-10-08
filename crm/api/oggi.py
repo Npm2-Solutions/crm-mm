@@ -17,18 +17,23 @@ from frappe.utils import get_datetime, getdate
 
 from crm.convenzioni import convenzioni
 from crm.permissions import livelli
-from crm.scheduling import cicli, esiti, promemoria
+from crm.scheduling import cicli, esiti, promemoria, sedi
 
 #: How far back the appointments nobody closed are still asked about.
 GIORNI_INDIETRO = 7
 
 
-def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bool = False) -> list[dict]:
-	"""The appointments the session sees between two moments, with their people."""
+def _appuntamenti(
+	dal: datetime.datetime, al: datetime.datetime, solo_aperti: bool = False, sede: str | None = None
+) -> list[dict]:
+	"""The appointments the session sees between two moments, with their people;
+	at one location, that location's and the ones that name none."""
+	filtri = [["starts_on", ">=", dal], ["starts_on", "<", al], ["status", "!=", "Cancelled"]]
 	righe = frappe.get_list(
 		"CRM Appointment",
 		# from `dal` up to `al` excluded: the next day's midnight is the next day's
-		filters=[["starts_on", ">=", dal], ["starts_on", "<", al], ["status", "!=", "Cancelled"]],
+		filters=filtri,
+		or_filters=[["centre_location", "=", sede], ["centre_location", "is", "not set"]] if sede else None,
 		fields=["name", "title", "service", "starts_on", "ends_on", "status", "color", "video_link"],
 		order_by="starts_on asc",
 		limit_page_length=500,
@@ -113,18 +118,21 @@ def _moduli_dovuti(righe: list, partecipanti: dict) -> dict[tuple[str, str], lis
 
 
 @frappe.whitelist()
-def get_day(date: str | None = None) -> dict:
-	"""The day at the desk: its appointments, and the ones the last days left open."""
+def get_day(date: str | None = None, location: str | None = None) -> dict:
+	"""The day at the desk: its appointments, and the ones the last days left open;
+	at one location where the centre has more than one (docs/crm/62)."""
 	livelli.verifica_nel_crm("agenda.presenze")
 	giorno = getdate(date) if date else getdate()
 	inizio = datetime.datetime.combine(giorno, datetime.time.min)
+	sede = sedi.valida(location)
 	return {
 		"date": str(giorno),
 		"today": str(getdate()),
-		"appointments": _appuntamenti(inizio, inizio + datetime.timedelta(days=1)),
+		"location": sede,
+		"appointments": _appuntamenti(inizio, inizio + datetime.timedelta(days=1), sede=sede),
 		# only before the day shown: the day itself is above
 		"past_open": _appuntamenti(
-			inizio - datetime.timedelta(days=GIORNI_INDIETRO), inizio, solo_aperti=True
+			inizio - datetime.timedelta(days=GIORNI_INDIETRO), inizio, solo_aperti=True, sede=sede
 		),
 		"can_invoice": livelli.puo("fatture.emetti"),
 	}
@@ -149,20 +157,22 @@ def set_outcome(appointment: str, participant: str, outcome: str) -> dict:
 
 
 @frappe.whitelist()
-def get_cash_summary(date: str | None = None) -> dict:
+def get_cash_summary(date: str | None = None, location: str | None = None) -> dict:
 	"""The day's money at the desk: collected by way of paying and by who issued it,
 	the credit notes, the cash the drawer should hold, and the closing if it was
 	closed (`crm.invoicing.cassa`)."""
 	livelli.verifica_nel_crm("fatture.incassi")
 	from crm.invoicing import cassa
 
-	return cassa.riepilogo_del_giorno(getdate(date) if date else getdate())
+	return cassa.riepilogo_del_giorno(getdate(date) if date else getdate(), sedi.valida(location))
 
 
 @frappe.whitelist(methods=["POST"])
-def close_cash_day(date: str, counted_cash: float, note: str | None = None) -> dict:
+def close_cash_day(
+	date: str, counted_cash: float, note: str | None = None, location: str | None = None
+) -> dict:
 	"""The day closed with the cash counted in the drawer."""
 	livelli.verifica_nel_crm("fatture.incassi")
 	from crm.invoicing import cassa
 
-	return cassa.chiudi(date, counted_cash, note)
+	return cassa.chiudi(date, counted_cash, note, sedi.valida(location))

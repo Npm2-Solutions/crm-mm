@@ -134,6 +134,11 @@
           </div>
         </template>
       </Link>
+      <ChiNellAgenda
+        v-if="piuSedi"
+        v-bind="sceltaDellaSede"
+        @update:modelValue="(valore) => (sedeFiltro = valore || '')"
+      />
       <div
         class="flex min-w-0 flex-1 items-center justify-end gap-3 text-xs text-ink-gray-5"
       >
@@ -328,6 +333,9 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import DashboardGrid from '@/components/Dashboard/DashboardGrid.vue'
 import DashboardDialog from '@/components/Dashboard/DashboardDialog.vue'
 import PeriodPicker from '@/components/Dashboard/PeriodPicker.vue'
+import ChiNellAgenda from '@/components/Calendar/ChiNellAgenda.vue'
+import { useSedi } from '@/composables/sedi'
+import { opzioniDelleSedi, sedeValida } from '@/utils/sedi'
 import WidgetConfigDialog from '@/components/Dashboard/WidgetConfigDialog.vue'
 import WidgetLibrary from '@/components/Dashboard/WidgetLibrary.vue'
 import { isStructural, layoutWidgets } from '@/components/Dashboard/meta'
@@ -388,10 +396,30 @@ const area = ref(null)
 const period = ref(DEFAULT_PERIOD)
 const range = ref(periodRange(DEFAULT_PERIOD))
 const userFilter = ref(null)
+// one of the centre's locations, where it has more than one (docs/crm/62): the
+// agenda's numbers and what was invoiced and collected there
+const { sedi, piuSedi } = useSedi()
+const sedeFiltro = ref('')
+const sedeScelta = computed(() =>
+  piuSedi.value ? sedeValida(sedi.value, sedeFiltro.value) : '',
+)
+const sceltaDellaSede = computed(() => ({
+  modelValue: sedeScelta.value,
+  singolo: true,
+  opzioni: opzioniDelleSedi(sedi.value, __('All locations')),
+  titolo: __('Locations'),
+  tutti: __('All locations'),
+  icona: 'lucide-map-pin',
+}))
 // what the numbers are asked for, as one comparable value: a new array with
 // the same dates is not a new question
 const filters = computed(() =>
-  JSON.stringify([range.value?.[0], range.value?.[1], userFilter.value]),
+  JSON.stringify([
+    range.value?.[0],
+    range.value?.[1],
+    userFilter.value,
+    sedeScelta.value,
+  ]),
 )
 
 const editing = ref(false)
@@ -646,6 +674,7 @@ async function fetchAnswers(targets) {
     to_date: range.value[1],
     user: userFilter.value,
     only_mine: current.value?.only_mine ? 1 : 0,
+    location: sedeScelta.value || undefined,
   })
 }
 

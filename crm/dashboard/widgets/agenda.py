@@ -51,14 +51,17 @@ MEASURE = Option(
 
 
 def staffed_by(ctx: Context):
-	"""The appointment has one of the people counted among its professionals."""
+	"""The appointment has one of the people counted among its professionals, and
+	is at the location asked (docs/crm/62)."""
+	dove = ctx.at(Appt.centre_location)
 	if ctx.everyone:
-		return None
-	return Appt.name.isin(
+		return dove
+	staffed = Appt.name.isin(
 		frappe.qb.from_(Staff)
 		.select(Staff.parent)
 		.where((Staff.parenttype == "CRM Appointment") & Staff.user.isin(ctx.owners or ["<nobody>"]))
 	)
+	return staffed if dove is None else staffed & dove
 
 
 def status_labels() -> dict[str, str]:
@@ -350,7 +353,13 @@ def appointments_by_staff(ctx: Context):
 		.select(Staff.user, Count(Appt.name).distinct().as_("n"))
 		.where(Staff.parenttype == "CRM Appointment")
 	)
-	query = where(query, Appt.status.isin(TAKEN), ctx.within(Appt.starts_on), ctx.owned(Staff.user))
+	query = where(
+		query,
+		Appt.status.isin(TAKEN),
+		ctx.within(Appt.starts_on),
+		ctx.owned(Staff.user),
+		ctx.at(Appt.centre_location),
+	)
 	rows = (
 		query.groupby(Staff.user)
 		.orderby(Count(Appt.name).distinct(), order=frappe.qb.desc)

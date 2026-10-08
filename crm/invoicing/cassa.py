@@ -8,6 +8,11 @@ money back, the cash the drawer should hold against the cash counted.
 Read and written by whoever records payments (`fatture.incassi`), through the
 reception desk (`crm.api.oggi`). A test invoice is never money: it stays out. The
 arithmetic is `cassa_regole`.
+
+Where the centre has more than one location (docs/crm/62) each desk closes its
+own: the invoices of a location are the ones `CRM Invoice.centre_location` names
+(its appointment's, else where whoever made it usually works); a closing for no
+location counts the whole centre, as before.
 """
 
 from __future__ import annotations
@@ -45,7 +50,9 @@ def _chi_ha_emesso(nomi: list[str], proprietari: dict[str, str]) -> dict[str, st
 	return chi
 
 
-def _righe(filtri: dict) -> list:
+def _righe(filtri: dict, sede: str | None = None) -> list:
+	if sede:
+		filtri = {**filtri, "centre_location": sede}
 	righe = frappe.get_list(
 		FATTURA,
 		filters={"docstatus": 1, "test_document": 0, **filtri},
@@ -65,23 +72,32 @@ def _righe(filtri: dict) -> list:
 	]
 
 
-def riepilogo_del_giorno(giorno) -> dict:
+def riepilogo_del_giorno(giorno, sede: str | None = None) -> dict:
 	"""The day as the closing reads it, with names for the screen, and its closing
-	if it was closed."""
+	if it was closed; at one location, that location's."""
 	giorno = getdate(giorno)
-	incassate = _righe({"collected_on": giorno, "document_type": ["not in", incassi.NOTE_DI_CREDITO]})
-	restituite = _righe({"posting_date": giorno, "document_type": ["in", incassi.NOTE_DI_CREDITO]})
+	incassate = _righe({"collected_on": giorno, "document_type": ["not in", incassi.NOTE_DI_CREDITO]}, sede)
+	restituite = _righe({"posting_date": giorno, "document_type": ["in", incassi.NOTE_DI_CREDITO]}, sede)
 	conti = R.riepilogo(incassate, restituite)
 	for voce in conti["methods"]:
 		voce["name"] = nome_del_metodo(voce["method"])
 		voce["cash"] = voce["method"] == R.CONTANTI
 	for chi in conti["by_user"]:
 		chi["full_name"] = get_fullname(chi["user"]) if chi["user"] else _("Nobody")
-	return {"date": str(giorno), **conti, "closing": chiusura_del(giorno)}
+	return {
+		"date": str(giorno),
+		"location": sede or None,
+		**conti,
+		"closing": chiusura_del(giorno, sede),
+	}
 
 
-def chiusura_del(giorno) -> dict | None:
-	nome = frappe.db.get_value(CHIUSURA, {"date": getdate(giorno)}, "name")
+def _filtri(giorno, sede: str | None) -> dict:
+	return {"date": getdate(giorno), "centre_location": sede or ["is", "not set"]}
+
+
+def chiusura_del(giorno, sede: str | None = None) -> dict | None:
+	nome = frappe.db.get_value(CHIUSURA, _filtri(giorno, sede), "name")
 	if not nome:
 		return None
 	doc = frappe.get_doc(CHIUSURA, nome)
@@ -97,7 +113,7 @@ def chiusura_del(giorno) -> dict | None:
 	}
 
 
-def chiudi(giorno, contati, nota: str | None = None) -> dict:
+def chiudi(giorno, contati, nota: str | None = None, sede: str | None = None) -> dict:
 	"""The day closed with the cash counted: what the day says now, kept. A day
 	closed again is counted again, on the same closing."""
 	giorno = getdate(giorno)
@@ -109,12 +125,13 @@ def chiudi(giorno, contati, nota: str | None = None) -> dict:
 		frappe.throw(_("Write the cash counted in the drawer"))
 	if contati < 0:
 		frappe.throw(_("The cash counted cannot be below zero"))
-	conti = riepilogo_del_giorno(giorno)
-	nome = frappe.db.get_value(CHIUSURA, {"date": giorno}, "name")
+	conti = riepilogo_del_giorno(giorno, sede)
+	nome = frappe.db.get_value(CHIUSURA, _filtri(giorno, sede), "name")
 	doc = frappe.get_doc(CHIUSURA, nome) if nome else frappe.new_doc(CHIUSURA)
 	doc.update(
 		{
 			"date": giorno,
+			"centre_location": sede or None,
 			"closed_by": frappe.session.user,
 			"closed_on": now_datetime(),
 			"collected_total": conti["collected"],
@@ -142,4 +159,4 @@ def chiudi(giorno, contati, nota: str | None = None) -> dict:
 	# only this door writes a closing: its numbers are the day's, never typed
 	doc.flags.dalla_cassa = True
 	doc.save(ignore_permissions=True)
-	return riepilogo_del_giorno(giorno)
+	return riepilogo_del_giorno(giorno, sede)

@@ -43,6 +43,14 @@
     <!-- pulled down from the top on a phone, the day reloads -->
     <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-6 max-md:px-4">
+      <!-- which location's desk, where the centre has more than one
+           (docs/crm/62): one's usual one first -->
+      <div v-if="piuSedi" class="-mb-4 flex">
+        <ChiNellAgenda
+          v-bind="sceltaDellaSede"
+          @update:modelValue="(valore) => (sede = valore || '')"
+        />
+      </div>
       <!-- how the day stands, at a glance: on a phone one short row -->
       <div class="dc-stat-row grid grid-cols-4 gap-3">
         <StatTile
@@ -294,6 +302,8 @@
         v-if="cassaMontata"
         v-model="cassaAperta"
         :date="day.data?.date || date"
+        :location="sedeScelta"
+        :locationName="nomeDellaSede(sedi, sedeScelta)"
       />
 
       <!-- and what is left to invoice -->
@@ -321,6 +331,9 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
+import ChiNellAgenda from '@/components/Calendar/ChiNellAgenda.vue'
+import { useSedi } from '@/composables/sedi'
+import { nomeDellaSede, opzioniDelleSedi, sedeValida } from '@/utils/sedi'
 import { avviaLaVisita, linkDellaVisita } from '@/utils/visiteOnline'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
@@ -366,12 +379,30 @@ const date = ref(null)
 // and its now, which the arrivals' times are read against
 const now = ref(adessoDelCentro())
 
+// which location's desk (docs/crm/62): one's usual one, else all of them
+const { sedi, piuSedi, sedeAbituale } = useSedi()
+const sede = ref(sedeAbituale.value || '')
+const sedeScelta = computed(() =>
+  piuSedi.value ? sedeValida(sedi.value, sede.value) : '',
+)
+const sceltaDellaSede = computed(() => ({
+  modelValue: sedeScelta.value,
+  singolo: true,
+  opzioni: opzioniDelleSedi(sedi.value, __('All locations')),
+  titolo: __('Locations'),
+  tutti: __('All locations'),
+  icona: 'lucide-map-pin',
+}))
+
 const day = createResource({
   url: 'crm.api.oggi.get_day',
-  makeParams: () => ({ date: date.value }),
+  makeParams: () => ({
+    date: date.value,
+    location: sedeScelta.value || undefined,
+  }),
   auto: true,
 })
-watch(date, () => day.reload())
+watch([date, sedeScelta], () => day.reload())
 
 // what is left to invoice, for whoever issues invoices: asked with the day, not
 // after it - who issues invoices comes with the page (the capabilities), and the

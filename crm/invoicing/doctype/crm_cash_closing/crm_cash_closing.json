@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "date",
+  "centre_location",
   "closed_by",
   "closed_on",
   "column_head",
@@ -26,9 +27,17 @@
    "fieldtype": "Date",
    "label": "Day",
    "reqd": 1,
-   "unique": 1,
    "in_list_view": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "The location whose desk was closed; empty: the whole centre."
   },
   {
    "fieldname": "closed_by",
@@ -109,7 +118,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-08 18:00:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Cash Closing",

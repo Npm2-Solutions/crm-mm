@@ -117,6 +117,7 @@
   "reference_invoice",
   "deal",
   "appointment",
+  "centre_location",
   "session_cycle",
   "subscription",
   "column_references",
@@ -846,6 +847,14 @@
    "options": "CRM Appointment"
   },
   {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "read_only": 1,
+   "description": "Where it was made: its appointment's location, else where whoever made it works."
+  },
+  {
    "description": "A cycle paid as a whole: its sessions are invoiced here",
    "fieldname": "session_cycle",
    "fieldtype": "Link",
@@ -919,7 +928,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-06 18:00:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

@@ -82,9 +82,13 @@ COSTS = Option(
 )
 
 
-def issued():
-	"""Submitted, and not sent back by the SdI."""
-	return (Invoice.docstatus == 1) & (IfNull(Invoice.sdi_status, "") != "scartata")
+def issued(ctx: Context | None = None):
+	"""Submitted, and not sent back by the SdI; at the location asked (docs/crm/62).
+	Without a context, the whole centre's: the suppliers' invoices name no
+	location, and a margin or a VAT of one location would be half a number."""
+	emessa = (Invoice.docstatus == 1) & (IfNull(Invoice.sdi_status, "") != "scartata")
+	dove = ctx.at(Invoice.centre_location) if ctx else None
+	return emessa if dove is None else emessa & dove
 
 
 def billed():
@@ -107,9 +111,9 @@ def signed_line():
 	return Case().when(Invoice.document_type.isin(CREDIT_NOTES), -line).else_(line)
 
 
-def collectable():
+def collectable(ctx: Context | None = None):
 	"""What a client is to pay: issued sales, not a test, not a credit note."""
-	return issued() & Invoice.document_type.isin(SALES) & (IfNull(Invoice.test_document, 0) == 0)
+	return issued(ctx) & Invoice.document_type.isin(SALES) & (IfNull(Invoice.test_document, 0) == 0)
 
 
 def payable():
@@ -147,7 +151,7 @@ def with_money(payload: dict) -> dict:
 )
 def invoiced_revenue(ctx: Context):
 	now, before = two_periods_by_day(
-		ctx, Invoice, Invoice.posting_date, issued(), billed(), value=signed(ctx)
+		ctx, Invoice, Invoice.posting_date, issued(ctx), billed(), value=signed(ctx)
 	)
 	return charts.number(now, before, format="currency", currency=EURO, route=INVOICES)
 
@@ -164,7 +168,7 @@ def invoiced_revenue(ctx: Context):
 )
 def invoices_issued(ctx: Context):
 	now, before = two_periods_by_day(
-		ctx, Invoice, Invoice.posting_date, issued(), Invoice.document_type.isin(SALES)
+		ctx, Invoice, Invoice.posting_date, issued(ctx), Invoice.document_type.isin(SALES)
 	)
 	return charts.number(now, before, route=INVOICES)
 
@@ -182,9 +186,9 @@ def invoices_issued(ctx: Context):
 def average_invoice(ctx: Context):
 	sales = Invoice.document_type.isin(SALES)
 	worth, worth_before = two_periods_by_day(
-		ctx, Invoice, Invoice.posting_date, issued(), sales, value=amount(ctx)
+		ctx, Invoice, Invoice.posting_date, issued(ctx), sales, value=amount(ctx)
 	)
-	count, count_before = two_periods_by_day(ctx, Invoice, Invoice.posting_date, issued(), sales)
+	count, count_before = two_periods_by_day(ctx, Invoice, Invoice.posting_date, issued(ctx), sales)
 	return charts.number(
 		worth / count if count else 0,
 		worth_before / count_before if count_before else None,
@@ -204,7 +208,7 @@ def average_invoice(ctx: Context):
 )
 def credit_notes(ctx: Context):
 	now, before = two_periods_by_day(
-		ctx, Invoice, Invoice.posting_date, issued(), Invoice.document_type.isin(CREDIT_NOTES)
+		ctx, Invoice, Invoice.posting_date, issued(ctx), Invoice.document_type.isin(CREDIT_NOTES)
 	)
 	return charts.number(now, before, negative_is_better=True, route=INVOICES)
 
@@ -312,7 +316,7 @@ def appointments_to_invoice(ctx: Context):
 )
 def invoiced_trend(ctx: Context):
 	values = per_bucket(
-		ctx, per_day(ctx, Invoice, Invoice.posting_date, issued(), billed(), value=signed(ctx))
+		ctx, per_day(ctx, Invoice, Invoice.posting_date, issued(ctx), billed(), value=signed(ctx))
 	)
 	return with_money(
 		charts.trend(
@@ -332,7 +336,7 @@ def lines_by(ctx: Context, key, empty: str) -> list[dict]:
 		.on((Item.parent == Invoice.name) & (Item.parenttype == "CRM Invoice"))
 		.select(key.as_("key"), Sum(value).as_("n"))
 	)
-	query = where(query, issued(), billed(), ctx.within_days(Invoice.posting_date)).groupby(key)
+	query = where(query, issued(ctx), billed(), ctx.within_days(Invoice.posting_date)).groupby(key)
 	query = query.orderby(Sum(value), order=frappe.qb.desc).limit(ctx.option("limit", 8))
 	return [{"label": row.key or empty, "n": float(row.n or 0)} for row in query.run(as_dict=True)]
 
@@ -385,7 +389,7 @@ def invoiced_by_provider(ctx: Context):
 def invoiced_by_client(ctx: Context):
 	value = signed(ctx)
 	query = frappe.qb.from_(Invoice).select(Invoice.billing_name.as_("key"), Sum(value).as_("n"))
-	query = where(query, issued(), billed(), ctx.within_days(Invoice.posting_date)).groupby(
+	query = where(query, issued(ctx), billed(), ctx.within_days(Invoice.posting_date)).groupby(
 		Invoice.billing_name
 	)
 	query = query.orderby(Sum(value), order=frappe.qb.desc).limit(ctx.option("limit", 8))
@@ -658,8 +662,8 @@ def age_bucket(days: int) -> int:
 	return len(AGES) - 1
 
 
-def still_to_collect():
-	return collectable() & Invoice.collected_on.isnull()
+def still_to_collect(ctx: Context | None = None):
+	return collectable(ctx) & Invoice.collected_on.isnull()
 
 
 @widget(
@@ -673,7 +677,7 @@ def still_to_collect():
 	keywords=("incassato", "cash", "payments", "incassi"),
 )
 def collected(ctx: Context):
-	now, before = two_periods_by_day(ctx, Invoice, Invoice.collected_on, collectable(), value=payable())
+	now, before = two_periods_by_day(ctx, Invoice, Invoice.collected_on, collectable(ctx), value=payable())
 	return charts.number(now, before, format="currency", currency=EURO, route=INVOICES)
 
 
@@ -690,14 +694,14 @@ def collected(ctx: Context):
 )
 def to_collect(ctx: Context):
 	return charts.number(
-		total(Invoice, still_to_collect(), value=payable()),
+		total(Invoice, still_to_collect(ctx), value=payable()),
 		format="currency",
 		currency=EURO,
 		route=INVOICES,
 	)
 
 
-def waiting_rows(limit: int | None = None) -> list:
+def waiting_rows(ctx: Context, limit: int | None = None) -> list:
 	query = frappe.qb.from_(Invoice).select(
 		Invoice.name,
 		Invoice.document_number,
@@ -705,7 +709,7 @@ def waiting_rows(limit: int | None = None) -> list:
 		Invoice.billing_name,
 		payable().as_("amount"),
 	)
-	query = where(query, still_to_collect()).orderby(Invoice.posting_date)
+	query = where(query, still_to_collect(ctx)).orderby(Invoice.posting_date)
 	if limit:
 		query = query.limit(limit)
 	return query.run(as_dict=True)
@@ -726,7 +730,7 @@ def waiting_rows(limit: int | None = None) -> list:
 def to_collect_by_age(ctx: Context):
 	sums = [0.0] * len(AGES)
 	today = ctx.today
-	for row in waiting_rows():
+	for row in waiting_rows(ctx):
 		days = (today - row.posting_date).days if row.posting_date else 0
 		sums[age_bucket(days)] += float(row.amount or 0)
 	colors = ("green", "amber", "orange", "red")
@@ -753,7 +757,7 @@ def to_collect_by_age(ctx: Context):
 def to_collect_list(ctx: Context):
 	today = ctx.today
 	items = []
-	for row in waiting_rows(ctx.option("limit", 6)):
+	for row in waiting_rows(ctx, ctx.option("limit", 6)):
 		days = (today - row.posting_date).days if row.posting_date else 0
 		_limit, label = AGES[age_bucket(days)]
 		items.append(
@@ -778,7 +782,7 @@ def to_collect_list(ctx: Context):
 			items,
 			empty=_("Nothing to collect: every invoice has been paid"),
 			more={"label": _("Open invoices"), "route": INVOICES},
-			total=int(total(Invoice, still_to_collect())),
+			total=int(total(Invoice, still_to_collect(ctx))),
 		)
 	)
 
