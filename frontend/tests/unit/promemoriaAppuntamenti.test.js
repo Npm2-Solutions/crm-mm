@@ -4,6 +4,7 @@
 // answers, where DottorCloud's own template is with Meta.
 import {
   modelliAdatti,
+  problemaDelSecondo,
   rigaDelPromemoria,
   rispostaDellAppuntamento,
   segnoDelPromemoria,
@@ -107,5 +108,19 @@ describe('modelliAdatti and statoDelNostro', () => {
     expect(statoDelNostro({ status: 'PENDING' })).toBe('in_attesa')
     expect(statoDelNostro({ status: 'approved' })).toBe('approvato')
     expect(statoDelNostro({ status: 'REJECTED' })).toBe('rifiutato')
+  })
+})
+
+describe('problemaDelSecondo', () => {
+  it('takes none, or 1 to 12 hours fewer than the first', () => {
+    expect(problemaDelSecondo('', 24)).toBe('')
+    expect(problemaDelSecondo(null, 24)).toBe('')
+    expect(problemaDelSecondo(0, 24)).toBe('')
+    expect(problemaDelSecondo(3, 24)).toBe('')
+    expect(problemaDelSecondo(13, 24)).toBe('From 1 to 12 hours before.')
+    expect(problemaDelSecondo(1.5, 24)).toBe('From 1 to 12 hours before.')
+    expect(problemaDelSecondo(4, 4)).toBe(
+      'Fewer hours than the first reminder.',
+    )
   })
 })

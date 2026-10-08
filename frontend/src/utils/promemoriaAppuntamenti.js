@@ -93,3 +93,17 @@ export function statoDelNostro(nostro) {
   if (stato === 'REJECTED') return 'rifiutato'
   return 'in_attesa'
 }
+
+/**
+ * What is wrong with the second reminder's hours, the same day's (empty: none):
+ * 1 to 12, and fewer than the first's - the server says the same on saving.
+ */
+export function problemaDelSecondo(secondo, primo, t = fmt) {
+  if (secondo === '' || secondo === null || secondo === undefined) return ''
+  const ore = Number(secondo)
+  if (!Number.isInteger(ore) || ore < 0 || ore > 12)
+    return t('From 1 to 12 hours before.')
+  if (ore && ore >= Number(primo))
+    return t('Fewer hours than the first reminder.')
+  return ''
+}

@@ -46968,3 +46968,27 @@ msgstr "Cosa ha incassato la giornata, per metodo di pagamento, e i contanti in 
 
 msgid "To pay: {0}"
 msgstr "Da pagare: {0}"
+
+msgid "Second reminder: hours before"
+msgstr "Secondo promemoria: ore prima"
+
+msgid "Optional, the same day: 1 to 12 hours before, never at night; not to whoever already answered"
+msgstr "Facoltativo, lo stesso giorno: da 1 a 12 ore prima, mai di notte; non a chi ha già risposto"
+
+msgid "Same-day reminder"
+msgstr "Promemoria del giorno stesso"
+
+msgid "The second reminder of the place, the same day"
+msgstr "Il secondo promemoria del posto, lo stesso giorno"
+
+msgid "The second reminder leaves from 1 to 12 hours before, and fewer hours than the first."
+msgstr "Il secondo promemoria parte da 1 a 12 ore prima, e con meno ore del primo."
+
+msgid "Optional: a second reminder the same day, 1 to 12 hours before. Never at night, nor to whoever already said they are coming or cannot come."
+msgstr "Facoltativo: un secondo promemoria lo stesso giorno, da 1 a 12 ore prima. Mai di notte, né a chi ha già detto che verrà o che non può venire."
+
+msgid "From 1 to 12 hours before."
+msgstr "Da 1 a 12 ore prima."
+
+msgid "Fewer hours than the first reminder."
+msgstr "Meno ore del primo promemoria."

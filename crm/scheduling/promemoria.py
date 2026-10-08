@@ -6,7 +6,9 @@ WhatsApp with three buttons, else SMS, else email; and what the person answers.
 
 Every quarter of an hour (`ogni_quarto_d_ora`) the places whose reminder is due
 get it - each person of a class their own - once for the time they are booked at:
-an appointment moved is reminded again of its new time. The register (`CRM
+an appointment moved is reminded again of its new time. Where the centre wants it,
+a second one leaves the same day (`second_hours_before`), not to whoever already
+said they are coming or cannot come. The register (`CRM
 Appointment Reminder`) keeps each one, written before it leaves so that it never
 leaves twice: by which way, to where, how it went, what was answered. A WhatsApp
 that did not arrive goes by SMS or email at the next round.
@@ -65,6 +67,7 @@ def impostazioni() -> frappe._dict:
 	return frappe._dict(
 		attivi=_si(doc.get("enabled"), False),
 		ore=R.ore_prima(doc.get("hours_before")),
+		secondo=R.ore_del_secondo(doc.get("second_hours_before"), R.ore_prima(doc.get("hours_before"))),
 		whatsapp=_modello_whatsapp(doc.get("whatsapp_template")),
 		# the centre's one sender (doc 52), the same as every other SMS of its
 		sms=sms_del_centro.mittente() if _si(doc.get("use_sms"), False) else None,
@@ -199,9 +202,9 @@ def ogni_quarto_d_ora() -> None:
 	if not conf.attivi:
 		return
 	with _nella_lingua_del_centro():
-		for appuntamento, riga in dovuti(conf):
+		for appuntamento, riga, quale in dovuti(conf):
 			try:
-				manda(appuntamento, riga, conf)
+				manda(appuntamento, riga, conf, quale)
 				_conferma()
 			except Exception:
 				_annulla()
@@ -233,12 +236,13 @@ def _annulla() -> None:
 
 
 def dovuti(conf=None) -> list[tuple]:
-	"""The places whose reminder leaves now: (appointment, participant's row)."""
+	"""The places whose reminder leaves now: (appointment, participant's row, which
+	reminder - `R.PRIMO` or `R.SECONDO`)."""
 	from crm.demo import guardie
 
 	conf = conf or impostazioni()
 	adesso = _adesso()
-	dal, al = R.da_cercare(adesso, conf.ore)
+	dal, al = R.da_cercare(adesso, conf.ore, bool(conf.secondo))
 	nomi = frappe.get_all(
 		APPUNTAMENTO,
 		filters={
@@ -250,14 +254,17 @@ def dovuti(conf=None) -> list[tuple]:
 	)
 	if not nomi:
 		return []
-	fatti = {
-		(r.appointment, r.party_type, r.party, get_datetime(r.starts_on))
-		for r in frappe.get_all(
-			PROMEMORIA,
-			filters={"appointment": ["in", nomi]},
-			fields=["appointment", "party_type", "party", "starts_on"],
-		)
-	}
+	# each place's reminders already written for its time, and whether it was answered
+	fatti, risposti = {}, set()
+	for r in frappe.get_all(
+		PROMEMORIA,
+		filters={"appointment": ["in", nomi]},
+		fields=["appointment", "party_type", "party", "starts_on", "second", "answer"],
+	):
+		chiave = (r.appointment, r.party_type, r.party, get_datetime(r.starts_on))
+		fatti.setdefault(chiave, set()).add(R.SECONDO if r.second else R.PRIMO)
+		if R.chiude(r.answer):
+			risposti.add(chiave)
 	dovuti_ = []
 	for nome in nomi:
 		# nothing about the demo leaves (crm/demo/guardie.py)
@@ -267,23 +274,32 @@ def dovuti(conf=None) -> list[tuple]:
 		# a booking platform reminds its own; an online booking still waits for the centre's yes
 		if doc.source == "External" or (doc.source == "Online" and doc.status == "Scheduled"):
 			continue
-		if not R.dovuto(_locale(doc.starts_on), adesso, conf.ore, _locale(doc.creation)):
-			continue
 		inizio = get_datetime(doc.starts_on)
 		for riga in doc.participants:
 			if riga.status != "Booked" or not riga.party:
 				continue
-			if (doc.name, riga.party_type, riga.party, inizio) in fatti:
+			chiave = (doc.name, riga.party_type, riga.party, inizio)
+			quale = R.quale(
+				_locale(doc.starts_on),
+				adesso,
+				conf.ore,
+				conf.secondo,
+				_locale(doc.creation),
+				fatti.get(chiave, ()),
+				chiave in risposti,
+			)
+			if not quale:
 				continue
-			dovuti_.append((doc, riga))
+			dovuti_.append((doc, riga, quale))
 			if len(dovuti_) >= PER_GIRO:
 				return dovuti_
 	return dovuti_
 
 
-def manda(appuntamento, riga, conf=None) -> str:
+def manda(appuntamento, riga, conf=None, quale: int = R.PRIMO) -> str:
 	"""The reminder of one place, by the first way that works; kept in the register
-	however it went, and written there before it leaves. Returns its name."""
+	however it went, and written there before it leaves - the same day's second
+	one marked so. Returns its name."""
 	conf = conf or impostazioni()
 	persona, email, numero = destinatario(riga)
 	fermato = bool(persona) and sms_del_centro.ha_fermato("CRM Lead", persona)
@@ -303,6 +319,7 @@ def manda(appuntamento, riga, conf=None) -> str:
 			"party": riga.party,
 			"lead": persona,
 			"starts_on": appuntamento.starts_on,
+			"second": 1 if quale == R.SECONDO else 0,
 			"status": R.NON_INVIATO,
 			"sent_on": now_datetime(),
 		}
@@ -777,7 +794,12 @@ def nelle_righe(appuntamenti: list[dict]) -> None:
 		],
 		order_by="creation asc",
 	):
-		per[(r.appointment, r.party_type, r.party, get_datetime(r.starts_on))] = r
+		chiave = (r.appointment, r.party_type, r.party, get_datetime(r.starts_on))
+		prima = per.get(chiave)
+		# the same day's second one, not answered (yet): the first one's answer stands
+		if prima and prima.answer and not r.answer:
+			r.update({k: prima[k] for k in ("answer", "answered_on", "cancelled")})
+		per[chiave] = r
 	for appuntamento in appuntamenti:
 		inizio = get_datetime(appuntamento["starts_on"])
 		for partecipante in appuntamento.get("participants") or []:
@@ -813,6 +835,7 @@ def get_settings() -> dict:
 	return {
 		"enabled": int(conf.attivi),
 		"hours_before": conf.ore,
+		"second_hours_before": cint(doc.get("second_hours_before")) or "",
 		"cancel_on_reply": int(conf.disdice),
 		"whatsapp_template": doc.get("whatsapp_template") or "",
 		"use_sms": int(_si(doc.get("use_sms"), False)),
@@ -888,9 +911,24 @@ def save_settings(data: dict | str) -> dict:
 	livelli.verifica("agenda.configura")
 	dati = frappe.parse_json(data) if isinstance(data, str) else (data or {})
 	doc = frappe.get_doc(IMPOSTAZIONI)
-	for campo in ("enabled", "hours_before", "cancel_on_reply", "whatsapp_template", "use_sms", "use_email"):
+	for campo in (
+		"enabled",
+		"hours_before",
+		"second_hours_before",
+		"cancel_on_reply",
+		"whatsapp_template",
+		"use_sms",
+		"use_email",
+	):
 		if campo in dati:
 			doc.set(campo, dati[campo])
+	secondo = cint(doc.get("second_hours_before"))
+	if secondo and not R.ore_del_secondo(secondo, R.ore_prima(doc.hours_before)):
+		frappe.throw(
+			_("The second reminder leaves from 1 to 12 hours before, and fewer hours than the first.")
+		)
+	if secondo:
+		doc.second_hours_before = R.ore_del_secondo(secondo, R.ore_prima(doc.hours_before))
 	if doc.whatsapp_template:
 		etichette = _pulsanti(doc.whatsapp_template)
 		if not R.ha_i_pulsanti(etichette):

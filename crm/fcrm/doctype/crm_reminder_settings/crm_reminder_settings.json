@@ -9,6 +9,7 @@
   "reminders_section",
   "enabled",
   "hours_before",
+  "second_hours_before",
   "column_break_when",
   "cancel_on_reply",
   "channels_section",
@@ -37,6 +38,13 @@
    "label": "Hours before",
    "non_negative": 1,
    "description": "At night (21 to 8) it leaves in the morning, or the evening before"
+  },
+  {
+   "fieldname": "second_hours_before",
+   "fieldtype": "Int",
+   "label": "Second reminder: hours before",
+   "non_negative": 1,
+   "description": "Optional, the same day: 1 to 12 hours before, never at night; not to whoever already answered"
   },
   {
    "fieldname": "column_break_when",
@@ -80,7 +88,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-06 20:00:00.000000",
+ "modified": "2026-10-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Reminder Settings",
