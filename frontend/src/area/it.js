@@ -323,4 +323,6 @@ export default {
   'I’m here': 'Sono arrivato',
   'You are in the waiting room: the centre knows you are here.':
     'Sei in sala d’attesa: il centro sa che sei arrivato.',
+  'Book again': 'Prenota di nuovo',
+  'Book an appointment': 'Prenota un appuntamento',
 }

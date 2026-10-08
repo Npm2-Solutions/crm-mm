@@ -1,10 +1,11 @@
-<!-- Appointments: the cycles of sessions and the subscriptions going on, what
+<!-- Appointments: booking again, the cycles of sessions and the subscriptions going on, what
      the person waits for, the ones coming, then the last ones. -->
 <template>
   <div class="flex flex-col gap-5">
     <h1 class="area-title">
       {{ __('Your appointments') }}
     </h1>
+    <BookAgain v-if="appointments.data?.book" :book="appointments.data.book" />
     <section
       v-if="appointments.data?.cycles?.length"
       class="flex flex-col gap-2"
@@ -105,6 +106,7 @@ import { Button, createResource } from 'frappe-ui'
 import { ref } from 'vue'
 import { anteprima } from '../anteprima'
 import AppointmentCard from '../components/AppointmentCard.vue'
+import BookAgain from '../components/BookAgain.vue'
 import CycleCard from '../components/CycleCard.vue'
 import SubscriptionCard from '../components/SubscriptionCard.vue'
 import WaitingCard from '../components/WaitingCard.vue'

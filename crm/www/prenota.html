@@ -420,7 +420,7 @@
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
         wait: null, waited: null,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: false, for_name: "", for_relation: "Parent" },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };

@@ -38,6 +38,15 @@ def get_context(context):
 			"phone": (form.get("telefono") or form.get("phone") or "")[:40],
 		},
 	}
+	# from the client area (`?persona=`): the session says who books, the link only
+	# whose area it came from (`crm.area.api`)
+	if form.get("persona"):
+		try:
+			from crm.area.api import per_la_pagina_di_prenotazione
+
+			context.boot["prefill"].update(per_la_pagina_di_prenotazione(str(form.get("persona"))[:140]))
+		except Exception:
+			frappe.log_error(title="Booking page: who comes from the area")
 	try:
 		from crm.api.service_booking import page_branding
 

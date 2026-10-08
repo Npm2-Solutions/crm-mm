@@ -47091,3 +47091,6 @@ msgstr "Le persone viste di recente senza nulla in agenda, prima chi è venuto d
 
 msgid "Everybody seen lately has something booked"
 msgstr "Chi è venuto di recente ha già un appuntamento"
+
+msgid "Book again"
+msgstr "Prenota di nuovo"

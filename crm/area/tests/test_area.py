@@ -278,6 +278,65 @@ class Dentro(AreaCase):
 				chiamata(altro.name)
 
 
+class PrenotaDiNuovo(AreaCase):
+	"""«Book again»: the booking page on the last service, and the page knows who
+	comes from the area without anybody typing again."""
+
+	def prepara(self, online=1):
+		frappe.set_user("Administrator")
+		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", 1)
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+		estetista = self.make_user("area.ripeti@example.com")
+		self.make_service("Pulizia area", [estetista], bookable_online=online, website_slug="pulizia-area")
+		ieri = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=1)
+		self.make_appointment(
+			"Pulizia area",
+			ieri,
+			[estetista],
+			status="Completed",
+			participants=[
+				{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}
+			],
+		)
+		self.invita()
+		self.entra()
+
+	def test_il_servizio_dell_ultimo_appuntamento(self):
+		self.prepara()
+		prenota = api.get_appointments(self.anna.name)["book"]
+		self.assertEqual(prenota["service"], "Pulizia area")
+		self.assertEqual(prenota["url"], f"/prenota/pulizia-area?persona={self.anna.name}")
+
+	def test_un_servizio_che_non_si_prenota_online_porta_al_catalogo(self):
+		self.prepara(online=0)
+		prenota = api.get_appointments(self.anna.name)["book"]
+		self.assertEqual(prenota, {"url": f"/prenota?persona={self.anna.name}", "service": None})
+
+	def test_senza_prenotazione_online_niente(self):
+		self.prepara()
+		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", 0)
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+		frappe.set_user(ANNA)
+		self.assertIsNone(api.get_appointments(self.anna.name)["book"])
+
+	def test_la_pagina_sa_chi_prenota_dalla_sessione(self):
+		self.prepara()
+		frappe.db.set_value("CRM Lead", self.anna.name, "mobile_no", "+393331112233")
+		dati = api.per_la_pagina_di_prenotazione(self.anna.name)
+		self.assertEqual(dati, {"full_name": "Anna Area", "email": ANNA, "phone": "+393331112233"})
+		# somebody else's person, or nobody signed in: the empty form
+		frappe.set_user("Administrator")
+		altro = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Bruno", "last_name": "Altro"}).insert(
+			ignore_permissions=True
+		)
+		frappe.set_user(ANNA)
+		self.assertEqual(api.per_la_pagina_di_prenotazione(altro.name), {})
+		frappe.set_user("Guest")
+		self.assertEqual(api.per_la_pagina_di_prenotazione(self.anna.name), {})
+
+
 class SonoArrivato(AreaCase):
 	"""«I'm here» from Anna's phone: from half an hour before her appointment until
 	it ends, her own, and the desk is told."""

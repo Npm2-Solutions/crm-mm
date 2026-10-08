@@ -33,6 +33,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.area import accesso, anteprima, sezioni
+from crm.area import prenota_regole as P
 from crm.scheduling import abbonamenti, attese, cicli
 from crm.scheduling import arrivi_regole as A
 from crm.scheduling import attese_regole as R
@@ -140,6 +141,8 @@ def get_appointments(person: str) -> dict:
 	)
 	adesso = now_datetime()
 	prossimi, passati = [], []
+	# what was booked before, by its service: «Book again» books it once more
+	storia = []
 	arrivo = arrivo_dal_telefono()
 	# "session 4 of 10": which session of a cycle each one is
 	sedute = cicli.numero_della_seduta([riga.parent for riga in righe])
@@ -202,8 +205,10 @@ def get_appointments(person: str) -> dict:
 			prossimi.append(voce)
 		else:
 			passati.append(voce)
+			storia.append({**voce, "service": appuntamento.service, "service_name": voce["service"]})
 	prossimi.sort(key=lambda v: v["starts_on"])
 	passati.sort(key=lambda v: v["starts_on"], reverse=True)
+	storia.sort(key=lambda v: v["starts_on"], reverse=True)
 	return {
 		"upcoming": prossimi,
 		"past": passati[:20],
@@ -211,7 +216,55 @@ def get_appointments(person: str) -> dict:
 		"subscriptions": abbonamenti.della_persona(person),
 		"waiting": attese.della_persona(person),
 		"can_wait": attese.impostazioni().area,
+		# not from the centre's preview, which books nothing
+		"book": None if vista else _per_prenotare(person, storia),
 	}
+
+
+# ------------------------------------------------------------------ booking again
+
+
+def _per_prenotare(person: str, storia: list[dict]) -> dict | None:
+	"""The booking page's link, on the service of the last appointment when it is
+	still booked online; ``None`` where the centre takes no booking online."""
+	from crm.scheduling.availability import settings
+
+	if not cint(settings().get("online_booking_enabled")):
+		return None
+	prenotabili = {
+		s.name: s.website_slug
+		for s in frappe.get_all(
+			"CRM Service", filters={"enabled": 1, "bookable_online": 1}, fields=["name", "website_slug"]
+		)
+	}
+	return P.link_per_prenotare(storia, prenotabili, person)
+
+
+def per_la_pagina_di_prenotazione(person: str | None) -> dict:
+	"""What /prenota writes in for whoever comes from their area (``?persona=``):
+	the session says who they are, the link only whose area. Anybody else, the
+	centre's preview included, gets the empty form."""
+	utente = frappe.session.user
+	if not person or utente == "Guest" or anteprima.in_anteprima() or not accesso.entra_nell_area(utente):
+		return {}
+	riga = next((r for r in accesso.persone_di(utente) if r.lead == person), None)
+	if not riga:
+		return {}
+	from crm.utils import stored_value
+
+	def dati(lead: str | None) -> dict:
+		if not lead:
+			return {}
+		return {
+			"lead_name": frappe.db.get_value("CRM Lead", lead, "lead_name"),
+			"email": stored_value("CRM Lead", lead, "email"),
+			"phone": stored_value("CRM Lead", lead, "mobile_no") or stored_value("CRM Lead", lead, "phone"),
+		}
+
+	# who is in: the person with the session's address, else the session's own name
+	io = dati(frappe.db.get_value("CRM Lead", {"email": utente}, "name"))
+	io = {**io, "lead_name": io.get("lead_name") or frappe.utils.get_fullname(utente), "email": utente}
+	return P.chi_prenota(riga.relation, dati(person), io)
 
 
 # ------------------------------------------------------------------ «I'm here»
