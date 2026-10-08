@@ -236,3 +236,16 @@ class IComponentiDiAltri(UnitTestCase):
 		puliti, _, stato = S.pulisci(modulo, {"map": [{"x": 1, "y": 2}]})
 		self.assertEqual(puliti, {"map": [{"x": 1, "y": 2}]})
 		self.assertTrue(stato["visible"]["a"])
+
+
+class UnaDomandaSenzaParole(UnitTestCase):
+	def test_si_dice_col_suo_numero_non_con_la_chiave(self):
+		schema = {
+			"sections": [
+				{"id": "s1", "fields": [{"id": "a", "type": "text", "label": "A"}]},
+				{"id": "s2", "fields": [{"id": "signature", "type": "signature"}]},
+			]
+		}
+		[errore] = [e for e in S.valida_schema(schema) if e.codice == "missing_label"]
+		self.assertEqual(errore.messaggio, "Question {0} needs its words")
+		self.assertEqual(tuple(errore.argomenti), (2,))

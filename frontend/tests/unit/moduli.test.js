@@ -300,3 +300,21 @@ describe('the engine the /modulo page loads', () => {
     expect(served === source).toBe(true)
   })
 })
+
+// a question without words is named by its place in the form, never its key
+describe('a question left without words', () => {
+  it('is said by its number across the sections', () => {
+    const schema = {
+      sections: [
+        { id: 's1', fields: [{ id: 'a', type: 'text', label: 'A' }] },
+        { id: 's2', fields: [{ id: 'signature', type: 'signature' }] },
+      ],
+    }
+    const [problema] = validateSchema(schema).filter(
+      (p) => p.code === 'missing_label',
+    )
+    expect(problema.field).toBe('signature')
+    expect(problema.message).toBe('Question {0} needs its words')
+    expect(problema.args).toEqual([2])
+  })
+})

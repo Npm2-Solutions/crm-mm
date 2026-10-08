@@ -923,7 +923,7 @@ def _controlla_condizioni(
 				)
 
 
-def _controlla_campo(errori: list, campo: dict, prima: dict, tutti: dict) -> None:
+def _controlla_campo(errori: list, campo: dict, prima: dict, tutti: dict, posto: int = 0) -> None:
 	chiave = campo.get("id") if _id_valido(campo.get("id")) else None
 	tipo = componente(campo.get("type"))
 	etichetta = _testo(campo.get("label")) or chiave or ""
@@ -933,7 +933,8 @@ def _controlla_campo(errori: list, campo: dict, prima: dict, tutti: dict) -> Non
 		)
 		return
 	if tipo.valore is not None and not _testo(campo.get("label")):
-		errori.append(Errore("missing_label", chiave, "A question needs its words ({0})", (chiave,)))
+		# named by its place in the form, never by its key: «signature» told nobody which
+		errori.append(Errore("missing_label", chiave, "Question {0} needs its words", (posto,)))
 
 	nome = campo.get("type")
 	if nome in ("number", "scale"):
@@ -1110,6 +1111,7 @@ def valida_schema(schema) -> list[Errore]:
 	prima: dict[str, dict] = {}
 	id_sezioni: set = set()
 	id_campi: set = set()
+	posto = 0
 	for sezione in lista_sezioni:
 		if not isinstance(sezione, dict):
 			errori.append(Errore("not_a_schema", None, "This is not a form"))
@@ -1126,6 +1128,7 @@ def valida_schema(schema) -> list[Errore]:
 			errori, sezione.get("show_if"), chiave, prima, tutti, True, _testo(sezione.get("title")) or chiave
 		)
 		for campo in campi_della_sezione(sezione):
+			posto += 1
 			chiave_campo = campo.get("id") if _id_valido(campo.get("id")) else None
 			if chiave_campo is None or chiave_campo in id_campi:
 				errori.append(
@@ -1136,7 +1139,7 @@ def valida_schema(schema) -> list[Errore]:
 						(chiave_campo or "",),
 					)
 				)
-			_controlla_campo(errori, campo, prima, tutti)
+			_controlla_campo(errori, campo, prima, tutti, posto)
 			if chiave_campo is not None:
 				id_campi.add(chiave_campo)
 				prima.setdefault(chiave_campo, campo)

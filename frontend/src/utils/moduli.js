@@ -607,7 +607,7 @@ function pointsOf(field, value) {
     }
     const picked = Array.isArray(value) ? value : [value]
     return picked.reduce(
-      (total, v) => total + (typeof v === 'string' ? points.get(v) ?? 0 : 0),
+      (total, v) => total + (typeof v === 'string' ? (points.get(v) ?? 0) : 0),
       0,
     )
   }
@@ -832,7 +832,7 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
 const hasValue = (value) =>
   value !== null && value !== undefined && value !== ''
 
-function checkField(found, field, before, all) {
+function checkField(found, field, before, all, number = 0) {
   const key = validId(field.id) ? field.id : null
   const kind = component(field.type)
   const label = text(field.label) || key || ''
@@ -847,7 +847,8 @@ function checkField(found, field, before, all) {
   }
   if (kind.value !== null && !text(field.label)) {
     found.push(
-      problem('missing_label', key, 'A question needs its words ({0})', [key]),
+      // named by its place in the form, never by its key («signature»)
+      problem('missing_label', key, 'Question {0} needs its words', [number]),
     )
   }
   const type = field.type
@@ -1148,6 +1149,7 @@ export function validateSchema(schema) {
   const before = new Map()
   const sectionIds = new Set()
   const fieldIds = new Set()
+  let number = 0
   for (const section of schema.sections) {
     if (!isObject(section)) {
       found.push(problem('not_a_schema', null, 'This is not a form'))
@@ -1175,6 +1177,7 @@ export function validateSchema(schema) {
       text(section.title) || key,
     )
     for (const field of fieldsOfSection(section)) {
+      number += 1
       const fieldKey = validId(field.id) ? field.id : null
       if (fieldKey === null || fieldIds.has(fieldKey)) {
         found.push(
@@ -1186,7 +1189,7 @@ export function validateSchema(schema) {
           ),
         )
       }
-      checkField(found, field, before, all)
+      checkField(found, field, before, all, number)
       if (fieldKey !== null) {
         fieldIds.add(fieldKey)
         if (!before.has(fieldKey)) before.set(fieldKey, field)

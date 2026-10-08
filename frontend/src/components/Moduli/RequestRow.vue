@@ -57,7 +57,11 @@ const STATUS = {
   Sent: () => ({ label: __('Sent'), theme: 'gray' }),
   Opened: () => ({ label: __('Opened'), theme: 'blue' }),
   Filled: () => ({ label: __('To sign at the desk'), theme: 'orange' }),
-  Signed: () => ({ label: __('Signed'), theme: 'green' }),
+  // a survey is answered, never signed
+  Signed: (request) => ({
+    label: request.without_code ? __('Answered', null, 'Survey') : __('Signed'),
+    theme: 'green',
+  }),
   Expired: () => ({ label: __('Expired'), theme: 'gray' }),
   Cancelled: () => ({ label: __('Withdrawn'), theme: 'gray' }),
 }
@@ -65,7 +69,7 @@ const status = computed(() =>
   (
     STATUS[props.request.status] ||
     (() => ({ label: props.request.status, theme: 'gray' }))
-  )(),
+  )(props.request),
 )
 
 const said = computed(() => {

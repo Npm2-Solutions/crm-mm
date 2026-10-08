@@ -104,6 +104,9 @@ class IlQuestionario(RichiesteCase):
 		self.assertNotIn("session", vista)
 		frappe.set_user("Administrator")
 		self.assertEqual(frappe.db.get_value(richieste.RICHIESTA, richiesta.name, "status"), "Signed")
+		# the desk reads it answered, never signed
+		[riga] = [r for r in richieste.get_requests(self.giulia.name) if r["name"] == richiesta.name]
+		self.assertTrue(riga["without_code"])
 
 		# the dashboard: no answer is no score, then one answer, a promoter
 		widget = registry.get("satisfaction_nps")

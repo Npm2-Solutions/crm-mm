@@ -496,6 +496,12 @@ def _riga(richiesta) -> dict:
 		"opened_on": richiesta.opened_on,
 		"form": richiesta.form,
 		"via": richiesta.via,
+		# a survey is answered, never signed
+		"without_code": modelli.uso(
+			frappe.get_cached_value(modelli.VERSIONE, richiesta.template_version, "use")
+			if richiesta.template_version
+			else None
+		).senza_codice,
 	}
 
 
