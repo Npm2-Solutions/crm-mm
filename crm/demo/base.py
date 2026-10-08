@@ -57,6 +57,17 @@ def registra() -> None:
 	)
 	registra_parte(
 		Parte(
+			"sedi",
+			"Two locations",
+			crea_sedi,
+			dopo=("squadra", "agenda"),
+			prima=("clienti",),
+			descrizione="A second location in Monza with two rooms of its own, where the osteopath "
+			"works on Tuesdays and Thursdays. Only where the centre has no locations of its own.",
+		)
+	)
+	registra_parte(
+		Parte(
 			"clienti",
 			"People and appointments",
 			simulazione.crea,
@@ -373,6 +384,73 @@ def crea_agenda(ctx: Contesto) -> None:
 					"enabled": 1,
 				}
 			).insert(ignore_permissions=True)
+
+
+# -- the locations (docs/crm/62) ----------------------------------------------------------------
+
+
+def crea_sedi(ctx: Contesto) -> None:
+	"""Milan, where the rooms are, and Monza with two rooms of its own and the
+	osteopath's Tuesdays and Thursdays: through the same documents the settings
+	write. A centre that set up its own locations keeps them, and gets none."""
+	if frappe.db.count("CRM Location"):
+		return
+	sedi = {}
+	for chiave, nome, via, cap, citta, provincia, telefono, orari in dati.SEDI:
+		ctx.avanza(nome)
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Location",
+				"location_name": nome_libero("CRM Location", nome),
+				"enabled": 1,
+				"address_line": via,
+				"pincode": cap,
+				"city": citta,
+				"province": provincia,
+				"phone": telefono,
+				"opening_hours": orari,
+			}
+		).insert(ignore_permissions=True)
+		sedi[chiave] = doc.name
+		ctx.ricorda("CRM Location", doc.name, f"sede.{chiave}")
+	# the rooms there are in the first
+	for chiave, *_resto in dati.STANZE:
+		stanza = ctx.trova(f"room.{chiave}")
+		if stanza:
+			doc = frappe.get_doc("CRM Resource", stanza)
+			doc.centre_location = sedi["milano"]
+			doc.save(ignore_permissions=True)
+	from crm import lingue
+
+	for chiave, nome, sede, colore, descrizione in dati.STANZE_DELLE_SEDI:
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Resource",
+				"resource_name": nome_libero("CRM Resource", nome),
+				"resource_type": "Room",
+				"capacity": 1,
+				"color": colore,
+				"description": descrizione,
+				"currency": lingue.valuta(),
+				"centre_location": sedi[sede],
+				"enabled": 1,
+			}
+		).insert(ignore_permissions=True)
+		ctx.ricorda("CRM Resource", doc.name, f"room.{chiave}")
+	# every shift is worked in the first, but the days somebody works in the second
+	for chi in dati.TURNI:
+		utente = ctx.squadra(chi)
+		nome = utente and frappe.db.get_value("CRM Staff Schedule", {"user": utente})
+		if not nome:
+			continue
+		giorni, sede, _stanza = dati.IN_SEDE.get(chi, ((), "milano", None))
+		turni = frappe.get_doc("CRM Staff Schedule", nome)
+		for riga in turni.availability:
+			riga.centre_location = sedi[sede] if riga.workday in giorni else sedi["milano"]
+		turni.save(ignore_permissions=True)
+	from crm.scheduling import sedi as delle_sedi
+
+	delle_sedi.dimentica()
 
 
 # -- companies and agreements ------------------------------------------------------------------

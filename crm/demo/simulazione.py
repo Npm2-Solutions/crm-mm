@@ -174,6 +174,8 @@ class Simulazione:
 		self.prezzi = {riga[0]: riga[4] for riga in dati.SERVIZI}
 		self.stanza_di = {riga[0]: riga[6] for riga in dati.SERVIZI}
 		self.stanze = {riga[0]: ctx.trova(f"room.{riga[0]}") for riga in dati.STANZE}
+		# the second location's rooms, where the demo has two locations (docs/crm/62)
+		self.stanze.update({riga[0]: ctx.trova(f"room.{riga[0]}") for riga in dati.STANZE_DELLE_SEDI})
 		self.squadra = {riga[0]: ctx.squadra(riga[0]) for riga in dati.SQUADRA}
 		self.desk = self.squadra.get("desk") or ctx.utente
 		self.inizio = ctx.giorno(-GIORNI_INDIETRO)
@@ -508,7 +510,7 @@ class Simulazione:
 		"""A visit somebody came to before the three months: completed, as the agenda
 		closed it; it keeps their last visit, as any other does."""
 		fine = inizio + datetime.timedelta(minutes=self.minuti[servizio])
-		stanza = self.stanze.get(dati.STUDIO.get(chiave) or self.stanza_di[servizio])
+		stanza = self._stanza(chiave, servizio, giorno)
 		doc = frappe.get_doc(
 			{
 				"doctype": "CRM Appointment",
@@ -646,6 +648,14 @@ class Simulazione:
 		if venuti:
 			self._appuntamento(giorno, self.ctx.alle(giorno, ora), servizio, "davide", venuti)
 
+	def _stanza(self, chiave: str, servizio: str, giorno: datetime.date) -> str | None:
+		"""The room: one's own; on the days one works in the second location, one's
+		room there."""
+		giorni, _sede, stanza = dati.IN_SEDE.get(chiave, ((), None, None))
+		if nome_del_giorno(giorno) in giorni and self.stanze.get(stanza):
+			return self.stanze[stanza]
+		return self.stanze.get(dati.STUDIO.get(chiave) or self.stanza_di[servizio])
+
 	def _appuntamento(
 		self,
 		giorno: datetime.date,
@@ -673,7 +683,7 @@ class Simulazione:
 		online = all(riga["booked_online"] for _p, riga in righe) and len(righe) == 1
 		stato = "Cancelled" if annullato else ("Confirmed" if self.rng.random() < 0.6 else "Scheduled")
 		prenotato = self._prenotato(inizio, [p for p, _r in righe])
-		stanza = self.stanze.get(dati.STUDIO.get(chiave) or self.stanza_di[servizio])
+		stanza = self._stanza(chiave, servizio, giorno)
 		doc = frappe.get_doc(
 			{
 				"doctype": "CRM Appointment",
