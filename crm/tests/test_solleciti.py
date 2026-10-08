@@ -134,3 +134,20 @@ class SollecitiTest(InvoicingBase):
 		self.assertEqual(solleciti.di_fatture([nome])[nome]["count"], 0)
 		# but it waits for the next turn, as any other
 		self.assertNotIn(nome, self.dovute())
+
+	def test_la_data_si_legge_come_in_una_frase(self):
+		from types import SimpleNamespace
+
+		nome = self.emessa()
+		frappe.db.set_value("CRM Invoice", nome, "posting_date", "2026-09-01")
+		fattura = frappe.get_doc("CRM Invoice", nome)
+		dove = SimpleNamespace(nome="Mario", email=self.persona.email, numero=None, lead=self.persona.name)
+		lingua = frappe.local.lang
+		try:
+			frappe.local.lang = "it"
+			frase = solleciti._testo(fattura, dove, SimpleNamespace(come_pagare=""))["frase"]
+		finally:
+			frappe.local.lang = lingua
+		# the day in words, its article elided before the 1, never «dell'01/09/2026»
+		self.assertIn("dell'1 settembre 2026", frase)
+		self.assertNotIn("01/09", frase)

@@ -26,7 +26,7 @@ from decimal import Decimal
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, cint, escape_html, flt, getdate, now_datetime, nowdate
+from frappe.utils import add_days, cint, escape_html, flt, formatdate, getdate, now_datetime, nowdate
 
 from crm.invoicing import incassi
 from crm.invoicing import solleciti_regole as R
@@ -294,7 +294,9 @@ def _testo(fattura, dove, conf) -> dict:
 	from crm.moduli.richieste import nome_del_centro
 
 	numero = fattura.document_number or fattura.name
-	giorno = frappe.format(getdate(fattura.posting_date), "Date")
+	# the day in words, as a sentence says it («dell'1 settembre 2026»): the site's
+	# format put «dell'01/09/2026» in an SMS
+	giorno = formatdate(getdate(fattura.posting_date), "d MMMM yyyy")
 	importo = in_euro(Decimal(str(incassi.da_pagare(fattura))))
 	return {
 		"nome": dove.nome,

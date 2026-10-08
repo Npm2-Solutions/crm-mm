@@ -47538,3 +47538,51 @@ msgstr "La segreteria prende tutte le chiamate"
 
 msgid "The answering service answers every call: each call counts as missed."
 msgstr "La segreteria risponde a ogni chiamata: ogni chiamata conta come persa."
+
+#: crm/invoicing/doctype/crm_payment_reminder_settings/crm_payment_reminder_settings.json
+msgid "Instructions for the clients"
+msgstr "Istruzioni per i clienti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "«I’m here» from their phone, and the news their area sends: email, WhatsApp or SMS."
+msgstr "«Sono qui» dal suo telefono, e le novità che la sua area manda: email, WhatsApp o SMS."
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by WhatsApp"
+msgstr "Primo promemoria inviato su WhatsApp"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by SMS"
+msgstr "Primo promemoria inviato per SMS"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by email"
+msgstr "Primo promemoria inviato per email"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent"
+msgstr "Primo promemoria inviato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder not delivered"
+msgstr "Primo promemoria non arrivato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by WhatsApp"
+msgstr "Secondo promemoria inviato su WhatsApp"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by SMS"
+msgstr "Secondo promemoria inviato per SMS"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by email"
+msgstr "Secondo promemoria inviato per email"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent"
+msgstr "Secondo promemoria inviato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder not delivered"
+msgstr "Secondo promemoria non arrivato"

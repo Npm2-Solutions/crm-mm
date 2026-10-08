@@ -269,11 +269,12 @@ export const MENU = [
         condition: puo('consensi.configura'),
       },
       {
-        // what the area tells outside it
+        // what the area offers from the phone, and what it tells outside it
+        // (the key is the page's first name)
         key: 'News in the client area',
         label: 'Client area',
         description:
-          'The news their area sends: the email with its link, WhatsApp or SMS.',
+          '«I’m here» from their phone, and the news their area sends: email, WhatsApp or SMS.',
         condition: (c) => c.puo('canali.configura') && c.puo('area.invita'),
       },
       {

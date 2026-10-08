@@ -791,6 +791,7 @@ def nelle_righe(appuntamenti: list[dict]) -> None:
 			"answer",
 			"answered_on",
 			"cancelled",
+			"second",
 		],
 		order_by="creation asc",
 	):
@@ -800,6 +801,8 @@ def nelle_righe(appuntamenti: list[dict]) -> None:
 		if prima and prima.answer and not r.answer:
 			r.update({k: prima[k] for k in ("answer", "answered_on", "cancelled")})
 		per[chiave] = r
+	# with a second one the centre sends, the first says it is the first
+	due = bool(impostazioni().secondo)
 	for appuntamento in appuntamenti:
 		inizio = get_datetime(appuntamento["starts_on"])
 		for partecipante in appuntamento.get("participants") or []:
@@ -813,6 +816,7 @@ def nelle_righe(appuntamenti: list[dict]) -> None:
 					"answer": r.answer or "",
 					"answered_on": str(r.answered_on) if r.answered_on else None,
 					"cancelled": bool(r.cancelled),
+					"which": quale(r.second, due),
 				}
 
 
@@ -967,6 +971,14 @@ def create_template() -> dict:
 	return {**get_settings(), "made": risultato}
 
 
+def quale(secondo, due: bool) -> str:
+	"""Which reminder a row of the register is, for the screens: "second", "first"
+	where the centre sends two, else nothing to say."""
+	if secondo:
+		return "second"
+	return "first" if due else ""
+
+
 def recenti(quanti: int = 20) -> list[dict]:
 	"""The last reminders, for the settings page: who, for when, by which way, how
 	it went and what they answered."""
@@ -985,11 +997,14 @@ def recenti(quanti: int = 20) -> list[dict]:
 			"sent_on",
 			"answer",
 			"cancelled",
+			"second",
 		],
 		order_by="creation desc",
 		limit=quanti,
 	)
+	due = bool(impostazioni().secondo)
 	for riga in righe:
+		riga["which"] = quale(riga.second, due)
 		riga["person"] = (
 			frappe.db.get_value("CRM Lead", riga.party, "lead_name")
 			if riga.party_type == "CRM Lead"

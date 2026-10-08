@@ -90,6 +90,27 @@ describe('rigaDelPromemoria', () => {
     )
     expect(rigaDelPromemoria(null)).toBe('')
   })
+
+  it('says which reminder it is where the centre sends two', () => {
+    expect(
+      rigaDelPromemoria({ status: 'Sent', channel: 'Email', which: 'first' }),
+    ).toBe('First reminder sent by email')
+    expect(
+      rigaDelPromemoria({
+        status: 'Sent',
+        channel: 'WhatsApp',
+        which: 'second',
+        answer: 'Wants to move',
+      }),
+    ).toBe('Second reminder sent by WhatsApp · Would like to move it')
+    expect(rigaDelPromemoria({ status: 'Failed', which: 'second' })).toBe(
+      'Second reminder not delivered',
+    )
+    // a way nobody named: the reminder, sent
+    expect(rigaDelPromemoria({ status: 'Sent', which: 'first' })).toBe(
+      'First reminder sent',
+    )
+  })
 })
 
 describe('modelliAdatti and statoDelNostro', () => {

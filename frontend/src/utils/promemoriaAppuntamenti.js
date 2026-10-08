@@ -55,24 +55,44 @@ export function rispostaDellAppuntamento(appuntamento, t = fmt) {
     : null
 }
 
+// one whole sentence for each way and each reminder (`which`, from the server:
+// "first" where the centre sends two, "second"): never a word glued into another
+const FRASI = {
+  '': {
+    WhatsApp: 'Reminder sent by WhatsApp',
+    SMS: 'Reminder sent by SMS',
+    Email: 'Reminder sent by email',
+    inviato: 'Reminder sent',
+    perso: 'Reminder not delivered',
+  },
+  first: {
+    WhatsApp: 'First reminder sent by WhatsApp',
+    SMS: 'First reminder sent by SMS',
+    Email: 'First reminder sent by email',
+    inviato: 'First reminder sent',
+    perso: 'First reminder not delivered',
+  },
+  second: {
+    WhatsApp: 'Second reminder sent by WhatsApp',
+    SMS: 'Second reminder sent by SMS',
+    Email: 'Second reminder sent by email',
+    inviato: 'Second reminder sent',
+    perso: 'Second reminder not delivered',
+  },
+}
+
 /**
  * A reminder in one line, for the appointment's panel and the settings' list:
- * how it went and what was answered - «Reminder sent by WhatsApp · Confirmed
- * they are coming».
+ * which one, how it went and what was answered - «Second reminder sent by
+ * WhatsApp · Confirmed they are coming».
  */
 export function rigaDelPromemoria(promemoria, t = fmt) {
   if (!promemoria) return ''
-  // one whole sentence for each way: the way is never glued into another
+  const frasi = FRASI[promemoria.which] || FRASI['']
   const andato =
     promemoria.status === INVIATO
-      ? t(
-          {
-            WhatsApp: 'Reminder sent by WhatsApp',
-            SMS: 'Reminder sent by SMS',
-            Email: 'Reminder sent by email',
-          }[promemoria.channel] || 'Reminder sent',
-        )
-      : t('Reminder not delivered')
+      ? t(frasi[promemoria.channel] || frasi.inviato)
+      : t(frasi.perso)
   const segno = segnoDelPromemoria({ ...promemoria, status: INVIATO }, t)
   return segno ? `${andato} · ${segno.testo}` : andato
 }
