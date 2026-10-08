@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The preview of a person's area: the area as they see it, opened by the centre
-from the person's page, before the area is theirs or after (docs/progetto-ghl/41).
+from the person's page, before the area is theirs or after (docs/crm/41).
 
 - **Who**: whoever opens areas (`area.invita`) and reads the person, from the
   desk's own session; never a client of the area.

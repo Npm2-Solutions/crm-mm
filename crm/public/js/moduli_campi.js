@@ -30,6 +30,41 @@ export const WORDS_IT = {
   'Signed at the desk, when you come.': 'Si firma al banco, quando vieni.',
   'Bring it to the visit, or send it to the centre.':
     'Portalo alla visita, o mandalo al centro.',
+  Front: 'Davanti',
+  Back: 'Dietro',
+  R: 'D',
+  L: 'S',
+  'Mark a point': 'Segna un punto',
+  Draw: 'Disegna',
+  'Tap the body where it hurts: each tap is a numbered point':
+    'Tocca il corpo dove fa male: ogni tocco è un punto numerato',
+  'Draw on the body with your finger, or with the mouse':
+    'Disegna sul corpo con il dito, o con il mouse',
+  'Undo the last stroke': "Togli l'ultimo tratto",
+  'Clear all': 'Azzera tutto',
+  'Point {0}': 'Punto {0}',
+  'Remove the point': 'Togli il punto',
+  'What it feels like, where': 'Cosa senti, dove',
+  'Burning, down the leg': 'Bruciore, scende lungo la gamba',
+  'How much, from 0 (nothing) to 10 (the worst)': 'Quanto, da 0 (niente) a 10 (il peggio)',
+  'Drawn by hand: {0}': 'Disegnato a mano: {0}',
+}
+
+const SVG = 'http://www.w3.org/2000/svg'
+
+/** An element of a drawing: the body chart's outlines and marks. */
+function svg(tag, attrs, ...children) {
+  const el = document.createElementNS(SVG, tag)
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === null || value === undefined || value === false) continue
+    if (key.startsWith('on')) el.addEventListener(key.slice(2), value)
+    else el.setAttribute(key, value)
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined || child === false) continue
+    el.append(child instanceof Node ? child : document.createTextNode(String(child)))
+  }
+  return el
 }
 
 export function h(tag, attrs, ...children) {
@@ -291,6 +326,8 @@ export function drawForm({
           : padControl(field)
       case 'attachment':
         return h('p', { class: 'help' }, t('Bring it to the visit, or send it to the centre.'))
+      case 'body_chart':
+        return bodyControl(field, id)
       default:
         return h('span', {})
     }
@@ -363,6 +400,314 @@ export function drawForm({
         ),
       )
     }
+    draw()
+    return holder
+  }
+
+  // where it hurts: points tapped on the body's outlines, strokes drawn on them,
+  // kept as fractions of the outline (the engine's cleanBodyChart, the server's
+  // too). A tap leaves the page to the finger; drawing keeps it.
+  function bodyControl(field, id) {
+    const { BODY_OUTLINES, bodyViews, smoothPath, roundHalfUp } = engine
+    const PAPER = '#ffffff'
+    const MARK = '#c2410c'
+    const OUTLINE = '#5f6368'
+    const INSIDE = '#f3f4f6'
+    const DETAIL = '#a3a7ad'
+    const views = bodyViews(field)
+    const start = values[field.id] && typeof values[field.id] === 'object' ? values[field.id] : {}
+    let marks = Array.isArray(start.marks) ? start.marks.map((m) => ({ ...m })) : []
+    let strokes = Array.isArray(start.strokes) ? start.strokes.map((s) => ({ ...s })) : []
+    let mode = 'points'
+    let chosen = null
+    let drawing = null
+    const viewName = (view) => (view === 'back' ? t('Back') : t('Front'))
+    const holder = h('div', { class: 'stack corpo', role: 'group', 'aria-labelledby': id + '-q' })
+
+    const keep = () => {
+      const value = {}
+      if (marks.length) value.marks = marks.map((m) => ({ ...m }))
+      if (strokes.length) value.strokes = strokes.map((s) => ({ view: s.view, points: s.points }))
+      set(field.id, Object.keys(value).length ? value : null)
+    }
+    const where = (outline, e) => {
+      const r = outline.getBoundingClientRect()
+      const f = (v) => roundHalfUp(Math.min(1, Math.max(0, v)), 3)
+      return [f((e.clientX - r.left) / r.width), f((e.clientY - r.top) / r.height)]
+    }
+
+    function figure(view) {
+      const outline = svg(
+        'svg',
+        {
+          viewBox: '0 0 200 460',
+          class: 'sagoma' + (mode === 'draw' ? ' disegna' : ''),
+          role: 'img',
+          'aria-label': viewName(view),
+          'data-disegno': '',
+        },
+        svg('path', { d: BODY_OUTLINES.body, fill: INSIDE, stroke: OUTLINE, 'stroke-width': '1.4' }),
+        svg('path', { d: BODY_OUTLINES.head, fill: INSIDE, stroke: OUTLINE, 'stroke-width': '1.4' }),
+        BODY_OUTLINES[view].map((d) => svg('path', { d, fill: 'none', stroke: DETAIL, 'stroke-width': '1' })),
+        // whose right is on which side: from the front, on the reader's left
+        svg('text', { x: '8', y: '40', 'font-size': '13', fill: DETAIL }, view === 'front' ? t('R') : t('L')),
+        svg(
+          'text',
+          { x: '192', y: '40', 'font-size': '13', fill: DETAIL, 'text-anchor': 'end' },
+          view === 'front' ? t('L') : t('R'),
+        ),
+        strokes
+          .filter((s) => s.view === view)
+          .map((s) =>
+            svg('path', {
+              d: smoothPath(s.points),
+              fill: 'none',
+              stroke: MARK,
+              'stroke-opacity': '0.75',
+              'stroke-width': '3',
+              'stroke-linecap': 'round',
+              'stroke-linejoin': 'round',
+            }),
+          ),
+        marks.map((m, i) =>
+          m.view !== view
+            ? null
+            : svg(
+                'g',
+                {
+                  class: 'segno',
+                  onclick: (e) => {
+                    e.stopPropagation()
+                    chosen = chosen === i ? null : i
+                    draw()
+                  },
+                },
+                svg('circle', { cx: m.x * 200, cy: m.y * 460, r: '16', fill: 'transparent' }),
+                svg('circle', {
+                  cx: m.x * 200,
+                  cy: m.y * 460,
+                  r: '9',
+                  fill: MARK,
+                  stroke: chosen === i ? '#1f2328' : PAPER,
+                  'stroke-width': chosen === i ? '2.5' : '1.5',
+                }),
+                svg(
+                  'text',
+                  {
+                    x: m.x * 200,
+                    y: m.y * 460 + 3.8,
+                    'font-size': '11',
+                    'font-weight': '700',
+                    'text-anchor': 'middle',
+                    fill: PAPER,
+                  },
+                  String(i + 1),
+                ),
+              ),
+        ),
+      )
+      outline.addEventListener('click', (e) => {
+        if (mode !== 'points' || marks.length >= 40) return
+        const [x, y] = where(outline, e)
+        marks.push({ view, x, y })
+        chosen = marks.length - 1
+        keep()
+        draw()
+      })
+      outline.addEventListener('pointerdown', (e) => {
+        if (mode !== 'draw' || strokes.length >= 40) return
+        e.preventDefault()
+        if (outline.setPointerCapture) outline.setPointerCapture(e.pointerId)
+        drawing = { view, points: [where(outline, e)], line: null }
+        drawing.line = svg('path', {
+          fill: 'none',
+          stroke: MARK,
+          'stroke-opacity': '0.75',
+          'stroke-width': '3',
+          'stroke-linecap': 'round',
+        })
+        outline.append(drawing.line)
+      })
+      outline.addEventListener('pointermove', (e) => {
+        if (!drawing) return
+        e.preventDefault()
+        if (drawing.points.length >= 500) return
+        const [x, y] = where(outline, e)
+        const [px, py] = drawing.points[drawing.points.length - 1]
+        if (Math.abs(x - px) + Math.abs(y - py) < 0.008) return
+        drawing.points.push([x, y])
+        drawing.line.setAttribute('d', smoothPath(drawing.points))
+      })
+      const end = () => {
+        if (!drawing) return
+        strokes.push({ view: drawing.view, points: drawing.points })
+        drawing = null
+        keep()
+        draw()
+      }
+      outline.addEventListener('pointerup', end)
+      outline.addEventListener('pointercancel', end)
+      return h('figure', { class: 'figura' }, outline, h('figcaption', {}, viewName(view)))
+    }
+
+    function editor() {
+      if (chosen === null || !marks[chosen]) return null
+      const m = marks[chosen]
+      const words = h('input', {
+        class: 'in',
+        value: m.label || '',
+        maxlength: '120',
+        enterkeyhint: 'done',
+        placeholder: t('Burning, down the leg'),
+        'aria-label': t('What it feels like, where'),
+      })
+      words.addEventListener('input', () => {
+        if (words.value) m.label = words.value
+        else delete m.label
+        keep()
+      })
+      // the list below says the words once they are written
+      words.addEventListener('change', draw)
+      const levels = Array.from({ length: 11 }, (_, n) => {
+        const b = h('button', { class: 'pill', type: 'button', 'aria-pressed': m.intensity === n ? 'true' : 'false' }, String(n))
+        b.addEventListener('click', () => {
+          if (m.intensity === n) delete m.intensity
+          else m.intensity = n
+          keep()
+          draw()
+        })
+        return b
+      })
+      return h(
+        'div',
+        { class: 'punto' },
+        h(
+          'div',
+          { class: 'row', style: 'justify-content:space-between' },
+          h('b', {}, t('Point {0}').replace('{0}', chosen + 1) + ' · ' + viewName(m.view)),
+          h(
+            'button',
+            {
+              class: 'ghost',
+              type: 'button',
+              onclick: () => {
+                marks.splice(chosen, 1)
+                chosen = null
+                keep()
+                draw()
+              },
+            },
+            t('Remove the point'),
+          ),
+        ),
+        h('label', { class: 'stack', style: 'gap:.3rem' }, h('span', { class: 'help' }, t('What it feels like, where')), words),
+        h('span', { class: 'help' }, t('How much, from 0 (nothing) to 10 (the worst)')),
+        h('div', { class: 'pills' }, levels),
+      )
+    }
+
+    function list() {
+      const lines = marks.map((m, i) =>
+        [`${i + 1}. ${viewName(m.view)}`, m.label, m.intensity === undefined || m.intensity === null ? null : `${m.intensity}/10`]
+          .filter(Boolean)
+          .join(' · '),
+      )
+      if (!lines.length) return null
+      return h(
+        'div',
+        { class: 'options' },
+        lines.map((line, i) =>
+          h(
+            'button',
+            {
+              class: 'opt',
+              type: 'button',
+              'aria-pressed': chosen === i ? 'true' : 'false',
+              onclick: () => {
+                mode = 'points'
+                chosen = chosen === i ? null : i
+                draw()
+              },
+            },
+            line,
+          ),
+        ),
+      )
+    }
+
+    function draw() {
+      holder.innerHTML = ''
+      if (field.drawing) {
+        const modeButton = (key, label) =>
+          h(
+            'button',
+            {
+              class: 'pill',
+              type: 'button',
+              'aria-pressed': mode === key ? 'true' : 'false',
+              onclick: () => {
+                mode = key
+                draw()
+              },
+            },
+            label,
+          )
+        holder.append(h('div', { class: 'pills' }, modeButton('points', t('Mark a point')), modeButton('draw', t('Draw'))))
+      }
+      holder.append(
+        h(
+          'p',
+          { class: 'help', style: 'margin:0' },
+          mode === 'draw'
+            ? t('Draw on the body with your finger, or with the mouse')
+            : t('Tap the body where it hurts: each tap is a numbered point'),
+        ),
+        h('div', { class: 'carta' + (views.length === 1 ? ' una' : '') }, views.map(figure)),
+      )
+      if (marks.length || strokes.length) {
+        holder.append(
+          h(
+            'div',
+            { class: 'pills' },
+            strokes.length
+              ? h(
+                  'button',
+                  {
+                    class: 'secondary',
+                    type: 'button',
+                    onclick: () => {
+                      strokes.pop()
+                      keep()
+                      draw()
+                    },
+                  },
+                  t('Undo the last stroke'),
+                )
+              : null,
+            h(
+              'button',
+              {
+                class: 'ghost',
+                type: 'button',
+                onclick: () => {
+                  marks = []
+                  strokes = []
+                  chosen = null
+                  keep()
+                  draw()
+                },
+              },
+              t('Clear all'),
+            ),
+          ),
+        )
+      }
+      const open = editor()
+      if (open) holder.append(open)
+      const words = list()
+      if (words) holder.append(words)
+    }
+
     draw()
     return holder
   }

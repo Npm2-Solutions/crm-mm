@@ -468,15 +468,15 @@ MENU = (
 		"colazione",
 		"Colazione",
 		"07:30",
-		(("19016", 200, "oppure uno yogurt bianco"), ("32140", 40, None), ("13005", 100, "oppure una mela")),
+		(("19016", 200, "uno yogurt bianco"), ("32140", 40, None), ("13005", 100, "una mela")),
 	),
-	("spuntino", "Spuntino", "10:30", (("15005", 15, "oppure 15 g di mandorle"),)),
+	("spuntino", "Spuntino", "10:30", (("15005", 15, "15 g di mandorle"),)),
 	(
 		"pranzo",
 		"Pranzo",
 		"13:00",
 		(
-			("9811", 80, "oppure riso o farro"),
+			("9811", 80, "riso o farro"),
 			("20385", 150, "o altra verdura di stagione"),
 			("12120", 10, None),
 			("17270", 10, None),
@@ -488,8 +488,8 @@ MENU = (
 		"Cena",
 		"20:00",
 		(
-			("26072", 150, "oppure 120 g di pollo o due uova"),
-			("4003", 150, "oppure 50 g di pane"),
+			("26072", 150, "120 g di pollo o due uova"),
+			("4003", 150, "50 g di pane"),
 			("20031", 80, None),
 			("17270", 10, None),
 		),
@@ -523,7 +523,7 @@ SCAMBI = (
 		"Cena",
 		"20:00",
 		(
-			("Fish", 1, "oppure carne bianca, uova o legumi"),
+			("Fish", 1, "carne bianca, uova o legumi"),
 			("Vegetables", 2, None),
 			("Cereals and tubers", 1, "pane o patate"),
 			("Oils and fats", 1, None),

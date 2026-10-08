@@ -5,7 +5,7 @@
 
 The consent register: who agreed to what, on which words, when and how. The form
 templates and their versions (`schema`, `modelli`), and next the signatures and
-the PDFs (phase 2 of the medical centre project, `docs/gestionale-medico/design.md`),
+the PDFs (phase 2 of the medical centre project, `docs/verticali/clinica/design.md`),
 because a privacy notice or a marketing consent is not a clinical matter: a gym
 needs them as much as a clinic does.
 

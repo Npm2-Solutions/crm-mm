@@ -277,6 +277,7 @@ const USE_FILTERS = {
   Form: () => __('To fill and sign'),
   Sheet: () => __('Sheets'),
   Website: () => __('On the website'),
+  Survey: () => __('Surveys'),
 }
 const filter = ref('all')
 const filters = computed(() => {
@@ -295,7 +296,13 @@ const shown = computed(() =>
   ),
 )
 
-const starters = [
+// what the modules ship (the clinic's sheets), in the centre's language: asked
+// the first time somebody starts a new one
+const shipped = createResource({
+  url: 'crm.moduli.modelli.get_starters',
+  cache: 'crm-form-starters',
+})
+const starters = computed(() => [
   {
     key: 'blank',
     title: __('Blank'),
@@ -307,10 +314,16 @@ const starters = [
     title: __(starter.title),
     description: __(starter.description),
   })),
-]
+  ...(shipped.data || []).map((starter) => ({
+    ...starter,
+    shipped: true,
+    // the centre's own words already: a copy of its schema each time
+    schema: () => JSON.parse(JSON.stringify(starter.schema)),
+  })),
+])
 // a blank one for every use; the others for their own
 const startersFor = (use) =>
-  starters.filter(
+  starters.value.filter(
     (starter) => starter.key === 'blank' || (starter.use || 'Form') === use,
   )
 
@@ -415,6 +428,7 @@ function openCreate() {
   const use = useOf(filter.value) ? filter.value : first
   Object.assign(draft, { title: '', use, starter: 'blank', error: '' })
   showCreate.value = true
+  if (!shipped.data && !shipped.loading) shipped.fetch()
 }
 
 // another use, another set of starters: a form of the desk is not a website's
@@ -422,13 +436,13 @@ watch(
   () => draft.use,
   (use) => {
     if (!startersFor(use).some((s) => s.key === draft.starter)) {
-      pickStarter(starters[0])
+      pickStarter(starters.value[0])
     }
   },
 )
 
 function pickStarter(starter) {
-  const previous = starters.find((s) => s.key === draft.starter)
+  const previous = starters.value.find((s) => s.key === draft.starter)
   // the title follows the starter until somebody writes their own
   if (!draft.title || draft.title === previous?.title) {
     draft.title = starter.key === 'blank' ? '' : starter.title
@@ -440,11 +454,20 @@ async function create() {
   creating.value = true
   draft.error = ''
   try {
-    const starter = starters.find((s) => s.key === draft.starter) || starters[0]
+    const starter =
+      starters.value.find((s) => s.key === draft.starter) || starters.value[0]
     const saved = await call('crm.moduli.modelli.save_template', {
       title: draft.title.trim(),
       use: draft.use,
       schema: JSON.stringify(starter.schema()),
+      // a module's sheet keeps its mark, specialty and words of what it is for
+      ...(starter.shipped
+        ? {
+            clinical: starter.clinical ? 1 : 0,
+            specialty: starter.specialty || undefined,
+            description: starter.description || undefined,
+          }
+        : {}),
     })
     showCreate.value = false
     emit('open', saved.name)

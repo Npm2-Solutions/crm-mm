@@ -80,19 +80,28 @@ STATI = {
 	"Off": livelli.SPENTO,
 }
 
-# What the listino says (docs/gestionale-medico/listino.md, 01/10/2026).
+# What the listino says (docs/marchi/dottorcloud/listino-proposta.md, 07/10/2026).
+# "Solo" is the Professional plan: one person working alone, on up to three rooms.
 
 #: Ambulatori each size covers - rooms where one visits or treats, as the agenda's
 #: rooms; None: past ten, each one more is paid.
-AMBULATORI = {"Solo": 1, "Studio": 2, "Centre": 5, "Polyclinic": 10, "Large": None}
+AMBULATORI = {"Solo": 3, "Studio": 3, "Centre": 5, "Polyclinic": 10, "Large": None}
 
-#: SdI credits a year that come with invoicing, by size.
-CREDITI_SDI = {"Solo": 240, "Studio": 500, "Centre": 1200, "Polyclinic": 2400, "Large": 2400}
+#: Users each size allows - people who work in DottorCloud with a level; a size
+#: not here has them unlimited. The Professional plan is one person's.
+UTENTI = {"Solo": 1}
 
-#: Signatures a year that come with the advanced signature. The phone counts
-#: nothing: a year's fee switches it on, and calls, numbers and SMS are paid to
-#: Twilio by whoever owns the account (the listino, 03/10/2026).
+#: SdI credits a year that come with invoicing - in every plan - by size: the
+#: Professional and the Studio the same (the listino, 07/10/2026).
+CREDITI_SDI = {"Solo": 300, "Studio": 300, "Centre": 600, "Polyclinic": 1200, "Large": 1200}
+
+#: Signatures a year that come with the advanced signature, an add-on in every
+#: plan, never included. The phone counts nothing: a monthly fee switches it on,
+#: and calls, numbers and SMS are paid to Twilio by whoever owns the account.
 FIRME_INCLUSE = 2000
+
+#: Requests the assistant's trial has, the centre's whole: then it is an add-on.
+RICHIESTE_DI_PROVA = 50
 
 #: Used past this share of what is included, the page warns (the listino: at 80%).
 AVVISO = 0.8

@@ -43,7 +43,7 @@ FORMA = "Form"
 SCHEDA = "Sheet"
 SITO = "Website"
 CHIEDE = ("By hand", "First appointment", "Services")
-VALIDITA = ("Forever", "One year", "Every appointment")
+VALIDITA = ("Forever", "One year", "Every few weeks", "Every appointment")
 
 
 @dataclass(frozen=True)
@@ -61,10 +61,13 @@ class Uso:
 	si_manda: bool = True
 	#: published on the centre's website, filled in by anybody (`crm.moduli.sito`)
 	sul_sito: bool = False
+	#: opened by its link alone, no code: it asks nothing that is the person's to
+	#: protect - no consent, no signature, no file, no health data (a survey)
+	senza_codice: bool = False
 
 
 _usi: dict[str, Uso] = {
-	FORMA: Uso(FORMA, "Form", "Filled in by the person: a privacy notice, consents, a questionnaire"),
+	FORMA: Uso(FORMA, "Form", "Filled in and signed by the person: a privacy notice, consents, a contract"),
 	SCHEDA: Uso(
 		SCHEDA,
 		"Sheet",
@@ -98,6 +101,26 @@ CAMPI_PERSONA = {
 _dato_clinico: list[Callable[[], bool]] = []
 
 
+#: What modules ship to start a template from (the clinic's sheets): () -> list of
+#: {key, use, title, description, specialty, clinical, schema}.
+_partenze: list[Callable[[], list[dict]]] = []
+
+
+def registra_partenze(fonte: Callable[[], list[dict]]) -> None:
+	if fonte not in _partenze:
+		_partenze.append(fonte)
+
+
+@frappe.whitelist()
+def get_starters() -> list[dict]:
+	"""The templates the modules ship to start from, in the centre's language, for
+	the uses the session builds: offered beside the builder's own."""
+	trovate = []
+	for fonte in _partenze:
+		trovate += [partenza for partenza in fonte() if puo_costruire(partenza.get("use"))]
+	return trovate
+
+
 def registra_uso(uso: Uso) -> None:
 	_usi[uso.chiave] = uso
 
@@ -109,6 +132,11 @@ def usi() -> list[Uso]:
 def uso(chiave: str | None) -> Uso:
 	"""A template's use; an old one without it is a form."""
 	return _usi.get(chiave or FORMA) or _usi[FORMA]
+
+
+def usi_da_mandare() -> list[str]:
+	"""The uses sent by a link or asked of the person: a form, a survey."""
+	return [chiave for chiave, voce in _usi.items() if voce.si_manda]
 
 
 def usi_della_persona() -> list[str]:
@@ -142,8 +170,19 @@ def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
 			{"code": codice, "field": campo.get("id") if campo else None, "message": messaggio}
 		)
 
-	for campo in S.campi(schema):
-		etichetta = campo.get("label") or campo.get("id")
+	for numero, campo in enumerate(S.campi(schema), 1):
+		# a question without words (a signature) by its place, never its key
+		etichetta = campo.get("label") or _("Question {0}").format(numero)
+		if voce.senza_codice and campo.get("type") in ("consent", "signature", "attachment"):
+			# opened by the link alone: nobody checked who holds it
+			problema(
+				"not_without_a_code",
+				campo,
+				_("{0}: a survey opens with its link alone, so it asks no consent, signature or file").format(
+					etichetta
+				),
+			)
+			continue
 		if campo.get("type") == "consent" and not voce.della_persona:
 			problema(
 				"consent_on_a_sheet",
@@ -162,6 +201,13 @@ def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
 			)
 		if campo.get("type") == "attachment":
 			problema("file_on_the_site", campo, _("{0}: no file is sent from the website").format(etichetta))
+		if campo.get("type") == "body_chart":
+			# where it hurts is health data: told at the centre, never to anybody's form
+			problema(
+				"body_chart_on_the_site",
+				campo,
+				_("{0}: where it hurts is asked at the centre, not on the website").format(etichetta),
+			)
 		if campo.get("person") and campo.get("person") not in CAMPI_PERSONA:
 			problema(
 				"person_field_unknown",
@@ -388,6 +434,7 @@ def get_template(name: str) -> dict:
 		"ask_on": modello.ask_on,
 		"services": [riga.service for riga in modello.services],
 		"validity": modello.validity,
+		"validity_weeks": modello.validity_weeks,
 		"send_before": modello.send_before,
 		**{campo: modello.get(campo) for campo in CAMPI_SITO},
 		"schema": schema,
@@ -409,6 +456,8 @@ def _usi_da_costruire() -> list[dict]:
 			# asked and sent: a form, not a sheet nor a form on the website
 			"sent": voce.si_manda,
 			"on_the_site": voce.sul_sito,
+			# a survey: opened by its link alone, so it asks nothing to protect
+			"without_code": voce.senza_codice,
 		}
 		for voce in usi()
 		if puo_costruire(voce.chiave)
@@ -498,6 +547,7 @@ _CAMPI_MODELLO = (
 	"specialty",
 	"ask_on",
 	"validity",
+	"validity_weeks",
 	"send_before",
 	"enabled",
 	*CAMPI_SITO,

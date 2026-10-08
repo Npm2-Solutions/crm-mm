@@ -166,7 +166,7 @@
               form.docstatus
                 ? form.use === 'Sheet'
                   ? __('Completed')
-                  : form.channel === 'Website'
+                  : form.channel === 'Website' || form.without_code
                     ? __('Sent')
                     : __('Signed')
                 : __('To finish')
@@ -178,6 +178,13 @@
         </div>
       </button>
     </div>
+
+    <!-- a questionnaire's totals over time; where the clinic is on, in its
+         summary, beside the visits' -->
+    <ScoreTrends
+      v-if="!conLaClinica && data?.forms.some((form) => form.docstatus)"
+      :lead="lead"
+    />
 
     <div v-if="earlier.length" class="flex flex-col gap-1">
       <button
@@ -224,6 +231,7 @@ import EmptyState from '@/components/ListViews/EmptyState.vue'
 import DescrizioneRipiegata from '@/components/Mobile/DescrizioneRipiegata.vue'
 import RequestRow from '@/components/Moduli/RequestRow.vue'
 import SendFormsDialog from '@/components/Moduli/SendFormsDialog.vue'
+import ScoreTrends from '@/components/Moduli/ScoreTrends.vue'
 import { formatDate } from '@/utils'
 import LucideChevronRight from '~icons/lucide/chevron-right'
 import LucideFileCheck from '~icons/lucide/file-check'
@@ -243,6 +251,9 @@ import { computed, h, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({ lead: { type: String, required: true } })
+
+// the clinic draws the totals over time in its own summary
+const conLaClinica = window.vertical?.key === 'clinica'
 
 const router = useRouter()
 const starting = ref(false)
@@ -276,6 +287,7 @@ const REASONS = {
   never_signed: () => __('Never signed'),
   new_version: () => __('A new version: to sign again'),
   expired: () => __('Signed more than a year ago'),
+  due_again: () => __('Its weeks have passed: to fill again'),
   every_appointment: () => __('Signed for each appointment'),
 }
 const PENDING = {
@@ -321,7 +333,9 @@ function describe(form) {
         ? __('completed {0}', [when])
         : form.channel === 'Website'
           ? __('sent {0}', [when])
-          : __('signed {0}', [when]),
+          : form.without_code
+            ? __('answered {0}', [when])
+            : __('signed {0}', [when]),
     )
   } else {
     parts.push(__('started {0}', [formatDate(form.modified, 'D MMM YYYY')]))

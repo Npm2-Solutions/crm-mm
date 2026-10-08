@@ -3,6 +3,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   answerInWords,
+  BODY_OUTLINES,
+  bodyChartInWords,
+  bodyViews,
+  cleanBodyChart,
   computeFormula,
   conditionFields,
   evaluate,
@@ -11,10 +15,12 @@ import {
   keyFromLabel,
   newField,
   newSection,
+  numberedMarks,
   readyToPublish,
   renameInFormula,
   renameKey,
   schemaCounts,
+  smoothPath,
   truthy,
   usesOf,
   validateSchema,
@@ -54,6 +60,16 @@ describe('the cases shared with the server', () => {
     'evaluation: %s',
     (_, c) => {
       expect(evaluate(schemaOf(c), c.values)).toEqual(c.expected)
+    },
+  )
+
+  it.each(CASES.body_charts.map((c) => [c.name, c]))(
+    'body chart: %s',
+    (_, c) => {
+      const field = { id: 'b', type: 'body_chart', label: 'B', ...c.field }
+      const { value, error } = cleanBodyChart(field, structuredClone(c.value))
+      expect(value).toEqual(c.expected)
+      expect(error !== null).toBe(c.error)
     },
   )
 
@@ -285,6 +301,87 @@ describe('a signed answer in words', () => {
   })
 })
 
+describe('the body chart', () => {
+  it('draws the outlines the server draws in the PDF', () => {
+    const server = JSON.parse(
+      fs.readFileSync(
+        path.resolve(
+          import.meta.dirname,
+          '../../../crm/moduli/sagome_corpo.json',
+        ),
+        'utf8',
+      ),
+    )
+    delete server._what
+    expect({ ...BODY_OUTLINES }).toEqual(server)
+  })
+
+  it('shows both outlines unless the question names its own', () => {
+    expect(bodyViews({})).toEqual(['front', 'back'])
+    expect(bodyViews({ views: ['back'] })).toEqual(['back'])
+    expect(bodyViews({ views: ['back', 'front'] })).toEqual(['front', 'back'])
+    expect(bodyViews({ views: 'front' })).toEqual(['front', 'back'])
+  })
+
+  it('numbers the points in the order they were put', () => {
+    const value = {
+      marks: [
+        { view: 'back', x: 0.5, y: 0.4 },
+        { view: 'front', x: 0.2, y: 0.3 },
+      ],
+    }
+    expect(numberedMarks(value).map((m) => [m.number, m.view])).toEqual([
+      [1, 'back'],
+      [2, 'front'],
+    ])
+    expect(numberedMarks(null)).toEqual([])
+  })
+
+  it('draws a stroke through the middles of its points', () => {
+    expect(smoothPath([])).toBe('')
+    expect(smoothPath([[0.5, 0.5]])).toBe('M100 230l0.1 0')
+    expect(
+      smoothPath([
+        [0, 0],
+        [0.5, 0.5],
+        [1, 1],
+      ]),
+    ).toBe('M0 0Q100 230 150 345L200 460')
+  })
+
+  it('says each point in words, as the PDF does', () => {
+    expect(
+      bodyChartInWords({
+        marks: [
+          { view: 'back', x: 0.5, y: 0.4, label: 'Lower back', intensity: 7 },
+          { view: 'front', x: 0.2, y: 0.3 },
+        ],
+        strokes: [{ view: 'back', points: [[0.1, 0.1]] }],
+      }),
+    ).toBe('1. Back · Lower back · 7/10\n2. Front\nDrawn by hand: Back')
+    expect(answerInWords({ type: 'body_chart' }, null)).toBe('')
+    expect(
+      answerInWords(
+        { type: 'body_chart' },
+        { marks: [{ view: 'front', x: 0, y: 0, intensity: 0 }] },
+      ),
+    ).toBe('1. Front · 0/10')
+  })
+
+  it('starts a new one on both outlines, drawn by hand too', () => {
+    const field = newField('body_chart', { sections: [] }, 'Dove fa male')
+    expect(field).toMatchObject({
+      id: 'dove_fa_male',
+      type: 'body_chart',
+      views: ['front', 'back'],
+      drawing: true,
+    })
+    expect(
+      readyToPublish({ sections: [{ id: 's', fields: [field] }] }),
+    ).toEqual([])
+  })
+})
+
 describe('the engine the /modulo page loads', () => {
   it('is this very file, copied where the website serves it', () => {
     const here = path.resolve(import.meta.dirname, '../..')
@@ -298,5 +395,23 @@ describe('the engine the /modulo page loads', () => {
     )
     // run `yarn sync-moduli-engine` after changing src/utils/moduli.js
     expect(served === source).toBe(true)
+  })
+})
+
+// a question without words is named by its place in the form, never its key
+describe('a question left without words', () => {
+  it('is said by its number across the sections', () => {
+    const schema = {
+      sections: [
+        { id: 's1', fields: [{ id: 'a', type: 'text', label: 'A' }] },
+        { id: 's2', fields: [{ id: 'signature', type: 'signature' }] },
+      ],
+    }
+    const [problema] = validateSchema(schema).filter(
+      (p) => p.code === 'missing_label',
+    )
+    expect(problema.field).toBe('signature')
+    expect(problema.message).toBe('Question {0} needs its words')
+    expect(problema.args).toEqual([2])
   })
 })

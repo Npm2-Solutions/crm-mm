@@ -133,6 +133,19 @@ def solo_italiano_e_inglese() -> None:
 		set_default_language(centro)
 
 
+def euro_come_si_scrive() -> None:
+	"""The euro where the centre's language writes it: after the amount in Italian
+	(«60,00 €»), before it in English («€60.00»). The framework writes every
+	amount by its Currency's ``symbol_on_right``: /prenota's price, a deal's
+	value and a company's revenue read «€ 60,00» to an Italian centre."""
+	if not frappe.db.exists("Currency", "EUR"):
+		return
+	dopo = 1 if del_centro() == "it" else 0
+	if frappe.db.get_value("Currency", "EUR", "symbol_on_right") != dopo:
+		frappe.db.set_value("Currency", "EUR", "symbol_on_right", dopo, update_modified=False)
+		frappe.clear_cache()
+
+
 def utenti_in_italiano_o_inglese() -> int:
 	"""Whoever had chosen another language reads the centre's (the patch, once):
 	DottorCloud has no words in it. How many."""

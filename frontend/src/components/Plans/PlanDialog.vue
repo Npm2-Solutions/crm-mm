@@ -45,6 +45,12 @@
             )
           }}
         </p>
+        <!-- a new plan, still empty, may start from a template -->
+        <PlanTemplates
+          v-if="!plan.name && !plan.items.length && plan.plan_type"
+          :plan-type="plan.plan_type"
+          @use="useTemplate"
+        />
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl v-model="plan.title" :label="__('Title')" />
           <FormControl
@@ -95,44 +101,99 @@
           </div>
         </div>
 
+        <!-- the week, a day at a time: every day's moments, then each
+             weekday's own; the number says how many each holds -->
+        <div class="flex flex-col gap-2">
+          <div
+            class="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1"
+            role="tablist"
+            :aria-label="__('Day')"
+          >
+            <button
+              v-for="giorno in giorni"
+              :key="giorno.day"
+              type="button"
+              role="tab"
+              class="touch-target shrink-0 rounded-full border px-3 py-1 text-sm"
+              :class="
+                giorno.day === day
+                  ? 'border-transparent bg-surface-gray-10 text-ink-white hover:bg-surface-gray-9'
+                  : 'border-outline-gray-2 text-ink-gray-7 hover:bg-surface-gray-2'
+              "
+              :aria-selected="giorno.day === day"
+              @click="day = giorno.day"
+            >
+              {{ __(giorno.day) }}
+              <span v-if="giorno.count" class="opacity-70">
+                {{ giorno.count }}
+              </span>
+            </button>
+          </div>
+          <p
+            v-if="day !== OGNI_GIORNO && everyDayCount"
+            class="text-p-xs text-ink-gray-6"
+          >
+            {{
+              everyDayCount === 1
+                ? __('Plus one moment of every day.')
+                : __('Plus {0} moments of every day.', [everyDayCount])
+            }}
+          </p>
+        </div>
+
+        <!-- what the day gives, next to the targets, while it is written -->
+        <DayTotals
+          v-if="offre(tipo, 'nutrients') && hasFoods"
+          :totals="dayTotals"
+          :targets="plan.targets"
+          :title="
+            day === OGNI_GIORNO
+              ? __('Every day')
+              : __('{0}, with every day’s moments', [__(day)])
+          "
+        />
+
         <section
-          v-for="moment in plan.moments"
+          v-for="moment in momentsOfDay"
           :key="moment.key"
-          class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-3"
+          class="flex flex-col gap-2 rounded-lg border border-outline-gray-2 p-3"
         >
-          <!-- on a phone the moment's name has its line («Spuntino del
-               mattino» was cut), its day, time and bin the next -->
-          <div class="flex flex-wrap items-end gap-2">
-            <div class="min-w-40 flex-1 max-md:basis-full">
-              <FormControl v-model="moment.label" :label="__('Moment')" />
-            </div>
-            <div class="w-40 max-md:flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="min-w-40 flex-1">
               <FormControl
-                v-model="moment.day"
-                type="select"
-                :label="__('Day')"
-                :options="dayOptions"
+                v-model="moment.label"
+                :aria-label="__('Moment')"
+                :placeholder="__('Moment')"
               />
             </div>
-            <div class="w-32 max-md:flex-1">
+            <div class="w-32">
               <FormControl
                 v-model="moment.time"
                 type="time"
-                :label="__('Time')"
+                :aria-label="__('Time')"
               />
             </div>
-            <Button
-              variant="ghost"
-              icon="trash-2"
-              class="touch-target shrink-0"
-              :aria-label="__('Remove the moment')"
-              @click="removeMoment(moment)"
-            />
+            <span
+              v-if="offre(tipo, 'nutrients') && momentKcal(moment.key) !== null"
+              class="shrink-0 text-p-sm tabular-nums text-ink-gray-7"
+              :title="momentLine(moment.key)"
+            >
+              {{ __('{0} kcal', [momentKcal(moment.key)]) }}
+            </span>
+            <Dropdown :options="momentActions(moment)" placement="right">
+              <Button
+                variant="ghost"
+                icon="more-horizontal"
+                class="touch-target shrink-0"
+                :aria-label="__('More about the moment')"
+              />
+            </Dropdown>
           </div>
           <FormControl
+            v-if="moment.note || noteOpen.has(moment.key)"
             v-model="moment.note"
             type="textarea"
-            :rows="moment.note ? 4 : 2"
+            :rows="3"
             :placeholder="
               offre(tipo, 'meals')
                 ? __('How to prepare it: the patient reads it with the meal')
@@ -148,14 +209,15 @@
             @remove="removeItem(item)"
           />
           <div class="flex flex-wrap items-center gap-2">
-            <Dropdown :options="addOptions(moment)" placement="left">
-              <Button
-                size="sm"
-                icon-left="plus"
-                class="w-fit"
-                :label="__('Add')"
-              />
-            </Dropdown>
+            <!-- the libraries open to be browsed, the rest goes in as it is -->
+            <Button
+              v-for="genere in plan.item_kinds || []"
+              :key="genere"
+              size="sm"
+              :icon-left="ADD[genere]?.icon || 'plus'"
+              :label="ADD[genere] ? ADD[genere].label : __(genere)"
+              @click="add(genere, moment)"
+            />
             <Button
               v-if="offre(tipo, 'recipes') && plan.recipes?.on"
               size="sm"
@@ -169,27 +231,52 @@
               "
               @click="openRecipes(moment)"
             />
-            <span
-              v-if="offre(tipo, 'nutrients') && momentLine(moment.key)"
-              class="text-p-xs text-ink-gray-5"
-            >
-              {{ momentLine(moment.key) }}
-            </span>
           </div>
         </section>
-        <Button
-          class="w-fit"
-          icon-left="plus"
-          :label="__('Add a moment')"
-          @click="addMoment"
-        />
+        <div class="flex flex-wrap gap-2">
+          <Button
+            icon-left="plus"
+            :label="
+              day === OGNI_GIORNO
+                ? __('Add a moment of every day')
+                : __('Add a moment on {0}', [__(day)])
+            "
+            @click="addMoment"
+          />
+          <Button
+            v-if="day !== OGNI_GIORNO && momentsOfDay.length"
+            icon-left="copy"
+            :label="__('Copy this day into…')"
+            @click="openCopy({ day })"
+          />
+        </div>
         <PlanNutrientsTable
           v-if="offre(tipo, 'nutrients') && hasFoods"
           :days="days"
           :targets="plan.targets"
           :missing="missing"
         />
+        <SaveTemplateDialog
+          v-if="templating.opened"
+          v-model="templating.show"
+          :data="templating.data"
+          :suggested-title="plan.title"
+        />
+        <CopyToDaysDialog
+          v-model="copy.show"
+          :title="copy.title"
+          :from="copy.from"
+          :note="copy.note"
+          @copy="doCopy"
+        />
         <ErrorMessage :message="error" />
+        <LibraryBrowser
+          v-if="browser.opened"
+          v-model="browser.show"
+          :kind="browser.kind"
+          :moment="browser.moment?.label || ''"
+          @choose="addChosen"
+        />
         <!-- inside the plan's dialog: one layer on the other, for the eye and
              for a screen reader -->
         <RecipeDialog
@@ -229,8 +316,23 @@
             {{ __(outcome) }}
           </span>
         </div>
+        <!-- how hard or painful it felt, as the person said it in their area -->
+        <p
+          v-if="plan.status !== 'Draft' && fatica"
+          class="flex items-center gap-1.5 text-p-sm text-ink-gray-7"
+        >
+          <span class="lucide-activity size-4" aria-hidden="true" />
+          {{
+            __(
+              'Effort or pain in the last two weeks: {0}/10 on average, last {1}',
+              [numeroDelleTabelle(fatica.average, appLocale()), fatica.last],
+            )
+          }}
+        </p>
         <section
-          v-for="moment in plan.moments.filter((m) => itemsOf(m.key).length)"
+          v-for="moment in inOrdineDiGiorno(plan.moments).filter(
+            (m) => itemsOf(m.key).length,
+          )"
           :key="moment.key"
           class="flex flex-col gap-2"
         >
@@ -252,24 +354,43 @@
             :key="item.key"
             class="flex flex-wrap items-center justify-between gap-2 border-b border-outline-gray-1 pb-2 last:border-0"
           >
-            <div class="flex min-w-0 flex-col">
-              <span class="text-p-base text-ink-gray-8">
-                {{ describe(item) }}
-              </span>
-              <span
-                v-if="item.alternatives || item.note"
-                class="text-p-sm text-ink-gray-5"
-              >
-                {{ [item.alternatives, item.note].filter(Boolean).join(' · ') }}
-              </span>
+            <div class="flex min-w-0 items-center gap-3">
+              <img
+                v-if="item.exercise_detail?.picture && !rotte.has(item.key)"
+                :src="item.exercise_detail.picture"
+                alt=""
+                loading="lazy"
+                class="size-12 shrink-0 rounded-md bg-white object-contain ring-1 ring-outline-gray-1"
+                @error="rotte.add(item.key)"
+              />
+              <div class="flex min-w-0 flex-col">
+                <span class="text-p-base text-ink-gray-8">
+                  {{ describe(item) }}
+                </span>
+                <span
+                  v-if="item.alternatives || item.note"
+                  class="text-p-sm text-ink-gray-5"
+                >
+                  {{
+                    [item.alternatives, item.note].filter(Boolean).join(' · ')
+                  }}
+                </span>
+              </div>
             </div>
             <div v-if="plan.status !== 'Draft'" class="flex shrink-0 gap-0.5">
               <span
-                v-for="day in giorniDellaVoce(plan.logs, item.key, plan.days)"
-                :key="day.day"
+                v-for="giorno in giorniDellaVoce(
+                  plan.logs,
+                  item.key,
+                  plan.days,
+                )"
+                :key="giorno.day"
                 class="size-2.5 rounded-sm"
-                :class="dot(day.outcome)"
-                :title="day.day + (day.outcome ? ' · ' + __(day.outcome) : '')"
+                :class="dot(giorno.outcome)"
+                :title="
+                  giorno.day +
+                  (giorno.outcome ? ' · ' + __(giorno.outcome) : '')
+                "
               />
             </div>
           </div>
@@ -294,14 +415,32 @@
         v-if="editing"
         class="dialog-footer flex flex-wrap items-center justify-between gap-2"
       >
-        <Button
-          v-if="plan.name"
-          variant="ghost"
-          theme="red"
-          :label="__('Delete the draft')"
-          @click="remove"
-        />
-        <span v-else />
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-if="plan.name"
+            variant="ghost"
+            theme="red"
+            :label="__('Delete the draft')"
+            @click="conferma = 'delete'"
+          />
+          <!-- on a phone its icon: the row of actions stays one row -->
+          <Button
+            v-if="plan.items.length"
+            variant="ghost"
+            icon-left="bookmark"
+            class="max-md:hidden"
+            :label="__('Save as a template')"
+            @click="openTemplating"
+          />
+          <Button
+            v-if="plan.items.length"
+            variant="ghost"
+            icon="bookmark"
+            class="md:hidden"
+            :aria-label="__('Save as a template')"
+            @click="openTemplating"
+          />
+        </div>
         <div class="flex gap-2">
           <Button
             :label="__('Save the draft')"
@@ -315,8 +454,52 @@
             variant="solid"
             :label="__('Publish')"
             :loading="busy === 'publish'"
-            @click="publish"
+            @click="publish()"
           />
+        </div>
+        <div
+          v-if="conferma === 'delete'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{ __('The draft is deleted with what is written in it.') }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              theme="red"
+              :label="__('Delete the draft')"
+              :loading="busy === 'delete'"
+              @click="remove"
+            />
+          </div>
+        </div>
+        <!-- publishing closes the plan of the same kind the person follows now:
+             said, and asked, before it happens -->
+        <div
+          v-if="conferma === 'publish'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{
+              __(
+                'Publishing it closes «{0}», which the person follows now: their area will show only this one.',
+                [plan.closes_on_publish.map((p) => p.title).join(', ')],
+              )
+            }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              :label="__('Publish and close the other')"
+              :loading="busy === 'publish'"
+              @click="publish(true)"
+            />
+          </div>
         </div>
       </div>
       <div v-else class="dialog-footer flex flex-wrap justify-end gap-2">
@@ -327,11 +510,33 @@
           @click="shopping = true"
         />
         <Button
-          v-if="plan.can_close"
+          v-if="plan.can_close && conferma !== 'close'"
           :label="__('Close the plan')"
           :loading="busy === 'close'"
-          @click="close"
+          @click="conferma = 'close'"
         />
+        <div
+          v-if="conferma === 'close'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{
+              __(
+                'Closed, the plan leaves the person’s area; what they ticked stays here.',
+              )
+            }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              :label="__('Close the plan')"
+              :loading="busy === 'close'"
+              @click="close"
+            />
+          </div>
+        </div>
         <Button
           v-if="plan.can_version"
           variant="solid"
@@ -350,28 +555,45 @@
 </template>
 
 <script setup>
+import LibraryBrowser from '@/components/Plans/LibraryBrowser.vue'
+import CopyToDaysDialog from '@/components/Plans/CopyToDaysDialog.vue'
+import DayTotals from '@/components/Plans/DayTotals.vue'
 import PlanItemEditor from '@/components/Plans/PlanItemEditor.vue'
+import PlanTemplates from '@/components/Plans/PlanTemplates.vue'
+import SaveTemplateDialog from '@/components/Plans/SaveTemplateDialog.vue'
 import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
 import ShoppingListDialog from '@/components/Clinic/ShoppingListDialog.vue'
 import { dateFormat, formatDate } from '@/utils'
+import { appLocale } from '@/utils/locale'
 import { hhmm } from '@/utils/scheduler'
 import {
   CIBO,
+  ESERCIZIO,
   ESITI,
   GIORNI,
   GRUPPO,
   NUTRIENTI,
   OGNI_GIORNO,
+  copiaGiorno,
+  copiaMomento,
   descrivi,
   giorniDellaVoce,
+  grammiIniziali,
+  inOrdineDiGiorno,
+  numeroDelleTabelle,
+  faticaDetta,
+  momentiDelGiorno,
   momentiIniziali,
+  momentiPerGiorno,
+  perOgniGiorno,
   nuovaVoce,
   nuovoMomento,
   nutrienti,
   offre,
   perGiorno,
   rigaNutrienti,
+  totaleDelGiorno,
 } from '@/utils/piani'
 import {
   Badge,
@@ -410,13 +632,10 @@ const tipo = computed(() => ({
   items: plan.item_kinds || [],
   features: plan.features || [],
 }))
-const dayOptions = [OGNI_GIORNO, ...GIORNI].map((day) => ({
-  label: __(day),
-  value: day,
-}))
 
 // what the server gives, as the editor holds it
 function fill(data) {
+  conferma.value = ''
   for (const key of Object.keys(plan)) delete plan[key]
   Object.assign(plan, data, {
     show_calories: Boolean(data.show_calories),
@@ -445,6 +664,7 @@ watch(show, async (open) => {
       moments: firstMoments(props.kind),
       items: [],
     })
+    firstDay()
     if (offre(props.kind, 'recipes')) {
       plan.recipes = await call('crm.clinica.menu.recipes_available', {
         lead: props.lead,
@@ -458,6 +678,7 @@ watch(show, async (open) => {
     // a stage's plan starts empty on the server: the same first moments as a new one
     if (plan.can_edit && !plan.moments.length && !plan.items.length)
       plan.moments = firstMoments(tipo.value)
+    firstDay()
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message
   } finally {
@@ -484,8 +705,145 @@ function itemsOf(key) {
   return plan.items.filter((item) => item.moment === key)
 }
 
+// ------------------------------------------------------------ the week
+
+// the day the editor shows: every day's moments, or a weekday's own
+const day = ref(OGNI_GIORNO)
+const giorni = computed(() => momentiPerGiorno(plan.moments))
+const momentsOfDay = computed(() => momentiDelGiorno(plan.moments, day.value))
+const everyDayCount = computed(
+  () => momentiDelGiorno(plan.moments, OGNI_GIORNO).length,
+)
+
+// a plan opens on the first day that holds something: every day's, else a
+// weekday's own
+function firstDay() {
+  const pieno = giorni.value.find((g) => g.count)
+  day.value = pieno ? pieno.day : OGNI_GIORNO
+}
+
 function addMoment() {
-  plan.moments.push(nuovoMomento(''))
+  plan.moments.push(nuovoMomento('', day.value))
+}
+
+// a moment's note opens when asked for; one written stays open
+const noteOpen = reactive(new Set())
+
+function momentActions(moment) {
+  const azioni = []
+  if (!moment.note && !noteOpen.has(moment.key))
+    azioni.push({
+      label: __('Add a note'),
+      icon: 'edit-3',
+      onClick: () => noteOpen.add(moment.key),
+    })
+  // an every-day moment copied into a weekday would come twice on that day:
+  // it is made one of each weekday instead, to change day by day
+  azioni.push(
+    (moment.day || OGNI_GIORNO) === OGNI_GIORNO
+      ? {
+          label: __('One for each day of the week'),
+          icon: 'copy',
+          onClick: () => splitByDay(moment),
+        }
+      : {
+          label: __('Copy into other days…'),
+          icon: 'copy',
+          onClick: () => openCopy({ moment }),
+        },
+    {
+      label: __('Duplicate here'),
+      icon: 'plus-square',
+      onClick: () => {
+        const copia = copiaMomento(
+          moment,
+          plan.items,
+          moment.day || OGNI_GIORNO,
+        )
+        const dove = plan.moments.indexOf(moment) + 1
+        plan.moments.splice(dove, 0, copia.momento)
+        plan.items.push(...copia.voci)
+      },
+    },
+    {
+      label: __('Move to…'),
+      icon: 'corner-up-right',
+      submenu: [OGNI_GIORNO, ...GIORNI]
+        .filter((g) => g !== (moment.day || OGNI_GIORNO))
+        .map((g) => ({
+          label: __(g),
+          onClick: () => (moment.day = g),
+        })),
+    },
+    {
+      label: __('Remove the moment'),
+      icon: 'trash-2',
+      theme: 'red',
+      onClick: () => removeMoment(moment),
+    },
+  )
+  return azioni
+}
+
+function splitByDay(moment) {
+  const copia = perOgniGiorno(moment, plan.items)
+  removeMoment(moment)
+  plan.moments.push(...copia.momenti)
+  plan.items.push(...copia.voci)
+  day.value = GIORNI[0]
+  toast.success(
+    __('«{0}» is now one for each day: change the days that differ', [
+      moment.label || __('Moment'),
+    ]),
+  )
+}
+
+// a meal or a session into other days, or a whole day
+const copy = reactive({
+  show: false,
+  title: '',
+  from: '',
+  note: '',
+  moment: null,
+})
+
+function openCopy({ moment = null, day: giorno = null }) {
+  Object.assign(copy, {
+    show: true,
+    moment,
+    from: moment ? moment.day || OGNI_GIORNO : giorno,
+    note: moment
+      ? ''
+      : __('The days chosen take its moments in place of their own.'),
+    title: moment
+      ? __('Copy «{0}» into…', [moment.label || __('Moment')])
+      : __('Copy {0} into…', [__(giorno)]),
+  })
+}
+
+function doCopy(verso) {
+  if (copy.moment) {
+    for (const giorno of verso) {
+      const copia = copiaMomento(copy.moment, plan.items, giorno)
+      plan.moments.push(copia.momento)
+      plan.items.push(...copia.voci)
+    }
+  } else {
+    // the days chosen take the copied day's moments in place of their own
+    const via = new Set(
+      plan.moments.filter((m) => verso.includes(m.day)).map((m) => m.key),
+    )
+    plan.items = plan.items.filter((item) => !via.has(item.moment))
+    plan.moments = plan.moments.filter((m) => !via.has(m.key))
+    const copia = copiaGiorno(plan.moments, plan.items, copy.from, verso)
+    plan.moments.push(...copia.momenti)
+    plan.items.push(...copia.voci)
+  }
+  toast.success(
+    verso.length === 1
+      ? __('Copied into {0}', [__(verso[0])])
+      : __('Copied into {0} days', [verso.length]),
+  )
 }
 
 function removeMoment(moment) {
@@ -497,12 +855,61 @@ function removeItem(item) {
   plan.items = plan.items.filter((i) => i !== item)
 }
 
-function addOptions(moment) {
-  return (plan.item_kinds || []).map((kind) => ({
-    label: __(kind),
-    onClick: () => plan.items.push(nuovaVoce(kind, moment.key)),
-  }))
+// what a moment adds: an exercise or a food from its library, browsed and
+// chosen several at once; a habit, a food group as they are
+const ADD = {
+  [ESERCIZIO]: { label: __('Exercises'), icon: 'lucide-dumbbell' },
+  [CIBO]: { label: __('Foods'), icon: 'lucide-apple' },
 }
+const LIBRERIA = { [ESERCIZIO]: 'exercise', [CIBO]: 'food' }
+const browser = reactive({
+  opened: false,
+  show: false,
+  kind: 'exercise',
+  moment: null,
+})
+
+function add(kind, moment) {
+  if (!LIBRERIA[kind]) {
+    plan.items.push(nuovaVoce(kind, moment.key))
+    return
+  }
+  Object.assign(browser, {
+    opened: true,
+    show: true,
+    kind: LIBRERIA[kind],
+    moment,
+  })
+}
+
+function addChosen(rows) {
+  const moment = browser.moment
+  if (!moment) return
+  for (const row of rows) {
+    const item = nuovaVoce(
+      browser.kind === 'food' ? CIBO : ESERCIZIO,
+      moment.key,
+    )
+    if (browser.kind === 'food')
+      Object.assign(item, {
+        food: row.name,
+        food_name: row.food_name,
+        food_detail: row,
+        // the library's portion to start from, changed as the diet wants
+        quantity_g: grammiIniziali(row),
+      })
+    else
+      Object.assign(item, {
+        exercise: row.name,
+        exercise_name: row.exercise_name,
+        exercise_detail: row,
+      })
+    plan.items.push(item)
+  }
+}
+
+// the pictures that did not load leave their place
+const rotte = reactive(new Set())
 
 function describe(item) {
   return descrivi(item, (text, args) => __(text, args))
@@ -566,9 +973,26 @@ async function save(quiet = false) {
   return done
 }
 
-async function publish() {
+// what the person said of the effort, in the order of the days (0 is not said)
+const fatica = computed(() =>
+  faticaDetta(
+    [...(plan.logs || [])]
+      .sort((a, b) => String(a.log_date).localeCompare(String(b.log_date)))
+      .map((l) => l.effort),
+  ),
+)
+
+// an action asked again before it happens: 'publish' or 'close'
+const conferma = ref('')
+
+async function publish(confermato = false) {
   // what is on screen is saved first: the draft published is the one shown
   if (!(await save(true))) return
+  if (!confermato && plan.closes_on_publish?.length) {
+    conferma.value = 'publish'
+    return
+  }
+  conferma.value = ''
   const done = await run('publish', 'publish_plan', { name: plan.name })
   if (done) {
     toast.success(__('Published: the person finds it in their area'))
@@ -577,6 +1001,7 @@ async function publish() {
 }
 
 async function close() {
+  conferma.value = ''
   await run('close', 'close_plan', { name: plan.name })
 }
 
@@ -587,6 +1012,33 @@ async function newVersion() {
 async function remove() {
   const done = await run('delete', 'delete_draft', { name: plan.name })
   if (done) show.value = false
+}
+
+// ------------------------------------------------------------ the templates
+
+// a new plan filled from a template: its content, the plan's kind and state kept
+function useTemplate(content) {
+  const { title, ...resto } = content
+  Object.assign(plan, {
+    instructions: resto.instructions || plan.instructions,
+    show_calories: Boolean(resto.show_calories),
+    targets: Object.fromEntries(
+      NUTRIENTI.map((n) => [n, resto.targets?.[n] ?? '']),
+    ),
+    moments: (resto.moments || []).map((m) => ({ ...m, time: m.time || null })),
+    items: (resto.items || []).map((i) => ({
+      ...i,
+      times_per_week: i.times_per_week ? String(i.times_per_week) : '0',
+    })),
+  })
+  if (!plan.title || plan.title === __(plan.plan_type)) plan.title = title
+  firstDay()
+}
+
+// what the editor holds, kept to start the next plans from
+const templating = reactive({ opened: false, show: false, data: '' })
+function openTemplating() {
+  Object.assign(templating, { opened: true, show: true, data: payload() })
 }
 
 // ------------------------------------------------------------ the nutrients
@@ -618,6 +1070,14 @@ const hasShopping = computed(() =>
   ),
 )
 const days = computed(() => perGiorno(plan.moments, plan.items, foods.value))
+const dayTotals = computed(() =>
+  totaleDelGiorno(plan.moments, plan.items, foods.value, day.value),
+)
+function momentKcal(key) {
+  const items = itemsOf(key)
+  if (!items.some((item) => item.kind === CIBO && item.food)) return null
+  return nutrienti(items, foods.value).kcal
+}
 const missing = computed(
   () => nutrienti(plan.items, foods.value).missing.length,
 )
@@ -638,16 +1098,16 @@ const recipes = reactive({ show: false, moment: null, kcal: '' })
 function suggestedKcal(moment) {
   const target = Number(plan.targets?.kcal)
   if (!target) return ''
-  const day = moment.day === OGNI_GIORNO ? days.value[0]?.day : moment.day
+  const delGiorno = moment.day === OGNI_GIORNO ? days.value[0]?.day : moment.day
   const ofTheDay = plan.moments.filter(
-    (m) => m.day === OGNI_GIORNO || m.day === day,
+    (m) => m.day === OGNI_GIORNO || m.day === delGiorno,
   )
   const empty = ofTheDay.filter(
     (m) =>
       m.key !== moment.key &&
       !itemsOf(m.key).some((item) => item.kind === CIBO && item.food),
   )
-  const total = days.value.find((row) => row.day === day)?.kcal || 0
+  const total = days.value.find((row) => row.day === delGiorno)?.kcal || 0
   const own = nutrienti(itemsOf(moment.key), foods.value).kcal
   const left = target - (total - own)
   return left > 0 ? Math.round(left / (empty.length + 1)) : ''

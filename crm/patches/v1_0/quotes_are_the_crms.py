@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The dental care plans become the CRM's quotes (docs/gestionale-medico/design.md,
+"""The dental care plans become the CRM's quotes (docs/verticali/clinica/design.md,
 "Tre strati"): a beauty centre's package and a gym's personal training are quotes
 as a dentist's care plan is.
 

@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda on a phone (docs/progetto-ghl/29): a grid of hours shows four of
+  The agenda on a phone (docs/crm/29): a grid of hours shows four of
   them at a time and a short appointment as a sliver, so a phone opens on the
   day as a list - when, who, what - in the order it happens, with a line where
   "now" falls. The week above is a tap away from any of its days; the hours'
@@ -147,7 +147,7 @@
                   statoDaDire(riga) ||
                   risposte.has(riga.id)
                 "
-                class="flex shrink-0 flex-wrap gap-1"
+                class="flex min-w-0 max-w-full flex-wrap gap-1"
               >
                 <span
                   v-if="riga.dati.first_visit"
@@ -165,13 +165,16 @@
                      says it: an icon with its words -->
                 <span
                   v-if="risposte.has(riga.id)"
-                  class="flex items-center gap-1 rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+                  class="flex min-w-0 max-w-full items-center gap-1 rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
                 >
                   <span
                     :class="[risposte.get(riga.id).icona, 'size-3 shrink-0']"
                     aria-hidden="true"
                   />
-                  {{ risposte.get(riga.id).testo }}
+                  <!-- a long answer wraps inside its chip, never past the card -->
+                  <span class="min-w-0 break-words">{{
+                    risposte.get(riga.id).testo
+                  }}</span>
                 </span>
               </span>
             </span>

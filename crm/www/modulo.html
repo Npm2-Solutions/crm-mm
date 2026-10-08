@@ -140,6 +140,7 @@
         "Save and finish later": "Salva e finisci dopo",
         "Sign": "Firma",
         "Finish": "Ho finito",
+        "Send": "Invia",
         "Back to the forms": "Torna ai moduli",
         "Saved: you can finish it later from the same link.": "Salvato: puoi finirlo dopo, dallo stesso link.",
         "Still to answer: {0}": "Da rispondere ancora: {0}",
@@ -159,6 +160,9 @@
         "Something went wrong: try again.": "Qualcosa non è andato: riprova.",
         "Nothing is left to fill here.": "Qui non c'è più niente da compilare.",
         "Back to your area": "Torna alla tua area",
+        "Thank you, you have already answered.": "Grazie, hai già risposto.",
+        "Your answers reached {0}: nothing else is needed.": "Le tue risposte sono arrivate a {0}: non serve altro.",
+        "Your answers reached the centre: nothing else is needed.": "Le tue risposte sono arrivate al centro: non serve altro.",
       };
       window.WORDS = (window.BOOT.lang || "it").startsWith("it") ? { ...WORDS_IT, ...IT } : {};
       const t = window.__;
@@ -220,8 +224,20 @@
       async function start() {
         try { view = await api("open_request"); } catch (error) { return fail(error); }
         if (view.session) keep(view.session);
+        // a survey answered already: its link opens nothing more, and says so
+        if (view.done && !view.needs_code && !view.session) return answered();
         if (view.needs_code && !session) return askCode();
         showForms();
+      }
+
+      function answered() {
+        keep(null);
+        screen(
+          h("h1", {}, t("Thank you, you have already answered.")),
+          h("p", { class: "lede" }, view.centre
+            ? t("Your answers reached {0}: nothing else is needed.", [view.centre])
+            : t("Your answers reached the centre: nothing else is needed.")),
+          fromArea ? h("a", { class: "action primary", href: "/area" }, t("Back to your area")) : null);
       }
 
       function askCode(problem = "", sentTo = null) {
@@ -337,7 +353,7 @@
           note,
           h("div", { class: "actions" },
             view.channel === "Link" ? h("button", { class: "secondary", onclick: save }, t("Save and finish later")) : null,
-            h("button", { class: "primary", onclick: (e) => submit(e.currentTarget) }, data.sign_at_desk ? t("Finish") : t("Sign"))));
+            h("button", { class: "primary", onclick: (e) => submit(e.currentTarget) }, data.sign_at_desk ? t("Finish") : data.has_signature === false ? t("Send") : t("Sign"))));
       }
 
       async function save(event) {

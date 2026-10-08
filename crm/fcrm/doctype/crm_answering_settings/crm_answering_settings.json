@@ -21,6 +21,12 @@
   "message_prompt",
   "column_break_messages",
   "message_seconds",
+  "missed_section",
+  "missed_when_nobody_answers",
+  "missed_when_nobody_to_ring",
+  "missed_when_service_answers",
+  "column_break_missed",
+  "sms_to_missed_callers",
   "greeting_section",
   "greeting_source",
   "greeting_text",
@@ -104,6 +110,44 @@
    "fieldname": "retry_after_hours",
    "fieldtype": "Int",
    "label": "Retry After (hours)"
+  },
+  {
+   "fieldname": "missed_section",
+   "fieldtype": "Section Break",
+   "label": "Missed Calls",
+   "description": "When a call counts as missed: whoever the centre knows is heard by the automations (\"Missed Call\"), a number nobody knows may get an SMS. Whether the answering service is on or not."
+  },
+  {
+   "fieldname": "missed_when_nobody_answers",
+   "fieldtype": "Check",
+   "label": "Nobody Answers",
+   "default": "1",
+   "description": "Everyone who answers the number rang and nobody picked up."
+  },
+  {
+   "fieldname": "missed_when_nobody_to_ring",
+   "fieldtype": "Check",
+   "label": "Nobody to Ring",
+   "default": "0",
+   "description": "Nobody answers the number at that moment, so nobody rang."
+  },
+  {
+   "fieldname": "missed_when_service_answers",
+   "fieldtype": "Check",
+   "label": "Answering Service Takes Every Call",
+   "default": "0",
+   "description": "The answering service answers every call: each call counts as missed."
+  },
+  {
+   "fieldname": "column_break_missed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "A number the centre does not know that finds nobody gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number.",
+   "fieldname": "sms_to_missed_callers",
+   "fieldtype": "Check",
+   "label": "Text Callers Nobody Answered"
   },
   {
    "depends_on": "enabled",
@@ -220,7 +264,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 19:00:00.000000",
+ "modified": "2026-10-08 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Answering Settings",

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Dental care plans, without a site (docs/gestionale-medico, phase 3: "piani di cura
+"""Dental care plans, without a site (docs/verticali/clinica, phase 3: "piani di cura
 (odontoiatria)"; the open question 2: "odontogramma, preventivi, piani di cura").
 
 - **The teeth** in the FDI notation (ISO 3950), the one Italian dentists write:

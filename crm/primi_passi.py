@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The first steps: what a centre does to start working with the product, each
-ticked by itself when it is done (docs/progetto-ghl/37).
+ticked by itself when it is done (docs/crm/37).
 
 Every module registers its own steps (`registra_passo`), as it does its
 capabilities: the base the centre's name, its services and hours, the colleagues,

@@ -67,6 +67,8 @@ def offerti() -> list[str]:
 @frappe.whitelist()
 def get_notice_settings() -> dict:
 	livelli.verifica("canali.configura")
+	from crm.area.api import arrivo_dal_telefono
+
 	# the ones the number that sends can send: the offers and the news leave from it
 	from crm.integrations.whatsapp.templates import modelli_inviabili
 
@@ -77,22 +79,28 @@ def get_notice_settings() -> dict:
 		"templates": modelli,
 		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
 		"email_new_documents": cint(frappe.db.get_single_value(IMPOSTAZIONI, "email_new_documents")),
+		"self_check_in": int(arrivo_dal_telefono()),
 	}
 
 
 @frappe.whitelist(methods=["POST"])
 def save_notice_settings(
-	whatsapp_template: str | None = None, email_new_documents: int | None = None
+	whatsapp_template: str | None = None,
+	email_new_documents: int | None = None,
+	self_check_in: int | None = None,
 ) -> dict:
 	"""What the area offers besides the email: the centre's, with the channels'
 	capability. The SMS leave from the centre's one sender (Twilio's page). And
-	whether a new document is told by email (`collegamento`)."""
+	whether a new document is told by email (`collegamento`), and whether the
+	person may say «I'm here» from the area (`api.check_in`)."""
 	livelli.verifica("canali.configura")
 	if whatsapp_template and not frappe.db.exists("WhatsApp Templates", whatsapp_template):
 		frappe.throw(_("This WhatsApp template does not exist"))
 	frappe.db.set_single_value(IMPOSTAZIONI, "whatsapp_template", whatsapp_template or None)
 	if email_new_documents is not None:
 		frappe.db.set_single_value(IMPOSTAZIONI, "email_new_documents", int(bool(cint(email_new_documents))))
+	if self_check_in is not None:
+		frappe.db.set_single_value(IMPOSTAZIONI, "self_check_in", int(bool(cint(self_check_in))))
 	return get_notice_settings()
 
 

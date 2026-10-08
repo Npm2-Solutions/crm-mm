@@ -16,6 +16,9 @@ Builder step schema (ordered list; every step may carry "label" for go_to and
     {"type": "send_email", "subject", "message", "email_template"?}
     {"type": "send_sms", "message"}
     {"type": "send_whatsapp_template", "template", "template_parameters"?: [..]}
+    {"type": "send_form", "template", "via": "email|sms|whatsapp", "message"?,
+                          "whatsapp_template"?, "template_parameters"?: [..]}
+                          # a form's link ({{ form_link }}): a survey after a visit
     {"type": "notify", "message"}
   CRM:
     {"type": "create_task", "title", "due_in_days", "assigned_to"?}
@@ -47,11 +50,16 @@ Conditions: a group is a list of {field, operator, value} ANDed together;
 contains, is_set, is_not_set, greater_than, less_than.
 
 Text fields render Jinja against the record: "Ciao {{ first_name }}"; tracked
-links via {{ tracked_link("slug") }}.
+links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }} (where
+the centre takes no booking online, the line that carries it is left out), a
+review on Google via {{ review_link }}: a message that carries it asks how a visit
+went, and leaves only past `crm.recensioni.chiedi.perche_no` (who agreed, how
+long since the last request, which service).
 """
 
 import json
 import random
+import re
 
 import frappe
 from frappe import _
@@ -59,6 +67,7 @@ from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetim
 from jinja2 import DebugUndefined
 from jinja2.sandbox import SandboxedEnvironment
 
+from crm.recensioni import chiedi as recensioni
 from crm.scheduling.timeutils import hhmm
 from crm.telephony import sms, sms_regole
 from crm.utils import count_field
@@ -84,6 +93,8 @@ EVENT_TO_TRIGGER = {
 	"callback_requested": "Callback Requested",
 	"callback_attempt_failed": "Callback Attempt Failed",
 	"callback_completed": "Callback Completed",
+	# a call nobody answered, from somebody the centre knows (`crm.telephony.persa`)
+	"call_missed": "Missed Call",
 	"sms_received": "Incoming SMS",
 	"reply_received": "Customer Replied",
 	"email_opened": "Email Opened",
@@ -96,7 +107,13 @@ EVENT_TO_TRIGGER = {
 	"inbound_webhook": "Inbound Webhook",
 	# the first time a person comes, or their first invoice (`crm.clienti`)
 	"client_created": "Became Client",
+	# a campaign: nothing raises it, the manager sends it to a list of people
+	# (`crm.automation.campagne`)
+	"started_by_hand": "Started by Hand",
 }
+
+#: The trigger of a campaign: the automations the People list sends to a list.
+A_MANO = EVENT_TO_TRIGGER["started_by_hand"]
 
 TRIGGER_EVENTS = list(EVENT_TO_TRIGGER.values())
 
@@ -129,6 +146,7 @@ ACTION_TYPES = (
 	"send_email",
 	"send_sms",
 	"send_whatsapp_template",
+	"send_form",
 	"notify",
 	"create_task",
 	"assign",
@@ -147,7 +165,7 @@ CONTROL_TYPES = ("wait", "if_else", "split", "goal", "go_to", "exit", "stop_if")
 
 STEP_TYPES = ACTION_TYPES + CONTROL_TYPES
 
-COMMUNICATION_TYPES = ("send_email", "send_sms", "send_whatsapp_template")
+COMMUNICATION_TYPES = ("send_email", "send_sms", "send_whatsapp_template", "send_form")
 
 CONDITION_OPERATORS = (
 	"equals",
@@ -687,9 +705,8 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 				enrollment.current_step += 1
 				continue
 
-			if step_type == "send_sms" and sms.ha_fermato(
-				enrollment.reference_doctype, enrollment.reference_name
-			):
+			sms_in_uscita = step_type == "send_sms" or (step_type == "send_form" and step.get("via") == "sms")
+			if sms_in_uscita and sms.ha_fermato(enrollment.reference_doctype, enrollment.reference_name):
 				# a STOP is heard by every automation, consent or not (doc 52)
 				log_step(
 					enrollment,
@@ -709,7 +726,7 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 
 			adesso = now_datetime()
 			if (
-				step_type == "send_sms"
+				sms_in_uscita
 				and automation.get("marketing_consent")
 				and not sms_regole.ora_consentita(adesso)
 			):
@@ -720,12 +737,30 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 				enrollment.wait_until = sms_regole.prossimo_momento(adesso)
 				break
 
+			payload = state.get("payload") or {}
+			if step_type in COMMUNICATION_TYPES:
+				# asking how a visit went: only who agreed, once in a while (crm.recensioni)
+				motivo = recensioni.perche_no(step, enrollment, ref_doc, payload)
+				if motivo:
+					log_step(enrollment, enrollment.current_step, step_type, "Skipped", motivo)
+					enrollment.current_step += 1
+					continue
+
 			try:
+				if step_type in COMMUNICATION_TYPES:
+					# the review request is written before the message carrying its link leaves
+					frappe.flags.crm_review_link = recensioni.prepara(step, enrollment, ref_doc, payload)
 				detail = execute_step(step, ref_doc, enrollment)
 				log_step(enrollment, enrollment.current_step, step_type, "Success", detail)
+			except PassoSaltato as saltato:
+				log_step(enrollment, enrollment.current_step, step_type, "Skipped", str(saltato))
+			except PassoNonRiuscito as non_riuscito:
+				log_step(enrollment, enrollment.current_step, step_type, "Failed", str(non_riuscito))
 			except Exception:
 				frappe.log_error(frappe.get_traceback(), f"CRM Automation: step failed ({automation.name})")
 				log_step(enrollment, enrollment.current_step, step_type, "Failed", _("See error log"))
+			finally:
+				frappe.flags.crm_review_link = None
 			enrollment.current_step += 1
 			ref_doc.reload()
 	finally:
@@ -947,6 +982,13 @@ def to_naive_utc_free(value):
 
 def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 	step_type = step.get("type")
+	if step_type == "send_form":
+		# the appointment the run is about, for the form's request
+		return step_send_form(step, ref_doc, enrollment)
+	if step_type in ("send_sms", "send_whatsapp_template"):
+		# the number the event came from, for a person who has none on the record
+		invia = step_send_sms if step_type == "send_sms" else step_send_whatsapp_template
+		return invia(step, ref_doc, enrollment)
 	handler = {
 		"send_email": step_send_email,
 		"send_sms": step_send_sms,
@@ -1001,8 +1043,9 @@ def _automation_jenv():
 	return _JENV
 
 
-def render(text: str, ref_doc, preview: bool = False) -> str:
-	"""Render Jinja against the record. In preview mode nothing is minted or logged."""
+def render(text: str, ref_doc, preview: bool = False, extra: dict | None = None) -> str:
+	"""Render Jinja against the record. In preview mode nothing is minted or logged.
+	``extra`` adds what one step alone knows (a form's link)."""
 	if not text:
 		return ""
 
@@ -1015,6 +1058,15 @@ def render(text: str, ref_doc, preview: bool = False) -> str:
 
 	context = ref_doc.as_dict()
 	context["tracked_link"] = tracked_link
+	# the booking page, where the centre takes bookings online (the missed call's
+	# recipe); where it takes none, the line that offers it is left out
+	context["booking_link"] = _pagina_di_prenotazione()
+	if not context["booking_link"]:
+		text = senza_le_righe_di(text, "booking_link")
+	# the review request's own link, written before the message leaves; a preview
+	# shows Google's page itself
+	context["review_link"] = (recensioni.link_di_google() if preview else frappe.flags.crm_review_link) or ""
+	context.update(extra or {})
 	if preview:
 		try:
 			return _automation_jenv().from_string(text).render(context)
@@ -1023,10 +1075,37 @@ def render(text: str, ref_doc, preview: bool = False) -> str:
 	return _automation_jenv().from_string(text).render(context)
 
 
+def _pagina_di_prenotazione() -> str:
+	from crm.scheduling.availability import settings as agenda
+
+	return frappe.utils.get_url("/prenota") if cint(agenda().get("online_booking_enabled")) else ""
+
+
+def senza_le_righe_di(text: str, variabile: str) -> str:
+	"""``text`` without its lines that print ``variabile``, when something else is left
+	to say: «To book now: {{ booking_link }}» goes, a message of one line stays."""
+	segno = re.compile(r"\{\{\s*" + re.escape(variabile) + r"\s*\}\}")
+	righe = text.split("\n")
+	altre = [riga for riga in righe if not segno.search(riga)]
+	if len(altre) == len(righe) or not any(riga.strip() for riga in altre):
+		return text
+	return "\n".join(altre).rstrip()
+
+
+class PassoNonRiuscito(Exception):
+	"""A step that ran and did not do its work (an SMS Twilio refused): logged Failed
+	with its words, never Success."""
+
+
+class PassoSaltato(Exception):
+	"""A step with nothing to do it on (a person without a number, a form not
+	published): logged Skipped with its reason, never Success."""
+
+
 def step_send_email(step, ref_doc) -> str:
 	recipient = ref_doc.get("email")
 	if not recipient:
-		return _("Skipped: record has no email")
+		raise PassoSaltato(_("Skipped: record has no email"))
 	subject = step.get("subject") or ""
 	message = step.get("message") or ""
 	if step.get("email_template") and frappe.db.exists("Email Template", step["email_template"]):
@@ -1043,27 +1122,39 @@ def step_send_email(step, ref_doc) -> str:
 	return _("Email queued to {0}").format(recipient)
 
 
-def step_send_sms(step, ref_doc) -> str:
+def numero_del_passo(ref_doc, enrollment=None) -> str | None:
+	"""Where a message step writes: the record's mobile or phone, else the number the
+	event came from (a missed call's caller, `crm.telephony.persa`): a person found
+	through a contact may have no number of their own on the record."""
+	numero = ref_doc.get("mobile_no") or ref_doc.get("phone")
+	if numero or not enrollment:
+		return numero
+	return (get_state(enrollment).get("payload") or {}).get("number") or None
+
+
+def step_send_sms(step, ref_doc, enrollment=None) -> str:
 	from crm.api.sms import send_automation_sms
 
-	number = ref_doc.get("mobile_no") or ref_doc.get("phone")
+	number = numero_del_passo(ref_doc, enrollment)
 	if not number:
-		return _("Skipped: record has no phone number")
+		raise PassoSaltato(_("Skipped: record has no phone number"))
 	ok = send_automation_sms(
 		to=number,
 		message=render(step.get("message") or "", ref_doc),
 		reference_doctype=ref_doc.doctype,
 		reference_name=ref_doc.name,
 	)
-	return _("SMS sent to {0}").format(number) if ok else _("SMS send failed (see error log)")
+	if not ok:
+		raise PassoNonRiuscito(_("SMS send failed (see error log)"))
+	return _("SMS sent to {0}").format(number)
 
 
-def step_send_whatsapp_template(step, ref_doc) -> str:
+def step_send_whatsapp_template(step, ref_doc, enrollment=None) -> str:
 	if not frappe.db.exists("DocType", "WhatsApp Message"):
-		return _("Skipped: WhatsApp app is not installed")
-	number = ref_doc.get("mobile_no") or ref_doc.get("phone")
+		raise PassoSaltato(_("Skipped: WhatsApp app is not installed"))
+	number = numero_del_passo(ref_doc, enrollment)
 	if not number:
-		return _("Skipped: record has no phone number")
+		raise PassoSaltato(_("Skipped: record has no phone number"))
 	from crm.api.whatsapp import send_whatsapp_template
 
 	# each value goes through render(), so a step can pass {{ first_name }}
@@ -1076,6 +1167,78 @@ def step_send_whatsapp_template(step, ref_doc) -> str:
 		template_parameters=parameters or None,
 	)
 	return _("WhatsApp template {0} sent to {1}").format(step.get("template"), number)
+
+
+FORM_LINK_SMS = "Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}"
+
+
+def step_send_form(step, ref_doc, enrollment=None) -> str:
+	"""A form's link to the person, or to whoever answers for them (`crm.moduli.richieste`):
+	by email in the centre's words, by SMS or WhatsApp in the step's, where
+	{{ form_link }} is the link. A survey opens with the link alone."""
+	from crm.moduli import modelli, richieste
+
+	lead = ref_doc.name if ref_doc.doctype == "CRM Lead" else ref_doc.get("lead")
+	template = step.get("template")
+	if not lead:
+		raise PassoSaltato(_("Skipped: no person"))
+	if not template or not frappe.db.exists(
+		modelli.MODELLO, {"name": template, "enabled": 1, "current_version": ("is", "set")}
+	):
+		raise PassoSaltato(_("Skipped: the form is not published"))
+	payload = (get_state(enrollment).get("payload") or {}) if enrollment else {}
+	appuntamento = payload.get("appointment")
+	if appuntamento and not frappe.db.exists("CRM Appointment", appuntamento):
+		appuntamento = None
+	scadenza = add_to_date(now_datetime(), days=richieste.GIORNI_LINK)
+	via = step.get("via") or "email"
+
+	if via == "email":
+		dove = richieste.destinatario(lead)
+		if not dove.get("email"):
+			raise PassoSaltato(_("Skipped: {0}").format(dove.get("reason")))
+		richieste.manda_il_link(
+			lead, [template], dove, scadenza=scadenza, appointment=appuntamento, dal_centro=True
+		)
+		return _("Form link emailed to {0}").format(dove["email"])
+
+	dove = richieste.destinatario_del_messaggio(lead)
+	if not dove.get("mobile_no"):
+		raise PassoSaltato(_("Skipped: {0}").format(dove.get("reason")))
+	link = richieste.link_per_un_messaggio(
+		lead, [template], dove, scadenza=scadenza, appointment=appuntamento
+	)
+	extra = {"form_link": link}
+	if via == "whatsapp":
+		if not frappe.db.exists("DocType", "WhatsApp Message"):
+			raise PassoSaltato(_("Skipped: WhatsApp app is not installed"))
+		from crm.api.whatsapp import send_whatsapp_template
+
+		parametri = [render(v, ref_doc, extra=extra) for v in (step.get("template_parameters") or [])]
+		send_whatsapp_template(
+			reference_doctype=ref_doc.doctype,
+			reference_name=ref_doc.name,
+			template=step.get("whatsapp_template"),
+			to=dove["mobile_no"],
+			template_parameters=parametri or None,
+		)
+		return _("WhatsApp template {0} sent to {1}").format(step.get("whatsapp_template"), dove["mobile_no"])
+
+	from crm.api.sms import send_automation_sms
+
+	testo = step.get("message") or _(FORM_LINK_SMS)
+	if "form_link" not in testo:
+		# the link is what the step sends: never a message without it
+		testo = testo + " {{ form_link }}"
+	ok = send_automation_sms(
+		to=dove["mobile_no"],
+		message=render(testo, ref_doc, extra=extra),
+		reference_doctype=ref_doc.doctype,
+		reference_name=ref_doc.name,
+	)
+	if not ok:
+		raise PassoNonRiuscito(_("SMS send failed (see error log)"))
+	return _("SMS sent to {0}").format(dove["mobile_no"])
 
 
 def step_create_task(step, ref_doc) -> str:
@@ -1099,13 +1262,13 @@ def step_assign(step, ref_doc) -> str:
 	users = step.get("users") or ([step["user"]] if step.get("user") else [])
 	users = [u for u in users if u and frappe.db.exists("User", u)]
 	if not users:
-		return _("Skipped: no valid user to assign")
+		raise PassoSaltato(_("Skipped: no valid user to assign"))
 
 	if step.get("only_if_unassigned"):
 		from crm.api.doc import assigned_users_of
 
 		if assigned_users_of(ref_doc.doctype, ref_doc.name):
-			return _("Skipped: already assigned")
+			raise PassoSaltato(_("Skipped: already assigned"))
 
 	user = users[0]
 	if len(users) > 1:  # equal round robin: least open assignments among the pool
@@ -1131,7 +1294,7 @@ def step_assign(step, ref_doc) -> str:
 			ignore_permissions=True,
 		)
 	except assign_to.DuplicateToDoError:
-		return _("Skipped: already assigned to {0}").format(user)
+		raise PassoSaltato(_("Skipped: already assigned to {0}").format(user))
 	return _("Assigned to {0}").format(user)
 
 
@@ -1143,7 +1306,7 @@ def step_add_note(step, ref_doc) -> str:
 def step_add_tag(step, ref_doc) -> str:
 	tag = (step.get("tag") or "").strip()
 	if not tag:
-		return _("Skipped: no tag")
+		raise PassoSaltato(_("Skipped: no tag"))
 	from frappe.desk.doctype.tag.tag import add_tag
 
 	add_tag(tag, ref_doc.doctype, ref_doc.name)
@@ -1153,7 +1316,7 @@ def step_add_tag(step, ref_doc) -> str:
 def step_remove_tag(step, ref_doc) -> str:
 	tag = (step.get("tag") or "").strip()
 	if not tag:
-		return _("Skipped: no tag")
+		raise PassoSaltato(_("Skipped: no tag"))
 	from frappe.desk.doctype.tag.tag import remove_tag
 
 	remove_tag(tag, ref_doc.doctype, ref_doc.name)
@@ -1171,9 +1334,9 @@ def step_set_field(step, ref_doc) -> str:
 
 def step_convert_to_deal(step, ref_doc) -> str:
 	if ref_doc.doctype != "CRM Lead":
-		return _("Skipped: only leads can be converted")
+		raise PassoSaltato(_("Skipped: only leads can be converted"))
 	if ref_doc.get("converted"):
-		return _("Skipped: lead already converted")
+		raise PassoSaltato(_("Skipped: lead already converted"))
 	from crm.fcrm.doctype.crm_lead.crm_lead import convert_to_deal
 
 	ref_doc.flags.ignore_permissions = True
@@ -1212,9 +1375,11 @@ def step_webhook(step, ref_doc) -> str:
 def step_add_to_workflow(step, ref_doc) -> str:
 	target = step.get("automation")
 	if not target or not frappe.db.exists("CRM Automation", target):
-		return _("Skipped: automation not found")
+		raise PassoSaltato(_("Skipped: automation not found"))
 	result = enroll(target, ref_doc.doctype, ref_doc.name)
-	return _("Enrolled in {0}").format(target) if result else _("Skipped: not enrolled (filters/re-entry)")
+	if not result:
+		raise PassoSaltato(_("Skipped: not enrolled (filters/re-entry)"))
+	return _("Enrolled in {0}").format(target)
 
 
 def step_remove_from_workflow(step, ref_doc) -> str:
@@ -1480,6 +1645,13 @@ def describe_step(step: dict, ref_doc) -> str:
 		return _("WhatsApp template {0} to {1}").format(
 			step.get("template") or "?", ref_doc.get("mobile_no") or ref_doc.get("phone") or _("no number")
 		)
+	if step_type == "send_form":
+		titolo = step.get("template") and frappe.db.get_value("CRM Form Template", step["template"], "title")
+		frase = {
+			"sms": _("form «{0}» by SMS"),
+			"whatsapp": _("form «{0}» on WhatsApp"),
+		}.get(step.get("via"), _("form «{0}» by email"))
+		return frase.format(titolo or "?")
 	if step_type == "notify":
 		return _("internal notification — {0}").format(text(step.get("message")))
 	if step_type == "create_task":
@@ -1745,7 +1917,7 @@ def on_appointment_updated(doc, method=None):
 		"Completed": "appointment_completed",
 	}.get(doc.status)
 	if event:
-		process_event(event, doc, {"status": doc.status, "service": doc.service})
+		process_event(event, doc, {"status": doc.status, "service": doc.service, "appointment": doc.name})
 		if doc.get("source") == "Online":
 			process_event(event.replace("appointment_", "booking_"), doc, {"status": doc.status})
 

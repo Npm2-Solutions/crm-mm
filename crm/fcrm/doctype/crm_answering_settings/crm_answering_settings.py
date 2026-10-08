@@ -28,8 +28,12 @@ class CRMAnsweringSettings(Document):
 		max_callback_attempts: DF.Int
 		message_prompt: DF.SmallText | None
 		message_seconds: DF.Int
+		missed_when_nobody_answers: DF.Check
+		missed_when_nobody_to_ring: DF.Check
+		missed_when_service_answers: DF.Check
 		retry_after_hours: DF.Int
 		ring_seconds: DF.Int
+		sms_to_missed_callers: DF.Check
 		take_messages: DF.Check
 		use_working_hours: DF.Check
 		voice: DF.Literal["alice", "man", "woman", "Polly.Bianca", "Polly.Carla", "Polly.Giorgio"]

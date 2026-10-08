@@ -348,6 +348,18 @@
           <div>{{ resourceSummary(doc.resources) }}</div>
         </div>
 
+        <!-- which location, where the centre has more than one (docs/crm/62) -->
+        <div
+          v-if="sedeDellAppuntamento"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-map-pin mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="min-w-0 break-words">{{ sedeDellAppuntamento }}</div>
+        </div>
+
         <div
           v-if="doc.total_amount"
           class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
@@ -364,12 +376,119 @@
           </div>
         </div>
 
+        <!-- under a convention: who pays what, the fund's authorisation, the
+             pratica's state (doc 61) -->
+        <div
+          v-if="doc.convention_info"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-shield-check mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <div class="break-words">
+              {{
+                [
+                  doc.convention_info.title,
+                  nomeDellaForma(doc.convention_info.form, t),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </div>
+            <div
+              v-if="doc.convention_info.form === 'Direct'"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{
+                __("The person's share {0} · the fund's {1}", [
+                  money(doc.convention_info.patient_share, doc.currency),
+                  money(doc.convention_info.fund_share, doc.currency),
+                ])
+              }}
+            </div>
+            <div
+              v-if="doc.convention_info.card_number || doc.authorisation"
+              class="text-p-sm text-ink-gray-6 [overflow-wrap:anywhere]"
+            >
+              {{
+                [
+                  doc.convention_info.card_number
+                    ? __('Card {0}', [doc.convention_info.card_number])
+                    : '',
+                  doc.authorisation
+                    ? __('Authorisation {0}', [doc.authorisation])
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <Badge
+                v-if="doc.convention_info.missing_authorisation"
+                variant="subtle"
+                theme="orange"
+                :label="__('Authorisation missing')"
+              />
+              <Badge
+                v-else-if="doc.convention_info.state"
+                variant="subtle"
+                :theme="statoInParole(doc.convention_info.state, t).theme"
+                :label="statoInParole(doc.convention_info.state, t).label"
+              />
+              <span
+                v-if="doc.convention_info.fund_invoice"
+                class="text-p-sm text-ink-gray-5"
+              >
+                {{ __('Invoice {0}', [doc.convention_info.fund_invoice]) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div
           v-if="doc.location"
           class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
         >
           <MapIcon class="mt-0.5 size-4 shrink-0" />
           <div class="min-w-0 break-words">{{ doc.location }}</div>
+        </div>
+
+        <!-- an online visit: its room, started from here; the person enters
+             from their area -->
+        <div
+          v-if="visitaOnline"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-video mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div>{{ __('Online visit') }}</div>
+            <template v-if="visitaOnline === 'avvia'">
+              <Button
+                variant="solid"
+                icon-left="lucide-video"
+                :label="__('Start the online visit')"
+                :size="isMobileView ? 'lg' : 'sm'"
+                class="touch-target self-start max-md:w-full"
+                @click="avviaLaVisita(doc.video_link)"
+              />
+              <div class="text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]">
+                {{ doc.video_link }}
+              </div>
+            </template>
+            <div v-else class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  "No link to enter it yet: paste one in the appointment, or the professional's own room in their hours.",
+                )
+              }}
+            </div>
+          </div>
         </div>
 
         <div
@@ -813,6 +932,37 @@
           :placeholder="__('Add a place or a meeting link')"
         />
       </div>
+      <!-- an online visit's room: made by itself on the agency's server, or the
+           professional's own; here the desk pastes another -->
+      <div
+        v-if="service?.online_visit || form.video_link"
+        class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7"
+      >
+        <span class="lucide-video mt-2 size-4 shrink-0" aria-hidden="true" />
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+          <TextInput
+            v-model="form.video_link"
+            class="w-full"
+            variant="outline"
+            type="url"
+            v-bind="tastiera('url')"
+            :aria-label="__('Online visit link')"
+            :placeholder="__('Online visit link (Meet, Zoom, Teams…)')"
+          />
+          <span
+            v-if="service?.online_visit && !form.video_link"
+            class="text-p-sm text-ink-gray-5"
+          >
+            {{
+              meta?.settings?.video_server
+                ? __('Left empty, its room is made when you save.')
+                : __(
+                    "Left empty, it takes the professional's own room, if they have one.",
+                  )
+            }}
+          </span>
+        </div>
+      </div>
       <div class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7">
         <DescriptionIcon class="mt-2 size-4 shrink-0" />
         <Textarea
@@ -846,6 +996,76 @@
           </div>
           <div v-if="quote.data?.source" class="text-p-sm text-ink-gray-5">
             {{ quote.data.source }}
+          </div>
+        </div>
+      </div>
+
+      <!-- who pays: the person, or a convention in direct or indirect form;
+           the person's own covers first (doc 61) -->
+      <div
+        v-if="form.service && opzioniConvenzioni.length"
+        class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7"
+      >
+        <span
+          class="lucide-shield-check mt-2 size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <FormControl
+            v-model="form.convention"
+            type="select"
+            variant="outline"
+            :aria-label="__('Who pays')"
+            :options="opzioniConvenzioni"
+            @update:modelValue="cambiaConvenzione"
+          />
+          <FormControl
+            v-if="form.convention && (quote.data?.forms || []).length > 1"
+            v-model="form.convention_form"
+            type="select"
+            variant="outline"
+            :aria-label="__('Form', null, 'Convention')"
+            :options="opzioniForma"
+            @update:modelValue="refreshPrice"
+          />
+          <FormControl
+            v-if="form.convention && form.convention_form === 'Direct'"
+            v-model="form.authorisation"
+            variant="outline"
+            :aria-label="__('Authorisation')"
+            :placeholder="__('Authorisation number from the fund')"
+            v-bind="tastiera('codice')"
+          />
+          <div
+            v-if="form.convention && quote.data?.patient_share != null"
+            class="text-p-sm text-ink-gray-6"
+          >
+            {{
+              form.convention_form === 'Direct'
+                ? __("The person's share {0} · the fund's {1}", [
+                    money(quote.data.patient_share, quote.data.currency),
+                    money(quote.data.fund_share, quote.data.currency),
+                  ])
+                : __('The person pays {0} and asks the fund for it back', [
+                    money(quote.data.patient_share, quote.data.currency),
+                  ])
+            }}
+          </div>
+          <div
+            v-if="
+              form.convention &&
+              quote.data?.requires_authorisation &&
+              !(form.authorisation || '').trim()
+            "
+            class="flex items-center gap-1.5 text-p-sm text-ink-amber-8"
+          >
+            <span
+              class="lucide-triangle-alert size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            {{
+              __('Authorisation missing: the fund wants it before the visit')
+            }}
           </div>
         </div>
       </div>
@@ -944,6 +1164,9 @@
 </template>
 
 <script setup>
+import { useSedi } from '@/composables/sedi'
+import { nomeDellaSede } from '@/utils/sedi'
+import { chiedi } from '@/utils/chiedi'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import DescriptionIcon from '@/components/Icons/DescriptionIcon.vue'
 import MapIcon from '@/components/Icons/MapIcon.vue'
@@ -960,6 +1183,7 @@ import {
   segnoDelPromemoria,
 } from '@/utils/promemoriaAppuntamenti'
 import { laSeduta } from '@/utils/cicli'
+import { nomeDellaForma, statoInParole } from '@/utils/convenzioni'
 import { appLocale } from '@/utils/locale'
 import {
   adessoDelCentro,
@@ -973,6 +1197,8 @@ import {
 import { partiDellIndirizzo } from '@/utils/sulTelefono'
 import { tastiera } from '@/utils/tastiera'
 import { leggibile } from '@/utils/telefono'
+import { avviaLaVisita, statoDellaVisitaOnline } from '@/utils/visiteOnline'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
   Button,
@@ -990,6 +1216,8 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+
+const t = (text, args, context) => __(text, args, context)
 
 const props = defineProps({
   // details, edit, or new
@@ -1036,24 +1264,29 @@ function load(name) {
   repeatOpen.value = false
   repeat.rule = ''
   cancelling.open = false
-  appointment.submit(
-    { name },
-    {
-      onSuccess: (data) => {
-        doc.value = data
-        // asked to edit (a double click) one it may not change: it reads
-        if (props.mode === 'edit' && !data.can_write) emit('mode', 'details')
-        else if (props.mode !== 'details') loadInto(data)
+  appointment
+    .submit(
+      { name },
+      {
+        onSuccess: (data) => {
+          doc.value = data
+          // asked to edit (a double click) one it may not change: it reads
+          if (props.mode === 'edit' && !data.can_write) emit('mode', 'details')
+          else if (props.mode !== 'details') loadInto(data)
+        },
+        onError: (e) => {
+          toast.error(e.messages?.[0] || __('Could not open the appointment'))
+          emit('close')
+        },
       },
-      onError: (e) => {
-        toast.error(e.messages?.[0] || __('Could not open the appointment'))
-        emit('close')
-      },
-    },
-  )
+    )
+    .catch(() => {})
 }
 
 const services = computed(() => props.meta?.services || [])
+
+// an online visit: its room to start, or the line that it has none yet
+const visitaOnline = computed(() => statoDellaVisitaOnline(doc.value))
 
 function serviceOf(name) {
   return services.value.find((one) => one.name === name)
@@ -1143,10 +1376,9 @@ const changing = ref(false)
 
 function apply(url, params, done) {
   changing.value = true
-  createResource({
+  chiedi({
     url,
     params,
-    auto: true,
     onSuccess: (data) => {
       changing.value = false
       doc.value = data
@@ -1247,10 +1479,9 @@ const cycleActions = computed(() => {
 
 function moveToCycle(cycle) {
   changing.value = true
-  createResource({
+  chiedi({
     url: 'crm.scheduling.cicli.attach',
     params: { appointment: doc.value.name, cycle },
-    auto: true,
     onSuccess: () => {
       changing.value = false
       toast.success(
@@ -1296,10 +1527,9 @@ function subscriptionActions(who) {
 
 function moveToSubscription(who, subscription) {
   changing.value = who.party
-  createResource({
+  chiedi({
     url: 'crm.scheduling.abbonamenti.attach',
     params: { appointment: doc.value.name, subscription, party: who.party },
-    auto: true,
     onSuccess: () => {
       changing.value = false
       toast.success(
@@ -1331,14 +1561,13 @@ const repeatOptions = [
 
 function createSeries() {
   repeating.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.create_series',
     params: {
       name: doc.value.name,
       repeat: repeat.rule,
       occurrences: repeat.occurrences,
     },
-    auto: true,
     onSuccess: (data) => {
       repeating.value = false
       repeat.rule = ''
@@ -1376,7 +1605,11 @@ const emptyForm = () => ({
   participants: [],
   resources: [],
   price_list: '',
+  convention: '',
+  convention_form: '',
+  authorisation: '',
   location: '',
+  video_link: '',
   notes: '',
   override_conflicts: false,
 })
@@ -1503,6 +1736,12 @@ function setEnd(value) {
   if (value) form.end = value
 }
 
+// where it is, where the centre has more than one location (docs/crm/62)
+const { sedi, piuSedi } = useSedi()
+const sedeDellAppuntamento = computed(() =>
+  piuSedi.value ? nomeDellaSede(sedi.value, doc.value?.centre_location) : '',
+)
+
 const quote = createResource({ url: 'crm.api.appointments.quote_price' })
 const slots = createResource({
   url: 'crm.api.appointments.get_available_slots',
@@ -1549,7 +1788,11 @@ function payload() {
       }),
     resources: form.resources.filter((row) => row.resource),
     price_list: form.price_list || null,
+    convention: form.convention || null,
+    convention_form: form.convention ? form.convention_form || null : null,
+    authorisation: form.convention ? (form.authorisation || '').trim() : null,
     location: form.location,
+    video_link: (form.video_link || '').trim(),
     notes: form.notes,
     override_conflicts: form.override_conflicts ? 1 : 0,
   }
@@ -1561,14 +1804,79 @@ function snapshot() {
 
 function refreshPrice() {
   if (!form.service) return
-  quote.submit({
-    service: form.service,
-    when: oraDelCentro(startsOn.value),
-    price_list: form.price_list || null,
-    staff: form.staff,
-    resources: form.resources.map((row) => row.resource).filter(Boolean),
-    participants: form.participants.length || 1,
-  })
+  quote
+    .submit({
+      service: form.service,
+      when: oraDelCentro(startsOn.value),
+      price_list: form.price_list || null,
+      staff: form.staff,
+      resources: form.resources.map((row) => row.resource).filter(Boolean),
+      participants: form.participants.length || 1,
+      convention: form.convention || null,
+      convention_form: form.convention_form || null,
+    })
+    .then((dati) => {
+      // the form the convention allows, when none was chosen yet
+      if (form.convention && dati?.convention_form)
+        form.convention_form = dati.convention_form
+    })
+    .catch(() => {})
+}
+
+// --- who pays (doc 61) -------------------------------------------------------
+
+const convenzioni = createResource({
+  url: 'crm.convenzioni.api.options_for',
+})
+const personaDelPosto = computed(
+  () =>
+    form.participants.find((row) => row.party && row.party_type === 'CRM Lead')
+      ?.party || '',
+)
+watch(
+  () => [personaDelPosto.value, form.date, props.mode],
+  () => {
+    if (props.mode === 'details') return
+    convenzioni
+      .submit({ person: personaDelPosto.value || null, when: form.date })
+      .catch(() => {})
+  },
+  { immediate: true },
+)
+const opzioniConvenzioni = computed(() => {
+  const elenco = convenzioni.data?.conventions || []
+  if (!elenco.length && !form.convention) return []
+  return [
+    { label: __('The person pays'), value: '' },
+    ...elenco.map((c) => ({
+      label: c.covered
+        ? c.card_number
+          ? __('{0} · their card {1}', [c.convention_name, c.card_number])
+          : __('{0} · they are covered', [c.convention_name])
+        : c.convention_name,
+      value: c.name,
+    })),
+    // one no longer offered stays as it was chosen
+    ...(form.convention && !elenco.some((c) => c.name === form.convention)
+      ? [
+          {
+            label: doc.value?.convention_info?.title || form.convention,
+            value: form.convention,
+          },
+        ]
+      : []),
+  ]
+})
+const opzioniForma = computed(() =>
+  (quote.data?.forms || []).map((forma) => ({
+    label: nomeDellaForma(forma, t),
+    value: forma,
+  })),
+)
+function cambiaConvenzione(valore) {
+  form.convention = valore
+  form.convention_form = ''
+  refreshPrice()
 }
 
 function refreshConflicts() {
@@ -1576,37 +1884,41 @@ function refreshConflicts() {
     conflicts.value = []
     return
   }
-  conflictCheck.submit(
-    { appointment: { ...payload(), name: form.name } },
-    { onSuccess: (data) => (conflicts.value = data || []) },
-  )
+  conflictCheck
+    .submit(
+      { appointment: { ...payload(), name: form.name } },
+      { onSuccess: (data) => (conflicts.value = data || []) },
+    )
+    .catch(() => {})
 }
 
 function findSlots() {
   if (!form.service) return
   slotHint.value = ''
-  slots.submit(
-    {
-      service: form.service,
-      start_date: form.date,
-      end_date: dayjs(form.date).add(6, 'day').format('YYYY-MM-DD'),
-      staff: form.staff,
-      resources: form.resources.map((row) => row.resource).filter(Boolean),
-      participants: Math.max(form.participants.length, 1),
-      exclude_appointment: form.name || null,
-    },
-    {
-      onSuccess: (data) => {
-        slotDaysOpen.clear()
-        slotList.value = data || []
-        slotHint.value = slotList.value.length
-          ? __('{0} free times in the next 7 days', [data.length])
-          : __('No free time in the next 7 days')
+  slots
+    .submit(
+      {
+        service: form.service,
+        start_date: form.date,
+        end_date: dayjs(form.date).add(6, 'day').format('YYYY-MM-DD'),
+        staff: form.staff,
+        resources: form.resources.map((row) => row.resource).filter(Boolean),
+        participants: Math.max(form.participants.length, 1),
+        exclude_appointment: form.name || null,
       },
-      onError: (e) =>
-        toast.error(e.messages?.[0] || __('Could not load free times')),
-    },
-  )
+      {
+        onSuccess: (data) => {
+          slotDaysOpen.clear()
+          slotList.value = data || []
+          slotHint.value = slotList.value.length
+            ? __('{0} free times in the next 7 days', [data.length])
+            : __('No free time in the next 7 days')
+        },
+        onError: (e) =>
+          toast.error(e.messages?.[0] || __('Could not load free times')),
+      },
+    )
+    .catch(() => {})
 }
 
 // the time alone: the day is said once, above its times
@@ -1653,36 +1965,38 @@ function toggleStaff(person) {
 
 function autoAssign() {
   if (!form.service) return
-  slots.submit(
-    {
-      service: form.service,
-      start_date: form.date,
-      end_date: form.date,
-      participants: Math.max(form.participants.length, 1),
-      exclude_appointment: form.name || null,
-    },
-    {
-      onSuccess: (data) => {
-        const wanted = `${form.date} ${form.time}`
-        const match =
-          (data || []).find((slot) => {
-            const inizio = delCentro(slot.start)
-            return inizio && `${inizio.giorno} ${inizio.ora}` === wanted
-          }) || null
-        if (!match) {
-          toast.error(__('Nobody is free at this time'))
-          return
-        }
-        form.staff = [...(match.staff || [])]
-        if (
-          match.resources?.length &&
-          !form.resources.some((r) => r.resource)
-        ) {
-          form.resources = match.resources.map((row) => ({ ...row }))
-        }
+  slots
+    .submit(
+      {
+        service: form.service,
+        start_date: form.date,
+        end_date: form.date,
+        participants: Math.max(form.participants.length, 1),
+        exclude_appointment: form.name || null,
       },
-    },
-  )
+      {
+        onSuccess: (data) => {
+          const wanted = `${form.date} ${form.time}`
+          const match =
+            (data || []).find((slot) => {
+              const inizio = delCentro(slot.start)
+              return inizio && `${inizio.giorno} ${inizio.ora}` === wanted
+            }) || null
+          if (!match) {
+            toast.error(__('Nobody is free at this time'))
+            return
+          }
+          form.staff = [...(match.staff || [])]
+          if (
+            match.resources?.length &&
+            !form.resources.some((r) => r.resource)
+          ) {
+            form.resources = match.resources.map((row) => ({ ...row }))
+          }
+        },
+      },
+    )
+    .catch(() => {})
 }
 
 function participantRow(values = {}) {
@@ -1722,19 +2036,21 @@ function pickParty(row, value) {
   }
   // a child without a contact of their own is reached through whoever books for
   // them: the reminders go to the parent
-  partyDetails.submit(
-    { lead: value },
-    {
-      onSuccess: (data) => {
-        row.participant_name = data?.lead_name || value
-        row.email = data?.email || ''
-        row.phone = data?.phone || ''
-        row.booked_by = data?.booked_by || ''
-        row.booked_by_name = data?.booked_by_name || ''
+  partyDetails
+    .submit(
+      { lead: value },
+      {
+        onSuccess: (data) => {
+          row.participant_name = data?.lead_name || value
+          row.email = data?.email || ''
+          row.phone = data?.phone || ''
+          row.booked_by = data?.booked_by || ''
+          row.booked_by_name = data?.booked_by_name || ''
+        },
+        onError: () => (row.participant_name = value),
       },
-      onError: () => (row.participant_name = value),
-    },
-  )
+    )
+    .catch(() => {})
 }
 
 function loadInto(data) {
@@ -1765,7 +2081,11 @@ function loadInto(data) {
       quantity: row.quantity || 1,
     })),
     price_list: data.price_list || '',
+    convention: data.convention || '',
+    convention_form: data.convention_form || '',
+    authorisation: data.authorisation || '',
     location: data.location || '',
+    video_link: data.video_link || '',
     notes: data.notes || '',
     override_conflicts: Boolean(data.override_conflicts),
   })
@@ -1868,10 +2188,9 @@ function save() {
     return
   }
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_appointment',
     params: { appointment: payload(), name: form.name || null },
-    auto: true,
     onSuccess: (data) => {
       saving.value = false
       toast.success(
@@ -1945,10 +2264,9 @@ function confirmDelete() {
         theme: 'red',
         onClick: (closeDialog) => {
           closeDialog()
-          createResource({
+          chiedi({
             url: 'crm.api.appointments.delete_appointment',
             params: { name: doc.value.name },
-            auto: true,
             onSuccess: () => {
               toast.success(__('Appointment deleted'))
               emit('deleted', doc.value.name)

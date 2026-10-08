@@ -37,6 +37,7 @@ class CRMAutomationTrigger(Document):
 			"Callback Requested",
 			"Callback Attempt Failed",
 			"Callback Completed",
+			"Missed Call",
 			"Incoming SMS",
 			"Customer Replied",
 			"Email Opened",
@@ -49,6 +50,7 @@ class CRMAutomationTrigger(Document):
 			"Inbound Webhook",
 			"Became Client",
 			"Became Patient",
+			"Started by Hand",
 		]
 	# end: auto-generated types
 

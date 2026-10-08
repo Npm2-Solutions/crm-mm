@@ -14,7 +14,7 @@ import frappe
 from frappe import _
 
 from crm.marchio import con_nome
-from crm.telephony import answering, callbacks, routing
+from crm.telephony import answering, callbacks, persa, routing
 from crm.telephony.providers.base import (
 	Announcement,
 	CallInstruction,
@@ -48,11 +48,14 @@ def handle_incoming_call(
 	config = answering.settings()
 
 	if answering.takes_every_call(config):
+		persa.chiamata_persa(call_log, from_number, persa.R.SEGRETERIA)
 		return answer_with_service(provider, config, call_log)
 
 	ringing = routing.find_ringing(provider, to_number, from_number)
 
 	if not ringing:
+		# nobody to ring: a missed call where the centre counts it as one
+		persa.chiamata_persa(call_log, from_number, persa.R.NESSUNO_DA_FAR_SQUILLARE)
 		# "Ring Agents First" means exactly that — the announcement is the
 		# fallback, not the surprise
 		if answering.rings_agents_first(config):
@@ -74,7 +77,9 @@ def handle_incoming_call(
 
 def nobody_answered(provider: TelephonyProvider, call_log=None) -> CallInstruction:
 	"""Everyone rang and nobody picked up: the announcement and the callback when the
-	answering service rings first, else the apology."""
+	answering service rings first, else the apology. The automations hear it, or a
+	number nobody knows gets its SMS (`persa`)."""
+	persa.chiamata_persa(call_log, call_log.get("from") if call_log else None, persa.R.NESSUNO_RISPONDE)
 	config = answering.settings()
 	if answering.rings_agents_first(config):
 		return answer_with_service(provider, config, call_log)

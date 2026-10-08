@@ -3,7 +3,7 @@
 
 """The last visit and its service, from the appointments already there.
 
-Recalls pick people by when they last came (docs/gestionale-medico, the second
+Recalls pick people by when they last came (docs/verticali/clinica, the second
 seam): the agenda keeps it from now on, and this finds it in the past. Written
 straight to the table, as the agenda writes it: nobody edited the person.
 """

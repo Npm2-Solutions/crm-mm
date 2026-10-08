@@ -66,6 +66,8 @@ def _cibo_per_l_autore(voce: dict, cibo: dict | None) -> dict:
 def _cibo_per_il_paziente(voce: dict, piano, contesto: dict) -> dict:
 	riga = {
 		"food_name": voce.get("food_name"),
+		# its group: the food's mark, and the kitchen's measure of its grams
+		"food_group": (voce.get("food_detail") or {}).get("food_group"),
 		"quantity_g": voce.get("quantity_g"),
 		"alternatives": voce.get("alternatives"),
 	}
@@ -196,6 +198,24 @@ def search_foods(text: str | None = None, group: str | None = None) -> list[dict
 	)
 
 
+@frappe.whitelist()
+def browse_foods(text: str | None = None, group: str | None = None, start: int | str = 0) -> dict:
+	"""The foods' library a page at a time, filtered by group, with their values for
+	100 g: what a diet's editor browses."""
+	return piani.sfoglia(
+		CIBO,
+		"food_name",
+		text,
+		{"food_group": group},
+		["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI, "source"],
+		("food_group",),
+		start,
+		uso="food",
+		# the drinks are hundreds of mineral waters: after the foods
+		in_fondo={"food_group": ["Drinks"]},
+	)
+
+
 @frappe.whitelist(methods=["POST"])
 def add_food(
 	food_name: str,
@@ -211,6 +231,9 @@ def add_food(
 	"""A food of the centre, when the library has not got it: its values for 100 g
 	from a table, whose name goes with it."""
 	livelli.verifica("piani.scrivi")
+	# a food without its energy counts nothing in a diet: the library leaves one out too
+	if not flt(kcal) > 0:
+		frappe.throw(_("A food needs its kcal for 100 g"))
 	valori = {"kcal": kcal, "protein_g": protein_g, "carbs_g": carbs_g, "fat_g": fat_g, "fibre_g": fibre_g}
 	doc = frappe.get_doc(
 		{

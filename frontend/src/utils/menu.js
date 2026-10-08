@@ -1,7 +1,7 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // For license information, please see license.txt
 
-// The main menu as data (docs/progetto-ghl/34): the centre's work in groups,
+// The main menu as data (docs/crm/34): the centre's work in groups,
 // each entry with its page, its icon (a name of components/Icons/menu.js) and
 // who sees it, on the session (`puo`, `puoUno`, `ambito`, `telefono`: a
 // telephony provider is on). The work of the day in one group with no label,

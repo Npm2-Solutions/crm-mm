@@ -16,7 +16,11 @@
       </h2>
     </template>
     <template #header-actions>
-      <AzioneImpostazioni :loading="saving" :disabled="!dirty" @click="save" />
+      <AzioneImpostazioni
+        :loading="saving"
+        :disabled="!dirty || Boolean(problemaSecondo)"
+        @click="save"
+      />
     </template>
     <template #content>
       <div v-if="settings.data" class="flex flex-col gap-6 pb-6">
@@ -69,6 +73,25 @@
               {{
                 __(
                   'At night, from 21 to 8, it leaves in the morning, or the evening before; never in the last hour, nor for what was just booked.',
+                )
+              }}
+            </span>
+          </div>
+          <div class="flex max-w-sm flex-col gap-1.5">
+            <FormControl
+              v-model.number="form.second_hours_before"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="12"
+              :placeholder="__('None')"
+              :label="__('Second reminder: hours before')"
+            />
+            <ErrorMessage v-if="problemaSecondo" :message="problemaSecondo" />
+            <span v-else class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'Optional: a second reminder the same day, 1 to 12 hours before. Never at night, nor to whoever already said they are coming or cannot come.',
                 )
               }}
             </span>
@@ -246,6 +269,7 @@ import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import {
   modelliAdatti,
+  problemaDelSecondo,
   rigaDelPromemoria,
   segnoDelPromemoria,
   statoDelNostro,
@@ -266,6 +290,7 @@ import { computed, reactive, ref } from 'vue'
 const CAMPI = [
   'enabled',
   'hours_before',
+  'second_hours_before',
   'cancel_on_reply',
   'whatsapp_template',
   'use_sms',
@@ -284,7 +309,7 @@ function fill(data) {
     for (const field of CAMPI) {
       target[field] = TICKS.includes(field)
         ? Boolean(data[field])
-        : data[field] ?? ''
+        : (data[field] ?? '')
     }
   }
 }
@@ -350,6 +375,10 @@ const templateOptions = computed(() => {
   ]
 })
 
+const problemaSecondo = computed(() =>
+  problemaDelSecondo(form.second_hours_before, form.hours_before, __),
+)
+
 const dirty = computed(() =>
   CAMPI.some((field) => String(form[field]) !== String(saved[field])),
 )
@@ -365,6 +394,7 @@ async function save() {
           TICKS.map((field) => [field, form[field] ? 1 : 0]),
         ),
         whatsapp_template: form.whatsapp_template || null,
+        second_hours_before: form.second_hours_before || 0,
       }),
     })
     settings.data = data

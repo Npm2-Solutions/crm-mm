@@ -4,7 +4,7 @@
 
   A person's summary: what one needs to know of them at a glance, the page
   they open on from the People list and the agenda - one person, two doors
-  (docs/progetto-ghl/54). From the conversations they open on the chat, and
+  (docs/crm/54). From the conversations they open on the chat, and
   this sits beside it (`compatto`). Who they are and their next appointment are
   in the head of the page; this says the rest, each line a tap from the tab
   that holds it: the last thing said, the appointments, what they have going,
@@ -136,6 +136,21 @@
             />
           </button>
         </template>
+        <!-- the ones they did not show up to: the desk thinks twice -->
+        <button
+          v-if="righe.no_shows"
+          type="button"
+          :class="riga"
+          @click="apri('events')"
+        >
+          <span
+            class="lucide-calendar-x size-4 shrink-0 text-ink-red-7"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 flex-1 break-words text-p-sm text-ink-gray-8">
+            {{ fraseDelleAssenze(righe.no_shows, (s, v) => __(s, v)) }}
+          </span>
+        </button>
       </section>
 
       <!-- what they have going: cycles, subscriptions, a place in the line;
@@ -180,6 +195,41 @@
         </button>
       </section>
 
+      <!-- the funds and conventions that cover them today (doc 61): who
+           pays, before the desk asks -->
+      <section v-if="righe.covers" :class="carta">
+        <div :class="[testata, 'cursor-default hover:bg-transparent']">
+          <span>{{ __('Funds and conventions') }}</span>
+        </div>
+        <div
+          v-for="(copertura, i) in righe.covers.covers"
+          :key="i"
+          :class="[riga, 'cursor-default hover:bg-transparent']"
+        >
+          <span
+            class="lucide-shield-check mt-0.5 size-4 shrink-0 text-ink-green-7"
+            aria-hidden="true"
+          />
+          <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span class="break-words text-base text-ink-gray-8">
+              {{ copertura.convention_name }}
+            </span>
+            <span class="break-words text-p-sm text-ink-gray-6">
+              {{
+                [
+                  nomeDelTipo(copertura.kind, t),
+                  rigaDellaCopertura(copertura, t, (g) =>
+                    formatDate(g, 'D MMM YYYY'),
+                  ),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </span>
+          </span>
+        </div>
+      </section>
+
       <!-- what is left to collect: the invoices issued, the drafts -->
       <section v-if="righe.to_collect" :class="carta">
         <div :class="[testata, 'cursor-default hover:bg-transparent']">
@@ -204,6 +254,18 @@
             </span>
             <span class="text-p-sm text-ink-gray-6">
               {{ formatDate(fattura.posting_date, 'D MMM YYYY') }}
+            </span>
+            <span
+              v-if="fattura.reminders?.count"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{
+                fraseDeiSolleciti(
+                  fattura.reminders,
+                  (testo, valori) => __(testo, valori),
+                  (giorno) => formatDate(giorno, 'D MMM YYYY'),
+                )
+              }}
             </span>
           </span>
           <span class="shrink-0 text-base tabular-nums text-ink-gray-8">
@@ -327,6 +389,10 @@
                 ])
               }}
             </span>
+            <InstalmentsLine
+              :summary="preventivo.instalments"
+              :currency="preventivo.currency"
+            />
           </span>
           <Badge
             class="shrink-0"
@@ -373,6 +439,7 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import InstalmentsLine from '@/components/Quotes/InstalmentsLine.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
@@ -380,6 +447,7 @@ import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { useFattura } from '@/composables/fattura'
+import { fraseDeiSolleciti } from '@/utils/fattura'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
 import { appLocale } from '@/utils/locale'
@@ -393,6 +461,7 @@ import { APERTE, STATO as STATO_ATTESA, quandoPuo } from '@/utils/attese'
 import { STATO as STATO_PREVENTIVO } from '@/utils/preventivi'
 import {
   TEMA_DELLO_STATO,
+  fraseDelleAssenze,
   prossimi,
   qualcosaDaDire,
   scadenza,
@@ -408,6 +477,7 @@ import {
   dayjsLocal,
   getCachedResource,
 } from 'frappe-ui'
+import { nomeDelTipo, rigaDellaCopertura } from '@/utils/convenzioni'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 

@@ -97,7 +97,7 @@ def crea(ctx: Contesto) -> None:
 	ctx.salva()
 	fatture = []
 	# one series, its numbers in the order of the days: visits and cycles together
-	for giorno, fai in sorted(_visite(ctx, desk) + _cicli(ctx), key=lambda voce: voce[0]):
+	for giorno, fai in sorted(_visite(ctx, desk) + _cicli(ctx) + _rate(ctx), key=lambda voce: voce[0]):
 		with ctx.come(desk):
 			fatta = fai(giorno)
 		if fatta:
@@ -286,6 +286,42 @@ def _ciclo(ctx: Contesto, ciclo, giorno: datetime.date) -> str | None:
 		frappe.clear_last_message()
 		return None
 	return _emetti(ctx, giorno, bozza=bozza, pagamento="MP05")
+
+
+def _rate(ctx: Contesto) -> list[tuple]:
+	"""The instalments of the quotes paid in instalments, each invoiced on the day it
+	fell due and paid then (`crm.preventivi.rate`): the daily round never invoices
+	the demo's."""
+	from crm.preventivi import rate
+
+	persone = persone_della_demo(ctx)
+	voci = []
+	for nome in frappe.get_all(
+		"CRM Quote",
+		filters={"lead": ["in", persone or [""]], "instalments_invoiced": 1, "status": ["in", rate.IN_CORSO]},
+		pluck="name",
+	):
+		for riga in rate.dovute(frappe.get_doc("CRM Quote", nome), ctx.oggi):
+			voci.append(
+				(
+					getdate(riga.due_on),
+					lambda giorno, nome=nome, riga=riga.name: _rata(ctx, nome, riga, giorno),
+				)
+			)
+	return voci
+
+
+def _rata(ctx: Contesto, nome: str, riga: str, giorno: datetime.date) -> str | None:
+	from crm.preventivi import rate
+
+	doc = frappe.get_doc("CRM Quote", nome)
+	_profilo(ctx, doc.lead)
+	try:
+		bozza = rate.fattura(doc, [r for r in doc.instalments if r.name == riga])
+	except frappe.ValidationError:
+		frappe.clear_last_message()
+		return None
+	return _emetti(ctx, giorno, bozza=bozza, pagamento="MP08")
 
 
 def _emetti(

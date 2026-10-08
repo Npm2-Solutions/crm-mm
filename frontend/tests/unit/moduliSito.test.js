@@ -49,6 +49,52 @@ describe('what a use allows', () => {
     expect(wrong[0].field).toBe('firma')
   })
 
+  it('a form of the website asks nobody where it hurts', () => {
+    const site = { onTheSite: true, personFields: PERSON }
+    const wrong = useProblems(
+      form([...contact, { id: 'dolore', type: 'body_chart', label: 'Dolore' }]),
+      site,
+    )
+    expect(codes(wrong)).toEqual([
+      '{0}: where it hurts is asked at the centre, not on the website',
+    ])
+    expect(wrong[0].field).toBe('dolore')
+    // a form of the desk does
+    expect(
+      useProblems(form([{ id: 'dolore', type: 'body_chart', label: 'D' }])),
+    ).toEqual([])
+  })
+
+  it('a survey opens with its link alone: no consent, signature or file', () => {
+    const survey = { withoutCode: true }
+    const wrong = useProblems(
+      form([
+        { id: 'voto', type: 'scale', label: 'Voto', min: 0, max: 10 },
+        { id: 'ok', type: 'consent', label: 'Privacy' },
+        { id: 'firma', type: 'signature', label: 'Firma' },
+        { id: 'foto', type: 'attachment', label: 'Foto' },
+      ]),
+      survey,
+    )
+    expect(wrong.map((p) => p.field)).toEqual(['ok', 'firma', 'foto'])
+    expect(new Set(codes(wrong))).toEqual(
+      new Set([
+        '{0}: a survey opens with its link alone, so it asks no consent, signature or file',
+      ]),
+    )
+  })
+
+  it('a question without words is named by its place, never its key', () => {
+    const [wrong] = useProblems(
+      form([
+        { id: 'voto', type: 'scale', label: 'Voto', min: 0, max: 10 },
+        { id: 'signature', type: 'signature' },
+      ]),
+      { withoutCode: true },
+    )
+    expect(wrong.args).toEqual(['Question 2'])
+  })
+
   it('a sheet records no consent; a form of the desk says nothing of the person', () => {
     const consent = { id: 'ok', type: 'consent', label: 'Privacy' }
     expect(

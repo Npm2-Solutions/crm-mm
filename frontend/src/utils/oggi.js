@@ -1,4 +1,4 @@
-// The desk's day (docs/gestionale-medico, «La giornata della segreteria»): who is
+// The desk's day (docs/verticali/clinica, «La giornata della segreteria»): who is
 // coming, who is waiting and since when, what the last days left open. Pure, so
 // the page only draws and the rules are tested.
 

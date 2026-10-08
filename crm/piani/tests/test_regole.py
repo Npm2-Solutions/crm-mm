@@ -127,6 +127,11 @@ class IlGiornoELaSettimana(UnitTestCase):
 		self.assertFalse(r.in_corso(LUNEDI + datetime.timedelta(days=1), None, LUNEDI))
 		self.assertFalse(r.in_corso(None, LUNEDI - datetime.timedelta(days=1), LUNEDI))
 
+	def test_la_fatica_detta_dalla_persona(self):
+		self.assertEqual(r.fatica([0, 4, None, 7, 6]), {"average": 5.7, "last": 6, "said": 3})
+		# nothing said, or out of the scale, is no answer
+		self.assertIsNone(r.fatica([0, None, 11]))
+
 	def test_il_riepilogo_conta_non_giudica(self):
 		self.assertEqual(
 			r.riepilogo([r.FATTO, r.FATTO, r.SALTATO]), {r.FATTO: 2, r.IN_PARTE: 0, r.SALTATO: 1}

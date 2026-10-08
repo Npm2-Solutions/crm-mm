@@ -1,8 +1,9 @@
 name: Pubblica il sito
 
-# Publishes sito/ on NPM2's HestiaCP server, for every domain in sito/domini.txt:
-# the domain is added in the panel if missing, gets its certificate once its DNS
-# points to the server, and receives the site through sito/deploy.sh. It needs
+# Publishes every brand's website (siti/<brand>/) on NPM2's HestiaCP server, for
+# every domain in its domini.txt: the domain is added in the panel if missing,
+# gets its certificate once its DNS points to the server, and receives the site
+# through the site's own deploy.sh. It needs
 # the HOSTING_SSH_KEY secret (the server's SSH key); without it the run only says
 # so and publishes nothing.
 
@@ -12,7 +13,7 @@ on:
             - develop
             - claude/upbeat-faraday-j8afbh
         paths:
-            - "sito/**"
+            - "siti/**"
             - "brand/**"
             - ".github/workflows/sito-pubblica.yml"
     workflow_dispatch:
@@ -35,7 +36,7 @@ jobs:
         steps:
             - name: Without the key, nothing is published
               if: env.HOSTING_SSH_KEY == ''
-              run: echo "::warning::The HOSTING_SSH_KEY secret is missing, so the site was not published (see sito/README.md)."
+              run: echo "::warning::The HOSTING_SSH_KEY secret is missing, so the site was not published (see siti/README.md)."
 
             - uses: actions/checkout@v4
               if: env.HOSTING_SSH_KEY != ''
@@ -51,7 +52,10 @@ jobs:
             # a site that fails its tests does not go online
             - name: Test
               if: env.HOSTING_SSH_KEY != ''
-              run: node --test sito/test/sito.test.mjs
+              run: |
+                  for sito in siti/*/; do
+                      node --test "$sito"test/*.test.mjs
+                  done
 
             - name: SSH key
               if: env.HOSTING_SSH_KEY != ''
@@ -65,10 +69,12 @@ jobs:
               if: env.HOSTING_SSH_KEY != ''
               run: |
                   export SITO_SSH="root@$HOSTING_IP" SITO_SSH_KEY="$HOME/.ssh/hosting"
-                  for domain in $(grep -v -e '^#' -e '^[[:space:]]*$' sito/domini.txt); do
-                      echo "::group::$domain"
-                      sito/deploy.sh "$domain" --crea --nginx
-                      echo "::endgroup::"
+                  for sito in siti/*/; do
+                      for domain in $(grep -v -e '^#' -e '^[[:space:]]*$' "$sito"domini.txt); do
+                          echo "::group::$domain"
+                          "$sito"deploy.sh "$domain" --crea --nginx
+                          echo "::endgroup::"
+                      done
                   done
 
             - name: Check
@@ -77,7 +83,7 @@ jobs:
                   failed=0
                   echo "| Address | Answer |" >> "$GITHUB_STEP_SUMMARY"
                   echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-                  for domain in $(grep -v -e '^#' -e '^[[:space:]]*$' sito/domini.txt); do
+                  for domain in $(cat siti/*/domini.txt | grep -v -e '^#' -e '^[[:space:]]*$'); do
                       if [[ "$(getent ahostsv4 "$domain" | awk 'NR == 1 {print $1}')" == "$HOSTING_IP" ]]; then
                           url="https://$domain/"
                           code="$(curl -sS -o /dev/null -w '%{http_code}' "$url" || true)"
@@ -98,8 +104,8 @@ jobs:
               if: env.HOSTING_SSH_KEY != ''
               continue-on-error: true
               run: |
-                  if grep -qx 'dottorcloud.com' sito/domini.txt; then
-                      node sito/indexnow.mjs https://dottorcloud.com
+                  if grep -qx 'dottorcloud.com' siti/dottorcloud/domini.txt; then
+                      node siti/dottorcloud/indexnow.mjs https://dottorcloud.com
                   fi
 
             - name: Forget the key

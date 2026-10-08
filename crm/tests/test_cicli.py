@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Cycles of sessions (docs/gestionale-medico, phase 3).
+"""Cycles of sessions (docs/verticali/clinica, phase 3).
 
 The desk sells Mario a cycle of physiotherapy. The appointments of that service join
 it by themselves, and so do the ones already booked when it is sold. The cycle counts

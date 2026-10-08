@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "creation": "2026-10-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "istable": 1,
+ "description": "An instalment of a quote paid in instalments: when, how much, how it goes",
+ "field_order": [
+  "kind",
+  "number",
+  "due_on",
+  "amount",
+  "column_status",
+  "status",
+  "invoice",
+  "paid_on",
+  "problem",
+  "currency"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Deposit\nInstalment",
+   "default": "Instalment"
+  },
+  {
+   "columns": 1,
+   "fieldname": "number",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Number",
+   "description": "The instalment's place in the plan: 0 for the deposit"
+  },
+  {
+   "columns": 2,
+   "fieldname": "due_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due on",
+   "description": "The deposit's is the day the quote was accepted"
+  },
+  {
+   "columns": 2,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "currency"
+  },
+  {
+   "fieldname": "column_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "To pay\nInvoiced\nPaid\nCancelled",
+   "default": "To pay"
+  },
+  {
+   "columns": 2,
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice",
+   "options": "CRM Invoice"
+  },
+  {
+   "fieldname": "paid_on",
+   "fieldtype": "Date",
+   "label": "Paid on",
+   "description": "Where the centre invoices by itself: the day it was marked paid"
+  },
+  {
+   "fieldname": "problem",
+   "fieldtype": "Small Text",
+   "label": "What stopped its invoice"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Preventivi",
+ "name": "CRM Quote Instalment",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

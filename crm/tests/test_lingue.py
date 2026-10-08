@@ -282,3 +282,19 @@ class LApostrofoDavantiAUnaData(UnitTestCase):
 		# other languages, and what is not a sentence
 		self.assertEqual(c("until al 11/10", "en"), "until al 11/10")
 		self.assertIsNone(c(None, "it"))
+
+
+class LEuroComeSiScrive(IntegrationTestCase):
+	def test_dopo_l_importo_in_italiano_prima_in_inglese(self):
+		prima = frappe.db.get_value("Currency", "EUR", "symbol_on_right")
+		try:
+			with patch.object(lingue, "del_centro", return_value="it"):
+				lingue.euro_come_si_scrive()
+			self.assertEqual(frappe.db.get_value("Currency", "EUR", "symbol_on_right"), 1)
+			self.assertIn("€", frappe.utils.fmt_money(60, currency="EUR").split()[-1])
+			with patch.object(lingue, "del_centro", return_value="en"):
+				lingue.euro_come_si_scrive()
+			self.assertEqual(frappe.db.get_value("Currency", "EUR", "symbol_on_right"), 0)
+		finally:
+			frappe.db.set_value("Currency", "EUR", "symbol_on_right", prima, update_modified=False)
+			frappe.clear_cache()

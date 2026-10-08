@@ -212,7 +212,11 @@
               }}
             </div>
           </div>
-          <WeeklyHours v-else v-model="form.availability" />
+          <WeeklyHours
+            v-else
+            v-model="form.availability"
+            :sedi="piuSedi ? opzioniSede : []"
+          />
           <Link
             doctype="CRM Holiday List"
             :modelValue="form.holiday_list"
@@ -283,6 +287,15 @@
               class="max-md:col-span-3 max-md:col-start-1 max-md:row-start-3"
               :placeholder="__('Reason (optional)')"
             />
+            <!-- extra hours somewhere: which location (docs/crm/62) -->
+            <FormControl
+              v-if="piuSedi && !row.unavailable"
+              v-model="row.centre_location"
+              type="select"
+              class="col-span-full max-md:row-start-4"
+              :aria-label="__('Centre location')"
+              :options="opzioniSede"
+            />
             <Button
               variant="ghost"
               icon="lucide-trash-2"
@@ -334,6 +347,27 @@
             />
           </div>
         </section>
+
+        <!-- 4. their own room for online visits (crm.scheduling.visite_online) -->
+        <section class="flex flex-col gap-2">
+          <h3 class="text-p-base-medium text-ink-gray-8">
+            {{ __('Online visits') }}
+          </h3>
+          <FormControl
+            v-model="form.video_link"
+            type="url"
+            v-bind="tastiera('url')"
+            :label="__('Own online visit room')"
+            placeholder="https://meet.google.com/…"
+          />
+          <p class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                "Their fixed room (Meet, Zoom, Teams), for their online visits where the agency gives no video server. Use a service the centre's data processing agreement covers, in the European Union.",
+              )
+            }}
+          </p>
+        </section>
       </div>
     </template>
     <template #actions>
@@ -349,6 +383,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import Link from '@/components/Controls/Link.vue'
 import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
@@ -363,7 +398,19 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 import { hhmm, oggiDelCentro } from '@/utils/scheduler'
+import { useSedi } from '@/composables/sedi'
+import { opzioniDelleSedi } from '@/utils/sedi'
+
+// where a shift is worked, where the centre has more than one location (docs/crm/62)
+const { sedi, piuSedi } = useSedi()
+const opzioniSede = computed(() =>
+  opzioniDelleSedi(sedi.value, __('Any location')).map(({ value, label }) => ({
+    value,
+    label,
+  })),
+)
 import { appLocale } from '@/utils/locale'
+import { tastiera } from '@/utils/tastiera'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { dateFormat } from '@/utils'
@@ -440,6 +487,7 @@ const emptyForm = () => ({
   max_daily_appointments: null,
   max_weekly_appointments: null,
   holiday_list: '',
+  video_link: '',
   availability: [],
   exceptions: [],
   default_availability: [],
@@ -494,12 +542,14 @@ async function openEditor(user = '') {
       max_daily_appointments: data.max_daily_appointments || null,
       max_weekly_appointments: data.max_weekly_appointments || null,
       holiday_list: data.holiday_list || '',
+      video_link: data.video_link || '',
       availability: data.availability || [],
       exceptions: (data.exceptions || []).map((row) => ({
         date: row.date,
         unavailable: Boolean(row.unavailable),
         start_time: hhmm(row.start_time),
         end_time: hhmm(row.end_time),
+        centre_location: row.centre_location || '',
         reason: row.reason || '',
       })),
     })
@@ -519,7 +569,7 @@ function save() {
     return
   }
   saving.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_schedule',
     params: {
       schedule: {
@@ -530,9 +580,9 @@ function save() {
         holiday_list: form.enabled ? form.holiday_list : '',
         availability: form.enabled ? form.availability : [],
         exceptions: form.exceptions,
+        video_link: (form.video_link || '').trim(),
       },
     },
-    auto: true,
     onSuccess: () => {
       saving.value = false
       showEditor.value = false

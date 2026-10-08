@@ -2,8 +2,8 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda's filters in one place: services, rooms or professionals, state,
-  where it was booked - a list of ticks under each heading, how many are on
+  The agenda's filters in one place: on a phone the location (docs/crm/62),
+  services, rooms or professionals, state, where it was booked - a list of ticks under each heading, how many are on
   beside «Filters». Five chips took a whole row above every day; whose agenda
   it is has a control of its own (ChiNellAgenda). On a phone the list is a
   sheet from the bottom (`data-foglio`, telefono.css).
@@ -59,10 +59,8 @@
             class="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-surface-gray-2"
           >
             <Checkbox
-              :modelValue="
-                (modelValue[gruppo.chiave] || []).includes(opzione.value)
-              "
-              @update:modelValue="alterna(gruppo.chiave, opzione.value)"
+              :modelValue="scelto(gruppo, opzione.value)"
+              @update:modelValue="alterna(gruppo, opzione.value)"
             />
             <span
               v-if="opzione.colore"
@@ -100,7 +98,8 @@ import { computed } from 'vue'
 const props = defineProps({
   /** the filters, by key: `{ services: [], statuses: [], … }` */
   modelValue: { type: Object, required: true },
-  /** `[{ chiave, titolo, opzioni: [{ value, label, colore? }], vuoto? }]` */
+  /** `[{ chiave, titolo, opzioni: [{ value, label, colore? }], vuoto?,
+   * singolo? }]`: a `singolo` group takes one value, '' its «all» */
   gruppi: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['cambia', 'azzera'])
@@ -126,8 +125,20 @@ function cambia(chiave, valori) {
   emit('cambia', chiave, valori)
 }
 
-function alterna(chiave, valore) {
+function scelto(gruppo, valore) {
+  const ora = props.modelValue[gruppo.chiave] || []
+  // one of a kind (the location): its «all» is ticked while nothing is
+  if (gruppo.singolo && !valore) return !ora.length
+  return ora.includes(valore)
+}
+
+function alterna(gruppo, valore) {
+  const chiave = gruppo.chiave
   const ora = props.modelValue[chiave] || []
+  if (gruppo.singolo) {
+    cambia(chiave, valore && !ora.includes(valore) ? [valore] : [])
+    return
+  }
   cambia(
     chiave,
     ora.includes(valore) ? ora.filter((v) => v !== valore) : [...ora, valore],

@@ -38,6 +38,7 @@
   "service_provider",
   "column_links",
   "addendum_to",
+  "copied_from",
   "signed_on",
   "amended_from"
  ],
@@ -248,6 +249,14 @@
    "read_only": 1
   },
   {
+   "description": "The visit on the same sheet this one started from: its answers, never its signatures, attachments or consents.",
+   "fieldname": "copied_from",
+   "fieldtype": "Link",
+   "label": "Copied from",
+   "options": "Clinic Record",
+   "read_only": 1
+  },
+  {
    "fieldname": "signed_on",
    "fieldtype": "Datetime",
    "label": "Signed on",
@@ -267,7 +276,7 @@
  "is_submittable": 1,
  "links": [],
  "make_attachments_public": 0,
- "modified": "2026-10-01 11:00:00.000000",
+ "modified": "2026-10-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Record",

@@ -1,13 +1,14 @@
 <!--
   A code again before a document is handed over: design.md, "per scaricare un
-  referto si rientra". Verified, downloads work for fifteen minutes.
+  referto si rientra". Verified, downloads work for fifteen minutes - and a
+  quote is signed, the code saying who signs.
 -->
 <template>
   <Dialog v-model="show" :options="{ title: __('The code'), size: 'sm' }">
     <template #body-content>
       <div class="flex flex-col gap-3">
         <p class="text-p-sm text-ink-gray-6">
-          {{ __('To download a document we send you a code again.') }}
+          {{ reason || __('To download a document we send you a code again.') }}
         </p>
         <FormControl
           v-model="code"
@@ -39,6 +40,8 @@ import { Button, Dialog, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import { messageOf } from '../store'
 
+// why the code is asked: a download, unless the caller says (signing a quote)
+defineProps({ reason: { type: String, default: '' } })
 const emit = defineEmits(['verified'])
 const show = defineModel({ type: Boolean })
 const code = ref('')

@@ -28,12 +28,19 @@ export const SIGNERS = ['patient', 'operator', 'guardian']
 export const SIGNATURE_LEVELS = ['simple', 'advanced', 'qualified']
 export const COLUMN_TYPES = ['text', 'number', 'date', 'yesno']
 export const SIDE_INPUTS = ['number', 'text']
+/** The body chart's outlines: from the front, from the back. */
+export const BODY_VIEWS = ['front', 'back']
 
 const MAX_SECTIONS = 50
 const MAX_FIELDS = 400
 const MAX_OPTIONS = 100
 const MAX_COLUMNS = 20
 const MAX_DECIMALS = 6
+// what a body chart holds: numbered points, strokes by hand and their points
+const MAX_MARKS = 40
+const MAX_STROKES = 40
+const MAX_POINTS = 500
+const MAX_MARK_WORDS = 120
 
 const ID = /^[a-z][a-z0-9_]{0,59}$/
 const NUMBER_TEXT = /^\s*-?[0-9]+(?:[.,][0-9]+)?\s*$/
@@ -228,6 +235,16 @@ for (const definition of [
     condition: 'presence',
     props: ['signer', 'level'],
   },
+  {
+    type: 'body_chart',
+    label: 'Body chart',
+    value: 'body',
+    group: 'Questions',
+    description:
+      'Where it hurts: points and strokes on the body, front and back',
+    condition: 'presence',
+    props: ['views', 'drawing'],
+  },
 ]) {
   registerComponent(definition)
 }
@@ -261,6 +278,147 @@ export function roundHalfUp(x, decimals) {
   const scaled = x * factor + 0.5
   if (!Number.isFinite(scaled)) return x
   return Math.floor(scaled) / factor
+}
+
+// --- the body chart -----------------------------------------------------------
+
+/**
+ * The body's outlines, drawn by NPM2 for DottorCloud: the body, the head over
+ * it, the lines that tell the front from the back. The same as the server's
+ * `crm/moduli/sagome_corpo.json` (a test keeps them equal), so an answer is
+ * drawn the same way here and in the signed PDF.
+ */
+export const BODY_OUTLINES = Object.freeze({
+  viewBox: '0 0 200 460',
+  head: 'M100 6C113 6 122 17 122 32C122 46 113 56 100 56C87 56 78 46 78 32C78 17 87 6 100 6Z',
+  body: 'M109 50C112.2 52.7 108.5 62 110 66C111.5 70 113.8 71.7 118 74C122.2 76.3 130.3 78 135 80C139.7 82 143.2 82.8 146 86C148.8 89.2 150.8 93.3 152 99C153.2 104.7 152.5 112.2 153 120C153.5 127.8 154.2 137.3 155 146C155.8 154.7 156.8 163.7 158 172C159.2 180.3 160.7 187.7 162 196C163.3 204.3 164.8 214 166 222C167.2 230 167.8 238.3 169 244C170.2 249.7 172 251.7 173 256C174 260.3 175.3 265.3 175 270C174.7 274.7 172.8 281.3 171 284C169.2 286.7 165.8 287.3 164 286C162.2 284.7 160.8 280 160 276C159.2 272 159.5 266.7 159 262C158.5 257.3 158.2 254.7 157 248C155.8 241.3 153.8 230.7 152 222C150.2 213.3 147.7 204.7 146 196C144.3 187.3 143.3 179.3 142 170C140.7 160.7 139.2 149 138 140C136.8 131 135.7 116 135 116C134.3 116 134.5 131.7 134 140C133.5 148.3 132.7 158.3 132 166C131.3 173.7 130 179.3 130 186C130 192.7 130.8 199.3 132 206C133.2 212.7 135.7 219 137 226C138.3 233 139.7 239 140 248C140.3 257 139.8 268.7 139 280C138.2 291.3 136.2 306 135 316C133.8 326 132.5 333.3 132 340C131.5 346.7 132.2 348.7 132 356C131.8 363.3 132 374.7 131 384C130 393.3 127.7 404.3 126 412C124.3 419.7 121.2 425.3 121 430C120.8 434.7 124.5 437 125 440C125.5 443 126.5 446.7 124 448C121.5 449.3 112.5 450 110 448C107.5 446 109.2 441.7 109 436C108.8 430.3 108.8 422.3 109 414C109.2 405.7 109.8 395.3 110 386C110.2 376.7 110.3 366 110 358C109.7 350 108.5 346 108 338C107.5 330 107.5 319.7 107 310C106.5 300.3 106 289 105 280C104 271 102 260 101 256C100 252 100 252 99 256C98 260 96 271 95 280C94 289 93.5 300.3 93 310C92.5 319.7 92.5 330 92 338C91.5 346 90.3 350 90 358C89.7 366 89.8 376.7 90 386C90.2 395.3 90.8 405.7 91 414C91.2 422.3 91.2 430.3 91 436C90.8 441.7 92.5 446 90 448C87.5 450 78.5 449.3 76 448C73.5 446.7 74.5 443 75 440C75.5 437 79.2 434.7 79 430C78.8 425.3 75.7 419.7 74 412C72.3 404.3 70 393.3 69 384C68 374.7 68.2 363.3 68 356C67.8 348.7 68.5 346.7 68 340C67.5 333.3 66.2 326 65 316C63.8 306 61.8 291.3 61 280C60.2 268.7 59.7 257 60 248C60.3 239 61.7 233 63 226C64.3 219 66.8 212.7 68 206C69.2 199.3 70 192.7 70 186C70 179.3 68.7 173.7 68 166C67.3 158.3 66.5 148.3 66 140C65.5 131.7 65.7 116 65 116C64.3 116 63.2 131 62 140C60.8 149 59.3 160.7 58 170C56.7 179.3 55.7 187.3 54 196C52.3 204.7 49.8 213.3 48 222C46.2 230.7 44.2 241.3 43 248C41.8 254.7 41.5 257.3 41 262C40.5 266.7 40.8 272 40 276C39.2 280 37.8 284.7 36 286C34.2 287.3 30.8 286.7 29 284C27.2 281.3 25.3 274.7 25 270C24.7 265.3 26 260.3 27 256C28 251.7 29.8 249.7 31 244C32.2 238.3 32.8 230 34 222C35.2 214 36.7 204.3 38 196C39.3 187.7 40.8 180.3 42 172C43.2 163.7 44.2 154.7 45 146C45.8 137.3 46.5 127.8 47 120C47.5 112.2 46.8 104.7 48 99C49.2 93.3 51.2 89.2 54 86C56.8 82.8 60.3 82 65 80C69.7 78 77.8 76.3 82 74C86.2 71.7 88.5 70 90 66C91.5 62 87.8 52.7 91 50C94.2 47.3 105.8 47.3 109 50Z',
+  front: [
+    'M84 84Q92 88 100 86Q108 88 116 84',
+    'M98.5 196a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0',
+  ],
+  back: [
+    'M100 70V236',
+    'M78 104Q86 124 92 130',
+    'M122 104Q114 124 108 130',
+    'M84 250Q100 256 116 250',
+  ],
+})
+
+/** The outlines a body chart shows: the ones it names, in their order, else both. */
+export function bodyViews(field) {
+  const chosen = BODY_VIEWS.filter((view) =>
+    list(get(field, 'views')).includes(view),
+  )
+  return chosen.length ? chosen : [...BODY_VIEWS]
+}
+
+function coordinate(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error()
+  if (value < 0 || value > 1) throw new Error()
+  return roundHalfUp(value, 3)
+}
+
+/**
+ * A body chart's answer as the server keeps it (`schema.pulisci_corpo`): its
+ * points (where, on which outline, the words and the intensity 0 to 10 if
+ * given) and its strokes, to the thousandth. `{ value, error }`: the error is
+ * `invalid_value` for a point off the outline, on one the question does not
+ * show, or too many of them.
+ */
+export function cleanBodyChart(field, value) {
+  if (isEmpty(value)) return { value: null, error: null }
+  try {
+    if (!isObject(value)) throw new Error()
+    const allowed = bodyViews(field)
+    const marks = or(get(value, 'marks'), [])
+    const strokes = or(get(value, 'strokes'), [])
+    if (!Array.isArray(marks) || !Array.isArray(strokes)) throw new Error()
+    if (marks.length > MAX_MARKS || strokes.length > MAX_STROKES) {
+      throw new Error()
+    }
+    const cleanMarks = marks.map((mark) => {
+      if (!isObject(mark) || !allowed.includes(get(mark, 'view'))) {
+        throw new Error()
+      }
+      const clean = {
+        view: mark.view,
+        x: coordinate(get(mark, 'x')),
+        y: coordinate(get(mark, 'y')),
+      }
+      let words = get(mark, 'label')
+      if (!isEmpty(words)) {
+        if (typeof words === 'number') words = String(words)
+        if (typeof words !== 'string') throw new Error()
+        words = words.trim().split(/\s+/).filter(Boolean).join(' ')
+        if (words.length > MAX_MARK_WORDS) throw new Error()
+        if (words) clean.label = words
+      }
+      const intensity = get(mark, 'intensity')
+      if (!isEmpty(intensity)) {
+        const n = toNumber(intensity)
+        if (n === null || !Number.isInteger(n) || n < 0 || n > 10) {
+          throw new Error()
+        }
+        clean.intensity = n
+      }
+      return clean
+    })
+    const cleanStrokes = strokes.map((stroke) => {
+      if (!isObject(stroke) || !allowed.includes(get(stroke, 'view'))) {
+        throw new Error()
+      }
+      const points = get(stroke, 'points')
+      if (!Array.isArray(points)) throw new Error()
+      if (points.length < 1 || points.length > MAX_POINTS) throw new Error()
+      if (!points.every((p) => Array.isArray(p) && p.length === 2)) {
+        throw new Error()
+      }
+      return {
+        view: stroke.view,
+        points: points.map(([x, y]) => [coordinate(x), coordinate(y)]),
+      }
+    })
+    const clean = {}
+    if (cleanMarks.length) clean.marks = cleanMarks
+    if (cleanStrokes.length) clean.strokes = cleanStrokes
+    return { value: Object.keys(clean).length ? clean : null, error: null }
+  } catch {
+    return { value: null, error: 'invalid_value' }
+  }
+}
+
+/** The points with their number, 1 to n in the order they were put. */
+export function numberedMarks(value) {
+  return list(get(value, 'marks'))
+    .filter(isObject)
+    .map((mark, i) => ({ ...mark, number: i + 1 }))
+}
+
+const one = (x) => {
+  const text = (Math.round(x * 10) / 10).toFixed(1)
+  return text.endsWith('.0') ? text.slice(0, -2) : text
+}
+
+/**
+ * A stroke as a smooth line through the middles of its points, as the
+ * signature pad draws one (`corpo.percorso` on the server). Points are
+ * fractions of the outline: `width` and `height` scale them.
+ */
+export function smoothPath(points, width = 200, height = 460) {
+  const xy = list(points).map(([x, y]) => [x * width, y * height])
+  if (!xy.length) return ''
+  if (xy.length === 1) return `M${one(xy[0][0])} ${one(xy[0][1])}l0.1 0`
+  const parts = [`M${one(xy[0][0])} ${one(xy[0][1])}`]
+  for (let i = 1; i < xy.length - 1; i++) {
+    const [x1, y1] = xy[i]
+    const [x2, y2] = xy[i + 1]
+    parts.push(
+      `Q${one(x1)} ${one(y1)} ${one((x1 + x2) / 2)} ${one((y1 + y2) / 2)}`,
+    )
+  }
+  const [xn, yn] = xy[xy.length - 1]
+  parts.push(`L${one(xn)} ${one(yn)}`)
+  return parts.join('')
 }
 
 // --- the schema ---------------------------------------------------------------
@@ -607,7 +765,7 @@ function pointsOf(field, value) {
     }
     const picked = Array.isArray(value) ? value : [value]
     return picked.reduce(
-      (total, v) => total + (typeof v === 'string' ? points.get(v) ?? 0 : 0),
+      (total, v) => total + (typeof v === 'string' ? (points.get(v) ?? 0) : 0),
       0,
     )
   }
@@ -832,7 +990,7 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
 const hasValue = (value) =>
   value !== null && value !== undefined && value !== ''
 
-function checkField(found, field, before, all) {
+function checkField(found, field, before, all, number = 0) {
   const key = validId(field.id) ? field.id : null
   const kind = component(field.type)
   const label = text(field.label) || key || ''
@@ -847,7 +1005,8 @@ function checkField(found, field, before, all) {
   }
   if (kind.value !== null && !text(field.label)) {
     found.push(
-      problem('missing_label', key, 'A question needs its words ({0})', [key]),
+      // named by its place in the form, never by its key («signature»)
+      problem('missing_label', key, 'Question {0} needs its words', [number]),
     )
   }
   const type = field.type
@@ -1107,6 +1266,25 @@ function checkField(found, field, before, all) {
       )
     }
   }
+  if (type === 'body_chart') {
+    const views = get(field, 'views')
+    if (
+      views !== null &&
+      (!Array.isArray(views) ||
+        !views.length ||
+        views.some((view) => !BODY_VIEWS.includes(view)) ||
+        new Set(views).size !== views.length)
+    ) {
+      found.push(
+        problem(
+          'invalid_body_views',
+          key,
+          '{0}: the body is shown from the front, from the back, or both',
+          [label],
+        ),
+      )
+    }
+  }
   if (type === 'consent' && !text(field.consent_type)) {
     found.push(
       problem('missing_consent_type', key, '{0}: which consent it records', [
@@ -1148,6 +1326,7 @@ export function validateSchema(schema) {
   const before = new Map()
   const sectionIds = new Set()
   const fieldIds = new Set()
+  let number = 0
   for (const section of schema.sections) {
     if (!isObject(section)) {
       found.push(problem('not_a_schema', null, 'This is not a form'))
@@ -1175,6 +1354,7 @@ export function validateSchema(schema) {
       text(section.title) || key,
     )
     for (const field of fieldsOfSection(section)) {
+      number += 1
       const fieldKey = validId(field.id) ? field.id : null
       if (fieldKey === null || fieldIds.has(fieldKey)) {
         found.push(
@@ -1186,7 +1366,7 @@ export function validateSchema(schema) {
           ),
         )
       }
-      checkField(found, field, before, all)
+      checkField(found, field, before, all, number)
       if (fieldKey !== null) {
         fieldIds.add(fieldKey)
         if (!before.has(fieldKey)) before.set(fieldKey, field)
@@ -1242,6 +1422,7 @@ const DEFAULTS = {
   signature: () => ({ signer: 'patient', level: 'simple', required: true }),
   consent: () => ({ consent_type: '' }),
   paragraph: () => ({ text: '' }),
+  body_chart: () => ({ views: [...BODY_VIEWS], drawing: true }),
 }
 
 /** A new field of `type`, with a key nobody in the schema has. */
@@ -1422,6 +1603,8 @@ export function answerInWords(field, value, band = null) {
         parts.push(__('Right: {0}', [unit(value.right)]))
       return parts.join(' · ')
     }
+    case 'body_chart':
+      return bodyChartInWords(value)
     case 'attachment':
       return (Array.isArray(value) ? value : [value])
         .map((file) => String(file).split('/').pop())
@@ -1429,4 +1612,32 @@ export function answerInWords(field, value, band = null) {
     default:
       return String(value)
   }
+}
+
+/**
+ * A body chart in words, one line a point - «1. Front · Lower back · 7/10» -
+ * and the outlines drawn on by hand: the list beside the drawing, in the reader
+ * and in the PDF (`pdf.risposta_in_parole`).
+ */
+export function bodyChartInWords(value) {
+  const viewName = (view) =>
+    view === 'back'
+      ? __('Back', null, 'Body chart')
+      : __('Front', null, 'Body chart')
+  const lines = numberedMarks(value).map((mark) =>
+    [
+      `${mark.number}. ${viewName(mark.view)}`,
+      mark.label,
+      isEmpty(mark.intensity) ? null : `${mark.intensity}/10`,
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  )
+  const drawn = BODY_VIEWS.filter((view) =>
+    list(get(value, 'strokes')).some((stroke) => stroke?.view === view),
+  )
+  if (drawn.length) {
+    lines.push(__('Drawn by hand: {0}', [drawn.map(viewName).join(', ')]))
+  }
+  return lines.join('\n')
 }

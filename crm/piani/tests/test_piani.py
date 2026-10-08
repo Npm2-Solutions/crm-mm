@@ -23,7 +23,7 @@ from crm.area import messaggi
 from crm.area.tests.test_area import DESK, MANAGER, OPERATORE, SALES, AreaCase
 from crm.piani import api as piani
 from crm.piani import area as area_piani
-from crm.piani import librerie, programmi
+from crm.piani import librerie, modelli, programmi
 from crm.piani import programmi_regole as P
 from crm.piani import regole as r
 
@@ -91,6 +91,13 @@ class ChiScrive(PianiCase):
 		self.assertEqual(self.tipi(OPERATORE), [r.ALLENAMENTO, r.ABITUDINI])
 		with self.assertRaises(frappe.PermissionError):
 			self.scrive({**self.allenamento(), "plan_type": "Meal plan"})
+
+	def test_senza_la_clinica_niente_di_bloccato(self):
+		# the diets are not there at all: nothing to say about whose they are
+		self.come(OPERATORE)
+		risposta = piani.get_plans(self.anna.name)
+		self.assertEqual(risposta["locked_kinds"], [])
+		self.assertIsNone(risposta["qualification"])
 
 	def test_quello_che_un_tipo_offre(self):
 		self.come(OPERATORE)
@@ -183,6 +190,34 @@ class NellArea(PianiCase):
 		self.come(OPERATORE)
 		self.assertEqual(piani.get_plans(self.anna.name)["plans"][0]["summary"][r.FATTO], 1)
 
+	def test_anna_dice_quanto_e_stato_faticoso(self):
+		fatto = self.pubblica()
+		self.invita()
+		self.entra()
+		area_piani.log_item(self.anna.name, fatto["name"], "squat", r.FATTO, effort=6)
+		# the answer changes, what she said of the effort stays
+		area_piani.log_item(self.anna.name, fatto["name"], "squat", r.IN_PARTE)
+		giorno = area_piani.area_plan(self.anna.name, fatto["name"])
+		squat = next(v for v in giorno["moments"][0]["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual((squat["outcome"], squat["effort"]), (r.IN_PARTE, 6))
+		with self.assertRaises(frappe.ValidationError):
+			area_piani.log_item(self.anna.name, fatto["name"], "squat", r.FATTO, effort=11)
+		# the author reads it beside the plan
+		self.come(OPERATORE)
+		self.assertEqual(
+			piani.get_plans(self.anna.name)["plans"][0]["effort"], {"average": 6, "last": 6, "said": 1}
+		)
+
+	def test_il_lato_arriva_alla_persona(self):
+		dati = self.allenamento()
+		dati["items"][0]["side"] = "Each side"
+		fatto = self.pubblica(dati)
+		self.invita()
+		self.entra()
+		giorno = area_piani.area_plan(self.anna.name, fatto["name"])
+		squat = next(v for v in giorno["moments"][0]["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual(squat["side"], "Each side")
+
 	def test_la_sezione_piani_c_e_solo_con_un_piano(self):
 		self.assertEqual(area_piani.piani_in_corso(self.anna.name), 0)
 		self.pubblica()
@@ -231,8 +266,107 @@ class LaLibreria(PianiCase):
 			with self.assertRaises(frappe.PermissionError):
 				librerie.get_exercises()
 
+	def test_si_sfogliano_con_i_filtri_e_le_immagini(self):
+		self.come(OPERATORE)
+		pagina = piani.browse_exercises(text="squ", body_part="Legs")
+		self.assertIn(self.squat.name, [riga["name"] for riga in pagina["rows"]])
+		self.assertGreaterEqual(pagina["total"], 1)
+		# each row with its picture's address, or none, and the facets counted
+		self.assertIn("picture", pagina["rows"][0])
+		parti = {f["value"]: f["count"] for f in pagina["facets"]["body_part"]}
+		self.assertGreaterEqual(parti["Legs"], 1)
+		self.assertIn("has_media", pagina)
+		# a switched-off exercise is not offered
+		frappe.set_user("Administrator")
+		frappe.db.set_value(piani.ESERCIZIO, self.squat.name, "enabled", 0)
+		self.come(OPERATORE)
+		self.assertNotIn(self.squat.name, [r["name"] for r in piani.browse_exercises(text="Squat")["rows"]])
+		# whoever does not write plans does not browse the library
+		self.come(DESK)
+		with self.assertRaises(frappe.PermissionError):
+			piani.browse_exercises()
+
 	def test_chi_scrive_piani_aggiunge_un_esercizio(self):
 		self.come(OPERATORE)
 		fatto = piani.add_exercise("Plank", body_part="Core")
 		self.assertEqual(fatto["exercise_name"], "Plank")
 		self.assertIn("Plank", [e["exercise_name"] for e in piani.search_exercises("Pla")])
+
+
+class IModelli(PianiCase):
+	def test_un_piano_diventa_un_modello_e_un_modello_un_piano(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Forza base")
+		[modello] = modelli.get_templates(r.ALLENAMENTO)
+		self.assertEqual((modello["name"], modello["mine"], modello["items"]), (salvato["name"], True, 2))
+		usato = modelli.use_template(salvato["name"])
+		self.assertEqual((usato["plan_type"], usato["left_out"]), (r.ALLENAMENTO, 0))
+		# new keys, the exercise read from its library
+		[momento] = usato["moments"]
+		self.assertNotEqual(momento["key"], "seduta")
+		esercizio = next(v for v in usato["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual(esercizio["moment"], momento["key"])
+		self.assertEqual(esercizio["exercise_name"], "Squat")
+		# what the editor makes of it is saved as any plan
+		fatto = piani.save_plan(
+			self.anna.name,
+			json.dumps({"plan_type": r.ALLENAMENTO, "moments": usato["moments"], "items": usato["items"]}),
+		)
+		self.assertEqual(len(fatto["items"]), 2)
+		# saved again under its title, it is the same template
+		di_nuovo = modelli.save_template(json.dumps(self.allenamento()), "Forza base", shared=1)
+		self.assertEqual(di_nuovo["name"], salvato["name"])
+		self.assertEqual(len(modelli.get_templates(r.ALLENAMENTO)), 1)
+
+	def test_quello_che_la_libreria_non_offre_resta_fuori(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Forza base")
+		frappe.set_user("Administrator")
+		frappe.db.set_value(piani.ESERCIZIO, self.squat.name, "enabled", 0)
+		self.come(OPERATORE)
+		usato = modelli.use_template(salvato["name"])
+		self.assertEqual(usato["left_out"], 1)
+		self.assertEqual([v["kind"] for v in usato["items"]], [r.ABITUDINE])
+
+	def test_un_modello_e_del_suo_autore_o_del_centro(self):
+		self.come(OPERATORE)
+		salvato = modelli.save_template(json.dumps(self.allenamento()), "Solo mio")
+		# whoever does not write plans has none
+		self.come(DESK)
+		with self.assertRaises(frappe.PermissionError):
+			modelli.get_templates()
+		# another writer sees it only once shared, and never removes it
+		frappe.set_user("Administrator")
+		frappe.db.set_value(modelli.MODELLO, salvato["name"], "practitioner", "Administrator")
+		self.come(OPERATORE)
+		self.assertEqual(modelli.get_templates(), [])
+		frappe.set_user("Administrator")
+		frappe.db.set_value(modelli.MODELLO, salvato["name"], "shared", 1)
+		self.come(OPERATORE)
+		self.assertEqual([m["name"] for m in modelli.get_templates()], [salvato["name"]])
+		with self.assertRaises(frappe.PermissionError):
+			modelli.delete_template(salvato["name"])
+
+	def test_un_modello_vuoto_non_si_salva(self):
+		self.come(OPERATORE)
+		with self.assertRaises(frappe.ValidationError):
+			modelli.save_template(json.dumps({**self.allenamento(), "items": []}), "Vuoto")
+
+
+class IlCatalogo(PianiCase):
+	def test_quello_che_si_usa_viene_prima(self):
+		self.come(OPERATORE)
+		frappe.set_user("Administrator")
+		frappe.get_doc({"doctype": piani.ESERCIZIO, "exercise_name": "Affondo", "body_part": "Legs"}).insert(
+			ignore_permissions=True
+		)
+		self.come(OPERATORE)
+		self.scrive()
+		[primo, *_altri] = piani.browse_exercises(body_part="Legs")["rows"]
+		self.assertEqual(primo["name"], self.squat.name)
+		self.assertEqual(primo["uses"], {"mine": 1, "all": 1})
+		# the pages go on after the used ones, none twice
+		tutti = piani.browse_exercises(body_part="Legs")
+		nomi = [riga["name"] for riga in tutti["rows"]]
+		self.assertEqual(len(nomi), len(set(nomi)))
+		self.assertEqual(len(nomi), min(tutti["total"], piani.PER_PAGINA))

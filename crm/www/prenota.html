@@ -90,8 +90,9 @@
         ol.steps li:not(.current) { padding-right: .35rem; }
       }
 
-      .layout { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
-      @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } .summary { position: static; } }
+      /* minmax(0, …): a column never grows to its widest row (the categories' chips scroll in their own box) */
+      .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1.25rem; align-items: start; }
+      @media (max-width: 820px) { .layout { grid-template-columns: minmax(0, 1fr); } .summary { position: static; } }
       .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
       .panel h2 { font-size: 1.05rem; margin: 0 0 1rem; color: var(--ink-strong); }
       .panel h3 { font-size: .85rem; margin: 1.25rem 0 .6rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
@@ -203,11 +204,13 @@
       button.primary:disabled { opacity: .5; cursor: default; }
       button.ghost, a.btn { background: transparent; color: var(--ink); border-color: var(--border); }
       button.ghost:hover, a.btn:hover { background: var(--hover); }
+      a.btn.primary, a.btn.primary:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
       button.danger { background: var(--danger-bg); color: var(--danger); }
       .msg { border-radius: 8px; padding: .75rem 1rem; font-size: .88rem; margin-top: 1rem; }
       .msg.error { background: var(--danger-bg); color: var(--danger); }
       .msg.success { background: var(--success-bg); color: var(--success-ink); }
       .msg.warn { background: var(--warn-bg); color: var(--warn-ink); }
+      .msg.info { background: var(--accent-soft); color: var(--ink); }
       .done-hero { text-align: center; padding: 1rem 0 .5rem; }
       .done-hero .badge { width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto .75rem; background: var(--success-bg); color: var(--success-ink); font-size: 1.5rem; }
       .done-hero.pending .badge { background: var(--warn-bg); color: var(--warn-ink); }
@@ -265,6 +268,7 @@
       // --- i18n -----------------------------------------------------------
       const DICT = {
         it: {
+          stepLocation: "Sede", pickLocation: "In quale sede?", anyLocation: "Qualsiasi sede", anyLocationSub: "Il primo orario libero in tutte le sedi", openMap: "Apri la mappa", map: "Mappa",
           stepService: "Servizio", stepStaff: "Professionista", stepTime: "Data e ora", stepDetails: "I tuoi dati", stepDone: "Conferma",
           search: "Cerca un servizio…", all: "Tutti", noServices: "Nessun servizio prenotabile online al momento.",
           noMatch: "Nessun servizio corrisponde alla ricerca.", minutes: "min", group: "Di gruppo", from: "da",
@@ -274,6 +278,8 @@
           morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera", seatsLeft: "posti", people: "Persone",
           tzNote: "Orari nel tuo fuso orario: {0}", continue: "Continua", back: "Indietro",
           name: "Nome e cognome", email: "Email", phone: "Telefono", notes: "Note per lo studio", optional: "facoltativo",
+          convention: "Fondo sanitario, assicurazione o convenzione", convNone: "Nessuna, pago io", cardNumber: "Numero di tessera o di polizza",
+          convHint: "Il centro verifica la tua copertura e ti conferma la prenotazione.",
           consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
           confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
           summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", with: "Con", when: "Quando", duration: "Durata",
@@ -299,8 +305,14 @@
           waitUntil: "Fino al", waitChannel: "Scrivimi su", full: "Piena", fullWait: "in lista", joinWait: "Mettimi in lista",
           waitedTitle: "Sei in lista d'attesa", waitedSub: "Ti abbiamo mandato un'email: dal suo link puoi vedere la lista o uscirne.",
           waitedLink: "Vedi o esci dalla lista d'attesa", waitClass: "Lezione", partmorning: "Mattina", partafternoon: "Pomeriggio", partevening: "Sera",
+          online: "Visita online", onlineHow: "È una visita online: entri dalla tua area, da 15 minuti prima dell'inizio. Ti scriviamo come entrarci.",
+          deposit: "Acconto online", fullOnline: "Da pagare online", depositNote: "Dopo la conferma paghi {0} con carta su Stripe: la prenotazione è confermata appena il pagamento arriva.",
+          toPay: "Vai al pagamento", payTitle: "Manca il pagamento", paySub: "Il posto è tenuto per 30 minuti: paga {0} per confermare la prenotazione.",
+          payWaiting: "Pagamento ricevuto: stiamo aspettando la conferma di Stripe…", payCancelled: "Il pagamento non è stato fatto: puoi riprovare finché il posto è tenuto.",
+          payExpired: "Il pagamento non è arrivato in tempo: il posto è stato liberato.", depositPaid: "Acconto pagato online", depositRefunded: "Acconto restituito",
         },
         en: {
+          stepLocation: "Location", pickLocation: "Which location?", anyLocation: "Any location", anyLocationSub: "The earliest free time in every location", openMap: "Open the map", map: "Map",
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
           search: "Search a service…", all: "All", noServices: "No service can be booked online right now.",
           noMatch: "No service matches your search.", minutes: "min", group: "Group", from: "from",
@@ -310,6 +322,8 @@
           morning: "Morning", afternoon: "Afternoon", evening: "Evening", seatsLeft: "seats", people: "People",
           tzNote: "Times in your time zone: {0}", continue: "Continue", back: "Back",
           name: "Full name", email: "Email", phone: "Phone", notes: "Notes for us", optional: "optional",
+          convention: "Health fund, insurance or convention", convNone: "None, I pay myself", cardNumber: "Card or policy number",
+          convHint: "The centre checks your cover and confirms your booking.",
           consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
           confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
           summary: "Summary", summaryEmpty: "Pick a service to start.", with: "With", when: "When", duration: "Duration",
@@ -335,6 +349,11 @@
           waitUntil: "Until", waitChannel: "Write to me by", full: "Full", fullWait: "waiting list", joinWait: "Put me on the list",
           waitedTitle: "You are on the waiting list", waitedSub: "We've emailed you: from its link you can see the list or leave it.",
           waitedLink: "See or leave the waiting list", waitClass: "Class", partmorning: "Morning", partafternoon: "Afternoon", partevening: "Evening",
+          online: "Online visit", onlineHow: "It is an online visit: you enter it from your area, from 15 minutes before it starts. We write to you how to enter it.",
+          deposit: "Online deposit", fullOnline: "To pay online", depositNote: "After confirming you pay {0} by card on Stripe: the booking is confirmed as soon as the payment arrives.",
+          toPay: "Go to payment", payTitle: "Payment missing", paySub: "Your place is held for 30 minutes: pay {0} to confirm the booking.",
+          payWaiting: "Payment received: waiting for Stripe's confirmation…", payCancelled: "The payment was not made: you can try again while the place is held.",
+          payExpired: "The payment did not arrive in time: the place was freed.", depositPaid: "Deposit paid online", depositRefunded: "Deposit given back",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -416,16 +435,20 @@
 
       // --- state ---------------------------------------------------------------
       const S = {
-        catalog: null, step: "service", query: "", category: "",
+        catalog: null, step: "service", query: "", category: "", location: "",
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
         wait: null, waited: null,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: false, for_name: "", for_relation: "Parent" },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", convention: "", card_number: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
+      // more than one location (docs/crm/62): the person picks where first
+      const LOCATIONS = () => (S.catalog && S.catalog.locations) || [];
+      const hasLocations = () => LOCATIONS().length > 1;
+      const locationOf = (id) => LOCATIONS().find((l) => l.id === id) || null;
       const STEPS = () => {
-        const list = [["service", T("stepService")]];
+        const list = hasLocations() ? [["location", T("stepLocation")], ["service", T("stepService")]] : [["service", T("stepService")]];
         if (S.service?.can_pick_staff) list.push(["staff", T("stepStaff")]);
         list.push(["time", T("stepTime")], ["details", T("stepDetails")], ["done", T("stepDone")]);
         return list;
@@ -443,7 +466,7 @@
         renderSummary();
         const main = $("main");
         main.replaceChildren();
-        const view = { service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage, wait: viewWait, waited: viewWaited }[S.step];
+        const view = { location: viewLocation, service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage, wait: viewWait, waited: viewWaited }[S.step];
         try { main.append(view()); } catch (e) { console.error(e); main.append(h("div", { class: "msg error", role: "alert" }, T("genericError"))); }
         if (S.error) main.append(h("div", { class: "msg error", role: "alert" }, S.error));
       }
@@ -466,24 +489,56 @@
         const box = $("summary");
         box.replaceChildren(h("h2", {}, T("summary")));
         const svc = S.manage ? { name: S.manage.service } : S.service;
-        if (!svc) { box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
         const row = (ico, label, value) => h("div", { class: "row" }, h("span", { class: "ico", "aria-hidden": "true" }, ico), h("div", {}, h("div", {}, label), h("b", {}, value)));
+        // where, once chosen: a location's name and address
+        const sede = !S.manage && locationOf((S.slot && S.slot.location_id) || S.location);
+        if (sede) box.append(row("⌖", T("stepLocation"), [sede.name, sede.address].filter(Boolean).join(", ")));
+        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
         box.append(row("◆", T("stepService"), svc.name));
         if (S.manage) {
           if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));
           box.append(row("◷", T("when"), fmtFull.format(new Date(S.manage.start))));
-          if (S.manage.location) box.append(row("⌖", T("where"), S.manage.location));
+          if (S.manage.online_visit) box.append(row("▶", T("where"), T("online")));
+          else if (S.manage.location) box.append(row("⌖", T("where"), S.manage.location));
           if (S.manage.formatted_price) box.append(h("div", { class: "price" }, S.manage.formatted_price));
           return;
         }
         box.append(row("⏱", T("duration"), durationLabel(S.service)));
-        if (S.service.location) box.append(row("⌖", T("where"), S.service.location));
+        if (S.service.online_visit) box.append(row("▶", T("where"), T("online")));
+        else if (S.service.location && !sede) box.append(row("⌖", T("where"), S.service.location));
         if (S.staffName || S.service.can_pick_staff) box.append(row("☺", T("with"), S.staffName || T("anyone")));
         if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
         if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
         if (S.service.formatted_price) box.append(h("div", { class: "price" }, (S.service.per_participant && S.seats > 1 ? `${S.seats} × ` : "") + priceLabel(S.service)));
+        if (S.service.deposit) box.append(row("€", T(S.service.deposit.full ? "fullOnline" : "deposit"), S.service.deposit.formatted));
         if (S.service.manual_approval) box.append(h("div", { class: "msg warn" }, T("manual")));
       }
+
+      function viewLocation() {
+        const wrap = h("section", {}, h("h2", {}, T("pickLocation")));
+        const grid = h("div", { class: "staff-grid" });
+        grid.append(h("button", { class: "person", "aria-pressed": String(!S.location), onclick: () => pickLocation("") },
+          h("span", { class: "avatar" }, "★"), h("span", {}, h("div", { class: "who" }, T("anyLocation")), h("div", { class: "sub" }, T("anyLocationSub")))));
+        for (const l of LOCATIONS()) {
+          const subs = [l.address, l.opening_hours].filter(Boolean);
+          grid.append(h("button", { class: "person", "aria-pressed": String(S.location === l.id), onclick: () => pickLocation(l.id) },
+            h("span", { class: "avatar", "aria-hidden": "true" }, "⌖"),
+            h("span", {}, h("div", { class: "who" }, l.name), ...subs.map((x) => h("div", { class: "sub" }, x)))));
+        }
+        wrap.append(grid);
+        return wrap;
+      }
+
+      function pickLocation(id) {
+        if (S.location !== id) { S.slot = null; S.date = null; S.month = null; S.days = {}; }
+        S.location = id;
+        // a service not held there is offered no more
+        if (S.service && !heldAt(S.service)) S.service = null;
+        go("service");
+      }
+
+      // whether a service is held at the location chosen (null: anywhere)
+      const heldAt = (s) => !S.location || !s.locations || s.locations.includes(S.location);
 
       function viewServices() {
         const wrap = h("section", {});
@@ -517,7 +572,7 @@
           list.replaceChildren();
           const q = S.query.trim().toLowerCase();
           const items = c.services.filter((s) =>
-            (s.listed || s.id === BOOT.service) &&
+            (s.listed || s.id === BOOT.service) && heldAt(s) &&
             (!S.person || S.person.services.includes(s.id)) &&
             (!S.category || s.category === S.category) &&
             (!q || (s.name + " " + s.description + " " + s.category).toLowerCase().includes(q)));
@@ -530,7 +585,8 @@
             }
             const tags = [h("span", { class: "tag" }, durationLabel(s))];
             if (s.group) tags.push(h("span", { class: "tag" }, T("group")));
-            if (s.location) tags.push(h("span", { class: "tag" }, s.location));
+            if (s.online_visit) tags.push(h("span", { class: "tag" }, T("online")));
+            else if (s.location) tags.push(h("span", { class: "tag" }, s.location));
             list.append(h("button", { class: "service", onclick: () => pickService(s) },
               s.image ? h("img", { class: "thumb", src: s.image, alt: "" }) : h("span", { class: "dot", style: s.color ? `background:${s.color}` : null }),
               h("div", {}, h("div", { class: "name" }, s.name), s.description ? h("div", { class: "desc" }, s.description) : null, h("div", { class: "tags" }, tags)),
@@ -584,7 +640,7 @@
         const last = iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)));
         S.loadingSlots = true; render();
         try {
-          const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ });
+          const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ, location: S.location });
           S.days = r.days; S.full = r.full || {}; S.minDate = r.min_date; S.maxDate = r.max_date;
           const available = [...new Set([...Object.keys(S.days), ...Object.keys(S.full)])].sort();
           if (!S.date || !(S.days[S.date] || S.full[S.date])) S.date = available[0] || null;
@@ -655,7 +711,9 @@
             times.append(h("div", { class: "hint", style: "margin:.6rem 0 .35rem" }, T(bucket)));
             const g = h("div", { class: "times" });
             for (const slot of list) {
-              const sub = S.service.group ? `${slot.seats_left} ${T("seatsLeft")}` : slot.staff.length && !S.staff && S.service.can_pick_staff ? slot.staff.join(", ") : null;
+              const who = S.service.group ? `${slot.seats_left} ${T("seatsLeft")}` : slot.staff.length && !S.staff && S.service.can_pick_staff ? slot.staff.join(", ") : null;
+              // «Any location»: where each time is
+              const sub = [slot.location, who].filter(Boolean).join(" · ") || null;
               g.append(h("button", { class: "time", "aria-pressed": String(S.slot?.start === slot.start), onclick: () => { S.slot = slot; S.moving ? confirmMove() : go("details"); } },
                 slot.time, sub ? h("small", {}, sub) : null));
             }
@@ -699,6 +757,23 @@
         const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
         form.append(h("h2", {}, T("stepDetails")));
         const other = personFields(form, svc, true);
+        // a fund or a convention the centre offers online: the booking waits for its yes
+        if ((S.catalog.conventions || []).length) {
+          const sel = h("select", { id: "f-convention", name: "convention" },
+            h("option", { value: "" }, T("convNone")),
+            ...S.catalog.conventions.map((c) => h("option", { value: c.id, selected: S.form.convention === c.id || null }, c.name)));
+          sel.addEventListener("change", (e) => { S.form.convention = e.target.value; render(); });
+          // before the ticks, with the person's details
+          const before = form.querySelector("label.check");
+          const put = (node) => (before ? form.insertBefore(node, before) : form.append(node));
+          put(h("div", {}, h("label", { for: "f-convention" }, T("convention"), ` (${T("optional")})`), sel));
+          if (S.form.convention) {
+            put(field("card_number", T("cardNumber"), { autocomplete: "off", autocapitalize: "characters", spellcheck: "false" }));
+            put(h("p", { class: "hint" }, T("convHint")));
+          }
+        }
+        // paid online first: said before the button, not discovered after it
+        if (svc.deposit && !S.form.convention) form.append(h("div", { class: "msg info" }, T("depositNote").replace("{0}", svc.deposit.formatted)));
         form.append(h("div", { class: "actions" },
           h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
           h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
@@ -857,13 +932,17 @@
           const params = new URLSearchParams(location.search);
           S.result = await api("book", {
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
+            convention: f.convention || "", card_number: f.convention ? (f.card_number || "").trim() : "",
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
+            location: (S.slot && S.slot.location_id) || S.location,
             consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
             for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
           }, true);
-          S.busy = false;
           history.replaceState(null, "", "?token=" + encodeURIComponent(S.result.token));
+          // a deposit: to Stripe's page, back to this booking once paid
+          if (S.result.checkout_url) { location.href = S.result.checkout_url; return; }
+          S.busy = false;
           go("done");
         } catch (e) {
           S.busy = false; S.error = e.message;
@@ -871,14 +950,39 @@
           if (/available|disponibil/i.test(e.message)) { S.slot = null; go("time"); S.error = e.message; loadMonth(); } else render();
         }
       }
+      async function waitForPayment(tries) {
+        await new Promise((done) => setTimeout(done, 3000));
+        try { S.manage = await api("get_booking", { token: BOOT.token }); } catch (e) { return; }
+        const waiting = S.manage.payment && S.manage.payment.state === "waiting";
+        if (!waiting || tries >= 20) {
+          // not heard yet after a minute: the page as it is, with the way to pay again
+          if (waiting) BOOT.payment = "";
+          // the confirmation the person was waiting for: «we emailed you» too
+          S.result = S.manage;
+          render();
+          return;
+        }
+        waitForPayment(tries + 1);
+      }
+
       function readCookie(name) { const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; }
 
       function outcome(b, gestione = false) {
+        const pay = b.payment;
+        if (pay && pay.state === "waiting" && b.status !== "Cancelled") {
+          const back = BOOT.payment;
+          const sub = back === "fatto" ? T("payWaiting") : T("paySub").replace("{0}", pay.formatted_amount);
+          const hero = h("div", { class: "done-hero pending" }, h("div", { class: "badge", "aria-hidden": "true" }, "€"), h("h2", {}, T("payTitle")), h("div", { class: "hint", role: "status" }, sub));
+          if (back === "annullato") hero.append(h("div", { class: "msg warn" }, T("payCancelled")));
+          if (pay.checkout_url && back !== "fatto") hero.append(h("div", { class: "actions", style: "justify-content:center" }, h("a", { class: "btn primary", href: pay.checkout_url }, T("toPay"))));
+          return hero;
+        }
         const kind = b.status === "Cancelled" ? "cancelled" : b.pending_approval ? "pending" : "";
         // opened again from its link (an email, a reminder): no «booking confirmed, we emailed you»
         if (gestione && !kind && S.result !== b) return null;
         const title = kind === "cancelled" ? T("cancelledTitle") : kind === "pending" ? T("pendingTitle") : T("doneTitle");
-        const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : T("doneSub");
+        // «we emailed you» only when an email is on its way (none went: no address, the centre's choice, a failure)
+        const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : b.email_sent === false ? "" : T("doneSub");
         return h("div", { class: "done-hero " + kind }, h("div", { class: "badge", "aria-hidden": "true" }, kind === "cancelled" ? "✕" : kind === "pending" ? "…" : "✓"), h("h2", {}, title), sub ? h("div", { class: "hint" }, sub) : null);
       }
 
@@ -890,17 +994,21 @@
         add(T("when"), fmtFull.format(new Date(b.start)));
         add(T("duration"), duration(b.duration));
         add(T("with"), b.staff.join(", "));
-        add(T("where"), b.location);
+        add(T("where"), b.online_visit ? T("online") : b.location);
+        if (!b.online_visit && b.map_link) add(T("map"), h("a", { href: b.map_link, target: "_blank", rel: "noopener" }, T("openMap")));
         if (b.seats > 1) add(T("people"), String(b.seats));
         add(T("price"), b.formatted_price);
+        if (b.payment && b.payment.state === "paid") add(T("depositPaid"), b.payment.formatted_amount);
+        if (b.payment && b.payment.state === "refunded") add(T("depositRefunded"), b.payment.refunded || b.payment.formatted_amount);
         // what the desk booked is booked: only an online request waits for the centre's yes
-        add(T("status"), T(b.status === "Scheduled" && !b.pending_approval ? "stBooked" : "st" + b.status));
+        add(T("status"), b.payment && b.payment.state === "waiting" && b.status !== "Cancelled" ? T("payTitle") : T(b.status === "Scheduled" && !b.pending_approval ? "stBooked" : "st" + b.status));
         return dl;
       }
 
       function viewDone() {
         const b = S.result;
         const wrap = h("section", {}, outcome(b), details(b));
+        if (b.online_visit && b.status !== "Cancelled") wrap.append(h("div", { class: "msg info" }, T("onlineHow")));
         if (b.instructions) wrap.append(h("div", { class: "msg warn" }, b.instructions));
         if (b.status !== "Cancelled") {
           wrap.append(h("div", { class: "actions" },
@@ -915,14 +1023,16 @@
 
       function restart() {
         history.replaceState(null, "", location.pathname);
-        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null });
-        S.form.notes = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
-        go("service");
+        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null, location: "" });
+        S.form.notes = ""; S.form.convention = ""; S.form.card_number = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
+        go(hasLocations() ? "location" : "service");
       }
 
       function viewManage() {
         const b = S.manage;
         const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b, true), details(b));
+        if (b.payment && b.payment.state === "expired") wrap.append(h("div", { class: "msg warn" }, T("payExpired")));
+        if (b.online_visit && b.status !== "Cancelled") wrap.append(h("div", { class: "msg info" }, T("onlineHow")));
         if (b.instructions && b.status !== "Cancelled") wrap.append(h("div", { class: "msg warn" }, b.instructions));
         if (b.confirmed && b.status !== "Cancelled") wrap.append(h("div", { class: "msg success", role: "status" }, T("confirmedNote")));
         if (b.status !== "Cancelled") {
@@ -970,6 +1080,8 @@
         const svc = S.catalog.services.find((s) => s.id === S.manage.service_id);
         if (!svc) { S.error = T("genericError"); render(); return; }
         S.service = svc; S.moving = true; S.staff = ""; S.slot = null; S.date = null; S.month = null; S.seats = S.manage.seats || 1;
+        // moved, it stays where it was booked
+        S.location = S.manage.location_id || "";
         go("time");
         loadMonth();
       }
@@ -997,6 +1109,9 @@
             S.manage = await api("get_booking", { token: BOOT.token });
             S.step = "manage";
             render();
+            // back from Stripe's page: Stripe tells the centre a moment later
+            if (BOOT.payment === "fatto" && S.manage.payment && S.manage.payment.state === "waiting") waitForPayment(0);
+            else if (BOOT.payment === "fatto") { S.result = S.manage; render(); }
             return;
           }
           const pre = BOOT.service && S.catalog.services.find((s) => s.id === BOOT.service || s.name === BOOT.service);
@@ -1008,6 +1123,8 @@
             if (!(pre.can_pick_staff && !person)) loadMonth();
             return;
           }
+          // more than one location: where, first; a professional's page knows who
+          if (hasLocations() && !S.person) S.step = "location";
           render();
         } catch (e) {
           $("main").replaceChildren(h("div", { class: "msg error", role: "alert" }, e.message || T("genericError")));

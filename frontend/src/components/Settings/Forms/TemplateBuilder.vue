@@ -251,7 +251,7 @@
             <Button
               size="sm"
               :label="__('Clear the answers')"
-              @click="(previewValues = {}), (previewChecked = false)"
+              @click="((previewValues = {}), (previewChecked = false))"
             />
           </div>
         </div>
@@ -306,7 +306,11 @@
           :description="useInfo.description"
         />
         <label
-          v-if="(meta.clinical_available || tpl.clinical) && !onTheSite"
+          v-if="
+            (meta.clinical_available || tpl.clinical) &&
+            !onTheSite &&
+            !withoutCode
+          "
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
           <Switch
@@ -331,13 +335,18 @@
           </span>
         </label>
         <FormControl
-          v-if="tpl.clinical || (tpl.use !== 'Form' && !onTheSite)"
+          v-if="
+            tpl.clinical || (tpl.use !== 'Form' && !onTheSite && !withoutCode)
+          "
           v-model="tpl.specialty"
           :label="__('Specialty')"
           :placeholder="__('Nutrition')"
         />
         <!-- asked of the person, and sent: a sheet is written at the desk -->
-        <div v-if="sent" class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+        <div
+          v-if="sent && !withoutCode"
+          class="grid grid-cols-2 gap-3 max-md:grid-cols-1"
+        >
           <FormControl
             v-model="tpl.ask_on"
             type="select"
@@ -350,9 +359,23 @@
             :label="__('A signed one counts')"
             :options="validityOptions"
           />
+          <FormControl
+            v-if="tpl.validity === 'Every few weeks'"
+            v-model="tpl.validity_weeks"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            max="104"
+            :label="__('Asked again every how many weeks')"
+            :description="
+              __(
+                'A questionnaire with a score is asked again, and its totals are followed over time on the person\'s page.',
+              )
+            "
+          />
         </div>
         <label
-          v-if="sent && tpl.ask_on !== 'By hand'"
+          v-if="sent && !withoutCode && tpl.ask_on !== 'By hand'"
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
           <Switch v-model="tpl.send_before" class="mt-0.5 shrink-0" size="sm" />
@@ -368,7 +391,7 @@
           </span>
         </label>
         <div
-          v-if="sent && tpl.ask_on === 'Services'"
+          v-if="sent && !withoutCode && tpl.ask_on === 'Services'"
           class="flex flex-col gap-1.5"
         >
           <span class="text-sm text-ink-gray-5">{{
@@ -429,13 +452,17 @@
                   ? __(
                       'Off, it is not on the website any more; what was sent stays.',
                     )
-                  : forThePerson
+                  : withoutCode
                     ? __(
-                        'Off, it is not asked any more; what was signed on it stays.',
+                        'Off, it is not sent any more; the answers given stay.',
                       )
-                    : __(
-                        'Off, it is not offered any more; what was written on it stays.',
-                      )
+                    : forThePerson
+                      ? __(
+                          'Off, it is not asked any more; what was signed on it stays.',
+                        )
+                      : __(
+                          'Off, it is not offered any more; what was written on it stays.',
+                        )
               }}
             </span>
           </span>
@@ -752,6 +779,7 @@ const askOptions = [
 const validityOptions = [
   { label: __('For ever'), value: 'Forever' },
   { label: __('For a year'), value: 'One year' },
+  { label: __('For a few weeks'), value: 'Every few weeks' },
   { label: __('For one appointment'), value: 'Every appointment' },
 ]
 
@@ -790,6 +818,7 @@ const SETTINGS = [
   'specialty',
   'ask_on',
   'validity',
+  'validity_weeks',
   'send_before',
   'enabled',
   'services',
@@ -840,6 +869,9 @@ const forThePerson = computed(() => useInfo.value.for_the_person !== false)
 const sent = computed(() => useInfo.value.sent !== false)
 // filled by anybody on the centre's website (crm/moduli/sito.py)
 const onTheSite = computed(() => Boolean(useInfo.value.on_the_site))
+// a survey: opened by its link alone, sent by an automation or by hand, never
+// owed at a booking nor holding health data
+const withoutCode = computed(() => Boolean(useInfo.value.without_code))
 watch(onTheSite, (on) => !on && tab.value === 'share' && (tab.value = 'build'))
 
 // what is wrong, as the server will say it: the same rules, live
@@ -848,6 +880,7 @@ const problems = computed(() => [
   ...useProblems(schema.value, {
     forThePerson: forThePerson.value,
     onTheSite: onTheSite.value,
+    withoutCode: withoutCode.value,
     personFields: meta.person_fields,
   }),
 ])

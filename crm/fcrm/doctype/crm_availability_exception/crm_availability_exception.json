@@ -9,6 +9,7 @@
   "unavailable",
   "start_time",
   "end_time",
+  "centre_location",
   "reason"
  ],
  "fields": [
@@ -41,6 +42,13 @@
    "depends_on": "eval:!doc.unavailable"
   },
   {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "description": "Where these hours are worked. Empty: anywhere, the room decides."
+  },
+  {
    "fieldname": "reason",
    "fieldtype": "Data",
    "label": "Reason"
@@ -48,7 +56,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Availability Exception",

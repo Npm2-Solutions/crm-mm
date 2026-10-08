@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="brand/logo/dottorcloud-orizzontale.svg" height="56" alt="DottorCloud">
+<img src="brand/dottorcloud/logo/dottorcloud-orizzontale.svg" height="56" alt="DottorCloud">
 
 **Il gestionale per i centri medici** · NPM2 Solutions Srl
 
@@ -14,17 +14,26 @@ online, la cartella clinica e i moduli da firmare, le fatture elettroniche e il
 Sistema TS, WhatsApp e il telefono, i piani e i programmi che il paziente segue
 dalla sua area, il marketing e le sue campagne.
 
+È fatto a strati. Sotto c'è un **CRM** neutro, che serve a qualunque attività che
+lavora con le persone (clienti, appuntamenti, conversazioni, fatture, area cliente);
+sopra, i **verticali**, i gestionali per un servizio: oggi la clinica, che lo fa
+parlare di pazienti e visite e aggiunge cartella, referti e dati sanitari; in cima,
+i **marchi** con cui NPM2 li vende: oggi DottorCloud, che porta la clinica. Codice,
+documenti e materiale seguono gli stessi strati: [docs/](./docs/), [brand/](./brand/),
+[siti/](./siti/).
+
 ## Dove leggere
 
 | Cosa | Dove |
 |---|---|
 | Com'è fatto il codice, dove sono i file, le regole | [AGENTS.md](./AGENTS.md) |
-| Il gestionale medico, fase per fase | [docs/gestionale-medico/](./docs/gestionale-medico/) |
-| Prenotazioni online e piattaforme esterne | [docs/prenotazioni/](./docs/prenotazioni/) |
-| Le pagine del prodotto, il telefono, la dashboard | [docs/progetto-ghl/](./docs/progetto-ghl/) |
+| I documenti, a strati: il CRM, i verticali, i marchi | [docs/](./docs/) |
+| Il CRM di base: persone, agenda, conversazioni, fatture, telefono… (doc 00-59) | [docs/crm/](./docs/crm/) · prenotazioni in [docs/crm/prenotazioni/](./docs/crm/prenotazioni/) |
+| Il gestionale per i centri medici, fase per fase | [docs/verticali/clinica/](./docs/verticali/clinica/) |
+| Il listino e i documenti legali di DottorCloud | [docs/marchi/dottorcloud/](./docs/marchi/dottorcloud/) |
 | Contratti stabili e storia delle decisioni | [.pi/SPEC.md](./.pi/SPEC.md) · [.pi/ARCHIVE.md](./.pi/ARCHIVE.md) |
-| Logo, design system, video, presentazione, inserzioni | [brand/](./brand/) |
-| Il sito di DottorCloud (`dottorcloud.com`) | [sito/](./sito/) |
+| I marchi: logo, design system, video, presentazione, inserzioni (uno per cartella) | [brand/](./brand/) · DottorCloud in [brand/dottorcloud/](./brand/dottorcloud/) |
+| I siti dei marchi (uno per cartella) | [siti/](./siti/) · `dottorcloud.com` in [siti/dottorcloud/](./siti/dottorcloud/) |
 
 ## Sviluppo
 

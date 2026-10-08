@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The phone at hand (docs/progetto-ghl/34): what the phone button at the top of
+"""The phone at hand (docs/crm/34): what the phone button at the top of
 every page opens, where the keypad of the menu used to be a page of its own.
 
 - **The last calls** the session may read (`telefono.registro`, the register's

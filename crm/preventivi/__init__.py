@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Quotes: what the centre proposes to a person, service by service, and follows
-until it is done (docs/gestionale-medico/design.md, "Tre strati": "Il preventivo").
+until it is done (docs/verticali/clinica/design.md, "Tre strati": "Il preventivo").
 
 A beauty centre's laser package, a gym's personal training, a dentist's care plan:
 each is a quote, so it is the CRM's, not the clinic's.

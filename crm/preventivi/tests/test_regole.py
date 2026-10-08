@@ -98,3 +98,31 @@ class LaRigaVuota(unittest.TestCase):
 		self.assertFalse(R.vuota({**nuova, "rate": 70}))
 		# a module's field: the tooth a dentist wrote
 		self.assertFalse(R.vuota({**nuova, "tooth": "36"}))
+
+
+class LaRispostaDellaPersona(unittest.TestCase):
+	def test_si_risponde_a_un_proposto_ancora_valido(self):
+		import datetime
+
+		oggi = datetime.date(2026, 10, 8)
+		self.assertIsNone(R.da_rispondere(R.PROPOSTO, oggi, oggi))
+		self.assertIsNone(R.da_rispondere(R.PROPOSTO, None, oggi))
+		scaduto = R.da_rispondere(R.PROPOSTO, datetime.date(2026, 10, 7), oggi)
+		self.assertEqual(scaduto.messaggio, "This quote was valid until {0}: ask the centre for a new one")
+		for stato in (R.BOZZA, R.ACCETTATO, R.RIFIUTATO, R.CHIUSO):
+			self.assertEqual(
+				R.da_rispondere(stato, oggi, oggi).messaggio, "This quote is no longer waiting for an answer"
+			)
+
+	def test_il_motivo(self):
+		self.assertIsNone(R.motivo(None))
+		self.assertIsNone(R.motivo("   "))
+		self.assertEqual(R.motivo("  Costa troppo \n"), "Costa troppo")
+		self.assertEqual(len(R.motivo("x" * 2000)), R.MAX_MOTIVO)
+
+	def test_l_impronta_non_dipende_dall_ordine(self):
+		a = R.impronta({"title": "Viso", "items": [1, 2], "net": 240.0})
+		b = R.impronta({"net": 240.0, "items": [1, 2], "title": "Viso"})
+		self.assertEqual(a, b)
+		self.assertEqual(len(a), 64)
+		self.assertNotEqual(a, R.impronta({"title": "Viso", "items": [2, 1], "net": 240.0}))

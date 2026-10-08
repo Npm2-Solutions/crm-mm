@@ -241,6 +241,10 @@ export function axisOptions(
     type: 'value',
     splitNumber: 4,
     minInterval: interi ? 1 : undefined,
+    // a share stops at the whole: an axis to 120% read as more than everybody
+    ...(format === 'percent' && !payload.stacked
+      ? { max: ({ max }) => (max <= 100 ? 100 : undefined) }
+      : {}),
     axisLabel: {
       color: INK_MUTED,
       fontSize: 11,

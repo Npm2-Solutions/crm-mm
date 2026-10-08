@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
-"""The phone's own lists (docs/progetto-ghl/29): a person found by a number
+"""The phone's own lists (docs/crm/29): a person found by a number
 written any way, by name or by email, a page at a time, with when they come
 next; the open tasks by when they are due, one's own or everybody's; the deals
 of a pipeline by stage; the companies with their deals; the register of calls,

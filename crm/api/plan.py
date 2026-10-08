@@ -28,6 +28,8 @@ from crm.fcrm.doctype.crm_plan.crm_plan import (
 	AVVISO,
 	CREDITI_SDI,
 	FIRME_INCLUSE,
+	RICHIESTE_DI_PROVA,
+	UTENTI,
 	crediti_sdi,
 )
 from crm.permissions import livelli
@@ -102,6 +104,8 @@ def get_plan() -> dict:
 		)
 	sale = ambulatori()
 	comprese = AMBULATORI.get(piano.size) if piano.size else None
+	persone = utenti()
+	ammessi = UTENTI.get(piano.size) if piano.size else None
 	accesi = {modulo["key"] for modulo in moduli if modulo["state"] in ("active", "trial")}
 	return {
 		"size": piano.size or None,
@@ -110,8 +114,19 @@ def get_plan() -> dict:
 			"included": comprese,
 			"over": bool(comprese and sale > comprese),
 		},
+		# None: unlimited, as in every plan but the Professional
+		"users": {
+			"count": persone,
+			"included": ammessi,
+			"full": bool(ammessi and persone >= ammessi),
+		},
 		"modules": moduli,
-		"usage": consumi(piano.size, accesi, spazio_gb=piano.get("storage_gb")),
+		"usage": consumi(
+			piano.size,
+			accesi,
+			spazio_gb=piano.get("storage_gb"),
+			in_prova={modulo["key"] for modulo in moduli if modulo["state"] == "trial"},
+		),
 		"agency": livelli.e_agenzia(frappe.session.user),
 		"trial_days": GIORNI_DI_PROVA,
 	}
@@ -185,10 +200,94 @@ def _system_managers() -> list[str]:
 	return frappe.get_all("User", filters={"name": ["in", users or [""]], "enabled": 1}, pluck="email")
 
 
+@frappe.whitelist(methods=["POST"])
+@richiede("piano.amplia")
+def ask_for_size(size: str) -> dict:
+	"""Ask the agency for a bigger size: the centre cannot write the plan, the
+	agency moves it and bills it (the Professional who takes a colleague)."""
+	if size not in AMBULATORI:
+		frappe.throw(_("{0} is not a size of the plan").format(frappe.bold(size)))
+	piano = frappe.get_cached_doc("CRM Plan")
+	destinatari = [piano.agency_email] if piano.agency_email else _system_managers()
+	chi = frappe.utils.get_fullname(frappe.session.user)
+	inviata = False
+	if destinatari:
+		try:
+			frappe.sendmail(
+				recipients=destinatari,
+				subject=_("{0} asks for the {1} plan on {2}").format(
+					chi, nome_della_taglia(size), frappe.local.site
+				),
+				header=frappe.utils.escape_html(_("A centre asks for a bigger plan")),
+				with_container=True,
+				message=_(
+					"{0} ({1}) asks to move {2} to the {3} plan. Change the size in the site's plan "
+					"(Settings > Plan) and bill it from next month."
+				).format(chi, frappe.session.user, frappe.utils.get_url(), nome_della_taglia(size)),
+			)
+			inviata = True
+		except Exception:
+			frappe.log_error(title="Plan: the agency could not be asked for a bigger size")
+	return {"agency_notified": inviata}
+
+
+def nome_della_taglia(taglia: str) -> str:
+	"""A size as the listino names it: "Solo" is the Professional plan."""
+	return {
+		"Solo": _("Professional"),
+		"Studio": _("Studio"),
+		"Centre": _("Centre"),
+		"Polyclinic": _("Polyclinic"),
+		"Large": _("Over 10 rooms"),
+	}.get(taglia, taglia)
+
+
+def chi_conta() -> set[str]:
+	"""The users the plan counts: the people who work in DottorCloud with a level,
+	enabled. Not the agency's (System Manager), nor the demo's, nor the people of
+	the client area, who have no level."""
+	from crm.permissions import utenti as gestione_utenti
+
+	profili = list(gestione_utenti.profili_crm())
+	con_livello = frappe.get_all(
+		"User Role Profile",
+		filters={"parenttype": "User", "role_profile": ["in", profili or [""]]},
+		pluck="parent",
+		distinct=True,
+	)
+	attivi = frappe.get_all("User", filters={"name": ["in", con_livello or [""]], "enabled": 1}, pluck="name")
+	demo = set(frappe.get_all("CRM Demo Record", filters={"ref_doctype": "User"}, pluck="ref_name"))
+	return {user for user in attivi if user not in demo and not livelli.e_agenzia(user)}
+
+
+def utenti() -> int:
+	"""How many users the plan counts (`chi_conta`)."""
+	return len(chi_conta())
+
+
+def verifica_utenti(nuovi: int) -> None:
+	"""Stop before the plan has more users than it allows: the Professional plan is
+	one person's. The invitations still pending count, so two at once do not pass.
+	The agency is never stopped: it moves the size."""
+	piano = frappe.get_cached_doc("CRM Plan")
+	ammessi = UTENTI.get(piano.size) if piano.size else None
+	if ammessi is None or nuovi <= 0 or livelli.e_agenzia(frappe.session.user):
+		return
+	in_attesa = frappe.db.count("CRM Invitation", {"status": "Pending"})
+	if utenti() + in_attesa + nuovi > ammessi:
+		frappe.throw(
+			_(
+				"The Professional plan is for one person. To work with colleagues, ask for the Studio "
+				"plan from Settings > Features: users are unlimited there."
+			),
+			title=_("One user in the plan"),
+		)
+
+
 def ambulatori() -> int:
 	"""What the size counts (listino.md): the ambulatori, the agenda's rooms where
 	one visits or treats - a physiotherapy gym counts as one. Practitioners and
-	users are unlimited."""
+	users are unlimited but in the Professional plan (`UTENTI`)."""
 	return frappe.db.count("CRM Resource", {"resource_type": "Room", "enabled": 1})
 
 
@@ -197,6 +296,7 @@ def consumi(
 	accesi: set[str] = frozenset(),
 	giorno: str | None = None,
 	spazio_gb: int | None = None,
+	in_prova: set[str] = frozenset(),
 ) -> dict:
 	"""What the centre used, as the agency bills it: the space its files take
 	(doc 57), the SdI credits and the advanced signatures of the year, each with
@@ -225,6 +325,11 @@ def consumi(
 			),
 			"included": FIRME_INCLUSE,
 		}
+	if "assistente" in in_prova:
+		# the assistant's trial is a few requests, then it is an add-on
+		from crm.assistente import modello
+
+		uso["assistant_trial"] = {"used": modello.richieste_usate(), "included": RICHIESTE_DI_PROVA}
 	for voce in uso.values():
 		if voce and voce.get("included"):
 			voce["warn"] = archivio_regole.avviso(voce["used"], voce["included"], AVVISO)

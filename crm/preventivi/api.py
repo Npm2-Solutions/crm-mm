@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Quotes on the person's page (docs/gestionale-medico/design.md, "Tre strati": "Il
+"""Quotes on the person's page (docs/verticali/clinica/design.md, "Tre strati": "Il
 preventivo"); the rules without a site are `regole`.
 
 - **A draft is its author's**: services from the price list, each with its
@@ -34,6 +34,7 @@ from frappe import _
 from frappe.utils import add_days, cint, flt, get_fullname, getdate, now_datetime
 
 from crm.permissions import livelli, org_hierarchy, sanitari
+from crm.preventivi import rate
 from crm.preventivi import regole as R
 
 DOCTYPE = "CRM Quote"
@@ -230,6 +231,8 @@ def calcola(doc) -> None:
 	doc.total_discount = somme["discount"]
 	doc.total_net = somme["net"]
 	doc.total_done = somme["done"]
+	# paid in instalments: the schedule from the terms, while it is a draft
+	rate.calcola(doc)
 
 
 # ------------------------------------------------------------------ reading
@@ -280,6 +283,8 @@ def _riga(doc) -> dict:
 		"done": fatte,
 		"clinical": cint(doc.clinical),
 		"mine": doc.practitioner == frappe.session.user,
+		# paid in instalments: how many are paid, the next one, the late ones
+		"instalments": rate.riassunto(doc),
 	}
 	for estensione in _estensioni:
 		if estensione.legge:
@@ -308,15 +313,30 @@ def _dettaglio(doc) -> dict:
 		"decline_reason": doc.decline_reason,
 		"closed_on": str(doc.closed_on) if doc.closed_on else None,
 		"replaces": doc.replaces,
+		# the answer the person gave in their area, and what keeps it
+		"answered_in": doc.answered_in,
+		"signer_name": doc.signer_name,
+		"signed_on": str(doc.signed_on) if doc.signed_on else None,
+		"signed_pdf": doc.signed_pdf,
+		"sent_to_sign_on": str(doc.sent_to_sign_on) if doc.sent_to_sign_on else None,
+		"sent_to_sign_to": doc.sent_to_sign_to,
 		"can_edit": mio and doc.status == R.BOZZA,
 		"can_withdraw": mio and doc.status == R.PROPOSTO,
 		"can_decide": decide,
+		# the person accepts and signs it in their area: the link to do so
+		"can_send_to_sign": decide,
 		# the deal's lost reasons, for a quote declined
 		"lost_reasons": frappe.get_all("CRM Lost Reason", pluck="name", order_by="name") if decide else [],
 		"can_mark": doc.status in (R.ACCETTATO, R.COMPLETATO) and (mio or scrive()),
 		"can_close": doc.status == R.ACCETTATO and (mio or gestisce()),
 		"can_copy": scrive() and doc.status != R.BOZZA,
 		"offers": offre(),
+		# how it is paid, and the instalments as they go
+		**rate.leggi(
+			doc,
+			puo_fatturare=(mio or gestisce()) and bool(frappe.has_permission("CRM Invoice", "create")),
+			puo_incassare=livelli.puo("fatture.incassi"),
+		),
 	}
 
 
@@ -493,11 +513,14 @@ def save_quote(lead: str, data: str | dict, name: str | None = None, deal: str |
 	doc.set("items", [])
 	for voce in voci:
 		doc.append("items", {**voce, "status": R.DA_FARE})
+	rate.termini_da(doc, dati)
 	marca(doc)
 	if doc.is_new():
 		doc.insert()
 	else:
 		doc.save()
+	# a draft may leave the first instalment's day for later, never be wrong
+	_problemi(rate.problemi(doc))
 	return _dettaglio(doc)
 
 
@@ -518,6 +541,8 @@ def propose_quote(name: str) -> dict:
 	"""Handed to the person: frozen, its PDF made, the quotes deal moved."""
 	doc = _mio(name, R.BOZZA)
 	valida([voce.as_dict() for voce in doc.items])
+	_problemi(rate.problemi(doc, getdate()))
+	rate.al_proposto(doc)
 	doc.status = R.PROPOSTO
 	doc.proposed_on = now_datetime()
 	doc.valid_until = doc.valid_until or add_days(getdate(), giorni_di_validita())
@@ -556,35 +581,65 @@ def _decide(name: str):
 	return doc
 
 
-@frappe.whitelist(methods=["POST"])
-def accept_quote(name: str, note: str | None = None) -> dict:
-	"""The person said yes: how, in a few words. The appointments already booked for
-	its services take them."""
+def accetta(doc, chi: str, nota: str | None = None, dove: str = R.AL_BANCO) -> None:
+	"""The person said yes - at the desk, recorded by ``chi``, or in their area,
+	where ``chi`` is who entered it: the quotes deal is won, and the appointments
+	already booked for its services take them."""
 	from crm.preventivi import appuntamenti, pipeline
 
-	doc = _decide(name)
 	doc.status = R.ACCETTATO
 	doc.accepted_on = now_datetime()
-	doc.accepted_by = frappe.session.user
-	doc.acceptance_note = (note or "").strip() or None
+	doc.accepted_by = chi
+	doc.acceptance_note = (nota or "").strip() or None
+	doc.answered_in = dove
+	rate.all_accettazione(doc)
 	salva(doc)
 	pipeline.segui(doc, accettato=True)
 	appuntamenti.raccogli(doc.name)
+	sostituisce(doc)
+
+
+def sostituisce(doc) -> None:
+	"""A new version accepted takes the place of the one it replaces, if that was
+	going on: closed, its instalments not invoiced yet cancelled."""
+	if not doc.replaces:
+		return
+	vecchio = frappe.get_doc(DOCTYPE, doc.replaces)
+	if vecchio.status != R.ACCETTATO:
+		return
+	vecchio.status = R.CHIUSO
+	vecchio.closed_on = now_datetime()
+	salva(vecchio)
+	rate.annulla(vecchio)
+
+
+def rifiuta(doc, motivo: str | None = None, nota: str | None = None, dove: str = R.AL_BANCO) -> None:
+	"""The person said no, and maybe why: the reason is the deal's lost reason."""
+	from crm.preventivi import pipeline
+
+	doc.status = R.RIFIUTATO
+	doc.declined_on = now_datetime()
+	doc.decline_reason = ", ".join(v for v in ((motivo or "").strip(), (nota or "").strip()) if v) or None
+	doc.answered_in = dove
+	salva(doc)
+	rate.annulla(doc)
+	pipeline.segui(doc, accettato=False, motivo=motivo, note=nota)
+
+
+@frappe.whitelist(methods=["POST"])
+def accept_quote(name: str, note: str | None = None) -> dict:
+	"""The person said yes, at the desk: how, in a few words."""
+	doc = _decide(name)
+	accetta(doc, frappe.session.user, note)
 	return _dettaglio(frappe.get_doc(DOCTYPE, doc.name))
 
 
 @frappe.whitelist(methods=["POST"])
 def decline_quote(name: str, reason: str | None = None, note: str | None = None) -> dict:
-	"""The person said no, and maybe why: the reason is the deal's lost reason."""
-	from crm.preventivi import pipeline
-
+	"""The person said no, at the desk, and maybe why."""
 	doc = _decide(name)
-	doc.status = R.RIFIUTATO
-	doc.declined_on = now_datetime()
-	doc.decline_reason = ", ".join(v for v in ((reason or "").strip(), (note or "").strip()) if v) or None
-	salva(doc)
-	pipeline.segui(doc, accettato=False, motivo=reason, note=note)
-	return _dettaglio(doc)
+	rifiuta(doc, reason, note)
+	return _dettaglio(frappe.get_doc(DOCTYPE, doc.name))
 
 
 @frappe.whitelist(methods=["POST"])
@@ -627,7 +682,9 @@ def close_quote(name: str) -> dict:
 	doc.status = R.CHIUSO
 	doc.closed_on = now_datetime()
 	salva(doc)
-	return _dettaglio(doc)
+	# the instalments not invoiced yet go with it
+	annullate = rate.annulla(doc)
+	return {**_dettaglio(frappe.get_doc(DOCTYPE, doc.name)), "cancelled_instalments": annullate}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -641,6 +698,7 @@ def copy_quote(name: str) -> dict:
 	doc.price_list = fonte.price_list
 	doc.patient_notes = fonte.patient_notes
 	doc.replaces = fonte.name
+	rate.copia(fonte, doc)
 	# the same deal while it is open: a closed one is never opened again by a quote
 	from crm.preventivi import pipeline
 

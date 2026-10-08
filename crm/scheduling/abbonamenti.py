@@ -233,7 +233,9 @@ def aggancia(appuntamento) -> None:
 	"""`validate` of an appointment, after its cycle and before its price: each person
 	newly booked into a comprised service uses an entry of their own subscription; a
 	place in a cycle, or whose service, person or day left the subscription, leaves
-	it."""
+	it. One brought over from the previous software uses no entry."""
+	if appuntamento.flags.get("importato"):
+		return
 	ciclo = appuntamento.get("session_cycle")
 	giorno = getdate(appuntamento.starts_on) if appuntamento.starts_on else None
 	for riga in _righe(appuntamento, anche_annullati=True):

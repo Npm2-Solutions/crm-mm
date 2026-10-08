@@ -109,6 +109,9 @@ def save_food(name: str | None = None, data: dict | str | None = None) -> dict:
 		frappe.throw(_("A food has a name"))
 	if dati.get("food_group") not in T.GRUPPI:
 		frappe.throw(_("Choose the group"))
+	# a food without its energy counts nothing in a diet: the library leaves one out too
+	if not flt(dati.get("kcal")) > 0:
+		frappe.throw(_("A food needs its kcal for 100 g"))
 	doc.food_name = nome[:140]
 	doc.food_group = dati["food_group"]
 	doc.portion_g = flt(dati.get("portion_g")) or None

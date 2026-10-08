@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <EditValueModal
     v-if="showEditModal"
@@ -21,6 +24,12 @@
     :docname="showDeleteDocModal.docname"
     :reload="reload"
   />
+  <SendToListDialog
+    v-if="showSendToList"
+    v-model="showSendToList"
+    :names="selectedValues"
+    @sent="() => unselectAllAction?.()"
+  />
   <BulkDeleteLinkedDocModal
     v-if="showDeleteDocModal.showDeleteModal"
     v-model="showDeleteDocModal.showDeleteModal"
@@ -33,6 +42,8 @@
 <script setup>
 import EditValueModal from '@/components/Modals/EditValueModal.vue'
 import AssignmentModal from '@/components/Modals/AssignmentModal.vue'
+import SendToListDialog from '@/components/Automations/SendToListDialog.vue'
+import { usersStore } from '@/stores/users'
 import { setupListCustomizations } from '@/utils'
 import { globalStore } from '@/stores/global'
 import { useTelemetry } from 'frappe-ui/frappe'
@@ -118,6 +129,15 @@ function deleteValues(selections, unselectAll) {
   }
 }
 
+const { puo } = usersStore()
+const showSendToList = ref(false)
+
+function sendToList(selections, unselectAll) {
+  selectedValues.value = Array.from(selections)
+  unselectAllAction.value = unselectAll
+  showSendToList.value = true
+}
+
 const showAssignmentModal = ref(false)
 const bulkAssignees = ref([])
 
@@ -193,6 +213,13 @@ function bulkActions(selections, unselectAll) {
       label: __('New Deal'),
       onClick: () => convertToDeal(selections, unselectAll),
     })
+    // a campaign to the people chosen (crm/automation/campagne.py)
+    if (puo('automazioni.gestisci')) {
+      actions.push({
+        label: __('Send to a list'),
+        onClick: () => sendToList(selections, unselectAll),
+      })
+    }
   }
 
   customBulkActions.value.forEach((action) => {

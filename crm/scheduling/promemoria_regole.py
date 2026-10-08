@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The reminders of the appointments without a site (docs/progetto-ghl/59). The
+"""The reminders of the appointments without a site (docs/crm/59). The
 engine is `crm.scheduling.promemoria`; here, what it decides.
 
 - **The day before, never at night**: a reminder leaves the hours before its
@@ -10,6 +10,10 @@ engine is `crm.scheduling.promemoria`; here, what it decides.
   the appointment - to the evening before.
 - **Never for what was just booked**, nor in the last hour: a booking made after
   its reminder would have left was its own reminder.
+- **A second one, the same day**, where the centre wants it: 1 to 12 hours
+  before, after the first, never at night (it goes in the morning, or not at all)
+  nor in the last half hour; once it is due the first no longer leaves, and it
+  does not leave to whoever already said they are coming or cannot come.
 - **One way**: WhatsApp with the centre's template and its buttons, else SMS, else
   the email - the first the centre has and the person can receive; a STOP to the
   centre's SMS leaves the SMS out.
@@ -56,6 +60,12 @@ SERA = datetime.time(20, 0)
 ULTIMA_ORA = datetime.timedelta(hours=1)
 #: Booked this close to its reminder's moment, the booking is the reminder.
 APPENA_PRENOTATO = datetime.timedelta(hours=2)
+#: The second reminder's hours before, as the centre may choose them: off where empty.
+ORE_DEL_SECONDO = (1, 12)
+#: The second one may leave within the last hour, never within the last half.
+ULTIMA_MEZZ_ORA = datetime.timedelta(minutes=30)
+#: Which reminder of a place: the one the day before, the one the same day.
+PRIMO, SECONDO = 1, 2
 #: How long a WhatsApp that left is watched, in case it did not arrive.
 GUARDA_INDIETRO = datetime.timedelta(hours=6)
 
@@ -100,10 +110,86 @@ def dovuto(
 	return not (prenotato_il and prenotato_il > momento - APPENA_PRENOTATO)
 
 
-def da_cercare(adesso: datetime.datetime, ore: int) -> tuple[datetime.datetime, datetime.datetime]:
+def da_cercare(
+	adesso: datetime.datetime, ore: int, secondo: bool = False
+) -> tuple[datetime.datetime, datetime.datetime]:
 	"""Where the appointments whose reminder may be due now start: a moment of the
-	night may have moved their reminder up to thirteen hours earlier."""
-	return adesso + ULTIMA_ORA, adesso + datetime.timedelta(hours=ore + 13)
+	night may have moved their reminder up to thirteen hours earlier; a second
+	reminder may leave until the last half hour."""
+	return adesso + (ULTIMA_MEZZ_ORA if secondo else ULTIMA_ORA), adesso + datetime.timedelta(hours=ore + 13)
+
+
+# ------------------------------------------------------------------ the second, the same day
+
+
+def ore_del_secondo(valore, ore: int) -> int | None:
+	"""The second reminder's hours before, within 1 to 12; None where the centre
+	wants none, or where it would not come after the first."""
+	try:
+		numero = int(valore or 0)
+	except (TypeError, ValueError):
+		numero = 0
+	if numero <= 0:
+		return None
+	minimo, massimo = ORE_DEL_SECONDO
+	numero = min(max(numero, minimo), massimo)
+	return numero if numero < ore else None
+
+
+def momento_del_secondo(inizio: datetime.datetime, ore: int, ore_primo: int) -> datetime.datetime | None:
+	"""When the second reminder leaves: ``ore`` before the appointment, a moment of
+	the night in the morning - never the evening before, which is the first one's
+	time -; None when the morning is within the last half hour or the moment is
+	not after the first's."""
+	momento = inizio - datetime.timedelta(hours=ore)
+	if di_notte(momento):
+		giorno = (
+			momento.date() if momento.time() < NOTTE_ALLE else momento.date() + datetime.timedelta(days=1)
+		)
+		momento = datetime.datetime.combine(giorno, NOTTE_ALLE)
+	if inizio - momento < ULTIMA_MEZZ_ORA or momento <= momento_di_invio(inizio, ore_primo):
+		return None
+	return momento
+
+
+def dovuto_il_secondo(
+	inizio: datetime.datetime,
+	adesso: datetime.datetime,
+	ore: int,
+	ore_primo: int,
+	prenotato_il: datetime.datetime | None = None,
+) -> bool:
+	"""Whether the second reminder leaves now: its moment has come, the appointment
+	is not within the half hour, and it was not just booked."""
+	momento = momento_del_secondo(inizio, ore, ore_primo)
+	if momento is None or inizio - adesso < ULTIMA_MEZZ_ORA or adesso < momento:
+		return False
+	return not (prenotato_il and prenotato_il > momento - APPENA_PRENOTATO)
+
+
+def quale(
+	inizio: datetime.datetime,
+	adesso: datetime.datetime,
+	ore: int,
+	ore_secondo: int | None,
+	prenotato_il: datetime.datetime | None = None,
+	fatti=(),
+	risposto: bool = False,
+) -> int | None:
+	"""Which reminder of a place leaves now, if any (``PRIMO``, ``SECONDO``): the
+	ones in ``fatti`` left already. Once the second is due the first no longer
+	leaves - two in a row would be one too many -, and the second does not leave
+	to whoever answered they are coming or cannot (``risposto``)."""
+	if ore_secondo and dovuto_il_secondo(inizio, adesso, ore_secondo, ore, prenotato_il):
+		return SECONDO if SECONDO not in fatti and not risposto else None
+	if PRIMO in fatti or SECONDO in fatti:
+		return None
+	return PRIMO if dovuto(inizio, adesso, ore, prenotato_il) else None
+
+
+def chiude(risposta_: str | None) -> bool:
+	"""Whether an answer leaves nothing to remind: coming, or not coming."""
+	return risposta_ in (CONFERMA, NON_VIENE)
 
 
 # ------------------------------------------------------------------ the way

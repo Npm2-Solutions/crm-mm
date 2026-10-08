@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 18:00:00.000000",
+ "description": "The centre's own Stripe account, for online payments: the money goes to the centre, never through DottorCloud",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "secret_key",
+  "mode",
+  "column_break_account",
+  "account_id",
+  "account_name",
+  "country",
+  "currency",
+  "webhook_section",
+  "webhook_id",
+  "webhook_url",
+  "webhook_secret",
+  "column_break_webhook",
+  "connected_on",
+  "connected_by",
+  "rules_section",
+  "refund_on_cancel",
+  "refund_hours"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Connected",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "secret_key",
+   "fieldtype": "Password",
+   "label": "Secret key",
+   "length": 255
+  },
+  {
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "\ntest\nlive",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_account",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "label": "Stripe account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_name",
+   "fieldtype": "Data",
+   "label": "Account name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "webhook_section",
+   "fieldtype": "Section Break",
+   "label": "Webhook"
+  },
+  {
+   "fieldname": "webhook_id",
+   "fieldtype": "Data",
+   "label": "Webhook endpoint",
+   "read_only": 1
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook signing secret",
+   "length": 255
+  },
+  {
+   "fieldname": "column_break_webhook",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connected_on",
+   "fieldtype": "Datetime",
+   "label": "Connected on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "connected_by",
+   "fieldtype": "Link",
+   "label": "Connected by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rules_section",
+   "fieldtype": "Section Break",
+   "label": "Deposits"
+  },
+  {
+   "fieldname": "refund_on_cancel",
+   "fieldtype": "Check",
+   "label": "Refund the deposit when the person cancels in time",
+   "default": "1",
+   "description": "Given back on Stripe by itself when the booking is cancelled at least the hours below before the appointment"
+  },
+  {
+   "fieldname": "refund_hours",
+   "fieldtype": "Int",
+   "label": "Hours before the appointment",
+   "default": "24",
+   "non_negative": 1,
+   "description": "A cancellation later than this keeps the deposit"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-08 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Pagamenti",
+ "name": "CRM Stripe Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "issingle": 1,
+ "track_changes": 1
+}

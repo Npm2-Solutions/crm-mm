@@ -3,12 +3,20 @@
 ## What this project is
 
 DottorCloud, the management software for medical centres of NPM2 Solutions Srl,
-built as the `crm` app. Vue 3 + frappe-ui frontend; the backend is Python on the
+built as the `crm` app, in three layers: a neutral **CRM** any business that works
+with people uses (clients, appointments, conversations, invoices, the client area);
+**verticals** on it, one management software per service (`crm/verticali.py`; today
+the clinic, `crm/clinica`); and **brands** that sell them (`crm/marchio.py`; today
+DottorCloud, which wears the clinic). The docs, the brands' material and their
+websites follow the same layers: `docs/crm/` (the numbered docs, "doc 57"),
+`docs/verticali/<vertical>/`, `docs/marchi/<brand>/`; `brand/<brand>/`;
+`siti/<brand>/` (`docs/README.md`). Vue 3 + frappe-ui frontend; the backend is Python on the
 Frappe framework. Scripts in `frontend/` only; Python in `crm/`. No build step for
 Form Scripts — they run as evaluated strings in the browser.
 
-The company is **NPM2 Solutions Srl**, the brand is **DottorCloud**. Everything a
-user sees says DottorCloud: never "Frappe" nor "Frappe CRM", in the CRM, the
+The company is **NPM2 Solutions Srl**, the brand is **DottorCloud** (the one on
+today; the words say `{brand}`, the brand that is on). Everything a
+user sees says the brand: never "Frappe" nor "Frappe CRM", in the CRM, the
 framework's screens (login, desk, public pages, emails) or a document, and never
 "the CRM" for the product ("CRM" stays for the category and in technical names).
 The framework's name stays where only code sees it (imports, API paths).
@@ -35,8 +43,8 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | Form scripting user guide | [feats/form-scripting/guide.md](./.pi/feats/form-scripting/guide.md) |
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
-| Any screen a phone will see (rules below) | [docs/progetto-ghl/29-telefono.md](./docs/progetto-ghl/29-telefono.md) |
-| How DottorCloud looks: tokens, the brand's marks, components | [brand/design-system/espresso](./brand/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
+| Any screen a phone will see (rules below) | [docs/crm/29-telefono.md](./docs/crm/29-telefono.md) |
+| How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/dottorcloud/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
 
 ---
 
@@ -45,7 +53,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 ### Scripting engine
 | File | Role |
 |---|---|
-| `frontend/src/data/document.js` | `useDocument` — loads doc, wires script, patches `save.submit`, exposes triggers |
+| `frontend/src/data/document.js` | `useDocument` — loads doc, wires script, patches `save.submit`, exposes triggers; asks the document itself (`pronto`: true once it came): what a page asks about a record waits for it, so a refused one asks nothing more and leaves no uncaught error |
 | `frontend/src/data/script.js` | `getScript` — fetches Form Script records, evaluates class via `new Function`, injects helpers, `setupHelperMethods` |
 | `frontend/src/utils/scriptHelpers.js` | `createDocProxy`, `getClassNames` — extracted pure helpers |
 
@@ -80,14 +88,14 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 ### Dashboard
 | File | Role |
 |---|---|
-| `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store |
+| `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store; `riprenotazione_regole.py` pure: who came and booked again (each person by their last visit, any later appointment not cancelled), who has nothing ahead — the agenda's «Rebooking rate», per professional and «No next appointment» (the people the viewer sees, `org_hierarchy.visible_leads`), tested with plain `unittest` |
 | `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)`; who reads a widget is the capability of its category (`registry.READERS`: doc 30's numbers) or its own `reader`, a template's `reader` says whom it is for (`store.reads`, `store.offers`) |
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
 | `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |
-| `docs/progetto-ghl/28-dashboard.md` | What it does and why |
+| `docs/crm/28-dashboard.md` | What it does and why |
 
-### The agenda's screen (docs/progetto-ghl/56)
+### The agenda's screen (docs/crm/56)
 | File | Role |
 |---|---|
 | `frontend/src/utils/agenda.js` | Pure: an hour's height (`ALTEZZE`), the whole lines a block holds (`righeDelBlocco`, `formaDelBlocco`), what it says, the person first (`testoDelBlocco`, `segniDelBlocco`, `paroleDelBlocco`), the colour by service or by state, a column's hours and where it is closed (`orarioDelGiorno`, `chiusure`), the hours a grid shows, a day's columns (who works or has something) and a week's days, the periods and their headings, what each column and each day of the month draws (`cosePerColonna`, `cosePerGiorno`) — tested |
@@ -100,14 +108,21 @@ never a colour alone. A view draws its columns from `cosePerColonna`; what a col
 does not work is greyed from the server's hours, never guessed in the browser.
 A column offers a new appointment only where the reader may book it: a
 colleague's column takes no tap and no drop from a practitioner, as the server
-would refuse it.
+would refuse it. An appointment's calendar copy (`Event`, `sync_event`) is its first
+professional's, every professional of it a participant by their user; the people who
+come are linked by their record, never by their email (it would read the copy to
+the area's user and get the framework's reminders).
+A call asked once whose refusal its `onError` says is `chiedi()` (`utils/chiedi.js`),
+and a resource's `submit()` so answered ends in `.catch(() => {})`: frappe-ui throws
+again what it handed to `onError`, and a `createResource({ auto: true })` refused
+left an uncaught rejection over the page that had said why.
 
-### The reminders of the appointments (docs/progetto-ghl/59)
+### The reminders of the appointments (docs/crm/59)
 | File | Role |
 |---|---|
-| `crm/scheduling/promemoria_regole.py` | Pure: when one leaves (24 hours before by default, 2 to 72; the night's, 21 to 8, in the morning or the evening before; never in the last hour, nor for what was booked two hours before), by which way (WhatsApp, SMS, email; STOP takes the SMS away), what an answer means (a button's words; an SMS that says only yes, no or move), whether a template has the buttons (`ha_i_pulsanti`), DottorCloud's template in Italian and English (`modello`, a copy) — tested with plain `unittest` |
-| `crm/scheduling/promemoria.py` + `CRM Reminder Settings`, `CRM Appointment Reminder` | Every quarter of an hour the places due get theirs, each person of a class their own, once per time they are booked at; the register written before it leaves; a WhatsApp Meta could not deliver goes by SMS or email; the answers - a WhatsApp button on the message it answers, from the number it went to; an SMS after `sms.ascolta`; «I'll be there» on /prenota (`service_booking.confirm`), a cancellation there (`disdetto_dalla_pagina`) - kept on the reminder: «cannot come» cancels the person's place where the centre wants it, «move» gets the booking page's link, the desk and the appointment's staff told (`avvisa`); never the demo's, a platform's or an online request not yet approved; DottorCloud's template made on the sending number's account (`create_template`, `_nome_libero`) |
-| `frontend/src/components/Settings/Scheduling/RemindersSettings.vue` + `utils/promemoriaAppuntamenti.js` | Settings > Agenda > Agenda & reminders > Appointment reminders (off to start with): hours, what a «cannot come» does, the template (only one with the buttons), SMS and email, the last ones; the answer's mark on the agenda's block and the phone's day list (`rispostaDellAppuntamento`, one person's appointment), on each person at the reception desk (`ParticipantRow`), and its line in the panel (`get_appointment`, `get_calendar`, `oggi.get_day` through `nelle_righe`) — tested |
+| `crm/scheduling/promemoria_regole.py` | Pure: when one leaves (24 hours before by default, 2 to 72; the night's, 21 to 8, in the morning or the evening before; never in the last hour, nor for what was booked two hours before; a second the same day where the centre wants it, 1 to 12 hours before, after the first, in the morning or not at all, never in the last half hour, and once it is due the first no longer leaves: `quale`), by which way (WhatsApp, SMS, email; STOP takes the SMS away), what an answer means (a button's words; an SMS that says only yes, no or move), whether a template has the buttons (`ha_i_pulsanti`), DottorCloud's template in Italian and English (`modello`, a copy) — tested with plain `unittest` |
+| `crm/scheduling/promemoria.py` + `CRM Reminder Settings`, `CRM Appointment Reminder` | Every quarter of an hour the places due get theirs, each person of a class their own, once per time they are booked at (the same day's second marked `second`, never to whoever answered they are coming or cannot); the register written before it leaves; a WhatsApp Meta could not deliver goes by SMS or email; the answers - a WhatsApp button on the message it answers, from the number it went to; an SMS after `sms.ascolta`; «I'll be there» on /prenota (`service_booking.confirm`), a cancellation there (`disdetto_dalla_pagina`) - kept on the reminder: «cannot come» cancels the person's place where the centre wants it, «move» gets the booking page's link, the desk and the appointment's staff told (`avvisa`); never the demo's, a platform's or an online request not yet approved; DottorCloud's template made on the sending number's account (`create_template`, `_nome_libero`) |
+| `frontend/src/components/Settings/Scheduling/RemindersSettings.vue` + `utils/promemoriaAppuntamenti.js` | Settings > Agenda > Agenda & reminders > Appointment reminders (off to start with): hours, the second reminder's (`problemaDelSecondo`), what a «cannot come» does, the template (only one with the buttons), SMS and email, the last ones; the answer's mark on the agenda's block and the phone's day list (`rispostaDellAppuntamento`, one person's appointment), on each person at the reception desk (`ParticipantRow`), and its line in the panel (`get_appointment`, `get_calendar`, `oggi.get_day` through `nelle_righe`), which says which one it is where the centre sends two (`which`: «Secondo promemoria inviato per email») as the settings' last ones do — tested |
 
 A reminder is written in its register before it leaves. A template offered for
 it has the buttons to confirm and to cancel, and an answer counts only from its
@@ -118,8 +133,8 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 ### Service booking & external platforms
 | File | Role |
 |---|---|
-| `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest` |
-| `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine |
+| `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest`; whoever missed `no_show_limit` appointments in the last `no_show_months` (`CRM Scheduling Settings`, off where empty; counted from the participants' «No Show», `missed`) books only with the centre's yes, or not at all (`check_no_shows`, `no_show_action`), a class's seat then refused |
+| `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine; a service's deposit paid on the centre's Stripe before the booking is one (`crm.pagamenti`, doc 60) |
 | `crm/scheduling/unify.py` | One booking system: legacy Booking Calendars → services, /book redirects |
 | `crm/api/booking_admin.py` | Who-does-what matrix, team rota, "why not available" explainer |
 | `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
@@ -131,14 +146,17 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 | `frontend/src/pages/WaitingList.vue`, `components/Waiting/` + `utils/attese.js` | The desk: the whole line, the person's section, an entry with its free places; the words, tested; `area/components/WaitingCard.vue`, `WaitingJoinDialog.vue` in the client area |
 | `crm/scheduling/abbonamenti_regole.py` + `abbonamenti.py` | Subscriptions (`CRM Subscription Type`, `CRM Subscription`, `agenda.abbonamenti`): a type sold from a day, its terms copied on the subscription; a person's place in a comprised service uses an entry of their own by itself (the participant's `subscription`: in a class each person uses theirs, the others pay; `aggancia` and `prezzo` in the appointment's `validate`, after its cycle) while its week or month has one left, and costs them nothing; a suspension moves the end; the daily `ogni_giorno` invoices the instalments due (`invoicing.api.issue_from_subscription`, issued where the type says so), reminds of the end, renews. The rules pure, tested with plain `unittest` |
 | `frontend/src/components/Subscriptions/`, `Settings/Scheduling/SubscriptionTypesSettings.vue` + `utils/abbonamenti.js` | The person's subscriptions, selling and following one, the types in Settings > Agenda > Services; the words and the instalments as the server makes them, tested; `area/components/SubscriptionCard.vue` in the client area |
-| `docs/prenotazioni/` | User guide + platform API research |
+| `crm/scheduling/visite_online_regole.py` + `visite_online.py`, `area/components/OnlineVisit.vue`, `area/visitaOnline.js`, `utils/visiteOnline.js` | Online visits: a service marked «Online visit» (`CRM Service.online_visit`) gives each appointment a room's link (`CRM Appointment.video_link`), made once when it is saved: a random room (120 bits, nothing of the person) on the agency's Jitsi (`CRM Scheduling Settings.video_server`, permlevel 1, else `dottorcloud_video` in `common_site_config.json`), else the professional's own room (`CRM Staff Schedule.video_link`), or a https link the desk pastes; never for the demo (`guardie.visita_di_prova`); no room of the centre (`serve_la_stanza`). Staff start it from the agenda's panel and the reception desk; the person only from the area, from 15 minutes before until the end (`crm.area.api.enter_online_visit`, never in the preview nor in a list); /prenota, the confirmation and the reminders say it is online and send to the area (`area_per`, opened if nobody ever entered it), never the room's link — the rules tested with plain `unittest` |
+| `docs/crm/prenotazioni/` | User guide + platform API research |
 
 ---
 
-### Forms to fill and sign (crm/moduli, docs/gestionale-medico phase 2)
+### Forms to fill and sign (crm/moduli, docs/verticali/clinica phase 2)
 | File | Role |
 |---|---|
 | `crm/moduli/schema.py` | Pure: what a template schema may hold, conditions, formulas, scores, `valuta()`, `pulisci()`, `valida_schema()`, SHA-256 |
+| `crm/moduli/corpo.py` + `sagome_corpo.json`, `components/Moduli/BodyChartInput.vue` | The body chart («Disegno sul corpo», `body_chart`): DottorCloud's own outlines, front and back (the browser's `BODY_OUTLINES`, a test keeps them equal), numbered points with words and an intensity 0-10, strokes by hand as the signature pad draws them; kept as fractions of the outline (`schema.pulisci_corpo`, `cleanBodyChart`, the shared cases' «body_charts»), drawn as an SVG in the signed PDF and the report (`pdf.disegno_del_corpo`); a tap marks and the page scrolls, only «Draw» keeps the finger (`data-disegno`); never on the website |
+| `crm/moduli/andamenti.py` + `andamenti_regole.py`, `components/Moduli/ScoreTrends.vue`, `utils/andamenti.js` | Questionnaires over time: each score's total, signed form after signed form of a template, on its bands, worked out from the answers kept; through `get_list`'s rules, health data for the care team with its View Log; a module adds its own (`registra_fonte`: the clinic's visits on its sheets); on the Forms tab, in the Clinic tab where the clinic is on — tested |
 | `frontend/src/utils/moduli.js` | The same rules in the browser, plus the builder's helpers — tested on the same cases |
 | `crm/moduli/tests/casi_schema.json` | The cases both sides must agree on: change one side, run both suites |
 | `crm/moduli/modelli.py` | Drafts (`CRM Form Template`) and immutable versions (`CRM Form Template Version`), consents' words frozen at publish; the uses: a "Form" the person fills (sent, owed at a booking, giving consents), a "Sheet" the operator writes at the desk (a treatment sheet; with the health data mark, the clinic's clinical sheet, written in the record) and a "Website" form anybody fills, built by marketing (`moduli_lead.gestisci`), a module registers its own (`registra_uso`); what a use does not allow (`problemi_dell_uso`); the summary's lines |
@@ -156,7 +174,7 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 | `frontend/src/components/Moduli/SendFormsDialog.vue`, `RequestRow.vue` | "On their own": send a link or hand the tablet over; what was sent and where it is |
 | `crm/moduli/firme.py` + `CRM Signature Settings` | Signature providers: `FornitoreFirma` (create, page, webhook event, signed PDF, evidence), `registra_fornitore`, the webhook |
 | `frontend/src/components/Moduli/PaperSignDialog.vue` | On paper: print the copy to sign, upload the scan, attest it (`compilazioni.sign_on_paper`) |
-| `crm/moduli/dovuti.py` | Which forms a person owes, and when: `dovuto()` is pure (ask on, validity, a new version from a date); the Forms tab, Today and the link sent with a booking |
+| `crm/moduli/dovuti.py` | Which forms a person owes, and when: `dovuto()` is pure (ask on, validity - for ever, a year, every few weeks (`validity_weeks`, 1 to 104: a questionnaire followed over time, «due_again»), one appointment -, a new version from a date); the Forms tab, Today and the link sent with a booking; a whole day at the desk in one go (`per_appuntamenti`: the templates and each person's forms read once, not once a row) |
 
 The browser and the server evaluate a form the same way: a question looks only at
 the ones before it (to show, compute, score), a hidden answer does not count, and
@@ -169,8 +187,8 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/permissions/catalogo.py` | The CRM's own levels and capabilities; `crm/invoicing/capacita.py` adds invoicing's |
 | `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
 | `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
-| `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability; the listino's numbers (`AMBULATORI` by size, `CREDITI_SDI`, included signatures) and `crediti_sdi()`. The phone counts nothing: a year's fee, calls and SMS paid to Twilio by whoever owns the account |
-| `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), the extras (invoicing, marketing, phone, assistant, advanced signature) and their trial, the size in rooms and the usage the agency bills; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
+| `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability; the listino's numbers (`AMBULATORI` and `UTENTI` by size, `CREDITI_SDI`, included signatures, the assistant's trial requests `RICHIESTE_DI_PROVA`) and `crediti_sdi()`. The phone counts nothing: a monthly fee, numbers, calls and SMS paid to Twilio by the centre's own account (DottorCloud resells no traffic) |
+| `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), invoicing with the Sistema TS in every plan (the base comprises it), the extras (marketing, phone, assistant, advanced signature) and their trial, the size in rooms and users (`UTENTI`: the Professional plan, `Solo`, is one person's, `verifica_utenti` stops a second invitation and `ask_for_size` asks the agency for the Studio) and the usage the agency bills; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings, the address book (an entry is its owner's, or comes with a deal one sees; nobody's is the centre's) |
 | `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |
@@ -194,7 +212,7 @@ A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_perm
 which asks the controllers too) before offering a write; reading and writing are
 separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 
-### The main menu (docs/progetto-ghl/34)
+### The main menu (docs/crm/34)
 | File | Role |
 |---|---|
 | `frontend/src/utils/menu.js` | The menu as data: the day's group (no label, the dashboard last where the day opens on the reception desk), then marketing; each entry its page, icon and `condition` on the session; the pages that live together (`SORELLE`: the reception desk, the agenda and the waiting list; People and the companies; Tasks and the notes); `menuDi()`, `paginaSorelle()`, `barraDelTelefono()` (the phone's four places) — tested |
@@ -206,7 +224,7 @@ work, with the capability that opens it; never straight into the sidebar. A page
 that belongs with another goes in `SORELLE`, not in the menu; an action (calling)
 is never a menu entry.
 
-### The phone's own screens (docs/progetto-ghl/29, second part)
+### The phone's own screens (docs/crm/29, second part)
 | File | Role |
 |---|---|
 | `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number; notes by their title or words, their first words in plain text — tested in `crm/tests/test_sul_telefono.py` |
@@ -215,7 +233,7 @@ is never a menu entry.
 | `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
 | `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
 
-### Notifications (docs/progetto-ghl/43)
+### Notifications (docs/crm/43)
 | File | Role |
 |---|---|
 | `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents, a message on the answering service); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…"). A person's message (WhatsApp, SMS, email) reaches `chi_segue()`: whoever the person or one of their deals is assigned to (`stessa_conversazione`: one conversation on each page; Administrator too when somebody chose it), else its owner, else the desk - everyone of the centre who reads conversations and may open the person, never the agency -; one's own mailbox tells only them. It comes from the person: whoever saved it is never its sender |
@@ -237,7 +255,7 @@ and the email open the same place; only a notification with nowhere to go opens
 the notifications. A page a notification opens on one thing takes it from its
 query (`?open=`) and leaves the address without it (`history.replaceState`).
 
-### Emails (docs/progetto-ghl/44)
+### Emails (docs/crm/44)
 | File | Role |
 |---|---|
 | `crm/templates/emails/standard.html`, `email_header.html`, `email_footer.html` | Every email's layout over the framework's (its classes kept): with a `header` or `with_container`, the brand's canvas, the white card with the cloud's tail, the centre's mark at the top (its PNG/JPEG logo, else its name; the product's only for a centre with neither), "Powered by" under the card; light theme only. A plain email somebody wrote stays plain |
@@ -250,7 +268,7 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
-### The sending service and the centre's mailboxes (docs/progetto-ghl/51)
+### The sending service and the centre's mailboxes (docs/crm/51)
 | File | Role |
 |---|---|
 | `crm/posta/servizio.py` | The agency's sending service (`dottorcloud_posta` in `common_site_config.json`) as each site's "DottorCloud" account, the default outgoing one: `assicura()` after migrate and hourly, saved only when it changes, a failure undoes only its own save; `intestazioni()` (`make_email_body_message`): From the centre's name on the service's address (the envelope too), "Anna Bianchi · Centro Aurora" for somebody without a mailbox, Reply-To the centre's (`FCRM Settings.reply_to_email`, else its main mailbox); the page's calls, syncing the agency's |
@@ -264,10 +282,10 @@ never one of the centre's (`personale.del_centro()` in every list of them). An e
 person's, never a new person for somebody known; a module that sends a reminder on
 its own document needs nothing more: the answer reaches the person.
 
-### The centre's archive (docs/progetto-ghl/57)
+### The centre's archive (docs/crm/57)
 | File | Role |
 |---|---|
-| `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<prefix>/<site>/<sha[:2]>/<sha>/<name>`: the bucket is NPM2's, shared with other projects, and every site has its own folder), which files move (private only), what the plan includes (`SPAZIO_COMPRESO`: 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
+| `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<prefix>/<site>/<sha[:2]>/<sha>/<name>`: the bucket is NPM2's, shared with other projects, and every site has its own folder), which files move (private only), what the plan includes (`SPAZIO_COMPRESO` by size: 300 GB, 600 GB, 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
 | `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link, the bucket's versions and CORS (`imposta_il_bucket`) |
 | `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); `/private/files/…` of an archived one sends whoever the framework lets read it to the bucket for five minutes (`prima_della_richiesta`, its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory |
 
@@ -275,13 +293,15 @@ A private file is read through its `File` (`get_content()`), never by opening it
 path: an archived one is an empty file on the server until something asks for it.
 A public file stays on the server.
 
-### The centre's Twilio account (docs/progetto-ghl/52)
+### The centre's Twilio account (docs/crm/52)
 | File | Role |
 |---|---|
 | `crm/telephony/collegamento_regole.py` | Pure: the two codes before Twilio is asked, a SID masked, the space's name, what a number and the app need to reach DottorCloud (a SIP trunk's number left alone), Twilio's answers in words — tested with plain `unittest` |
 | `crm/telephony/collegamento.py` + `Settings/Telephony/TwilioSettings.vue`, `utils/twilio.js` | The centre pastes Account SID and Auth Token once: DottorCloud makes its space in the account (a subaccount named after the site, found again on reconnecting; a subaccount's codes make it the space), its key and TwiML app, points every number of the space at itself, and keeps only the space's codes; the agency's account the same way (`dottorcloud_twilio` in `common_site_config.json`); `assicura()` every hour, only in a space; Check, Disconnect (the key goes, the space stays) — tested with a fake Twilio (`crm/telephony/tests/twilio_finto.py`) |
 | `crm/telephony/numeri_regole.py` | Pure: the kinds of Italian number and what each is for, whose the number is (a company or a professional), an area's prefix, the regulation's fields and documents in DottorCloud's words, the files Twilio takes, its evaluation line by line, a month's price, approved documents good for the next number — tested with plain `unittest` |
 | `crm/telephony/inbound.py`, `routing.py` + `providers/base.py` (`Ring`, `Message`), `messaggi.py` | An incoming call rings everyone who answers the number at once (browser and mobile, `find_ringing`) for the answering settings' seconds; nobody picks up: the announcement and the callback (`nobody_answered`), else the apology; when the centre wants it, a message after the tone (`take_message`), kept on the call (`left_message`) and told to whoever follows the person (notification "Call"). Twilio comes back to `ring_ended`, `message_taken`, `message_recorded` |
+| `crm/telephony/persa.py` + `persa_regole.py` | A missed call: when one counts is the centre's (`conta`; «Missed calls» on the answering service's page, on or off: nobody answered on to start with, nobody to ring and the answering service taking every call off); the caller found as the rest of telephony files the call (`chi_ha_chiamato`: its `links`, a contact's person, else the number), the automations hear «Missed Call»; a number nobody knows gets one SMS of service a day where the centre wants it, on the call that caused it (`CRM SMS Message` referencing the `CRM Call Log`: the register decides, `gia_scritto`; the cache only a lock between two jobs) - the rules pure, tested with plain `unittest` |
+| `crm/telephony/persa.py` + `persa_regole.py` | A call nobody answered (`nobody_answered`, nobody to ring, the announcement taking every call): from somebody the centre knows, the automations hear «Missed Call» (`call_missed`; the builder's recipe «We missed you… missed call», off as every recipe, waits a minute and texts `{{ booking_link }}`); from a number nobody knows, where the centre wants it (`CRM Answering Settings.sms_to_missed_callers`, off to start with), one SMS of service in a job from `sms.mittente()`, only to a mobile of the countries the centre calls (`uscita_regole`), once a day a number, never for the demo (`guardie.sms_dopo_una_chiamata_persa`) — tested with plain `unittest` and on a site |
 | `crm/telephony/numeri.py` + `CRM Phone Number Request`, `Settings/Telephony/NewNumberDialog.vue`, `utils/numeri.js` | A new number from DottorCloud: kind and price, the fields with invoicing's details in them, the documents uploaded here, Twilio's evaluation before review (a draft sent again leaves Twilio), every hour how it went with a notification ("Phone", it opens Twilio's page), the number chosen and bought pointed at DottorCloud, released from the numbers' page (only in a space); approved, the files and what was written go |
 | `crm/telephony/sms_regole.py` | Pure: the sender's name Twilio takes and one made from the centre's, a message that is only STOP or START (Italian and English), promotional hours (Monday to Saturday, 8 to 22) — tested with plain `unittest` |
 | `crm/telephony/sms.py` + `Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Every SMS of the centre from one sender (`mittente()`: its name or one of the space's numbers that send SMS, chosen on Twilio's page): written by hand, the automations', the waiting list's, the area's; STOP written to the centre stops the automatic ones (`CRM Lead.sms_opt_out`, the marketing consent withdrawn "By SMS"), START has them again, the answer kept in the conversation; the composer says who wrote STOP |
@@ -311,7 +331,7 @@ A call from the browser leaves only after the server's yes (`voice` asks
 `uscita.perche_no` again, whatever the screen did), and shows a number of the
 centre's or the caller's own line: never one the browser made up.
 
-### WhatsApp's templates (docs/progetto-ghl/12)
+### WhatsApp's templates (docs/crm/12)
 | File | Role |
 |---|---|
 | `crm/integrations/whatsapp/modelli_regole.py` | Pure: a template lives on a WhatsApp Business account (WABA), never on a number: the numbers that send it (`numeri_che_possono`, `stesso_account`), its buttons by Meta's rules (10 at most, 2 links, 1 call, 25 characters, quick replies first), Meta's description read into frappe_whatsapp's fields (`da_meta`), the ones Meta no longer has (`spariti`) — tested with plain `unittest` |
@@ -321,7 +341,7 @@ A template is chosen where it can be sent: whatever offers one asks
 `modelli_inviabili()`, never the whole list, and a check before sending compares the
 account (`stesso_account`), never the number's name.
 
-### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
+### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/crm/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
 | `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
@@ -337,7 +357,8 @@ account (`stesso_account`), never the number's name.
 | `crm/invoicing/prova.py` + `Settings/Invoicing/ProviderConnection.vue` (doc 49) | A company starts in test (`provider_environment`): its invoices are test invoices (`test_document`, `segna()` at issue), numbered on their own series (`2026/PROVA-S/1`), with a band on the PDF, the Sistema TS report checked and never sent (`ts_status` `prova`), never a client nor in the area; `go_live` (the centre's manager) when nothing blocks, taking the test invoices away; `back_to_test` (the agency) only without real invoices; `mancanze()`: what is missing, what stops going live, whose it is (the agency's rows only the agency reads). Settings > Invoicing > Test and go live |
 | `crm/invoicing/connessione.py` + `sdi/itala.py` (doc 49) | Itala, the one intermediary offered: its test and production doors by environment (a document's: `ambiente_del_documento`), the agency's account (`CRM Invoicing Settings`, permlevel 1, else `itala_client_id`/`itala_client_secret` in `common_site_config.json`) or a company's own; the company registered under it once per environment (`registra_azienda`, `/aziende`); Itala's file name and id kept on the invoice; the token harvested from Basic calls. The SdI's outcomes asked every ten minutes, only when something waits (`riconciliazione.da_chiedere`); every update kept before it is applied (`CRM SdI Update`: Itala gives each once) and tried again, an invoice silent for a day asked by name; each notice applied once by its own name; only the site that registered the company reads its updates (`itala_site`); the XML leaves unsigned (Itala signs a PA's) and the one transmitted is kept (`sdi_sent_file`); a send whose answer was lost asks Itala first; the webhook's `Authorization: Bearer` taken away before Frappe reads it (`webhook.prima_della_richiesta`) |
 | `crm/invoicing/engine/fornitori.py` + `ricevute.py`, `components/Invoices/ReceivedInvoices.vue`, `ReceivedInvoiceDialog.vue`, `utils/ricevute.js` | The suppliers' invoices (`CRM Supplier Invoice`): filed by `riconciliazione` with the amounts read out of their own XML (taxable, VAT, due date, lines; a DOCTYPE never read), whoever manages invoicing told (`ricevute.annuncia`, «{0} sent an invoice of {1}», opens `?ricevuta=`); the Invoices page's «Received» tab: by state or to pay, by a word; seen, to the accountant, disputed with the reason, paid; Itala's PDF asked once (`itala.pdf`); the month's ZIP for the accountant, issued and received (`export_month`, `fatture.esporta`) — tested |
-| `crm/invoicing/incassi.py` | Collected is `CRM Invoice.collected_on`, never `payment_date` (the issue date by default): an invoice to a person issued at the desk takes its payment date (`alla_cassa`, in `emissione.issue`), the rest wait for `fatture.incassi` to mark them; a credit note is never collected. The dashboard's «Centre economics» (`widgets/invoicing.py`: collected, to collect by age, costs with or without VAT, margin, VAT of the period) counts on it |
+| `crm/invoicing/incassi.py` | Collected is `CRM Invoice.collected_on`, never `payment_date` (the issue date by default): an invoice to a person issued at the desk takes its payment date (`alla_cassa`, in `emissione.issue`), the rest wait for `fatture.incassi` to mark them or a payment online (`segna`, the one door: `crm.pagamenti`); a credit note is never collected. The dashboard's «Centre economics» (`widgets/invoicing.py`: collected, to collect by age, costs with or without VAT, margin, VAT of the period) counts on it |
+| `crm/invoicing/solleciti.py` + `solleciti_regole.py`, `CRM Payment Reminder Settings`, `Settings/Invoicing/PaymentReminders.vue` | Settings > Invoicing > Payments and reminders (off to start with): every morning (`ogni_giorno`) an invoice to a person still to collect, due (its schedule's last `due_date`, else its issue) and past the days chosen, gets a polite reminder - email in the system's layout with the area's link to its documents where the person has the area, an SMS from `sms.mittente()` where chosen, never to STOP -, at most N, every M days, from a minimum amount; written on its log before it leaves (`CRM Invoice Log` event `reminded`), never a credit note, a test, a refused or the demo's invoice; the dialog and the person's summary say «Sollecitata 2 volte, l'ultima il…» (`di_fatture`, `fraseDeiSolleciti`); «How to pay» is the centre's words for the reminders and the area; the invoice's day in words, as a sentence says it («dell'1 settembre 2026»); the page's «Update» the phone's bar (`DocFields`, `AzioneImpostazioni`). The rules pure, tested with plain `unittest` |
 | `crm/invoicing/automatico.py`, `crm/tessera_sanitaria/automatico.py` | The two switches of Settings > Invoicing > Advanced > Options, off to start with: an electronic invoice leaves for the SdI in a job after its issue is committed (`api.trasmetti`, the button's send); every night (`daily_long`) the healthcare expenses not reported yet leave for the Sistema TS one by one, a test invoice or a refused one never; what stops is told (`monitoraggio.avvisa`) |
 
 A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
@@ -368,7 +389,7 @@ section or tab left empty.
 Anything with a lasting effect (a client, a patient, the area, a report to the
 Sistema TS) leaves a test invoice out (`test_document`); going live takes them away.
 
-### Fatture in Cloud, for a centre that already invoices there (docs/progetto-ghl/58)
+### Fatture in Cloud, for a centre that already invoices there (docs/crm/58)
 | File | Role |
 |---|---|
 | `crm/invoicing/fic/regole.py` | Pure: a DottorCloud invoice as Fatture in Cloud's document (`documento()`: each line with its rate, the fund or INPS recharge, the withholding, the stamp duty - on an e-invoice the issuer's and a line when recharged, on paper the client's -, the payment on its method's account, a credit note's reference, the Sistema TS's fields), which of its rates and accounts stands for ours (`chiave_iva`, `scegli_tipo`, `conto_suggerito`), the totals compared (`totali_diversi`: VAT, withholding, amount due), `ei_status` in DottorCloud's states — tested with plain `unittest` |
@@ -384,7 +405,31 @@ Fatture in Cloud's totals equal to ours. Its ids are numbers, the ordinary rate'
 is 0: never read one as «nothing chosen». The tokens travel in variables named
 `*_token` and are never logged.
 
-### The settings (docs/progetto-ghl/31, 35)
+### Online payments on the centre's own Stripe (`crm/pagamenti`, docs/crm/60)
+| File | Role |
+|---|---|
+| `crm/pagamenti/regole.py` | Pure: the key's mode by its prefix (`sk_test_`/`rk_test_` «Modalità di prova»), Stripe's webhook signature (`t=…,v1=…`, HMAC-SHA256 of the raw body, five minutes' tolerance: `perche_rifiutata`), amounts in cents rounded half up, the form encoding, what an event means (`significato`), the deposit a service asks (`acconto`), whether a cancellation gives it back (`rimborsabile`), Stripe's refusals in words — tested with plain `unittest` on a signature computed apart |
+| `crm/pagamenti/cliente.py`, `collegamento.py` + `CRM Stripe Settings`, `Settings/Invoicing/OnlinePayments.vue`, `utils/pagamentiOnline.js` | Stripe's REST API through `requests` (no SDK; `stripe_api` in a test bench's config points at a fake); Settings > Invoicing > Online payments (`pagamenti.gestisci`, the manager's): the centre pastes its secret or restricted key once, DottorCloud checks it, makes its own webhook endpoint on the account for the four events and keeps the signing secret (Password fields, `*_secret` variables, never logged nor sent to the page); Check makes the endpoint again, Disconnect deletes it there; the deposits' refund rule (on, 24 hours); the privacy line — the page's words tested |
+| `crm/pagamenti/pagamenti.py`, `webhook.py` + `CRM Online Payment`, `CRM Stripe Event` | A Checkout link made on demand and kept while it holds: an issued invoice to a person still to collect (`perche_non_pagabile`: never a credit note, a test, a refused or the demo's: `guardie.mai_a_stripe`), from the area's «Paga online» (`area.api.pay_invoice`, never the preview) or the invoice dialog's «Link di pagamento» (`payment_link`, `fatture.incassi`); a deposit at /prenota (`CRM Service.online_payment`, `online_deposit`): the place held as an online request, `book` answers `checkout_url`, confirmed and told when paid, freed when the link expires (the event, or `ogni_dieci_minuti` asking Stripe first), its link closed at a cancellation, a payment after the place went given back; a cancellation in time refunds where the centre wants it (`alla_disdetta`, in a job). The guest webhook checks the signature on the raw body (400), keeps each event by Stripe's id before applying it once (500 to have it again), ignores another site's (`metadata.site`); paid, the invoice is collected through `incassi.segna` with MP08 and the payment intent in its log, `avvisa` the invoicing managers; a refund on Stripe is recorded and said, never un-collected; the payment follows the person (`org_hierarchy`), goes with them — tested with a fake Stripe (`tests/stripe_finto.py`) |
+
+A payment goes to the centre's own Stripe account, never through DottorCloud: a
+link is made only for what may be paid, every event is applied once after its
+signature, and what DottorCloud does on Stripe by itself (a refund, an expired
+link) is recorded on the `CRM Online Payment` first. A deposit already paid is
+said in the invoice dialog («Acconto già pagato online»), never subtracted from
+the e-invoice.
+
+### Conventions, health funds and insurances (`crm/convenzioni`, docs/crm/61)
+| File | Role |
+|---|---|
+| `crm/convenzioni/regole.py` + `utils/convenzioni.js` | Pure: a convention's price (its price list's, the centre's less a discount, the centre's), the person's share and the fund's to the cent, half up (`quote`: direct form a fixed, percentage or by-service share never over the total, indirect all the person's), a pratica's state from the appointment and the fund's invoice (`stato`: to authorise, authorised, done, drafted, billed, paid, cancelled, missed), the month, the fund's invoice line (`descrizione`: service, patient, day, authorisation, card - no health data it does not need), the month's CSV for the fund's portal — tested on both sides |
+| `crm/convenzioni/convenzioni.py`, `api.py` + `CRM Convention`, `CRM Convention Cover`, `Settings/Invoicing/ConventionsSettings.vue`, `ConventionCoversSection.vue`, `Invoices/ConventionClaims.vue` | Settings > Invoicing > Conventions and funds (`convenzioni.gestisci`): kind, who pays (a `CRM Organization` with its billing details), direct and/or indirect, prices on a `CRM Price List` or a discount, the person's share, authorisation first, /prenota. A person's covers (card, holder, dates) on the Data tab and the summary (`covers`), following the person (`org_hierarchy`), gone with them. The appointment's `convention`, `convention_form`, `authorisation`: the convention's list before the price (`listino`), its discount after the cycles and subscriptions (`prezzo`), the two shares once the price is final, a quote's too (doc_event `quote_dell_appuntamento`); one person only, never a subscription's place; «Autorizzazione mancante» in the panel (`get_appointment.convention_info`) and at the desk (`nelle_righe`). The person's invoice is their share (`invoicing.api._fattura_da_appuntamento`, nothing when the fund pays it all), the Sistema TS hears only of that; the fund's is one a month through the engine, to the company, `soggetto_iva`, a line a pratica (`fattura_al_fondo`, Invoices > Conventions, `fatture.emetti`), thrown away or cancelled its pratiche are to bill again (`fattura_tolta`); /prenota offers the ones `show_online`, the booking then waits for the centre's yes, with no deposit; the dashboard's «Da incassare dai fondi» (`widgets/conventions.py`) — tested on a site |
+
+A convention never invoices beside the engine: the person's share and the fund's
+month are `CRM Invoice` drafts like any other, test mode included; the fund's goes
+to a VAT subject through the SdI and never to the Sistema TS.
+
+### The settings (docs/crm/31, 35)
 | File | Role |
 |---|---|
 | `frontend/src/utils/impostazioni.js` | The menu as data: groups (your account, the centre, agenda, clients, deals, email, WhatsApp, phone, marketing, invoicing, integrations), their entries, an entry's tabs, who sees each (`condition` on `puo`, `ambito`, `whatsapp`, `verticale`), the line on what each group and entry is for (`description`); `menuDi()`, `trova()` (the entry and tab a page's name opens), `pagine()` — tested |
@@ -398,10 +443,10 @@ it had before stays as an alias. Its label, its tab and its page's title say the
 same words, in the user's language, and its `description` says in one line what
 one sets up there.
 
-### A person: one page, two doors (docs/progetto-ghl/54)
+### A person: one page, two doors (docs/crm/54)
 | File | Role |
 |---|---|
-| `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`) — tested |
+| `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`), the agenda's the appointments missed in the last year (`assenze`, `no_shows`) — tested |
 | `frontend/src/components/Activities/SummaryArea.vue` + `utils/riepilogo.js` | The Summary tab (first on the desk and the phone) and the column beside a conversation (`compatto`): the last message the person carries, the appointments the page's head asked for (the same resource), the server's lines, each a tap from its tab; three lines of a list, the rest on its tab — the pure part tested |
 | `frontend/src/router.js`, `notifiche/api.py` `percorso`, `Conversations/ConversationAside.vue` | The doors: a person opens on `#summary` wherever one comes without naming a tab (not the tab left last time); a message opens the Chat (its notification names it, the conversations' «Open the record» says `#activity`) |
 | `components/ViewControls.vue`, `Mobile/ElencoPersone.vue`, `api/sul_telefono.get_people(relationship=)` | The People list: one list, its step as views (the quick filter drawn as buttons), at `/crm/persone` - the old `/crm/leads` addresses redirect |
@@ -413,7 +458,7 @@ registers a line of the summary, its own key, from its `registra()`; the page
 draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
 server writes (an email, a push, the Desk) says so.
 
-### What a list offers to choose (docs/progetto-ghl/55)
+### What a list offers to choose (docs/crm/55)
 | File | Role |
 |---|---|
 | `crm/liste/regole.py` | Pure: for each use (`filtro`, `ordine`, `gruppo`, `colonna`, and `scheda` for a record's layout editors: any kind of field, never the layout's structure) the kinds of value it takes, the framework's own columns it offers and their words («Created By», «Last Modified By», «Favourite»), what no list offers (a code, a series, comments, tags); each field once, two of the same name told apart by their section («Sorgente (Primo contatto)»), the document's own field over the framework's of that name; a saved column under the framework's old name read by the new (`nome_della_colonna`) — tested with plain `unittest` |
@@ -446,14 +491,14 @@ into an appointment with a contact is found or made the same way
 | File | Role |
 |---|---|
 | `crm/area/accesso.py` + `crm/www/area.py` | The door: invitation (`CRM Area Access`, role "Client Area User"), a code by email, step-up before a download; every call derives the session's people on the server |
-| `crm/area/api.py` | Appointments with the booking page's link, cycles, invoices; "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session |
+| `crm/area/api.py` + `prenota_regole.py` | Appointments with the booking page's link, cycles, invoices with what is left to pay of each (`to_pay`, `incassi.da_pagare`: never collected, a credit note or refused), «Paga online» on the centre's Stripe (`pay_invoice`, `crm.pagamenti`) and «Pagata online il…», and the total beside the centre's «How to pay» (`solleciti.come_pagare`; in a preview only what the previewer reads counts); "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session; «I'm here» (`check_in`, `area/components/CheckIn.vue`, `area/arrivo.js`): from half an hour before one's own appointment until it ends (`scheduling/arrivi_regole.py`, the window in seconds by the server's clock), marked Arrived through `esiti.scrivi` as the desk does, the desk and the appointment's staff told (`ARRIVATO_DALL_AREA`); `CRM Area Settings.self_check_in`, on unless the centre switches it off (Settings > Clients > Client area, first on the page, above its news); «Book again» (`area/components/BookAgain.vue`, Home and Appointments) on `/prenota` at the last appointment's service while it is booked online, else the catalogue, never in the preview: the link carries only `?persona=`, the page asks the session who books (`per_la_pagina_di_prenotazione`: one's own details, or a parent's with the child's name) |
 | `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the plans, the documents given online, the quotes, shown to whom they have something |
-| `crm/area/messaggi.py` | The board (`CRM Area Message`): the desk writes administration, the chat passes questions; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers |
+| `crm/area/messaggi.py` + `messaggi_regole.py` | The board both ways (`CRM Area Message`): the desk writes administration, the chat passes questions; the person writes from Messages (`send_message`, "From the person": words and one photo or PDF told by its bytes, 5 MB, private with the message, 20 an hour, never the preview), whoever follows them and reads the board told by name only (`avvisa`, never the words), the file opened through `attachment`; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers; the rules pure, tested with plain `unittest` |
 | `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |
 | `crm/area/collegamento.py` + `CRM Area Link` | The link every email of the area's carries: it enters once, within seven days, only its fingerprint kept; the door's «Enter» spends it (a POST: a mail scanner opening links never does), it counts as a code just read, an old one leads to the code. A new document told by email where the centre wants it (`CRM Area Settings.email_new_documents`, off to start with): an invoice to a person, never a test one, the area opened if there was none (the parent's for a minor), never for the demo |
 | `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The area's app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js`, the vertical's first |
-| `frontend/src/area/area.css` + `aspetto.js`, `components/AreaChip.vue`, `NextAppointment.vue` | The area as the brand draws the patient's phone (doc 42, `brand/presentazione/sorgenti/img/telefono-*.png`): `area-*` classes on Espresso's tokens - titles, small-capital labels, cards with the tail, a kind in its category's cloud (a plan kind's `colore` and `icona`), the next appointment the one deep block, the days, the one-tap tick, the code's boxes; five places at the bottom, the open one in the brand's colour; light or dark as the phone is set, and following it (`utils/temaDelTelefono.js`), the centre's wide logo on a white card in the dark; the dates and a day's progress pure, tested |
+| `frontend/src/area/area.css` + `aspetto.js`, `components/AreaChip.vue`, `NextAppointment.vue` | The area as the brand draws the patient's phone (doc 42, `brand/dottorcloud/presentazione/sorgenti/img/telefono-*.png`): `area-*` classes on Espresso's tokens - titles, small-capital labels, cards with the tail, a kind in its category's cloud (a plan kind's `colore` and `icona`), the next appointment the one deep block, the days, the one-tap tick, the code's boxes; five places at the bottom, the open one in the brand's colour; light or dark as the phone is set, and following it (`utils/temaDelTelefono.js`), the centre's wide logo on a white card in the dark; the dates and a day's progress pure, tested |
 | `frontend/src/components/Area/` | The person's "Client area" tab: who enters, the board, the plans, the preview |
 | `crm/area/anteprima.py` + `frontend/src/area/anteprima.js` | The centre's preview of a person's area (doc 41): `start` from the person's page ties it to the session for half an hour, before the invitation too, nothing sent; the area shows only what whoever previews reads in DottorCloud (`vede`, `filtra`: the rest keeps its place empty, `HiddenCard`), health data read go in the access log |
 
@@ -464,10 +509,11 @@ A call of the area that only reads passes `anche_in_anteprima=True` to `_mia` (o
 |---|---|
 | `crm/piani/regole.py` | Plans without a site: moments and items, the day and the week, one tap, the kinds of plan registered (`registra_tipo`: who writes it by qualification, what it holds, what its screens offer, the "health data" mark) and of item — tested with plain `unittest` |
 | `crm/piani/api.py` | Plans on the person's Plans tab (`CRM Personal Plan`, `piani.scrivi` / `piani.vedi`), each kind with its line (`TipoPiano.descrizione`) and whether the person's area is open: drafts of their author, published to the area, new version or closed; what a module adds (`registra_genere`, `registra_estensione`); health data read through `crm.permissions.sanitari` |
+| `crm/piani/modelli.py` + `CRM Plan Template`, `Plans/PlanTemplates.vue`, `SaveTemplateDialog.vue` | Templates: a plan's moments, items and a diet's targets kept with a title (the same title of one's own written again), never a person; its author's, or the centre's when shared, offered to whoever writes its kind; starting from one gives new keys and leaves out what the library switched off, said |
 | `crm/piani/programmi_regole.py` + `programmi.py` | Programmes of stages (`CRM Programme`): each stage with its words and maybe a plan (`CRM Personal Plan.programme`), opened at one's own pace (the person in the area, `finish_stage`) or by time (`apri_del_giorno`, daily); a stage that opens publishes its plan with `api.pubblica` |
 | `crm/piani/area.py` + `frontend/src/area/pages/Plans.vue`, `Plan.vue`, `components/PlanItem.vue`, `ProgrammeCard.vue` | The plans in the area: the day's moments, one tap an item (`CRM Personal Plan Log`), made up within two days, what is left this week; the programmes stage by stage |
 | `crm/piani/librerie.py` + `dataset.py` + `dati/esercizi.json` | The exercises (`CRM Exercise`, `piani.librerie`, Settings > Clients > Libraries): the library DottorCloud ships, its names in Italian (NPM2's, `names.it` in the file; the dataset's English kept as `name_in_source` and searched too), in the code with its licence, loaded at install and at every migrate that brings a new file (`carica_libreria`); the centre never imports nor changes the library's: it switches off what it does not use (`switch_exercise`, a switch on each row) and adds its own (`save_exercise`, which refuses the library's), NPM2 adds to the library in that file. Its pictures always with "© Gym visual", the server's own copy (`crm/piani/immagini.py`: every hour the missing ones from the dataset at the library's commit into `sites/assets/crm-esercizi`, one site's job at a time, nobody pressing anything) or a CDN the agency names in the Desk (`CRM Area Settings`, permlevel 1); the screens never name the dataset; loaded again, pictures and muscles update and what a centre wrote before stays, while words NPM2 put right in the file (its steps in the imperative, not «Ripetere…») reach a site's copy by the fingerprints a record keeps of what it said before (`before`, `dataset.nella_lingua`) |
-| `frontend/src/components/Plans/` + `utils/piani.js`, `utils/programmi.js` | The plans card, the editor and reader, an item by its kind, the library search, the programme: what a kind holds and offers comes from the server — tested |
+| `frontend/src/components/Plans/` + `utils/piani.js`, `utils/programmi.js` | The plans card, the editor and reader, an item by its kind, the programme: what a kind holds and offers comes from the server; the libraries browsed (`LibraryBrowser`: exercises with their pictures by body part and equipment, `api.browse_exercises`; foods by group, the clinic's `browse_foods`; both on `api.sfoglia`, a page at a time, several chosen at once), an exercise read whole before it is chosen, the catalogue opening on what one's own and the centre's plans use (`api.usi`), the drinks last; the editor a week (`PlanDialog`: every day, then each day with its own moments; a moment copied into other days, an every-day one split into one per day, a day copied over others), each item one row (a food with its grams from the group's LARN portion, `PORZIONI`, and its kcal; an exercise with its picture, sets × reps), the day's totals against a diet's targets and where its energy comes from, carbohydrates and fats against LARN's ranges (`DayTotals`, `ripartizioneEnergia`); a food's mark by its name or group in its category's colour (`FoodMark`, `aspettoDelCibo`, in the catalogue, the row and the area), its grams as a kitchen measures them («1 tablespoon», `misuraCasalinga`, the patient's line too), the same energy from another food of its group, the most alike one of each kind (`alternativeEquivalenti`); an exercise's dose in one tap (`DOSI`) and its side (`side`), and how hard or painful it felt, 1 to 10, said in the area after it is done (`CRM Personal Plan Log.effort`, kept while the answer changes) and read beside the plan (`regole.fatica`); the kinds the reader's qualification does not write said with whose they are (`api.tipi_bloccati`, `locked_kinds`), never gone without a word — tested |
 
 A training and habits are the CRM's own kinds; a module registers its kinds with the
 qualifications that write them (the clinic: diets, exercises at home). A plan is
@@ -500,12 +546,14 @@ obscured) finds their padlock in a person's documents and plans
 | File | Role |
 |---|---|
 | `crm/preventivi/regole.py` | A quote without a site: its states, the rows' amounts and sums, the phases, which row an appointment takes, what is checked before it is proposed — tested with plain `unittest` |
-| `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab, and on the deal's: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk); a new version, closed half-way; what a module adds to the rows (`registra_estensione`); who reads one as a condition (`condizione`), which the dashboard counts on |
-| `crm/preventivi/documento.py` + `templates/preventivo.html` | The quote's PDF, made once when it is proposed, private |
+| `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab, and on the deal's: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk) through `accetta`/`rifiuta`, which the area's answer goes through too (`answered_in`); a new version, closed half-way; what a module adds to the rows (`registra_estensione`); who reads one as a condition (`condizione`), which the dashboard counts on |
+| `crm/preventivi/documento.py` + `templates/preventivo.html` | The quote's PDF, made once when it is proposed, private; signed in the area, its signed copy (`fai_la_copia_firmata`): the stroke where the lines were, the evidence page, PDF/A sealed as a signed form's, its SHA-256 kept |
+| `crm/preventivi/firma.py` | The person answers in the area: «Accept and sign» (a code or the area's link in the last 15 minutes, the forms' pad, the stroke, who as what, when, IP and device, the SHA-256 of the PDF as proposed, the register `traccia`) or «I do not accept» with a reason; the person or a parent, never who only follows nor the preview; the author and the desk told without the quote's title (`avvisa`, opens `#quotes`); the desk's «Send to sign» (`send_to_sign`): the area opened if it was not, its link by email, by SMS or the area's news by WhatsApp only to the number that wrote to the centre; never to the demo's |
 | `crm/preventivi/appuntamenti.py` | `CRM Appointment` doc_events: an appointment of a service still to do takes its row at the price agreed, done when the person came, given back when cancelled |
 | `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won (worth the quote) or lost with the reason; which one and how long a quote holds, in Settings > Deals > Pipelines. A quote is a deal's only in that pipeline (`prende_preventivi`): it moves no other pipeline's deal and opens no closed one (`si_puo_spostare`) |
-| `crm/preventivi/area.py` | The quotes proposed and going on, in the person's area (the Plans page) |
-| `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab of the person and of the deal (`QuotesCard`, the deal the server confirms), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them, the deal a click away, the states with the "Quote" context); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue` in the area |
+| `crm/preventivi/area.py` | The quotes proposed and going on, in the person's area (the Plans page), whether each is still to answer there, with its payment plan and «Pay online» on an instalment invoiced and not paid |
+| `crm/preventivi/rate_regole.py` + `rate.py`, `CRM Quote Instalment`, `Quotes/InstalmentsLine.vue`, `utils/preventivi.js` (doc 63) | Paid in instalments: the centre's own plan, no interest, fees nor third party (doc 63 on consumer credit); a deposit (amount or %, maybe 0) on acceptance and 2 to 36 equal instalments to the cent, the cents on the last, every month or two from a first day (the same cases both sides: `tests/casi_rate.json`); written with the draft, frozen and signed with the rows, printed in the PDF's «Piano dei pagamenti»; how they are invoiced copied from `CRM Quote Settings` when proposed (`instalments_invoiced`): each row its invoice when due (`ogni_giorno`, drafts or issued, `invoicing.api.issue_from_quote`; its appointments then never invoiced again, `pagati_a_rate`) or «Track only», marked paid by `fatture.incassi`; a row's state follows its invoice (`allinea`, from the invoice's events and `incassi.segna`); declined, closed or replaced by a new version accepted (`api.sostituisce`), what was not invoiced is cancelled; «Pay off the rest» one invoice; «Rate: 3 di 10 pagate · prossima…» on the quote, the Quotes tab and the summary (`fraseDelleRate`), late ones in the warning colour; a reminder names «la rata 4 di 10»; the dashboard's «Instalments to collect»; never the demo's by the daily round (`crm/invoicing/demo.py` `_rate` invoices the dentist's plan) — tested |
+| `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab of the person and of the deal (`QuotesCard`, the deal the server confirms), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them, the deal a click away, the states with the "Quote" context, «Send to sign» and the signed copy); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue`, `QuoteAnswer.vue` + `area/preventivi.js` in the area |
 | `crm/dashboard/widgets/quotes.py` | Quotes proposed, the share accepted (a "no" followed by a new version is not one), what the waiting ones are worth, the ones to call back after three days; only what the viewer reads, in the quotes' currency; the Sales dashboard's "Quotes" section |
 
 With the clinic on, what a health professional writes carries the mark: a dentist's
@@ -560,7 +608,7 @@ the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 | `crm/clinica/__init__.py` | `registra()`: plan module, Medical Director level, capabilities, clinic consents |
 | `crm/clinica/regole.py` | How a person becomes a patient — pure, tested |
 | `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls |
-| `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
+| `crm/clinica/cartella.py` + `cartella_regole.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock; «Start from the last visit» (`start_sheet(from_last=1)`, `utils/cartella.js` offers it after a sheet with one): the answers of the last signed visit on the same sheet the session reads (`ultima_visita`: the dossier, obscured and «only me» left out, the reading logged) through the version published now (`pulisci`), never a signature, an attachment or a consent; the draft keeps `copied_from` and says «Copied from the visit of …» |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
 | `crm/clinica/piani_regole.py` | The clinic's kinds on the CRM's plans (`crm.piani.regole`): a menu, an exchange diet, exercises at home, who writes which by qualification; a food and a food group; the nutrients and the shopping list — pure, tested with plain `unittest` |
@@ -591,11 +639,12 @@ the draft with `modello.accetta`.
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
 | `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` + `dati/alimenti.json` | The foods (`piani.librerie`): the library DottorCloud ships, CIQUAL 2025 under the Licence Ouverte with the names in Italian (NPM2's, kept by code from one version to the next; `alimenti.LICENSE.txt`), made by `tabelle.libreria_ciqual` from ANSES's sheet and loaded at install and at every migrate that brings a new file (`carica_libreria`). The centre never imports nor changes the library's: it switches off the foods it does not use (`switch_food`) and adds its own (`save_food`); an Italian table (BDA-IEO, CREA) NPM2 adds the same way once licensed. Loaded again, numbers update, a name a centre changed before stays (`library_name` keeps the library's own); a food without its energy is left out |
 | `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clients > Libraries, the Foods tab: the list with a switch on each row, a food of the library to read, a new one of the centre's; the exercises' page is the CRM's (`Settings/Plans/LibraryPage.vue`) |
+| `crm/clinica/schede_pronte.py` + `schede_pronte_regole.py`, `dati/schede_pronte.json` | The clinical sheets DottorCloud ships (physiotherapy assessment and follow-up, with the body chart; first nutrition visit and follow-up; first dental visit; general history): their own questions, no validated scale; drafts of the centre's where the clinic is on, in `lingue.del_centro()` (English in the file, «words» its Italian), loaded at install, at a migrate with a new file or language, when the clinic is switched on or the language changes; one the centre changed, published or deleted is never written again (`impronta`), nor one where the centre has its own of that title; offered in «Start from» (`modelli.registra_partenze`, `get_starters`) — the rules tested with plain `unittest` |
 | `crm/clinica/cure_regole.py` | The teeth without a site: FDI teeth and arches, surfaces, the chart's conditions, the teeth on a quote's rows (`valida_denti`) — tested with plain `unittest` |
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
 
-### The language (docs/progetto-ghl/40)
+### The language (docs/crm/40)
 | File | Role |
 |---|---|
 | `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
@@ -620,7 +669,7 @@ Monday in System Settings too (`per_l_italia`, whatever country), and a
 measure is metric.
 A currency is chosen and read by its name, the code stored («Euro», never «EUR»:
 `components/Controls/CampoValuta.vue`, `utils/valute.js`), a price as the reader
-writes it («65,00 €», `prezzo()`), never «65 EUR»; a time zone by its city in the
+writes it («65,00 €», `prezzo()`; a currency field's `formatCurrency` places the symbol by the reader's language too, `conIlSimbolo`), never «65 EUR»; a time zone by its city in the
 reader's language («Roma · Ora dell'Europa centrale», `utils/fusiOrari.js`),
 never «Europe/Rome». A sentence names the agency for what is the agency's (System
 Manager, `tecnico.*`) and the centre's manager for what is theirs, never «an
@@ -668,22 +717,22 @@ The same for a word a pure helper hands to the translator it is given
 ### The brand
 | File | Role |
 |---|---|
-| `brand/` | The logo, the design system (`tokens.css`; Espresso and its 28 components in `design-system/espresso`), the font, icons, shapes, compositions, the website's layer, video, presentation, ads, and the generators that remake them (`brand/generatori`, paths in `percorsi.py`) — `brand/README.md` |
+| `brand/dottorcloud/` | The logo, the design system (`tokens.css`; Espresso and its 28 components in `design-system/espresso`), the font, icons, shapes, compositions, the website's layer, video, presentation, ads, and the generators that remake them (`brand/dottorcloud/generatori`, paths in `percorsi.py`) — `brand/dottorcloud/README.md` |
 | `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()` (with the centre's mark: `centre_logo`, `centre_logo_shape`, `centre_name`), `contesto()` (every web page), `manifest()` (the phone's). `forma_di()` measures a logo of the site's ("wide" on its own, "square" beside the name). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes); the desk of Frappe 16.50 opens a module in its shell, a `Sidebar` whose title is its address: the CRM's module ships `fcrm/sidebar/dottorcloud` (`/desk/dottorcloud`), and `_navigazione_del_desk` takes away the one the conversion of the old Workspace Sidebars made beside it. The desktop is the apps' screen (`desktop_ad_app`, at install and once by a patch: a later choice in Desktop Settings stays), the app's rail its shipped `Dock` (`crm/dock/crm`: the product's shell, then its modules; a module's shell is computed unless it ships a `Sidebar`). A link to the desk is `/desk/…` (`/app/…` only redirects), `boot()` names the apps in the desk (the framework's is «Administration», under the gear `amministrazione.svg`, its desktop icon too: never a second app named after the product), `nome_scelto()` keeps the software's name from passing for a centre's |
 | `crm/verticali.py` | A vertical names its brand (`Verticale.marchio`): the clinic wears DottorCloud |
 | `crm/hooks.py` (top) | `app_title`, `app_logo_url` (fallbacks), `update_website_context` (`marchio.contesto`), `extend_bootinfo`, the apps screen |
-| `frontend/src/espresso.css` | The design system on frappe-ui (`brand/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through rules on frappe-ui's markup (avatars, menus, lists and their bar, the date's calendar, dialogs, toast, spinner), under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio`, our chosen items `dc-scelto` |
+| `frontend/src/espresso.css` | The design system on frappe-ui (`brand/dottorcloud/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through rules on frappe-ui's markup (avatars, menus, lists and their bar, the date's calendar, dialogs, toast, spinner), under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio`, our chosen items `dc-scelto` |
 | `frontend/src/espresso-componenti.css` + `components/Espresso/` | The components frappe-ui has not (doc 39): `StatTile` (Today; the dashboard's numbers, the first of each row a deep block, `highlightedNumbers`), `EmptyState`/`EmptyArt` (every empty list), `CategoryTag`, `InProgressBadge`, `LoaderMark`; the agenda's `dc-evento` (first visit: `first_visit` in `crm.api.appointments.get_calendar`), the cycles' `dc-steps`; their tokens on the brand that is on |
 | `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); the centre's mark: `formaDelLogo()`, `misureSvg()`, `iniziali()`, `nomeDelCentro()`; primary buttons, switches and ticks in its colour — tested |
 | `frontend/src/components/CentreTile.vue`, `composables/formaDelLogo.js` | The centre's tile (a square logo, the initials, the product's icon) in the client area and the previews; a logo's shape, from the server or measured |
 | `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices |
 | `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent, the centre's mark at the top (`marchio_segni`) and the product's signature at the foot (`marchio_piede`); the framework's sign-in, new password and message in the brand's action colour and a phone's sizes (`marchio_framework`, added to their head by `contesto()` for `PAGINE_DEL_FRAMEWORK`) |
-| `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
+| `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/dottorcloud/logo` |
 | `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
 
 One mark per place, never two side by side. The product's brand - the
 vertical's - heads the sidebar (its horizontal logo, as the design system wants,
-`brand/design-system/espresso`) and is the tab's (title, favicon), the framework's
+`brand/dottorcloud/design-system/espresso`) and is the tab's (title, favicon), the framework's
 screens', the emails', the PDFs' producer's, the phone's manifest's; its colours
 are everywhere. Where a person deals with the centre - the client area, the public
 pages - the centre's mark leads (Settings > The centre > General > Name & logo, the
@@ -694,7 +743,7 @@ fills it in the browser, `con_nome(_("…"))` on the server (before any `.format
 A public page's title names the centre (`FCRM Settings.brand_name`) beside the
 product's name: `nome_scelto()` treats every brand's name as no name of the centre's.
 
-A screen looks the way the design system says (`brand/design-system/espresso`):
+A screen looks the way the design system says (`brand/dottorcloud/design-system/espresso`):
 frappe-ui's components with its variables, the brand's action colour for what one
 acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
 that is not under words (progress), a required field's mark `segno-obbligatorio`.
@@ -710,7 +759,7 @@ An element whose tag is chosen while drawing is `ElementoNativo`
 the name to frappe-ui's Button, registered for the whole app, and the card becomes
 a 28px-high button with its words cut to one line.
 
-### The first steps (docs/progetto-ghl/37)
+### The first steps (docs/crm/37)
 | File | Role |
 |---|---|
 | `crm/benvenuto.py` + `pages/Benvenuto.vue` | The centre's first opening, before anything else for whoever sets it up (`impostazioni.generali`, the boot's `benvenuto`): its language, Italian or English, each said in its own words, then its name, its clock and maybe the demo data; offered while the centre has no name and nobody finished it (`FATTO`), «Later» for that tab; it marks the framework's setup wizard done |
@@ -721,22 +770,45 @@ A module with steps of its own registers them from its `registra()`; a step is
 done by the data, never by a click, so a centre that already works sees nothing.
 The data are the centre's own: `c_e` leaves out what the demo made.
 
-### The website (`sito/`)
+### The brands' websites (`siti/<brand>/`, today `siti/dottorcloud/`)
 | File | Role |
 |---|---|
-| `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
-| `sito/approfondimenti/`, `sito/seo.mjs` | The articles (guides, rules with their sources, organisation) and the glossary; `seo.mjs` writes each page's schema.org graph (company, breadcrumbs, FAQ from `<details>`, product, article, glossary), the sitemap with dates, the RSS feed — pure, tested |
-| `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/`, sitemap |
-| `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
-| `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
-| `.github/workflows/sito-pubblica.yml`, `sito/domini.txt` | Publishing from GitHub on every push that changes `sito/` or `brand/`: tests, then `deploy.sh --crea --nginx` for each domain listed; needs the `HOSTING_SSH_KEY` secret |
-| `sito/test/sito.test.mjs` | `node --test sito/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
+| `siti/dottorcloud/pagine/`, `siti/dottorcloud/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
+| `siti/dottorcloud/approfondimenti/`, `siti/dottorcloud/seo.mjs` | The articles (guides, rules with their sources, organisation) and the glossary; `seo.mjs` writes each page's schema.org graph (company, breadcrumbs, FAQ from `<details>`, product, article, glossary), the sitemap with dates, the RSS feed — pure, tested |
+| `siti/dottorcloud/build.mjs` | Builds into `siti/dottorcloud/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/dottorcloud/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/dottorcloud/`, sitemap |
+| `siti/dottorcloud/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
+| `siti/dottorcloud/deploy.sh`, `siti/dottorcloud/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
+| `.github/workflows/sito-pubblica.yml`, `siti/dottorcloud/domini.txt` | Publishing from GitHub on every push that changes `siti/` or `brand/`: every site's tests, then its `deploy.sh --crea --nginx` for each domain its `domini.txt` lists; needs the `HOSTING_SSH_KEY` secret |
+| `siti/dottorcloud/test/sito.test.mjs` | `node --test siti/dottorcloud/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
+
+One brand, one folder, by the key `crm/marchio.py` gives it: its material in
+`brand/<brand>/` (the same subfolders as `brand/dottorcloud/`, `brand/README.md`),
+its website in `siti/<brand>/` (`build.mjs`, `test/`, `deploy.sh`, `domini.txt`:
+`siti/README.md`), its images in `crm/public/images/<brand>-*`; nothing of one brand
+in another's folder, nor at the top of `brand/` or `siti/`.
 
 The site promises the finished product as the marketing material does, and shows no
 plan and no price. It sets no cookie and loads nothing from other sites. It is not
 the Frappe site's public pages: those belong to each centre.
 
-### The demo data (docs/progetto-ghl/53)
+### The centre's data, taken away (crm/esportazione)
+| File | Role |
+|---|---|
+| `crm/esportazione/regole.py` | Pure: which document types go (DottorCloud's and the framework's that go with them, `DEL_FRAMEWORK`; never a child table, a single, a virtual one or `SOLO_PER_LA_MACCHINA`), a record as a row with its child tables, JSON lines and an Excel table, the names in the ZIP — tested with plain `unittest` |
+| `crm/esportazione/esporta.py` + `Settings/YourDataSettings.vue` | Settings > The centre > Your data (`dati.esporta`, the manager's, a clinical capability: never the agency's for being the agency): one archive at a time in a job, the demo's records left out, the attached files brought back from the bucket first, a private file of whoever asked, the framework's access log, gone after a week (`togli_le_vecchie`) |
+
+A new document type of DottorCloud's goes in the archive by itself; one that holds
+only keys or fingerprints goes in `regole.SOLO_PER_LA_MACCHINA`.
+
+### People and appointments brought over from the previous software (crm/importazione)
+| File | Role |
+|---|---|
+| `crm/importazione/foglio.py` | Pure: a sheet's first page, Excel or CSV, in the encodings Italian programs write (the clinic's food tables read it too) |
+| `crm/importazione/regole.py` | Pure: a column by the names it goes by (`COLONNE`, Italian first), a row as a person (dates as an Italian sheet writes them, +39, a fiscal code's sex and birth, «ROSSI MARIO» surname first), what is wrong with it, the keys that find somebody already here (fiscal code, email, mobile, else name and birth date: `_per_nome_e_nascita`, one match only) — tested with plain `unittest` |
+| `crm/importazione/importa.py` + `Settings/YourDataSettings.vue` | Settings > The centre > Your data (`persone.importa`): the preview before anything is written, then a job; somebody already here only gets what was missing, somebody new their billing details and their notes; a module does its part with `registra_dopo` (the clinic: a patient by the import rule, `paziente.dall_importazione`) |
+| `crm/importazione/appuntamenti_regole.py` + `appuntamenti.py`, `Settings/ImportAppointments.vue`, `utils/importaAppuntamenti.js` | The appointments and their history, the same page and lock (`persone.importa`, one sheet at a time): the person read as the people's sheet reads them, a day and an hour as an Italian sheet writes them (`ora`, `durata`, a date that may be in the future), how it went from the program's words (a cancellation or an absence stays; else past is attended, to come booked: `stato`); the preview asks what each service, professional (users, matched by name without «Dott.», `abbina`) and room the sheet names is here, a service the centre has not «Other» (made once, `_servizio_altro`); a row without a person, a day or a start is left out, a person only by name too; the job finds or makes the person (`importa._porta`), keys each appointment (`import_key`, the previous code or person + moment + service) and never brings it twice. Saved with `flags.importato` in `_in_silenzio` (the demo's `SILENZI`, no job, no realtime): no automation, deal, form, cycle, subscription, quote or waiting list moves, a clash kept in `conflict_note`; the past makes clients (and patients) from its day, quietly (`annuncia=False`), and the last visit; one to come gets the centre's reminders at its time — the rules pure, tested with plain `unittest`, the job on a site |
+
+### The demo data (docs/crm/53)
 | File | Role |
 |---|---|
 | `crm/demo/registro.py` | The parts (`Parte`, `registra_parte`: a module's share, its plan module, the parts it needs, the ones that take what it makes, `prima`) and the register (`CRM Demo Record`): every record made while a part runs, written down by the `"*"` `after_insert` (`annota`), with a key a later part finds it by (`ricorda`, `trova`); `fuori_dal_registro` for what is the product's (the new clients pipeline) |
@@ -763,17 +835,46 @@ keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.
 
+### A campaign to a list of people (`crm/automation/campagne.py`)
+| File | Role |
+|---|---|
+| `crm/automation/campagne_regole.py` + `frontend/src/utils/campagne.js` | Pure: the ways an automation writes by (`canali`, through branches and paths, the same on both sides), why a person of a list is left out (`motivo`: already in it, no marketing consent where it asks, the start's conditions, STOP where only the SMS would reach them, nowhere to write to), the counts; at most `MASSIMO` (5,000) a campaign; the reasons and the list in words — tested |
+| `crm/automation/campagne.py` + `CRM Automation Campaign`, `Automations/SendToListDialog.vue`, `EnrollmentsPanel.vue` | A campaign is an automation whose trigger is «Started by Hand» (`engine.A_MANO`, nothing raises it), switched on. «Send to a list» on the People list's header (the view's filters) or its rows chosen (`ListBulkActions`), for `automazioni.gestisci`, on the desk only (the phone's list has no views nor rows to choose): the dialog counts the list as the reader sees it (`frappe.get_list`) and who is left out and why (`preview_campaign`), then a job enrols under the sender (`esegui`, through `engine.enroll` with the trigger row: consent asked again, a «Skipped» once; STOP, the promotional hours and the time window kept at each step by the engine); the demo's people enrolled like anybody, the guards keep what is written to them; the report (`CRM Automation Campaign`: the list, enrolled, left out by reason) on the automation's Enrolments (`get_campaigns`), told by the socket (`crm_campaign_done`) |
+
+### Asking how a visit went (`crm/recensioni`)
+| File | Role |
+|---|---|
+| `crm/recensioni/regole.py` | Pure: who may be asked (a yes to «Review requests», `review_requests`, or to marketing; a no to these requests wins), once every so many months (12 to start with), a service excluded, the Google link (pasted, else from the Place ID) — tested with plain `unittest` |
+| `crm/recensioni/chiedi.py` + `CRM Review Settings`, `CRM Review Request`, `Settings/ReviewSettings.vue` | An automation asks for a review by writing `{{ review_link }}` in a message: before it leaves the engine asks `perche_no` (the consent, the person came, the link set, the service, the months, whatever automation asked) and logs a skip in words; the request is written before it leaves (`prepara`, one per enrollment), its link signed with its name (`vai`: the first opening counted, then Google, nothing of the person carried there); Settings > Marketing > Review requests (`automazioni.gestisci`); the recipe «Ask for a review after the visit» (`automation.js`, off as every recipe); the dashboard's «Review requests sent» |
+| `crm/recensioni/__init__.py` + `moduli/richieste.py`, `automation/engine.py` `step_send_form`, `www/modulo.html` | The forms' use «Survey» (`registra_uso`, `Uso.senza_codice`): filled by the person from its link alone (no code: it asks no consent, signature, file nor health data, `problemi_dell_uso` and `useProblems`), sent by hand or by the automations' «Send a form» (by email in the centre's words, by SMS or WhatsApp with `{{ form_link }}`; `link_per_un_messaggio`), under the same consent as a review; the starter «How likely are you to recommend us?» (`moduliStarters.js`), the recipe «Satisfaction survey after the visit»; its first 0 to 10 scale makes the dashboard's «Satisfaction (NPS)» (`regole.nps`) |
+
+Google forbids choosing who is asked (review gating) and offering anything for a
+review: the settings choose only a service nobody is asked after, never a person.
+
+### More than one location (`crm/scheduling/sedi.py`, docs/crm/62)
+| File | Role |
+|---|---|
+| `crm/scheduling/sedi_regole.py` + `utils/sedi.js` | Pure: one location is none (`piu_sedi`), a room or a shift line without one serves all, a room of another location gives way to its kind (`stanze_al_posto`), an appointment's location (rooms', else the shift's, else chosen, else the only one), where a service is held, the address as an envelope writes it — tested |
+| `crm/scheduling/sedi.py` + `CRM Location`, `crm/api/sedi.py`, `Settings/LocationsSettings.vue`, `composables/sedi.js` | Settings > The centre > Locations (`impostazioni.generali`): address, phone, map, opening hours, an issuing company of its own; `centre_location` on rooms, shift lines and overrides, the appointment (`assegna` in its `validate`; a shift in one and the room in another is a conflict), the invoice and the cash closing (one a day per location, none the whole centre); a room or shifts given one bring the appointments that named none (`stanza_aggiornata`, `turni_aggiornati`); `indirizzo_di` for the confirmation, .ics, area and reminders; the usual location a user default (Preferences), the reception desk opens on it; boot `sedi`, empty with fewer than two, and then no screen names one |
+
+The engine books at one location (`get_slots(location=)`): with more than one and none asked, each location on its own, every slot saying where. A screen shows a location chooser only on `piuSedi`; the agenda keeps it in `crmAgenda`, a phone has it in the Filters sheet.
+
 ### The desk's day
 | File | Role |
 |---|---|
-| `crm/scheduling/esiti.py` | How an appointment went: check-in (`Arrived`, `arrived_at`), who may mark (`agenda.presenze`), visit and invoice close it, the end-of-day "did they come?" |
-| `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The reception desk («Accoglienza», `/accoglienza`, once Today at `/oggi`): arrivals, waiting room, days left open, what is left to invoice; a view of the agenda, beside it and the waiting list in the header's switch |
+| `crm/scheduling/esiti.py` | How an appointment went: check-in (`Arrived`, `arrived_at`), who may mark (`agenda.presenze`, `segna`; `scrivi` for a caller that checked, the area's «I'm here»), visit and invoice close it, the end-of-day "did they come?" |
+| `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The reception desk («Accoglienza», `/accoglienza`, once Today at `/oggi`): arrivals, waiting room, days left open (only those asked further), what is left to invoice, the forms owed for the whole day in one go (`dovuti.per_appuntamenti`); a view of the agenda, beside it and the waiting list in the header's switch |
 | `frontend/src/utils/oggi.js` | Pure: waiting time, next outcomes, summary, days — tested |
+| `crm/invoicing/cassa.py` + `cassa_regole.py`, `CRM Cash Closing`, `Today/CashClosingDialog.vue`, `utils/cassa.js` | The cash closing at the reception desk (`fatture.incassi`, `oggi.get_cash_summary`, `close_cash_day`): the day's `collected_on` by payment method in words (`voci.etichetta`) and by who issued (the log's «issued»), the credit notes of the day out, the cash expected (MP01) against the cash counted, to the cent; one closing a day, closed again on the same record (its versions keep the rest); never a test invoice. The arithmetic pure, tested on both sides |
 
 An automation for marketing asks `marketing_consent`: `engine.enroll` skips whoever
 did not agree (an enrollment `Skipped`, once, never counted as having been through
 it) and a message step re-checks before sending. Recalls pick people by
-`CRM Lead.last_visit`/`last_service`, which the agenda keeps. A module adds its own
+`CRM Lead.last_visit`/`last_service`, which the agenda keeps. A step that ran and did not do its
+work (an SMS Twilio refused) raises `engine.PassoNonRiuscito`: logged Failed, never
+Success; one with nothing to do it on `engine.PassoSaltato`: logged Skipped. A message
+step writes to the record's number, else the event's (`numero_del_passo`: a missed
+call's caller found through a contact); `{{ booking_link }}`'s line is left out where the centre takes no booking online. A module adds its own
 dashboard template with `crm.dashboard.templates.registra` (`requires` features).
 
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
@@ -784,7 +885,7 @@ and the registries (`engine.registra_evento`, dashboard features, widgets and te
 patient, the record and reports, dossier and obscuring, the summary, the dental
 chart, diets and rehabilitation. What a beauty centre or a gym would use the same
 way belongs in the CRM, and the clinic registers its rules on it, with the "health
-data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
+data" mark deciding who reads (docs/verticali/clinica/design.md, "Tre strati",
 30/09/2026). The client area moved there first (`crm/area`), then plans,
 programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`),
 quotes (`crm/preventivi`), the new clients pipeline (`crm/clienti`) and one forms
@@ -818,7 +919,9 @@ row, the bar's words beside their icons).
   record's column beside its panel is a phone's width (368px) at `md:`: what
   sits side by side there wraps by its own width, never by the screen's - a
   tab's words keep `min-w-[15rem]` in a `flex-wrap` row with their buttons, a
-  section's columns wrap at 11rem (`FieldLayout/Column.vue`), cards are a grid
+  section's columns wrap at 11rem (`FieldLayout/Column.vue`; one under the
+  other on a phone they never wrap: a column-wise flex that wraps is as wide as
+  its widest content, `Section.vue`), cards are a grid
   of `repeat(auto-fit,minmax(12rem,1fr))`, a card that lays out by its own
   width asks a container query (`ClinicSummary.vue`).
 - A settings page follows its pane, not the screen: `impostazioni-strette:`
@@ -1010,7 +1113,12 @@ row, the bar's words beside their icons).
 - The first page waits on no call in a row: what the router needs comes with
   the page's boot (`crm_user`, `benvenuto`, the capabilities), and a page asks
   its calls together - what the server would answer from a capability, the
-  browser asks `puo()` for before the first answer arrives.
+  browser asks `puo()` for before the first answer arrives. The SPA's shells
+  (`/crm`, `/area`) are served before the framework looks for a web form or a
+  dynamic Web Page at their address (`crm/pagine_dell_app.py`, `page_renderer`):
+  those lists come from a Redis cache that answers None to a request racing
+  another while it fills again, a 500 with nothing in the logs. A sheet held
+  sideways keeps its grabber, title and actions tight (`telefono.css` «10»).
 - A tap is drawn before anything else is asked of the page. A CSS rule finds an
   element down a path (`body:has(> … > …)`), never through the whole page:
   `body:has(.x)` was looked for in 9,000 elements at every `data-state` that
@@ -1040,7 +1148,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1198 tests · ~15s** — all must pass before committing
+- **1528 tests · ~25s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
@@ -1084,6 +1192,12 @@ Pre-commit hooks run prettier + eslint + oxlint automatically. If they modify a 
 ---
 
 ## Docs structure
+
+`docs/` follows the layers (`docs/README.md`): `docs/crm/` the base's numbered
+docs (00-59, a number never changes: code cites "doc 57" or `docs/crm/57`) with
+`prenotazioni/`; `docs/verticali/<vertical>/` (the clinic's: `docs/verticali/clinica/`,
+its design in three layers); `docs/marchi/<brand>/` (DottorCloud's listino and legal
+drafts). A new doc goes in the lowest layer it is true for. In `.pi/`:
 
 ```
 PLAN.md          — future only (phases 3B, 4, 5, 6)

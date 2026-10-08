@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What a list offers to choose (docs/progetto-ghl/55): the fields one filters
+"""What a list offers to choose (docs/crm/55): the fields one filters
 by, sorts by, groups by, adds as a column or onto a board's card.
 
 Not every field a document keeps. Never what only the machine reads: a code, a

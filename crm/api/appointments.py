@@ -20,7 +20,7 @@ from frappe.query_builder.functions import Min
 from frappe.utils import cint, flt, sbool
 
 from crm.permissions.livelli import CENTRO, ambito, puo, verifica
-from crm.scheduling import abbonamenti, cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing, sedi, visite_online, visite_online_regole
 from crm.scheduling import intervals as iv
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
@@ -107,13 +107,16 @@ def get_calendar(
 	include_events: bool = True,
 	sources: str | list | None = None,
 	with_hours: bool = False,
+	location: str | None = None,
 ) -> dict:
 	"""Appointments (and optionally plain calendar events) in a date window.
 
 	One call feeds every view — month, week, day and the resource grid — because
 	they only differ in how the same rows are laid out. With `with_hours`, for a
 	day or a week, when each professional and each room works on those days and
-	the professionals' own engagements: the grid greys out the rest.
+	the professionals' own engagements: the grid greys out the rest. With
+	`location`, where the centre has more than one (docs/crm/62), that location's
+	appointments and the ones that name none.
 	"""
 	window_start = parse_date(start)
 	window_end = parse_date(end)
@@ -149,9 +152,11 @@ def get_calendar(
 				or [""],
 			]
 
+	sede = sedi.valida(location)
 	rows = frappe.get_list(
 		"CRM Appointment",
 		filters=filters,
+		or_filters=[["centre_location", "=", sede], ["centre_location", "is", "not set"]] if sede else None,
 		fields=[
 			"name",
 			"title",
@@ -161,6 +166,7 @@ def get_calendar(
 			"ends_on",
 			"color",
 			"location",
+			"centre_location",
 			"total_amount",
 			"currency",
 			"price_source",
@@ -171,13 +177,15 @@ def get_calendar(
 			"external_platform",
 			"external_url",
 			"customer_notes",
+			# an online visit's room: whoever reads the appointment starts it
+			"video_link",
 		],
 		order_by="starts_on asc",
 		limit_page_length=0,
 	)
 	appointments = _decorate(rows)
 	_first_visits(appointments)
-	# each person's reminder: sent, answered (docs/progetto-ghl/59)
+	# each person's reminder: sent, answered (docs/crm/59)
 	from crm.scheduling.promemoria import nelle_righe
 
 	nelle_righe(appointments)
@@ -193,7 +201,7 @@ def get_calendar(
 	from crm.permissions.seguono import shows_busy_time
 
 	busy = (
-		_busy_time(from_dt, to_dt, {row["name"] for row in rows}, wanted_staff, wanted_resources)
+		_busy_time(from_dt, to_dt, {row["name"] for row in rows}, wanted_staff, wanted_resources, sede)
 		if shows_busy_time()
 		else []
 	)
@@ -217,7 +225,10 @@ def _giornate(first, last, appointments, busy, from_dt, to_dt) -> dict:
 	tz = scheduling_tz()
 	return {
 		"hours": {
-			"staff": {user: orari_di(staff_working_hours(user), days, tz) for user in users},
+			"staff": {
+				user: orari_di(staff_working_hours(user), days, tz, con_le_sedi=sedi.piu_sedi())
+				for user in users
+			},
 			"resources": {
 				room: orari_di(resource_working_hours(frappe.get_cached_doc("CRM Resource", room)), days, tz)
 				for room in sorted(rooms)
@@ -243,11 +254,12 @@ def _professionisti() -> set[str]:
 	)
 
 
-def orari_di(hours, days: list[datetime.date], tz) -> dict | None:
+def orari_di(hours, days: list[datetime.date], tz, con_le_sedi: bool = False) -> dict | None:
 	"""A professional's or a room's open hours on each day, in minutes of the
 	centre's clock - {"2026-10-06": {"open": [[480, 780], [840, 1140]], "note": ""}},
 	the note a date override's reason («Ferie»). None where no hours were ever set:
-	open whenever, and the agenda greys nothing out."""
+	open whenever, and the agenda greys nothing out. `con_le_sedi`: the locations
+	the day's lines name too (`sedi`, '' for a line good anywhere: docs/crm/62)."""
 	if hours.always and not hours.rows and not hours.exceptions and not hours.holidays:
 		return None
 	out = {}
@@ -277,6 +289,8 @@ def orari_di(hours, days: list[datetime.date], tz) -> dict | None:
 			"open": [[minute(start), minute(end)] for start, end in windows if minute(start) < minute(end)],
 			"note": note,
 		}
+		if con_le_sedi:
+			out[day.isoformat()]["sedi"] = hours.sedi_del_giorno(day, tz)
 	return out
 
 
@@ -320,7 +334,9 @@ def _impegni(from_dt, to_dt, users: list[str]) -> list[dict]:
 	]
 
 
-def _busy_time(from_dt, to_dt, seen: set[str], wanted_staff: set, wanted_resources: set) -> list[dict]:
+def _busy_time(
+	from_dt, to_dt, seen: set[str], wanted_staff: set, wanted_resources: set, sede: str | None = None
+) -> list[dict]:
 	"""The rest of the agenda as busy time: when, who works it, which room - never who
 	comes or why. For whoever sees only part of the agenda in full: sales book for
 	their people into everybody's day."""
@@ -329,10 +345,10 @@ def _busy_time(from_dt, to_dt, seen: set[str], wanted_staff: set, wanted_resourc
 		for row in frappe.get_all(
 			"CRM Appointment",
 			filters={"starts_on": ["<", to_dt], "ends_on": [">", from_dt], "status": ["!=", "Cancelled"]},
-			fields=["name", "starts_on", "ends_on"],
+			fields=["name", "starts_on", "ends_on", "centre_location"],
 			limit_page_length=0,
 		)
-		if row.name not in seen
+		if row.name not in seen and (not sede or row.centre_location in (sede, None, ""))
 	]
 	if not rows:
 		return []
@@ -512,7 +528,7 @@ def get_appointment(name: str) -> dict:
 	doc = frappe.get_doc("CRM Appointment", name)
 	doc.check_permission("read")
 	data = doc.as_dict()
-	# each person's reminder, read on the rows as they are stored (docs/progetto-ghl/59)
+	# each person's reminder, read on the rows as they are stored (docs/crm/59)
 	from crm.scheduling.promemoria import nelle_righe
 
 	nelle_righe([data])
@@ -532,11 +548,17 @@ def get_appointment(name: str) -> dict:
 	# the subscriptions an entry is used of
 	data["cycle"] = cicli.della_seduta(doc)
 	data["subscription"] = abbonamenti.del_appuntamento(doc)
+	# under a convention: which, the two shares, the authorisation (doc 61)
+	from crm.convenzioni import convenzioni
+
+	data["convention_info"] = convenzioni.del_appuntamento(doc)
 	# what the panel offers: who reads the agenda without booking (the medical
 	# director, the read-only level) sees the appointment, not the controls the
 	# server would refuse
 	data["can_write"] = bool(doc.has_permission("write"))
 	data["can_delete"] = bool(doc.has_permission("delete"))
+	# held by video: the panel starts it, or says it has no link yet
+	data["online_visit"] = visite_online.del_servizio(doc.service)
 	return data
 
 
@@ -643,6 +665,7 @@ def get_scheduler_meta() -> dict:
 			"currency",
 			"price_per_participant",
 			"description",
+			"online_visit",
 		],
 		order_by="service_name asc",
 	)
@@ -686,14 +709,34 @@ def get_scheduler_meta() -> dict:
 		order_by="full_name asc",
 	)
 
+	# where each works, where the centre has more than one location (docs/crm/62)
+	if sedi.piu_sedi():
+		for persona in people:
+			persona["sedi"] = sorted(
+				{
+					riga.centre_location or ""
+					for riga in staff_working_hours(persona.name).rows
+					if riga.get("workday")
+				}
+			)
 	return {
 		"services": services,
 		"resources": frappe.get_list(
 			"CRM Resource",
 			filters={"enabled": 1},
-			fields=["name", "resource_name", "resource_type", "capacity", "seats", "color", "location"],
+			fields=[
+				"name",
+				"resource_name",
+				"resource_type",
+				"capacity",
+				"seats",
+				"color",
+				"location",
+				"centre_location",
+			],
 			order_by="resource_type asc, resource_name asc",
 		),
+		"locations": sedi.per_il_boot(),
 		"staff": people,
 		"price_lists": frappe.get_list(
 			"CRM Price List",
@@ -716,6 +759,8 @@ def get_scheduler_meta() -> dict:
 			"default_duration": cint(config.default_duration) or 30,
 			"allow_override": cint(config.allow_override),
 			"can_override": puo("agenda.sovrapponi"),
+			# an online visit's room is made by itself on the agency's server
+			"video_server": bool(visite_online.server()),
 		},
 	}
 
@@ -734,8 +779,10 @@ def get_available_slots(
 	resources: str | list | None = None,
 	participants: int = 1,
 	exclude_appointment: str | None = None,
+	location: str | None = None,
 ) -> list[dict]:
-	"""Free slots for a service, as ISO-8601 UTC, with the assignment behind each."""
+	"""Free slots for a service, as ISO-8601 UTC, with the assignment behind each;
+	at one location where asked (docs/crm/62)."""
 	_check_reader()
 	first, last = parse_date(start_date), parse_date(end_date)
 	if last < first:
@@ -750,6 +797,7 @@ def get_available_slots(
 		resources=_as_list(resources),
 		participants=cint(participants) or 1,
 		exclude_appointment=exclude_appointment,
+		location=sedi.valida(location),
 	)
 	return [slot.as_dict() for slot in slots]
 
@@ -762,9 +810,16 @@ def quote_price(
 	staff: str | list | None = None,
 	resources: str | list | None = None,
 	participants: int = 1,
+	convention: str | None = None,
+	convention_form: str | None = None,
 ) -> dict:
-	"""Live price preview while the appointment is still being edited."""
+	"""Live price preview while the appointment is still being edited; under a
+	convention, its price and the two shares (doc 61)."""
 	_check_reader()
+	if convention:
+		from crm.convenzioni import convenzioni
+
+		price_list = convenzioni.listino_di(convention) or price_list
 	price = pricing.resolve_price(
 		service,
 		parse_utc(when),
@@ -773,7 +828,10 @@ def quote_price(
 		resources=_as_list(resources),
 		participants=cint(participants) or 1,
 	)
-	return price.as_dict(cint(participants) or 1)
+	risposta = price.as_dict(cint(participants) or 1)
+	if convention:
+		risposta.update(convenzioni.anteprima(convention, convention_form, risposta["total"], service))
+	return risposta
 
 
 @frappe.whitelist()
@@ -1144,6 +1202,7 @@ def list_services() -> list[dict]:
 			"currency",
 			"color",
 			"bookable_online",
+			"online_visit",
 		],
 		order_by="service_name asc",
 	)
@@ -1174,6 +1233,8 @@ def get_service(name: str) -> dict:
 		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.availability
 	]
+	# whether an online visit gets its room by itself, for the editor to say so
+	data["video_server"] = bool(visite_online.server())
 	return data
 
 
@@ -1242,6 +1303,9 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 			"cancel_notice_hours",
 			"reschedule_notice_hours",
 			"max_reschedules",
+			# paid online when booking (`crm.pagamenti`)
+			"online_payment",
+			"online_deposit",
 		)
 		if key in payload
 	}
@@ -1257,6 +1321,7 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 		"allow_online_cancel",
 		"allow_online_reschedule",
 		"hide_from_menu",
+		"online_visit",
 	):
 		if key in payload:
 			values[key] = cint(payload.get(key))
@@ -1341,6 +1406,7 @@ def list_resources() -> list[dict]:
 			"capacity",
 			"seats",
 			"location",
+			"centre_location",
 			"color",
 			"hourly_rate",
 			"currency",
@@ -1372,6 +1438,7 @@ def save_resource(resource: str | dict, name: str | None = None) -> dict:
 		"capacity": cint(payload.get("capacity")) or 1,
 		"seats": cint(payload.get("seats")),
 		"location": payload.get("location"),
+		"centre_location": sedi.esistente(payload.get("centre_location")),
 		"color": payload.get("color"),
 		"hourly_rate": flt(payload.get("hourly_rate")),
 		"currency": payload.get("currency") or "EUR",
@@ -1576,6 +1643,7 @@ def get_schedule(user: str = "") -> dict:
 			"bookable_online": 1,
 			"public_title": "",
 			"public_bio": "",
+			"video_link": "",
 			"holiday_list": None,
 			"availability": [],
 			"exceptions": [],
@@ -1591,9 +1659,15 @@ def get_schedule(user: str = "") -> dict:
 		"bookable_online": 1 if doc.get("bookable_online") is None else cint(doc.bookable_online),
 		"public_title": doc.get("public_title") or "",
 		"public_bio": doc.get("public_bio") or "",
+		"video_link": doc.get("video_link") or "",
 		"holiday_list": doc.holiday_list,
 		"availability": [
-			{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
+			{
+				"workday": row.workday,
+				"start_time": hhmm(row.start_time),
+				"end_time": hhmm(row.end_time),
+				"centre_location": row.get("centre_location") or "",
+			}
 			for row in doc.availability
 		],
 		"exceptions": [
@@ -1603,6 +1677,7 @@ def get_schedule(user: str = "") -> dict:
 				"start_time": hhmm(row.start_time),
 				"end_time": hhmm(row.end_time),
 				"reason": row.reason,
+				"centre_location": row.get("centre_location") or "",
 			}
 			for row in doc.exceptions
 		],
@@ -1627,6 +1702,8 @@ def save_schedule(schedule: str | dict) -> dict:
 				"workday": row.get("workday"),
 				"start_time": row.get("start_time"),
 				"end_time": row.get("end_time"),
+				# where these hours are worked (docs/crm/62): empty, anywhere
+				"centre_location": sedi.esistente(row.get("centre_location")),
 			}
 			for row in payload.get("availability") or []
 			if row.get("workday")
@@ -1638,6 +1715,7 @@ def save_schedule(schedule: str | dict) -> dict:
 				"start_time": row.get("start_time") or None,
 				"end_time": row.get("end_time") or None,
 				"reason": row.get("reason"),
+				"centre_location": sedi.esistente(row.get("centre_location")),
 			}
 			for row in payload.get("exceptions") or []
 			if row.get("date")
@@ -1651,6 +1729,12 @@ def save_schedule(schedule: str | dict) -> dict:
 		# a practitioner's own hours, not how the booking page shows them
 		if key in payload and not proprio:
 			values[key] = payload.get(key) or None
+	# their own online visit room: a practitioner sets theirs too
+	if "video_link" in payload:
+		link = (payload.get("video_link") or "").strip()
+		if link and not visite_online_regole.link_valido(link):
+			frappe.throw(_("The online visit's link must be an address starting with https://"))
+		values["video_link"] = link or None
 	if values["enabled"] and not values["availability"]:
 		frappe.throw(_("Add at least one time slot, or use the studio hours"))
 	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
@@ -1675,6 +1759,8 @@ def get_scheduling_settings() -> dict:
 		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.default_availability
 	]
+	# a field never saved reads its default, never 0: the months the misses count over
+	data["no_show_months"] = data.get("no_show_months") or 12
 	# what an empty time zone means, for the settings page to say it
 	data["site_timezone"] = frappe.utils.get_system_timezone()
 	# what the booking page falls back to, for the settings to show it. One field
@@ -1716,6 +1802,9 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"notify_staff_on_booking",
 		"send_client_confirmation",
 		"max_active_per_customer",
+		"no_show_limit",
+		"no_show_months",
+		"no_show_action",
 		# online defaults every service inherits
 		"default_min_notice_hours",
 		"default_max_horizon_days",

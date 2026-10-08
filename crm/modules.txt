@@ -11,3 +11,6 @@ Piani
 Documenti
 Preventivi
 Clienti
+Recensioni
+Pagamenti
+Convenzioni

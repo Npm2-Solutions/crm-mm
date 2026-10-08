@@ -1,0 +1,227 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 21:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "convention_name",
+  "kind",
+  "enabled",
+  "column_break_head",
+  "organization",
+  "valid_from",
+  "valid_upto",
+  "forms_section",
+  "direct",
+  "requires_authorisation",
+  "column_break_forms",
+  "indirect",
+  "show_online",
+  "prices_section",
+  "price_mode",
+  "price_list",
+  "discount_percent",
+  "column_break_prices",
+  "share_mode",
+  "share_amount",
+  "share_percent",
+  "shares_section",
+  "shares",
+  "notes_section",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "convention_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Health fund\nInsurance\nCompany",
+   "default": "Health fund",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "organization",
+   "fieldtype": "Link",
+   "label": "Who pays",
+   "options": "CRM Organization",
+   "description": "The fund, the insurer or the company: billed in direct form, with its billing details"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid from"
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid until"
+  },
+  {
+   "fieldname": "forms_section",
+   "fieldtype": "Section Break",
+   "label": "How the person pays"
+  },
+  {
+   "fieldname": "direct",
+   "fieldtype": "Check",
+   "label": "Direct form",
+   "description": "The fund pays the centre; the person pays only their share"
+  },
+  {
+   "fieldname": "requires_authorisation",
+   "fieldtype": "Check",
+   "label": "Authorisation before the appointment",
+   "depends_on": "direct"
+  },
+  {
+   "fieldname": "column_break_forms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "indirect",
+   "fieldtype": "Check",
+   "label": "Indirect form",
+   "description": "The person pays everything and asks the fund for the money back"
+  },
+  {
+   "fieldname": "show_online",
+   "fieldtype": "Check",
+   "label": "Offered on the booking page",
+   "description": "The person may say they come with it; the booking then waits for the centre's yes"
+  },
+  {
+   "fieldname": "prices_section",
+   "fieldtype": "Section Break",
+   "label": "Prices"
+  },
+  {
+   "fieldname": "price_mode",
+   "fieldtype": "Select",
+   "label": "Prices",
+   "options": "Centre prices\nPrice list\nDiscount",
+   "default": "Centre prices"
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price list",
+   "options": "CRM Price List",
+   "depends_on": "eval:doc.price_mode=='Price list'"
+  },
+  {
+   "fieldname": "discount_percent",
+   "fieldtype": "Percent",
+   "label": "Discount",
+   "depends_on": "eval:doc.price_mode=='Discount'"
+  },
+  {
+   "fieldname": "column_break_prices",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "share_mode",
+   "fieldtype": "Select",
+   "label": "Share paid by the person",
+   "options": "None\nFixed\nPercentage",
+   "default": "None",
+   "depends_on": "direct"
+  },
+  {
+   "fieldname": "share_amount",
+   "fieldtype": "Currency",
+   "label": "Fixed share",
+   "depends_on": "eval:doc.share_mode=='Fixed'"
+  },
+  {
+   "fieldname": "share_percent",
+   "fieldtype": "Percent",
+   "label": "Share in percent",
+   "depends_on": "eval:doc.share_mode=='Percentage'"
+  },
+  {
+   "fieldname": "shares_section",
+   "fieldtype": "Section Break",
+   "label": "Share by service",
+   "depends_on": "direct"
+  },
+  {
+   "fieldname": "shares",
+   "fieldtype": "Table",
+   "label": "Share by service",
+   "options": "CRM Convention Share"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-08 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Convenzioni",
+ "name": "CRM Convention",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:convention_name",
+ "naming_rule": "By fieldname",
+ "title_field": "convention_name",
+ "track_changes": 1,
+ "description": "A health fund, an insurance or a company the centre has a convention with: its prices, the person's share, who pays",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ]
+}

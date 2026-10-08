@@ -127,6 +127,7 @@
             :can-log="data.can_log"
             :busy="saving === item.key"
             @log="(outcome) => log(item, outcome)"
+            @effort="(n) => effort(item, n)"
           />
         </div>
       </section>
@@ -185,6 +186,29 @@ async function go(day) {
   }
 }
 go(null)
+
+// how hard or painful an exercise was: said on the answer of its day
+async function effort(item, n) {
+  const before = item.effort
+  item.effort = n || null
+  saving.value = item.key
+  error.value = ''
+  try {
+    await call('crm.piani.area.log_item', {
+      person: area.person,
+      plan: route.params.plan,
+      item: item.key,
+      outcome: item.outcome,
+      day: data.value.day,
+      effort: n,
+    })
+  } catch (e) {
+    item.effort = before
+    error.value = __(messageOf(e))
+  } finally {
+    saving.value = null
+  }
+}
 
 async function log(item, outcome) {
   const before = item.outcome

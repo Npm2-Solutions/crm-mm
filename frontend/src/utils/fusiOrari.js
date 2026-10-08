@@ -68,17 +68,27 @@ export function europei(zone = []) {
   ].sort()
 }
 
+// the generic name does not change with the day: asked once per zone and
+// language, as a formatter for each of four hundred zones took a tenth of a
+// second of the settings' page every time its list was drawn again
+const NOMI = new Map()
+
 /** What a zone is called in `lingua` («Ora dell'Europa centrale»), or nothing. */
-export function nomeDelFuso(zona, lingua = 'it', quando = new Date()) {
+export function nomeDelFuso(zona, lingua = 'it', quando) {
+  const chiave = `${lingua}|${zona}`
+  if (!quando && NOMI.has(chiave)) return NOMI.get(chiave)
+  let nome = ''
   try {
     const parti = new Intl.DateTimeFormat(lingua, {
       timeZone: zona,
       timeZoneName: 'longGeneric',
-    }).formatToParts(quando)
-    return parti.find((parte) => parte.type === 'timeZoneName')?.value || ''
+    }).formatToParts(quando || new Date())
+    nome = parti.find((parte) => parte.type === 'timeZoneName')?.value || ''
   } catch {
-    return ''
+    // a zone the browser does not know: no name
   }
+  if (!quando) NOMI.set(chiave, nome)
+  return nome
 }
 
 /**

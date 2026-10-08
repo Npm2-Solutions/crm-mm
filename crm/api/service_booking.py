@@ -34,6 +34,7 @@ from crm.demo import guardie
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 from crm.scheduling import booking_rules as rules_mod
+from crm.scheduling import sedi, sedi_regole
 from crm.scheduling.availability import ACTIVE_STATUSES, get_slots, settings
 from crm.scheduling.timeutils import (
 	UTC,
@@ -58,6 +59,9 @@ def limit_message(code: str) -> str:
 	"""The client-facing sentence for a ``booking_rules`` code."""
 	return {
 		rules_mod.LIMIT_IN_PAST: _("This time is in the past."),
+		rules_mod.LIMIT_NO_SHOWS: _(
+			"This appointment cannot be booked online: please contact us to book it."
+		),
 		rules_mod.LIMIT_TOO_SOON: _("This time is too close: it can no longer be booked online."),
 		rules_mod.LIMIT_TOO_FAR: _("This date is too far ahead to be booked yet."),
 		rules_mod.LIMIT_NOT_OPEN_YET: _("Online booking for this service is not open yet for this date."),
@@ -304,10 +308,61 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		# when no time suits, or a class is full: the waiting list, where the centre offers it
 		"waiting_list": _lista_d_attesa(),
 		"timezone": str(scheduling_tz()),
+		# where the centre has more than one location (docs/crm/62): picked first
+		"locations": _sedi_pubbliche(),
 		"categories": categories,
 		"services": services,
 		"people": sorted(people.values(), key=lambda p: p["name"]),
+		# the funds and conventions the centre offers here (doc 61): the booking waits for its yes
+		"conventions": _convenzioni_online(),
 	}
+
+
+def _sedi_pubbliche() -> list[dict]:
+	"""The locations the person picks from, with what finds them; none with one."""
+	if not sedi.piu_sedi():
+		return []
+	return [
+		{
+			"id": riga["name"],
+			"name": riga["location_name"],
+			"address": sedi_regole.indirizzo(riga),
+			"city": riga["city"] or "",
+			"map_link": riga["map_link"] or "",
+			"phone": riga["phone"] or "",
+			"opening_hours": riga["opening_hours"] or "",
+		}
+		for riga in sedi.attive()
+	]
+
+
+def _sedi_del_servizio(service, online_staff: list[str]) -> list[str] | None:
+	"""Where a service can be held, for the page to offer it at a location; None
+	where anywhere (or the centre has one location)."""
+	if not sedi.piu_sedi():
+		return None
+	from crm.scheduling.availability import staff_working_hours
+	from crm.scheduling.visite_online import serve_la_stanza
+
+	stanze = frappe.get_all(
+		"CRM Resource", filters={"enabled": 1}, fields=["name", "resource_type", "centre_location"]
+	)
+	richieste = [
+		{"resource": riga.resource, "resource_type": riga.resource_type}
+		for riga in service.resources
+		if cint(riga.required) and serve_la_stanza(service, riga)
+	]
+	professionisti = [
+		[riga.get("centre_location") or "" for riga in staff_working_hours(user).rows] or [""]
+		for user in online_staff
+	]
+	return sedi_regole.sedi_del_servizio(richieste, stanze, professionisti, sedi.nomi())
+
+
+def _convenzioni_online() -> list[dict]:
+	from crm.convenzioni import convenzioni
+
+	return convenzioni.offerte_online()
 
 
 def _lista_d_attesa() -> dict | None:
@@ -359,6 +414,27 @@ def _service_card(service) -> dict:
 		"bookable": bool(online_staff),
 		"listed": not cint(service.get("hide_from_menu")),
 		"location": service.get("location") or "",
+		# the locations it is held in (docs/crm/62); None: any
+		"locations": None if cint(service.get("online_visit")) else _sedi_del_servizio(service, online_staff),
+		# held by video: the page says so, and asks for no room
+		"online_visit": bool(cint(service.get("online_visit"))),
+		# paid online when booking (`crm.pagamenti`): what, before the details
+		"deposit": _acconto_della_scheda(service, prices[0]),
+	}
+
+
+def _acconto_della_scheda(service, prezzo) -> dict | None:
+	"""What the booking page says a service asks online: the deposit, or the price."""
+	from crm.pagamenti import pagamenti
+	from crm.pagamenti import regole as pagamenti_regole
+
+	importo = pagamenti.acconto_da_chiedere(service, prezzo)
+	if not importo:
+		return None
+	return {
+		"full": service.get("online_payment") == pagamenti_regole.TUTTO,
+		"amount": importo,
+		"formatted": _money(importo, service.currency),
 	}
 
 
@@ -408,8 +484,10 @@ def online_slots(
 	staff_user: str | None = None,
 	participants: int = 1,
 	exclude_appointment: str | None = None,
+	location: str | None = None,
 ) -> list:
-	"""Engine slots narrowed by the service's online rules."""
+	"""Engine slots narrowed by the service's online rules; at one location where
+	the person picked one (docs/crm/62)."""
 	rules = _rules(service)
 	now = datetime.datetime.now(UTC)
 	earliest, latest = rules.window(now)
@@ -423,6 +501,7 @@ def online_slots(
 		online=True,
 		# the online notice/horizon (own or inherited) decide, not the internal ones
 		window=(earliest, latest or now + datetime.timedelta(days=3650)),
+		location=sedi.valida(location),
 	)
 	tz = scheduling_tz()
 	window_start = datetime.datetime.combine(first, datetime.time.min, tzinfo=tz)
@@ -446,6 +525,7 @@ def get_slots_public(
 	staff: str | None = None,
 	participants: int = 1,
 	timezone: str | None = None,
+	location: str | None = None,
 ) -> dict:
 	"""Free start times for a service between two dates.
 
@@ -465,7 +545,7 @@ def get_slots_public(
 
 	days: dict[str, list[dict]] = {}
 	seen = set()
-	for slot in online_slots(doc, first, last, user, seats):
+	for slot in online_slots(doc, first, last, user, seats, location=location):
 		key = (slot.start, slot.join_appointment)
 		if key in seen:
 			continue
@@ -477,6 +557,9 @@ def get_slots_public(
 				"time": local.strftime("%H:%M"),
 				"seats_left": cint(slot.seats_left),
 				"group": bool(slot.join_appointment),
+				# «Any location»: where this one is, and the booking goes there
+				"location": sedi.nome_di(slot.location) if slot.location and not location else "",
+				"location_id": slot.location or "",
 				"staff": [_staff_card(u)["name"] for u in slot.staff]
 				if doc.staff_selection != "All required"
 				else [],
@@ -569,6 +652,20 @@ def _client_history(service_name: str, email: str, phone: str, lead: str | None)
 		.where(appointment.status.isin(ACTIVE_STATUSES))
 		.run(as_dict=True)
 	)
+	# the appointments they did not show up to (doc 59's outcomes, `esiti`): their
+	# place marked so, or the whole appointment where nobody said otherwise of them
+	missed = (
+		frappe.qb.from_(participant)
+		.join(appointment)
+		.on(participant.parent == appointment.name)
+		.select(appointment.name, appointment.starts_on)
+		.where(condition)
+		.where(
+			(participant.status == "No Show")
+			| ((appointment.status == "No Show") & participant.status.isin(("Booked", "No Show")))
+		)
+		.run(as_dict=True)
+	)
 	now = datetime.datetime.now(UTC)
 	unique = {row.name: row for row in rows}.values()
 	starts = [(row.service, from_system_naive(row.starts_on)) for row in unique]
@@ -576,6 +673,7 @@ def _client_history(service_name: str, email: str, phone: str, lead: str | None)
 		service_starts=[s for svc, s in starts if svc == service_name],
 		all_starts=[s for _svc, s in starts],
 		is_returning=any(s < now for _svc, s in starts),
+		no_shows=[from_system_naive(row.starts_on) for row in {r.name: r for r in missed}.values()],
 	)
 
 
@@ -595,10 +693,10 @@ def _clean_phone(value: str | None) -> str:
 	return to_e164(value) or value
 
 
-def _find_slot(service, start_utc, staff_user, seats, exclude_appointment=None):
+def _find_slot(service, start_utc, staff_user, seats, exclude_appointment=None, location=None):
 	tz = scheduling_tz()
 	day = start_utc.astimezone(tz).date()
-	for slot in online_slots(service, day, day, staff_user, seats, exclude_appointment):
+	for slot in online_slots(service, day, day, staff_user, seats, exclude_appointment, location):
 		if slot.start == start_utc:
 			return slot
 	return None
@@ -624,6 +722,9 @@ def book(
 	marketing_consent: int | str | None = None,
 	for_name: str | None = None,
 	for_relation: str | None = None,
+	convention: str | None = None,
+	card_number: str | None = None,
+	location: str | None = None,
 ) -> dict:
 	"""Book a service on a free slot; returns what the confirmation page shows.
 
@@ -673,9 +774,19 @@ def book(
 		history = _client_history(doc.name, email, phone, existing)
 	if code := rules.check_client(start_utc, now, tz, history):
 		frappe.throw(limit_message(code))
+	# whoever missed too many appointments: the centre's yes first, or no online booking
+	assenze = rules_mod.check_no_shows(
+		history,
+		now,
+		config.get("no_show_limit"),
+		config.get("no_show_months"),
+		config.get("no_show_action"),
+	)
+	if assenze == rules_mod.LIMIT_NO_SHOWS:
+		frappe.throw(limit_message(assenze))
 
 	staff_user = _staff_from_public_id(doc, staff) if staff and _flag(doc, "allow_staff_choice") else None
-	slot = _find_slot(doc, start_utc, staff_user, seats)
+	slot = _find_slot(doc, start_utc, staff_user, seats, location=location)
 	if not slot:
 		frappe.throw(_("This slot is no longer available. Please pick another one."))
 
@@ -709,6 +820,24 @@ def book(
 		booked_by=booker if lead != booker else None,
 	)
 	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
+	# with a fund or a convention offered online (doc 61): the centre checks the cover first
+	from crm.convenzioni import convenzioni
+
+	convenzione = convenzioni.scelta_online(convention)
+	if convenzione:
+		if slot.join_appointment:
+			frappe.throw(_("A place in a class is not booked under a convention online: call the centre"))
+		status = "Scheduled"
+	# paid online first (`crm.pagamenti`): the place held as a request until Stripe says paid
+	from crm.pagamenti import pagamenti
+
+	# whether it asks anything (the amount, once the appointment has its price)
+	chiede_acconto = not convenzione and bool(pagamenti.acconto_da_chiedere(doc, 1, lead, booker))
+	if assenze == rules_mod.NO_SHOW_APPROVAL:
+		# a seat in a class is no booking of its own to approve: the desk books it
+		if slot.join_appointment:
+			frappe.throw(limit_message(rules_mod.LIMIT_NO_SHOWS))
+		status = "Scheduled"
 
 	if slot.join_appointment:
 		appointment = frappe.get_doc("CRM Appointment", slot.join_appointment)
@@ -725,7 +854,7 @@ def book(
 			{
 				"doctype": "CRM Appointment",
 				"service": doc.name,
-				"status": status,
+				"status": "Scheduled" if chiede_acconto else status,
 				"starts_on": to_system_naive(slot.start),
 				"ends_on": to_system_naive(slot.end),
 				"staff": [{"user": user, "required": 1} for user in slot.staff],
@@ -734,14 +863,42 @@ def book(
 				"source": "Online",
 				"customer_notes": notes,
 				"location": doc.get("location") or None,
+				# where the slot is (docs/crm/62): its room says it too
+				"centre_location": slot.location,
 			}
 		)
+		if convenzione:
+			convenzioni.prenotata_online(appointment, convenzione, lead, card_number)
 		appointment.insert(ignore_permissions=True)
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
-	send_client_email(appointment, token, "booked")
-	notify_staff(appointment, _("New online booking"))
-	return public_view(appointment, token)
+	if chiede_acconto:
+		importo = pagamenti.acconto_da_chiedere(
+			doc, _il_mio_prezzo(appointment, _my_rows(appointment, token)), lead
+		)
+		if importo:
+			from crm.pagamenti.cliente import ErroreStripe
+
+			try:
+				link = pagamenti.chiedi_acconto(appointment, token, lead, importo, status, email)
+			except ErroreStripe as errore:
+				# nothing booked without its deposit: the request's rollback gives the place back
+				frappe.throw(errore.in_parole(), title=_("Online payment"))
+			# told once it is paid (`pagamenti._acconto_pagato`)
+			return {**public_view(appointment, token), "email_sent": False, "checkout_url": link["url"]}
+		if appointment.status != status and not slot.join_appointment:
+			appointment.db_set("status", status)
+	mandata = send_client_email(appointment, token, "booked")
+	notify_staff(
+		appointment,
+		_("New online booking to approve: missed appointments")
+		if assenze == rules_mod.NO_SHOW_APPROVAL
+		else _("New online booking to approve: with a convention")
+		if convenzione
+		else _("New online booking"),
+	)
+	# the page says «we emailed you» only when an email is on its way
+	return {**public_view(appointment, token), "email_sent": mandata}
 
 
 def _marketing_offerto(config) -> dict | None:
@@ -862,6 +1019,15 @@ def _my_rows(appointment, token: str) -> list:
 	return [row for row in appointment.participants if row.access_token == token]
 
 
+def _il_mio_prezzo(appointment, mine) -> float:
+	"""What the booking costs whoever holds ``mine``: their seats, or the appointment."""
+	return (
+		sum(flt(r.amount) for r in mine)
+		if cint(appointment.per_participant)
+		else flt(appointment.total_amount)
+	)
+
+
 def public_view(appointment, token: str) -> dict:
 	service = frappe.get_cached_doc("CRM Service", appointment.service)
 	rules = _rules(service)
@@ -875,11 +1041,7 @@ def public_view(appointment, token: str) -> dict:
 	cancel_block = rules.check_cancel(start, now) if active else "inactive"
 	move_block = rules.check_reschedule(start, now, appointment.reschedule_count) if active else "inactive"
 	client_tz = next((r.timezone for r in mine if r.get("timezone")), None) or str(scheduling_tz())
-	amount = (
-		sum(flt(r.amount) for r in mine)
-		if cint(appointment.per_participant)
-		else flt(appointment.total_amount)
-	)
+	amount = _il_mio_prezzo(appointment, mine)
 	show_price = _flag(service, "show_price_online")
 	# «I'll be there», from the reminder that linked here (crm.scheduling.promemoria)
 	from crm.scheduling import promemoria
@@ -889,6 +1051,9 @@ def public_view(appointment, token: str) -> dict:
 		if active and mine
 		else {"can_confirm": False, "confirmed": False}
 	)
+	from crm.pagamenti import pagamenti
+
+	pagamento = pagamenti.per_la_pagina(appointment, token)
 	return {
 		"token": token,
 		"service": service.service_name,
@@ -896,13 +1061,22 @@ def public_view(appointment, token: str) -> dict:
 		"status": status,
 		# waits for the centre's yes: an online booking of a service it approves by hand;
 		# what the desk booked is booked
-		"pending_approval": status == "Scheduled" and appointment.get("source") == "Online",
+		"pending_approval": status == "Scheduled"
+		and appointment.get("source") == "Online"
+		and not (pagamento and pagamento["state"] == "waiting"),
+		# the deposit paid online, or still to pay (`crm.pagamenti`)
+		"payment": pagamento,
 		"start": start.isoformat(),
 		"end": end.isoformat(),
 		"timezone": client_tz,
 		"duration": int((end - start).total_seconds() // 60),
 		"staff": [_staff_card(row.user)["name"] for row in appointment.staff],
-		"location": appointment.location or "",
+		# where to go: the location's name and address, else the place written on it
+		"location": sedi.indirizzo_di(appointment),
+		"location_id": appointment.get("centre_location") if sedi.piu_sedi() else None,
+		"map_link": (sedi.sede(appointment.get("centre_location")) or {}).get("map_link") or "",
+		# held by video: one enters it from the area, never from this page
+		"online_visit": bool(cint(service.get("online_visit"))),
 		"seats": len([r for r in mine if r.status != "Cancelled"]) or len(mine),
 		"client_name": mine[0].participant_name if mine else "",
 		# booked by somebody else: the page and the email say whose appointment it is
@@ -913,7 +1087,7 @@ def public_view(appointment, token: str) -> dict:
 		"cancel_block": limit_message(cancel_block) if cancel_block and cancel_block != "inactive" else "",
 		"can_reschedule": not move_block,
 		"reschedule_block": limit_message(move_block) if move_block and move_block != "inactive" else "",
-		"calendar_links": _calendar_links(service.service_name, start, end, appointment.location),
+		"calendar_links": _calendar_links(service.service_name, start, end, sedi.indirizzo_di(appointment)),
 		**reminder,
 	}
 
@@ -1005,10 +1179,12 @@ def reschedule(token: str, start: str) -> dict:
 	if not others:
 		# the whole appointment is this client's: move it, keeping the professional if possible
 		current_staff = [row.user for row in appointment.staff]
+		# moved, it stays where it was booked (docs/crm/62)
+		sede = sedi.valida(appointment.get("centre_location"))
 		slot = None
 		if len(current_staff) == 1:
-			slot = _find_slot(service, new_start, current_staff[0], seats, appointment.name)
-		slot = slot or _find_slot(service, new_start, None, seats, appointment.name)
+			slot = _find_slot(service, new_start, current_staff[0], seats, appointment.name, sede)
+		slot = slot or _find_slot(service, new_start, None, seats, appointment.name, sede)
 		if not slot or slot.join_appointment:
 			frappe.throw(_("This slot is no longer available. Please pick another one."))
 		appointment.starts_on = to_system_naive(slot.start)
@@ -1020,7 +1196,9 @@ def reschedule(token: str, start: str) -> dict:
 		target = appointment
 	else:
 		# a seat in a group: leave this session, take a seat in (or open) another
-		slot = _find_slot(service, new_start, None, seats)
+		slot = _find_slot(
+			service, new_start, None, seats, location=sedi.valida(appointment.get("centre_location"))
+		)
 		if not slot:
 			frappe.throw(_("This slot is no longer available. Please pick another one."))
 		carried = [
@@ -1134,13 +1312,14 @@ def ics_file(uid: str, title: str, start, end, location: str | None, cancelled: 
 	return {"fname": "appuntamento.ics", "fcontent": "\r\n".join(lines)}
 
 
-def send_client_email(appointment, token: str, kind: str) -> None:
-	"""Tell the client what just happened to their booking. Never blocks a booking."""
+def send_client_email(appointment, token: str, kind: str) -> bool:
+	"""Tell the client what just happened to their booking. Never blocks a booking.
+	Whether an email is on its way."""
 	if not _flag(settings(), "send_client_confirmation"):
-		return
+		return False
 	mine = [r for r in appointment.participants if r.access_token == token and r.email]
 	if not mine:
-		return
+		return False
 	try:
 		view = public_view(appointment, token)
 		tz = _tz_or(view["timezone"], scheduling_tz())
@@ -1171,8 +1350,16 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 			lines.append(f"<p>{_('With')}: {esc(', '.join(view['staff']))}</p>")
 		if view["location"]:
 			lines.append(f"<p>{esc(view['location'])}</p>")
+		if view["online_visit"] and kind != "cancelled":
+			# how to enter it: from the area, never the room's link by email
+			from crm.scheduling import visite_online
+
+			persona = mine[0].party if mine[0].party_type == "CRM Lead" else None
+			lines.append(f"<p>{esc(visite_online.frase(visite_online.area_per(persona)))}</p>")
 		if view["formatted_price"]:
 			lines.append(f"<p>{_('Price')}: <b>{view['formatted_price']}</b></p>")
+		if (view.get("payment") or {}).get("state") == "paid" and kind != "cancelled":
+			lines.append(f"<p>{_('Deposit paid online')}: <b>{view['payment']['formatted_amount']}</b></p>")
 		if view["pending_approval"] and kind == "booked":
 			lines.append(f"<p>{_('We will confirm it shortly.')}</p>")
 		if view["instructions"] and kind != "cancelled":
@@ -1191,8 +1378,10 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 			reference_doctype="CRM Appointment",
 			reference_name=appointment.name,
 		)
+		return True
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), f"Service booking: {kind} email failed")
+		return False
 
 
 def notify_staff(appointment, subject: str) -> None:

@@ -230,6 +230,37 @@
           <div class="text-p-sm text-ink-gray-6">
             {{ __('{0} rooms in the agenda', [plan.data.rooms.count]) }}
           </div>
+          <!-- the Professional plan is one person's: the others count nobody -->
+          <div
+            v-if="plan.data.users?.included"
+            class="text-p-sm text-ink-gray-6"
+          >
+            {{
+              __('{0} of {1} users', [
+                plan.data.users.count,
+                plan.data.users.included,
+              ])
+            }}
+          </div>
+          <div
+            v-if="plan.data.users?.full"
+            class="mt-1 flex flex-wrap items-center gap-2 rounded bg-surface-gray-2 p-2 text-p-sm text-ink-gray-8"
+          >
+            <span class="min-w-[15rem] flex-1">
+              {{
+                __(
+                  'The Professional plan is for one person. To work with colleagues, the Studio plan has unlimited users and the same rooms.',
+                )
+              }}
+            </span>
+            <Button
+              v-if="puo('piano.amplia')"
+              class="shrink-0"
+              :label="__('Ask for the Studio plan')"
+              :loading="askForSize.loading"
+              @click="askForSize.submit({ size: 'Studio' })"
+            />
+          </div>
           <div
             v-if="plan.data.rooms.over"
             class="mt-1 flex gap-2 rounded bg-surface-amber-1 p-2 text-p-sm text-ink-amber-8"
@@ -249,7 +280,7 @@
           <p class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited.',
+                'A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited, but in the Professional plan.',
               )
             }}
           </p>
@@ -273,9 +304,11 @@
             </span>
             <span v-if="item.warn" class="text-p-xs text-ink-amber-8">
               {{
-                item.bytes
-                  ? __('Nearly full: beyond, the space is paid as used')
-                  : __('Nearly used up: beyond, they are paid as used')
+                item.prova
+                  ? __('Nearly used up: then the assistant is an add-on')
+                  : item.bytes
+                    ? __('Nearly full: beyond, the space is paid as used')
+                    : __('Nearly used up: beyond, they are paid as used')
               }}
             </span>
             <span v-if="item.note" class="text-p-xs text-ink-gray-5">
@@ -318,7 +351,7 @@ import { appLocale } from '@/utils/locale'
 import { Badge, createResource, toast } from 'frappe-ui'
 import { computed } from 'vue'
 
-const { permissions } = usersStore()
+const { permissions, puo } = usersStore()
 
 const plan = createResource({
   url: 'crm.api.plan.get_plan',
@@ -337,6 +370,21 @@ const startTrial = createResource({
       toast.warning(
         __('Trial started, but the agency could not be emailed: let them know'),
       )
+    }
+  },
+  onError(error) {
+    toast.error(error?.messages?.[0] || __('Something went wrong'))
+  },
+})
+
+// the Professional who takes a colleague: the agency moves the size and bills it
+const askForSize = createResource({
+  url: 'crm.api.plan.ask_for_size',
+  onSuccess(data) {
+    if (data.agency_notified) {
+      toast.success(__('Asked: the agency will move your plan'))
+    } else {
+      toast.warning(__('The agency could not be emailed: let them know'))
     }
   },
   onError(error) {
@@ -373,10 +421,10 @@ function iconaDi(modulo) {
   return ICONE[modulo.key] || LucidePackage
 }
 
-// the listino's levels (docs/gestionale-medico/listino.md)
+// the listino's levels (docs/marchi/dottorcloud/listino.md)
 const SIZES = {
-  Solo: __('Solo, one room'),
-  Studio: __('Studio, up to 2 rooms'),
+  Solo: __('Professional, one user and up to 3 rooms'),
+  Studio: __('Studio, up to 3 rooms'),
   Centre: __('Centre, up to 5 rooms'),
   Polyclinic: __('Polyclinic, up to 10 rooms'),
   Large: __('Over 10 rooms'),
@@ -390,7 +438,7 @@ const sizeText = computed(() =>
 
 // what the agency bills, each with what the plan includes: the space the
 // centre's files take (doc 57), the SdI credits with invoicing, the signatures
-// with the advanced signature. Calls and SMS are not here: Twilio bills them to
+// with the advanced signature, the assistant's trial. Calls and SMS are not here: Twilio bills them to
 // whoever owns the account
 const usage = computed(() => {
   const uso = plan.data?.usage || {}
@@ -416,6 +464,12 @@ const usage = computed(() => {
     uso.signatures && {
       label: __('Advanced signatures this year'),
       ...uso.signatures,
+    },
+    // the assistant's trial: a few requests, then an add-on
+    uso.assistant_trial && {
+      label: __("Assistant's trial requests"),
+      ...uso.assistant_trial,
+      prova: true,
     },
   ].filter(Boolean)
 })

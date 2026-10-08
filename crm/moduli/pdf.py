@@ -27,7 +27,7 @@ from frappe import _
 from frappe.utils import format_datetime, formatdate, get_fullname, get_system_timezone, getdate
 
 from crm import marchio
-from crm.moduli import compilazioni, sigillo, traccia
+from crm.moduli import compilazioni, corpo, sigillo, traccia
 from crm.moduli import schema as S
 
 MODELLO_HTML = "crm/moduli/templates/modulo_firmato.html"
@@ -115,7 +115,49 @@ def risposta_in_parole(campo: dict, valore, fascia: str | None = None) -> str:
 	if tipo == "attachment":
 		file = valore if isinstance(valore, list) else [valore]
 		return ", ".join(f.rsplit("/", 1)[-1] for f in file)
+	if tipo == "body_chart":
+		return corpo_in_parole(valore)
 	return str(valore)
+
+
+def _vista(vista: str) -> str:
+	return _("Back", context="Body chart") if vista == "back" else _("Front", context="Body chart")
+
+
+def corpo_in_parole(valore) -> str:
+	"""A body chart in words, one line a point - «1. Front · Lower back · 7/10» -
+	and the outlines drawn on by hand, as the browser says it (`bodyChartInWords`)."""
+	righe = []
+	for segno in corpo.numerati(valore):
+		parti = [f"{segno['number']}. {_vista(segno.get('view'))}"]
+		if segno.get("label"):
+			parti.append(segno["label"])
+		if not S.vuoto(segno.get("intensity")):
+			parti.append(f"{segno['intensity']}/10")
+		righe.append(" · ".join(parti))
+	disegnate = [
+		vista
+		for vista in S.VISTE
+		if any(isinstance(t, dict) and t.get("view") == vista for t in (valore or {}).get("strokes") or [])
+	]
+	if disegnate:
+		righe.append(_("Drawn by hand: {0}").format(", ".join(_vista(v) for v in disegnate)))
+	return "\n".join(righe)
+
+
+def disegno_del_corpo(campo: dict, valore) -> str:
+	"""The body chart as a picture inside the page, its words in the reader's language."""
+	return corpo.come_immagine(
+		campo,
+		valore,
+		{
+			"front": _vista("front"),
+			"back": _vista("back"),
+			# the sides' initials, over the outline: whose right is on which side
+			"right": _("R", context="Body chart side"),
+			"left": _("L", context="Body chart side"),
+		},
+	)
 
 
 def _immagine(file_url: str | None) -> str | None:
@@ -216,6 +258,11 @@ def contesto(doc, versione, da_firmare: bool = False) -> dict:
 					]
 					for riga in (valore or [])
 				]
+			elif voce["tipo"] == "body_chart":
+				# the outlines with the points on them, and the points in words; on a copy
+				# to sign, the empty outlines to mark by hand
+				voce["immagine"] = disegno_del_corpo(campo, valore)
+				voce["risposta"] = risposta_in_parole(campo, valore)
 			else:
 				voce["risposta"] = risposta_in_parole(campo, valore, stato["bands"].get(chiave))
 			if da_firmare and not voce.get("risposta"):

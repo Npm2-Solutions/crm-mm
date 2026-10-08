@@ -1,0 +1,151 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "how_section",
+  "how_to_pay",
+  "reminders_section",
+  "enabled",
+  "first_after_days",
+  "every_days",
+  "column_reminders",
+  "max_reminders",
+  "minimum_amount",
+  "channels_section",
+  "use_email",
+  "column_channels",
+  "use_sms"
+ ],
+ "fields": [
+  {
+   "fieldname": "how_section",
+   "fieldtype": "Section Break",
+   "label": "How to pay"
+  },
+  {
+   "fieldname": "how_to_pay",
+   "fieldtype": "Small Text",
+   "label": "Instructions for the clients",
+   "description": "Shown to the person in their area beside what is left to pay, and in the reminders: an IBAN, «at the desk», a payment link. Empty, nothing is said."
+  },
+  {
+   "fieldname": "reminders_section",
+   "fieldtype": "Section Break",
+   "label": "Payment reminders"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Remind the clients of invoices still to pay",
+   "description": "Every morning, a polite reminder of an invoice issued to a person and not collected yet. Never a credit note nor a test invoice. Off to start with."
+  },
+  {
+   "default": "7",
+   "fieldname": "first_after_days",
+   "fieldtype": "Int",
+   "label": "First reminder, days after the due date",
+   "depends_on": "enabled",
+   "description": "The due date is the last one of the invoice's payment schedule, else the day it was issued."
+  },
+  {
+   "default": "14",
+   "fieldname": "every_days",
+   "fieldtype": "Int",
+   "label": "Days between reminders",
+   "depends_on": "enabled"
+  },
+  {
+   "fieldname": "column_reminders",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "2",
+   "fieldname": "max_reminders",
+   "fieldtype": "Int",
+   "label": "Reminders at most",
+   "depends_on": "enabled"
+  },
+  {
+   "default": "10",
+   "fieldname": "minimum_amount",
+   "fieldtype": "Currency",
+   "label": "Only from this amount",
+   "depends_on": "enabled",
+   "description": "A smaller amount is never reminded."
+  },
+  {
+   "fieldname": "channels_section",
+   "fieldtype": "Section Break",
+   "label": "How the reminders go",
+   "depends_on": "enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_email",
+   "fieldtype": "Check",
+   "label": "By email",
+   "description": "With a button to their invoices in the area, where the person has one."
+  },
+  {
+   "fieldname": "column_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_sms",
+   "fieldtype": "Check",
+   "label": "By SMS too",
+   "description": "From the centre's sender; never to who wrote STOP to the centre's SMS."
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-08 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Payment Reminder Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

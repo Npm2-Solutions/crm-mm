@@ -29,6 +29,7 @@
 	.domanda { margin: 0 0 8pt; page-break-inside: avoid; }
 	.etichetta { font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 1pt; }
 	.risposta { white-space: pre-wrap; }
+	.corpo img { height: 80mm; max-width: 100%; margin: 2pt 0 4pt; }
 	.vuota { color: #9a9a9a; }
 	.testo { white-space: pre-wrap; background: #f6f6f6; padding: 7pt 9pt; border-radius: 3pt; margin: 0 0 8pt; }
 	table { width: 100%; border-collapse: collapse; font-size: 9pt; }
@@ -81,6 +82,12 @@
 					<div class="testo">{{ voce.testo }}</div>
 					{% if voce.risposta %}<div class="risposta"><strong>{{ voce.risposta }}</strong></div>
 					{% elif voce.opzioni %}<div class="caselle">{% for opzione in voce.opzioni %}<span>&#9744; {{ opzione }}</span>{% endfor %}</div>{% endif %}
+				</div>
+			{% elif voce.tipo == "body_chart" %}
+				<div class="domanda corpo">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					<img src="{{ voce.immagine }}" alt="">
+					{% if voce.risposta %}<div class="risposta">{{ voce.risposta }}</div>{% endif %}
 				</div>
 			{% elif voce.tipo == "table" %}
 				<div class="domanda">

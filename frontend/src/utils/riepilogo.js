@@ -4,7 +4,7 @@
 /**
  * A person's summary (components/Activities/SummaryArea.vue): what one needs
  * to know of them at a glance, the page they open on from the People list and
- * the agenda (docs/progetto-ghl/54). The server says what each module has for
+ * the agenda (docs/crm/54). The server says what each module has for
  * them (`crm.persone.riepilogo.get_summary`); these say which of their
  * appointments to name, the last thing said, when a task is due. Pure, so the
  * page only draws.
@@ -95,8 +95,20 @@ export function qualcosaDaDire({
 } = {}) {
   return Boolean(
     messaggio ||
-      appuntamenti.length ||
-      ultimoAppuntamento ||
-      Object.keys(righe || {}).length,
+    appuntamenti.length ||
+    ultimoAppuntamento ||
+    Object.keys(righe || {}).length,
   )
+}
+
+/**
+ * The appointments the person did not show up to in the last year
+ * (`no_shows` of the summary), in one sentence: nothing when there are none.
+ */
+export function fraseDelleAssenze(assenze, t = (s) => s) {
+  const quante = Number(assenze?.count) || 0
+  if (!quante) return ''
+  return quante === 1
+    ? t('1 missed appointment in the last year')
+    : t('{0} missed appointments in the last year', [quante])
 }

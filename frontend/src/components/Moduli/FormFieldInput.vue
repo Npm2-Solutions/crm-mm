@@ -338,6 +338,17 @@
         </div>
       </div>
 
+      <BodyChartInput
+        v-else-if="field.type === 'body_chart'"
+        role="group"
+        :aria-labelledby="idDomanda"
+        :field="field"
+        :model-value="modelValue"
+        :readonly="readonly"
+        :missing="missing"
+        @update:model-value="(value) => emit(value)"
+      />
+
       <template v-else-if="field.type === 'signature'">
         <!-- signed, but not drawn here: on paper, or at the provider -->
         <div
@@ -397,6 +408,7 @@
 </template>
 
 <script setup>
+import BodyChartInput from '@/components/Moduli/BodyChartInput.vue'
 import SignaturePad from '@/components/Moduli/SignaturePad.vue'
 import TableInput from '@/components/Moduli/TableInput.vue'
 import LucidePaperclip from '~icons/lucide/paperclip'

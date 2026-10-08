@@ -58,6 +58,16 @@ class ICasiCondivisi(UnitTestCase):
 			with self.subTest(caso["name"]):
 				self.assertEqual([e.codice for e in S.valida_schema(_schema(caso))], caso["expected"])
 
+	def test_il_disegno_sul_corpo(self):
+		for caso in CASI["body_charts"]:
+			with self.subTest(caso["name"]):
+				campo = {"id": "b", "type": "body_chart", "label": "B", **caso["field"]}
+				valore, errore = S._converti(campo, copy.deepcopy(caso["value"]))
+				self.assertEqual(valore, caso["expected"])
+				self.assertEqual(errore is not None, caso["error"])
+				if errore:
+					self.assertEqual(errore.codice, "invalid_value")
+
 
 class LaPulizia(UnitTestCase):
 	"""What is kept of the answers: server side only, on the way in."""
@@ -236,3 +246,16 @@ class IComponentiDiAltri(UnitTestCase):
 		puliti, _, stato = S.pulisci(modulo, {"map": [{"x": 1, "y": 2}]})
 		self.assertEqual(puliti, {"map": [{"x": 1, "y": 2}]})
 		self.assertTrue(stato["visible"]["a"])
+
+
+class UnaDomandaSenzaParole(UnitTestCase):
+	def test_si_dice_col_suo_numero_non_con_la_chiave(self):
+		schema = {
+			"sections": [
+				{"id": "s1", "fields": [{"id": "a", "type": "text", "label": "A"}]},
+				{"id": "s2", "fields": [{"id": "signature", "type": "signature"}]},
+			]
+		}
+		[errore] = [e for e in S.valida_schema(schema) if e.codice == "missing_label"]
+		self.assertEqual(errore.messaggio, "Question {0} needs its words")
+		self.assertEqual(tuple(errore.argomenti), (2,))

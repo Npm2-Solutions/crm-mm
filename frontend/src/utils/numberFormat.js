@@ -1,5 +1,7 @@
 // Modifications copyright (c) 2026, NPM2 Solutions Srl
 
+import { appLocale } from '@/utils/locale'
+
 const NUMBER_FORMAT_INFO = {
   '#,###.##': { decimalStr: '.', groupSep: ',' },
   '#.###,##': { decimalStr: ',', groupSep: '.' },
@@ -211,11 +213,50 @@ export function formatCurrency(value, format, currency = 'USD', precision = 2) {
     let symbol = getCurrencySymbol(currency)
 
     if (symbol) {
-      return __(symbol) + ' ' + formatNumber(value, format, precision)
+      return conIlSimbolo(
+        formatNumber(value, format, precision),
+        __(symbol),
+        currency,
+      )
     }
   }
 
   return formatNumber(value, format, precision)
+}
+
+/**
+ * An amount with its currency's symbol where the reader's language writes it:
+ * after it in Italian («60,00 €»), before it in English («€60.00»), as
+ * `prezzo()` does (`utils/valute.js`). The digits are the site's number format;
+ * only the symbol's place and the space beside it are the language's. The
+ * symbol went first whatever the language: «€ 0,00» on the deals and companies.
+ */
+export function conIlSimbolo(
+  numero,
+  simbolo,
+  valuta = 'EUR',
+  lingua = globalThis.window?.lang,
+) {
+  let prima = true
+  let spazio = ''
+  try {
+    const parti = new Intl.NumberFormat(appLocale(lingua), {
+      style: 'currency',
+      currency: valuta || 'EUR',
+    }).formatToParts(1)
+    const segno = parti.findIndex((p) => p.type === 'currency')
+    const cifre = parti.findIndex((p) => p.type === 'integer')
+    if (segno >= 0 && cifre >= 0) {
+      prima = segno < cifre
+      const accanto = parti[prima ? segno + 1 : segno - 1]
+      // a non-breaking space: the symbol never wraps away from its amount
+      spazio = accanto?.type === 'literal' ? '\u00a0' : ''
+    }
+  } catch {
+    // a currency Intl does not know: the symbol first, as before
+    spazio = ' '
+  }
+  return prima ? simbolo + spazio + numero : numero + spazio + simbolo
 }
 
 function getNumberFormat(format = null) {

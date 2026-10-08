@@ -10,7 +10,8 @@ gives the person only what is theirs to see:
 
 - **appointments**, upcoming and past, each with the booking page's own link to
   move or cancel it by the centre's rules, the cycles of sessions and the
-  subscriptions going on (`crm.scheduling.abbonamenti`);
+  subscriptions going on (`crm.scheduling.abbonamenti`); «I'm here» around the
+  time of one (`check_in`), which fills the desk's waiting room;
 - **the waiting lists**: what the person waits for, the place offered to answer,
   joining one and leaving it (`crm.scheduling.attese`);
 - **the forms** to fill before the next one, opened without another code;
@@ -29,11 +30,14 @@ import secrets
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import get_datetime, now_datetime
+from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.area import accesso, anteprima, sezioni
-from crm.scheduling import abbonamenti, attese, cicli
+from crm.area import prenota_regole as P
+from crm.scheduling import abbonamenti, attese, cicli, sedi, visite_online
+from crm.scheduling import arrivi_regole as A
 from crm.scheduling import attese_regole as R
+from crm.scheduling import visite_online_regole as V
 
 
 def _utente(anche_in_anteprima: bool = False) -> str:
@@ -138,13 +142,26 @@ def get_appointments(person: str) -> dict:
 	)
 	adesso = now_datetime()
 	prossimi, passati = [], []
+	# what was booked before, by its service: «Book again» books it once more
+	storia = []
+	arrivo = arrivo_dal_telefono()
 	# "session 4 of 10": which session of a cycle each one is
 	sedute = cicli.numero_della_seduta([riga.parent for riga in righe])
 	for riga in righe:
 		appuntamento = frappe.db.get_value(
 			"CRM Appointment",
 			riga.parent,
-			["name", "title", "service", "starts_on", "ends_on", "status", "location"],
+			[
+				"name",
+				"title",
+				"service",
+				"starts_on",
+				"ends_on",
+				"status",
+				"location",
+				"centre_location",
+				"video_link",
+			],
 			as_dict=True,
 		)
 		if not appuntamento:
@@ -157,6 +174,15 @@ def get_appointments(person: str) -> dict:
 			)
 			continue
 		annullato = "Cancelled" in (appuntamento.status, riga.status)
+		inizio, fine = (
+			get_datetime(appuntamento.starts_on),
+			(get_datetime(appuntamento.ends_on) if appuntamento.ends_on else None),
+		)
+		# going on now, the place still open: it is still the next one
+		in_corso = (
+			not annullato and inizio < adesso < (fine or inizio) and riga.status in ("Booked", "Arrived")
+		)
+		online = visite_online.del_servizio(appuntamento.service)
 		voce = {
 			"name": appuntamento.name,
 			"service": frappe.db.get_value("CRM Service", appuntamento.service, "service_name")
@@ -164,7 +190,10 @@ def get_appointments(person: str) -> dict:
 			else appuntamento.title,
 			"starts_on": appuntamento.starts_on,
 			"ends_on": appuntamento.ends_on,
-			"location": appuntamento.location,
+			# held by video: no place to come to, the room's door instead
+			# where to go: the location's name and address (docs/crm/62), else the place written
+			"location": None if online else (sedi.indirizzo_di(appuntamento) or None),
+			"online": online,
 			"status": "Cancelled" if annullato else appuntamento.status,
 			"session": {
 				k: v for k, v in (sedute.get(appuntamento.name) or {}).items() if k in ("number", "total")
@@ -179,16 +208,27 @@ def get_appointments(person: str) -> dict:
 				)
 			],
 		}
-		if get_datetime(appuntamento.starts_on) >= adesso and not annullato:
+		if (inizio >= adesso and not annullato) or in_corso:
 			# moved or cancelled on the booking page, by the service's own rules; not
 			# from the centre's preview, which changes nothing
-			if appuntamento.service and not vista:
+			if appuntamento.service and not vista and inizio >= adesso:
 				voce["manage_url"] = _link_di_gestione(riga)
+			voce["arrived"] = riga.status == "Arrived"
+			# «I'm here», until the appointment ends: when it opens, by the server's clock;
+			# an online visit is entered instead, from a quarter of an hour before. The
+			# room's link is given only by `enter_online_visit`, never in the list
+			if online:
+				if not vista and appuntamento.video_link:
+					voce["online_visit"] = V.tra_quanto(inizio, fine, adesso)
+			elif not vista and arrivo and riga.status == A.IN_ATTESA:
+				voce["check_in"] = A.tra_quanto(inizio, fine, adesso)
 			prossimi.append(voce)
 		else:
 			passati.append(voce)
+			storia.append({**voce, "service": appuntamento.service, "service_name": voce["service"]})
 	prossimi.sort(key=lambda v: v["starts_on"])
 	passati.sort(key=lambda v: v["starts_on"], reverse=True)
+	storia.sort(key=lambda v: v["starts_on"], reverse=True)
 	return {
 		"upcoming": prossimi,
 		"past": passati[:20],
@@ -196,7 +236,163 @@ def get_appointments(person: str) -> dict:
 		"subscriptions": abbonamenti.della_persona(person),
 		"waiting": attese.della_persona(person),
 		"can_wait": attese.impostazioni().area,
+		# not from the centre's preview, which books nothing
+		"book": None if vista else _per_prenotare(person, storia),
 	}
+
+
+# ------------------------------------------------------------------ booking again
+
+
+def _per_prenotare(person: str, storia: list[dict]) -> dict | None:
+	"""The booking page's link, on the service of the last appointment when it is
+	still booked online; ``None`` where the centre takes no booking online."""
+	from crm.scheduling.availability import settings
+
+	if not cint(settings().get("online_booking_enabled")):
+		return None
+	prenotabili = {
+		s.name: s.website_slug
+		for s in frappe.get_all(
+			"CRM Service", filters={"enabled": 1, "bookable_online": 1}, fields=["name", "website_slug"]
+		)
+	}
+	return P.link_per_prenotare(storia, prenotabili, person)
+
+
+def per_la_pagina_di_prenotazione(person: str | None) -> dict:
+	"""What /prenota writes in for whoever comes from their area (``?persona=``):
+	the session says who they are, the link only whose area. Anybody else, the
+	centre's preview included, gets the empty form."""
+	utente = frappe.session.user
+	if not person or utente == "Guest" or anteprima.in_anteprima() or not accesso.entra_nell_area(utente):
+		return {}
+	riga = next((r for r in accesso.persone_di(utente) if r.lead == person), None)
+	if not riga:
+		return {}
+	from crm.utils import stored_value
+
+	def dati(lead: str | None) -> dict:
+		if not lead:
+			return {}
+		return {
+			"lead_name": frappe.db.get_value("CRM Lead", lead, "lead_name"),
+			"email": stored_value("CRM Lead", lead, "email"),
+			"phone": stored_value("CRM Lead", lead, "mobile_no") or stored_value("CRM Lead", lead, "phone"),
+		}
+
+	# who is in: the person with the session's address, else the session's own name
+	io = dati(frappe.db.get_value("CRM Lead", {"email": utente}, "name"))
+	io = {**io, "lead_name": io.get("lead_name") or frappe.utils.get_fullname(utente), "email": utente}
+	return P.chi_prenota(riga.relation, dati(person), io)
+
+
+# ------------------------------------------------------------------ «I'm here»
+
+
+def arrivo_dal_telefono() -> bool:
+	"""Whether the area offers «I'm here» (`CRM Area Settings.self_check_in`): on
+	unless the centre switched it off."""
+	valore = frappe.db.get_singles_dict("CRM Area Settings").get("self_check_in")
+	return valore is None or bool(cint(valore))
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=20, seconds=60 * 60)
+def check_in(person: str, appointment: str) -> dict:
+	"""«I'm here»: the person says from their phone they are at the centre, from
+	half an hour before their appointment until it ends. Marked arrived as the desk
+	marks them - the waiting room counts from now -, and the desk and whoever the
+	appointment is with are told."""
+	from crm.notifiche import regole as N
+	from crm.notifiche.avvisi import avvisa
+	from crm.scheduling import esiti
+
+	_mia(person)
+	if not arrivo_dal_telefono():
+		frappe.throw(_("The centre does not take arrivals from the phone: tell the desk."))
+	if not frappe.db.exists("CRM Appointment", appointment):
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	doc = frappe.get_doc("CRM Appointment", appointment)
+	riga = next(
+		(
+			r
+			for r in doc.participants
+			if r.party_type == "CRM Lead" and r.party == person and r.status != "Cancelled"
+		),
+		None,
+	) or next((r for r in doc.participants if r.party_type == "CRM Lead" and r.party == person), None)
+	if not riga:
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	perche = A.perche_no(
+		get_datetime(doc.starts_on),
+		get_datetime(doc.ends_on) if doc.ends_on else None,
+		now_datetime(),
+		doc.status,
+		riga.status,
+	)
+	if perche == A.GIA_DETTO and riga.status == "Arrived":
+		return {"arrived": True}
+	if perche:
+		frappe.throw(
+			{
+				A.PRESTO: _("It is a little early: you can say you are here from half an hour before."),
+				A.FINITO: _("This appointment is over."),
+				A.ANNULLATO: _("This appointment was cancelled."),
+				A.GIA_DETTO: _("The centre already knows how this appointment went."),
+			}[perche]
+		)
+	esiti.scrivi(doc, riga.name, "Arrived")
+	nome = frappe.db.get_value("CRM Lead", person, "lead_name") or riga.participant_name or ""
+	utenti = dict.fromkeys([*esiti.chi_avvisare(), *(s.user for s in doc.staff if s.user)])
+	for utente in utenti:
+		avvisa(
+			utente,
+			"Agenda",
+			N.ARRIVATO_DALL_AREA,
+			[nome],
+			riguarda=("CRM Lead", person),
+			oggetto=("CRM Appointment", doc.name),
+		)
+	return {"arrived": True}
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=60, seconds=60 * 60)
+def enter_online_visit(person: str, appointment: str) -> dict:
+	"""«Enter the visit»: the room's link of the person's online visit, from a
+	quarter of an hour before it starts until it ends. Only to the person whose
+	place it is, never in the centre's preview, which enters nothing."""
+	_mia(person)
+	if not frappe.db.exists("CRM Appointment", appointment):
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	doc = frappe.get_doc("CRM Appointment", appointment)
+	righe = [r for r in doc.participants if r.party_type == "CRM Lead" and r.party == person]
+	if not righe:
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	riga = next((r for r in righe if r.status != "Cancelled"), righe[0])
+	if not visite_online.del_servizio(doc.service):
+		frappe.throw(_("This appointment is not an online visit."))
+	perche = V.perche_no(
+		get_datetime(doc.starts_on),
+		get_datetime(doc.ends_on) if doc.ends_on else None,
+		now_datetime(),
+		doc.status,
+		riga.status,
+		doc.video_link,
+	)
+	if perche:
+		frappe.throw(
+			{
+				V.PRESTO: _("It is a little early: you can enter from {0} minutes before.").format(
+					visite_online.MINUTI
+				),
+				V.FINITO: _("This appointment is over."),
+				V.ANNULLATO: _("This appointment was cancelled."),
+				V.SENZA_STANZA: _("The centre has not given the link of this visit yet: ask the centre."),
+			}[perche]
+		)
+	return {"url": doc.video_link}
 
 
 # ------------------------------------------------------------------ waiting lists
@@ -487,30 +683,90 @@ def _fatture(person: str) -> list:
 		"CRM Invoice",
 		# a test invoice is the centre's rehearsal, never the person's
 		filters={"party_type": "CRM Lead", "party": person, "docstatus": 1, "test_document": 0},
-		fields=["name", "document_number", "posting_date", "grand_total", "pdf_file"],
+		fields=[
+			"name",
+			"document_number",
+			"posting_date",
+			"grand_total",
+			"net_payable",
+			"pdf_file",
+			"document_type",
+			"collected_on",
+			"sdi_status",
+		],
 		order_by="posting_date desc",
 		limit=50,
 	)
 
 
+def _da_pagare(fattura) -> float:
+	"""What is left to pay of an invoice, by the desk's rule (`incassi`): issued, not
+	a credit note, not collected, not sent back by the SdI. Nothing for the rest."""
+	from crm.invoicing import incassi
+
+	if (
+		fattura.collected_on
+		or (fattura.document_type or "TD01") in incassi.NOTE_DI_CREDITO
+		or fattura.sdi_status == "scartata"
+	):
+		return 0.0
+	return incassi.da_pagare(fattura)
+
+
 @frappe.whitelist()
 def get_invoices(person: str) -> dict:
+	"""The person's invoices, each with what is left to pay of it; the total left,
+	and how the centre is paid (`solleciti.come_pagare`)."""
+	from crm.demo import guardie
+	from crm.invoicing import solleciti
+	from crm.pagamenti import collegamento, pagamenti
+
 	_mia(person, anche_in_anteprima=True)
+	righe = _fatture(person)
+	# paid online on Stripe (`crm.pagamenti`): «Pay online», and «Paid online on…»
+	online = (
+		collegamento.collegato()
+		and not anteprima.in_anteprima()
+		and not guardie.mai_a_stripe(("CRM Lead", person))
+	)
+	pagate = pagamenti.pagate_online([f.name for f in righe])
+	fatture = anteprima.filtra(
+		"CRM Invoice",
+		[
+			{
+				"name": f.name,
+				"number": f.document_number or f.name,
+				"date": f.posting_date,
+				"total": f.grand_total,
+				"to_pay": _da_pagare(f),
+				"has_pdf": bool(f.pdf_file),
+				"pay_online": bool(
+					online and _da_pagare(f) > 0 and not guardie.mai_a_stripe(("CRM Invoice", f.name))
+				),
+				"paid_online_on": pagate.get(f.name),
+			}
+			for f in righe
+		],
+	)
+	# in the centre's preview, only what whoever previews reads counts
+	totale = round(sum(f.get("to_pay") or 0 for f in fatture if not f.get("hidden")), 2)
 	return {
-		"invoices": anteprima.filtra(
-			"CRM Invoice",
-			[
-				{
-					"name": f.name,
-					"number": f.document_number or f.name,
-					"date": f.posting_date,
-					"total": f.grand_total,
-					"has_pdf": bool(f.pdf_file),
-				}
-				for f in _fatture(person)
-			],
-		)
+		"invoices": fatture,
+		"to_pay": totale,
+		"how_to_pay": solleciti.come_pagare() if totale else "",
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def pay_invoice(person: str, invoice: str) -> dict:
+	"""«Pay online»: the Stripe link that pays what is left of one of the person's
+	invoices, back to the area once paid. Never in the centre's preview."""
+	from crm.pagamenti import pagamenti
+
+	_mia(person)
+	if not any(f.name == invoice for f in _fatture(person)):
+		frappe.throw(_("This is not your area"), frappe.PermissionError)
+	return pagamenti.link_della_fattura(invoice, frappe.utils.get_url("/area/documents"))
 
 
 @frappe.whitelist(methods=["GET"])

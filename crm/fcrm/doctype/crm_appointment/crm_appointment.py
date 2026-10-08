@@ -6,8 +6,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
+from crm.convenzioni import convenzioni
 from crm.permissions.livelli import puo
-from crm.scheduling import abbonamenti, cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing, sedi, visite_online
 from crm.scheduling.availability import find_conflicts, settings
 
 
@@ -31,6 +32,7 @@ class CRMAppointment(Document):
 		booking: DF.Link | None
 		booking_connection: DF.Link | None
 		cancellation_reason: DF.SmallText | None
+		centre_location: DF.Link | None
 		color: DF.Color | None
 		conflict_note: DF.SmallText | None
 		currency: DF.Link | None
@@ -40,6 +42,7 @@ class CRMAppointment(Document):
 		external_id: DF.Data | None
 		external_platform: DF.Data | None
 		external_url: DF.Data | None
+		import_key: DF.Data | None
 		location: DF.Data | None
 		notes: DF.SmallText | None
 		override_conflicts: DF.Check
@@ -59,6 +62,7 @@ class CRMAppointment(Document):
 		title: DF.Data | None
 		total_amount: DF.Currency | None
 		unit_price: DF.Currency | None
+		video_link: DF.Data | None
 	# end: auto-generated types
 
 	def before_validate(self):
@@ -72,15 +76,23 @@ class CRMAppointment(Document):
 		self.stamp_arrivals()
 		self.close_from_attendance()
 		self.set_title()
+		# where it is, where the centre has more than one location (docs/crm/62)
+		sedi.assegna(self)
 		self.check_conflicts()
+		# an online visit's room, made once (or the link the desk pasted, checked)
+		visite_online.assicura(self)
 		# a session of a cycle joins it before the price, and costs its share after;
 		# what no cycle takes uses an entry of each person's subscription, and costs
 		# them nothing
 		cicli.aggancia(self)
 		abbonamenti.aggancia(self)
+		# a convention prices it on its own list, and splits it between the person
+		# and the fund
+		convenzioni.listino(self)
 		pricing.apply_to(self)
 		cicli.prezzo(self)
 		abbonamenti.prezzo(self)
+		convenzioni.prezzo(self)
 
 	def on_update(self):
 		self.sync_event()
@@ -111,8 +123,9 @@ class CRMAppointment(Document):
 			self.color = service.color
 		if not self.location and service.get("location"):
 			self.location = service.location
-		if not self.location:
-			# the room the appointment runs in is the most useful default location
+		if not self.location and not cint(service.get("online_visit")):
+			# the room the appointment runs in is the most useful default location;
+			# an online visit is held in none
 			for row in self.resources:
 				location = frappe.db.get_value("CRM Resource", row.resource, "location")
 				if location:
@@ -135,7 +148,7 @@ class CRMAppointment(Document):
 
 	def update_last_visit(self):
 		"""The person's last visit and its service: administrative data the recalls
-		pick people by (docs/gestionale-medico, the second seam), never the record."""
+		pick people by (docs/verticali/clinica, the second seam), never the record."""
 		if self.status == "Cancelled":
 			return
 		giorno = getdate(self.starts_on)
@@ -181,7 +194,7 @@ class CRMAppointment(Document):
 				row.arrived_at = now_datetime()
 
 	def close_from_attendance(self):
-		"""The participants say how it went (docs/gestionale-medico, fase 1): once each
+		"""The participants say how it went (docs/verticali/clinica, fase 1): once each
 		of them came or did not, it is Completed, or No Show when nobody came. The
 		visit, the check-in and the invoice close it this way, without somebody
 		remembering to. Cancelled stays cancelled, and one still waiting stays open."""
@@ -241,8 +254,9 @@ class CRMAppointment(Document):
 		if not conflicts:
 			self.conflict_note = None
 			return
-		if self.flags.external_booking:
-			# a booking that already exists on an external platform cannot be refused:
+		if self.flags.external_booking or self.flags.importato:
+			# a booking that already exists on an external platform cannot be refused,
+			# nor one brought over from the previous software (`crm.importazione`):
 			# keep it, and keep the clash visible for whoever has to solve it
 			self.conflict_note = "\n".join(conflicts)
 			return
@@ -325,9 +339,13 @@ class CRMAppointment(Document):
 				event.update(payload)
 			else:
 				event = frappe.get_doc({"doctype": "Event", **payload})
-				event.owner = owner
 			event.set("event_participants", self._event_participants())
 			event.save(ignore_permissions=True)
+			# the first professional's, whoever booked it: the framework makes a new
+			# document its session's (a guest's from /prenota, the desk's), and a
+			# private Event reads only to its owner and its participants
+			if owner and event.owner != owner:
+				event.db_set("owner", owner, update_modified=False)
 			if event.name != self.event:
 				self.db_set("event", event.name, update_modified=False)
 		except Exception:
@@ -336,27 +354,41 @@ class CRMAppointment(Document):
 			frappe.flags.in_appointment_sync = False
 
 	def _event_participants(self) -> list[dict]:
+		"""Who the calendar copy is for. Every professional of the appointment, by their
+		user (the framework lets a private Event be read by a participant whose email
+		is the user: the owner alone left the others out). The people who come are
+		linked by their record and never by their email: an address on a participant
+		row reads the Event to the client area's user of that address, gets the
+		framework's event reminders and Google's invitations - the centre writes to
+		its clients itself (doc 59)."""
 		rows = []
-		for row in self.staff[1:]:
-			email = frappe.db.get_value("User", row.user, "email")
-			if email:
+		for row in self.staff:
+			if not row.user:
+				continue
+			# the participant's email is the user it reads to: a user's name is its email
+			email = row.user if "@" in row.user else frappe.db.get_value("User", row.user, "email")
+			if email and not any(r.get("email") == email for r in rows):
 				rows.append({"reference_doctype": "User", "reference_docname": row.user, "email": email})
 		for row in self.participants:
-			if row.email and row.status != "Cancelled":
-				entry = {"email": row.email}
-				if row.party_type == "Contact" and row.party:
-					entry.update({"reference_doctype": "Contact", "reference_docname": row.party})
-				rows.append(entry)
+			# the framework's Event Participants wants what the row refers to: a
+			# person, a contact or a deal; a name typed with no record stays off
+			# the event (booked from /prenota a person came without one, and the
+			# whole mirror failed: «Valore mancante per: Tipo di documento di riferimento»)
+			if row.status != "Cancelled" and row.party_type and row.party:
+				rows.append({"reference_doctype": row.party_type, "reference_docname": row.party})
 		return rows
 
 	def remove_event(self):
 		if not self.event:
 			return
 		frappe.flags.in_appointment_sync = True
+		evento = self.event
 		try:
-			if frappe.db.exists("Event", self.event):
-				frappe.delete_doc("Event", self.event, ignore_permissions=True, delete_permanently=True)
+			# the link goes first: the copy is linked to this appointment, and the
+			# framework refuses to delete what is linked («Impossibile eliminare…»)
 			self.db_set("event", None, update_modified=False)
+			if frappe.db.exists("Event", evento):
+				frappe.delete_doc("Event", evento, ignore_permissions=True, delete_permanently=True)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"Appointment {self.name}: calendar cleanup failed")
 		finally:

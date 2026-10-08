@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Plans, programmes and exercises move from the clinic to the CRM
-(docs/gestionale-medico/design.md, "Tre strati"): a gym's trainer writes plans as a
+(docs/verticali/clinica/design.md, "Tre strati"): a gym's trainer writes plans as a
 nutritionist does, the clinic only adds its kinds.
 
 Before the models are synced, their DocTypes take the CRM's names and the "Piani"

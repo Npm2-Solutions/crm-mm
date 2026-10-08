@@ -10,7 +10,8 @@
   "section_break_uegc",
   "start_time",
   "column_break_maie",
-  "end_time"
+  "end_time",
+  "centre_location"
  ],
  "fields": [
   {
@@ -42,12 +43,21 @@
    "in_list_view": 1,
    "label": "End Time",
    "reqd": 1
+  },
+  {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "in_list_view": 1,
+   "depends_on": "eval:parent.doctype=='CRM Staff Schedule'",
+   "description": "Where these hours are worked. Empty: anywhere, the room decides."
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-23 12:14:06.741495",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Service Day",

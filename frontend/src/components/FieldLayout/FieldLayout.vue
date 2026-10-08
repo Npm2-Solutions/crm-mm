@@ -1,6 +1,8 @@
 <template>
+  <!-- min-w-0 down to the panel: a select with a long choice («Struttura
+       sanitaria autorizzata dalla Regione») widened the tab past its card -->
   <div
-    class="flex flex-col"
+    class="flex min-w-0 flex-col"
     :class="{ 'rounded-lg border border-outline-elevation-2': hasTabs }"
   >
     <Tabs
@@ -9,11 +11,11 @@
       :tabs="processedTabs"
       :class="[
         !hasTabs ? `[&>[role='tablist']]:hidden` : '',
-        `[&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tabpanel']]:overflow-visible !overflow-visible`,
+        `[&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tabpanel']]:overflow-visible [&>[role='tabpanel']]:min-w-0 min-w-0 !overflow-visible`,
       ]"
     >
       <template #tab-panel="{ tab }">
-        <div class="sections" :class="{ 'my-4 sm:my-5': hasTabs }">
+        <div class="sections min-w-0" :class="{ 'my-4 sm:my-5': hasTabs }">
           <template v-for="section in tab.sections" :key="section.name">
             <Section :section="section" :data-name="section.name" />
           </template>

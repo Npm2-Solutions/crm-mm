@@ -78,7 +78,7 @@ def _esiti(plan: str, dal, al) -> list:
 	return frappe.get_all(
 		piani.REGISTRO,
 		filters={"plan": plan, "log_date": ("between", (dal, al))},
-		fields=["name", "item_key", "log_date", "outcome"],
+		fields=["name", "item_key", "log_date", "outcome", "effort"],
 	)
 
 
@@ -183,7 +183,7 @@ def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 	momenti, voci = _voci_del_giorno(doc, giorno)
 	lunedi, domenica = R.settimana(giorno)
 	settimana = _esiti(doc.name, lunedi, domenica)
-	del_giorno = {r.item_key: r.outcome for r in settimana if getdate(r.log_date) == giorno}
+	del_giorno = {r.item_key: r for r in settimana if getdate(r.log_date) == giorno}
 	del_contesto = contesti(voci)
 	righe = []
 	for momento in momenti:
@@ -192,7 +192,10 @@ def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 			if voce["moment"] != momento["key"]:
 				continue
 			riga = per_la_persona(voce, doc, del_contesto)
-			riga["outcome"] = del_giorno.get(voce["key"])
+			segnata = del_giorno.get(voce["key"])
+			riga["outcome"] = segnata.outcome if segnata else None
+			# how hard or how painful, 1 to 10, as the person said it; 0 is not said
+			riga["effort"] = (segnata.effort or None) if segnata else None
 			riga["left_this_week"] = R.restano(
 				voce.get("times_per_week"), [r.outcome for r in settimana if r.item_key == voce["key"]]
 			)
@@ -254,12 +257,13 @@ def log_item(
 		return {"outcome": None}
 	valori = {
 		"outcome": outcome,
-		# 0 when not said: the area does not ask it yet
-		"effort": fatica or 0,
 		"note": (note or "").strip()[:500] or None,
 		"logged_by": frappe.session.user,
 		"logged_on": now_datetime(),
 	}
+	# said once, the effort stays while the answer changes; 0 is not said
+	if fatica is not None or not esistente:
+		valori["effort"] = fatica or 0
 	if esistente:
 		frappe.db.set_value(piani.REGISTRO, esistente, valori)
 	else:

@@ -40,102 +40,45 @@
         aria-hidden="true"
       />
     </template>
+    <!-- a food's name is read whole, on as many lines as it takes, never cut:
+         «Pasta secca, stand…» at 320px; the framework's button keeps one -->
+    <template v-if="kind === 'food'" #trigger="{ selectedOption, open }">
+      <button
+        type="button"
+        class="flex min-h-8 w-full items-center gap-2 rounded bg-surface-gray-2 px-2 py-1 text-left text-base hover:bg-surface-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3 max-md:min-h-10"
+        aria-haspopup="listbox"
+        :aria-expanded="open"
+      >
+        <span
+          class="min-w-0 flex-1 break-words"
+          :class="selectedOption ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+        >
+          {{ selectedOption?.label ?? __('Choose a food') }}
+        </span>
+        <span
+          class="lucide-chevron-down size-4 shrink-0 text-ink-gray-4 transition-transform"
+          :class="open && 'rotate-180'"
+          aria-hidden="true"
+        />
+      </button>
+    </template>
     <template v-if="credito" #footer>
       <p class="px-2.5 py-1.5 text-p-xs text-ink-gray-5">{{ credito }}</p>
     </template>
   </Combobox>
-  <Dialog
+  <LibraryAddDialog
     v-model="adding.show"
-    :options="{
-      title: kind === 'food' ? __('A new food') : __('A new exercise'),
-      size: 'md',
-    }"
-  >
-    <template #body-content>
-      <div class="flex flex-col gap-3">
-        <FormControl v-model="adding.name" :label="__('Name')" />
-        <template v-if="kind === 'food'">
-          <FormControl
-            v-model="adding.group"
-            type="select"
-            :label="__('Group')"
-            :options="groupOptions"
-          />
-          <div class="grid grid-cols-2 gap-3">
-            <FormControl
-              v-model="adding.portion"
-              type="number"
-              :label="__('Portion (g)')"
-            />
-            <FormControl
-              v-model="adding.kcal"
-              type="number"
-              :label="__('kcal per 100 g')"
-            />
-          </div>
-          <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
-            <FormControl
-              v-for="nutrient in macros"
-              :key="nutrient.key"
-              v-model="adding[nutrient.key]"
-              type="number"
-              :label="nutrient.label"
-            />
-          </div>
-          <FormControl
-            v-model="adding.source"
-            :label="__('From which table')"
-            :placeholder="__('For example CREA, or the label of the product')"
-          />
-        </template>
-        <template v-else>
-          <FormControl
-            v-model="adding.part"
-            type="select"
-            :label="__('Body part')"
-            :options="partOptions"
-          />
-          <FormControl
-            v-model="adding.instructions"
-            type="textarea"
-            :label="__('How it is done')"
-          />
-          <FormControl
-            v-model="adding.video"
-            :label="__('Video (YouTube or Vimeo)')"
-            placeholder="https://"
-          />
-        </template>
-        <ErrorMessage :message="adding.error" />
-      </div>
-    </template>
-    <template #actions>
-      <div class="dialog-footer flex justify-end gap-2">
-        <Button :label="__('Cancel')" @click="adding.show = false" />
-        <Button
-          variant="solid"
-          :label="__('Add to the library')"
-          :disabled="!adding.name.trim()"
-          :loading="adding.busy"
-          @click="add"
-        />
-      </div>
-    </template>
-  </Dialog>
+    :kind="kind"
+    :name="adding.name"
+    @added="added"
+  />
 </template>
 
 <script setup>
-import { GRUPPI, PARTI } from '@/utils/piani'
-import {
-  Button,
-  Combobox,
-  Dialog,
-  ErrorMessage,
-  FormControl,
-  call,
-  createResource,
-  debounce,
-} from 'frappe-ui'
+import LibraryAddDialog from '@/components/Plans/LibraryAddDialog.vue'
+import { appLocale } from '@/utils/locale'
+import { numeroDelleTabelle } from '@/utils/piani'
+import { Combobox, createResource, debounce } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
 const props = defineProps({
@@ -165,8 +108,14 @@ const search = debounce((text) => {
 function describe(row) {
   if (props.kind === 'food') {
     const parts = [__(row.food_group)]
-    if (row.portion_g) parts.push(__('portion {0} g', [row.portion_g]))
-    if (row.kcal) parts.push(__('{0} kcal/100 g', [row.kcal]))
+    if (row.portion_g)
+      parts.push(
+        __('portion {0} g', [numeroDelleTabelle(row.portion_g, appLocale())]),
+      )
+    if (row.kcal)
+      parts.push(
+        __('{0} kcal/100 g', [numeroDelleTabelle(row.kcal, appLocale())]),
+      )
     // where the numbers come from: a table, or the centre
     if (row.source && row.source !== 'Centre') parts.push(row.source)
     return parts.join(' · ')
@@ -223,89 +172,15 @@ function pick(option) {
   emit('picked', option.row)
 }
 
-const groupOptions = GRUPPI.map((g) => ({ label: __(g), value: g }))
-const partOptions = PARTI.map((p) => ({
-  label: __(p, null, 'Body part'),
-  value: p,
-}))
-
-// grams per 100 g, as the table says: what a menu's totals are made of
-const macros = [
-  { key: 'protein_g', label: __('Proteins (g)') },
-  { key: 'carbs_g', label: __('Carbohydrates (g)') },
-  { key: 'fat_g', label: __('Fats (g)') },
-  { key: 'fibre_g', label: __('Fibre (g)') },
-]
-
-const adding = reactive({
-  show: false,
-  name: '',
-  group: GRUPPI[0],
-  portion: '',
-  kcal: '',
-  protein_g: '',
-  carbs_g: '',
-  fat_g: '',
-  fibre_g: '',
-  source: '',
-  part: PARTI[0],
-  instructions: '',
-  video: '',
-  busy: false,
-  error: '',
-})
+const adding = reactive({ show: false, name: '' })
 
 function openAdd(text) {
-  Object.assign(adding, {
-    show: true,
-    name: text || '',
-    portion: '',
-    kcal: '',
-    protein_g: '',
-    carbs_g: '',
-    fat_g: '',
-    fibre_g: '',
-    source: '',
-    instructions: '',
-    video: '',
-    busy: false,
-    error: '',
-  })
+  Object.assign(adding, { show: true, name: text || '' })
 }
 
-async function add() {
-  adding.busy = true
-  adding.error = ''
-  try {
-    const row =
-      props.kind === 'food'
-        ? await call('crm.clinica.piani.add_food', {
-            food_name: adding.name,
-            food_group: adding.group,
-            portion_g: adding.portion || null,
-            kcal: adding.kcal === '' ? null : adding.kcal,
-            ...Object.fromEntries(
-              macros.map(({ key }) => [
-                key,
-                adding[key] === '' ? null : adding[key],
-              ]),
-            ),
-            source_note: adding.source || null,
-          })
-        : await call('crm.piani.api.add_exercise', {
-            exercise_name: adding.name,
-            body_part: adding.part,
-            instructions: adding.instructions || null,
-            video_url: adding.video || null,
-          })
-    adding.show = false
-    emit('update:modelValue', row.name)
-    emit('picked', row)
-    results.reload()
-  } catch (e) {
-    adding.error = e.messages?.join(' ') || e.message
-  } finally {
-    adding.busy = false
-  }
+function added(row) {
+  emit('update:modelValue', row.name)
+  emit('picked', row)
+  results.reload()
 }
 </script>

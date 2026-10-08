@@ -17,9 +17,9 @@ import json
 
 import frappe
 
-from crm.clinica import cartella, sintesi
-from crm.clinica.tests.test_cartella import DESK, DOC1, DOC2, RecordCase
-from crm.moduli import compilazioni, modelli
+from crm.clinica import cartella, dossier, sintesi
+from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, RecordCase
+from crm.moduli import compilazioni, consensi, modelli
 from crm.moduli.tests.test_compilazioni import tratto
 
 VISITA = {
@@ -291,3 +291,85 @@ class LaSintesi(SchedeCase):
 		# another practitioner reads it; deciding is for whoever writes the record
 		self.come(DOC2)
 		self.assertTrue(sintesi.get_summary(self.anna.name)["proposals"])
+
+
+VISITA_CON_PROVE = {
+	"sections": [
+		{
+			"id": "anamnesi",
+			"title": "Anamnesi",
+			"fields": [
+				{"id": "allergie", "type": "text", "label": "Allergie"},
+				{"id": "foto", "type": "attachment", "label": "Foto"},
+				{"id": "firma", "type": "signature", "label": "Firma", "signer": "operator"},
+			],
+		}
+	]
+}
+
+
+class DallUltimaVisita(SchedeCase):
+	"""«Start from the last visit»: the answers of the last signed visit on the same
+	sheet the practitioner reads, through the version published now; never its
+	signatures nor its attachments; the draft says where it came from."""
+
+	def parte(self, user=DOC1, scheda=None):
+		self.come(user)
+		return cartella.start_sheet(self.anna.name, scheda or self.scheda, from_last=1)
+
+	def test_le_risposte_dell_ultima_visita(self):
+		self.visita(risposte={"allergie": "Lattosio", "peso": "60"})
+		ultima = self.visita()
+		bozza = self.parte()
+		self.assertEqual(bozza["copied_from"], ultima["name"])
+		self.assertTrue(bozza["copied_from_date"])
+		self.assertEqual(
+			bozza["answers"], {"allergie": "Nichel", "peso": 64.5, "altezza": 170, "esame": "Nella norma"}
+		)
+		self.assertEqual(bozza["docstatus"], 0)
+		# without asking, a sheet starts empty
+		self.come(DOC1)
+		vuota = cartella.start_sheet(self.anna.name, self.scheda)
+		self.assertEqual((vuota["answers"], vuota["copied_from"]), ({}, None))
+
+	def test_quello_che_la_nuova_versione_non_chiede_cade(self):
+		self.visita()
+		frappe.set_user("Administrator")
+		ridotta = json.loads(json.dumps(VISITA))
+		ridotta["sections"][0]["fields"] = [f for f in ridotta["sections"][0]["fields"] if f["id"] != "esame"]
+		modelli.save_template(name=self.scheda, schema=json.dumps(ridotta))
+		modelli.publish_template(self.scheda)
+		self.assertNotIn("esame", self.parte()["answers"])
+
+	def test_mai_firme_ne_allegati(self):
+		frappe.set_user("Administrator")
+		scheda = self.pubblica(VISITA_CON_PROVE, "Visita con prove", use=modelli.SCHEDA, clinical=1)
+		self.come(DOC1)
+		riga = cartella.start_sheet(self.anna.name, scheda)
+		firmata = cartella.save_record(
+			self.anna.name, name=riga["name"], answers=json.dumps({"allergie": "Nichel"}), sign=1
+		)
+		# as a signed visit keeps them
+		frappe.db.set_value(
+			"Clinic Record",
+			firmata["name"],
+			"answers",
+			json.dumps(
+				{"allergie": "Nichel", "foto": ["/private/files/x.jpg"], "firma": "data:image/png;base64,AA"}
+			),
+		)
+		self.assertEqual(self.parte(scheda=scheda)["answers"], {"allergie": "Nichel"})
+
+	def test_chi_non_la_legge_non_copia_niente(self):
+		ultima = self.visita()
+		# a colleague without the dossier's consent does not read it
+		bozza = self.parte(user=DOC2)
+		self.assertEqual((bozza["answers"], bozza["copied_from"]), ({}, None))
+		# with it, yes; an obscured episode, never
+		frappe.set_user("Administrator")
+		consensi.registra_risposta(self.anna.name, cartella.DOSSIER)
+		self.assertEqual(self.parte(user=DOC2)["copied_from"], ultima["name"])
+		self.come(DIRECTOR)
+		dossier.obscure("Clinic Record", ultima["name"])
+		bozza = self.parte(user=DOC2)
+		self.assertEqual((bozza["answers"], bozza["copied_from"]), ({}, None))

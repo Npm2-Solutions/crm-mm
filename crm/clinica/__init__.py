@@ -4,7 +4,7 @@
 """The clinic: the vertical that makes the CRM a medical centre's management software.
 
 Switched on, it turns the CRM into the centre's software, all of it
-(docs/gestionale-medico/design.md, "Tre strati"): its words - patients, visits, the
+(docs/verticali/clinica/design.md, "Tre strati"): its words - patients, visits, the
 patient area (`parole.py`, through `crm.verticali`); what exists only for health
 data or medical practice - who is a patient (`regole.py`, `paziente.py`), the
 record and its reports, the dossier, the summary, the dental chart, diets; and its
@@ -337,6 +337,11 @@ def registra() -> None:
 	# new clients pipeline, in its words, is the one to the first visit
 	clienti.registra_nomi(PIANO, pipeline.NUOVI_PAZIENTI)
 	engine.registra_evento(paziente.EVENTO, paziente.TRIGGER, disponibile=clinica_accesa)
+	# somebody brought over from the previous software was the clinic's patient
+	# there: the import rule (regola 5)
+	from crm.importazione import importa
+
+	importa.registra_dopo(paziente.dall_importazione)
 	_registra_dashboard(clinica_accesa)
 	registra_ruolo(
 		"Medical Director",
@@ -362,6 +367,15 @@ def registra() -> None:
 
 	modelli.registra_dato_clinico(clinica_accesa)
 	compilazioni.registra_lettore_clinico(legge_i_moduli_clinici)
+	# a score on a clinical sheet is followed over time beside the forms' ones
+	from crm.clinica import cartella
+	from crm.moduli import andamenti
+
+	andamenti.registra_fonte(cartella.punteggi)
+	# its ready sheets, to start a clinical sheet from (`schede_pronte`)
+	from crm.clinica import schede_pronte
+
+	modelli.registra_partenze(schede_pronte.partenze)
 	# the lines of the patient's summary a field of a template may answer
 	from crm.clinica import sintesi
 

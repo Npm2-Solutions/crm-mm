@@ -231,6 +231,9 @@ class LaLibreriaDegliAlimenti(LibrerieCase):
 		)
 		with self.assertRaises(frappe.ValidationError):
 			librerie.save_food(None, {"food_name": " ", "food_group": "Cereals and tubers"})
+		# nor without its energy: it would count nothing in a diet
+		with self.assertRaises(frappe.ValidationError):
+			librerie.save_food(None, {"food_name": "Senza numeri", "food_group": "Cereals and tubers"})
 
 
 class SiSpegneNonSiCambia(LibrerieCase):

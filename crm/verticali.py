@@ -5,7 +5,7 @@
 
 The CRM underneath is the same for everybody, and says what it does in neutral
 words: clients, appointments, the client area. A vertical switched on by the plan
-makes it the software of its trade, all the way (docs/gestionale-medico/design.md,
+makes it the software of its trade, all the way (docs/verticali/clinica/design.md,
 "Tre strati"): with the clinic on, the CRM is a medical centre's management
 software and says so everywhere.
 

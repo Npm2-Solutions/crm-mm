@@ -29,6 +29,8 @@ def get_context(context):
 		"staff": form.get("professionista") or form.get("staff") or path.get("staff", ""),
 		"category": form.get("categoria") or form.get("category") or path.get("category", ""),
 		"token": form.get("token") or "",
+		# back from Stripe's page (`crm.pagamenti`): «fatto» or «annullato»
+		"payment": (form.get("pagamento") or "")[:20],
 		"embed": bool(form.get("embed")),
 		"lang": (form.get("lang") or frappe.local.lang or "it")[:2],
 		# campaigns and the CRM itself can open the page with the client already known
@@ -38,6 +40,15 @@ def get_context(context):
 			"phone": (form.get("telefono") or form.get("phone") or "")[:40],
 		},
 	}
+	# from the client area (`?persona=`): the session says who books, the link only
+	# whose area it came from (`crm.area.api`)
+	if form.get("persona"):
+		try:
+			from crm.area.api import per_la_pagina_di_prenotazione
+
+			context.boot["prefill"].update(per_la_pagina_di_prenotazione(str(form.get("persona"))[:140]))
+		except Exception:
+			frappe.log_error(title="Booking page: who comes from the area")
 	try:
 		from crm.api.service_booking import page_branding
 

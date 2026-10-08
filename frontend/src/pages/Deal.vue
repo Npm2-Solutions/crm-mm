@@ -487,6 +487,7 @@ const {
   scripts,
   error,
   canWrite,
+  pronto,
 } = useDocument('CRM Deal', props.dealId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
@@ -773,7 +774,11 @@ const dealContacts = createResource({
   },
 })
 
-if (!dealContacts.data) dealContacts.fetch()
+// once the deal came: a deal one may not open asks nothing more
+pronto.then(
+  (venuto) =>
+    venuto && !dealContacts.data && dealContacts.fetch().catch(() => {}),
+)
 
 async function triggerStatusChange(value) {
   await triggerOnChange('status', value)

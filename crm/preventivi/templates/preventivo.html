@@ -3,6 +3,8 @@
 	proposed, and kept. Like every document the CRM keeps, it loads no remote
 	resource. It ends with the lines the person signs to accept it. A module's row
 	says more under its service (the clinic: the tooth and its surfaces).
+	Signed in the client area (`firma`), the signature stands where the lines were,
+	and the evidence follows on a page of its own.
 -#}
 {#- what a person typed is printed as text: never as HTML -#}
 {% autoescape true %}
@@ -33,6 +35,13 @@
 	.firma { margin-top: 26pt; page-break-inside: avoid; }
 	.linee { display: flex; gap: 24pt; margin-top: 28pt; }
 	.linea { flex: 1; border-top: 0.6pt solid #1a1a1a; padding-top: 3pt; font-size: 8.5pt; color: #444; }
+	.colonna { flex: 1; display: flex; flex-direction: column; }
+	.colonna .linea { flex: none; }
+	.tratto { height: 22mm; display: flex; align-items: flex-end; }
+	.tratto img { max-height: 22mm; max-width: 70mm; }
+	.prove { page-break-before: always; }
+	.prove table td:first-child { width: 34%; color: #555; }
+	.impronta { font-family: "DejaVu Sans Mono", monospace; font-size: 7.5pt; word-break: break-all; }
 </style>
 </head>
 <body>
@@ -83,15 +92,75 @@
 
 	{% if doc.patient_notes %}<div class="testo">{{ doc.patient_notes }}</div>{% endif %}
 
+	{% if rate %}
+	{#- paid in instalments: the centre's own plan, no interest nor fees -#}
+	<h2>{{ _("Payment plan") }}</h2>
+	<table class="rate">
+		<tr>
+			<th>{{ _("Payment") }}</th>
+			<th>{{ _("Due") }}</th>
+			<th class="numero">{{ _("Amount") }}</th>
+		</tr>
+		{% for riga in rate %}{% if riga.status != "Cancelled" %}
+		<tr>
+			<td>{% if riga.kind == "Deposit" %}{{ _("Deposit") }}{% else %}{{ _("Instalment {0} of {1}").format(riga.number, rate|selectattr("kind", "equalto", "Instalment")|list|length) }}{% endif %}</td>
+			<td>{% if riga.quando %}{{ riga.quando }}{% else %}{{ _("On acceptance") }}{% endif %}</td>
+			<td class="numero">{{ soldi(riga.amount) }}</td>
+		</tr>
+		{% endif %}{% endfor %}
+		<tr class="totale"><td colspan="2">{{ _("Total") }}</td><td class="numero">{{ soldi(totali.net) }}</td></tr>
+	</table>
+	<p class="sommesso">{{ _("Paid in instalments to the centre, without interest or fees.") }}</p>
+	{% endif %}
+
 	<div class="firma">
 		{% if valido_fino %}<p>{{ _("This quote is valid until {0}.").format(valido_fino) }}</p>{% endif %}
-		<p class="sommesso">{{ _("Each service is invoiced when it is done, at the price above.") }}</p>
+		<p class="sommesso">{% if rate and rate_fatturate %}{{ _("Each payment is invoiced when it falls due.") }}{% else %}{{ _("Each service is invoiced when it is done, at the price above.") }}{% endif %}</p>
 		<p>{{ _("For acceptance") }}</p>
+		{% if firma %}
+		<div class="linee">
+			<div class="colonna">
+				<div class="tratto"></div>
+				<div class="linea">{{ _("Date") }}: {{ firma.quando }}</div>
+			</div>
+			<div class="colonna">
+				<div class="tratto">{% if firma.immagine %}<img src="{{ firma.immagine }}" alt="">{% endif %}</div>
+				<div class="linea">{{ firma.chi }} ({{ firma.veste }})</div>
+			</div>
+		</div>
+		{% else %}
 		<div class="linee">
 			<div class="linea">{{ _("Date") }}</div>
 			<div class="linea">{{ parola("Signature of the person, or of who answers for them") }}</div>
 		</div>
+		{% endif %}
 	</div>
+
+	{% if firma %}
+	<div class="prove">
+		<h2>{{ _("Evidence") }}</h2>
+		<table>
+			<tr><td>{{ _("Quote") }}</td><td>{{ doc.name }}</td></tr>
+			<tr><td>{{ _("Who") }}</td><td>{{ firma.chi }} ({{ firma.veste }})</td></tr>
+			<tr><td>{{ _("Level") }}</td><td>{{ _("Simple signature") }} · {{ _("drawn on the screen") }}</td></tr>
+			<tr><td>{{ _("When, by the server's clock") }}</td><td>{{ firma.quando }}</td></tr>
+			<tr><td>{{ _("From") }}</td><td>{{ firma.ip or "—" }}</td></tr>
+			<tr><td>{{ _("Device") }}</td><td>{{ firma.dispositivo or "—" }}</td></tr>
+			<tr><td>{{ _("Who signed, known by") }}</td><td>{{ firma.riconoscimento }}</td></tr>
+			<tr><td>{{ _("What was signed") }}</td><td>{{ firma.su_cosa }}</td></tr>
+			<tr><td>{{ _("Its SHA-256") }}</td><td class="impronta">{{ firma.impronta }}</td></tr>
+		</table>
+		<h2>{{ _("What happened") }}</h2>
+		<table>
+			{% for evento in firma.eventi %}
+			<tr><td>{{ evento.quando }}</td><td>{{ evento.cosa }}{% if evento.chi %} · {{ evento.chi }}{% endif %}{% if evento.ip %} · {{ evento.ip }}{% endif %}</td></tr>
+			{% endfor %}
+		</table>
+		<p class="sommesso" style="margin-top: 12pt">
+			{{ _("This document was generated once, when the quote was signed. Its SHA-256 is recorded with the quote: a copy that gives a different one is not this document.") }}
+		</p>
+	</div>
+	{% endif %}
 </body>
 </html>
 {% endautoescape %}

@@ -79,6 +79,9 @@ class Context:
 	viewer: str
 	owners: list[str] | None = None
 	config: dict[str, Any] = field(default_factory=dict)
+	#: one of the centre's locations (docs/crm/62): the widgets that know where
+	#: their rows are (the agenda's, what was invoiced and collected) count only it
+	location: str | None = None
 	today: datetime.date = field(default_factory=lambda: getdate(nowdate()))
 	now: datetime.datetime = field(default_factory=now_datetime)
 
@@ -92,6 +95,7 @@ class Context:
 		requested_user: str | None = None,
 		scope: str = "team",
 		config: dict | None = None,
+		location: str | None = None,
 	) -> Context:
 		viewer = viewer or frappe.session.user
 		today = getdate(nowdate())
@@ -102,7 +106,17 @@ class Context:
 			owners = None
 		else:
 			owners = owners_for(requested_user, viewer)
-		return cls(start=start, end=end, viewer=viewer, owners=owners, config=config or {}, today=today)
+		from crm.scheduling import sedi
+
+		return cls(
+			start=start,
+			end=end,
+			viewer=viewer,
+			owners=owners,
+			config=config or {},
+			today=today,
+			location=sedi.valida(location),
+		)
 
 	# -- the period ---------------------------------------------------------
 
@@ -150,6 +164,14 @@ class Context:
 	@property
 	def everyone(self) -> bool:
 		return self.owners is None
+
+	# -- where ----------------------------------------------------------------
+
+	def at(self, column) -> Criterion | None:
+		"""``column`` (a location) is the one asked; ``None`` when every location counts."""
+		if not self.location:
+			return None
+		return column == self.location
 
 	# -- the widget's settings -----------------------------------------------
 

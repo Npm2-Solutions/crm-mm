@@ -10,6 +10,7 @@ from crm.dashboard.widgets import (
 	agenda,
 	automations,
 	calls,
+	conventions,
 	conversations,
 	invoicing,
 	marketing,

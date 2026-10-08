@@ -29,13 +29,12 @@ CRM's (`crm.piani.dataset`).
 
 from __future__ import annotations
 
-import csv
-import io
 import math
 import re
 import unicodedata
 
 from crm.clinica.piani_regole import GRUPPI
+from crm.importazione import foglio
 
 CIBO_CAMPI = (
 	"code",
@@ -92,46 +91,8 @@ def _parole(testo: str, radici) -> bool:
 
 def leggi_foglio(nome_file: str, contenuto: bytes) -> list[list]:
 	"""The rows of a table's first sheet: Excel (.xlsx, .xls) or text (.csv, .txt)
-	with commas, semicolons or tabs."""
-	estensione = (nome_file or "").rsplit(".", 1)[-1].lower()
-	if estensione == "xlsx" or contenuto[:2] == b"PK":
-		from openpyxl import load_workbook
-
-		libro = load_workbook(io.BytesIO(contenuto), read_only=True, data_only=True)
-		foglio = libro.worksheets[0]
-		righe = []
-		for riga in foglio.iter_rows(values_only=True):
-			righe.append(list(riga))
-			if len(righe) > MAX_RIGHE:
-				break
-		libro.close()
-		return righe
-	if estensione == "xls" or contenuto[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
-		import xlrd
-
-		foglio = xlrd.open_workbook(file_contents=contenuto).sheet_by_index(0)
-		return [foglio.row_values(i) for i in range(min(foglio.nrows, MAX_RIGHE + 1))]
-	return _csv(contenuto)
-
-
-def _csv(contenuto: bytes) -> list[list]:
-	for codifica in ("utf-8-sig", "cp1252", "latin-1"):
-		try:
-			testo = contenuto.decode(codifica)
-			break
-		except UnicodeDecodeError:
-			continue
-	campione = testo[:20000]
-	try:
-		separatore = csv.Sniffer().sniff(campione, delimiters=";,\t|").delimiter
-	except csv.Error:
-		separatore = ";" if campione.count(";") > campione.count(",") else ","
-	righe = []
-	for riga in csv.reader(io.StringIO(testo), delimiter=separatore):
-		righe.append(riga)
-		if len(righe) > MAX_RIGHE:
-			break
-	return righe
+	with commas, semicolons or tabs (`crm.importazione.foglio`, the CRM's reader)."""
+	return foglio.leggi(nome_file, contenuto, MAX_RIGHE)
 
 
 # ------------------------------------------------------------------ the columns

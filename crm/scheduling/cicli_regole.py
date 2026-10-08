@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A cycle of sessions, without a site (docs/gestionale-medico, phase 3: "cicli di
+"""A cycle of sessions, without a site (docs/verticali/clinica, phase 3: "cicli di
 sedute (fisioterapia)"; the packages of a beauty centre are the same thing).
 
 - **A cycle is N sessions of one service for one person**, from a day, maybe until

@@ -12,6 +12,7 @@
   "column_break_head",
   "color",
   "bookable_online",
+  "online_visit",
   "description",
   "location",
   "scheduling_section",
@@ -30,6 +31,8 @@
   "allow_staff_choice",
   "hide_from_menu",
   "show_price_online",
+  "online_payment",
+  "online_deposit",
   "online_slot_interval",
   "online_max_participants",
   "column_break_online",
@@ -130,6 +133,12 @@
    "fieldname": "bookable_online",
    "fieldtype": "Check",
    "label": "Bookable online"
+  },
+  {
+   "fieldname": "online_visit",
+   "fieldtype": "Check",
+   "label": "Online visit",
+   "description": "Held by video: each appointment gets the link of its own room, and needs no room of the centre."
   },
   {
    "fieldname": "description",
@@ -238,6 +247,21 @@
    "fieldtype": "Check",
    "label": "Show Price",
    "default": "1"
+  },
+  {
+   "fieldname": "online_payment",
+   "fieldtype": "Select",
+   "label": "Pay online when booking",
+   "options": "\nDeposit\nFull price",
+   "description": "Asked on the booking page through the centre's Stripe account; the booking is confirmed once paid"
+  },
+  {
+   "depends_on": "eval:doc.online_payment=='Deposit'",
+   "fieldname": "online_deposit",
+   "fieldtype": "Currency",
+   "label": "Deposit",
+   "options": "currency",
+   "non_negative": 1
   },
   {
    "fieldname": "online_slot_interval",
@@ -623,7 +647,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-24 10:00:00.000000",
+ "modified": "2026-10-08 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Service",

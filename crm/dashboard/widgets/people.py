@@ -3,7 +3,7 @@
 
 """People: who arrived, from where, and whether they became a deal.
 
-A ``CRM Lead`` is a person (docs/progetto-ghl/21): permanent, one per human,
+A ``CRM Lead`` is a person (docs/crm/21): permanent, one per human,
 created by a form, an ad, a booking or an unknown number writing on WhatsApp.
 So "new people" counts humans who reached you for the first time — not
 requests, which are deals.

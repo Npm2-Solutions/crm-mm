@@ -31,10 +31,14 @@ SCRITTURA = {
 	"CRM Waiting List Settings": "agenda.configura",
 	"CRM Reminder Settings": "agenda.configura",
 	"CRM Subscription Type": "agenda.configura",
+	# who pays: the funds, insurers and companies the centre has a convention with
+	"CRM Convention": "convenzioni.gestisci",
 	"CRM Holiday List": "agenda.configura",
 	# shifts, holidays and rooms: the front desk's too; a practitioner their own shifts
 	"CRM Staff Schedule": "agenda.turni",
 	"CRM Resource": "agenda.turni",
+	# the centre's locations (docs/crm/62): its manager's
+	"CRM Location": "impostazioni.generali",
 	"CRM Booking Calendar": "prenotazione_online.configura",
 	# the pipeline
 	"CRM Lead Status": "pipeline.configura",
@@ -43,6 +47,8 @@ SCRITTURA = {
 	# which pipelines new clients and quotes move
 	"CRM Client Settings": "pipeline.configura",
 	"CRM Quote Settings": "pipeline.configura",
+	# where the reviews are written, how often a person is asked: marketing's
+	"CRM Review Settings": "automazioni.gestisci",
 	# public views: everybody keeps their own
 	"CRM View Settings": "viste.configura",
 	# the channels: everybody uses the templates, the manager writes them

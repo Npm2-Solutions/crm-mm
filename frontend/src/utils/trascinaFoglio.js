@@ -26,10 +26,10 @@ export const ZONA_MANIGLIA = 64
 export const PASSO_MINIMO = 8
 
 const APERTO = ".dialog-content[data-state='open']"
-// a drawing (a signature) and an editor keep the finger; a field only while
+// a drawing (a signature, a body chart) and an editor keep the finger; a field only while
 // one writes in it: a finger that moves on it writes nothing, and in a form
 // it lands on one nearly everywhere
-const SEMPRE = '[contenteditable="true"], canvas'
+const SEMPRE = '[contenteditable="true"], canvas, [data-disegno]'
 const CAMPI = 'input, textarea, select'
 // a list's grip that reorders it (vuedraggable's `handle`)
 const PRESE =

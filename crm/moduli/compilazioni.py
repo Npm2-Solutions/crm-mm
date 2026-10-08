@@ -181,13 +181,16 @@ def _risposte(doc) -> dict:
 
 def _riga(doc) -> dict:
 	avvisi = json.loads(doc.alerts or "[]") if isinstance(doc.alerts, str) else (doc.alerts or [])
+	uso = modelli.uso(frappe.get_cached_value(modelli.VERSIONE, doc.template_version, "use"))
 	return {
 		"name": doc.name,
 		"title": doc.title,
 		"version": doc.version,
 		"template": doc.template,
 		# a form the person fills, or a sheet the operator writes
-		"use": modelli.uso(frappe.get_cached_value(modelli.VERSIONE, doc.template_version, "use")).chiave,
+		"use": uso.chiave,
+		# a survey is answered, never signed (it opens with its link alone)
+		"without_code": uso.senza_codice,
 		"clinical": doc.clinical,
 		"channel": doc.channel,
 		"docstatus": doc.docstatus,

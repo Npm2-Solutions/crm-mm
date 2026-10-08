@@ -278,6 +278,175 @@ class Dentro(AreaCase):
 				chiamata(altro.name)
 
 
+class PrenotaDiNuovo(AreaCase):
+	"""«Book again»: the booking page on the last service, and the page knows who
+	comes from the area without anybody typing again."""
+
+	def prepara(self, online=1):
+		frappe.set_user("Administrator")
+		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", 1)
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+		estetista = self.make_user("area.ripeti@example.com")
+		self.make_service("Pulizia area", [estetista], bookable_online=online, website_slug="pulizia-area")
+		ieri = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=1)
+		self.make_appointment(
+			"Pulizia area",
+			ieri,
+			[estetista],
+			status="Completed",
+			participants=[
+				{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}
+			],
+		)
+		self.invita()
+		self.entra()
+
+	def test_il_servizio_dell_ultimo_appuntamento(self):
+		self.prepara()
+		prenota = api.get_appointments(self.anna.name)["book"]
+		self.assertEqual(prenota["service"], "Pulizia area")
+		self.assertEqual(prenota["url"], f"/prenota/pulizia-area?persona={self.anna.name}")
+
+	def test_un_servizio_che_non_si_prenota_online_porta_al_catalogo(self):
+		self.prepara(online=0)
+		prenota = api.get_appointments(self.anna.name)["book"]
+		self.assertEqual(prenota, {"url": f"/prenota?persona={self.anna.name}", "service": None})
+
+	def test_senza_prenotazione_online_niente(self):
+		self.prepara()
+		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", 0)
+		if hasattr(frappe.local, "crm_scheduling_settings"):
+			del frappe.local.crm_scheduling_settings
+		frappe.set_user(ANNA)
+		self.assertIsNone(api.get_appointments(self.anna.name)["book"])
+
+	def test_la_pagina_sa_chi_prenota_dalla_sessione(self):
+		self.prepara()
+		frappe.db.set_value("CRM Lead", self.anna.name, "mobile_no", "+393331112233")
+		dati = api.per_la_pagina_di_prenotazione(self.anna.name)
+		self.assertEqual(dati, {"full_name": "Anna Area", "email": ANNA, "phone": "+393331112233"})
+		# somebody else's person, or nobody signed in: the empty form
+		frappe.set_user("Administrator")
+		altro = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Bruno", "last_name": "Altro"}).insert(
+			ignore_permissions=True
+		)
+		frappe.set_user(ANNA)
+		self.assertEqual(api.per_la_pagina_di_prenotazione(altro.name), {})
+		frappe.set_user("Guest")
+		self.assertEqual(api.per_la_pagina_di_prenotazione(self.anna.name), {})
+
+
+class SonoArrivato(AreaCase):
+	"""«I'm here» from Anna's phone: from half an hour before her appointment until
+	it ends, her own, and the desk is told."""
+
+	def setUp(self):
+		super().setUp()
+		frappe.set_user("Administrator")
+		self.estetista = self.make_user("area.arrivo@example.com")
+		self.servizio = self.make_service("Arrivo area", [self.estetista])
+		self.invita()
+
+	def appuntamento(self, fra_minuti, persona=None):
+		frappe.set_user("Administrator")
+		persona = persona or self.anna
+		inizio = datetime.datetime.now(datetime.UTC).replace(second=0, microsecond=0) + datetime.timedelta(
+			minutes=fra_minuti
+		)
+		return self.make_appointment(
+			self.servizio.name,
+			inizio,
+			[self.estetista],
+			status="Confirmed",
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": persona.name,
+					"participant_name": persona.lead_name,
+					"status": "Booked",
+				}
+			],
+		)
+
+	def posto(self, appuntamento):
+		return frappe.db.get_value(
+			"CRM Appointment Participant",
+			{"parent": appuntamento.name},
+			["status", "arrived_at"],
+			as_dict=True,
+		)
+
+	def test_poco_prima_entra_in_sala_d_attesa_e_l_accoglienza_lo_sa(self):
+		from crm.notifiche import regole as N
+
+		appuntamento = self.appuntamento(10)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertEqual(prossimo["check_in"]["opens_in"], 0)
+		self.assertFalse(prossimo["arrived"])
+		self.assertEqual(api.check_in(self.anna.name, appuntamento.name), {"arrived": True})
+		posto = self.posto(appuntamento)
+		self.assertEqual(posto.status, "Arrived")
+		self.assertTrue(posto.arrived_at)
+		self.assertTrue(
+			frappe.db.exists(
+				"CRM Notification",
+				{
+					"to_user": DESK,
+					"sentence": N.ARRIVATO_DALL_AREA,
+					"notification_type_doc": appuntamento.name,
+				},
+			)
+		)
+		# said again, nothing changes
+		self.assertEqual(api.check_in(self.anna.name, appuntamento.name), {"arrived": True})
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertTrue(prossimo["arrived"])
+		self.assertNotIn("check_in", prossimo)
+
+	def test_iniziato_si_puo_ancora_dire(self):
+		appuntamento = self.appuntamento(-5)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertEqual(prossimo["name"], appuntamento.name)
+		api.check_in(self.anna.name, appuntamento.name)
+		self.assertEqual(self.posto(appuntamento).status, "Arrived")
+
+	def test_troppo_presto_no(self):
+		appuntamento = self.appuntamento(120)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertGreater(prossimo["check_in"]["opens_in"], 80 * 60)
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+		self.assertEqual(self.posto(appuntamento).status, "Booked")
+
+	def test_l_appuntamento_di_un_altro_no(self):
+		bruno = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Bruno", "last_name": "Arrivo"}).insert(
+			ignore_permissions=True
+		)
+		suo = self.appuntamento(10, bruno)
+		self.entra()
+		with self.assertRaises(frappe.PermissionError):
+			api.check_in(self.anna.name, suo.name)
+		with self.assertRaises(frappe.PermissionError):
+			api.check_in(bruno.name, suo.name)
+		self.assertEqual(self.posto(suo).status, "Booked")
+
+	def test_annullato_o_spento_no(self):
+		appuntamento = self.appuntamento(10)
+		frappe.db.set_single_value("CRM Area Settings", "self_check_in", 0)
+		self.entra()
+		self.assertNotIn("check_in", api.get_appointments(self.anna.name)["upcoming"][0])
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+		frappe.db.set_single_value("CRM Area Settings", "self_check_in", 1)
+		frappe.db.set_value("CRM Appointment", appuntamento.name, "status", "Cancelled")
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+
+
 class SenzaLaClinica(AreaCase):
 	def test_niente_della_clinica_e_le_parole_del_crm(self):
 		self.invita()
@@ -456,3 +625,86 @@ class IMessaggi(AreaCase):
 		for chiamata in (messaggi.area_messages, messaggi.mark_read):
 			with self.assertRaises(frappe.PermissionError, msg=chiamata.__name__):
 				chiamata(self.anna.name)
+
+
+class IlDaPagare(AreaCase):
+	"""What is left to pay of each invoice, the total and how the centre is paid:
+	never a test invoice, nothing for one collected."""
+
+	def fattura(self, **valori):
+		from crm.invoicing.install import semina_qualifiche
+		from crm.tests.test_invoicing import CF_PAZIENTE, InvoicingBase
+
+		frappe.set_user("Administrator")
+		semina_qualifiche()
+		azienda = InvoicingBase.crea_azienda()
+		erogatore = InvoicingBase.crea_erogatore("Studio Neri", "societa_servizi")
+		servizio = InvoicingBase.crea_servizio("Consulenza", healthcare=False, exempt=False)
+		documento = frappe.get_doc(
+			{
+				"doctype": "CRM Invoice",
+				"company": azienda.name,
+				"recipient_type": "persona_fisica",
+				"party_type": "CRM Lead",
+				"party": self.anna.name,
+				"billing_name": "Anna Area",
+				"first_name": "Anna",
+				"last_name": "Area",
+				"fiscal_code": CF_PAZIENTE,
+				"address_line": "Via Verdi 3",
+				"postal_code": "00100",
+				"city": "Roma",
+				"province": "RM",
+				"payment_method": "MP05",
+				"items": [
+					{
+						"billable_service": servizio.name,
+						"service_provider": erogatore.name,
+						"qty": 1,
+						"rate": 65,
+					}
+				],
+			}
+		).insert()
+		documento.submit()
+		frappe.db.set_value(
+			"CRM Invoice", documento.name, {"collected_on": None, "test_document": 0, **valori}
+		)
+		return documento.name
+
+	def test_quanto_resta_e_come_si_paga(self):
+		da_pagare = self.fattura()
+		pagata = self.fattura(collected_on=frappe.utils.today())
+		di_prova = self.fattura(test_document=1)
+		frappe.db.set_single_value(
+			"CRM Payment Reminder Settings", "how_to_pay", "IBAN IT60X0542811101000000123456"
+		)
+		self.invita()
+		self.entra()
+		fatto = api.get_invoices(self.anna.name)
+		righe = {riga["name"]: riga for riga in fatto["invoices"]}
+		self.assertNotIn(di_prova, righe)
+		self.assertEqual(righe[pagata]["to_pay"], 0)
+		self.assertGreater(righe[da_pagare]["to_pay"], 0)
+		self.assertEqual(fatto["to_pay"], righe[da_pagare]["to_pay"])
+		self.assertIn("IT60X0542811101000000123456", fatto["how_to_pay"])
+
+		# in the centre's preview, an invoice the previewer does not read does not count
+		from crm.area import anteprima
+
+		with mock.patch.object(
+			api.anteprima,
+			"filtra",
+			side_effect=lambda doctype, righe: [
+				anteprima.coperta(riga) if riga["name"] == da_pagare else riga for riga in righe
+			],
+		):
+			nascosta = api.get_invoices(self.anna.name)
+		self.assertEqual(nascosta["to_pay"], 0)
+		self.assertEqual(nascosta["how_to_pay"], "")
+
+		# all paid: nothing to say on how to pay
+		frappe.set_user("Administrator")
+		frappe.db.set_value("CRM Invoice", da_pagare, "collected_on", frappe.utils.today())
+		frappe.set_user(ANNA)
+		self.assertEqual(api.get_invoices(self.anna.name)["to_pay"], 0)

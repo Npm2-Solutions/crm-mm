@@ -67,6 +67,9 @@ def contesto(doc, versione=None) -> dict:
 					]
 					for riga in (valore or [])
 				]
+			elif voce["tipo"] == "body_chart":
+				voce["immagine"] = pdf.disegno_del_corpo(campo, valore)
+				voce["risposta"] = pdf.risposta_in_parole(campo, valore)
 			else:
 				voce["risposta"] = pdf.risposta_in_parole(campo, valore, stato["bands"].get(chiave))
 			voci.append(voce)

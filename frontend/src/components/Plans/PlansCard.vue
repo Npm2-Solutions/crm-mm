@@ -38,6 +38,30 @@
       </Dropdown>
     </div>
 
+    <!-- what the reader's qualification does not write: whose it is, and
+         where the qualification is set - never a kind gone without a word -->
+    <div
+      v-if="bloccati.length"
+      class="flex gap-2 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+    >
+      <span class="lucide-lock mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <div class="flex min-w-0 flex-col gap-1">
+        <p v-for="riga in bloccati" :key="riga">{{ riga }}</p>
+        <p>
+          {{
+            plans.data.qualification
+              ? __(
+                  'Your qualification is {0}. The centre’s manager sets it in Settings › Invoicing › Services & providers.',
+                  [plans.data.qualification],
+                )
+              : __(
+                  'You have no qualification yet: the centre’s manager sets it in Settings › Invoicing › Services & providers.',
+                )
+          }}
+        </p>
+      </div>
+    </div>
+
     <!-- a published plan reaches the person only through their area -->
     <div
       v-if="avvisoArea"
@@ -63,8 +87,12 @@
     <!-- none yet: how it goes, and what one may write -->
     <template v-if="vuoto">
       <!-- side by side where each has 12rem: three in a record's column on a
-           tablet held upright were 70px, a word to a line -->
-      <ol class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3">
+           tablet held upright were 70px, a word to a line; only for whoever
+           writes plans: the others have no steps to take -->
+      <ol
+        v-if="plans.data.kinds.length"
+        class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3"
+      >
         <li
           v-for="(passo, i) in COME_FUNZIONA"
           :key="passo"
@@ -201,14 +229,29 @@
               :label="__('Health data')"
             />
           </span>
-        </span>
-        <span class="flex shrink-0 items-center gap-2">
+          <!-- how the week went and how hard or painful it felt, as the person
+               said it in their area: a line of its own, on every screen -->
           <span
             v-if="plan.status === 'Published'"
-            class="text-p-xs text-ink-gray-5 max-md:hidden"
+            class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-p-xs text-ink-gray-6"
           >
-            {{ __('{0} done this week', [plan.summary.Done]) }}
+            <span>{{
+              plan.summary.Done === 1
+                ? __('1 done this week')
+                : __('{0} done this week', [plan.summary.Done])
+            }}</span>
+            <span v-if="plan.effort" class="flex items-center gap-1">
+              <span class="lucide-activity size-3.5" aria-hidden="true" />
+              {{
+                __('Effort or pain {0}/10, last {1}', [
+                  numero(plan.effort.average),
+                  plan.effort.last,
+                ])
+              }}
+            </span>
           </span>
+        </span>
+        <span class="flex shrink-0 items-center gap-2">
           <Badge
             variant="subtle"
             :theme="statusTheme[plan.status] || 'gray'"
@@ -239,8 +282,17 @@ import DescrizioneRipiegata from '@/components/Mobile/DescrizioneRipiegata.vue'
 import PlanDialog from '@/components/Plans/PlanDialog.vue'
 import ProgrammeDialog from '@/components/Plans/ProgrammeDialog.vue'
 import CategoryTag from '@/components/Espresso/CategoryTag.vue'
+import { appLocale } from '@/utils/locale'
+import { chiLoScrive } from '@/utils/piani'
 import { Badge, Button, Dropdown, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
+
+// an average as the reader writes it: «4,5»
+function numero(n) {
+  return new Intl.NumberFormat(appLocale(), {
+    maximumFractionDigits: 1,
+  }).format(n)
+}
 
 const props = defineProps({ lead: { type: String, required: true } })
 
@@ -299,6 +351,16 @@ const nascosti = computed(() => {
       __('{0} programmes with protected health data', [programmi]),
   ].filter(Boolean)
 })
+
+// the kinds switched on that the reader's qualification does not write
+const bloccati = computed(() =>
+  (plans.data?.locked_kinds || []).map((kind) =>
+    __('{0}: written by {1}.', [
+      __(kind.key),
+      chiLoScrive(kind.written_by, appLocale()),
+    ]),
+  ),
+)
 
 // none yet, of plans or programmes
 const vuoto = computed(

@@ -108,7 +108,7 @@ describe('the settings menu, by who reads it', () => {
   it('gives the manager every area of the centre, in eleven groups', () => {
     expect(comeSiLegge(menuDi(sessione('manager')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
-      'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Features',
+      'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Locations, Features',
       'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Agenda & reminders [Agenda · Appointment reminders], Waiting list, Online booking [Services & people · Page & rules · Platforms]',
       'Clients: Forms, Consents, Client area, Libraries [Exercises · Foods]',
       'Deals: Pipelines, Assignment [Rules · Response times]',
@@ -116,25 +116,25 @@ describe('the settings menu, by who reads it', () => {
       'WhatsApp: Numbers, Templates',
       'Phone: Telephony, Call scripts',
       'Marketing: Website, Social Planner, Tracking [Lead tracking · Tracked links]',
-      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
+      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Payments and reminders, Advanced [Options · Qualifications]',
       'Integrations: Meta, Assistant',
     ])
   })
 
-  it('had 48 entries in sixteen groups: now 35 for 52 pages, none alone in its group', () => {
+  it('had 48 entries in sixteen groups: now 37 for 54 pages, none alone in its group', () => {
     const menu = menuDi(sessione('manager'))
     const voci = menu.flatMap((gruppo) => gruppo.items)
-    expect(voci).toHaveLength(35)
+    expect(voci).toHaveLength(37)
     // every page is still there, as an entry or a tab, the notifications,
-    // the centre's language and Fatture in Cloud
-    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(52)
+    // the centre's language, Fatture in Cloud and the locations (doc 62)
+    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(54)
     expect(menu.filter((gruppo) => gruppo.items.length === 1)).toEqual([])
   })
 
   it('adds the technical pages for the agency', () => {
     const menu = comeSiLegge(menuDi(sessione('agenzia')))
     expect(menu[1]).toBe(
-      'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu · Formats], Users [Users · Invite · Hierarchy], Features',
+      'The centre: General [Name & logo · Language & time · Conversations · Dashboard · Menu · Formats], Users [Users · Invite · Hierarchy], Locations, Features',
     )
     expect(menu.at(-1)).toBe(
       'Integrations: Meta, Seal and time stamp, Assistant',
@@ -175,7 +175,7 @@ describe('the settings menu, by who reads it', () => {
   it('shows accounting the invoicing, and the medical director the forms and the libraries', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
-      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Advanced [Options · Qualifications]',
+      'Invoicing: Test and go live, Issuing company, Fatture in Cloud, Services & providers [Billable services · Providers], Payments and reminders, Advanced [Options · Qualifications]',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
@@ -246,6 +246,7 @@ describe('a page asked for by its name', () => {
       ['Providers', 'Services & providers', 'Providers'],
       ['Provider connection', 'Provider connection', null],
       ['Invoicing defaults', 'Advanced invoicing', 'Invoicing defaults'],
+      ['Payment reminders', 'Payment reminders', null],
       ['Services', 'Services', 'Services'],
       ['Team rota', 'Hours & shifts', 'Team rota'],
       ['Studio hours & rules', 'Hours & shifts', 'Studio hours & rules'],
@@ -329,8 +330,10 @@ describe('the pages there are', () => {
     expect(new Set(tutte).size).toBe(tutte.length)
     // the 51 pages there were, none lost, the notifications and one's email;
     // ERPNext gone (02/10/2026); the demo data (doc 53); the centre's language;
-    // Fatture in Cloud (06/10/2026)
-    expect(tutte).toHaveLength(56)
+    // Fatture in Cloud (06/10/2026); the centre's data in and out (07/10/2026);
+    // the review requests after a visit, the online payments, the conventions
+    // with funds and companies, the centre's locations (08/10/2026)
+    expect(tutte).toHaveLength(62)
   })
 
   it('gives every group, entry and tab a label', () => {

@@ -1,5 +1,5 @@
 <!--
-  One builder of forms (docs/gestionale-medico, design, "Il builder"): what the
+  One builder of forms (docs/verticali/clinica, design, "Il builder"): what the
   person fills and signs, the sheet the operator writes, the form on the website
   that finds the person or makes them. Each shows to whoever may build it: the
   centre its forms and sheets, marketing the website's.

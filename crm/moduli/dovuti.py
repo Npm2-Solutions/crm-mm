@@ -1,11 +1,12 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Which forms a person owes, and when (docs/gestionale-medico, "quando si chiede").
+"""Which forms a person owes, and when (docs/verticali/clinica, "quando si chiede").
 
 A template says when it is asked (``ask_on``: by hand, at the first appointment,
 for some services) and how long a signed one counts (``validity``: for ever, a
-year, one appointment); a new version may ask again whoever signed an earlier
+year, every few weeks - a questionnaire whose score is followed over time -, one
+appointment); a new version may ask again whoever signed an earlier
 one, from a date (``asked_from``). `dovuto` answers for one template and one
 person, pure; the rest reads the person's signed forms and appointments.
 
@@ -18,7 +19,7 @@ from __future__ import annotations
 import datetime
 
 import frappe
-from frappe.utils import add_years, get_datetime, getdate, now_datetime
+from frappe.utils import add_days, add_years, get_datetime, getdate, now_datetime
 
 from crm.demo import guardie
 
@@ -30,7 +31,18 @@ RICHIESTA = "CRM Form Request"
 FORMA = "Form"
 
 #: Why a form is owed, most telling first.
-MOTIVI = ("never_signed", "new_version", "expired", "every_appointment")
+MOTIVI = ("never_signed", "new_version", "expired", "due_again", "every_appointment")
+#: Every few weeks: from one week to two years.
+SETTIMANE = (1, 104)
+
+
+def settimane(modello: dict) -> int:
+	"""After how many weeks a template asked "every few weeks" is owed again."""
+	try:
+		n = int(modello.get("validity_weeks") or 0)
+	except (TypeError, ValueError):
+		n = 0
+	return min(max(n, SETTIMANE[0]), SETTIMANE[1]) if n else 4
 
 
 def _non_conta(firmato: dict, modello: dict, appuntamento: dict | None, oggi: datetime.date) -> str | None:
@@ -45,6 +57,11 @@ def _non_conta(firmato: dict, modello: dict, appuntamento: dict | None, oggi: da
 	validita = modello.get("validity") or "Forever"
 	if validita == "One year" and add_years(getdate(firmato.get("signed_on")), 1) <= oggi:
 		return "expired"
+	if (
+		validita == "Every few weeks"
+		and add_days(getdate(firmato.get("signed_on")), 7 * settimane(modello)) <= oggi
+	):
+		return "due_again"
 	if validita == "Every appointment" and (
 		not appuntamento or firmato.get("appointment") != appuntamento.get("name")
 	):
@@ -57,8 +74,8 @@ def dovuto(
 ) -> str | None:
 	"""Why ``modello`` is owed now, or None. Pure.
 
-	``modello``: ``ask_on``, ``validity``, ``services``, ``version`` (the current
-	one), ``asked_from``. ``firmati``: the person's signed forms of it, each with
+	``modello``: ``ask_on``, ``validity`` (and ``validity_weeks`` for "Every few
+	weeks"), ``services``, ``version`` (the current one), ``asked_from``. ``firmati``: the person's signed forms of it, each with
 	``version``, ``signed_on``, ``appointment``. ``appuntamento``: the one it is
 	asked for (``name``, ``service``), or None for the person in general.
 	"""
@@ -95,7 +112,16 @@ def modelli_che_si_chiedono() -> list[dict]:
 			"ask_on": ("!=", "By hand"),
 			"use": FORMA,
 		},
-		fields=["name", "title", "clinical", "ask_on", "validity", "current_version", "send_before"],
+		fields=[
+			"name",
+			"title",
+			"clinical",
+			"ask_on",
+			"validity",
+			"validity_weeks",
+			"current_version",
+			"send_before",
+		],
 		order_by="title asc",
 	)
 	servizi: dict[str, list] = {}
@@ -120,6 +146,7 @@ def modelli_che_si_chiedono() -> list[dict]:
 			"clinical": riga.clinical,
 			"ask_on": riga.ask_on,
 			"validity": riga.validity,
+			"validity_weeks": riga.validity_weeks,
 			"services": servizi.get(riga.name, []),
 			"version": versioni[riga.current_version].version if riga.current_version in versioni else 0,
 			"asked_from": versioni[riga.current_version].asked_from
@@ -170,15 +197,25 @@ def dovuti(
 	"""What each person owes: for the appointment given for them (or in general),
 	with why, and whether something is already under way. The forms with health
 	data only for whoever reads them (``clinici``)."""
+	dovute = per_appuntamenti([(persona, appuntamenti.get(persona)) for persona in persone], clinici=clinici)
+	return {persona: dovute[(persona, (appuntamenti.get(persona) or {}).get("name"))] for persona in persone}
+
+
+def per_appuntamenti(
+	coppie: list[tuple[str, dict | None]], *, clinici: bool
+) -> dict[tuple[str, str | None], list[dict]]:
+	"""`dovuti` for many people and appointments at once - a day at the desk, the
+	same person maybe twice: by (person, appointment's name), the templates, what
+	was signed and what is under way read once for all of them, not once a row."""
 	modelli = [m for m in modelli_che_si_chiedono() if clinici or not m["clinical"]]
+	persone = list({persona for persona, _ in coppie})
+	risposta: dict[tuple[str, str | None], list[dict]] = {}
 	if not modelli or not persone:
-		return {persona: [] for persona in persone}
+		return {(persona, (appuntamento or {}).get("name")): [] for persona, appuntamento in coppie}
 	firmati = _firmati(persone)
 	in_corso = _in_corso(persone)
 	oggi = getdate()
-	risposta: dict[str, list[dict]] = {}
-	for persona in persone:
-		appuntamento = appuntamenti.get(persona)
+	for persona, appuntamento in coppie:
 		voci = []
 		for modello in modelli:
 			if guardie.solo_per_la_demo(MODELLO, modello["name"], persona):
@@ -195,7 +232,7 @@ def dovuti(
 						"appointment": appuntamento.get("name") if appuntamento else None,
 					}
 				)
-		risposta[persona] = voci
+		risposta[(persona, appuntamento.get("name") if appuntamento else None)] = voci
 	return risposta
 
 
@@ -252,7 +289,11 @@ ORE_PRIMA = 1
 def appuntamento_prenotato(doc, method=None) -> None:
 	"""An appointment was booked: the forms the templates say to send go by link,
 	once the booking is saved (and in a job: the booking does not wait for mail)."""
-	if doc.get("status") == "Cancelled" or not any(m["send_before"] for m in modelli_che_si_chiedono()):
+	if (
+		doc.get("status") == "Cancelled"
+		# brought over from the previous software: nothing is asked of anybody
+		or doc.flags.get("importato")
+	) or not any(m["send_before"] for m in modelli_che_si_chiedono()):
 		return
 	frappe.enqueue(
 		"crm.moduli.dovuti.manda_con_la_prenotazione",

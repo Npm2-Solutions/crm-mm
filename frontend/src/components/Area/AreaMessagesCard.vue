@@ -1,10 +1,10 @@
 <!--
-  The person's board in their area: what the centre writes to them. Not a chat -
-  the person reads and does not answer here. The desk writes administrative
-  messages; with the clinic on, a practitioner writes about the care, read like a
-  visit. Who enters the area gets an email that says only that there is news.
-  A question the person passed on from the area's chat shows here too, marked:
-  it is answered by writing to the person.
+  The person's board in their area, both ways: what the centre writes to them,
+  and what they write back from the area's Messages - words, maybe a photo or a
+  PDF, opened from here - or pass on from its chat, marked: it is answered by
+  writing to the person. The desk writes administrative messages; with the clinic
+  on, a practitioner writes about the care, read like a visit. Who enters the
+  area gets an email that says only that there is news.
 -->
 <template>
   <section
@@ -22,7 +22,7 @@
                 'About their care: the person reads it in their area, your colleagues as they read your visits.',
               )
             : __(
-                'From the desk: a reminder, a document to bring. The person reads it in their area.',
+                'From the desk: a reminder, a document to bring. The person reads it in their area, and writes back here.',
               )
         }}
       </p>
@@ -63,19 +63,36 @@
       class="flex flex-col gap-1 border-t border-outline-gray-1 pt-3"
     >
       <Badge
-        v-if="message.kind === 'Question'"
+        v-if="message.from_person"
         class="w-fit"
         variant="subtle"
         theme="blue"
-        :label="__('A question from the area')"
+        :label="
+          message.kind === 'Question'
+            ? __('A question from the area')
+            : __('Written in the area')
+        "
       />
-      <p class="whitespace-pre-line text-p-base text-ink-gray-8">
+      <p
+        v-if="message.body"
+        class="whitespace-pre-line break-words text-p-base text-ink-gray-8"
+      >
         {{ message.body }}
       </p>
+      <a
+        v-if="message.attachment_name"
+        :href="attachmentUrl(message)"
+        target="_blank"
+        rel="noopener"
+        class="flex w-fit min-w-0 max-w-full items-center gap-1.5 rounded-md bg-surface-gray-2 px-2.5 py-1.5 text-p-sm text-ink-gray-8 hover:bg-surface-gray-3 [@media(pointer:coarse)]:min-h-10"
+      >
+        <FeatherIcon name="paperclip" class="size-4 shrink-0" />
+        <span class="min-w-0 truncate">{{ message.attachment_name }}</span>
+      </a>
       <span class="text-p-xs text-ink-gray-5">
         {{ message.author_name }} ·
         {{ formatDate(message.posted_on, 'D MMM YYYY, HH:mm') }}
-        <template v-if="message.kind === 'Question'">
+        <template v-if="message.from_person">
           · {{ __('answer by writing to the person') }}
         </template>
         <template v-else>
@@ -97,6 +114,7 @@ import {
   Badge,
   Button,
   ErrorMessage,
+  FeatherIcon,
   Textarea,
   call,
   createResource,
@@ -133,5 +151,10 @@ async function post() {
   } finally {
     busy.value = false
   }
+}
+
+// the file the person attached, opened through the board's own call
+function attachmentUrl(message) {
+  return `/api/method/crm.area.messaggi.attachment?${new URLSearchParams({ message: message.name })}`
 }
 </script>

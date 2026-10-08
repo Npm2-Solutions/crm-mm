@@ -21,6 +21,16 @@
   "column_totals",
   "total_net",
   "total_done",
+  "payment_section",
+  "payment",
+  "deposit_type",
+  "deposit_value",
+  "column_payment",
+  "instalments_count",
+  "every_months",
+  "first_due_on",
+  "instalments_invoiced",
+  "instalments",
   "quote_section",
   "proposed_on",
   "quote_pdf",
@@ -33,6 +43,20 @@
   "decline_reason",
   "closed_on",
   "replaces",
+  "signature_section",
+  "answered_in",
+  "sent_to_sign_on",
+  "sent_to_sign_to",
+  "signature",
+  "signer_name",
+  "signed_on",
+  "column_signature",
+  "signer_ip",
+  "signer_device",
+  "signed_hash",
+  "signed_pdf",
+  "signed_pdf_hash",
+  "signed_pdf_conformance",
   "dossier_section",
   "practitioner",
   "discipline",
@@ -151,6 +175,71 @@
    "read_only": 1
   },
   {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "default": "Single payment",
+   "fieldname": "payment",
+   "fieldtype": "Select",
+   "label": "Payment",
+   "options": "Single payment\nInstalments"
+  },
+  {
+   "default": "Amount",
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "deposit_type",
+   "fieldtype": "Select",
+   "label": "Deposit as",
+   "options": "Amount\nPercent"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "deposit_value",
+   "fieldtype": "Float",
+   "label": "Deposit",
+   "description": "An amount, or a share of the total; 0 for none"
+  },
+  {
+   "fieldname": "column_payment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "instalments_count",
+   "fieldtype": "Int",
+   "label": "Instalments",
+   "description": "From 2 to 36, equal to the cent"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "every_months",
+   "fieldtype": "Int",
+   "label": "Every how many months"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "first_due_on",
+   "fieldtype": "Date",
+   "label": "First instalment on"
+  },
+  {
+   "description": "Copied from the settings when it is proposed: each instalment is invoiced when it falls due, and the appointments of its services are not invoiced again",
+   "fieldname": "instalments_invoiced",
+   "fieldtype": "Check",
+   "label": "Each instalment invoiced when due",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "instalments",
+   "fieldtype": "Table",
+   "label": "Payment plan",
+   "options": "CRM Quote Instalment"
+  },
+  {
    "fieldname": "quote_section",
    "fieldtype": "Section Break",
    "label": "The quote"
@@ -223,6 +312,89 @@
    "read_only": 1
   },
   {
+   "fieldname": "signature_section",
+   "fieldtype": "Section Break",
+   "label": "Signed in the client area",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "answered_in",
+   "fieldtype": "Select",
+   "label": "Answered",
+   "options": "\nAt the desk\nIn the client area",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sent_to_sign_on",
+   "fieldtype": "Datetime",
+   "label": "Sent to sign on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sent_to_sign_to",
+   "fieldtype": "Data",
+   "label": "Sent to sign to",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Attach",
+   "label": "Signature",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signer_name",
+   "fieldtype": "Data",
+   "label": "Signed by",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_on",
+   "fieldtype": "Datetime",
+   "label": "Signed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_signature",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "signer_ip",
+   "fieldtype": "Data",
+   "label": "From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signer_device",
+   "fieldtype": "Small Text",
+   "label": "Device",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_hash",
+   "fieldtype": "Data",
+   "label": "The quote signed (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_pdf",
+   "fieldtype": "Attach",
+   "label": "Signed copy",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_pdf_hash",
+   "fieldtype": "Data",
+   "label": "Signed copy (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_pdf_conformance",
+   "fieldtype": "Data",
+   "label": "Signed copy's format",
+   "read_only": 1
+  },
+  {
    "fieldname": "dossier_section",
    "fieldtype": "Section Break",
    "hidden": 1,
@@ -255,7 +427,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-06 12:00:00.000000",
+ "modified": "2026-10-09 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Preventivi",
  "name": "CRM Quote",

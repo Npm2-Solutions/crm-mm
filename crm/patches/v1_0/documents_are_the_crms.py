@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """A person's documents and their deliveries move from the clinic to the CRM
-(docs/gestionale-medico/design.md, "Tre strati"): a beauty centre keeps a signed
+(docs/verticali/clinica/design.md, "Tre strati"): a beauty centre keeps a signed
 consent, a gym a contract, as a medical centre keeps a report.
 
 Before the models are synced, the DocTypes take the CRM's names and the

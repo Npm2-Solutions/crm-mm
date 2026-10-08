@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The phone at the top of every page (docs/progetto-ghl/34): where a telephony
+  The phone at the top of every page (docs/crm/34): where a telephony
   is on, for whoever calls or reads the calls. Its mark counts the callbacks
   owed now; it opens the phone at hand (PhonePanel) - under the button on a
   computer, from the bottom on a phone. It replaces the keypad and the calls

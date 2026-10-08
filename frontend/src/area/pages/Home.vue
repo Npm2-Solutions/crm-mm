@@ -1,6 +1,6 @@
 <!--
   The first screen, as the brand's phone has it: hello; the next appointment, the
-  page's deep block, and what to prepare for it; the plans followed today, in the
+  page's deep block, and what to prepare for it; booking again; the plans followed today, in the
   clouds of their kinds; the assistant for a question; what the centre gave
   online.
 -->
@@ -24,6 +24,10 @@
         </span>
         <LucideChevronRight class="area-row__go size-5" aria-hidden="true" />
       </router-link>
+      <BookAgain
+        v-if="appointments.data?.book"
+        :book="appointments.data.book"
+      />
     </section>
     <PrepareVisit />
     <TodayPlans v-if="section('plans')" />
@@ -79,6 +83,7 @@ import { computed } from 'vue'
 import LucideChevronRight from '~icons/lucide/chevron-right'
 import { anteprima } from '../anteprima'
 import AreaChip from '../components/AreaChip.vue'
+import BookAgain from '../components/BookAgain.vue'
 import HiddenCard from '../components/HiddenCard.vue'
 import InstallCard from '../components/InstallCard.vue'
 import NextAppointment from '../components/NextAppointment.vue'

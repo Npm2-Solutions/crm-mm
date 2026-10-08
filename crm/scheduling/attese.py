@@ -476,8 +476,9 @@ def _giorno_di(doc) -> str:
 
 def appuntamento_aggiornato(doc, method=None) -> None:
 	"""`on_update` of an appointment: cancelled, moved, a seat freed - who waits
-	for that day is looked at, after the save."""
-	if _fermo():
+	for that day is looked at, after the save. One brought over from the previous
+	software frees nothing."""
+	if _fermo() or doc.flags.get("importato"):
 		return
 	prima = doc.get_doc_before_save()
 	if R.libera(_istantanea(prima), _istantanea(doc), datetime.datetime.now(UTC)):

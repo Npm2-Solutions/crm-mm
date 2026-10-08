@@ -121,6 +121,15 @@ export const MENU = [
         ],
       },
       {
+        // more than one location in one centre (docs/crm/62): its rooms, the
+        // shifts worked there, its address on what the people booked receive
+        key: 'Locations',
+        label: 'Locations',
+        description:
+          'Where the centre is: each location with its address, its rooms and who works there.',
+        condition: generali,
+      },
+      {
         // the plan as the centre reads it: what the product comprises, the
         // extras; "Features", not "Plan", which are the patients' (doc 36)
         key: 'Plan',
@@ -128,6 +137,15 @@ export const MENU = [
         description:
           'What {brand} includes for the centre, and what can be added.',
         condition: puo('piano.vedi'),
+      },
+      {
+        // the centre's data are the centre's: brought over from the previous
+        // software (crm/importazione), taken away in one archive (crm/esportazione)
+        key: 'Your data',
+        label: 'Your data',
+        description:
+          'Bring your people over from the previous software, take all your data away.',
+        condition: (c) => c.puo('dati.esporta') || c.puo('persone.importa'),
       },
       {
         // a centre full of life to look around in, taken away in one tap
@@ -260,11 +278,12 @@ export const MENU = [
         condition: puo('consensi.configura'),
       },
       {
-        // what the area tells outside it
+        // what the area offers from the phone, and what it tells outside it
+        // (the key is the page's first name)
         key: 'News in the client area',
         label: 'Client area',
         description:
-          'The news their area sends: the email with its link, WhatsApp or SMS.',
+          '«I’m here» from their phone, and the news their area sends: email, WhatsApp or SMS.',
         condition: (c) => c.puo('canali.configura') && c.puo('area.invita'),
       },
       {
@@ -406,6 +425,15 @@ export const MENU = [
         condition: puo('social.pubblica'),
       },
       {
+        // asking after a visit for a review on Google (crm/recensioni): the
+        // automations ask, this page says where and how often
+        key: 'Review requests',
+        label: 'Review requests',
+        description:
+          'The Google review link and how often a person is asked. Everybody the same way, nothing in return.',
+        condition: puo('automazioni.gestisci'),
+      },
+      {
         key: 'Tracking',
         label: 'Tracking',
         description:
@@ -465,6 +493,31 @@ export const MENU = [
           { key: 'Billable services', label: 'Billable services' },
           { key: 'Providers', label: 'Providers' },
         ],
+      },
+      // how the clients pay, and the reminders of what they still owe
+      {
+        key: 'Payment reminders',
+        label: 'Payments and reminders',
+        description:
+          'How the clients pay, and the reminders of the invoices still to pay.',
+      },
+      // the centre's own Stripe account: invoices paid from the area or a link,
+      // deposits at online booking (doc 60)
+      {
+        key: 'Online payments',
+        label: 'Online payments',
+        description:
+          "Invoices and deposits paid online by card, on the centre's own Stripe account.",
+        condition: puo('pagamenti.gestisci'),
+      },
+      // the funds, insurers and companies the centre has a convention with: their
+      // prices, the person's share, who is billed (doc 61)
+      {
+        key: 'Conventions',
+        label: 'Conventions and funds',
+        description:
+          'Health funds, insurances and companies: their prices, the share the person pays, who is billed.',
+        condition: puo('convenzioni.gestisci'),
       },
       // what a centre opens once a year, if ever: the switches over everything,
       // and the register the accountant confirms

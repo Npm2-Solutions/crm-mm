@@ -1,6 +1,6 @@
 <!--
   The notifications panel, beside the sidebar: what is new for you in the
-  centre (docs/progetto-ghl/43-notifiche.md). All of them or only the unread
+  centre (docs/crm/43-notifiche.md). All of them or only the unread
   ones, under their days, each with its kind's mark; your upcoming events in a
   tab of their own. Escape, a click outside or the cross close it.
 -->

@@ -58,6 +58,12 @@ class CRMFormTemplate(Document):
 			frappe.throw(_("This is not a form"))
 		if self.ask_on != "Services":
 			self.set("services", [])
+		if self.validity == "Every few weeks":
+			from crm.moduli.dovuti import SETTIMANE
+
+			minimo, massimo = SETTIMANE
+			if not minimo <= (self.validity_weeks or 0) <= massimo:
+				frappe.throw(_("A form is asked again every {0} to {1} weeks").format(minimo, massimo))
 
 	def _sul_sito(self):
 		"""A form anybody fills on the website: an address of its own, and no health

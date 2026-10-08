@@ -67,6 +67,41 @@
       />
     </div>
 
+    <!-- paid online when booking, on the centre's Stripe (crm/pagamenti) -->
+    <div class="flex flex-col gap-2">
+      <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+        <FormControl
+          v-model="modoDiPagamento"
+          type="select"
+          :label="__('Pay online when booking')"
+          :options="paymentOptions"
+          :disabled="!stripe.data && !form.online_payment"
+        />
+        <FormControl
+          v-if="form.online_payment === 'Deposit'"
+          v-model.number="form.online_deposit"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          :label="__('Deposit')"
+        />
+      </div>
+      <p class="text-p-xs text-ink-gray-5">
+        {{
+          !stripe.data
+            ? __(
+                "Connect Stripe first, in Settings > Invoicing > Online payments: the money goes to the centre's own account.",
+              )
+            : form.online_payment
+              ? __(
+                  'The place is held for half an hour while the person pays on Stripe; the booking is confirmed once paid.',
+                )
+              : __('Nothing is paid online: the person pays at the centre.')
+        }}
+      </p>
+    </div>
+
     <!-- inherited rules -->
     <div>
       <div class="mb-1 text-p-sm-medium text-ink-gray-6">
@@ -261,12 +296,32 @@ import {
   setCustomised,
 } from '@/utils/onlineBooking'
 import { FormControl, Switch, toast } from 'frappe-ui'
+import { chiedi } from '@/utils/chiedi'
 import { computed } from 'vue'
 import { dateFormat } from '@/utils'
 
 const form = defineModel({ type: Object, required: true })
 const props = defineProps({
   serviceName: { type: String, default: '' },
+})
+
+// whether Stripe is connected: a deposit is asked only then
+const stripe = chiedi({
+  url: 'crm.pagamenti.collegamento.online_payments_on',
+  onError: () => {},
+})
+const paymentOptions = [
+  { label: __('Nothing, paid at the centre'), value: 'none' },
+  { label: __('A deposit'), value: 'Deposit' },
+  { label: __('The whole price'), value: 'Full price' },
+]
+
+// the select keeps no empty value (it would read «Choose…»): nothing is 'none'
+const modoDiPagamento = computed({
+  get: () => form.value.online_payment || 'none',
+  set: (valore) => {
+    form.value.online_payment = valore === 'none' ? '' : valore
+  },
 })
 
 const confirmationOptions = [

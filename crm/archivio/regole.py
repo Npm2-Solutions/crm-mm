@@ -34,9 +34,16 @@ BYTE_PER_GIRO = 20 * 1024**3
 GB = 1024**3
 TB = 1024 * GB
 
-#: What each size of the plan includes (listino.md, "Archivio"): a terabyte, two
-#: from the polyclinic up. The agency can write another figure on the plan.
-SPAZIO_COMPRESO = {"Solo": 1 * TB, "Studio": 1 * TB, "Centre": 1 * TB, "Polyclinic": 2 * TB, "Large": 2 * TB}
+#: What each size of the plan includes (the listino, 07/10/2026): growing with
+#: the size, 300 GB for one person, two terabytes from the polyclinic up. The
+#: agency can write another figure on the plan.
+SPAZIO_COMPRESO = {
+	"Solo": 300 * GB,
+	"Studio": 600 * GB,
+	"Centre": 1 * TB,
+	"Polyclinic": 2 * TB,
+	"Large": 2 * TB,
+}
 #: A plan without a size yet.
 SPAZIO_DI_BASE = 1 * TB
 

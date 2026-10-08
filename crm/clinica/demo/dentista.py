@@ -345,12 +345,7 @@ def _piano_di_cura(
 	proposto = min(
 		fine + datetime.timedelta(minutes=ctx.rng.randint(5, 20)), ctx.adesso - datetime.timedelta(minutes=30)
 	)
-	with ctx.come(agenda.dentista):
-		bozza = preventivi.save_quote(
-			persona, {"title": "Piano di cura", "patient_notes": ctx.rng.choice(D.NOTE_PIANO), "items": voci}
-		)
-		preventivi.propose_quote(bozza["name"])
-	nome = bozza["name"]
+	dati = {"title": "Piano di cura", "patient_notes": ctx.rng.choice(D.NOTE_PIANO), "items": voci}
 	caso = ctx.rng.random()
 	if (ctx.oggi - fine.date()).days <= 6 and caso < 0.5:
 		esito, quando = None, None
@@ -360,6 +355,16 @@ def _piano_di_cura(
 		esito, quando = "no", proposto + datetime.timedelta(days=ctx.rng.randint(2, 6))
 	if quando:
 		quando = min(quando, ctx.adesso - datetime.timedelta(minutes=10))
+	# the first who said yes a while ago pays in instalments, written so in the editor
+	a_rate = esito == "si" and (ctx.oggi - quando.date()).days >= GIORNI_RATE and not ctx.trova(CHIAVE_RATE)
+	if a_rate:
+		dati.update(RATE, first_due_on=str(ctx.giorno(30)))
+	with ctx.come(agenda.dentista):
+		bozza = preventivi.save_quote(persona, dati)
+		preventivi.propose_quote(bozza["name"])
+	nome = bozza["name"]
+	if a_rate:
+		ctx.ricorda(preventivi.DOCTYPE, nome, CHIAVE_RATE)
 	with ctx.come(agenda.desk):
 		if esito == "si":
 			preventivi.accept_quote(nome, ctx.rng.choice(dati_demo.SI_AL_PREVENTIVO))
@@ -369,8 +374,39 @@ def _piano_di_cura(
 				nome, motivo if frappe.db.exists("CRM Lost Reason", motivo) else None, nota
 			)
 	date_del_preventivo(ctx, nome, agenda.dentista, proposto, esito, quando, agenda.desk)
+	if a_rate:
+		_date_delle_rate(nome, quando.date())
 	if esito == "si":
 		_cure(ctx, agenda, persona, quando, righe)
+
+
+#: The care plan paid in instalments (docs/crm/63): a fifth on acceptance and ten a
+#: month from the day after; accepted at least this many days ago, so that the
+#: deposit and the first instalment at least are due, invoiced and paid by
+#: invoicing's part (three, for one accepted over a month ago).
+RATE = {
+	"payment": "Instalments",
+	"deposit_type": "Percent",
+	"deposit_value": 20,
+	"instalments_count": 10,
+	"every_months": 1,
+}
+GIORNI_RATE = 10
+CHIAVE_RATE = "quote.instalments"
+
+
+def _date_delle_rate(nome: str, accettato: datetime.date) -> None:
+	"""The plan put back at its moments, as the quote was: the deposit on the day it
+	was accepted, the instalments from the day after."""
+	from crm.scheduling.abbonamenti_regole import piu_mesi
+
+	primo = accettato + datetime.timedelta(days=1)
+	frappe.db.set_value("CRM Quote", nome, "first_due_on", primo, update_modified=False)
+	for riga in frappe.get_all(
+		"CRM Quote Instalment", filters={"parent": nome}, fields=["name", "kind", "number"]
+	):
+		giorno = accettato if riga.kind == "Deposit" else piu_mesi(primo, int(riga.number) - 1)
+		frappe.db.set_value("CRM Quote Instalment", riga.name, "due_on", giorno, update_modified=False)
 
 
 def _cure(

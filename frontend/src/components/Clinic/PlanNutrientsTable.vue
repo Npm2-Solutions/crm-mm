@@ -29,7 +29,11 @@
               :key="column.key"
               class="px-2 py-1 text-right tabular-nums"
             >
-              {{ Number(targets[column.key]) > 0 ? targets[column.key] : '–' }}
+              {{
+                Number(targets[column.key]) > 0
+                  ? numero(targets[column.key])
+                  : '–'
+              }}
             </td>
           </tr>
           <tr
@@ -43,7 +47,7 @@
               :key="column.key"
               class="px-2 py-1 text-right tabular-nums"
             >
-              {{ row[column.key] }}
+              {{ numero(row[column.key]) }}
             </td>
           </tr>
         </tbody>
@@ -65,6 +69,7 @@
 </template>
 
 <script setup>
+import { appLocale } from '@/utils/locale'
 import { NUTRIENTI } from '@/utils/piani'
 import { computed } from 'vue'
 
@@ -82,6 +87,12 @@ const columns = [
   { key: 'fat_g', label: __('Fats (g)') },
   { key: 'fibre_g', label: __('Fibre (g)') },
 ]
+
+// as the reader writes numbers: «1.800», «11,7»
+const formato = new Intl.NumberFormat(appLocale(), { maximumFractionDigits: 1 })
+function numero(n) {
+  return formato.format(Number(n) || 0)
+}
 
 const hasTargets = computed(() =>
   NUTRIENTI.some((n) => Number(props.targets?.[n]) > 0),

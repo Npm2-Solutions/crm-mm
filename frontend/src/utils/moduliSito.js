@@ -21,13 +21,32 @@ export const CONTACTS = ['email', 'mobile_no']
  */
 export function useProblems(
   schema,
-  { forThePerson = true, onTheSite = false, personFields = [] } = {},
+  {
+    forThePerson = true,
+    onTheSite = false,
+    withoutCode = false,
+    personFields = [],
+  } = {},
 ) {
   const problems = []
   const fields = fieldsOf(schema)
   const known = new Map(personFields.map((f) => [f.value, f.label]))
-  for (const field of fields) {
-    const label = field.label || field.id
+  for (const [index, field] of fields.entries()) {
+    // a question without words (a signature) by its place, never its key
+    const label = field.label || __('Question {0}', [index + 1])
+    // a survey opens with its link alone: nobody checked who holds it
+    if (
+      withoutCode &&
+      ['consent', 'signature', 'attachment'].includes(field.type)
+    ) {
+      problems.push({
+        field: field.id,
+        message:
+          '{0}: a survey opens with its link alone, so it asks no consent, signature or file',
+        args: [label],
+      })
+      continue
+    }
     if (field.type === 'consent' && !forThePerson) {
       problems.push({
         field: field.id,
@@ -48,6 +67,15 @@ export function useProblems(
       problems.push({
         field: field.id,
         message: '{0}: no file is sent from the website',
+        args: [label],
+      })
+    }
+    // where it hurts is health data: told at the centre, never to anybody's form
+    if (field.type === 'body_chart') {
+      problems.push({
+        field: field.id,
+        message:
+          '{0}: where it hurts is asked at the centre, not on the website',
         args: [label],
       })
     }

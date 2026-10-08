@@ -25,10 +25,10 @@ from crm.permissions.livelli import (
 	registra_ruolo,
 )
 
-#: Invoicing is an extra of the plan (listino.md, 01/10/2026): many centres
-#: invoice through their accountant. The Sistema TS always comes with it - whoever
-#: invoices healthcare to private persons owes it, and may not send those
-#: invoices to the SdI. On by default: every site invoiced before plans existed.
+#: Invoicing comes with every plan (the listino, 07/10/2026): the base comprises
+#: it (`catalogo.BASE`), whatever a plan's row says. The Sistema TS always comes
+#: with it - whoever invoices healthcare to private persons owes it, and may not
+#: send those invoices to the SdI.
 PIANO = "fatturazione"
 
 MODULO = ModuloPiano(

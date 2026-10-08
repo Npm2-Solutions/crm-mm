@@ -1,0 +1,74 @@
+{
+	"_": "A quote's payment plan: the cases crm/preventivi/tests/test_rate_regole.py and frontend/tests/unit/preventivi.test.js both prove. Change one side, run both.",
+	"acconto": [
+		{ "totale": 4000, "tipo": "Amount", "valore": 400, "atteso": 400 },
+		{ "totale": 4000, "tipo": "Percent", "valore": 15, "atteso": 600 },
+		{ "totale": 333.33, "tipo": "Percent", "valore": 10, "atteso": 33.33 },
+		{ "totale": 100, "tipo": "Amount", "valore": 250, "atteso": 100 },
+		{ "totale": 100, "tipo": "Amount", "valore": -5, "atteso": 0 },
+		{ "totale": 100, "tipo": "Amount", "valore": null, "atteso": 0 }
+	],
+	"quote": [
+		{ "resto": 3600, "numero": 10, "atteso": [360, 360, 360, 360, 360, 360, 360, 360, 360, 360] },
+		{ "resto": 100, "numero": 3, "atteso": [33.33, 33.33, 33.34] },
+		{ "resto": 200, "numero": 3, "atteso": [66.66, 66.66, 66.68] },
+		{ "resto": 1000.01, "numero": 36, "atteso_ultima": 28.06, "atteso_prima": 27.77 }
+	],
+	"piano": [
+		{
+			"totale": 4000, "acconto": 400, "numero": 10, "ogni": 1, "primo": "2026-11-01",
+			"atteso": [
+				{ "kind": "Deposit", "number": 0, "due_on": null, "amount": 400 },
+				{ "kind": "Instalment", "number": 1, "due_on": "2026-11-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 2, "due_on": "2026-12-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 3, "due_on": "2027-01-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 4, "due_on": "2027-02-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 5, "due_on": "2027-03-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 6, "due_on": "2027-04-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 7, "due_on": "2027-05-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 8, "due_on": "2027-06-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 9, "due_on": "2027-07-01", "amount": 360 },
+				{ "kind": "Instalment", "number": 10, "due_on": "2027-08-01", "amount": 360 }
+			]
+		},
+		{
+			"totale": 1000, "acconto": 0, "numero": 3, "ogni": 2, "primo": "2026-12-31",
+			"atteso": [
+				{ "kind": "Instalment", "number": 1, "due_on": "2026-12-31", "amount": 333.33 },
+				{ "kind": "Instalment", "number": 2, "due_on": "2027-02-28", "amount": 333.33 },
+				{ "kind": "Instalment", "number": 3, "due_on": "2027-04-30", "amount": 333.34 }
+			]
+		},
+		{
+			"totale": 250, "acconto": 50, "numero": 2, "ogni": 1, "primo": "2028-01-31",
+			"atteso": [
+				{ "kind": "Deposit", "number": 0, "due_on": null, "amount": 50 },
+				{ "kind": "Instalment", "number": 1, "due_on": "2028-01-31", "amount": 100 },
+				{ "kind": "Instalment", "number": 2, "due_on": "2028-02-29", "amount": 100 }
+			]
+		}
+	],
+	"problemi": [
+		{ "totale": 4000, "tipo": "Amount", "valore": 400, "numero": 10, "ogni": 1, "primo": "2026-11-01", "oggi": "2026-10-08", "atteso": [] },
+		{ "totale": 4000, "tipo": "Amount", "valore": 0, "numero": 1, "ogni": 1, "primo": "2026-11-01", "atteso": ["Instalments: from {0} to {1}"] },
+		{ "totale": 4000, "tipo": "Amount", "valore": 0, "numero": 37, "ogni": 3, "primo": "2026-11-01", "atteso": ["Instalments: from {0} to {1}", "Instalments go every month or every two months"] },
+		{ "totale": 4000, "tipo": "Amount", "valore": 4000, "numero": 10, "ogni": 1, "primo": "2026-11-01", "atteso": ["The deposit is less than the total"] },
+		{ "totale": 4000, "tipo": "Percent", "valore": 100, "numero": 10, "ogni": 1, "primo": "2026-11-01", "atteso": ["The deposit is less than the total"] },
+		{ "totale": 4000, "tipo": "Amount", "valore": 0, "numero": 10, "ogni": 1, "primo": null, "atteso": ["Choose the day of the first instalment"] },
+		{ "totale": 4000, "tipo": "Amount", "valore": 0, "numero": 10, "ogni": 1, "primo": "2026-10-01", "oggi": "2026-10-08", "atteso": ["The first instalment is not in the past"] },
+		{ "totale": 0.05, "tipo": "Amount", "valore": 0, "numero": 10, "ogni": 1, "primo": "2026-11-01", "atteso": ["Too many instalments for what is left to pay"] }
+	],
+	"riassunto": [
+		{
+			"oggi": "2026-11-15",
+			"rate": [
+				{ "kind": "Deposit", "due_on": "2026-10-08", "amount": 400, "status": "Paid" },
+				{ "kind": "Instalment", "due_on": "2026-11-01", "amount": 360, "status": "Invoiced" },
+				{ "kind": "Instalment", "due_on": "2026-12-01", "amount": 360, "status": "To pay" },
+				{ "kind": "Instalment", "due_on": "2027-01-01", "amount": 360, "status": "Paid" },
+				{ "kind": "Instalment", "due_on": "2027-02-01", "amount": 360, "status": "Cancelled" }
+			],
+			"atteso": { "count": 3, "paid": 1, "next_due_on": "2026-11-01", "late": 1, "late_amount": 360, "left": 720, "cancelled": 1 }
+		}
+	]
+}

@@ -1,6 +1,6 @@
 <!--
   The notifications on a phone: the same list as the panel, a page of its own
-  (docs/progetto-ghl/43-notifiche.md).
+  (docs/crm/43-notifiche.md).
 -->
 <template>
   <LayoutHeader>

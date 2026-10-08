@@ -4,7 +4,7 @@
 <template>
   <div class="flex min-w-0 items-center">
     <!-- the pages that live together, one switch between them: Persone and
-         Aziende, Da fare and Note (docs/progetto-ghl/34). Three do not fit
+         Aziende, Da fare and Note (docs/crm/34). Three do not fit
          beside a phone's buttons: there the one open is the title, the
          others in its menu -->
     <Dropdown v-if="aTendina" :options="vociSorelle">

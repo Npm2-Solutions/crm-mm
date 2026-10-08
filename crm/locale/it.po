@@ -920,8 +920,8 @@ msgid "A required field was missing from the message. That is ours to fix."
 msgstr "Nel messaggio mancava un campo obbligatorio. Tocca a noi correggerlo."
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited."
-msgstr "Un ambulatorio è una stanza in cui si visita o si tratta, come uno studio o un box; la palestra di fisioterapia conta come uno. Sono le sale dell'agenda: specialisti e utenti sono illimitati."
+msgid "A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited, but in the Professional plan."
+msgstr "Un ambulatorio è una stanza in cui si visita o si tratta, come uno studio o un box; la palestra di fisioterapia conta come uno. Sono le sale dell'agenda: specialisti e utenti sono illimitati, tranne nel piano Professionista."
 
 #: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
 msgid "A room or machine over capacity"
@@ -15364,7 +15364,7 @@ msgstr "Pasto"
 
 #: crm/clinica/piani_regole.py
 msgid "Meal plan"
-msgstr "Menu"
+msgstr "Piano alimentare"
 
 #: frontend/src/frontend/src/utils/moduliStarters.js
 msgid "Measures, allergies, medications, habits"
@@ -16962,7 +16962,7 @@ msgstr "Nessun indirizzo email: dai il link insieme al codice"
 
 #: crm/scheduling/attese.py
 msgid "No email or mobile on file: call them"
-msgstr "Nessuna email né cellulare: chiamala"
+msgstr "Nessuna email né cellulare: da chiamare"
 
 #: crm/invoicing/sdi/itala.py
 msgid "No endpoint for provider {0}: the XML is ready, the channel is not."
@@ -18384,7 +18384,7 @@ msgstr "Proposta da"
 
 #: frontend/src/components/Waiting/WaitingDialog.vue
 msgid "Offered, but nothing could be sent: call them"
-msgstr "Proposto, ma non è partito niente: chiamala"
+msgstr "Proposto, ma non è partito niente: da chiamare"
 
 #: frontend/src/components/Settings/Scheduling/WaitingListSettings.vue
 msgid "Offers"
@@ -24868,8 +24868,8 @@ msgid "Solo"
 msgstr "Solo"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Solo, one room"
-msgstr "Solo, un ambulatorio"
+msgid "Professional, one user and up to 3 rooms"
+msgstr "Professionista, un utente e fino a 3 ambulatori"
 
 #: frontend/src/utils/moduliStarters.js
 msgid "Some days"
@@ -25422,8 +25422,8 @@ msgid "Studio hours"
 msgstr "Orari del centro"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Studio, up to 2 rooms"
-msgstr "Studio, fino a 2 ambulatori"
+msgid "Studio, up to 3 rooms"
+msgstr "Studio, fino a 3 ambulatori"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:68
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:68
@@ -40150,7 +40150,7 @@ msgstr "Ha scritto STOP agli SMS del centro: non inviato"
 
 #: crm/scheduling/attese.py
 msgid "They wrote STOP to the centre's SMS and have no email on file: call them"
-msgstr "Ha scritto STOP agli SMS del centro e non ha un'email: chiamala"
+msgstr "Ha scritto STOP agli SMS del centro e non ha un'email: da chiamare"
 
 #: crm/telephony/sms.py
 msgid "Wrote STOP by SMS"
@@ -42039,8 +42039,8 @@ msgid "From a person’s page, put them on the list when there is no place: what
 msgstr "Dalla pagina di una persona, mettila in lista quando non c'è posto: quello che si libera va a lei."
 
 #: crm/moduli/modelli.py
-msgid "Filled in by the person: a privacy notice, consents, a questionnaire"
-msgstr "Lo compila la persona: un'informativa, dei consensi, un questionario"
+msgid "Filled in and signed by the person: a privacy notice, consents, a contract"
+msgstr "Lo compila e lo firma la persona: un'informativa, dei consensi, un contratto"
 
 #: crm/moduli/modelli.py
 msgid "Written by the operator during an appointment: a treatment sheet, an assessment"
@@ -44588,7 +44588,7 @@ msgstr "Quando è diventato paziente: una prestazione sanitaria, o dati sanitari
 msgid "New patients pipeline"
 msgstr "Pipeline dei nuovi pazienti"
 
-#. the first step of a person: stored "Contact", read «Lead» (docs/progetto-ghl/54)
+#. the first step of a person: stored "Contact", read «Lead» (docs/crm/54)
 #: frontend/src/utils/rapporto.js
 msgctxt "Relationship"
 msgid "Contact"
@@ -45513,7 +45513,7 @@ msgstr "Fai mandare a Zapier, Make, n8n o a qualsiasi altro sistema una prenotaz
 msgid "Cancelled in {brand}"
 msgstr "Annullato in {brand}"
 
-#. the person's summary: the tab their page opens on (docs/progetto-ghl/54)
+#. the person's summary: the tab their page opens on (docs/crm/54)
 #: frontend/src/pages/Lead.vue frontend/src/pages/MobileLead.vue
 msgctxt "Person tab"
 msgid "Summary"
@@ -45847,8 +45847,8 @@ msgid "Storage included (GB)"
 msgstr "Spazio incluso (GB)"
 
 #: crm/fcrm/doctype/crm_plan/crm_plan.json
-msgid "The space for the centre's files, in GB, when it is not what the size includes: 1 TB, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it."
-msgstr "Lo spazio per i file del centro, in GB, quando non è quello che la dimensione include: 1 TB, 2 TB da Poliambulatorio in su. Oltre non si blocca niente: la pagina avvisa e l'agenzia lo fattura."
+msgid "The space for the centre's files, in GB, when it is not what the size includes: 300 GB for Solo, 600 GB for Studio, 1 TB for Centre, 2 TB from Polyclinic up. Past it nothing is blocked: the page warns and the agency bills it."
+msgstr "Lo spazio per i file del centro, in GB, quando non è quello che la dimensione include: 300 GB per Solo, 600 GB per Studio, 1 TB per Centro, 2 TB da Poliambulatorio in su. Oltre non si blocca niente: la pagina avvisa e l'agenzia lo fattura."
 
 #: crm/fcrm/doctype/crm_archived_file/crm_archived_file.json
 msgid "CRM Archived File"
@@ -45900,7 +45900,7 @@ msgstr "{0} per {1}"
 
 #: crm/scheduling/promemoria.py
 msgid "None of the centre's ways reaches them: call them"
-msgstr "Nessun canale del centro la raggiunge: chiamala"
+msgstr "Nessun canale del centro la raggiunge: da chiamare"
 
 #: crm/scheduling/promemoria.py
 msgid "{0}: a reminder of your appointment: {1}, {2}. Reply YES to confirm, NO if you cannot come. To move it: {3}"
@@ -46227,3 +46227,3239 @@ msgstr "I promemoria degli appuntamenti di domani, per email, e chi ha confermat
 
 msgid "on the list since {0}"
 msgstr "in lista dal {0}"
+
+#: crm/api/plan.py
+msgid "{0} asks for the {1} plan on {2}"
+msgstr "{0} chiede il piano {1} su {2}"
+
+#: crm/api/plan.py
+msgid "A centre asks for a bigger plan"
+msgstr "Un centro chiede un piano più grande"
+
+#: crm/api/plan.py
+msgid "{0} ({1}) asks to move {2} to the {3} plan. Change the size in the site's plan (Settings > Plan) and bill it from next month."
+msgstr "{0} ({1}) chiede di passare {2} al piano {3}. Cambia la taglia nel piano del sito (Impostazioni > Piano) e fatturala dal mese dopo."
+
+#: crm/api/plan.py
+msgid "{0} is not a size of the plan"
+msgstr "{0} non è una taglia del piano"
+
+#: crm/api/plan.py
+msgid "The Professional plan is for one person. To work with colleagues, ask for the Studio plan from Settings > Features: users are unlimited there."
+msgstr "Il piano Professionista è per una persona. Per lavorare con dei colleghi chiedi il piano Studio da Impostazioni > Funzionalità: lì gli utenti sono illimitati."
+
+#: crm/api/plan.py
+msgid "One user in the plan"
+msgstr "Un utente nel piano"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "{0} of {1} users"
+msgstr "{0} utenti su {1}"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "The Professional plan is for one person. To work with colleagues, the Studio plan has unlimited users and the same rooms."
+msgstr "Il piano Professionista è per una persona. Per lavorare con dei colleghi c'è il piano Studio, con utenti illimitati e gli stessi ambulatori."
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Ask for the Studio plan"
+msgstr "Chiedi il piano Studio"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Asked: the agency will move your plan"
+msgstr "Richiesta inviata: l'agenzia sposterà il tuo piano"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "The agency could not be emailed: let them know"
+msgstr "Non è stato possibile scrivere all'agenzia: avvisala tu"
+
+#: crm/permissions/catalogo.py
+msgid "Take all the centre's data away in one archive, health data included"
+msgstr "Portare via tutti i dati del centro in un archivio, dati sanitari compresi"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Take all the centre's data away in one archive, whenever you want."
+msgstr "Porta via tutti i dati del centro in un archivio, quando vuoi."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The centre's data are the centre's. Take them all away in one archive, whenever you want: people, appointments, records, documents, invoices and their files."
+msgstr "I dati del centro sono del centro. Portali via tutti in un archivio, quando vuoi: persone, appuntamenti, cartelle, documenti, fatture e i loro file."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Make the archive"
+msgstr "Prepara l'archivio"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "With the files"
+msgstr "Con i file"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The attached files too: reports, signed forms, images. A centre with many takes longer."
+msgstr "Anche i file allegati: referti, moduli firmati, immagini. Un centro che ne ha molti ci mette di più."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Making the archive…"
+msgstr "Preparo l'archivio…"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "You can keep working: the archive appears here when it is ready."
+msgstr "Puoi continuare a lavorare: l'archivio compare qui quando è pronto."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Archives ready"
+msgstr "Archivi pronti"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "None yet."
+msgstr "Ancora nessuno."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "kept until {0}"
+msgstr "resta fino al {0}"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Made by a colleague"
+msgstr "Preparato da un collega"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The archive holds health data: keep it as you keep the clinical record. Each archive made stays in the access log, and goes after {0} days."
+msgstr "L'archivio contiene dati sanitari: conservalo come la cartella clinica. Ogni archivio preparato resta nel registro degli accessi, e sparisce dopo {0} giorni."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The archive could not be made: the agency has been told"
+msgstr "Non è stato possibile preparare l'archivio: l'agenzia è stata avvisata"
+
+#: crm/esportazione/esporta.py
+msgid "An archive is already being made: it is ready in a few minutes"
+msgstr "Un archivio è già in preparazione: sarà pronto tra pochi minuti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Bring your people over from the previous software, take all your data away."
+msgstr "Porta qui le tue persone dal gestionale di prima, porta via tutti i tuoi dati."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "The centre's data are the centre's: bring them over from the previous software, take them all away whenever you want."
+msgstr "I dati del centro sono del centro: portali qui dal gestionale di prima, portali via tutti quando vuoi."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bring your people over"
+msgstr "Porta qui le tue persone"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Export the patients or clients from the previous software as Excel or CSV, and upload the file here. {brand} recognises the columns, shows what it found row by row, and writes nothing until you confirm. Somebody already here, by fiscal code, email or mobile, is not made twice."
+msgstr "Esporta i pazienti o i clienti dal gestionale di prima in Excel o CSV e carica qui il file. {brand} riconosce le colonne, ti mostra riga per riga cosa ha trovato e non scrive niente finché non confermi. Chi c'è già, per codice fiscale, email o cellulare, non viene creato due volte."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0}: not read"
+msgstr "{0}: non letta"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0} rows: {1} already here, completed only where empty; {2} with something to check."
+msgstr "{0} righe: {1} già presenti, completate solo dove mancava qualcosa; {2} con qualcosa da controllare."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "What happens"
+msgstr "Cosa succede"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Already here"
+msgstr "Già presente"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bring them in"
+msgstr "Portale qui"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Bringing them in… you can keep working."
+msgstr "Le sto portando qui… puoi continuare a lavorare."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "{0} new people, {1} completed, {2} rows left out, {3} not brought in"
+msgstr "{0} persone nuove, {1} completate, {2} righe saltate, {3} non portate qui"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Take the centre's data away"
+msgstr "Porta via i dati del centro"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "One archive with people, appointments, records, documents, invoices and their files, in formats any program reads."
+msgstr "Un archivio con persone, appuntamenti, cartelle, documenti, fatture e i loro file, in formati che ogni programma legge."
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Street number"
+msgstr "Numero civico"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Code in the previous software"
+msgstr "Codice nel gestionale di prima"
+
+#: crm/importazione/regole.py
+msgid "The email {0} is not an email"
+msgstr "{0} non è un'email"
+
+#: crm/importazione/regole.py
+msgid "The fiscal code {0} is not valid"
+msgstr "Il codice fiscale {0} non è valido"
+
+#: crm/importazione/regole.py
+msgid "The date {0} is not a date"
+msgstr "{0} non è una data"
+
+#: crm/importazione/importa.py
+msgid "The sheet is empty"
+msgstr "Il foglio è vuoto"
+
+#: crm/importazione/importa.py
+msgid "A sheet is already being brought in"
+msgstr "Un foglio è già in importazione"
+
+#: crm/importazione/importa.py
+msgid "From the previous software"
+msgstr "Dal gestionale di prima"
+
+#: frontend/src/components/Settings/YourDataSettings.vue
+msgid "Row"
+msgstr "Riga"
+
+msgid "The trial's requests are used up: add the assistant to the plan in Settings > The centre > Features"
+msgstr "Le richieste di prova sono finite: aggiungi l'assistente al piano in Impostazioni > Il centro > Funzionalità"
+
+msgid "Assistant's trial requests"
+msgstr "Richieste di prova dell'assistente"
+
+msgid "Nearly used up: then the assistant is an add-on"
+msgstr "Quasi finite: poi l'assistente si aggiunge al piano"
+
+msgid "Choose the foods"
+msgstr "Scegli gli alimenti"
+
+msgid "Choose the exercises"
+msgstr "Scegli gli esercizi"
+
+msgid "For «{0}»"
+msgstr "Per «{0}»"
+
+msgid "Muscles"
+msgstr "Muscoli"
+
+msgid "Also"
+msgstr "Anche"
+
+msgid "The video"
+msgstr "Il video"
+
+msgid "Search a food: pasta, apple, yogurt…"
+msgstr "Cerca un alimento: pasta, mela, yogurt…"
+
+msgid "Search an exercise: squat, plank, stretching…"
+msgstr "Cerca un esercizio: squat, plank, allungamento…"
+
+msgid "The library’s pictures are not on the server yet: they arrive by themselves within a few hours. The exercises can be chosen already."
+msgstr "Le immagini della libreria non sono ancora sul server: arrivano da sole entro qualche ora. Gli esercizi si possono già scegliere."
+
+msgid "Add «{0}» to the library"
+msgstr "Aggiungi «{0}» alla libreria"
+
+msgid "How it is done: {0}"
+msgstr "Come si fa: {0}"
+
+msgid "Chosen"
+msgstr "Scelto"
+
+msgid "Choose it"
+msgstr "Sceglilo"
+
+msgid "Add {0}"
+msgstr "Aggiungi {0}"
+
+msgid "Any equipment"
+msgstr "Qualsiasi attrezzo"
+
+msgid "No exercise chosen"
+msgstr "Nessun esercizio scelto"
+
+msgid "Your qualification is {0}. The centre’s manager sets it in Settings › Invoicing › Services & providers."
+msgstr "La tua qualifica è {0}. La imposta il responsabile del centro in Impostazioni › Fatturazione › Servizi e professionisti."
+
+msgid "You have no qualification yet: the centre’s manager sets it in Settings › Invoicing › Services & providers."
+msgstr "Non hai ancora una qualifica: la imposta il responsabile del centro in Impostazioni › Fatturazione › Servizi e professionisti."
+
+msgid "{0}: written by {1}."
+msgstr "{0}: solo con la qualifica di {1}."
+
+msgid "In one of your plans"
+msgstr "In uno dei tuoi piani"
+
+msgid "In {0} of your plans"
+msgstr "In {0} dei tuoi piani"
+
+msgid "In one plan of the centre"
+msgstr "In un piano del centro"
+
+msgid "In {0} plans of the centre"
+msgstr "In {0} piani del centro"
+
+msgid "From the food tables"
+msgstr "Dalle tabelle degli alimenti"
+
+msgid "Change the exercise: {0}"
+msgstr "Cambia l'esercizio: {0}"
+
+msgid "Reps"
+msgstr "Ripet."
+
+msgid "More about this item"
+msgstr "Altro su questa voce"
+
+msgid "Or instead"
+msgstr "Oppure"
+
+msgid "Another food, how much"
+msgstr "Un altro alimento, quanto"
+
+msgid "How often"
+msgstr "Quante volte"
+
+msgid "Or instead: {0}"
+msgstr "Oppure: {0}"
+
+msgid "Plus one moment of every day."
+msgstr "Più un momento di ogni giorno."
+
+msgid "Plus {0} moments of every day."
+msgstr "Più {0} momenti di ogni giorno."
+
+msgid "{0}, with every day’s moments"
+msgstr "{0}, con i momenti di ogni giorno"
+
+msgid "More about the moment"
+msgstr "Altro sul momento"
+
+msgid "Add a moment of every day"
+msgstr "Aggiungi un momento di ogni giorno"
+
+msgid "Add a moment on {0}"
+msgstr "Aggiungi un momento ({0})"
+
+msgid "Copy this day into…"
+msgstr "Copia questo giorno in…"
+
+msgid "Save as a template"
+msgstr "Salva come modello"
+
+msgid "Add a note"
+msgstr "Aggiungi una nota"
+
+msgid "Copy into other days…"
+msgstr "Copia in altri giorni…"
+
+msgid "Duplicate here"
+msgstr "Duplica qui"
+
+msgid "Move to…"
+msgstr "Sposta in…"
+
+msgid "Copy «{0}» into…"
+msgstr "Copia «{0}» in…"
+
+msgid "Copy {0} into…"
+msgstr "Copia {0} in…"
+
+msgid "Copied into {0}"
+msgstr "Copiato in {0}"
+
+msgid "Copied into {0} days"
+msgstr "Copiato in {0} giorni"
+
+msgid "{0} of {1} kcal"
+msgstr "{0} di {1} kcal"
+
+msgid "{0} left"
+msgstr "ne mancano {0}"
+
+msgid "{0} over"
+msgstr "{0} oltre"
+
+msgid "Proteins"
+msgstr "Proteine"
+
+msgid "Carbohydrates"
+msgstr "Carboidrati"
+
+msgid "Fats"
+msgstr "Grassi"
+
+msgid "Fibre"
+msgstr "Fibre"
+
+msgid "All the days"
+msgstr "Tutti i giorni"
+
+msgid "Start from a template"
+msgstr "Parti da un modello"
+
+msgid "one moment"
+msgstr "un momento"
+
+msgid "{0} moments"
+msgstr "{0} momenti"
+
+msgid "one item"
+msgstr "una voce"
+
+msgid "{0} items"
+msgstr "{0} voci"
+
+msgid "for the whole centre"
+msgstr "per tutto il centro"
+
+msgid "Remove the template {0}"
+msgstr "Togli il modello {0}"
+
+msgid "One item was left out: the library no longer offers it"
+msgstr "Una voce è rimasta fuori: la libreria non la offre più"
+
+msgid "{0} items were left out: the library no longer offers them"
+msgstr "{0} voci sono rimaste fuori: la libreria non le offre più"
+
+msgid "The moments and what is in them, to start the next plans from. Nothing about the person goes with it."
+msgstr "I momenti e quello che c'è dentro, per partire da qui nei prossimi piani. Della persona non va niente."
+
+msgid "For the whole centre"
+msgstr "Per tutto il centro"
+
+msgid "Save the template"
+msgstr "Salva il modello"
+
+msgid "A template has a title"
+msgstr "Un modello ha un titolo"
+
+msgid "A template has something in it"
+msgstr "Un modello ha qualcosa dentro"
+
+msgid "A template is changed by who wrote it"
+msgstr "Un modello lo cambia chi l'ha scritto"
+
+msgid "A template is removed by who wrote it"
+msgstr "Un modello lo toglie chi l'ha scritto"
+
+msgid "CRM Plan Template"
+msgstr "Modello di piano"
+
+msgid "Kind of plan"
+msgstr "Tipo di piano"
+
+msgid "What it holds"
+msgstr "Cosa contiene"
+
+msgid "Offered to whoever of the centre writes plans of its kind, not only to who wrote it"
+msgstr "Offerto a chiunque nel centro scriva piani di questo tipo, non solo a chi l'ha scritto"
+
+msgid "The moments, the items, what the person reads and a diet's targets, as the plan's editor writes them"
+msgstr "I momenti, le voci, quello che la persona legge e gli obiettivi di una dieta, come li scrive l'editor del piano"
+
+msgid "A plan kept to start others from: its moments and items, without a person (crm.piani.modelli)"
+msgstr "Un piano tenuto per partire da lì con altri: i suoi momenti e le voci, senza una persona"
+
+msgid "One for each day of the week"
+msgstr "Uno per ogni giorno della settimana"
+
+msgid "«{0}» is now one for each day: change the days that differ"
+msgstr "«{0}» ora è uno per ogni giorno: cambia i giorni diversi"
+
+msgid "The days chosen take its moments in place of their own."
+msgstr "I giorni scelti prendono i suoi momenti al posto dei loro."
+
+msgid "{0} rusk"
+msgstr "{0} fetta biscottata"
+
+msgid "{0} rusks"
+msgstr "{0} fette biscottate"
+
+msgid "{0} biscuit"
+msgstr "{0} biscotto"
+
+msgid "{0} biscuits"
+msgstr "{0} biscotti"
+
+msgid "{0} slice"
+msgstr "{0} fetta"
+
+msgid "{0} slices"
+msgstr "{0} fette"
+
+msgid "{0} egg"
+msgstr "{0} uovo"
+
+msgid "{0} eggs"
+msgstr "{0} uova"
+
+msgid "{0} jar"
+msgstr "{0} vasetto"
+
+msgid "{0} jars"
+msgstr "{0} vasetti"
+
+msgid "{0} teaspoon"
+msgstr "{0} cucchiaino"
+
+msgid "{0} teaspoons"
+msgstr "{0} cucchiaini"
+
+msgid "{0} tablespoon"
+msgstr "{0} cucchiaio"
+
+msgid "{0} tablespoons"
+msgstr "{0} cucchiai"
+
+msgid "{0} glass"
+msgstr "{0} bicchiere"
+
+msgid "{0} glasses"
+msgstr "{0} bicchieri"
+
+msgid "{0} handful"
+msgstr "{0} manciata"
+
+msgid "{0} handfuls"
+msgstr "{0} manciate"
+
+msgid "{0} medium fruit"
+msgstr "{0} frutto medio"
+
+msgid "{0} medium fruits"
+msgstr "{0} frutti medi"
+
+msgid "each side"
+msgstr "per lato"
+
+msgid "left side"
+msgstr "lato sinistro"
+
+msgid "right side"
+msgstr "lato destro"
+
+msgid "About {0}"
+msgstr "Circa {0}"
+
+msgid "Frequent doses"
+msgstr "Dosi frequenti"
+
+msgid "Side"
+msgstr "Lato"
+
+msgid "Both sides"
+msgstr "Entrambi i lati"
+
+msgid "Each side"
+msgstr "Per lato"
+
+msgid "Same energy, another food"
+msgstr "Stessa energia, un altro alimento"
+
+msgid "No other food of this group with its values"
+msgstr "Nessun altro alimento di questo gruppo con i suoi valori"
+
+msgid "Add as an alternative: {0}"
+msgstr "Aggiungi come alternativa: {0}"
+
+msgid "Energy from"
+msgstr "Energia da"
+
+msgid "proteins {0}%"
+msgstr "proteine {0}%"
+
+msgid "carbohydrates {0}%"
+msgstr "carboidrati {0}%"
+
+msgid "fats {0}%"
+msgstr "grassi {0}%"
+
+msgid "(LARN {0}–{1}%)"
+msgstr "(LARN {0}–{1}%)"
+
+msgid "Effort or pain {0}/10, last {1}"
+msgstr "Fatica o dolore {0}/10, l'ultima {1}"
+
+msgid "Empty: both sides, or the exercise has none"
+msgstr "Vuoto: entrambi i lati, o l'esercizio non ne ha"
+
+msgid "How hard or painful was it?"
+msgstr "Quanto è stato faticoso o doloroso?"
+
+msgid "{0} out of 10"
+msgstr "{0} su 10"
+
+msgid "1 hardly"
+msgstr "1 per niente"
+
+msgid "10 very much"
+msgstr "10 moltissimo"
+
+msgid "Invoice {0} of {1}, for {2}, is still to be paid."
+msgstr "La fattura {0} del {1}, di {2}, risulta ancora da pagare."
+
+msgid "a kind reminder from {0}."
+msgstr "un gentile promemoria da {0}."
+
+msgid "How to pay:"
+msgstr "Come pagare:"
+
+msgid "See your invoices"
+msgstr "Vedi le tue fatture"
+
+msgid "If you have already paid, please ignore this message, and thank you."
+msgstr "Se hai già pagato, ignora questo messaggio, e grazie."
+
+msgid "Payment reminder: invoice {0}"
+msgstr "Promemoria di pagamento: fattura {0}"
+
+msgid "A payment reminder"
+msgstr "Un promemoria di pagamento"
+
+msgid "How to pay: {0}"
+msgstr "Come pagare: {0}"
+
+msgid "If you have already paid, please ignore this message."
+msgstr "Se hai già pagato, ignora questo messaggio."
+
+msgid "CRM Payment Reminder Settings"
+msgstr "Impostazioni dei solleciti di pagamento"
+
+msgid "How to pay"
+msgstr "Come pagare"
+
+msgid "Shown to the person in their area beside what is left to pay, and in the reminders: an IBAN, «at the desk», a payment link. Empty, nothing is said."
+msgstr "Si legge nell'area della persona accanto a quello che resta da pagare, e nei solleciti: un IBAN, «alla cassa», un link di pagamento. Vuoto, non si dice nulla."
+
+msgid "Payment reminders"
+msgstr "Solleciti di pagamento"
+
+msgid "Remind the clients of invoices still to pay"
+msgstr "Sollecita i clienti per le fatture ancora da pagare"
+
+msgid "Every morning, a polite reminder of an invoice issued to a person and not collected yet. Never a credit note nor a test invoice. Off to start with."
+msgstr "Ogni mattina, un promemoria gentile per una fattura emessa a una persona e non ancora incassata. Mai una nota di credito né una fattura di prova. Spento all'inizio."
+
+msgid "First reminder, days after the due date"
+msgstr "Primo sollecito, giorni dopo la scadenza"
+
+msgid "The due date is the last one of the invoice's payment schedule, else the day it was issued."
+msgstr "La scadenza è l'ultima delle rate della fattura, altrimenti il giorno in cui è stata emessa."
+
+msgid "Days between reminders"
+msgstr "Giorni tra un sollecito e l'altro"
+
+msgid "Reminders at most"
+msgstr "Solleciti al massimo"
+
+msgid "Only from this amount"
+msgstr "Solo da questo importo"
+
+msgid "A smaller amount is never reminded."
+msgstr "Un importo più piccolo non si sollecita mai."
+
+msgid "How the reminders go"
+msgstr "Come partono i solleciti"
+
+msgid "With a button to their invoices in the area, where the person has one."
+msgstr "Con un pulsante per le sue fatture nell'area, se la persona ce l'ha."
+
+msgid "By SMS too"
+msgstr "Anche per SMS"
+
+msgid "From the centre's sender; never to who wrote STOP to the centre's SMS."
+msgstr "Dal mittente del centro; mai a chi ha scritto STOP agli SMS del centro."
+
+msgid "Payments and reminders"
+msgstr "Pagamenti e solleciti"
+
+msgid "How the clients pay, and a polite reminder of the invoices they still have to pay."
+msgstr "Come pagano i clienti, e un promemoria gentile per le fatture che devono ancora pagare."
+
+msgid "How the clients pay, and the reminders of the invoices still to pay."
+msgstr "Come pagano i clienti, e i solleciti delle fatture ancora da pagare."
+
+msgid "Reminded once, on {0}"
+msgstr "Sollecitata una volta, il {0}"
+
+msgid "Reminded {0} times, the last on {1}"
+msgstr "Sollecitata {0} volte, l'ultima il {1}"
+
+msgid "A day that has not come yet cannot be closed"
+msgstr "Non si chiude un giorno che non è ancora arrivato"
+
+msgid "Write the cash counted in the drawer"
+msgstr "Scrivi i contanti contati in cassa"
+
+msgid "The cash counted cannot be below zero"
+msgstr "I contanti contati non possono essere sotto zero"
+
+msgid "CRM Cash Closing"
+msgstr "Chiusura di cassa"
+
+msgid "CRM Cash Closing Method"
+msgstr "Chiusura di cassa per metodo"
+
+msgid "Given back"
+msgstr "Restituito"
+
+msgid "Cash expected"
+msgstr "Contanti attesi"
+
+msgid "Cash counted"
+msgstr "Contanti contati"
+
+msgid "The cash counted less the cash expected: above zero there is more, below zero less."
+msgstr "I contanti contati meno quelli attesi: sopra zero ce n'è di più, sotto zero di meno."
+
+msgid "By payment method"
+msgstr "Per metodo di pagamento"
+
+msgid "Payment method code"
+msgstr "Codice del metodo di pagamento"
+
+msgid "Cash closing"
+msgstr "Chiusura di cassa"
+
+msgid "Nothing collected on this day."
+msgstr "Niente incassato in questo giorno."
+
+msgid "1 invoice"
+msgstr "1 fattura"
+
+msgid "{0} invoices"
+msgstr "{0} fatture"
+
+msgid "{0} given back"
+msgstr "{0} restituiti"
+
+msgid "By who issued them"
+msgstr "Per chi le ha emesse"
+
+msgid "Cash counted in the drawer"
+msgstr "Contanti contati in cassa"
+
+msgid "What explains a difference, if any"
+msgstr "Cosa spiega una differenza, se c'è"
+
+msgid "Closed by {0} at {1}"
+msgstr "Chiusa da {0} alle {1}"
+
+msgid "Close it again"
+msgstr "Richiudi"
+
+msgid "Close the cash"
+msgstr "Chiudi la cassa"
+
+msgid "The cash is closed"
+msgstr "La cassa è chiusa"
+
+msgid "The drawer is right"
+msgstr "La cassa torna"
+
+msgid "{0} missing"
+msgstr "Mancano {0}"
+
+msgid "{0} more than expected"
+msgstr "{0} in più del previsto"
+
+msgid "What the day collected, by way of paying, and the cash in the drawer."
+msgstr "Cosa ha incassato la giornata, per metodo di pagamento, e i contanti in cassa."
+
+msgid "To pay: {0}"
+msgstr "Da pagare: {0}"
+
+msgid "Second reminder: hours before"
+msgstr "Secondo promemoria: ore prima"
+
+msgid "Optional, the same day: 1 to 12 hours before, never at night; not to whoever already answered"
+msgstr "Facoltativo, lo stesso giorno: da 1 a 12 ore prima, mai di notte; non a chi ha già risposto"
+
+msgid "Same-day reminder"
+msgstr "Promemoria del giorno stesso"
+
+msgid "The second reminder of the place, the same day"
+msgstr "Il secondo promemoria del posto, lo stesso giorno"
+
+msgid "The second reminder leaves from 1 to 12 hours before, and fewer hours than the first."
+msgstr "Il secondo promemoria parte da 1 a 12 ore prima, e con meno ore del primo."
+
+msgid "Optional: a second reminder the same day, 1 to 12 hours before. Never at night, nor to whoever already said they are coming or cannot come."
+msgstr "Facoltativo: un secondo promemoria lo stesso giorno, da 1 a 12 ore prima. Mai di notte, né a chi ha già detto che verrà o che non può venire."
+
+msgid "From 1 to 12 hours before."
+msgstr "Da 1 a 12 ore prima."
+
+msgid "Fewer hours than the first reminder."
+msgstr "Meno ore del primo promemoria."
+
+msgid "1 missed appointment in the last year"
+msgstr "1 appuntamento mancato nell'ultimo anno"
+
+msgid "{0} missed appointments in the last year"
+msgstr "{0} appuntamenti mancati nell'ultimo anno"
+
+msgid "Missed appointments before the centre decides"
+msgstr "Appuntamenti mancati prima che decida il centro"
+
+msgid "Empty: never. Whoever did not show up this many times books online only with the centre's yes, or not at all"
+msgstr "Vuoto: mai. Chi non si è presentato tante volte prenota online solo con il sì del centro, o per niente"
+
+msgid "Counted over the last months"
+msgstr "Contati negli ultimi mesi"
+
+msgid "Then"
+msgstr "Poi"
+
+msgid "Refuse"
+msgstr "Rifiuta"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "The booking waits for the centre’s yes"
+msgstr "La prenotazione aspetta il sì del centro"
+
+msgid "No online booking"
+msgstr "Niente prenotazione online"
+
+msgid "Whoever did not show up this many times books online only with the centre’s yes, or not at all: they are asked to call. Empty: never."
+msgstr "Chi non si è presentato tante volte prenota online solo con il sì del centro, o per niente: gli si chiede di chiamare. Vuoto: mai."
+
+msgid "This appointment cannot be booked online: please contact us to book it."
+msgstr "Questo appuntamento non si può prenotare online: contattaci per prenotarlo."
+
+msgid "New online booking to approve: missed appointments"
+msgstr "Nuova prenotazione online da approvare: appuntamenti mancati"
+
+msgid "{0} is in the waiting room: they checked in from their phone"
+msgstr "{0} è in sala d'attesa: ha segnalato l'arrivo dal telefono"
+
+msgid "The centre does not take arrivals from the phone: tell the desk."
+msgstr "Il centro non accetta l'arrivo segnalato dal telefono: avvisa l'accoglienza."
+
+msgid "This is not your appointment"
+msgstr "Questo non è un tuo appuntamento"
+
+msgid "It is a little early: you can say you are here from half an hour before."
+msgstr "È un po' presto: puoi dire che sei qui da mezz'ora prima."
+
+msgid "This appointment is over."
+msgstr "Questo appuntamento è finito."
+
+msgid "This appointment was cancelled."
+msgstr "Questo appuntamento è stato annullato."
+
+msgid "The centre already knows how this appointment went."
+msgstr "Il centro sa già com'è andato questo appuntamento."
+
+msgid "The person says «I'm here» from their area"
+msgstr "La persona segnala «Sono qui» dalla sua area"
+
+msgid "From half an hour before their appointment until it ends: the desk's waiting room counts from then"
+msgstr "Da mezz'ora prima dell'appuntamento fino alla fine: la sala d'attesa dell'accoglienza conta da allora"
+
+msgid "«I’m here» from the phone"
+msgstr "«Sono qui» dal telefono"
+
+msgid "From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told."
+msgstr "Da mezz'ora prima dell'appuntamento fino alla fine, la persona segnala dalla sua area che è al centro: entra in sala d'attesa all'accoglienza, e l'accoglienza viene avvisata."
+
+msgid "Rebooking rate"
+msgstr "Tasso di riprenotazione"
+
+msgid "Of the people who came in the period, the share with a later appointment booked"
+msgstr "Delle persone venute nel periodo, la quota che ha già prenotato un appuntamento successivo"
+
+msgid "Rebooking per professional"
+msgstr "Riprenotazione per professionista"
+
+msgid "Of the people each professional saw in the period, the share that booked again"
+msgstr "Delle persone viste da ciascun professionista nel periodo, la quota che ha prenotato di nuovo"
+
+msgid "Booked again"
+msgstr "Hanno riprenotato"
+
+msgid "Seen in the last days"
+msgstr "Viste negli ultimi giorni"
+
+msgid "No next appointment"
+msgstr "Senza un prossimo appuntamento"
+
+msgid "People seen lately with nothing booked ahead, the longest ago first"
+msgstr "Le persone viste di recente senza nulla in agenda, prima chi è venuto da più tempo"
+
+msgid "Everybody seen lately has something booked"
+msgstr "Chi è venuto di recente ha già un appuntamento"
+
+msgid "Book again"
+msgstr "Prenota di nuovo"
+
+msgid "Somebody the centre knows called and nobody answered."
+msgstr "Una persona che il centro conosce ha chiamato e nessuno ha risposto."
+
+msgid "Booking page link"
+msgstr "Link alla pagina di prenotazione"
+
+msgid "We missed you… missed call"
+msgstr "Ti abbiamo cercato… chiamata persa"
+
+msgid "A minute after a call nobody answered, texts the caller the link to book online."
+msgstr "Un minuto dopo una chiamata a cui nessuno ha risposto, manda a chi ha chiamato un SMS con il link per prenotare online."
+
+msgid "Hi {{ first_name }}, sorry we missed your call. We will call you back; to book now: {{ booking_link }}"
+msgstr "Ciao {{ first_name }}, ci dispiace non averti risposto. Ti richiameremo; per prenotare subito: {{ booking_link }}"
+
+msgid "Text callers nobody answered"
+msgstr "Manda un SMS a chi chiama e non trova risposta"
+
+msgid "Text Callers Nobody Answered"
+msgstr "Manda un SMS a chi chiama e non trova risposta"
+
+msgid "A number the centre does not know that finds nobody gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number."
+msgstr "Un numero che il centro non conosce e che non trova nessuno riceve un SMS: il centro richiamerà, con la pagina di prenotazione se il centro prende prenotazioni online. Solo a un cellulare dei paesi che il centro chiama, al massimo una volta al giorno per numero."
+
+msgid "{0}: sorry we missed your call. We will call you back; to book now: {1}"
+msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo; per prenotare subito: {1}"
+
+msgid "{0}: sorry we missed your call. We will call you back as soon as we can."
+msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo appena possibile."
+
+msgid "Copied from"
+msgstr "Copiata da"
+
+msgid "The visit on the same sheet this one started from: its answers, never its signatures, attachments or consents."
+msgstr "La visita sulla stessa scheda da cui è partita questa: le sue risposte, mai le firme, gli allegati o i consensi."
+
+msgid "Copied from the visit of {0}"
+msgstr "Copiata dalla visita del {0}"
+
+msgid "{0}: start from the last visit"
+msgstr "{0}: parti dall'ultima visita"
+
+msgid "Review requests"
+msgstr "Richieste di recensione"
+
+msgid "Asked after a visit how it went: a review on Google, a satisfaction questionnaire. A no here wins over a yes to marketing."
+msgstr "Chiedere dopo una visita com'è andata: una recensione su Google, un questionario di soddisfazione. Un no qui vale più di un sì al marketing."
+
+msgid "The review link is a web address starting with https://"
+msgstr "Il link per la recensione è un indirizzo web che inizia con https://"
+
+msgid "A Google Place ID is made of letters, digits, dashes and underscores"
+msgstr "Un Place ID di Google è fatto di lettere, cifre, trattini e trattini bassi"
+
+msgid "Did not agree to be asked how a visit went: not sent"
+msgstr "Non ha acconsentito a sentirsi chiedere com'è andata una visita: non inviato"
+
+msgid "Did not come to the appointment: not sent"
+msgstr "Non è venuto all'appuntamento: non inviato"
+
+msgid "No Google review link in Settings > Marketing > Review requests: not sent"
+msgstr "Nessun link per le recensioni su Google in Impostazioni > Marketing > Richieste di recensione: non inviato"
+
+msgid "No review is asked after this service: not sent"
+msgstr "Dopo questo servizio non si chiede una recensione: non inviato"
+
+msgid "Asked for a review less than {0} months ago: not sent"
+msgstr "Ha già ricevuto una richiesta di recensione meno di {0} mesi fa: non inviato"
+
+msgid "Set the Google review link, then switch on the recipe that asks after a visit"
+msgstr "Imposta il link per le recensioni su Google, poi accendi la ricetta che le chiede dopo una visita"
+
+msgid "Review requests sent"
+msgstr "Richieste di recensione inviate"
+
+msgid "People asked after a visit for a review on Google, and how many opened the link"
+msgstr "Persone a cui dopo una visita è stata chiesta una recensione su Google, e quante hanno aperto il link"
+
+msgid "Link opened: {0}"
+msgstr "Link aperto: {0}"
+
+msgid "Review requests after a visit: where the review is written, how often a person is asked"
+msgstr "Richieste di recensione dopo una visita: dove si scrive la recensione, ogni quanto si chiede alla stessa persona"
+
+msgid "Google review link"
+msgstr "Link per le recensioni su Google"
+
+msgid "The page where people write a review of the centre on Google: in the Google Business Profile, «Ask for reviews»"
+msgstr "La pagina in cui si scrive una recensione del centro su Google: nel Profilo dell'attività su Google, «Chiedi recensioni»"
+
+msgid "Google Place ID"
+msgstr "Place ID di Google"
+
+msgid "Without the link, the centre's Place ID makes it"
+msgstr "Senza il link, lo crea il Place ID del centro"
+
+msgid "Without the link, the centre’s Place ID makes it."
+msgstr "Senza il link, lo crea il Place ID del centro."
+
+msgid "Months before asking again"
+msgstr "Mesi prima di chiedere di nuovo"
+
+msgid "The same person is not asked again before then, whatever automation asks"
+msgstr "Prima di allora alla stessa persona non si chiede di nuovo, qualunque automazione lo chieda"
+
+msgid "The same person is not asked again before then, whatever automation asks."
+msgstr "Prima di allora alla stessa persona non si chiede di nuovo, qualunque automazione lo chieda."
+
+msgid "Services excluded"
+msgstr "Servizi esclusi"
+
+msgid "Services after which nobody is asked, one per line"
+msgstr "Servizi dopo i quali non si chiede a nessuno, uno per riga"
+
+msgid "A review request sent after a visit: who, after what, and whether the link was opened"
+msgstr "Una richiesta di recensione inviata dopo una visita: a chi, dopo cosa, e se il link è stato aperto"
+
+msgid "Enrollment"
+msgstr "Iscrizione"
+
+msgid "Link opened on"
+msgstr "Link aperto il"
+
+msgid "CRM Review Settings"
+msgstr "Impostazioni delle richieste di recensione"
+
+msgid "CRM Review Request"
+msgstr "Richiesta di recensione"
+
+msgid "Everybody is asked the same way, with nothing in return: Google forbids choosing who is asked and offering anything for a review. Only who agreed to these requests, or to marketing, is asked; the automation «Ask for a review after the visit» sends the link, off until you switch it on."
+msgstr "Si chiede a tutti allo stesso modo, senza niente in cambio: Google vieta di scegliere a chi chiedere e di offrire qualcosa per una recensione. Si chiede solo a chi ha acconsentito a queste richieste, o al marketing; il link lo manda l'automazione «Chiedi una recensione dopo la visita», spenta finché non la accendi."
+
+msgid "In your Google Business Profile, «Ask for reviews» gives the link to copy here."
+msgstr "Nel Profilo dell'attività su Google, «Chiedi recensioni» dà il link da copiare qui."
+
+msgid "After these services nobody is asked: a certificate, a blood test."
+msgstr "Dopo questi servizi non si chiede a nessuno: un certificato, un prelievo."
+
+msgid "No service yet."
+msgstr "Ancora nessun servizio."
+
+msgid "The Google review link and how often a person is asked. Everybody the same way, nothing in return."
+msgstr "Il link per le recensioni su Google e ogni quanto chiedere alla stessa persona. A tutti allo stesso modo, senza niente in cambio."
+
+msgid "Ask for a review after the visit"
+msgstr "Chiedi una recensione dopo la visita"
+
+msgid "Two hours after a visit, the link to review the centre on Google: by SMS, or by email to who has no mobile."
+msgstr "Due ore dopo una visita, il link per recensire il centro su Google: via SMS, o via email a chi non ha un cellulare."
+
+msgid "Has a mobile"
+msgstr "Ha un cellulare"
+
+msgid "Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went: {{ review_link }}"
+msgstr "Ciao {{ first_name }}, grazie per la visita. Se hai un minuto, racconta agli altri com'è andata: {{ review_link }}"
+
+msgid "How did it go, {{ first_name }}?"
+msgstr "Com'è andata, {{ first_name }}?"
+
+msgid "Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went with a review on Google: {{ review_link }}"
+msgstr "Ciao {{ first_name }}, grazie per la visita. Se hai un minuto, racconta agli altri com'è andata con una recensione su Google: {{ review_link }}"
+
+msgid "Survey"
+msgstr "Questionario"
+
+msgid "Surveys"
+msgstr "Questionari"
+
+msgid "Filled in by the person after a visit, from its link alone: how it went, a score from 0 to 10"
+msgstr "Compilato dalla persona dopo una visita, col solo link: com'è andata, un voto da 0 a 10"
+
+msgid "{0}: a survey opens with its link alone, so it asks no consent, signature or file"
+msgstr "{0}: un questionario si apre col solo link, quindi non chiede consensi, firme o file"
+
+msgid "{0} records health data: it is not sent as a survey"
+msgstr "{0} raccoglie dati sanitari: non si manda come questionario"
+
+msgid "Nobody who answers for them has a mobile"
+msgstr "Nessuno di quelli che rispondono per lei ha un cellulare"
+
+msgid "This person has no mobile"
+msgstr "Questa persona non ha un cellulare"
+
+msgid "How did your visit go?"
+msgstr "Com'è andata la visita?"
+
+msgid "{0} would like to know how the visit of {1} went: it takes a minute."
+msgstr "{0} vorrebbe sapere com'è andata la visita di {1}: basta un minuto."
+
+msgid "{0} would like to know how your visit went: it takes a minute."
+msgstr "{0} vorrebbe sapere com'è andata la tua visita: basta un minuto."
+
+msgid "The link is valid until {0}."
+msgstr "Il link è valido fino al {0}."
+
+msgid "Answer the survey"
+msgstr "Rispondi al questionario"
+
+msgid "Only a survey opens without a code: this form needs an email to send the code to"
+msgstr "Solo un questionario si apre senza codice: questo modulo ha bisogno di un'email a cui mandare il codice"
+
+msgid "Open the link again"
+msgstr "Apri di nuovo il link"
+
+msgid "Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}"
+msgstr "Ciao {{ first_name }}, com'è andata la visita? Basta un minuto: {{ form_link }}"
+
+msgid "Skipped: no person"
+msgstr "Saltato: nessuna persona"
+
+msgid "Skipped: the form is not published"
+msgstr "Saltato: il modulo non è pubblicato"
+
+msgid "Skipped: {0}"
+msgstr "Saltato: {0}"
+
+msgid "Form link emailed to {0}"
+msgstr "Link del modulo inviato via email a {0}"
+
+msgid "form «{0}» by email"
+msgstr "modulo «{0}» via email"
+
+msgid "form «{0}» by SMS"
+msgstr "modulo «{0}» via SMS"
+
+msgid "form «{0}» on WhatsApp"
+msgstr "modulo «{0}» su WhatsApp"
+
+msgid "Satisfaction surveys"
+msgstr "Questionari di soddisfazione"
+
+msgid "Publish a survey with a question from 0 to 10, and send it after a visit"
+msgstr "Pubblica un questionario con una domanda da 0 a 10, e mandalo dopo una visita"
+
+msgid "Satisfaction (NPS)"
+msgstr "Soddisfazione (NPS)"
+
+msgid "Net Promoter Score of the surveys answered: who gives 9 or 10 less who gives 0 to 6, from -100 to 100"
+msgstr "Net Promoter Score dei questionari compilati: chi dà 9 o 10 meno chi dà da 0 a 6, da -100 a 100"
+
+msgid "No survey answered in this period"
+msgstr "Nessun questionario compilato in questo periodo"
+
+msgid "Answers: {0} · promoters {1}, detractors {2}"
+msgstr "Risposte: {0} · promotori {1}, detrattori {2}"
+
+msgid "Send a Form"
+msgstr "Manda un modulo"
+
+msgid "Sends the link to fill a published form: a survey after a visit opens with the link alone."
+msgstr "Manda il link per compilare un modulo pubblicato: un questionario dopo una visita si apre col solo link."
+
+msgid "No form selected"
+msgstr "Nessun modulo scelto"
+
+msgid "no form selected"
+msgstr "nessun modulo scelto"
+
+msgid "Send it by"
+msgstr "Mandalo via"
+
+msgid "No published form yet: start a survey in Settings > Clients > Forms, and publish it."
+msgstr "Ancora nessun modulo pubblicato: inizia un questionario in Impostazioni > Clienti > Moduli, e pubblicalo."
+
+msgid "The email says in the centre’s words what it is, with the link."
+msgstr "L'email dice con le parole del centro di cosa si tratta, con il link."
+
+msgid "{0} is the link to the form."
+msgstr "{0} è il link al modulo."
+
+msgid "{0} (survey)"
+msgstr "{0} (questionario)"
+
+msgid "Satisfaction survey after the visit"
+msgstr "Questionario di soddisfazione dopo la visita"
+
+msgid "The day after a visit, the link to a short survey: how likely they are to recommend the centre, from 0 to 10."
+msgstr "Il giorno dopo una visita, il link a un breve questionario: quanto consiglierebbe il centro, da 0 a 10."
+
+msgid "How likely are you to recommend us?"
+msgstr "Quanto ci consiglieresti?"
+
+msgid "A score from 0 to 10 and a comment"
+msgstr "Un voto da 0 a 10 e un commento"
+
+msgid "Your visit"
+msgstr "La tua visita"
+
+msgid "How likely are you to recommend us to a friend or family member?"
+msgstr "Quanto è probabile che ci consigli a un amico o a un familiare?"
+
+msgid "Not at all likely"
+msgstr "Per niente probabile"
+
+msgid "Extremely likely"
+msgstr "Estremamente probabile"
+
+msgid "What is the main reason for your score?"
+msgstr "Qual è il motivo principale del tuo voto?"
+
+msgid "portion"
+msgstr "porzione"
+
+msgid "portions"
+msgstr "porzioni"
+
+msgid "Left side"
+msgstr "Lato sinistro"
+
+msgid "Right side"
+msgstr "Lato destro"
+
+msgid "Add as an alternative:"
+msgstr "Aggiungi come alternativa:"
+
+msgid "1 done this week"
+msgstr "1 fatta questa settimana"
+
+msgid "It replaces your template «{0}»."
+msgstr "Sostituisce il tuo modello «{0}»."
+
+msgid "Publishing it closes «{0}», which the person follows now: their area will show only this one."
+msgstr "Pubblicandolo si chiude «{0}», che la persona segue ora: nella sua area resterà solo questo."
+
+msgid "Publish and close the other"
+msgstr "Pubblica e chiudi l'altro"
+
+msgid "Closed, the plan leaves the person’s area; what they ticked stays here."
+msgstr "Chiuso, il piano esce dall'area della persona; quello che ha segnato resta qui."
+
+msgid "The draft is deleted with what is written in it."
+msgstr "La bozza viene eliminata con quello che c'è scritto."
+
+msgid "A food needs its kcal for 100 g"
+msgstr "Un alimento ha bisogno delle sue kcal per 100 g"
+
+msgid "Secondary muscles"
+msgstr "Muscoli secondari"
+
+msgid "Effort or pain in the last two weeks: {0}/10 on average, last {1}"
+msgstr "Fatica o dolore nelle ultime due settimane: {0}/10 in media, l'ultima {1}"
+
+msgid "Nothing in this column"
+msgstr "Niente in questa colonna"
+
+msgid "The first reminder leaves from 1 to 365 days after the due date"
+msgstr "Il primo sollecito parte da 1 a 365 giorni dopo la scadenza"
+
+msgid "Between one reminder and the next, from 1 to 365 days"
+msgstr "Tra un sollecito e il successivo, da 1 a 365 giorni"
+
+msgid "From 1 to 10 reminders for an invoice"
+msgstr "Da 1 a 10 solleciti per fattura"
+
+msgid "The minimum amount cannot be below zero"
+msgstr "L'importo minimo non può essere sotto zero"
+
+msgid "A cash closing is made from the reception desk"
+msgstr "Una chiusura di cassa si fa dall'accoglienza"
+
+msgid "When a call counts as missed. From somebody the centre knows, the automations hear it («Missed call»); a number nobody knows can get an SMS."
+msgstr "Quando una chiamata conta come persa. Da chi il centro conosce, la sentono le automazioni («Chiamata persa»); un numero che nessuno conosce può ricevere un SMS."
+
+msgid "Nobody answers"
+msgstr "Nessuno risponde"
+
+msgid "Everyone who answers the number rang and nobody picked up."
+msgstr "Hanno squillato tutti quelli che rispondono al numero e nessuno ha risposto."
+
+msgid "There is nobody to ring"
+msgstr "Non c'è nessuno da far squillare"
+
+msgid "At that moment nobody answers the number, so nobody rang."
+msgstr "In quel momento nessuno risponde al numero, quindi non squilla nessuno."
+
+msgid "The answering service takes every call"
+msgstr "La segreteria prende tutte le chiamate"
+
+msgid "With the answering service answering every call, each call counts as missed."
+msgstr "Con la segreteria che risponde a ogni chiamata, ogni chiamata conta come persa."
+
+msgid "A number the centre does not know whose call counts as missed gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number."
+msgstr "Un numero che il centro non conosce, la cui chiamata conta come persa, riceve un SMS: il centro richiamerà, con la pagina di prenotazione se il centro prende prenotazioni online. Solo a un cellulare dei paesi che il centro chiama, al massimo una volta al giorno per numero."
+
+msgid "Hi {{ first_name }}, sorry we missed your call. We will call you back.\nTo book now: {{ booking_link }}"
+msgstr "Ciao {{ first_name }}, ci dispiace non averti risposto. Ti richiameremo.\nPer prenotare subito: {{ booking_link }}"
+
+msgid "Question {0}"
+msgstr "Domanda {0}"
+
+msgid "Choice"
+msgstr "Scelta"
+
+msgid "Scale"
+msgstr "Scala"
+
+msgid "Left and right"
+msgstr "Destra e sinistra"
+
+msgid "Text to read"
+msgstr "Testo da leggere"
+
+msgid "Calculation"
+msgstr "Calcolo"
+
+msgid "Signing"
+msgstr "Firme"
+
+msgid "From {0} to {1} months"
+msgstr "Da {0} a {1} mesi"
+
+msgid "Needed only without the link above: {brand} makes the review link from it."
+msgstr "Serve solo senza il link qui sopra: {brand} ne ricava il link per la recensione."
+
+msgid "answered {0}"
+msgstr "risposto il {0}"
+
+msgid "Off, it is not sent any more; the answers given stay."
+msgstr "Disattivato, non si manda più; le risposte date restano."
+
+msgid "No answers"
+msgstr "Nessuna risposta"
+
+msgid "Missed Calls"
+msgstr "Chiamate perse"
+
+msgid "When a call counts as missed: whoever the centre knows is heard by the automations (\"Missed Call\"), a number nobody knows may get an SMS. Whether the answering service is on or not."
+msgstr "Quando una chiamata conta come persa: per chi il centro conosce la sentono le automazioni («Chiamata persa»), un numero che nessuno conosce può ricevere un SMS. Che la segreteria sia attiva o no."
+
+msgid "Nobody Answers"
+msgstr "Nessuno risponde"
+
+msgid "Nobody to Ring"
+msgstr "Non c'è nessuno da far squillare"
+
+msgid "Nobody answers the number at that moment, so nobody rang."
+msgstr "In quel momento nessuno risponde al numero, quindi non squilla nessuno."
+
+msgid "Answering Service Takes Every Call"
+msgstr "La segreteria prende tutte le chiamate"
+
+msgid "The answering service answers every call: each call counts as missed."
+msgstr "La segreteria risponde a ogni chiamata: ogni chiamata conta come persa."
+
+#: crm/invoicing/doctype/crm_payment_reminder_settings/crm_payment_reminder_settings.json
+msgid "Instructions for the clients"
+msgstr "Istruzioni per i clienti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "«I’m here» from their phone, and the news their area sends: email, WhatsApp or SMS."
+msgstr "«Sono qui» dal suo telefono, e le novità che la sua area manda: email, WhatsApp o SMS."
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by WhatsApp"
+msgstr "Primo promemoria inviato su WhatsApp"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by SMS"
+msgstr "Primo promemoria inviato per SMS"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent by email"
+msgstr "Primo promemoria inviato per email"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder sent"
+msgstr "Primo promemoria inviato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "First reminder not delivered"
+msgstr "Primo promemoria non arrivato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by WhatsApp"
+msgstr "Secondo promemoria inviato su WhatsApp"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by SMS"
+msgstr "Secondo promemoria inviato per SMS"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent by email"
+msgstr "Secondo promemoria inviato per email"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder sent"
+msgstr "Secondo promemoria inviato"
+
+#: frontend/src/utils/promemoriaAppuntamenti.js
+msgid "Second reminder not delivered"
+msgstr "Secondo promemoria non arrivato"
+
+msgid "Removed for the whole centre"
+msgstr "Sparisce per tutto il centro"
+
+msgid "Removed for you"
+msgstr "Sparisce solo per te"
+
+msgid "Question {0} needs its words"
+msgstr "La domanda {0} va scritta"
+
+msgctxt "Survey"
+msgid "Answered"
+msgstr "Risposto"
+
+msgid "no mailbox sends the centre's emails yet: Settings > Email > Accounts"
+msgstr "nessuna casella invia ancora le email del centro: Impostazioni > Email > Account"
+
+msgid "Signed in the client area"
+msgstr "Firmato nell'area clienti"
+
+msgid "In the client area"
+msgstr "Nell'area clienti"
+
+msgid "Sent to sign on"
+msgstr "Mandato da firmare il"
+
+msgid "Sent to sign to"
+msgstr "Mandato da firmare a"
+
+msgid "Signed by"
+msgstr "Firmato da"
+
+msgid "The quote signed (SHA-256)"
+msgstr "Il preventivo firmato (SHA-256)"
+
+msgid "Signed copy"
+msgstr "Copia firmata"
+
+msgid "Signed copy (SHA-256)"
+msgstr "Copia firmata (SHA-256)"
+
+msgid "Signed copy's format"
+msgstr "Formato della copia firmata"
+
+msgid "This quote is no longer waiting for an answer"
+msgstr "Questo preventivo non aspetta più una risposta"
+
+msgid "This quote was valid until {0}: ask the centre for a new one"
+msgstr "Questo preventivo valeva fino al {0}: chiedine uno nuovo al centro"
+
+msgid "Sent to sign"
+msgstr "Mandato da firmare"
+
+msgid "Opened in the client area"
+msgstr "Aperto nell'area clienti"
+
+msgid "Accepted and signed"
+msgstr "Accettato e firmato"
+
+msgid "Its PDF as it was proposed"
+msgstr "Il suo PDF così come è stato proposto"
+
+msgid "Its services and sums"
+msgstr "Le sue prestazioni e i suoi totali"
+
+msgid "Quote accepted and signed"
+msgstr "Preventivo accettato e firmato"
+
+msgid "Level"
+msgstr "Livello"
+
+msgid "Simple signature"
+msgstr "Firma semplice"
+
+msgid "drawn on the screen"
+msgstr "tracciata sullo schermo"
+
+msgid "When, by the server's clock"
+msgstr "Quando, secondo l'orologio del server"
+
+msgid "What was signed"
+msgstr "Cosa è stato firmato"
+
+msgid "Its SHA-256"
+msgstr "Il suo SHA-256"
+
+msgid "This document was generated once, when the quote was signed. Its SHA-256 is recorded with the quote: a copy that gives a different one is not this document."
+msgstr "Questo documento è stato generato una volta sola, quando il preventivo è stato firmato. Il suo SHA-256 è registrato con il preventivo: una copia che ne dà uno diverso non è questo documento."
+
+msgid "This quote is not yours"
+msgstr "Questo preventivo non è tuo"
+
+msgid "Only the person, or a parent or guardian, answers a quote"
+msgstr "Solo la persona, o un genitore o tutore, risponde a un preventivo"
+
+msgid "In the client area, entered as {0}: the address was checked by a code or the area's link in the last {1} minutes"
+msgstr "Nell'area clienti, entrando come {0}: l'indirizzo è stato verificato con un codice o con il link dell'area negli ultimi {1} minuti"
+
+msgid "Enter your code again to sign it"
+msgstr "Inserisci di nuovo il codice per firmarlo"
+
+msgid "Your signature"
+msgstr "La tua firma"
+
+msgid "There is no PDF of this quote"
+msgstr "Questo preventivo non ha un PDF"
+
+msgid "Only to the number of the person's that wrote to the centre on {0}, once their area is open"
+msgstr "Solo al numero della persona che ha scritto al centro su {0}, quando la sua area è aperta"
+
+msgid "A quote to read in your area at {0}"
+msgstr "Un preventivo da leggere nella tua area di {0}"
+
+msgid "A quote to read"
+msgstr "Un preventivo da leggere"
+
+msgid "{0} sent you a quote. Read it in your area: there you accept and sign it, or say you do not accept it."
+msgstr "{0} ti ha mandato un preventivo. Leggilo nella tua area: lì lo accetti e lo firmi, oppure dici che non lo accetti."
+
+msgid "Read the quote"
+msgstr "Leggi il preventivo"
+
+msgid "{0} sent you a quote to read in your area: {1}"
+msgstr "{0} ti ha mandato un preventivo da leggere nella tua area: {1}"
+
+msgid "{0} is not a way to send it"
+msgstr "{0} non è un modo per mandarlo"
+
+msgid "This is a person of the demo data: nothing is sent to them"
+msgstr "È una persona dei dati di prova: non le si manda niente"
+
+msgid "There is no email to send it to: open the person's area first"
+msgstr "Non c'è un'email a cui mandarlo: apri prima l'area della persona"
+
+msgid "{0} accepted and signed a quote in their area"
+msgstr "{0} ha accettato e firmato un preventivo nella sua area"
+
+msgid "{0} declined a quote in their area"
+msgstr "{0} ha rifiutato un preventivo nella sua area"
+
+msgid "Declined by the person"
+msgstr "Rifiutato dalla persona"
+
+msgid "The person reads it in their area and accepts and signs it there, or says no. The message says only that there is a quote to read."
+msgstr "La persona lo legge nella sua area e lì lo accetta e lo firma, oppure dice di no. Il messaggio dice soltanto che c'è un preventivo da leggere."
+
+msgid "Signed copy (PDF)"
+msgstr "Copia firmata (PDF)"
+
+msgid "Send to sign"
+msgstr "Manda da firmare"
+
+msgid "sent to sign on {0}"
+msgstr "mandato da firmare il {0}"
+
+msgid "signed in the client area by {0} on {1}"
+msgstr "firmato nell'area clienti da {0} il {1}"
+
+msgid "declined in the client area on {0}"
+msgstr "rifiutato nell'area clienti il {0}"
+
+msgid "Sent: the person reads it in their area"
+msgstr "Mandato: la persona lo legge nella sua area"
+
+msgid "This quote is valid until {0}."
+msgstr "Questo preventivo vale fino al {0}."
+
+msgid "Each service is invoiced when it is done, at the price above."
+msgstr "Ogni prestazione si fattura quando è fatta, al prezzo indicato."
+
+msgid "For acceptance"
+msgstr "Per accettazione"
+
+msgid "The file could not be read: attach it again"
+msgstr "Non si riesce a leggere il file: allegalo di nuovo"
+
+msgid "Write the message or attach a file"
+msgstr "Scrivi il messaggio o allega un file"
+
+msgid "A message is at most {0} characters"
+msgstr "Un messaggio ha al massimo {0} caratteri"
+
+msgid "The file is larger than {0} MB"
+msgstr "Il file è più grande di {0} MB"
+
+msgid "Only a photo or a PDF can be attached"
+msgstr "Si può allegare solo una foto o un PDF"
+
+msgid "{0} wrote to the centre from their area"
+msgstr "{0} ha scritto al centro dalla sua area"
+
+msgid "{0} wrote {1} messages to the centre from their area"
+msgstr "{0} ha scritto {1} messaggi al centro dalla sua area"
+
+msgid "Attachment's name"
+msgstr "Nome dell'allegato"
+
+msgid "From the person"
+msgstr "Dalla persona"
+
+msgid "The file is no longer there"
+msgstr "Il file non c'è più"
+
+msgid "Written in the area"
+msgstr "Scritto nell'area"
+
+msgid "From the desk: a reminder, a document to bring. The person reads it in their area, and writes back here."
+msgstr "Dalla segreteria: un promemoria, un documento da portare. La persona lo legge nella sua area, e risponde qui."
+
+msgid "Started by Hand"
+msgstr "Avviata a mano"
+
+msgid "A campaign: nothing starts it by itself. From People, «Send to a list» enrols the people of a view or the ones chosen."
+msgstr "Una campagna: niente la avvia da sola. Da Persone, «Invia a un elenco» iscrive le persone di una vista o quelle scelte."
+
+msgid "Only who manages automations sends a campaign"
+msgstr "Solo chi gestisce le automazioni invia una campagna"
+
+msgid "This automation is not a campaign: it does not start by hand, or it is off"
+msgstr "Questa automazione non è una campagna: non si avvia a mano, oppure è spenta"
+
+msgid "This list has more than {0} people: narrow it with a filter first"
+msgstr "Questo elenco ha più di {0} persone: restringilo prima con un filtro"
+
+msgid "Nobody in this list"
+msgstr "Nessuno in questo elenco"
+
+msgid "CRM Automation Campaign"
+msgstr "Campagna"
+
+msgid "A campaign sent to a list of people from the People list: who was enrolled and who was left out, and why."
+msgstr "Una campagna inviata a un elenco di persone dalla lista Persone: chi è stato iscritto e chi è rimasto fuori, e perché."
+
+msgid "The list it was sent to: a view's name, or how many people were chosen."
+msgstr "L'elenco a cui è stata inviata: il nome di una vista, o quante persone erano state scelte."
+
+msgid "Result"
+msgstr "Esito"
+
+msgid "People in the list"
+msgstr "Persone nell'elenco"
+
+msgid "People left out"
+msgstr "Persone escluse"
+
+msgid "How many were left out, by reason."
+msgstr "Quante sono rimaste fuori, per motivo."
+
+msgid "People chosen"
+msgstr "Persone scelte"
+
+msgid "No email nor mobile number"
+msgstr "Né email né cellulare"
+
+msgid "No email address"
+msgstr "Nessun indirizzo email"
+
+msgid "No mobile number"
+msgstr "Nessun numero di cellulare"
+
+msgid "Already in this campaign"
+msgstr "Già in questa campagna"
+
+msgid "Do not meet the campaign's conditions"
+msgstr "Non rispettano le condizioni della campagna"
+
+msgid "Wrote STOP to the centre's SMS"
+msgstr "Hanno scritto STOP agli SMS del centro"
+
+msgid "email"
+msgstr "email"
+
+msgid "It writes to nobody: tasks, tags, notes"
+msgstr "Non scrive a nessuno: attività, tag, note"
+
+msgid "{0} and {1}"
+msgstr "{0} e {1}"
+
+msgid "By {0}"
+msgstr "Per {0}"
+
+msgid "1 person chosen"
+msgstr "1 persona scelta"
+
+msgid "{0} people chosen"
+msgstr "{0} persone scelte"
+
+msgid "The view «{0}»"
+msgstr "La vista «{0}»"
+
+msgid "The list on screen"
+msgstr "La lista a schermo"
+
+msgid "Send to a list"
+msgstr "Invia a un elenco"
+
+msgid "No campaign to send yet"
+msgstr "Ancora nessuna campagna da inviare"
+
+msgid "A campaign is an automation that starts «Started by Hand», switched on: make one in Automations, with the messages it sends."
+msgstr "Una campagna è un'automazione che parte «Avviata a mano», accesa: creane una in Automazioni, con i messaggi che invia."
+
+msgid "Go to Automations"
+msgstr "Vai alle automazioni"
+
+msgid "Which campaign"
+msgstr "Quale campagna"
+
+msgid "In the list"
+msgstr "Nell'elenco"
+
+msgid "To enrol"
+msgstr "Da iscrivere"
+
+msgctxt "Campaign"
+msgid "Left out"
+msgstr "Esclusi"
+
+msgid "Every message waits for the consent, a STOP, the promotional hours and the time window of the automation, as an automation started by an event does."
+msgstr "Ogni messaggio rispetta il consenso, uno STOP, gli orari promozionali e la fascia oraria dell'automazione, come un'automazione avviata da un evento."
+
+msgid "1 person of the list is of the demo data: what the campaign writes to them stays in {brand}."
+msgstr "1 persona dell'elenco è dei dati di prova: quello che la campagna le scrive resta in {brand}."
+
+msgid "{0} people of the list are of the demo data: what the campaign writes to them stays in {brand}."
+msgstr "{0} persone dell'elenco sono dei dati di prova: quello che la campagna scrive loro resta in {brand}."
+
+msgid "Enrol 1 person"
+msgstr "Iscrivi 1 persona"
+
+msgid "Enrol {0} people"
+msgstr "Iscrivi {0} persone"
+
+msgctxt "Campaign"
+msgid "Enrol"
+msgstr "Iscrivi"
+
+msgid "{0} · only to who agreed to marketing"
+msgstr "{0} · solo a chi ha dato il consenso al marketing"
+
+msgid "The campaign is being sent: the report will be on the automation's Enrolments."
+msgstr "La campagna è in invio: il resoconto sarà nelle Iscrizioni dell'automazione."
+
+msgid "Campaigns sent"
+msgstr "Campagne inviate"
+
+msgid "{0} · by {1}"
+msgstr "{0} · da {1}"
+
+msgid "{0} in the list · {1} enrolled · {2} left out"
+msgstr "{0} nell'elenco · {1} iscritte · {2} escluse"
+
+msgid "{0}: {1}"
+msgstr "{0}: {1}"
+
+msgctxt "Campaign state"
+msgid "Queued"
+msgstr "In coda"
+
+msgctxt "Campaign state"
+msgid "Being sent"
+msgstr "In invio"
+
+msgctxt "Campaign state"
+msgid "Sent"
+msgstr "Inviata"
+
+msgctxt "Campaign state"
+msgid "Failed"
+msgstr "Non riuscita"
+
+msgid "No date"
+msgstr "Senza data"
+
+msgid "No start time"
+msgstr "Senza ora d'inizio"
+
+msgid "The time {0} is not a time"
+msgstr "L'ora {0} non è un'ora"
+
+msgid "The duration {0} is not a duration"
+msgstr "La durata {0} non è una durata"
+
+msgid "It ends before it starts"
+msgstr "Finisce prima di cominciare"
+
+msgctxt "A service brought over"
+msgid "Other"
+msgstr "Altro"
+
+msgid "Import Key"
+msgstr "Chiave d'importazione"
+
+msgid "The row of the previous software's sheet it was brought over from: brought in once."
+msgstr "La riga del foglio del gestionale di prima da cui è stato portato: portato una volta sola."
+
+msgid "Start time"
+msgstr "Ora d'inizio"
+
+msgid "End time"
+msgstr "Ora di fine"
+
+msgid "Already brought in"
+msgstr "Già portato"
+
+msgid "Nobody here by this name: bring the people over first, or add their fiscal code, email or mobile"
+msgstr "Nessuno qui con questo nome: porta prima le persone, oppure aggiungi codice fiscale, email o cellulare"
+
+msgid "Took place"
+msgstr "Svolto"
+
+msgid "Other (a new service)"
+msgstr "Altro (nuovo servizio)"
+
+msgid "No room"
+msgstr "Nessun ambulatorio"
+
+msgid "Appointments brought in: {0}. New people: {1}. Already brought in before: {2}. Left out: {3}. Not brought in: {4}."
+msgstr "Appuntamenti portati: {0}. Persone nuove: {1}. Già portati prima: {2}. Lasciati fuori: {3}. Non portati: {4}."
+
+msgid "Row {0}: {1}"
+msgstr "Riga {0}: {1}"
+
+msgid "Bring your appointments over"
+msgstr "Porta qui i tuoi appuntamenti"
+
+msgid "Export the agenda from the previous software as Excel or CSV, the past with the appointments to come. {brand} finds each person as it does when bringing people over, shows what it read, and asks what each service, professional and room is here before writing anything. What is past counts as attended unless the sheet says it was cancelled or missed; nobody is written to, and the same sheet brought in again doubles nothing."
+msgstr "Esporta l'agenda dal gestionale di prima in Excel o CSV, il passato insieme agli appuntamenti futuri. {brand} trova ogni persona come quando porti qui le persone, mostra cosa ha letto e chiede cosa sono qui ogni servizio, professionista e ambulatorio prima di scrivere qualcosa. Quello che è passato conta come svolto, a meno che il foglio non dica che è stato annullato o che la persona non è venuta; non si scrive a nessuno, e lo stesso foglio portato di nuovo non raddoppia nulla."
+
+msgid "{0} rows: {1} to bring in, {2} already brought in."
+msgstr "{0} righe: {1} da portare, {2} già portate."
+
+msgid "New people, by fiscal code, email or mobile: {0}."
+msgstr "Persone nuove, per codice fiscale, email o cellulare: {0}."
+
+msgid "Left out: {0} (no person, day or start time)."
+msgstr "Lasciate fuori: {0} (senza persona, giorno o ora d'inizio)."
+
+msgid "1 row"
+msgstr "1 riga"
+
+msgid "{0} rows"
+msgstr "{0} righe"
+
+msgid "What «{0}» is here"
+msgstr "Cos'è qui «{0}»"
+
+msgid "The last sheet brought in"
+msgstr "L'ultimo foglio portato"
+
+msgid "The services of the sheet"
+msgstr "I servizi del foglio"
+
+msgid "No service written"
+msgstr "Nessun servizio scritto"
+
+msgid "The professionals of the sheet"
+msgstr "I professionisti del foglio"
+
+msgid "The rooms of the sheet"
+msgstr "Gli ambulatori del foglio"
+
+msgid "Select all"
+msgstr "Seleziona tutte"
+
+msgid "1 row selected"
+msgstr "1 riga selezionata"
+
+msgid "{0} rows selected"
+msgstr "{0} righe selezionate"
+
+msgid "How to mark"
+msgstr "Come segnare"
+
+msgid "Mark a point"
+msgstr "Segna un punto"
+
+msgid "Draw"
+msgstr "Disegna"
+
+msgid "Draw on the body with your finger, or with the mouse"
+msgstr "Disegna sul corpo con il dito, o con il mouse"
+
+msgid "Tap the body where it hurts: each tap is a numbered point"
+msgstr "Tocca il corpo dove fa male: ogni tocco è un punto numerato"
+
+msgid "Undo the last stroke"
+msgstr "Togli l'ultimo tratto"
+
+msgid "That is as many as a body chart holds"
+msgstr "Il disegno non ne tiene altri"
+
+msgid "Point {0}"
+msgstr "Punto {0}"
+
+msgid "Remove the point"
+msgstr "Togli il punto"
+
+msgid "What it feels like, where"
+msgstr "Cosa senti, dove"
+
+msgid "Burning, down the leg"
+msgstr "Bruciore, scende lungo la gamba"
+
+msgid "How much, from 0 (nothing) to 10 (the worst)"
+msgstr "Quanto, da 0 (niente) a 10 (il peggio)"
+
+msgid "Nothing marked"
+msgstr "Niente segnato"
+
+msgctxt "Body chart side"
+msgid "R"
+msgstr "D"
+
+msgctxt "Body chart side"
+msgid "L"
+msgstr "S"
+
+msgctxt "Body chart"
+msgid "Front"
+msgstr "Davanti"
+
+msgctxt "Body chart"
+msgid "Back"
+msgstr "Dietro"
+
+msgid "Drawn by hand: {0}"
+msgstr "Disegnato a mano: {0}"
+
+msgid "Body chart"
+msgstr "Disegno sul corpo"
+
+msgid "Where it hurts: points and strokes on the body, front and back"
+msgstr "Dove fa male: punti e tratti sul corpo, davanti e dietro"
+
+msgid "{0}: the body is shown from the front, from the back, or both"
+msgstr "{0}: il corpo si mostra davanti, dietro o da tutte e due le parti"
+
+msgid "The body seen"
+msgstr "Il corpo visto"
+
+msgid "From the front and from the back"
+msgstr "Davanti e dietro"
+
+msgid "From the front"
+msgstr "Davanti"
+
+msgid "From the back"
+msgstr "Dietro"
+
+msgid "Drawing by hand too"
+msgstr "Anche il disegno a mano"
+
+msgid "{0}: where it hurts is asked at the centre, not on the website"
+msgstr "{0}: dove fa male si chiede al centro, non sul sito"
+
+msgid "Questionnaires over time"
+msgstr "Questionari nel tempo"
+
+msgid "1 time"
+msgstr "1 volta"
+
+msgid "The same as on {0}"
+msgstr "Come il {0}"
+
+msgid "For a few weeks"
+msgstr "Per qualche settimana"
+
+msgid "Asked again every how many weeks"
+msgstr "Si chiede di nuovo ogni quante settimane"
+
+msgid "A questionnaire with a score is asked again, and its totals are followed over time on the person's page."
+msgstr "Un questionario con un punteggio si chiede di nuovo, e i suoi totali si seguono nel tempo sulla pagina della persona."
+
+msgid "Its weeks have passed: to fill again"
+msgstr "Sono passate le sue settimane: da compilare di nuovo"
+
+msgid "Every few weeks"
+msgstr "Ogni qualche settimana"
+
+msgid "Every how many weeks"
+msgstr "Ogni quante settimane"
+
+msgid "After how many weeks a signed one is asked again: a questionnaire followed over time."
+msgstr "Dopo quante settimane se ne chiede uno nuovo: un questionario seguito nel tempo."
+
+msgid "A form is asked again every {0} to {1} weeks"
+msgstr "Un modulo si chiede di nuovo ogni {0}-{1} settimane"
+
+msgid "{0} compared with {1}"
+msgstr "{0} rispetto al {1}"
+
+msgid "Online visit"
+msgstr "Visita online"
+
+msgid "Online visits"
+msgstr "Visite online"
+
+msgid "Held by video: each appointment gets the link of its own room, and needs no room of the centre."
+msgstr "Si fa in video: ogni appuntamento ha il link della sua stanza, e non occupa un ambulatorio del centro."
+
+msgid "Online visit link"
+msgstr "Link della visita online"
+
+msgid "Where the person and the professional meet by video. Made by itself for an online visit where the agency names a video server; else the professional's own room, or a link pasted here (Meet, Zoom, Teams)."
+msgstr "Dove la persona e il professionista si incontrano in video. Si crea da solo per una visita online dove l'agenzia indica un server video; altrimenti è la stanza del professionista, o un link incollato qui (Meet, Zoom, Teams)."
+
+msgid "Own online visit room"
+msgstr "Stanza propria per le visite online"
+
+msgid "The professional's own fixed room (Meet, Zoom, Teams), for their online visits where the agency names no video server."
+msgstr "La stanza fissa del professionista (Meet, Zoom, Teams), per le sue visite online dove l'agenzia non indica un server video."
+
+msgid "Video server"
+msgstr "Server video"
+
+msgid "The address of the Jitsi Meet server online visits are held on (https://…): each appointment gets a room of its own there, with a random name and nothing about the person. It must be a server the centre's data processing agreement covers, in the European Union. Empty: the server in the site's configuration (dottorcloud_video), else the professionals' own rooms."
+msgstr "L'indirizzo del server Jitsi Meet su cui si tengono le visite online (https://…): ogni appuntamento vi ha una stanza sua, con un nome casuale e nulla della persona. Deve essere un server coperto dall'accordo sul trattamento dei dati del centro, nell'Unione europea. Vuoto: il server nella configurazione del sito (dottorcloud_video), altrimenti le stanze proprie dei professionisti."
+
+msgid "The online visit's link must be an address starting with https://"
+msgstr "Il link della visita online deve essere un indirizzo che inizia con https://"
+
+msgid "It is an online visit: you enter it from your area, from {0} minutes before it starts: {1}"
+msgstr "È una visita online: entri dalla tua area, da {0} minuti prima dell'inizio: {1}"
+
+msgid "It is an online visit: the centre tells you how to enter it."
+msgstr "È una visita online: il centro ti dice come entrarci."
+
+msgid "{0}, online visit"
+msgstr "{0}, visita online"
+
+msgid "This appointment is not an online visit."
+msgstr "Questo appuntamento non è una visita online."
+
+msgid "It is a little early: you can enter from {0} minutes before."
+msgstr "È un po' presto: puoi entrare da {0} minuti prima."
+
+msgid "The centre has not given the link of this visit yet: ask the centre."
+msgstr "Il centro non ha ancora dato il link di questa visita: chiedilo al centro."
+
+msgid "Start the online visit"
+msgstr "Avvia la visita online"
+
+msgid "No link to enter it yet: paste one in the appointment, or the professional's own room in their hours."
+msgstr "Ancora nessun link per entrarci: incollane uno nell'appuntamento, o la stanza propria del professionista nei suoi orari."
+
+msgid "Online visit link (Meet, Zoom, Teams…)"
+msgstr "Link della visita online (Meet, Zoom, Teams…)"
+
+msgid "Left empty, its room is made when you save."
+msgstr "Se lo lasci vuoto, la stanza si crea quando salvi."
+
+msgid "Left empty, it takes the professional's own room, if they have one."
+msgstr "Se lo lasci vuoto, prende la stanza propria del professionista, se ne ha una."
+
+msgid "Held by video: each appointment gets the link of its own room, on the agency's video server or the professional's own, and needs no room of the centre. The person enters it from their area."
+msgstr "Si fa in video: ogni appuntamento ha il link della sua stanza, sul server video dell'agenzia o quella del professionista, e non occupa un ambulatorio del centro. La persona entra dalla sua area."
+
+msgid "Their fixed room (Meet, Zoom, Teams), for their online visits where the agency gives no video server. Use a service the centre's data processing agreement covers, in the European Union."
+msgstr "La sua stanza fissa (Meet, Zoom, Teams), per le sue visite online dove l'agenzia non dà un server video. Usa un servizio coperto dall'accordo sul trattamento dei dati del centro, nell'Unione europea."
+
+msgid "Enter the visit"
+msgstr "Entra nella visita"
+
+msgid "You enter the visit from here from {0}, 15 minutes before it starts."
+msgstr "Da qui entri nella visita dalle {0}, 15 minuti prima dell'inizio."
+
+msgid "The link to enter the visit will be here: the centre adds it."
+msgstr "Il link per entrare nella visita sarà qui: lo aggiunge il centro."
+
+msgid "Online payments"
+msgstr "Pagamenti online"
+
+msgctxt "Stripe"
+msgid "Connected"
+msgstr "Collegato"
+
+msgctxt "Stripe"
+msgid "Not connected"
+msgstr "Non collegato"
+
+msgid "Invoices and deposits paid online by card, on the centre's own Stripe account."
+msgstr "Fatture e acconti pagati online con carta, sull'account Stripe del centro."
+
+msgid "The money goes straight to your Stripe account, at Stripe's prices: {brand} never holds it. The person pays by card on Stripe's page; the invoice is marked collected by itself."
+msgstr "I soldi vanno direttamente sul tuo account Stripe, ai prezzi di Stripe: {brand} non li tiene mai. La persona paga con carta sulla pagina di Stripe; la fattura risulta incassata da sola."
+
+msgctxt "Stripe"
+msgid "Secret key"
+msgstr "Chiave segreta"
+
+msgid "Connect Stripe"
+msgstr "Collega Stripe"
+
+msgid "The account answers. The webhook endpoint was missing on Stripe: it was made again."
+msgstr "L'account risponde. Su Stripe mancava l'endpoint del webhook: è stato rifatto."
+
+msgid "The account answers, and its webhook endpoint is there."
+msgstr "L'account risponde, e il suo endpoint del webhook c'è."
+
+msgid "Open Stripe"
+msgstr "Apri Stripe"
+
+msgid "Deposits at online booking"
+msgstr "Acconti alla prenotazione online"
+
+msgid "Which services ask a deposit, or the whole price, is chosen on each service: Agenda > Services > Online rules."
+msgstr "Quali servizi chiedono un acconto, o il prezzo intero, si sceglie su ogni servizio: Agenda > Servizi > Regole online."
+
+msgid "Give the deposit back when the person cancels in time"
+msgstr "Restituisci l'acconto se la persona disdice in tempo"
+
+msgid "Refunded on Stripe by itself, the same day."
+msgstr "Rimborsato su Stripe da solo, il giorno stesso."
+
+msgid "Hours before the appointment"
+msgstr "Ore prima dell'appuntamento"
+
+msgid "A later cancellation keeps the deposit."
+msgstr "Con una disdetta più tardi l'acconto resta al centro."
+
+msgid "Payment data are handled by Stripe as the centre's own processor: {brand} never sees the card. The key is kept encrypted and used only to make the payment links, read their outcome and give a deposit back."
+msgstr "I dati di pagamento li tratta Stripe, come fornitore del centro: {brand} non vede mai la carta. La chiave è conservata cifrata e serve solo a creare i link di pagamento, leggerne l'esito e restituire un acconto."
+
+msgid "Create your account on Stripe, if you have none, and activate it with the centre's details and bank account."
+msgstr "Crea il tuo account su Stripe, se non ce l'hai, e attivalo con i dati e il conto del centro."
+
+msgid "In the Stripe dashboard, Developers > API keys, copy the secret key: start in test mode (sk_test_…) to try it."
+msgstr "Nella dashboard di Stripe, Sviluppatori > Chiavi API, copia la chiave segreta: comincia in modalità di prova (sk_test_…) per provare."
+
+msgid "Open the API keys"
+msgstr "Apri le chiavi API"
+
+msgid "Paste it here and connect."
+msgstr "Incollala qui e collega."
+
+msgid "Stripe connected"
+msgstr "Stripe collegato"
+
+msgid "Could not check"
+msgstr "Controllo non riuscito"
+
+msgid "Stripe disconnected"
+msgstr "Stripe scollegato"
+
+msgid "Disconnect Stripe?"
+msgstr "Scollegare Stripe?"
+
+msgid "Nobody will be able to pay online: the links already sent stop working. The payments made stay in your Stripe account."
+msgstr "Nessuno potrà più pagare online: i link già mandati smettono di funzionare. I pagamenti fatti restano sul tuo account Stripe."
+
+msgid "Valid until {0}. Send it to the person: they pay by card on Stripe."
+msgstr "Valido fino al {0}. Mandalo alla persona: paga con carta su Stripe."
+
+msgid "A link to pay it by card on Stripe, to send to the person."
+msgstr "Un link per pagarla con carta su Stripe, da mandare alla persona."
+
+msgid "Payment link"
+msgstr "Link di pagamento"
+
+msgid "Link copied"
+msgstr "Link copiato"
+
+msgid "Thank you: the payment went through. The invoice shows as paid in a moment."
+msgstr "Grazie: il pagamento è andato a buon fine. Tra un momento la fattura risulta pagata."
+
+msgid "The payment was not made: you can try again when you like."
+msgstr "Il pagamento non è stato fatto: puoi riprovare quando vuoi."
+
+msgid "Paid online on {0}"
+msgstr "Pagata online il {0}"
+
+msgid "Pay online"
+msgstr "Paga online"
+
+msgid "The payment could not start: try again."
+msgstr "Il pagamento non è partito: riprova."
+
+msgid "Pay online when booking"
+msgstr "Pagamento online alla prenotazione"
+
+msgid "Deposit"
+msgstr "Acconto"
+
+msgid "Connect Stripe first, in Settings > Invoicing > Online payments: the money goes to the centre's own account."
+msgstr "Prima collega Stripe, in Impostazioni > Fatturazione > Pagamenti online: i soldi vanno sull'account del centro."
+
+msgid "The place is held for half an hour while the person pays on Stripe; the booking is confirmed once paid."
+msgstr "Il posto resta tenuto per mezz'ora mentre la persona paga su Stripe; la prenotazione è confermata appena pagato."
+
+msgid "Nothing is paid online: the person pays at the centre."
+msgstr "Online non si paga nulla: la persona paga al centro."
+
+msgid "Nothing, paid at the centre"
+msgstr "Nulla, si paga al centro"
+
+msgid "A deposit"
+msgstr "Un acconto"
+
+msgid "The whole price"
+msgstr "Il prezzo intero"
+
+msgid "Paste the secret key of your Stripe account."
+msgstr "Incolla la chiave segreta del tuo account Stripe."
+
+msgid "This is the publishable key: paste the secret key (sk_…) or a restricted key (rk_…)."
+msgstr "Questa è la chiave pubblicabile: incolla la chiave segreta (sk_…) o una chiave con restrizioni (rk_…)."
+
+msgid "This is not a Stripe secret key: it starts with sk_ or rk_."
+msgstr "Questa non è una chiave segreta di Stripe: comincia con sk_ o rk_."
+
+msgid "Test mode"
+msgstr "Modalità di prova"
+
+msgid "Test mode: no real money moves. Pay with the card 4242 4242 4242 4242."
+msgstr "Modalità di prova: non si muovono soldi veri. Paga con la carta 4242 4242 4242 4242."
+
+msgid "Live: the payments are real and reach your account."
+msgstr "Pagamenti reali: arrivano sul tuo conto."
+
+msgid "Paid online on {0}: {1}, {2} given back on Stripe"
+msgstr "Pagata online il {0}: {1}, {2} restituiti su Stripe"
+
+msgid "Paid online on {0}: {1}"
+msgstr "Pagata online il {0}: {1}"
+
+msgid "Deposit already paid online: {0}"
+msgstr "Acconto già pagato online: {0}"
+
+msgid "Stripe did not answer: try again in a few minutes."
+msgstr "Stripe non ha risposto: riprova tra qualche minuto."
+
+msgid "Stripe did not accept the key: copy it again from the Stripe dashboard, Developers > API keys."
+msgstr "Stripe non ha accettato la chiave: copiala di nuovo dalla dashboard di Stripe, Sviluppatori > Chiavi API."
+
+msgid "The restricted key may not do this: give it Checkout Sessions, Webhook Endpoints and Refunds (write) and Charges (read), or use the secret key."
+msgstr "La chiave con restrizioni non può farlo: dalle Checkout Sessions, Webhook Endpoints e Refunds (scrittura) e Charges (lettura), oppure usa la chiave segreta."
+
+msgid "Stripe does not have it any more."
+msgstr "Stripe non ce l'ha più."
+
+msgid "Stripe asks to slow down: try again in a minute."
+msgstr "Stripe chiede di rallentare: riprova tra un minuto."
+
+msgid "Stripe refused this site's address: it must be public and on https."
+msgstr "Stripe ha rifiutato l'indirizzo di questo sito: deve essere pubblico e in https."
+
+msgid "Stripe refused the request."
+msgstr "Stripe ha rifiutato la richiesta."
+
+msgid "Stripe is not connected."
+msgstr "Stripe non è collegato."
+
+msgid "Stripe did not give the webhook's signing secret: try again."
+msgstr "Stripe non ha dato il segreto di firma del webhook: riprova."
+
+msgid "Online payments are not connected: Settings > Invoicing > Online payments."
+msgstr "I pagamenti online non sono collegati: Impostazioni > Fatturazione > Pagamenti online."
+
+msgid "Only an issued invoice is paid online, never a credit note."
+msgstr "Online si paga solo una fattura emessa, mai una nota di credito."
+
+msgid "A test invoice is never paid."
+msgstr "Una fattura di prova non si paga mai."
+
+msgid "Only an invoice to a person is paid online."
+msgstr "Online si paga solo una fattura a una persona."
+
+msgid "This invoice is already collected."
+msgstr "Questa fattura è già incassata."
+
+msgid "The SdI sent this invoice back: correct it first."
+msgstr "Lo SdI ha scartato questa fattura: prima correggila."
+
+msgid "Nothing is left to pay on this invoice."
+msgstr "Su questa fattura non resta nulla da pagare."
+
+msgid "The demo's invoices are never paid online."
+msgstr "Le fatture dei dati di prova non si pagano mai online."
+
+msgid "Invoice {0} · {1}"
+msgstr "Fattura {0} · {1}"
+
+msgid "Deposit · {0} · {1}"
+msgstr "Acconto · {0} · {1}"
+
+msgid "Paid online by card on Stripe ({0})"
+msgstr "Pagata online con carta su Stripe ({0})"
+
+msgid "New online booking, deposit paid"
+msgstr "Nuova prenotazione online, acconto pagato"
+
+msgid "The deposit was not paid in time"
+msgstr "L'acconto non è stato pagato in tempo"
+
+msgid "Stripe gave back {0} of the online payment"
+msgstr "Stripe ha restituito {0} del pagamento online"
+
+msgid "{0} paid invoice {1} online: {2}"
+msgstr "{0} ha pagato online la fattura {1}: {2}"
+
+msgid "Stripe gave back {0} to {1} for invoice {2}: it is still marked as collected"
+msgstr "Stripe ha restituito {0} a {1} per la fattura {2}: risulta ancora incassata"
+
+msgid "Stripe gave back {0} of the online deposit to {1}"
+msgstr "Stripe ha restituito {0} dell'acconto online a {1}"
+
+msgid "Online payment"
+msgstr "Pagamento online"
+
+msgid "Deposit paid online"
+msgstr "Acconto pagato online"
+
+msgid "Full price"
+msgstr "Prezzo intero"
+
+msgid "Asked on the booking page through the centre's Stripe account; the booking is confirmed once paid"
+msgstr "Chiesto sulla pagina di prenotazione tramite l'account Stripe del centro; la prenotazione è confermata appena pagato"
+
+msgid "CRM Online Payment"
+msgstr "Pagamento online"
+
+msgid "CRM Stripe Settings"
+msgstr "Impostazioni Stripe"
+
+msgid "CRM Stripe Event"
+msgstr "Evento Stripe"
+
+msgid "The centre's own Stripe account, for online payments: the money goes to the centre, never through DottorCloud"
+msgstr "L'account Stripe del centro, per i pagamenti online: i soldi vanno al centro, mai attraverso DottorCloud"
+
+msgid "A payment asked online through the centre's Stripe account: an invoice, or a booking's deposit"
+msgstr "Un pagamento chiesto online tramite l'account Stripe del centro: una fattura o l'acconto di una prenotazione"
+
+msgid "Every event Stripe sent, kept before it is applied: each is applied once"
+msgstr "Ogni evento mandato da Stripe, conservato prima di applicarlo: ognuno si applica una volta"
+
+msgid "Stripe account"
+msgstr "Account Stripe"
+
+msgid "Account name"
+msgstr "Nome dell'account"
+
+msgid "Webhook endpoint"
+msgstr "Endpoint del webhook"
+
+msgid "Webhook address"
+msgstr "Indirizzo del webhook"
+
+msgid "Deposits"
+msgstr "Acconti"
+
+msgid "Refund the deposit when the person cancels in time"
+msgstr "Rimborsa l'acconto se la persona disdice in tempo"
+
+msgid "Given back on Stripe by itself when the booking is cancelled at least the hours below before the appointment"
+msgstr "Restituito su Stripe da solo quando la prenotazione è disdetta almeno le ore qui sotto prima dell'appuntamento"
+
+msgid "A cancellation later than this keeps the deposit"
+msgstr "Con una disdetta più tarda l'acconto resta al centro"
+
+msgid "Refunded"
+msgstr "Rimborsato"
+
+msgid "Refunded on"
+msgstr "Rimborsato il"
+
+msgid "Checkout session"
+msgstr "Sessione di pagamento"
+
+msgid "Link valid until"
+msgstr "Link valido fino al"
+
+msgid "Payment intent"
+msgstr "Payment intent di Stripe"
+
+msgid "How it was paid, as FatturaPA codes it: MP08, by card"
+msgstr "Come è stato pagato: con carta"
+
+msgid "Last problem"
+msgstr "Ultimo problema"
+
+msgid "Booking token"
+msgstr "Codice della prenotazione"
+
+msgid "Appointment status once paid"
+msgstr "Stato dell'appuntamento una volta pagato"
+
+msgid "Partly refunded"
+msgstr "Rimborsato in parte"
+
+msgid "Last error"
+msgstr "Ultimo errore"
+
+msgid "Connect Stripe, the deposits' rule"
+msgstr "Collegare Stripe, la regola degli acconti"
+
+msgid "Live payments"
+msgstr "Pagamenti reali"
+
+msgid "No name on Stripe yet"
+msgstr "Ancora senza nome su Stripe"
+
+# Conventions, health funds and insurances (crm/convenzioni, doc 61)
+msgid "Conventions and funds"
+msgstr "Convenzioni e fondi"
+
+msgid "Health funds, insurances and companies: their prices, the share the person pays, who is billed."
+msgstr "Fondi sanitari, assicurazioni e aziende: i loro prezzi, la quota a carico del paziente, a chi si fattura."
+
+msgid "New convention"
+msgstr "Nuova convenzione"
+
+msgid "Paid by {0}"
+msgstr "Paga {0}"
+
+msgid "1 person covered"
+msgstr "1 persona coperta"
+
+msgid "{0} people covered"
+msgstr "{0} persone coperte"
+
+msgid "UniSalute, Fasi, Dipendenti Rossi S.p.A.…"
+msgstr "UniSalute, Fasi, Dipendenti Rossi S.p.A.…"
+
+msgid "Search a company"
+msgstr "Cerca un'azienda"
+
+msgid "How the person pays"
+msgstr "Come paga la persona"
+
+msgid "Direct form: the fund pays the centre, the person their share"
+msgstr "Forma diretta: il fondo paga il centro, la persona la sua quota"
+
+msgid "The fund authorises each appointment first"
+msgstr "Il fondo autorizza prima ogni appuntamento"
+
+msgid "Indirect form: the person pays everything and asks the fund for it back"
+msgstr "Forma indiretta: la persona paga tutto e chiede il rimborso al fondo"
+
+msgid "Offered on the booking page: the booking then waits for the centre’s yes"
+msgstr "Proposta nella pagina di prenotazione: la prenotazione aspetta poi la conferma del centro"
+
+msgid "Prices"
+msgstr "Prezzi"
+
+msgid "Discount (%)"
+msgstr "Sconto (%)"
+
+msgid "Share paid by the person"
+msgstr "Quota a carico del paziente"
+
+msgid "Fixed share (franchigia)"
+msgstr "Quota fissa (franchigia)"
+
+msgid "Share in percent (scoperto)"
+msgstr "Quota in percentuale (scoperto)"
+
+msgid "Share by service"
+msgstr "Quota per prestazione"
+
+msgid "A service with a share of its own, when the fund says so: it wins over the one above."
+msgstr "Una prestazione con una quota sua, quando il fondo lo prevede: vale al posto di quella sopra."
+
+msgid "Share"
+msgstr "Quota"
+
+msgid "How to ask for the authorisation, the portal, the deadlines…"
+msgstr "Come chiedere l'autorizzazione, il portale, le scadenze…"
+
+msgid "A price list of the agenda"
+msgstr "Un listino dell'agenda"
+
+msgid "Nothing: the fund pays it all"
+msgstr "Niente: paga tutto il fondo"
+
+msgid "A fixed amount"
+msgstr "Un importo fisso"
+
+msgid "A percentage"
+msgstr "Una percentuale"
+
+msgid "In direct form, of a visit of {0} the person pays {1} and the fund {2}."
+msgstr "In forma diretta, di una visita da {0} il paziente paga {1} e il fondo {2}."
+
+msgid "Convention deleted"
+msgstr "Convenzione eliminata"
+
+msgid "The fund, the insurer or the company, with its billing details on its page: in direct form it gets the month's invoice."
+msgstr "Il fondo, l'assicurazione o l'azienda, con i dati di fatturazione nella sua scheda: in forma diretta riceve la fattura del mese."
+
+msgid "The centre's prices"
+msgstr "I prezzi del centro"
+
+msgid "A discount on the centre's prices"
+msgstr "Uno sconto sui prezzi del centro"
+
+msgid "No convention yet"
+msgstr "Ancora nessuna convenzione"
+
+msgid "A health fund in direct form, an insurer, a company whose employees get a discount."
+msgstr "Un fondo sanitario in forma diretta, un'assicurazione, un'azienda i cui dipendenti hanno uno sconto."
+
+msgid "Funds and conventions"
+msgstr "Fondi e convenzioni"
+
+msgid "Add a cover"
+msgstr "Aggiungi una copertura"
+
+msgid "Not valid today"
+msgstr "Non valida oggi"
+
+msgid "No fund nor convention: they pay as everybody does."
+msgstr "Nessun fondo né convenzione: paga come tutti."
+
+msgid "The centre has no convention yet: Settings > Invoicing > Conventions and funds."
+msgstr "Il centro non ha ancora convenzioni: Impostazioni > Fatturazione > Convenzioni e fondi."
+
+msgid "Change the cover"
+msgstr "Modifica la copertura"
+
+msgid "Convention"
+msgstr "Convenzione"
+
+msgid "Policy or card number"
+msgstr "Numero di polizza o di tessera"
+
+msgid "As on the card"
+msgstr "Come sulla tessera"
+
+msgid "Holder, when it is somebody else"
+msgstr "Titolare, quando è un'altra persona"
+
+msgid "Choose the convention"
+msgstr "Scegli la convenzione"
+
+msgid "Cover removed"
+msgstr "Copertura tolta"
+
+msgid "No convention in direct form yet: a fund that pays the centre is set up in Settings > Invoicing > Conventions and funds."
+msgstr "Ancora nessuna convenzione in forma diretta: un fondo che paga il centro si imposta in Impostazioni > Fatturazione > Convenzioni e fondi."
+
+msgid "Export the month"
+msgstr "Esporta il mese"
+
+msgid "Invoice the fund"
+msgstr "Fattura al fondo"
+
+msgid "Pratiche"
+msgstr "Pratiche"
+
+msgid "The people's share"
+msgstr "Quota dei pazienti"
+
+msgid "To bill to the fund"
+msgstr "Da fatturare al fondo"
+
+msgid "of {0} for the month"
+msgstr "su {0} del mese"
+
+msgid "Invoiced to {0}, through the SdI."
+msgstr "Fatturato a {0}, tramite lo SdI."
+
+msgid "No appointment in direct form this month."
+msgstr "Nessun appuntamento in forma diretta in questo mese."
+
+msgid "Authorisation {0}"
+msgstr "Autorizzazione {0}"
+
+msgid "Card {0}"
+msgstr "Tessera {0}"
+
+msgid "{0} the person · {1} the fund"
+msgstr "{0} il paziente · {1} il fondo"
+
+msgid "Draft to the fund ready: check it and issue it"
+msgstr "Bozza al fondo pronta: controllala ed emettila"
+
+msgid "Could not make the invoice"
+msgstr "Impossibile preparare la fattura"
+
+msgid "Could not export"
+msgstr "Impossibile esportare"
+
+msgid "Health fund"
+msgstr "Fondo sanitario"
+
+msgid "Insurance"
+msgstr "Assicurazione"
+
+msgid "Company convention"
+msgstr "Convenzione aziendale"
+
+msgid "Direct form"
+msgstr "Forma diretta"
+
+msgid "Indirect form"
+msgstr "Forma indiretta"
+
+msgid "To authorise"
+msgstr "Da autorizzare"
+
+msgid "Authorised"
+msgstr "Autorizzata"
+
+msgid "Done, to bill"
+msgstr "Eseguita, da fatturare"
+
+msgid "In a draft to the fund"
+msgstr "Nella bozza al fondo"
+
+msgid "Billed to the fund"
+msgstr "Fatturata al fondo"
+
+msgid "Paid by the fund"
+msgstr "Pagata dal fondo"
+
+msgid "Choose what kind of convention it is"
+msgstr "Scegli che tipo di convenzione è"
+
+msgid "Choose the direct form, the indirect form or both"
+msgstr "Scegli la forma diretta, quella indiretta o entrambe"
+
+msgid "In direct form the fund is billed: choose the company that pays"
+msgstr "In forma diretta si fattura al fondo: scegli l'azienda che paga"
+
+msgid "Choose the price list of the convention"
+msgstr "Scegli il listino della convenzione"
+
+msgid "The discount is a percentage between 0 and 100"
+msgstr "Lo sconto è una percentuale tra 0 e 100"
+
+msgid "Direct and indirect form"
+msgstr "Forma diretta e indiretta"
+
+msgid "prices of {0}"
+msgstr "prezzi di {0}"
+
+msgid "{0}% off"
+msgstr "sconto del {0}%"
+
+msgid "the person pays {0}%"
+msgstr "il paziente paga il {0}%"
+
+msgid "the person pays {0}"
+msgstr "il paziente paga {0}"
+
+msgid "the fund pays it all"
+msgstr "paga tutto il fondo"
+
+msgid "holder {0}"
+msgstr "titolare {0}"
+
+msgid "Write the convention's name"
+msgstr "Scrivi il nome della convenzione"
+
+msgid "The person's share is a percentage between 0 and 100"
+msgstr "La quota del paziente è una percentuale tra 0 e 100"
+
+msgid "The person's share cannot be below zero"
+msgstr "La quota del paziente non può essere sotto zero"
+
+msgid "Authorisation missing"
+msgstr "Autorizzazione mancante"
+
+msgid "Authorisation"
+msgstr "Autorizzazione"
+
+msgid "Authorisation number from the fund"
+msgstr "Numero di autorizzazione del fondo"
+
+msgid "The person pays {0} and asks the fund for it back"
+msgstr "Il paziente paga {0} e chiede il rimborso al fondo"
+
+msgid "Authorisation missing: the fund wants it before the visit"
+msgstr "Autorizzazione mancante: il fondo la vuole prima della visita"
+
+msgid "The person pays"
+msgstr "Paga la persona"
+
+msgid "{0} · their card {1}"
+msgstr "{0} · tessera {1}"
+
+msgid "{0} · they are covered"
+msgstr "{0} · è coperta"
+
+msgid "The person's share {0} · the fund's {1}"
+msgstr "Quota del paziente {0} · del fondo {1}"
+
+msgid "Conventions"
+msgstr "Convenzioni"
+
+msgid "Appointments were booked under this convention: switch it off instead"
+msgstr "Ci sono appuntamenti prenotati con questa convenzione: disattivala invece"
+
+msgid "This cover is not this person's"
+msgstr "Questa copertura non è di questa persona"
+
+msgid "A convention is for an appointment of one person"
+msgstr "Una convenzione vale per l'appuntamento di una persona sola"
+
+msgid "A place of a subscription is not paid under a convention"
+msgstr "Un posto di un abbonamento non si paga con una convenzione"
+
+msgid "The convention {0} is not used in direct form"
+msgstr "La convenzione {0} non si usa in forma diretta"
+
+msgid "The convention {0} is not used in indirect form"
+msgstr "La convenzione {0} non si usa in forma indiretta"
+
+msgid "The convention {0} does not hold on that day"
+msgstr "La convenzione {0} non è valida in quel giorno"
+
+msgid "This appointment is billed to the fund already: {0}"
+msgstr "Questo appuntamento è già fatturato al fondo: {0}"
+
+msgid "Choose the company that pays for the convention {0} first"
+msgstr "Scegli prima l'azienda che paga per la convenzione {0}"
+
+msgid "No pratica of the month is done and still to bill"
+msgstr "Nessuna pratica del mese è eseguita e ancora da fatturare"
+
+msgid "Convention {0}: pratiche of {1}"
+msgstr "Convenzione {0}: pratiche di {1}"
+
+msgid "No fiscal card for the service {0}: a service without a card is not billable"
+msgstr "Nessuna scheda fiscale per la prestazione {0}: un servizio senza scheda non si fattura"
+
+msgid "This convention is not offered online: call the centre"
+msgstr "Questa convenzione non è proposta online: chiama il centro"
+
+msgid "Written by the person on the booking page: to check"
+msgstr "Scritta dalla persona nella pagina di prenotazione: da verificare"
+
+msgid "To collect from the funds"
+msgstr "Da incassare dai fondi"
+
+msgid "What the health funds and insurers still owe for their pratiche, by convention and by how long it waits"
+msgstr "Quanto devono ancora fondi sanitari e assicurazioni per le loro pratiche, per convenzione e da quanto aspetta"
+
+msgid "A place in a class is not booked under a convention online: call the centre"
+msgstr "Un posto in una lezione non si prenota online con una convenzione: chiama il centro"
+
+msgid "New online booking to approve: with a convention"
+msgstr "Nuova prenotazione online da confermare: con una convenzione"
+
+msgid "Nothing for the person to pay: the fund pays the whole of it, in the month's statement"
+msgstr "Niente da pagare per il paziente: paga tutto il fondo, nell'estratto del mese"
+
+msgid "Conventions with funds, insurers and companies"
+msgstr "Convenzioni con fondi, assicurazioni e aziende"
+
+msgid "An insurance in direct form with the people it covers, their visits authorised and done and one still to authorise; a company's discount for its employees."
+msgstr "Un'assicurazione in forma diretta con le persone che copre, le loro visite autorizzate ed eseguite e una ancora da autorizzare; lo sconto di un'azienda per i suoi dipendenti."
+
+msgid "CRM Convention"
+msgstr "Convenzione"
+
+msgid "CRM Convention Cover"
+msgstr "Copertura di una convenzione"
+
+msgid "CRM Convention Share"
+msgstr "Quota per prestazione"
+
+msgid "Cover"
+msgstr "Copertura"
+
+msgid "Convention form"
+msgstr "Forma della convenzione"
+
+msgid "Share paid by the fund"
+msgstr "Quota a carico del fondo"
+
+msgid "Invoice to the fund"
+msgstr "Fattura al fondo"
+
+msgid "Direct"
+msgstr "Diretta"
+
+msgid "Indirect"
+msgstr "Indiretta"
+
+msgid "Centre prices"
+msgstr "Prezzi del centro"
+
+msgid "Fixed"
+msgstr "Fissa"
+
+msgid "Percentage"
+msgstr "Percentuale"
+
+msgid "Fixed share"
+msgstr "Quota fissa"
+
+msgid "Share in percent"
+msgstr "Quota in percentuale"
+
+msgid "Authorisation before the appointment"
+msgstr "Autorizzazione prima dell'appuntamento"
+
+msgid "Offered on the booking page"
+msgstr "Proposta nella pagina di prenotazione"
+
+msgid "Holder"
+msgstr "Titolare"
+
+msgid "Holder's name"
+msgstr "Nome del titolare"
+
+msgid "Empty: the person themselves"
+msgstr "Vuoto: la persona stessa"
+
+msgid "The fund, the insurer or the company: billed in direct form, with its billing details"
+msgstr "Il fondo, l'assicurazione o l'azienda: fatturata in forma diretta, con i suoi dati di fatturazione"
+
+msgid "The fund pays the centre; the person pays only their share"
+msgstr "Il fondo paga il centro; la persona paga solo la sua quota"
+
+msgid "The person pays everything and asks the fund for the money back"
+msgstr "La persona paga tutto e chiede il rimborso al fondo"
+
+msgid "The person may say they come with it; the booking then waits for the centre's yes"
+msgstr "La persona può dire che viene con questa convenzione; la prenotazione aspetta la conferma del centro"
+
+msgid "A health fund, an insurance or a company the centre has a convention with: its prices, the person's share, who pays"
+msgstr "Un fondo sanitario, un'assicurazione o un'azienda convenzionata con il centro: i prezzi, la quota del paziente, chi paga"
+
+msgid "A person's cover by a convention: a fund, a policy, their company's"
+msgstr "La copertura di una persona con una convenzione: un fondo, una polizza, quella della sua azienda"
+
+msgctxt "Convention"
+msgid "Active"
+msgstr "Attiva"
+
+msgctxt "Convention"
+msgid "Form"
+msgstr "Forma"
+msgctxt "Pratica"
+msgid "Did not come"
+msgstr "Non presentato"
+
+msgid "CRM Location"
+msgstr "Sede"
+
+msgid "Centre location"
+msgstr "Sede"
+
+msgid "Locations"
+msgstr "Sedi"
+
+msgid "All locations"
+msgstr "Tutte le sedi"
+
+msgid "Any location"
+msgstr "Qualsiasi sede"
+
+msgid "Usual location"
+msgstr "Sede abituale"
+
+msgid "Where the room is, where the centre has more than one location. Empty: in any of them (equipment that moves)."
+msgstr "Dove si trova l'ambulatorio, se il centro ha più di una sede. Vuoto: in tutte (un'attrezzatura che si sposta)."
+
+msgid "Where these hours are worked. Empty: anywhere, the room decides."
+msgstr "Dove si lavorano queste ore. Vuoto: in qualsiasi sede, decide l'ambulatorio."
+
+msgid "Where the appointment is, from its room or its professional's shift."
+msgstr "Dove si tiene l'appuntamento, dal suo ambulatorio o dal turno del professionista."
+
+msgid "Where it was made: its appointment's location, else where whoever made it works."
+msgstr "Dove è stata fatta: la sede del suo appuntamento, altrimenti quella di chi l'ha fatta."
+
+msgid "The location whose desk was closed; empty: the whole centre."
+msgstr "La sede la cui cassa è stata chiusa; vuoto: tutto il centro."
+
+msgid "Who invoices what is done here, when it is not the centre's usual issuing company."
+msgstr "Chi fattura quello che si fa qui, quando non è l'azienda emittente di sempre del centro."
+
+msgid "Postcode"
+msgstr "CAP"
+
+msgid "Map link"
+msgstr "Link alla mappa"
+
+msgid "How the centre's people and its clients call it: «Sede di Monza»."
+msgstr "Come la chiamano il centro e i suoi clienti: «Sede di Monza»."
+
+msgid "In the centre's words, for its clients: «Mon-Fri 8-20, Sat 8-13»."
+msgstr "Con le parole del centro, per i suoi clienti: «Lun-Ven 8-20, Sab 8-13»."
+
+msgid "A location of the centre: its rooms, the shifts worked there, its address on what the people booked receive."
+msgstr "Una sede del centro: i suoi ambulatori, i turni che vi si lavorano, il suo indirizzo in quello che ricevono le persone prenotate."
+
+msgid "The map link must be an address starting with https://"
+msgstr "Il link alla mappa deve essere un indirizzo che inizia con https://"
+
+msgid "{0} has rooms or appointments: switch it off instead of deleting it"
+msgstr "{0} ha ambulatori o appuntamenti: disattivala invece di eliminarla"
+
+msgid "{0} works at {1} at this time, the room is at {2}"
+msgstr "{0} a quest'ora lavora presso {1}, l'ambulatorio è presso {2}"
+
+msgid "Only the centre's manager changes its locations"
+msgstr "Solo il responsabile del centro modifica le sue sedi"
+
+msgid "Give the location a name"
+msgstr "Dai un nome alla sede"
+
+msgid "This day is already closed: close it again from the reception desk"
+msgstr "Questo giorno è già chiuso: chiudilo di nuovo dall'accoglienza"
+
+msgid "Where: {0}"
+msgstr "Dove: {0}"
+
+msgid "Two locations"
+msgstr "Due sedi"
+
+msgid "A second location in Monza with two rooms of its own, where the osteopath works on Tuesdays and Thursdays. Only where the centre has no locations of its own."
+msgstr "Una seconda sede a Monza con due ambulatori suoi, dove l'osteopata lavora il martedì e il giovedì. Solo se il centro non ha sedi sue."
+
+msgid "Where the centre is: each location with its address, its rooms and who works there."
+msgstr "Dove si trova il centro: ogni sede con il suo indirizzo, i suoi ambulatori e chi ci lavora."
+
+msgid "Where the centre is. From the second location on, the agenda, the booking page and the reception desk let you choose one, and every room and shift says where it is."
+msgstr "Dove si trova il centro. Dalla seconda sede in poi l'agenda, la pagina di prenotazione e l'accoglienza fanno scegliere la sede, e ogni ambulatorio e ogni turno dice dove si trova."
+
+msgid "New location"
+msgstr "Nuova sede"
+
+msgid "Edit location"
+msgstr "Modifica la sede"
+
+msgid "With one location nothing changes: add the second to choose where in the agenda, the booking page and the reception desk."
+msgstr "Con una sede non cambia niente: aggiungi la seconda per scegliere dove nell'agenda, nella pagina di prenotazione e all'accoglienza."
+
+msgid "One centre, one place"
+msgstr "Un centro, un posto"
+
+msgid "Add your locations if the centre has more than one: each with its address, its rooms and who works there."
+msgstr "Aggiungi le tue sedi se il centro ne ha più di una: ognuna con il suo indirizzo, i suoi ambulatori e chi ci lavora."
+
+msgid "e.g. Monza location"
+msgstr "es. Sede di Monza"
+
+msgid "The link of the place on a map, for whoever books there."
+msgstr "Il link del posto su una mappa, per chi prenota lì."
+
+msgid "e.g. Mon-Fri 8-20, Sat 8-13"
+msgstr "es. Lun-Ven 8-20, Sab 8-13"
+
+msgid "Who invoices what is done here. Empty: the centre's usual issuing company."
+msgstr "Chi fattura quello che si fa qui. Vuoto: l'azienda emittente di sempre del centro."
+
+msgid "Switched off, it is offered nowhere: its rooms and shifts keep it for when it is back."
+msgstr "Disattivata, non si offre da nessuna parte: i suoi ambulatori e i turni la tengono per quando torna."
+
+msgid "The centre's usual company"
+msgstr "L'azienda emittente di sempre"
+
+msgid "No address yet"
+msgstr "Nessun indirizzo"
+
+msgid "1 room"
+msgstr "1 ambulatorio"
+
+msgid "Location saved"
+msgstr "Sede salvata"
+
+msgid "Empty: in any of them, as equipment that moves from one to another."
+msgstr "Vuoto: in tutte, come un'attrezzatura che si sposta da una all'altra."
+
+msgid "Where you usually work: the reception desk opens on it, and what you invoice there counts in its cash closing."
+msgstr "Dove lavori di solito: l'accoglienza si apre su questa sede, e quello che fatturi conta nella sua chiusura di cassa."
+
+msgctxt "Place"
+msgid "{0} at {1}"
+msgstr "{0} presso {1}"
+
+msgctxt "Location"
+msgid "Active"
+msgstr "Attiva"
+
+msgctxt "Location"
+msgid "Off"
+msgstr "Disattivata"
+
+msgid "Instalments: from {0} to {1}"
+msgstr "Rate: da {0} a {1}"
+
+msgid "Instalments go every month or every two months"
+msgstr "Le rate vanno ogni mese o ogni due mesi"
+
+msgid "The deposit is less than the total"
+msgstr "L'acconto è meno del totale"
+
+msgid "Choose the day of the first instalment"
+msgstr "Scegli il giorno della prima rata"
+
+msgid "The first instalment is not in the past"
+msgstr "La prima rata non è nel passato"
+
+msgid "Too many instalments for what is left to pay"
+msgstr "Troppe rate per quello che resta da pagare"
+
+msgid "Balance of the quote «{0}»"
+msgstr "Saldo del preventivo «{0}»"
+
+msgid "Deposit on the quote «{0}»"
+msgstr "Acconto sul preventivo «{0}»"
+
+msgid "Instalment {0} of {1} of the quote «{2}»"
+msgstr "Rata {0} di {1} del preventivo «{2}»"
+
+msgid "This quote has no instalments going on"
+msgstr "Questo preventivo non ha rate in corso"
+
+msgid "The centre invoices this quote's instalments by itself"
+msgstr "Le rate di questo preventivo le fattura il centro da sé"
+
+msgid "This instalment is not to invoice"
+msgstr "Questa rata non è da fatturare"
+
+msgid "Nothing is left to pay on this quote"
+msgstr "Su questo preventivo non resta niente da pagare"
+
+msgid "Its invoice says when it is paid"
+msgstr "Quando è pagata lo dice la sua fattura"
+
+msgid "No fiscal card for this quote's services: a service without a card is not billable"
+msgstr "Nessuna scheda fiscale per i servizi di questo preventivo: un servizio senza scheda non si fattura"
+
+msgid "No provider for this quote: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+msgstr "Nessun professionista per questo preventivo: la qualifica decide il tipo di spesa e il regime IVA, quindi non si può lasciare a un valore predefinito"
+
+msgid "This appointment is paid with the instalments of its quote"
+msgstr "Questo appuntamento si paga con le rate del suo preventivo"
+
+msgid "Invoice {0} of {1}, the deposit on your quote, for {2}, is still to be paid."
+msgstr "La fattura {0} del {1}, l'acconto sul tuo preventivo, di {2}, risulta ancora da pagare."
+
+msgid "Invoice {0} of {1}, instalment {2} of {3} of your quote, for {4}, is still to be paid."
+msgstr "La fattura {0} del {1}, la rata {2} di {3} del tuo preventivo, di {4}, risulta ancora da pagare."
+
+msgid "Instalments to collect"
+msgstr "Rate da incassare"
+
+msgid "What the instalments of the quotes accepted are worth that fall due in the next 30 days or are late, today"
+msgstr "Quanto valgono oggi le rate dei preventivi accettati che scadono nei prossimi 30 giorni o sono in ritardo"
+
+msgid "{0} late"
+msgstr "{0} in ritardo"
+
+msgid "Payment plan"
+msgstr "Piano dei pagamenti"
+
+msgid "Due"
+msgstr "Scadenza"
+
+msgid "Instalment {0} of {1}"
+msgstr "Rata {0} di {1}"
+
+msgid "On acceptance"
+msgstr "All'accettazione"
+
+msgid "Paid in instalments to the centre, without interest or fees."
+msgstr "Pagamento rateale direttamente al centro, senza interessi né spese."
+
+msgid "Each payment is invoiced when it falls due."
+msgstr "Ogni pagamento è fatturato alla sua scadenza."
+
+msgid "CRM Quote Instalment"
+msgstr "Rata del preventivo"
+
+msgid "An instalment of a quote paid in instalments: when, how much, how it goes"
+msgstr "Una rata di un preventivo pagato a rate: quando, quanto, come va"
+
+msgid "The instalment's place in the plan: 0 for the deposit"
+msgstr "Il posto della rata nel piano: 0 per l'acconto"
+
+msgid "The deposit's is the day the quote was accepted"
+msgstr "Per l'acconto è il giorno in cui il preventivo è stato accettato"
+
+msgid "Where the centre invoices by itself: the day it was marked paid"
+msgstr "Dove il centro fattura da sé: il giorno in cui è stata segnata pagata"
+
+msgid "What stopped its invoice"
+msgstr "Cosa ha fermato la sua fattura"
+
+msgid "Instalment"
+msgstr "Rata"
+
+msgid "Single payment"
+msgstr "Unica soluzione"
+
+msgid "Percent"
+msgstr "Percentuale"
+
+msgid "Deposit as"
+msgstr "Acconto come"
+
+msgid "An amount, or a share of the total; 0 for none"
+msgstr "Un importo, o una parte del totale; 0 per nessuno"
+
+msgid "From 2 to 36, equal to the cent"
+msgstr "Da 2 a 36, uguali al centesimo"
+
+msgid "Every how many months"
+msgstr "Ogni quanti mesi"
+
+msgid "First instalment on"
+msgstr "Prima rata il"
+
+msgid "Each instalment invoiced when due"
+msgstr "Ogni rata fatturata alla scadenza"
+
+msgid "Copied from the settings when it is proposed: each instalment is invoiced when it falls due, and the appointments of its services are not invoiced again"
+msgstr "Copiato dalle impostazioni quando è proposto: ogni rata è fatturata alla sua scadenza, e gli appuntamenti dei suoi servizi non si fatturano di nuovo"
+
+msgid "A quote paid in instalments: an invoice for each one when it falls due, or the centre invoices by itself and the instalments are only followed"
+msgstr "Un preventivo pagato a rate: una fattura per ognuna alla scadenza, oppure il centro fattura da sé e le rate sono solo seguite"
+
+msgid "Each instalment when due"
+msgstr "Ogni rata alla scadenza"
+
+msgid "Track only"
+msgstr "Solo seguite"
+
+msgid "Issue the instalments' invoices"
+msgstr "Emetti le fatture delle rate"
+
+msgid "Issued at once, else left as drafts to issue"
+msgstr "Emesse subito, altrimenti lasciate in bozza da emettere"
+
+msgid "How quotes go: the pipeline they move, how long they hold, how their instalments are invoiced"
+msgstr "Come vanno i preventivi: la pipeline che fanno avanzare, quanto restano validi, come si fatturano le loro rate"
+
+msgid "A quote paid in instalments: the instalments this invoice is for are on the quote"
+msgstr "Un preventivo pagato a rate: le rate di questa fattura sono sul preventivo"
+
+msgctxt "Instalment"
+msgid "To pay"
+msgstr "Da pagare"
+
+msgctxt "Instalment"
+msgid "Invoiced"
+msgstr "Fatturata"
+
+msgctxt "Instalment"
+msgid "Paid"
+msgstr "Pagata"
+
+msgctxt "Instalment"
+msgid "Cancelled"
+msgstr "Annullata"
+
+msgctxt "Instalments"
+msgid "How often"
+msgstr "Ogni quanto"
+
+msgid "2 to 36"
+msgstr "da 2 a 36"
+
+msgid "A share of the total"
+msgstr "Una parte del totale"
+
+msgid "An amount"
+msgstr "Un importo"
+
+msgid "At once"
+msgstr "In un'unica soluzione"
+
+msgid "Back to pay"
+msgstr "Di nuovo da pagare"
+
+msgid "Could not invoice it"
+msgstr "Non è stato possibile fatturarla"
+
+msgid "Deposit of {0} on acceptance"
+msgstr "Acconto di {0} all'accettazione"
+
+msgid "Deposit, %"
+msgstr "Acconto, %"
+
+msgid "Deposit, {0}"
+msgstr "Acconto, {0}"
+
+msgid "{brand} invoices each instalment"
+msgstr "{brand} fattura ogni rata"
+
+msgid "Due on {0}"
+msgstr "Scade il {0}"
+
+msgid "Every two months"
+msgstr "Ogni due mesi"
+
+msgid "Invoice it now"
+msgstr "Fatturala ora"
+
+msgid "Mark it paid"
+msgstr "Segna come pagata"
+
+msgid "Pay off the rest"
+msgstr "Salda il resto"
+
+msgid "Pay off the rest, {0}"
+msgstr "Salda il resto, {0}"
+
+msgid "Pay off the rest?"
+msgstr "Saldare il resto?"
+
+msgid "Quote closed: the 1 instalment not invoiced yet is cancelled"
+msgstr "Preventivo chiuso: la rata non ancora fatturata è annullata"
+
+msgid "Quote closed: the {0} instalments not invoiced yet are cancelled"
+msgstr "Preventivo chiuso: le {0} rate non ancora fatturate sono annullate"
+
+msgid "Quotes paid in instalments"
+msgstr "Preventivi pagati a rate"
+
+msgid "The instalments still to pay are marked paid today."
+msgstr "Le rate ancora da pagare sono segnate come pagate oggi."
+
+msgid "Was due on {0}"
+msgstr "Scadeva il {0}"
+
+msgid "due {0}"
+msgstr "scadenza {0}"
+
+msgid "due {0} · late"
+msgstr "scadenza {0} · in ritardo"
+
+msgid "due {0} · paid {1}"
+msgstr "scadenza {0} · pagata il {1}"
+
+msgid "{0} instalments of {1}"
+msgstr "{0} rate da {1}"
+
+msgid "{0} instalments of {1}, the last {2}"
+msgstr "{0} rate da {1}, l'ultima {2}"
+
+msgid "Each payment is invoiced by itself when it falls due; the appointments of these services are not invoiced again."
+msgstr "Ogni pagamento è fatturato da solo alla sua scadenza; gli appuntamenti di questi servizi non si fatturano di nuovo."
+
+msgid "Issue them at once, rather than leaving drafts to check and issue"
+msgstr "Emettile subito, invece di lasciare bozze da controllare ed emettere"
+
+msgid "On the day each payment falls due {brand} makes its invoice, and the appointments of the quote are not invoiced again. Money received before a service is done is invoiced when it is received."
+msgstr "Il giorno in cui ogni pagamento scade {brand} ne fa la fattura, e gli appuntamenti del preventivo non si fatturano di nuovo. Il denaro ricevuto prima che un servizio sia fatto si fattura quando lo si riceve."
+
+msgid "One invoice of {0} takes the place of the instalments still to invoice: it opens as a draft."
+msgstr "Una fattura di {0} prende il posto delle rate ancora da fatturare: si apre in bozza."
+
+msgid "The centre invoices by itself"
+msgstr "Il centro fattura da sé"
+
+msgid "The centre invoices the work by itself as it is done; the instalments are only followed, and marked paid by whoever records payments."
+msgstr "Il centro fattura da sé il lavoro man mano che è fatto; le rate sono solo seguite, e le segna pagate chi registra gli incassi."
+
+msgid "The centre invoices these payments by itself: mark each one paid here."
+msgstr "Questi pagamenti li fattura il centro da sé: segna qui quando ognuno è pagato."
+
+msgid "Instalments: all {0} paid"
+msgstr "Rate: tutte e {0} pagate"
+
+msgid "Instalments: {0} of {1} paid"
+msgstr "Rate: {0} di {1} pagate"
+
+msgid "next the deposit, {0}"
+msgstr "prossimo l'acconto, {0}"
+
+msgid "next {0}, {1}"
+msgstr "prossima {0}, {1}"
+
+msgid "1 late, {0}"
+msgstr "1 in ritardo, {0}"
+
+msgid "{0} late, {1}"
+msgstr "{0} in ritardo, {1}"

@@ -80,6 +80,13 @@ def e_paziente(lead: str) -> bool:
 	return bool(frappe.db.exists(DOCTYPE, lead))
 
 
+def dall_importazione(lead: str) -> None:
+	"""Somebody brought over from the previous software (`crm.importazione`): a
+	patient by the import rule, quietly - the automations hear nothing of a whole
+	archive arriving."""
+	assicura_paziente(lead, regole.IMPORTAZIONE, annuncia=False)
+
+
 def assicura_paziente(
 	lead: str | None,
 	regola: regole.Regola,

@@ -2,7 +2,8 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  News in the client area, told outside it: the email always says only that
+  The client area: «I'm here» from the phone, which the area offers on the day
+  of an appointment; then its news, told outside it: the email always says only that
   there is news, with a link that enters the area once (crm/area/collegamento.py);
   whether a new document is told so, off to start with; WhatsApp and SMS may say the same, to the person's own number
   that wrote to the centre, if they ask for it in their area. Here the centre
@@ -13,7 +14,7 @@
   <SettingsLayoutBase>
     <template #title>
       <h2 class="text-2xl-semibold text-ink-gray-9">
-        {{ __('News in the client area') }}
+        {{ __('Client area') }}
       </h2>
     </template>
     <template #header-actions>
@@ -21,6 +22,20 @@
     </template>
     <template #content>
       <div v-if="settings.data" class="flex flex-col gap-4 pb-6">
+        <SettingsRow
+          :label="__('«I’m here» from the phone')"
+          :description="
+            __(
+              'From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told.',
+            )
+          "
+        >
+          <Switch v-model="form.self_check_in" />
+        </SettingsRow>
+        <!-- what the area tells outside it -->
+        <h3 class="px-2 pt-2 text-lg-semibold text-ink-gray-8">
+          {{ __('News in the client area') }}
+        </h3>
         <p
           class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
         >
@@ -88,8 +103,13 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
-const form = reactive({ whatsapp_template: '', email_new_documents: false })
-const saved = reactive({ whatsapp_template: '', email_new_documents: false })
+const VUOTO = {
+  whatsapp_template: '',
+  email_new_documents: false,
+  self_check_in: true,
+}
+const form = reactive({ ...VUOTO })
+const saved = reactive({ ...VUOTO })
 const saving = ref(false)
 const error = ref('')
 
@@ -97,6 +117,7 @@ function fill(data) {
   for (const target of [form, saved]) {
     target.whatsapp_template = data.whatsapp_template || ''
     target.email_new_documents = Boolean(data.email_new_documents)
+    target.self_check_in = Boolean(data.self_check_in)
   }
 }
 
@@ -117,7 +138,8 @@ const templateOptions = computed(() => [
 const dirty = computed(
   () =>
     form.whatsapp_template !== saved.whatsapp_template ||
-    form.email_new_documents !== saved.email_new_documents,
+    form.email_new_documents !== saved.email_new_documents ||
+    form.self_check_in !== saved.self_check_in,
 )
 
 async function save() {
@@ -127,6 +149,7 @@ async function save() {
     const data = await call('crm.area.avvisi.save_notice_settings', {
       whatsapp_template: form.whatsapp_template || null,
       email_new_documents: form.email_new_documents ? 1 : 0,
+      self_check_in: form.self_check_in ? 1 : 0,
     })
     settings.data = data
     fill(data)

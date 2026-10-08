@@ -135,6 +135,7 @@
           <template #after>
             <BillingProfileSection partyType="CRM Lead" :party="leadId" />
             <RelatedPeopleSection :lead="leadId" />
+            <ConventionCoversSection :lead="leadId" />
             <PatientSection :lead="leadId" />
             <ConsentsSection :lead="leadId" />
           </template>
@@ -203,6 +204,7 @@ import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
 import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
+import ConventionCoversSection from '@/components/ConventionCoversSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
@@ -258,7 +260,6 @@ const showConvertToDealModal = ref(false)
 const deals = createResource({
   url: 'crm.api.lead.get_deals',
   params: { lead: props.leadId },
-  auto: true,
 })
 
 const dealOptions = computed(() => [
@@ -286,7 +287,11 @@ const {
   scripts,
   error,
   canWrite,
+  pronto,
 } = useDocument('CRM Lead', props.leadId)
+// once the person came: a person one does not follow asks nothing more, and the
+// page says why
+pronto.then((venuto) => venuto && deals.fetch().catch(() => {}))
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
 // opening a deal writes the person too (doc 30): whoever reads it does not

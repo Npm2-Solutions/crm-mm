@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The phone's «+» (docs/progetto-ghl/29): what a list adds - a person, a task,
+  The phone's «+» (docs/crm/29): what a list adds - a person, a task,
   a deal - where the thumb is, above the bar at the bottom, in the brand's
   colour like every primary action.
 -->

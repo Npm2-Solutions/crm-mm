@@ -33,8 +33,12 @@
       </div>
       <!-- in a page that scrolls as a whole, the save bar stays in sight
            (past the page's padding on a desk; on a phone the screen scrolls,
-           with no padding to go past, and its button is as wide as the bar) -->
+           with no padding to go past, and the page's «Update» is the
+           settings' own bar at the bottom of the screen, AzioneImpostazioni:
+           what is left here is the error, when there is one - shown, not
+           drawn again, so that the button carried away stays) -->
       <div
+        v-show="!(!scroll && isMobileView && !error && !$slots.actions)"
         class="flex items-center justify-between gap-3 border-t border-outline-gray-2 pt-3 max-md:flex-col max-md:items-stretch"
         :class="
           scroll
@@ -45,7 +49,14 @@
         <ErrorMessage :message="error" />
         <div class="ml-auto flex items-center gap-2 max-md:ml-0">
           <slot name="actions" />
+          <AzioneImpostazioni
+            v-if="!scroll"
+            :loading="saving"
+            :label="docname ? __('Update') : __('Create')"
+            @click="save"
+          />
           <Button
+            v-else
             variant="solid"
             class="max-md:h-11 max-md:flex-1 max-md:text-base"
             :loading="saving"
@@ -60,7 +71,8 @@
 
 <script setup>
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
-import { campoDaAprire } from '@/composables/settings'
+import AzioneImpostazioni from '@/components/Settings/AzioneImpostazioni.vue'
+import { campoDaAprire, isMobileView } from '@/composables/settings'
 import { tieniInVista } from '@/utils/inVista'
 import {
   buildTabs,
@@ -185,6 +197,9 @@ async function save() {
     // Sistema TS would not take, a stamp duty without its authorisation. The
     // message is theirs, not a generic failure.
     error.value = stripHtml(e.messages?.[0] || e.message)
+    // said where the eye is: on a phone the bar holding it sat under the
+    // settings' own, and a number refused read as a save that did nothing
+    toast.error(error.value)
   } finally {
     saving.value = false
   }

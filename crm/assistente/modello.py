@@ -28,6 +28,7 @@ from frappe import _
 from frappe.utils import cint, get_fullname, now_datetime
 
 from crm.assistente import funzione, funzioni, regole
+from crm.fcrm.doctype.crm_plan.crm_plan import RICHIESTE_DI_PROVA
 from crm.permissions import livelli
 
 IMPOSTAZIONI = "CRM Assistant Settings"
@@ -79,7 +80,27 @@ def mancano(chiave: str | None = None) -> list[str]:
 	voce = funzione(chiave) if chiave else None
 	if voce and voce.interruttore and not cint(cfg.get(voce.interruttore)):
 		problemi.append("This function is off in the assistant's settings")
+	if in_prova() and richieste_usate() >= RICHIESTE_DI_PROVA:
+		problemi.append(TRIAL_FINITA)
 	return problemi
+
+
+#: The trial's requests spent: the assistant is an add-on of the plan.
+TRIAL_FINITA = (
+	"The trial's requests are used up: add the assistant to the plan in Settings > The centre > Features"
+)
+
+
+def in_prova() -> bool:
+	"""The assistant on trial: a few requests to try it, then it is bought."""
+	from crm.assistente import PIANO
+
+	return livelli.stato_modulo(PIANO, livelli.moduli_attivi()) == livelli.PROVA
+
+
+def richieste_usate() -> int:
+	"""The requests the centre made of the model; a failed one cost nothing."""
+	return frappe.db.count(EVENTO, {"status": ["!=", regole.FALLITA]})
 
 
 def acceso(chiave: str | None = None) -> bool:

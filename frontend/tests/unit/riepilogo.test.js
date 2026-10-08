@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  fraseDelleAssenze,
   prossimi,
   qualcosaDaDire,
   scadenza,
@@ -119,5 +120,19 @@ describe('qualcosaDaDire', () => {
     expect(qualcosaDaDire({ appuntamenti: [{ name: 'a' }] })).toBe(true)
     expect(qualcosaDaDire({ ultimoAppuntamento: { name: 'p' } })).toBe(true)
     expect(qualcosaDaDire({ messaggio: { testo: 'Ciao' } })).toBe(true)
+  })
+})
+
+describe('fraseDelleAssenze', () => {
+  const t = (s, v = []) => s.replace('{0}', v[0])
+  it('says the missed appointments, one or more, nothing for none', () => {
+    expect(fraseDelleAssenze(null, t)).toBe('')
+    expect(fraseDelleAssenze({ count: 0 }, t)).toBe('')
+    expect(fraseDelleAssenze({ count: 1 }, t)).toBe(
+      '1 missed appointment in the last year',
+    )
+    expect(fraseDelleAssenze({ count: 3 }, t)).toBe(
+      '3 missed appointments in the last year',
+    )
   })
 })

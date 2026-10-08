@@ -40,12 +40,19 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 	if not paziente.clinica_accesa() or not paziente.appuntamento_per_la_clinica(doc.service, professionisti):
 		return
 
+	# brought over from the previous software: a patient from then, and no news
+	annuncia = not doc.flags.get("importato")
+
 	def converti():
 		for riga in righe:
 			persona = paziente.persona_di(riga.party_type, riga.party)
 			if regole.accolto(riga.get("arrived_at"), riga.status):
 				paziente.assicura_paziente(
-					persona, regole.ACCETTAZIONE, quando=riga.arrived_at, fonte=(doc.doctype, doc.name)
+					persona,
+					regole.ACCETTAZIONE,
+					quando=riga.arrived_at,
+					fonte=(doc.doctype, doc.name),
+					annuncia=annuncia,
 				)
 			if regole.presente(doc.status, riga.status):
 				paziente.assicura_paziente(
@@ -53,6 +60,7 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 					regole.APPUNTAMENTO_SVOLTO,
 					quando=doc.starts_on,
 					fonte=(doc.doctype, doc.name),
+					annuncia=annuncia,
 				)
 
 	_senza_fermare(_("Patient not recorded from appointment {0}").format(doc.name), doc, converti)
@@ -174,6 +182,10 @@ def piano_aggiornato(doc, method=None) -> None:
 		_senza_fermare(_("Medical centre pipelines not created"), doc, pipeline.crea_pipeline)
 		# and the centre's dashboard
 		_senza_fermare(_("Medical centre dashboard not created"), doc, _cruscotto_del_centro)
+		# and its ready clinical sheets, drafts in the centre's language
+		from crm.clinica import schede_pronte
+
+		schede_pronte.in_seguito()
 	if paziente.clinica_accesa() and not frappe.db.get_default(paziente.RECUPERO_FATTO):
 		frappe.enqueue(
 			"crm.clinica.paziente.recupera",

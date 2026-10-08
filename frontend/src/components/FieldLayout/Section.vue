@@ -10,9 +10,13 @@
   >
     <!-- the columns side by side where each has 11rem (Column's basis), one
          under the other where they would be narrower: three in a record's
-         column on a tablet held upright were 90px, «rita.deang» for an email -->
+         column on a tablet held upright were 90px, «rita.deang» for an email.
+         One under the other, they do not wrap: a column-wise flex that wraps
+         makes its line as wide as its widest content, and a select with a long
+         choice («Struttura sanitaria autorizzata dalla Regione») took the
+         Sistema TS tab 90px past its card on a phone -->
     <CollapsibleSection
-      class="flex flex-wrap gap-4 text-lg-medium max-sm:flex-col"
+      class="flex flex-wrap gap-4 text-lg-medium max-sm:flex-col max-sm:flex-nowrap"
       :class="{ 'px-3 sm:px-5': hasTabs }"
       :labelClass="['text-lg font-medium', { 'px-3 sm:px-5': hasTabs }]"
       :label="section.label"

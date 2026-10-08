@@ -21,19 +21,20 @@ from collections import defaultdict
 import frappe
 from frappe import _, _lt
 from frappe.query_builder import Case, DocType
-from frappe.query_builder.functions import Count, IfNull, Sum
+from frappe.query_builder.functions import Count, IfNull, Max, Sum
 
-from crm.dashboard import charts
+from crm.dashboard import charts, riprenotazione_regole
 from crm.dashboard.context import Context, where
 from crm.dashboard.queries import grouped, per_bucket, per_day, total, two_periods, weekday_hour
 from crm.dashboard.registry import Option, widget
 from crm.dashboard.widgets.conversations import full_names, hour_labels, weekday_labels
-from crm.permissions import livelli
+from crm.permissions import livelli, org_hierarchy
 
 Appt = DocType("CRM Appointment")
 Staff = DocType("CRM Appointment Staff")
 Participant = DocType("CRM Appointment Participant")
 Connection = DocType("CRM Booking Connection")
+Deal = DocType("CRM Deal")
 
 AGENDA = ("agenda",)
 CALENDAR = {"name": "Calendar"}
@@ -50,14 +51,17 @@ MEASURE = Option(
 
 
 def staffed_by(ctx: Context):
-	"""The appointment has one of the people counted among its professionals."""
+	"""The appointment has one of the people counted among its professionals, and
+	is at the location asked (docs/crm/62)."""
+	dove = ctx.at(Appt.centre_location)
 	if ctx.everyone:
-		return None
-	return Appt.name.isin(
+		return dove
+	staffed = Appt.name.isin(
 		frappe.qb.from_(Staff)
 		.select(Staff.parent)
 		.where((Staff.parenttype == "CRM Appointment") & Staff.user.isin(ctx.owners or ["<nobody>"]))
 	)
+	return staffed if dove is None else staffed & dove
 
 
 def status_labels() -> dict[str, str]:
@@ -98,7 +102,7 @@ def today_bounds(ctx: Context) -> tuple[datetime.datetime, datetime.datetime]:
 	keywords=("recall", "follow-up", "patients", "last visit"),
 )
 def recall_due(ctx: Context):
-	"""The second seam (docs/gestionale-medico): who to invite back, chosen by when
+	"""The second seam (docs/verticali/clinica): who to invite back, chosen by when
 	they last came and by their yes, never by what they came for."""
 	Lead = DocType("CRM Lead")
 	soglia = ctx.today - datetime.timedelta(days=365)
@@ -349,7 +353,13 @@ def appointments_by_staff(ctx: Context):
 		.select(Staff.user, Count(Appt.name).distinct().as_("n"))
 		.where(Staff.parenttype == "CRM Appointment")
 	)
-	query = where(query, Appt.status.isin(TAKEN), ctx.within(Appt.starts_on), ctx.owned(Staff.user))
+	query = where(
+		query,
+		Appt.status.isin(TAKEN),
+		ctx.within(Appt.starts_on),
+		ctx.owned(Staff.user),
+		ctx.at(Appt.centre_location),
+	)
 	rows = (
 		query.groupby(Staff.user)
 		.orderby(Count(Appt.name).distinct(), order=frappe.qb.desc)
@@ -438,6 +448,168 @@ def staff_occupancy(ctx: Context):
 		rows,
 		empty=_("No appointment in this period"),
 	)
+
+
+# -- booking again ------------------------------------------------------------
+
+
+def person_of_participant():
+	"""The person behind a participant, picked as themselves or as one of their deals."""
+	return (
+		Case()
+		.when(Participant.party_type == "CRM Lead", Participant.party)
+		.when(Participant.party_type == "CRM Deal", Deal.lead)
+	)
+
+
+def participations():
+	return (
+		frappe.qb.from_(Participant)
+		.join(Appt)
+		.on((Participant.parent == Appt.name) & (Participant.parenttype == "CRM Appointment"))
+		.left_join(Deal)
+		.on((Participant.party_type == "CRM Deal") & (Participant.party == Deal.name))
+	)
+
+
+def seen_people(ctx: Context, low, high, *, by_staff: bool = False) -> list[tuple]:
+	"""``(person, starts_on, professional)`` of every visit a person came to in
+	[low, high): among the people the viewer sees, on the agenda of whom is counted.
+	By professional, one row for each professional on it who is counted."""
+	came = (Participant.status == "Attended") | (
+		(Appt.status == "Completed") & IfNull(Participant.status, "").notin(("No Show", "Cancelled"))
+	)
+	person = person_of_participant()
+	query = (
+		participations()
+		.left_join(Staff)
+		.on((Staff.parent == Appt.name) & (Staff.parenttype == "CRM Appointment"))
+	)
+	query = query.select(person.as_("person"), Appt.starts_on, Staff.user)
+	visible = org_hierarchy.visible_leads(ctx.viewer)
+	query = where(
+		query,
+		came,
+		Appt.starts_on >= low,
+		Appt.starts_on < min(high, ctx.now),
+		person.isnotnull(),
+		person.isin(visible) if visible is not None else None,
+		staffed_by(ctx),
+		ctx.owned(Staff.user) if by_staff else None,
+	)
+	return [(row.person, row.starts_on, row.user) for row in query.run(as_dict=True)]
+
+
+def latest_bookings(people) -> dict[str, datetime.datetime]:
+	"""Each person's latest appointment that was not cancelled, whoever it is with."""
+	people = sorted({person for person in people if person})
+	if not people:
+		return {}
+	person = person_of_participant()
+	query = (
+		participations()
+		.select(person.as_("person"), Max(Appt.starts_on).as_("latest"))
+		.where(Appt.status != "Cancelled")
+		.where(IfNull(Participant.status, "") != "Cancelled")
+		.where(person.isin(people))
+		.groupby(person)
+	)
+	return {row.person: row.latest for row in query.run(as_dict=True)}
+
+
+def rebooking(ctx: Context, previous: bool = False) -> float | None:
+	visits = seen_people(ctx, *ctx.span(previous))
+	again, seen = riprenotazione_regole.tasso(visits, latest_bookings(row[0] for row in visits))
+	return charts.ratio(again, seen)
+
+
+@widget(
+	"rebooking_rate",
+	category="agenda",
+	kind="number",
+	title=_lt("Rebooking rate"),
+	description=_lt("Of the people who came in the period, the share with a later appointment booked"),
+	requires=AGENDA,
+	keywords=("retention", "rebooking", "came back", "return", "riprenotazione", "fidelizzazione"),
+)
+def rebooking_rate(ctx: Context):
+	now = rebooking(ctx)
+	return charts.number(
+		now or 0, rebooking(ctx, True), format="percent", compare="points", progress=now or 0
+	)
+
+
+@widget(
+	"rebooking_by_staff",
+	category="agenda",
+	kind="axis",
+	title=_lt("Rebooking per professional"),
+	description=_lt("Of the people each professional saw in the period, the share that booked again"),
+	size=(10, 8),
+	requires=AGENDA,
+	managers_only=True,
+	keywords=("retention", "rebooking", "riprenotazione", "professionista"),
+)
+def rebooking_by_staff(ctx: Context):
+	visits = seen_people(ctx, *ctx.span(), by_staff=True)
+	counts = riprenotazione_regole.per_professionista(visits, latest_bookings(row[0] for row in visits))
+	names = full_names(list(counts))
+	rows = [
+		{"user": names.get(user) or user, "rate": charts.ratio(again, seen) or 0, "seen": seen}
+		for user, (again, seen) in counts.items()
+	]
+	rows.sort(key=lambda row: (row["rate"], row["seen"]), reverse=True)
+	return charts.bars(rows[:12], label_key="user", lines=[("rate", _("Booked again"))], format="percent")
+
+
+DAYS = Option("days", _lt("Seen in the last days"), type="int", default=90, min=14, max=365)
+
+
+@widget(
+	"without_next_appointment",
+	category="agenda",
+	kind="list",
+	title=_lt("No next appointment"),
+	description=_lt("People seen lately with nothing booked ahead, the longest ago first"),
+	size=(10, 8),
+	live=True,
+	requires=AGENDA,
+	options=(ROWS, DAYS),
+	# a list shows the people themselves, not a number: whoever reads the agenda
+	reader="agenda.vedi",
+	keywords=("rebooking", "recall", "follow-up", "lost", "riprenotazione", "richiamo", "persi"),
+)
+def without_next_appointment(ctx: Context):
+	low = datetime.datetime.combine(
+		ctx.today - datetime.timedelta(days=int(ctx.option("days", 90))), datetime.time.min
+	)
+	visits = seen_people(ctx, low, ctx.now)
+	missing = riprenotazione_regole.senza_prossimo(visits, latest_bookings(row[0] for row in visits), ctx.now)
+	shown = missing[: int(ctx.option("limit", 6))]
+	names = (
+		dict(
+			frappe.get_all(
+				"CRM Lead",
+				filters={"name": ("in", [row[0] for row in shown])},
+				fields=["name", "lead_name"],
+				as_list=True,
+			)
+		)
+		if shown
+		else {}
+	)
+	items = []
+	for person, last, professional in shown:
+		item = {
+			"title": names.get(person) or person,
+			"subtitle": _("Last visit"),
+			"time": str(last),
+			"route": {"name": "Lead", "params": {"leadId": person}},
+		}
+		if professional:
+			item["user"] = professional
+		items.append(item)
+	return charts.listing(items, empty=_("Everybody seen lately has something booked"), total=len(missing))
 
 
 # -- lists --------------------------------------------------------------------

@@ -349,6 +349,10 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 		and frappe.db.get_value("CRM Session Cycle", incontro.session_cycle, "billing") == CICLO_INTERO
 	):
 		frappe.throw(_("This session is paid with its cycle: invoice the cycle"))
+	from crm.preventivi import rate as rate_dei_preventivi
+
+	if rate_dei_preventivi.pagati_a_rate([incontro.name]):
+		frappe.throw(_("This appointment is paid with the instalments of its quote"))
 	paganti = [
 		r for r in incontro.participants or [] if r.status != "Cancelled" and not r.get("subscription")
 	]
@@ -373,6 +377,13 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 	if not service_provider:
 		service_provider = frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
 
+	from crm.convenzioni import convenzioni
+
+	if convenzioni.nulla_per_la_persona(incontro):
+		frappe.throw(
+			_("Nothing for the person to pay: the fund pays the whole of it, in the month's statement")
+		)
+
 	fattura = frappe.new_doc("CRM Invoice")
 	fattura.appointment = appointment
 	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
@@ -391,7 +402,9 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 			"billable_service": billable_service,
 			"service_provider": service_provider or "",
 			"qty": 1,
-			"rate": incontro.unit_price or 0,
+			# under a convention in direct form, only the person's share: the fund is
+			# billed the rest, and the Sistema TS hears of what the person paid
+			"rate": convenzioni.da_pagare_dalla_persona(incontro),
 		},
 	)
 	return fattura
@@ -515,6 +528,73 @@ def issue_from_subscription(subscription: str, instalment: str, service_provider
 			"rate": flt(rata.amount),
 			"period_from": rata.due_on,
 			"period_to": fino,
+		},
+	)
+	fattura.insert()
+	return fattura.name
+
+
+@frappe.whitelist(methods=["POST"])
+def issue_from_quote(quote: str, instalments: list[str] | str) -> str:
+	"""Open a draft invoice for rows of a quote paid in instalments (`crm.preventivi.rate`):
+	the deposit, an instalment, or the rest at once - one line, their amount.
+
+	The fiscal card is the one of the quote's service worth the most (one expense
+	type per invoice: the Sistema TS reads it), the provider the one of whoever wrote
+	the quote, else the card's own; the person is the client, or whoever pays for
+	them. The appointments of its services are not invoiced one by one: they are paid
+	here.
+	"""
+	from crm.preventivi import rate
+
+	frappe.has_permission("CRM Invoice", "create", throw=True)
+	preventivo = frappe.get_doc("CRM Quote", quote)
+	preventivo.check_permission("read")
+	nomi = set(frappe.parse_json(instalments) if isinstance(instalments, str) else instalments or [])
+	righe = [riga for riga in preventivo.instalments if riga.name in nomi]
+	if not righe or len(righe) != len(nomi):
+		frappe.throw(_("No such instalment"))
+	for riga in righe:
+		if riga.invoice and frappe.db.get_value("CRM Invoice", riga.invoice, "docstatus") in (0, 1):
+			frappe.throw(_("This instalment is invoiced already: {0}").format(riga.invoice))
+	billable_service = None
+	for voce in sorted(preventivo.items, key=lambda v: -flt(v.amount)):
+		if voce.status == "Cancelled":
+			continue
+		billable_service = frappe.db.get_value(
+			"CRM Billable Service", {"crm_service": voce.service, "enabled": 1}, "name"
+		)
+		if billable_service:
+			break
+	if not billable_service:
+		frappe.throw(_("No fiscal card for this quote's services: a service without a card is not billable"))
+	service_provider = (
+		frappe.db.get_value("CRM Service Provider", {"user": preventivo.practitioner, "enabled": 1}, "name")
+		if preventivo.practitioner
+		else None
+	) or frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
+	if not service_provider:
+		frappe.throw(
+			_(
+				"No provider for this quote: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+			)
+		)
+
+	fattura = frappe.new_doc("CRM Invoice")
+	fattura.quote = quote
+	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
+	fattura.party_type = "CRM Lead"
+	fattura.party = preventivo.lead
+	if not anagrafica.pagante_della_fattura(fattura):
+		fattura.billing_name = preventivo.lead_name
+	fattura.append(
+		"items",
+		{
+			"billable_service": billable_service,
+			"service_provider": service_provider,
+			"description": rate.descrizione(preventivo, righe),
+			"qty": 1,
+			"rate": round(sum(flt(riga.amount) for riga in righe), 2),
 		},
 	)
 	fattura.insert()
@@ -849,6 +929,8 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			"unit_price",
 			"status",
 			"session_cycle",
+			"convention_form",
+			"patient_share",
 		],
 		order_by="starts_on desc",
 		limit_page_length=int(limit),
@@ -857,10 +939,16 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	from crm.scheduling import abbonamenti
 
 	coperti = abbonamenti.coperti([i.name for i in incontri])
+	# a service of a quote paid in instalments: the instalments pay for it
+	from crm.preventivi import rate as rate_dei_preventivi
+
+	coperti |= rate_dei_preventivi.pagati_a_rate([i.name for i in incontri])
 	return [
 		dict(i)
 		for i in incontri
 		if i.name not in fatturati
 		and not (i.session_cycle and i.session_cycle in interi)
 		and i.name not in coperti
+		# the fund pays it all: nothing to invoice to the person
+		and not (i.convention_form == "Direct" and not flt(i.patient_share))
 	]

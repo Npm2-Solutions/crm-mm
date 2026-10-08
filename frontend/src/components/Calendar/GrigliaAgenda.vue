@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda's hours as a grid (docs/progetto-ghl/56-agenda.md): a day's
+  The agenda's hours as a grid (docs/crm/56-agenda.md): a day's
   columns are its professionals or its rooms, a week's the days of one of
   them. Each column at least as wide as a name reads (`--col-min`), the
   columns scroll sideways under their headers and the hours stay where they
@@ -279,6 +279,7 @@
             "
             :nomeDi="nomeDi"
             :nomeStanza="nomeStanza"
+            :nomeSede="nomeSede"
             @apri="(cosa) => $emit('apri', cosa)"
             @modifica="(cosa) => $emit('modifica', cosa)"
             @prendi="(evento, cosa) => prendi(evento, cosa, colonna)"
@@ -333,6 +334,8 @@ const props = defineProps({
   serviceColors: { type: Object, default: () => ({}) },
   nomeDi: { type: Function, default: (utente) => utente },
   nomeStanza: { type: Function, default: (stanza) => stanza },
+  /** where an appointment is, while every location is shown: '' otherwise */
+  nomeSede: { type: Function, default: () => '' },
   /** what the columns draw has come for these days: the hours open where they matter */
   pronto: { type: Boolean, default: true },
 })

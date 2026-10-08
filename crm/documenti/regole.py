@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """What a person's document is, and how long it stays online, without a site
-(docs/gestionale-medico/design.md, "Tre strati": "I documenti della persona").
+(docs/verticali/clinica/design.md, "Tre strati": "I documenti della persona").
 
 - **The kinds are registered** (`TipoDocumento`): the CRM's own - a signed form, a
   contract, an identity document, a certificate, a photo, something else - and the

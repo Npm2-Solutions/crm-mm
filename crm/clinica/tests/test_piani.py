@@ -93,6 +93,50 @@ class ChiScrive(PianiCase):
 		frappe.set_user("Administrator")
 		self.assertTrue(paziente.e_paziente(self.anna.name))
 
+	def test_chi_non_scrive_una_dieta_sa_di_chi_e(self):
+		# the physiotherapist does not write a diet, and reads whose it is and
+		# their own qualification, never a kind gone without a word
+		self.come(DOC2)
+		risposta = piani.get_plans(self.anna.name)
+		bloccati = {tipo["key"]: tipo for tipo in risposta["locked_kinds"]}
+		self.assertEqual(set(bloccati), {R.MENU, R.SCAMBI})
+		self.assertEqual(len(bloccati[R.MENU]["written_by"]), len(R.DIETE))
+		self.assertTrue(risposta["qualification"])
+		# the dietitian writes them all, nothing locked
+		self.come(DOC1)
+		self.assertNotIn(R.MENU, [tipo["key"] for tipo in piani.get_plans(self.anna.name)["locked_kinds"]])
+
+	def test_gli_alimenti_si_sfogliano_per_gruppo(self):
+		self.come(DOC1)
+		pagina = piani_clinica.browse_foods(text="pasta", group="Cereals and tubers")
+		self.assertIn("Pasta di semola", [riga["food_name"] for riga in pagina["rows"]])
+		gruppi = {f["value"]: f["count"] for f in pagina["facets"]["food_group"]}
+		self.assertGreaterEqual(gruppi["Cereals and tubers"], 1)
+		self.come(DESK)
+		with self.assertRaises(frappe.PermissionError):
+			piani_clinica.browse_foods()
+
+	def test_le_bevande_in_fondo_e_le_usate_prima(self):
+		frappe.set_user("Administrator")
+		acqua = frappe.get_doc(
+			{"doctype": piani_clinica.CIBO, "food_name": "Acqua minerale", "food_group": "Drinks", "kcal": 0}
+		).insert(ignore_permissions=True)
+		frappe.get_doc(
+			{"doctype": piani_clinica.CIBO, "food_name": "Albicocca", "food_group": "Fruit", "kcal": 48}
+		).insert(ignore_permissions=True)
+		self.scrive(DOC1)
+		self.come(DOC1)
+		pagina = piani_clinica.browse_foods()
+		nomi = [riga["name"] for riga in pagina["rows"]]
+		# the pasta of the menu written first, the drinks after every food
+		self.assertEqual(nomi[0], self.pasta.name)
+		self.assertEqual(pagina["rows"][0]["uses"]["mine"], 1)
+		if acqua.name in nomi:
+			gruppi = [riga["food_group"] for riga in pagina["rows"]]
+			self.assertEqual(
+				gruppi[nomi.index(acqua.name) :], ["Drinks"] * (len(nomi) - nomi.index(acqua.name))
+			)
+
 	def test_esercizi_a_casa_al_fisioterapista(self):
 		dati = {
 			"plan_type": R.ESERCIZI,
@@ -266,6 +310,11 @@ class LeLibrerie(PianiCase):
 			piani_clinica.search_foods("pasta")
 		with self.assertRaises(frappe.PermissionError):
 			piani_clinica.add_food("Pane", "Cereals and tubers")
+
+	def test_un_alimento_nuovo_dice_la_sua_energia(self):
+		self.come(DOC1)
+		with self.assertRaises(frappe.ValidationError):
+			piani_clinica.add_food("Pane senza numeri", "Cereals and tubers")
 
 
 class LaSpesa(PianiCase):

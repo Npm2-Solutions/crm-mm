@@ -1,7 +1,7 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // For license information, please see license.txt
 
-// The notifications panel, without a screen (docs/progetto-ghl/43-notifiche.md):
+// The notifications panel, without a screen (docs/crm/43-notifiche.md):
 // how each kind looks, which day a notification is filed under, the time on its
 // row. The server says what a notification is (`kind`), what it says and where
 // it opens; here is only how it is drawn.

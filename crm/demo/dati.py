@@ -107,6 +107,39 @@ STANZE = (
 	("palestra", "Palestra", "Room", 8, "#E08A3C", "Otto reformer, tappetini e piccoli attrezzi"),
 )
 
+#: The centre's two locations (docs/crm/62), where it has none of its own: key, name,
+#: street, postcode, city, province, phone, opening hours. The rooms above are in the
+#: first; the second has two rooms of its own.
+SEDI = (
+	(
+		"milano",
+		"Sede di Milano",
+		"Via Washington 70",
+		"20146",
+		"Milano",
+		"MI",
+		"+39 02 5555 0100",
+		"Lun-Ven 7:30-21, Sab 9-13",
+	),
+	(
+		"monza",
+		"Sede di Monza",
+		"Via Italia 12",
+		"20900",
+		"Monza",
+		"MB",
+		"+39 039 555 0200",
+		"Mar e Gio 14-20",
+	),
+)
+#: key, name, location key, colour, description
+STANZE_DELLE_SEDI = (
+	("monza_a", "Monza - Studio A", "monza", "#C25C8B", "Lettino per osteopatia e trattamenti"),
+	("monza_b", "Monza - Studio B", "monza", "#D9A13B", "Scrivania e lettino"),
+)
+#: Who works in the second location, and on which days: their room there.
+IN_SEDE = {"luca": ({"Tuesday", "Thursday"}, "monza", "monza_a")}
+
 #: key, name, category, minutes, price, staff keys, room key, max participants,
 #: per participant, bookable online, colour, description
 SERVIZI = (

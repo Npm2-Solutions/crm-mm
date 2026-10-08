@@ -98,8 +98,10 @@ def get_widgets_data(
 	to_date: str | None = None,
 	user: str | None = None,
 	only_mine: int | str | None = 0,
+	location: str | None = None,
 ) -> dict:
-	"""The answer of each widget, keyed by its place on the grid.
+	"""The answer of each widget, keyed by its place on the grid; at one of the
+	centre's locations where asked (docs/crm/62).
 
 	One request for the whole dashboard, but each widget on its own: one that
 	fails is logged and comes back as an error, the others still load.
@@ -114,12 +116,12 @@ def get_widgets_data(
 			continue
 		key = str(entry.get("i") or entry.get("name"))
 		answers[key] = widget_answer(
-			entry.get("name"), entry.get("config") or {}, from_date, to_date, user, only_mine
+			entry.get("name"), entry.get("config") or {}, from_date, to_date, user, only_mine, location
 		)
 	return answers
 
 
-def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
+def widget_answer(name, config, from_date, to_date, user, only_mine, location=None) -> dict:
 	widget = registry.get(name)
 	if not widget:
 		return {"error": _("This widget does not exist any more")}
@@ -142,6 +144,7 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 		requested_user=user,
 		scope=scope,
 		config=widget.clean_config(config if isinstance(config, dict) else {}),
+		location=location,
 	)
 	try:
 		answer = widget.fn(ctx)

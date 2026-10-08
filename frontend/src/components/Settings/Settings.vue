@@ -306,6 +306,12 @@ const PAGINE = {
     () => import('@/components/Settings/Hierarchy/Hierarchy.vue'),
   ),
   Plan: aRichiesta(() => import('@/components/Settings/PlanSettings.vue')),
+  'Your data': aRichiesta(
+    () => import('@/components/Settings/YourDataSettings.vue'),
+  ),
+  Locations: aRichiesta(
+    () => import('@/components/Settings/LocationsSettings.vue'),
+  ),
   'Demo data': aRichiesta(
     () => import('@/components/Settings/DemoDataSettings.vue'),
   ),
@@ -393,6 +399,9 @@ const PAGINE = {
   'Social profiles': aRichiesta(
     () => import('@/components/Settings/Social/SocialSettings.vue'),
   ),
+  'Review requests': aRichiesta(
+    () => import('@/components/Settings/ReviewSettings.vue'),
+  ),
   'Lead Tracking': aRichiesta(
     () => import('@/components/Settings/TrackingSettings.vue'),
   ),
@@ -417,6 +426,15 @@ const PAGINE = {
   ),
   'Qualification register': aRichiesta(
     () => import('@/components/Settings/Invoicing/QualificationsSettings.vue'),
+  ),
+  'Payment reminders': aRichiesta(
+    () => import('@/components/Settings/Invoicing/PaymentReminders.vue'),
+  ),
+  Conventions: aRichiesta(
+    () => import('@/components/Settings/Invoicing/ConventionsSettings.vue'),
+  ),
+  'Online payments': aRichiesta(
+    () => import('@/components/Settings/Invoicing/OnlinePayments.vue'),
   ),
   'Invoicing defaults': aRichiesta(
     () => import('@/components/Settings/Invoicing/InvoicingDefaults.vue'),

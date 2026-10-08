@@ -32,16 +32,24 @@ def da_incassare(doc) -> bool:
 	return doc.docstatus == 1 and (doc.document_type or "TD01") not in NOTE_DI_CREDITO
 
 
+def da_pagare(riga) -> float:
+	"""What the client pays: the document less the withholding they pay themselves."""
+	return flt(riga.get("net_payable")) or flt(riga.get("grand_total"))
+
+
 def alla_cassa(doc) -> None:
 	"""An invoice to a person, issued at the desk, was paid at the desk."""
 	if da_incassare(doc) and doc.recipient_type == "persona_fisica" and not doc.collected_on:
 		doc.db_set("collected_on", doc.payment_date or doc.posting_date, update_modified=False)
+		if doc.get("quote"):
+			from crm.preventivi import rate
+
+			rate.allinea(doc)
 
 
 @frappe.whitelist(methods=["POST"])
 def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	"""Collected on a day, or - no day - still to collect."""
-	from crm.invoicing import documento
 	from crm.permissions.livelli import verifica_nel_crm
 
 	verifica_nel_crm("fatture.incassi", messaggio=_("You are not allowed to record payments"))
@@ -52,18 +60,33 @@ def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	giorno = getdate(collected_on) if collected_on else None
 	if giorno and doc.posting_date and giorno < getdate(doc.posting_date) and not doc.advance_payment:
 		frappe.throw(_("Collected before it was issued: mark it as paid before the invoice instead."))
+	segna(doc, giorno)
+	return {"collected_on": str(giorno) if giorno else None}
+
+
+def segna(doc, giorno, messaggio: str | None = None, payload: dict | None = None) -> None:
+	"""Collected on ``giorno`` (None: back to collect), in the invoice's log: the one
+	door, the desk's «Collected today» and a payment online (`crm.pagamenti`)."""
+	from crm.invoicing import documento
+
 	doc.db_set("collected_on", giorno, update_modified=False)
 	# made in Fatture in Cloud: the payment is marked there too
 	if doc.get("fic_document_id"):
 		from crm.invoicing.fic import emissione as fic
 
 		fic.segna_incasso(doc)
+	# an instalment of a quote: paid, or to collect again
+	if doc.get("quote"):
+		from crm.preventivi import rate
+
+		rate.allinea(doc)
 	documento.registra(
 		doc,
 		"collected",
-		_("Collected on {0}").format(frappe.format(giorno, "Date")) if giorno else _("Back to collect"),
+		messaggio
+		or (_("Collected on {0}").format(frappe.format(giorno, "Date")) if giorno else _("Back to collect")),
+		payload=payload,
 	)
-	return {"collected_on": str(giorno) if giorno else None}
 
 
 #: How many of the invoices still to collect the person's summary names.
@@ -99,10 +122,10 @@ def della_persona(lead: str) -> dict | None:
 	if not aperte and not bozze:
 		return None
 
-	# what the client pays: the document less the withholding they pay themselves
-	def da_pagare(riga) -> float:
-		return flt(riga.net_payable) or flt(riga.grand_total)
+	from crm.invoicing import solleciti
 
+	# how many times each was reminded, and when last (`solleciti`)
+	sollecitate = solleciti.di_fatture([riga.name for riga in aperte[:NEL_RIEPILOGO]])
 	return {
 		"count": len(aperte),
 		"total": sum(da_pagare(riga) for riga in aperte),
@@ -113,6 +136,7 @@ def della_persona(lead: str) -> dict | None:
 				"document_number": riga.document_number,
 				"posting_date": str(riga.posting_date) if riga.posting_date else None,
 				"amount": da_pagare(riga),
+				"reminders": sollecitate.get(riga.name),
 			}
 			for riga in aperte[:NEL_RIEPILOGO]
 		],

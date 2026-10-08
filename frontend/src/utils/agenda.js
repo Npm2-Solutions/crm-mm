@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 /**
- * The agenda, read (docs/progetto-ghl/56-agenda.md): how tall an hour is, what
+ * The agenda, read (docs/crm/56-agenda.md): how tall an hour is, what
  * an appointment's block says at its height, who works when, which columns a
  * day or a week shows, the period a view covers. Pure: no DOM, no Vue, no
  * network - the grid and the month draw what these say.
@@ -46,7 +46,8 @@ const fmt = (testo, valori = []) =>
  * where («Visita cardiologica · Studio 2»). `modo` is what the columns are: a
  * professional's column (`staff`, the day's and a week's) names the rooms, a
  * room's (`resource`) the professionals. `nomeDi` gives a professional's
- * name, `nomeStanza` a room's, `t` translates (`__`).
+ * name, `nomeStanza` a room's, `nomeSede` the location's where every location
+ * is shown at once, `t` translates (`__`).
  */
 export function testoDelBlocco(
   appuntamento = {},
@@ -54,6 +55,7 @@ export function testoDelBlocco(
     modo = 'staff',
     nomeDi = (utente) => utente,
     nomeStanza = (stanza) => stanza,
+    nomeSede = '',
     t = fmt,
   } = {},
 ) {
@@ -65,10 +67,15 @@ export function testoDelBlocco(
     : appuntamento.service && appuntamento.service !== chi
       ? appuntamento.service
       : ''
-  const dove =
-    modo === 'resource'
+  const dove = [
+    ...(modo === 'resource'
       ? (appuntamento.staff || []).map((riga) => nomeDi(riga.user))
-      : (appuntamento.resources || []).map((riga) => nomeStanza(riga.resource))
+      : (appuntamento.resources || []).map((riga) =>
+          nomeStanza(riga.resource),
+        )),
+    // every location shown at once: which one it is (docs/crm/62)
+    nomeSede,
+  ]
   return {
     chi,
     cosa,
@@ -304,7 +311,8 @@ export function lavora(orari, giorno) {
  * The columns a day shows, in their order: whoever was chosen; else, of
  * `tutti`, who works that day or has something in it (`occupati`, the keys
  * with something drawn) - a column of somebody off duty is one more to scroll
- * past. `mostraTutti` keeps everybody.
+ * past. `mostraTutti` keeps everybody. `nellaSede(chi)` says who belongs to
+ * the location chosen: the others show only with something drawn there.
  */
 export function colonneDelGiorno(
   tutti = [],
@@ -314,11 +322,14 @@ export function colonneDelGiorno(
     occupati = new Set(),
     scelti = [],
     mostraTutti = false,
+    nellaSede = () => true,
   } = {},
 ) {
   if (scelti.length) return tutti.filter((chi) => scelti.includes(chi))
-  if (mostraTutti) return tutti
-  return tutti.filter((chi) => occupati.has(chi) || lavora(orari[chi], giorno))
+  // at one location (docs/crm/62): its rooms, and who works there that day
+  const qui = tutti.filter((chi) => occupati.has(chi) || nellaSede(chi))
+  if (mostraTutti) return qui
+  return qui.filter((chi) => occupati.has(chi) || lavora(orari[chi], giorno))
 }
 
 /**

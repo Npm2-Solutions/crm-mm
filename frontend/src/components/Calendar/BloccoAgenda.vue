@@ -3,7 +3,7 @@
   For license information, please see license.txt
 
   An appointment, or one's own event, in the agenda's grid: the design
-  system's AgendaEvent (brand/design-system/espresso). The person first, then
+  system's AgendaEvent (brand/dottorcloud/design-system/espresso). The person first, then
   what and where, in as many whole lines as its height holds
   (utils/agenda.js): a half-hour that drew its time and the top half of
   «Servizio — Persona» says «09:00 Mario Rossi» and «Visita · Studio 2».
@@ -133,6 +133,8 @@ const props = defineProps({
   trascinabile: { type: Boolean, default: false },
   nomeDi: { type: Function, default: (utente) => utente },
   nomeStanza: { type: Function, default: (stanza) => stanza },
+  /** where an appointment is, while every location is shown (docs/crm/62) */
+  nomeSede: { type: Function, default: () => '' },
 })
 defineEmits(['apri', 'modifica', 'prendi'])
 
@@ -157,6 +159,7 @@ const testo = computed(() => {
     modo: props.modo,
     nomeDi: props.nomeDi,
     nomeStanza: props.nomeStanza,
+    nomeSede: props.nomeSede(dati.value),
     t,
   })
 })
@@ -190,6 +193,7 @@ const parole = computed(() => {
     modo: props.modo,
     nomeDi: props.nomeDi,
     nomeStanza: props.nomeStanza,
+    nomeSede: props.nomeSede(dati.value),
     t,
   })
 })

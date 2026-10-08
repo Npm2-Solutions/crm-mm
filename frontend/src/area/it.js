@@ -45,6 +45,9 @@ export default {
   Cancel: 'Annulla',
   'Invoice {0}': 'Fattura {0}',
   'PDF not ready': 'PDF non ancora pronto',
+  'To pay': 'Da pagare',
+  'To pay: {0}': 'Da pagare: {0}',
+  'How to pay': 'Come pagare',
   'Whose area': 'Di chi è l’area',
   'Something went wrong: try again.': 'Qualcosa non è andato: riprova.',
   'The code has expired: ask for a new one':
@@ -290,4 +293,104 @@ export default {
     'Qui {0} vede qualcosa che in {brand} tu non leggi.',
   'In the preview the chat does not answer.':
     'Nell’anteprima la chat non risponde.',
+  '{0} rusk': '{0} fetta biscottata',
+  '{0} rusks': '{0} fette biscottate',
+  '{0} biscuit': '{0} biscotto',
+  '{0} biscuits': '{0} biscotti',
+  '{0} slice': '{0} fetta',
+  '{0} slices': '{0} fette',
+  '{0} egg': '{0} uovo',
+  '{0} eggs': '{0} uova',
+  '{0} jar': '{0} vasetto',
+  '{0} jars': '{0} vasetti',
+  '{0} teaspoon': '{0} cucchiaino',
+  '{0} teaspoons': '{0} cucchiaini',
+  '{0} tablespoon': '{0} cucchiaio',
+  '{0} tablespoons': '{0} cucchiai',
+  '{0} glass': '{0} bicchiere',
+  '{0} glasses': '{0} bicchieri',
+  '{0} handful': '{0} manciata',
+  '{0} handfuls': '{0} manciate',
+  '{0} medium fruit': '{0} frutto medio',
+  '{0} medium fruits': '{0} frutti medi',
+  'each side': 'per lato',
+  'left side': 'lato sinistro',
+  'right side': 'lato destro',
+  'How hard or painful was it?': 'Quanto è stato faticoso o doloroso?',
+  '{0} out of 10': '{0} su 10',
+  '1 hardly': '1 per niente',
+  '10 very much': '10 moltissimo',
+  'I’m here': 'Sono qui',
+  'You are in the waiting room: the centre knows you are here.':
+    'Sei in sala d’attesa: il centro sa che sei qui.',
+  'Book again': 'Prenota di nuovo',
+  'Book an appointment': 'Prenota un appuntamento',
+  // a quote answered in the area (crm.preventivi.firma)
+  'This quote was valid until {0}: ask the centre for a new one.':
+    'Questo preventivo valeva fino al {0}: chiedine uno nuovo al centro.',
+  'Accepted and signed on {0}.': 'Accettato e firmato il {0}.',
+  'Signed copy': 'Copia firmata',
+  'Read the PDF': 'Leggi il PDF',
+  'I do not accept': 'Non accetto',
+  'Accept and sign': 'Accetta e firma',
+  'By signing you accept the quote as it is, at the prices shown. The centre receives your signature and you get a signed copy here.':
+    'Firmando accetti il preventivo così com’è, ai prezzi indicati. Il centro riceve la tua firma e qui trovi una copia firmata.',
+  'Read the quote (PDF)': 'Leggi il preventivo (PDF)',
+  'Sign here with your finger': 'Firma qui con il dito',
+  'Sign and accept': 'Firma e accetta',
+  'We tell the centre you do not accept «{0}». If you want, say why: it helps them propose something else.':
+    'Diciamo al centro che non accetti «{0}». Se vuoi, scrivi perché: lo aiuta a proporti qualcos’altro.',
+  'Why (if you want)': 'Perché (se vuoi)',
+  'We told the centre you do not accept «{0}».':
+    'Abbiamo detto al centro che non accetti «{0}».',
+  'Not signed': 'Non firmato',
+  'Sign again': 'Firma di nuovo',
+  Clear: 'Cancella',
+  'To sign we send you a code again: it says the signature is yours.':
+    'Per firmare ti mandiamo di nuovo un codice: dice che la firma è tua.',
+  // writing to the centre from Messages (crm.area.messaggi)
+  'Write to the centre': 'Scrivi al centro',
+  'A question, a document to send…': 'Una domanda, un documento da mandare…',
+  'The centre answers here. For an emergency do not write: call 112.':
+    'Il centro ti risponde qui. Per un’emergenza non scrivere: chiama il 112.',
+  'Remove the file': 'Togli il file',
+  'Attach a photo or a PDF': 'Allega una foto o un PDF',
+  'Your message': 'Il tuo messaggio',
+  'Only a photo or a PDF can be attached':
+    'Si può allegare solo una foto o un PDF',
+  'The file is larger than {0} MB': 'Il file è più grande di {0} MB',
+  'seen by the centre': 'visto dal centro',
+  'not seen by the centre yet': 'non ancora visto dal centro',
+  // online visits (crm.area.api.enter_online_visit)
+  'Online visit': 'Visita online',
+  'Enter the visit': 'Entra nella visita',
+  'You enter the visit from here from {0}, 15 minutes before it starts.':
+    'Da qui entri nella visita dalle {0}, 15 minuti prima dell’inizio.',
+  'The link to enter the visit will be here: the centre adds it.':
+    'Il link per entrare nella visita sarà qui: lo aggiunge il centro.',
+  // paid online on the centre's Stripe (crm/pagamenti)
+  'Pay online': 'Paga online',
+  'Paid online on {0}': 'Pagata online il {0}',
+  'Thank you: the payment went through. The invoice shows as paid in a moment.':
+    'Grazie: il pagamento è andato a buon fine. Tra un momento la fattura risulta pagata.',
+  'The payment was not made: you can try again when you like.':
+    'Il pagamento non è stato fatto: puoi riprovare quando vuoi.',
+  'The payment could not start: try again.':
+    'Il pagamento non è partito: riprova.',
+  // a quote paid in instalments (crm.preventivi.area)
+  'Payment plan': 'Piano dei pagamenti',
+  Paid: 'Pagata',
+  Deposit: 'Acconto',
+  'On acceptance': 'All’accettazione',
+  'Instalment {0} of {1}': 'Rata {0} di {1}',
+  'Was due on {0}': 'Scadeva il {0}',
+  'Due on {0}': 'Scade il {0}',
+  'Show fewer': 'Mostra meno',
+  'Show all {0}': 'Mostra tutte e {0}',
+  'Instalments: all {0} paid': 'Rate: tutte e {0} pagate',
+  'Instalments: {0} of {1} paid': 'Rate: {0} di {1} pagate',
+  'next the deposit, {0}': 'prossimo l’acconto, {0}',
+  'next {0}, {1}': 'prossima {0}, {1}',
+  '1 late, {0}': '1 in ritardo, {0}',
+  '{0} late, {1}': '{0} in ritardo, {1}',
 }

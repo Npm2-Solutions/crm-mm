@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The register of calls on a phone (docs/progetto-ghl/29): found by a name or a
+  The register of calls on a phone (docs/crm/29): found by a name or a
   number written any way; one line each - with whom, which way and how it went,
   when, how long - the missed ones in red, calling back a thumb away. The line
   opens the call; the list grows as it scrolls.

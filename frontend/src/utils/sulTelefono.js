@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 /**
- * The phone's own screens (docs/progetto-ghl/29), without a screen: what the
+ * The phone's own screens (docs/crm/29), without a screen: what the
  * line under a person's name says, the open tasks by when they are due, the
  * stage a deals board opens on, a deal's value only when it has one, a
  * company's line, a call's. What the server gives is `crm/api/sul_telefono.py`;

@@ -8,7 +8,7 @@ each with the server's time, who, from which address and device. Every event
 carries the SHA-256 of the one before it on the same document, so removing or
 changing one breaks the chain after it - and `verifica_catena` says where.
 
-Written the way `CRM Invoice Log` is (docs/gestionale-medico/design.md, "Le prove
+Written the way `CRM Invoice Log` is (docs/verticali/clinica/design.md, "Le prove
 di ogni firma"), with the chain added: a form signed today is evidence in years.
 """
 

@@ -87,6 +87,24 @@ PROMEMORIA_NON_VIENE = "{0} cannot come on {1}: cancel the appointment"
 PROMEMORIA_SPOSTA = "{0} would like to move the appointment on {1}"
 PROMEMORIA = frozenset({PROMEMORIA_DISDETTO, PROMEMORIA_NON_VIENE, PROMEMORIA_SPOSTA})
 
+#: «I'm here» from the client area (`crm.area.api.check_in`).
+ARRIVATO_DALL_AREA = "{0} is in the waiting room: they checked in from their phone"
+
+#: A quote answered in the client area (`crm.preventivi.firma`): never its title,
+#: which may say what a care plan is about. It opens the person's quotes.
+PREVENTIVO_FIRMATO = "{0} accepted and signed a quote in their area"
+PREVENTIVO_RIFIUTATO = "{0} declined a quote in their area"
+
+#: What the person wrote from the Messages of their area (`crm.area.messaggi`):
+#: never its words, which may say something about their health.
+MESSAGGIO_AREA = "{0} wrote to the centre from their area"
+MESSAGGIO_AREA_MOLTI = "{0} wrote {1} messages to the centre from their area"
+
+#: Paid online on the centre's Stripe (`crm.pagamenti`), and given back there: a
+#: refund never takes the collection back by itself, whoever manages invoicing does.
+PAGATA_ONLINE = "{0} paid invoice {1} online: {2}"
+RIMBORSO_FATTURA = "Stripe gave back {0} to {1} for invoice {2}: it is still marked as collected"
+RIMBORSO_ACCONTO = "Stripe gave back {0} of the online deposit to {1}"
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -128,6 +146,14 @@ FRASI = (
 	PROMEMORIA_DISDETTO,
 	PROMEMORIA_NON_VIENE,
 	PROMEMORIA_SPOSTA,
+	ARRIVATO_DALL_AREA,
+	PREVENTIVO_FIRMATO,
+	PREVENTIVO_RIFIUTATO,
+	MESSAGGIO_AREA,
+	MESSAGGIO_AREA_MOLTI,
+	PAGATA_ONLINE,
+	RIMBORSO_FATTURA,
+	RIMBORSO_ACCONTO,
 )
 
 #: The sentences that take something away: the panel draws them apart.

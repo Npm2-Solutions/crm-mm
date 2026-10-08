@@ -117,8 +117,10 @@
   "reference_invoice",
   "deal",
   "appointment",
+  "centre_location",
   "session_cycle",
   "subscription",
+  "quote",
   "column_references",
   "purchase_order",
   "cig",
@@ -846,6 +848,14 @@
    "options": "CRM Appointment"
   },
   {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "read_only": 1,
+   "description": "Where it was made: its appointment's location, else where whoever made it works."
+  },
+  {
    "description": "A cycle paid as a whole: its sessions are invoiced here",
    "fieldname": "session_cycle",
    "fieldtype": "Link",
@@ -858,6 +868,13 @@
    "fieldtype": "Link",
    "label": "Subscription",
    "options": "CRM Subscription"
+  },
+  {
+   "description": "A quote paid in instalments: the instalments this invoice is for are on the quote",
+   "fieldname": "quote",
+   "fieldtype": "Link",
+   "label": "Quote",
+   "options": "CRM Quote"
   },
   {
    "fieldname": "column_references",
@@ -919,7 +936,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-06 18:00:00.000000",
+ "modified": "2026-10-09 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

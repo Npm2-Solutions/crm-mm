@@ -376,6 +376,7 @@
 </template>
 
 <script setup>
+import { chiedi } from '@/utils/chiedi'
 import Link from '@/components/Controls/Link.vue'
 import CampoValuta from '@/components/Controls/CampoValuta.vue'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
@@ -429,7 +430,7 @@ const selected = ref('')
 
 function select(name) {
   selected.value = name
-  prices.submit({ price_list: name })
+  prices.submit({ price_list: name }).catch(() => {})
 }
 
 // The first list is opened once the lists are here. Not in `onSuccess`: the
@@ -535,10 +536,9 @@ function openListEditor(list = null) {
 
 function saveList() {
   savingList.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_price_list',
     params: { name: editingList.value, price_list: { ...listForm } },
-    auto: true,
     onSuccess: (doc) => {
       savingList.value = false
       showListEditor.value = false
@@ -570,10 +570,9 @@ function removeList() {
         variant: 'solid',
         onClick: (close) => {
           close()
-          createResource({
+          chiedi({
             url: 'crm.api.appointments.delete_price_list',
             params: { name },
-            auto: true,
             onSuccess: () => {
               selected.value = ''
               priceLists.reload()
@@ -641,18 +640,17 @@ function openRuleEditor(rule = null) {
 
 function saveRule() {
   savingRule.value = true
-  createResource({
+  chiedi({
     url: 'crm.api.appointments.save_price',
     params: {
       name: editingRule.value,
       price: { ...ruleForm, price_list: selected.value },
     },
-    auto: true,
     onSuccess: () => {
       savingRule.value = false
       showRuleEditor.value = false
       toast.success(__('Rule saved'))
-      prices.submit({ price_list: selected.value })
+      prices.submit({ price_list: selected.value }).catch(() => {})
       priceLists.reload()
     },
     onError: (e) => {
@@ -676,12 +674,11 @@ function removeRule(rule) {
         variant: 'solid',
         onClick: (close) => {
           close()
-          createResource({
+          chiedi({
             url: 'crm.api.appointments.delete_price',
             params: { name: rule.name },
-            auto: true,
             onSuccess: () => {
-              prices.submit({ price_list: selected.value })
+              prices.submit({ price_list: selected.value }).catch(() => {})
               priceLists.reload()
             },
             onError: (e) =>

@@ -43,6 +43,14 @@
     <!-- pulled down from the top on a phone, the day reloads -->
     <TiraPerAggiornare v-bind="tira" />
     <div class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-6 max-md:px-4">
+      <!-- which location's desk, where the centre has more than one
+           (docs/crm/62): one's usual one first -->
+      <div v-if="piuSedi" class="-mb-4 flex">
+        <ChiNellAgenda
+          v-bind="sceltaDellaSede"
+          @update:modelValue="(valore) => (sede = valore || '')"
+        />
+      </div>
       <!-- how the day stands, at a glance: on a phone one short row -->
       <div class="dc-stat-row grid grid-cols-4 gap-3">
         <StatTile
@@ -143,6 +151,35 @@
                   >{{ appointmentLine(appointment) }}</span
                 >
               </div>
+              <!-- under a convention: which, and the fund's authorisation
+                   still missing (doc 61) -->
+              <div
+                v-if="appointment.convention"
+                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-p-sm text-ink-gray-6"
+              >
+                <span class="flex min-w-0 items-center gap-1.5">
+                  <span
+                    class="lucide-shield-check size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span class="min-w-0 [overflow-wrap:anywhere]">
+                    {{
+                      [
+                        appointment.convention.title,
+                        nomeDellaForma(appointment.convention.form, t),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                    }}
+                  </span>
+                </span>
+                <Badge
+                  v-if="appointment.convention.missing_authorisation"
+                  variant="subtle"
+                  theme="orange"
+                  :label="__('Authorisation missing')"
+                />
+              </div>
               <ParticipantRow
                 v-for="participant in appointment.participants"
                 :key="participant.name"
@@ -152,6 +189,17 @@
                 :past="giornoPassato"
                 :now="now"
                 @changed="ricarica"
+              />
+              <!-- an online visit: its room from here, on the day (the person
+                   enters from their area) -->
+              <Button
+                v-if="!giornoPassato && linkDellaVisita(appointment)"
+                variant="subtle"
+                :label="__('Start the online visit')"
+                icon-left="lucide-video"
+                :size="isMobileView ? 'lg' : 'sm'"
+                class="touch-target mt-1 self-start max-md:w-full"
+                @click="avviaLaVisita(appointment.video_link)"
               />
               <!-- they came and it is not invoiced yet: the invoice from here,
                    not from the list of the last two weeks in Invoices -->
@@ -225,6 +273,39 @@
         />
       </section>
 
+      <!-- the day's money, and the cash in the drawer: for whoever records
+           payments -->
+      <button
+        v-if="puo('fatture.incassi')"
+        type="button"
+        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 px-4 py-3 text-left hover:bg-surface-gray-1"
+        @click="cassaAperta = true"
+      >
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="text-p-base text-ink-gray-8">
+            {{ __('Cash closing') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'What the day collected, by way of paying, and the cash in the drawer.',
+              )
+            }}
+          </span>
+        </span>
+        <span
+          class="lucide-chevron-right size-4 shrink-0 text-ink-gray-5"
+          aria-hidden="true"
+        />
+      </button>
+      <CashClosingDialog
+        v-if="cassaMontata"
+        v-model="cassaAperta"
+        :date="day.data?.date || date"
+        :location="sedeScelta"
+        :locationName="nomeDellaSede(sedi, sedeScelta)"
+      />
+
       <!-- and what is left to invoice -->
       <RouterLink
         v-if="toInvoice.data?.length"
@@ -250,7 +331,12 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
+import ChiNellAgenda from '@/components/Calendar/ChiNellAgenda.vue'
+import { useSedi } from '@/composables/sedi'
+import { nomeDellaSede, opzioniDelleSedi, sedeValida } from '@/utils/sedi'
+import { avviaLaVisita, linkDellaVisita } from '@/utils/visiteOnline'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
 import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import { useScorriGiorni } from '@/composables/scorriGiorni'
@@ -258,6 +344,7 @@ import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
+import { nomeDellaForma } from '@/utils/convenzioni'
 import {
   chiLoFa,
   byDay,
@@ -269,10 +356,20 @@ import {
 } from '@/utils/oggi'
 import { formatDate } from '@/utils'
 import { adessoDelCentro } from '@/utils/scheduler'
-import { Button, createResource, usePageMeta } from 'frappe-ui'
+import { Badge, Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
+const t = (text, args, context) => __(text, args, context)
+
 const { puo } = usersStore()
+
+// the cash closing: downloaded the first time it opens
+const CashClosingDialog = aRichiesta(
+  () => import('@/components/Today/CashClosingDialog.vue'),
+  { attesa: false },
+)
+const cassaAperta = ref(false)
+const cassaMontata = apertoUnaVolta(cassaAperta)
 // whoever reads, as the store gives it: the user's name, not a ref
 const { user } = sessionStore()
 
@@ -282,12 +379,30 @@ const date = ref(null)
 // and its now, which the arrivals' times are read against
 const now = ref(adessoDelCentro())
 
+// which location's desk (docs/crm/62): one's usual one, else all of them
+const { sedi, piuSedi, sedeAbituale } = useSedi()
+const sede = ref(sedeAbituale.value || '')
+const sedeScelta = computed(() =>
+  piuSedi.value ? sedeValida(sedi.value, sede.value) : '',
+)
+const sceltaDellaSede = computed(() => ({
+  modelValue: sedeScelta.value,
+  singolo: true,
+  opzioni: opzioniDelleSedi(sedi.value, __('All locations')),
+  titolo: __('Locations'),
+  tutti: __('All locations'),
+  icona: 'lucide-map-pin',
+}))
+
 const day = createResource({
   url: 'crm.api.oggi.get_day',
-  makeParams: () => ({ date: date.value }),
+  makeParams: () => ({
+    date: date.value,
+    location: sedeScelta.value || undefined,
+  }),
   auto: true,
 })
-watch(date, () => day.reload())
+watch([date, sedeScelta], () => day.reload())
 
 // what is left to invoice, for whoever issues invoices: asked with the day, not
 // after it - who issues invoices comes with the page (the capabilities), and the

@@ -18,7 +18,8 @@ So, while the demo data are in (or being made):
   never told of a demo person, a demo ad's preview is never asked of Meta, a demo
   post is marked published at its time, never handed to a network - as a demo SMS
   is kept as sent -, a demo invoice never reaches Fatture in Cloud and a demo
-  appointment is never reminded;
+  appointment is never reminded, nor a demo person of what they owe, and a demo
+  online visit gets no room on a real video server (`visita_di_prova`);
 - the public booking page offers the demo's services only to somebody signed in,
   who is trying the page out: never to a visitor;
 - a message or a call that comes in from a number a demo person has too is never
@@ -76,6 +77,12 @@ def trattenuto(numero: str | None) -> bool:
 	while a part of the demo is being made - its people are written down as it goes,
 	after the numbers were read - and a demo person's or colleague's after."""
 	return registro.raccolta() is not None or numero_di_prova(numero)
+
+
+def sms_dopo_una_chiamata_persa(numero: str | None) -> bool:
+	"""Whether the SMS to a number nobody knows that found no answer stays unsent
+	(`crm.telephony.persa`): while a part is made, and to a number of the demo's."""
+	return trattenuto(numero)
 
 
 def _numeri_della_demo() -> frozenset[str]:
@@ -146,6 +153,28 @@ def mai_fuori(doctype: str, nome: str | None) -> bool:
 	if not nome:
 		return False
 	return registro.raccolta() is not None or str(nome) in registro.nomi_di_prova(doctype)
+
+
+def mai_a_stripe(*riferimenti: tuple[str, str | None]) -> bool:
+	"""Whether a payment would be asked online for the demo (`crm.pagamenti`): an
+	invoice, a service, a person of the demo's. Stripe is never called for it."""
+	return any(mai_fuori(doctype, nome) for doctype, nome in riferimenti if nome)
+
+
+def visita_di_prova(appuntamento) -> bool:
+	"""Whether an online visit is the demo's, which gets no room on a real video
+	server (`crm.scheduling.visite_online`): made while a part runs, the demo's
+	appointment, or one of a demo person."""
+	if registro.raccolta() is not None:
+		return True
+	if not registro.caricati():
+		return False
+	if not appuntamento.is_new() and mai_fuori("CRM Appointment", appuntamento.name):
+		return True
+	return any(
+		riga.party_type == "CRM Lead" and mai_fuori("CRM Lead", riga.party)
+		for riga in appuntamento.participants
+	)
 
 
 # -- the public pages -------------------------------------------------------------------------

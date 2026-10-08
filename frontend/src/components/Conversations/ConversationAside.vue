@@ -11,7 +11,7 @@
   thread it is about.
 
   And the person's summary, the same as on their page: one person, two doors
-  (docs/progetto-ghl/54). «When is my appointment?», «what do I owe?» are
+  (docs/crm/54). «When is my appointment?», «what do I owe?» are
   answered here, without leaving the chat.
 -->
 <template>

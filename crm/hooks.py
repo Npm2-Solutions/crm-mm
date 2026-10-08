@@ -90,6 +90,10 @@ fixtures = [
 	{"dt": "Web Page", "filters": [["name", "in", ["privacy", "terms"]]]},
 ]
 
+# the SPA's shells before the framework's web forms and dynamic Web Pages, whose
+# cached lists answer None now and then while they are filled again (pagine_dell_app)
+page_renderer = ["crm.pagine_dell_app.PaginaDellApp"]
+
 website_route_rules = [
 	{"from_route": "/crm/<path:app_path>", "to_route": "crm"},
 	{"from_route": "/crm-form/<route>", "to_route": "crm_form"},
@@ -151,17 +155,21 @@ setup_wizard_complete = [
 	"crm.invoicing.install.qualifiche_nella_lingua",
 	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	"crm.clinica.librerie.dopo_la_configurazione",
+	# the clinic's ready sheets, drafts in the centre's language
+	"crm.clinica.schede_pronte.in_seguito",
 	"crm.demo.api.create_demo_data",
 ]
 # The centre chose another language (Settings > The centre > General > Language &
 # time): DottorCloud's own words follow it, in the background (`crm.lingue`) - the
 # same as after the setup wizard, the demo aside
 crm_lingua_del_centro = [
+	"crm.lingue.euro_come_si_scrive",
 	"crm.moduli.consensi.dopo_la_configurazione",
 	"crm.piani.librerie.dopo_la_configurazione",
 	"crm.invoicing.install.qualifiche_nella_lingua",
 	"crm.tessera_sanitaria.install.qualifiche_nella_lingua",
 	"crm.clinica.librerie.dopo_la_configurazione",
+	"crm.clinica.schede_pronte.in_seguito",
 ]
 # setup_wizard_test = "crm.setup.setup_wizard.test_setup_wizard.run_setup_wizard_test"
 
@@ -178,8 +186,11 @@ after_install = [
 	# Italian reads the public pages in Italian (the framework ships it off), one
 	# set in German reads English or the centre's, never half in German
 	"crm.lingue.solo_italiano_e_inglese",
+	"crm.lingue.euro_come_si_scrive",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
+	# the clinic's ready sheets, drafts of the centre's where the clinic is on
+	"crm.clinica.schede_pronte.carica_schede",
 	# nothing about the centre's use leaves for Frappe's servers
 	"crm.telemetria.spegni",
 ]
@@ -247,6 +258,10 @@ permission_query_conditions = {
 	"CRM Form Request": "crm.moduli.richieste.get_permission_query_conditions",
 	# and the people they are linked to, from either side
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
+	# and what they paid online
+	"CRM Online Payment": "crm.pagamenti.pagamenti.get_permission_query_conditions",
+	# and the funds and conventions that cover them
+	"CRM Convention Cover": "crm.convenzioni.api.get_cover_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
@@ -291,6 +306,8 @@ has_permission = {
 	"CRM Form": "crm.moduli.compilazioni.has_permission",
 	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
+	"CRM Online Payment": "crm.pagamenti.pagamenti.has_permission",
+	"CRM Convention Cover": "crm.convenzioni.api.has_cover_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"CRM Personal Plan": "crm.piani.api.has_permission",
@@ -319,15 +336,18 @@ has_permission = {
 	"CRM Waiting List Settings": "crm.permissions.documenti.has_permission",
 	"CRM Reminder Settings": "crm.permissions.documenti.has_permission",
 	"CRM Subscription Type": "crm.permissions.documenti.has_permission",
+	"CRM Convention": "crm.permissions.documenti.has_permission",
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
 	"CRM Resource": "crm.permissions.documenti.has_permission",
+	"CRM Location": "crm.permissions.documenti.has_permission",
 	"CRM Booking Calendar": "crm.permissions.documenti.has_permission",
 	"CRM Lead Status": "crm.permissions.documenti.has_permission",
 	"CRM Deal Status": "crm.permissions.documenti.has_permission",
 	"CRM Communication Status": "crm.permissions.documenti.has_permission",
 	"CRM Client Settings": "crm.permissions.documenti.has_permission",
 	"CRM Quote Settings": "crm.permissions.documenti.has_permission",
+	"CRM Review Settings": "crm.permissions.documenti.has_permission",
 	"CRM View Settings": "crm.permissions.documenti.has_permission",
 	"WhatsApp Templates": "crm.permissions.documenti.has_permission",
 	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
@@ -485,10 +505,16 @@ doc_events = {
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
 			"crm.moduli.consensi.cancella_con_la_persona",
 			"crm.persone.collegate.cancella_con_la_persona",
+			# and the conventions that cover them
+			"crm.convenzioni.convenzioni.cancella_con_la_persona",
 			# and what they waited for
 			"crm.scheduling.attese.cancella_con_la_persona",
 			# and their way through the automations
 			"crm.automation.engine.cancella_con_il_riferimento",
+			# and the review requests they were sent
+			"crm.recensioni.chiedi.cancella_con_la_persona",
+			# and what they paid online
+			"crm.pagamenti.pagamenti.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
@@ -515,7 +541,11 @@ doc_events = {
 	},
 	"CRM Appointment": {
 		# a service of an accepted quote: taken, at the price agreed
-		"validate": ["crm.preventivi.appuntamenti.in_validazione"],
+		"validate": [
+			"crm.preventivi.appuntamenti.in_validazione",
+			# under a convention, the person's share and the fund's of the final price
+			"crm.convenzioni.convenzioni.quote_dell_appuntamento",
+		],
 		"after_insert": [
 			"crm.automation.engine.on_appointment_created",
 			# a booking moves the new clients deal
@@ -534,6 +564,8 @@ doc_events = {
 			"crm.preventivi.appuntamenti.aggiornato",
 			# cancelled, moved, a seat freed: offered to who waits
 			"crm.scheduling.attese.appuntamento_aggiornato",
+			# cancelled in time: the deposit paid online goes back
+			"crm.pagamenti.pagamenti.alla_disdetta",
 		],
 		"on_trash": [
 			"crm.booking_platforms.sync.on_appointment_change",
@@ -544,13 +576,31 @@ doc_events = {
 		"after_delete": ["crm.scheduling.attese.appuntamento_eliminato"],
 	},
 	# a new shift, a service or a room changed: the waiting lists are looked at again
-	"CRM Staff Schedule": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Staff Schedule": {
+		"on_update": [
+			"crm.scheduling.attese.orari_cambiati",
+			# shifts given a location: the appointments ahead that named none are there (doc 62)
+			"crm.scheduling.sedi.turni_aggiornati",
+		]
+	},
 	"CRM Service": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
-	"CRM Resource": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Resource": {
+		"on_update": [
+			"crm.scheduling.attese.orari_cambiati",
+			# a room given a location: its appointments that named none are there (doc 62)
+			"crm.scheduling.sedi.stanza_aggiornata",
+		]
+	},
 	"CRM Scheduling Settings": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
 	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {
+		# a fund's invoice thrown away or cancelled: its pratiche are to bill again
+		# and a quote's instalments it was for are to pay again (crm.preventivi.rate)
+		"on_trash": ["crm.convenzioni.convenzioni.fattura_tolta", "crm.preventivi.rate.allinea"],
+		"on_cancel": ["crm.convenzioni.convenzioni.fattura_tolta", "crm.preventivi.rate.allinea"],
 		"on_submit": [
+			# a quote's instalments it is for are invoiced
+			"crm.preventivi.rate.allinea",
 			# issued from an appointment: the person came
 			"crm.scheduling.esiti.fattura_emessa",
 			"crm.clienti.eventi.fattura_confermata",
@@ -663,6 +713,8 @@ scheduler_events = {
 		"crm.integrations.meta.insights.sync_ad_spend",
 		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
+		# the centre's archive holds everything: it goes after a week
+		"crm.esportazione.esporta.togli_le_vecchie",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
 		"crm.api.tracking.purge_old_data",
 		"crm.telephony.transcription.expire_transcripts",
@@ -674,6 +726,10 @@ scheduler_events = {
 		"crm.piani.programmi.apri_del_giorno",
 		# subscriptions: how each stands, the instalments due, the end, the renewals
 		"crm.scheduling.abbonamenti.ogni_giorno",
+		# the quotes' instalments due get their invoices
+		"crm.preventivi.rate.ogni_giorno",
+		# where the centre switched them on, the reminders of what a person still owes
+		"crm.invoicing.solleciti.ogni_giorno",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
@@ -702,6 +758,8 @@ scheduler_events = {
 			"crm.invoicing.monitoraggio.riconcilia_provider",
 			# the same, for the invoices that left from Fatture in Cloud
 			"crm.invoicing.fic.emissione.riconcilia",
+			# an online payment's link nobody paid in time: a deposit's place freed
+			"crm.pagamenti.pagamenti.ogni_dieci_minuti",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 		# what is still unread in the panel after a few minutes, by email to who wants it
@@ -709,7 +767,7 @@ scheduler_events = {
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
 		"*/15 * * * *": [
 			"crm.booking_platforms.sync.sync_all",
-			# the reminders of the appointments, the day before (docs/progetto-ghl/59)
+			# the reminders of the appointments, the day before (docs/crm/59)
 			"crm.scheduling.promemoria.ogni_quarto_d_ora",
 		],
 	},
@@ -749,7 +807,14 @@ override_whitelisted_methods = {
 # -----------------------------------------------------------
 
 # the audit log outlives what it records: a document taken away keeps its events
-ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log"]
+ignore_links_on_delete = [
+	"Failed Lead Sync Log",
+	"CRM Audit Log",
+	"CRM Review Request",
+	# a payment stays in the register when its appointment is deleted
+	"CRM Online Payment",
+	"CRM Stripe Event",
+]
 
 # Request Events
 # ----------------
@@ -814,6 +879,8 @@ after_migrate = [
 	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
 	"crm.clinica.librerie.carica_libreria",
+	# the clinic's ready sheets, when their file or the centre's language is a new one
+	"crm.clinica.schede_pronte.carica_schede",
 	# whose own mailbox an account is (doc 51)
 	"crm.install.add_email_account_custom_field",
 	# DottorCloud's own emails leave through the agency's sending service
@@ -823,6 +890,8 @@ after_migrate = [
 	# Italian and English on, the framework's other languages off, the centre's
 	# read by whoever has not chosen their own
 	"crm.lingue.solo_italiano_e_inglese",
+	# the euro after the amount in Italian («60,00 €»), before it in English
+	"crm.lingue.euro_come_si_scrive",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)

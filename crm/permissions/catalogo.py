@@ -4,7 +4,7 @@
 """What the CRM itself brings to the registry: its plan modules, levels, roles and
 capabilities.
 
-The matrix is doc 30's (`docs/progetto-ghl/30-ruoli-e-permessi.md`), column by
+The matrix is doc 30's (`docs/crm/30-ruoli-e-permessi.md`), column by
 column. Invoicing adds its own capabilities from `crm.invoicing`, and the clinic
 will add its levels and capabilities from its own module: this file never names
 them.
@@ -64,8 +64,9 @@ MODULI = (
 		"booking and platforms, reminders; conversations; quotes; forms with a simple signature, "
 		"consents and documents; the client area; dashboards, users and levels",
 		ordine=1,
-		# every centre gives its people their area: the documents are everybody's
-		comprende=("area",),
+		# every centre gives its people their area: the documents are everybody's;
+		# and invoices with the Sistema TS, in every plan (the listino, 07/10/2026)
+		comprende=("area", "fatturazione"),
 		impostazioni=("Services", "Hours & shifts", "Online booking", "Users"),
 	),
 	ModuloPiano(
@@ -74,7 +75,7 @@ MODULI = (
 		descrizione="Automations, campaigns, Meta leads and spend, social, tracking, "
 		"cost per new client, the website",
 		ordine=3,
-		impostazioni=("Meta connection", "Tracking", "Social profiles", "Website"),
+		impostazioni=("Meta connection", "Tracking", "Review requests", "Social profiles", "Website"),
 	),
 	ModuloPiano(
 		TELEFONO,
@@ -226,7 +227,7 @@ CAPACITA = (
 		descrizione="Record an answer given at the desk, on paper, by phone; record a withdrawal",
 	),
 	_c("consensi.configura", manager=CENTRO, descrizione="The kinds of consent and their texts"),
-	# Forms to fill and sign (docs/gestionale-medico, phase 2): what they ask, in versions
+	# Forms to fill and sign (docs/verticali/clinica, phase 2): what they ask, in versions
 	_c("moduli.configura", manager=CENTRO, descrizione="The centre's form templates and their versions"),
 	# a person's forms follow the person, like their consents
 	_c("moduli.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
@@ -359,6 +360,16 @@ CAPACITA = (
 		"piano.vedi", scrive=False, manager=CENTRO, descrizione="The plan, its modules and this month's usage"
 	),
 	_c("piano.amplia", manager=CENTRO, descrizione="Start the trial of a module"),
+	# the whole centre in one archive, health data included: the manager's, never
+	# the agency's for being the agency (crm.esportazione)
+	(
+		Capacita(
+			"dati.esporta",
+			clinica=True,
+			descrizione="Take all the centre's data away in one archive, health data included",
+		),
+		{"manager": CENTRO},
+	),
 	# Phone
 	_c(
 		"telefono.chiama",

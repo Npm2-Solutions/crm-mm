@@ -58,7 +58,7 @@
           <div
             v-for="(row, i) in windows(day)"
             :key="i"
-            class="flex items-center gap-1 max-md:w-full"
+            class="flex items-center gap-1 max-md:w-full max-md:flex-wrap"
           >
             <FormControl
               class="w-[92px] max-md:flex-1"
@@ -72,6 +72,17 @@
               :modelValue="hhmm(row.end_time)"
               type="time"
               @update:modelValue="(v) => patch(row, { end_time: v })"
+            />
+            <!-- where these hours are worked (docs/crm/62): on a phone on
+                 its own line under the times -->
+            <FormControl
+              v-if="sedi.length"
+              class="w-[150px] max-md:order-last max-md:w-full max-md:basis-full"
+              type="select"
+              :aria-label="__('Centre location')"
+              :modelValue="row.centre_location || ''"
+              :options="sedi"
+              @update:modelValue="(v) => patch(row, { centre_location: v })"
             />
             <Button
               :aria-label="__('Remove')"
@@ -135,6 +146,9 @@ const props = defineProps({
   /** set it when no hours is a valid choice, e.g. "Whenever the team works" */
   anyTimeLabel: { type: String, default: '' },
   anyTimeHint: { type: String, default: '' },
+  /** where a time slot is worked, where the centre has more than one location:
+   * `[{ value, label }]`, '' for anywhere (docs/crm/62); none, no choice */
+  sedi: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -201,6 +215,7 @@ function toggleDay(day, on) {
       workday: day,
       start_time: hhmm(w.start_time),
       end_time: hhmm(w.end_time),
+      centre_location: w.centre_location || '',
     })),
   ])
 }
@@ -212,7 +227,12 @@ function addWindow(day) {
   const end = `${String(Math.min(h + 2, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`
   commit([
     ...props.modelValue,
-    { workday: day, start_time: start, end_time: end },
+    {
+      workday: day,
+      start_time: start,
+      end_time: end,
+      centre_location: last?.centre_location || '',
+    },
   ])
 }
 
@@ -226,6 +246,7 @@ function copyToAll(day) {
         workday: d,
         start_time: hhmm(w.start_time),
         end_time: hhmm(w.end_time),
+        centre_location: w.centre_location || '',
       })),
     ),
   ])

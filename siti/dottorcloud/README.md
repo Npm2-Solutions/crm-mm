@@ -1,0 +1,162 @@
+# Il sito di DottorCloud
+
+Il sito pubblico di DottorCloud, per `dottorcloud.com`. Presenta il gestionale finito
+come fanno il video, la presentazione e le inserzioni in [`../brand/dottorcloud/`](../../brand/dottorcloud/): stesse
+frasi, stesse schermate, stesso percorso del paziente (Arriva → Prenota → Visita → Dopo →
+A casa → Il centro). Nessun piano e nessun prezzo, per scelta: un test lo controlla.
+
+È un sito statico: HTML, un foglio di stile, poco JavaScript e un file PHP per il modulo
+della demo. Nessun cookie e niente caricato da altri siti (caratteri, immagini e video
+arrivano dal nostro server), quindi nessun banner per il consenso.
+
+## Le pagine
+
+| Indirizzo | File | Cosa c'è |
+|---|---|---|
+| `/` | `pagine/index.html` | Il titolo del video, l'agenda con l'app del paziente, il percorso, cinque funzioni, utenti illimitati, il video, la privacy, le domande dei centri |
+| `/funzioni/` | `pagine/funzioni.html` | Tutto il prodotto, tappa per tappa, con le schermate della presentazione |
+| `/per-chi/` | `pagine/per-chi.html` | Ogni ruolo (titolare, segreteria, medici, amministrazione, marketing, pazienti) e ogni tipo di centro |
+| `/dati-e-privacy/` | `pagine/dati-e-privacy.html` | I dati dei pazienti, protetti; chi siamo |
+| `/demo/` | `pagine/demo.html` | Il modulo "Richiedi una demo" |
+| `/demo/grazie/`, `/demo/errore/` | `pagine/demo-*.html` | Dove va il modulo senza JavaScript (fuori dai motori di ricerca) |
+| `/privacy/`, `/cookie/` | `pagine/privacy.html`, `pagine/cookie.html` | Informativa e cookie del sito |
+| `/gestionale-poliambulatorio/`, `/gestionale-studio-medico/`, `/gestionale-fisioterapia/`, `/gestionale-nutrizionista/`, `/gestionale-studio-dentistico/` | `pagine/gestionale-*.html` | Una pagina per tipo di centro: quello che DottorCloud fa per loro, con le loro domande |
+| `/agenda-medica-online/`, `/cartella-clinica-elettronica/`, `/software-fatturazione-sanitaria/`, `/consenso-informato-digitale/`, `/promemoria-appuntamenti-whatsapp/`, `/app-per-pazienti/` | `pagine/*.html` con `parent: /funzioni/` | Una pagina per funzione, per chi la cerca con quelle parole: cosa fa, le domande, i rimandi agli articoli |
+| `/approfondimenti/` | `pagine/approfondimenti.html` + `approfondimenti/*.html` | Gli articoli: guide, norme con le fonti, organizzazione |
+| `/glossario/` | `pagine/glossario.html` | Le parole del centro medico, con i rimandi agli articoli |
+| `/404.html` | `pagine/404.html` | La pagina che non c'è |
+
+## Com'è fatto
+
+| Dove | Cosa |
+|---|---|
+| `pagine/` | Una pagina per file: in cima un commento con `title`, `description`, `path`, `nav` (la voce del menu accesa) e `index: no` per tenerla fuori dai motori di ricerca; sotto, il contenuto di `<main>` |
+| `parti/` | Lo scheletro (`layout.html`), la testata, il piè di pagina e la fascia finale "Vediamolo sul tuo centro" (`cta.html`) |
+| `risorse/css/sito.css` | Lo stile. I colori, i raggi, le ombre e i movimenti sono i token di [`../brand/dottorcloud/design-system/tokens.css`](../../brand/dottorcloud/design-system/), messi davanti al foglio dalla build; dietro, la build mette lo strato del marchio [`../brand/dottorcloud/sito/sito-marchio.css`](../../brand/dottorcloud/sito/) (blocchi, croce, nuvola: le regole in [`sito.md`](../../brand/dottorcloud/design-system/espresso/sito.md)) |
+| `risorse/js/sito.js` | Il menu sul telefono, le cose che arrivano mentre si scorre, il video, il capitolo acceso in Funzioni, il modulo inviato senza lasciare la pagina. Tutto funziona anche senza |
+| `risorse/icone/` | Le icone Lucide usate dal sito (licenza ISC, in `LICENSE`), solo le forme: la build le mette dentro l'HTML |
+| `risorse/img/` | Le schermate del video in WebP e l'immagine per i link condivisi, fatte da `immagini.py` |
+| `api/richiesta-demo.php` | Il modulo della demo: controlla i campi, ferma i robot e le richieste ripetute, manda un'email a NPM2 |
+| `server/nginx.ssl.conf_sito` | La nostra 404 e qualche intestazione di sicurezza per nginx su HestiaCP |
+| `build.mjs` | Costruisce il sito in `dist/`, senza dipendenze |
+| `deploy.sh` | Lo pubblica sul server |
+| `test/sito.test.mjs` | I test: pagine, collegamenti, immagini, nessun prezzo, il modulo con PHP |
+
+Il logo, il carattere Inter (`brand/dottorcloud/font/`), lo strato del marchio, la composizione della
+404 (`brand/dottorcloud/composizioni/stato-vuoto.svg`) e il video non sono copiati qui: la build li
+prende da `brand/dottorcloud/` (e l'icona per il telefono da `crm/public/manifest/`). L'immagine dei
+link condivisi è `brand/dottorcloud/composizioni/condivisione-og.png`, fatta JPEG da `immagini.py`.
+
+Nelle pagine: `{{> cta}}` inserisce una parte, `{{icon calendar-days}}` un'icona,
+`{{email}}`, `{{company}}`, `{{address}}` e `{{vat}}` i dati di NPM2 Solutions Srl, che
+stanno una volta sola in `build.mjs`. Le immagini prendono larghezza e altezza dal file.
+
+## Gli approfondimenti
+
+Un articolo è un file in `approfondimenti/<indirizzo>.html`: l'indirizzo diventa
+`/approfondimenti/<indirizzo>/`. In cima il commento con `title` (al massimo 65
+caratteri) e `description` (70–160) per Google, `headline` (il titolo nella pagina),
+`crumb` (il nome corto nel percorso), `category` (`Guide`, `Norme` o `Organizzazione`),
+`date` e, se cambia, `updated` (AAAA-MM-GG), `summary` (la frase sotto il titolo e
+nelle schede). Sotto, il testo con `<h2>`: diventano l'indice a lato. Un articolo
+`Norme` chiude con `<p class="disclaimer">` e `<section class="sources">` con le fonti:
+un test lo controlla. Le cifre di legge (bollo, sanzioni) vanno bene, il prezzo di
+DottorCloud mai.
+
+La build scrive da sola l'indice e le schede, gli articoli correlati, il feed
+`/approfondimenti/feed.xml`, la sitemap con le date e `llms.txt`.
+
+## Per i motori di ricerca
+
+`seo.mjs` aggiunge a ogni pagina i dati strutturati (schema.org, un solo `@graph`):
+l'azienda e il sito ovunque, il percorso (`BreadcrumbList`) dalla pagina `parent` del
+commento, le domande della pagina (`<details>`) come `FAQPage`, il prodotto
+(`SoftwareApplication`) sulla home e dove c'è `product: yes`, l'articolo (`BlogPosting`)
+con le sue date, il glossario (`DefinedTermSet`, da `<dt id>`). La sitemap data ogni
+pagina con il suo ultimo commit (per questo il workflow scarica tutta la storia).
+
+Dopo ogni pubblicazione il workflow manda a IndexNow (Bing e gli altri motori che lo
+usano) le pagine della sitemap cambiate quel giorno: `indexnow.mjs`, con la chiave che il
+sito serve in `/<chiave>.txt`. Le immagini hanno nell'indirizzo l'impronta del file
+(`?v=…`, il server le tiene in cache per anni) e, quelle larghe, copie più piccole
+(`nome-800.webp`, `nome-1200.webp`, fatte da `immagini.py`) offerte in `srcset`.
+
+## Provarlo
+
+```bash
+node siti/dottorcloud/build.mjs                        # → siti/dottorcloud/dist
+php -S localhost:8080 -t siti/dottorcloud/dist         # http://localhost:8080 (il modulo vuole PHP)
+node --test siti/dottorcloud/test/sito.test.mjs        # i test, PHP compreso se c'è
+```
+
+`SITO_URL` cambia l'indirizzo del sito (canonico, sitemap), `SITO_ANTEPRIMA=1` lo tiene
+fuori dai motori di ricerca.
+
+## Pubblicarlo
+
+Il sito sta sul server HestiaCP di NPM2 (`hosting.npm2solutions.com`, 91.99.201.178),
+come dominio web dell'utente `admin`. La chiave SSH e le credenziali del pannello sono
+nel pacchetto di consegna dell'hosting, **non in questo repository**.
+
+**Da GitHub, il modo solito.** Il workflow
+[Pubblica il sito](../../.github/workflows/sito-pubblica.yml) parte a ogni push che cambia
+`siti/dottorcloud/` o `brand/dottorcloud/` (su `develop` e sul branch del sito) o a mano da Actions: fa girare i
+test e, per ogni dominio di [`domini.txt`](./domini.txt), `deploy.sh --crea --nginx`, poi
+controlla che il sito risponda. Gli serve il secret `HOSTING_SSH_KEY` (Settings → Secrets
+and variables → Actions): tutto il file `chiavi-ssh/root_hetzner_id_ed25519` del
+pacchetto, righe `BEGIN` ed `END` comprese. Senza, avvisa e non pubblica niente.
+
+1. **DNS.** Il DNS di `dottorcloud.com` è su GoDaddy (`ns47.domaincontrol.com`): il record A
+   punta già a 91.99.201.178 e `www` è un CNAME di `dottorcloud.com`. L'anteprima
+   `dottorcloud.preview.npm2solutions.com` punta lì anche lei (`*.preview`).
+2. **La pubblicazione**, da un computer con Node, rsync e SSH:
+
+   ```bash
+   SITO_SSH_KEY=/percorso/root_hetzner_id_ed25519 siti/dottorcloud/deploy.sh dottorcloud.com --crea --nginx
+   ```
+
+   `--crea` aggiunge il dominio nel pannello se manca e, quando il suo DNS punta al server,
+   gli dà il certificato Let's Encrypt con HTTPS obbligatorio e `www` che rimanda al
+   dominio; rilanciato dopo il cambio del DNS, prende il certificato. Poi lo script
+   costruisce il sito per quel dominio, controlla che `public_html` sia vuota, la pagina
+   d'attesa del pannello o già il nostro sito (non tocca mai una cartella con altro, come
+   un WordPress), copia `dist/`, mette la 404 e crea `private/sito.ini`. `--nginx` installa
+   la 404 e le intestazioni di `server/`. `--prova` mostra cosa cambierebbe senza cambiare
+   niente.
+
+   Senza computer, dal pannello (anche dal telefono): WEB → Add Web Domain, poi File
+   Manager → `public_html`, si toglie `index.html`, si carica lo zip di `siti/dottorcloud/dist`
+   costruito con `SITO_URL=https://dottorcloud.com` e lo si estrae; quando il DNS punta al
+   server, SSL con Let's Encrypt e Force HTTPS.
+3. **L'email del modulo.** In `private/sito.ini` (fuori da `public_html`): `destinatario`
+   riceve le richieste, `mittente` le manda (`sito@dottorcloud.com`). Il dominio del
+   mittente deve permettere al server di spedire, altrimenti le richieste finiscono nello
+   spam: su GoDaddy va aggiunto a `dottorcloud.com` il record TXT
+   `v=spf1 ip4:91.99.201.178 ip6:2a01:4f8:1c1f:b10d::1 ~all`. `archivio` tiene anche una
+   copia di ogni richiesta in un file, se si vuole. Poi una richiesta di prova dal sito.
+
+Le volte dopo basta `siti/dottorcloud/deploy.sh dottorcloud.com`. Per l'anteprima:
+`siti/dottorcloud/deploy.sh dottorcloud.preview.npm2solutions.com --crea`.
+
+## Cambiarlo
+
+- **Un testo**: nella pagina in `pagine/`; titolo e descrizione per Google nel commento in cima.
+- **Una pagina nuova**: un file in `pagine/` con il suo `path`; la sitemap si aggiorna da
+  sola, il menu è in `parti/header.html` e `parti/footer.html`.
+- **Un'immagine**: la schermata in `brand/dottorcloud/presentazione/sorgenti/img/`, il nome e la
+  larghezza in `immagini.py` (`pip install pillow`, poi `python3 siti/dottorcloud/immagini.py`), e
+  nella pagina `<img src="/img/nome.webp" alt="…">`.
+- **Un'icona**: da [lucide.dev](https://lucide.dev), solo le forme dentro `<svg>`, in
+  `risorse/icone/<nome>.svg`.
+
+## Prima di pubblicarlo
+
+- Come per il resto del materiale ([`../brand/dottorcloud/README.md`](../../brand/dottorcloud/README.md)), sono da
+  confermare "ogni accesso registrato", "i dati non escono dall'Unione europea", "senza
+  addestramento sui dati" per l'IA, la registrazione delle chiamate e l'avviso automatico
+  dalla lista d'attesa. L'assistente IA ha l'etichetta "Presto".
+- L'informativa privacy e la pagina dei cookie vanno lette da chi segue la privacy di NPM2:
+  il fornitore della posta, i tempi di conservazione.
+- Nel piè di pagina ci sono ragione sociale, sede e partita IVA; se si vogliono, numero REA
+  e capitale sociale vanno aggiunti in `parti/footer.html`.
+- Il dominio è `dottorcloud.com` (`SITO_URL` in `build.mjs`).

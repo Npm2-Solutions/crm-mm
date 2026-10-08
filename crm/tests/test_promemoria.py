@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The reminders of the appointments, on a real site (docs/progetto-ghl/59).
+"""The reminders of the appointments, on a real site (docs/crm/59).
 
 Anna has a visit the day after tomorrow at half past nine. Tomorrow at ten the
 round finds it, and the reminder leaves - by email, with the booking page's link,
@@ -43,6 +43,7 @@ class PromemoriaCase(agenda.SchedulingCase):
 		self.impostazioni(
 			enabled=1,
 			hours_before=24,
+			second_hours_before=0,
 			cancel_on_reply=1,
 			whatsapp_template=None,
 			use_sms=0,
@@ -204,6 +205,16 @@ class QuandoParte(PromemoriaCase):
 		registro = self.registro(altro)
 		self.assertEqual(registro.status, R.NON_INVIATO)
 		self.assertIn("call them", registro.reason)
+
+	def test_senza_una_casella_in_uscita_lo_dice_con_le_nostre_parole(self):
+		self.sendmail.side_effect = frappe.OutgoingEmailError(
+			"Please setup default outgoing Email Account from Settings > Email Account"
+		)
+		self.giro()
+		registro = self.registro()
+		self.assertNotEqual(registro.status, R.INVIATO)
+		self.assertIn("Settings > Email > Accounts", registro.reason)
+		self.assertNotIn("Email Account", registro.reason)
 
 
 class PerSms(PromemoriaCase):
@@ -496,3 +507,63 @@ class DallaPagina(PromemoriaCase):
 		feed = agenda_api.get_calendar(giorno, giorno)
 		[appuntamento] = [a for a in feed["appointments"] if a["name"] == self.appuntamento.name]
 		self.assertEqual(appuntamento["participants"][0]["reminder"]["answer"], R.CONFERMA)
+
+
+class IlSecondo(PromemoriaCase):
+	"""A second reminder the same morning, three hours before: half past six is
+	night, so it leaves at eight."""
+
+	def setUp(self):
+		super().setUp()
+		self.impostazioni(second_hours_before=3)
+		self.mattina = datetime.datetime.combine(self.inizio.date(), datetime.time(8))
+
+	def giro_alle(self, momento):
+		with mock.patch("crm.scheduling.promemoria._adesso", return_value=momento):
+			self.giro()
+
+	def test_il_giorno_prima_e_la_mattina(self):
+		self.giro()
+		self.giro_alle(self.mattina - datetime.timedelta(minutes=15))
+		self.assertEqual(len(self.sendmail.call_args_list), 1)
+		self.giro_alle(self.mattina)
+		self.giro_alle(self.mattina + datetime.timedelta(minutes=15))
+		self.assertEqual(len(self.sendmail.call_args_list), 2)
+		self.assertEqual([r.second for r in self.registri()], [0, 1])
+
+	def test_chi_ha_confermato_non_lo_riceve(self):
+		self.giro()
+		token = LINK.search(self.sendmail.call_args.kwargs["message"]).group(1)
+		frappe.set_user("Guest")
+		try:
+			SB.confirm(token)
+		finally:
+			frappe.set_user("Administrator")
+		self.giro_alle(self.mattina)
+		self.assertEqual(len(self.sendmail.call_args_list), 1)
+		self.assertEqual(len(self.registri()), 1)
+
+	def test_la_risposta_del_primo_resta_sull_agenda(self):
+		self.giro()
+		registro = frappe.get_doc(P.PROMEMORIA, self.registro().name)
+		P.rispondi(registro, R.SPOSTA, R.SMS)
+		self.giro_alle(self.mattina)
+		self.assertEqual(len(self.registri()), 2)
+		giorno = self.inizio.date().isoformat()
+		feed = agenda_api.get_calendar(giorno, giorno)
+		[appuntamento] = [a for a in feed["appointments"] if a["name"] == self.appuntamento.name]
+		self.assertEqual(appuntamento["participants"][0]["reminder"]["answer"], R.SPOSTA)
+
+	def test_spento_niente_la_mattina(self):
+		self.impostazioni(second_hours_before=0)
+		self.giro()
+		self.giro_alle(self.mattina)
+		self.assertEqual(len(self.registri()), 1)
+
+	def test_le_ore_del_secondo_dopo_il_primo(self):
+		with self.assertRaises(frappe.ValidationError):
+			P.save_settings({"hours_before": 2, "second_hours_before": 3})
+		# out of its hours it is said, as the page says it, never put right in silence
+		with self.assertRaises(frappe.ValidationError):
+			P.save_settings({"second_hours_before": 20})
+		self.assertEqual(P.save_settings({"second_hours_before": 12})["second_hours_before"], 12)

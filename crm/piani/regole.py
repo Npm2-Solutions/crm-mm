@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """What a plan is, without a site: its kinds, what goes in it, and how the person's
-week reads (docs/gestionale-medico/design.md, "I piani").
+week reads (docs/verticali/clinica/design.md, "I piani").
 
 - **The kinds are registered** (`TipoPiano`): the CRM's own - a training, habits -
   and the ones a module brings, with who writes them and what they hold: the
@@ -225,6 +225,16 @@ def riepilogo(esiti: list[str]) -> dict[str, int]:
 	return {esito: sum(1 for e in esiti if e == esito) for esito in ESITI}
 
 
+def fatica(valori: list) -> dict | None:
+	"""How hard or painful the person said the exercises were, 1 to 10, in the
+	order they said it (0 is not said): the average to one decimal, the last one
+	and how many times; None when they said nothing."""
+	detti = [int(v) for v in valori if v and 1 <= int(v) <= 10]
+	if not detti:
+		return None
+	return {"average": round(sum(detti) / len(detti), 1), "last": detti[-1], "said": len(detti)}
+
+
 # ------------------------------------------------------------------ the CRM's own
 
 
@@ -236,7 +246,9 @@ def _abitudine(voce: dict) -> Problema | None:
 	return None if (voce.get("text") or "").strip() else Problema("Write the habit")
 
 
-registra_genere(GenereVoce(ESERCIZIO, ("exercise", "sets", "reps", "duration", "rest", "load"), _esercizio))
+registra_genere(
+	GenereVoce(ESERCIZIO, ("exercise", "sets", "reps", "duration", "rest", "load", "side"), _esercizio)
+)
 #: A habit fits in any plan: water, a walk, sleep.
 registra_genere(GenereVoce(ABITUDINE, ("text",), _abitudine))
 registra_tipo(

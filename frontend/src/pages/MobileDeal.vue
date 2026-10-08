@@ -387,6 +387,7 @@ const {
   scripts,
   error,
   canWrite,
+  pronto,
 } = useDocument('CRM Deal', props.dealId)
 
 const doc = computed(() => document.doc || {})
@@ -647,7 +648,6 @@ const dealContacts = createResource({
   url: 'crm.fcrm.doctype.crm_deal.api.get_deal_contacts',
   params: { name: props.dealId },
   cache: ['deal_contacts', props.dealId],
-  auto: true,
   onSuccess: (data) => {
     let contactSection = sections.data?.find(
       (section) => section.name == 'contacts_section',
@@ -666,6 +666,9 @@ const dealContacts = createResource({
     })
   },
 })
+// once the deal came: a deal one may not open asks nothing more, and its page
+// says why
+pronto.then((venuto) => venuto && dealContacts.fetch().catch(() => {}))
 
 function updateField(name, value) {
   value = Array.isArray(name) ? '' : value

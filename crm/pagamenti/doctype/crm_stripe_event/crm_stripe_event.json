@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 18:00:00.000000",
+ "description": "Every event Stripe sent, kept before it is applied: each is applied once",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event_id",
+  "event_type",
+  "payment",
+  "column_break_head",
+  "done",
+  "attempts",
+  "received_on",
+  "detail_section",
+  "last_error",
+  "payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "event_id",
+   "fieldtype": "Data",
+   "label": "Event",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Data",
+   "label": "Type",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "payment",
+   "fieldtype": "Link",
+   "label": "Payment",
+   "options": "CRM Online Payment"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "done",
+   "fieldtype": "Check",
+   "label": "Applied",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts"
+  },
+  {
+   "fieldname": "received_on",
+   "fieldtype": "Datetime",
+   "label": "Received on"
+  },
+  {
+   "fieldname": "detail_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last error"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Event",
+   "options": "JSON"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-08 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Pagamenti",
+ "name": "CRM Stripe Event",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager"
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:event_id",
+ "naming_rule": "By fieldname"
+}

@@ -1,14 +1,18 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's messages on the person's board, read in their area.
+"""The person's board: the centre's messages read in their area, and what the
+person writes back.
 
-Not a chat: a board, one per person, and the person does not answer here.
-design.md leaves that open ("Da decidere" 7): a chat would be one more inbox.
-The desk writes administrative messages (a reminder, a document to bring); a
-question the person passed on from the area's chat is on the board too, for the
-desk to answer there. The email that follows says only that there is news in the
-area: the content stays inside it.
+One board per person, both ways, on the person's Client area tab - not one more
+inbox. The desk writes administrative messages (a reminder, a document to bring)
+and answers there; the email that follows says only that there is news in the
+area: the content stays inside it. The person writes from the Messages of their
+area (`send_message`): words and maybe a photo or a PDF (`messaggi_regole`), kept
+private with the message, read by whoever reads the board; a question passed on
+from the area's chat is theirs too. Whoever follows the person hears of it
+(`avvisa`) by the person's name only: the words stay on the board, which may say
+something about their health. Never from the centre's preview.
 
 **Other kinds come from other modules** (`registra_tipo`), each with who writes
 it and who reads it in DottorCloud: the clinic's "Care", written by a practitioner
@@ -23,9 +27,11 @@ from dataclasses import dataclass
 
 import frappe
 from frappe import _
+from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, get_fullname, now_datetime
 
 from crm.area import accesso
+from crm.area import messaggi_regole as R
 from crm.permissions import livelli
 
 MESSAGGIO = "CRM Area Message"
@@ -33,6 +39,11 @@ AMMINISTRATIVO = "Administrative"
 #: A question the person passed to the centre from the chat: read and answered
 #: here by whoever writes to the person.
 DOMANDA = "Question"
+#: What the person wrote from the Messages of their area.
+DALLA_PERSONA = "From the person"
+#: The kinds that come from the person: read by whoever opens the board, never
+#: news for the person.
+DELLA_PERSONA = (DOMANDA, DALLA_PERSONA)
 
 
 @dataclass(frozen=True)
@@ -67,6 +78,7 @@ def _legge_il_board(doc, user: str) -> bool:
 def registra() -> None:
 	registra_tipo(TipoMessaggio(AMMINISTRATIVO, scrive=_scrive_al_board, legge=_legge_il_board))
 	registra_tipo(TipoMessaggio(DOMANDA, scrive=None, legge=_legge_il_board))
+	registra_tipo(TipoMessaggio(DALLA_PERSONA, scrive=None, legge=_legge_il_board))
 
 
 def tipo_di(user: str | None = None) -> TipoMessaggio:
@@ -96,6 +108,9 @@ def _riga(doc, nell_area: bool = False) -> dict:
 		"author_name": get_fullname(doc.author),
 		"posted_on": doc.posted_on,
 		"read_on": doc.read_on,
+		# the person's own, from the area, and the file they attached
+		"from_person": doc.kind in DELLA_PERSONA,
+		"attachment_name": doc.attachment_name if doc.attachment else None,
 	}
 	if not nell_area:
 		riga["mine"] = doc.author == frappe.session.user
@@ -118,9 +133,9 @@ def get_messages(lead: str) -> dict:
 		)
 		if _legge(doc, utente)
 	]
-	# the person's questions are read by who opens the board: the person sees it
+	# what the person wrote is read by who opens the board: the person sees it
 	for riga in righe:
-		if riga["kind"] == DOMANDA and not riga["read_on"]:
+		if riga["kind"] in DELLA_PERSONA and not riga["read_on"]:
 			riga["read_on"] = now_datetime()
 			frappe.db.set_value(
 				MESSAGGIO,
@@ -208,7 +223,7 @@ def mark_read(person: str) -> dict:
 	_mia(person)
 	for nome in frappe.get_all(
 		MESSAGGIO,
-		filters={"lead": person, "read_on": ("is", "not set"), "kind": ("!=", DOMANDA)},
+		filters={"lead": person, "read_on": ("is", "not set"), "kind": ("not in", DELLA_PERSONA)},
 		pluck="name",
 	):
 		frappe.db.set_value(
@@ -221,7 +236,115 @@ def mark_read(person: str) -> dict:
 
 
 def da_leggere(person: str) -> int:
-	"""The centre's messages the person has not opened: their own questions are not news."""
+	"""The centre's messages the person has not opened: what they wrote is not news."""
 	return cint(
-		frappe.db.count(MESSAGGIO, {"lead": person, "read_on": ("is", "not set"), "kind": ("!=", DOMANDA)})
+		frappe.db.count(
+			MESSAGGIO, {"lead": person, "read_on": ("is", "not set"), "kind": ("not in", DELLA_PERSONA)}
+		)
 	)
+
+
+# ------------------------------------------------------------------ the person writes
+
+
+def _problemi(problemi: list) -> None:
+	if problemi:
+		frappe.throw("<br>".join(p.testo(_) for p in problemi))
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=20, seconds=60 * 60)
+def send_message(
+	person: str, body: str | None = None, attachment: str | None = None, attachment_name: str | None = None
+) -> dict:
+	"""The person writes to the centre from their area: words, and maybe one photo
+	or PDF, private with the message. Whoever follows them hears of it by name."""
+	from crm.area.api import _mia
+
+	_mia(person)
+	testo = (body or "").strip()
+	contenuto = R.dal_data_url(attachment)
+	_problemi(R.problemi(testo, contenuto, c_era_un_file=bool(attachment)))
+	frappe.db.savepoint("messaggio_dell_area")
+	doc = frappe.get_doc(
+		{
+			"doctype": MESSAGGIO,
+			"lead": person,
+			"kind": DALLA_PERSONA,
+			"author": frappe.session.user,
+			"posted_on": now_datetime(),
+			"body": testo,
+		}
+	).insert(ignore_permissions=True)
+	if contenuto:
+		nome = R.nome_del_file(attachment_name, R.tipo_del_file(contenuto))
+		try:
+			allegato = frappe.get_doc(
+				{
+					"doctype": "File",
+					"file_name": nome,
+					"attached_to_doctype": MESSAGGIO,
+					"attached_to_name": doc.name,
+					"attached_to_field": "attachment",
+					"is_private": 1,
+					"content": contenuto,
+				}
+			).insert(ignore_permissions=True)
+		except Exception:
+			# a PDF the framework cannot read (broken, or with scripts in it): the
+			# message goes with it, and the person is told
+			frappe.db.rollback(save_point="messaggio_dell_area")
+			frappe.clear_last_message()
+			frappe.throw(_("The file could not be read: attach it again"))
+		doc.db_set({"attachment": allegato.file_url, "attachment_name": nome}, update_modified=False)
+	_avvisa_chi_segue(person, doc.name)
+	return area_messages(person)
+
+
+def chi_sente(lead: str) -> list[str]:
+	"""Who hears of what the person wrote: whoever follows them and reads the
+	board; nobody does, the desk (`chat.chi_avvisare`). Only who may open them."""
+	from crm.area import chat
+	from crm.notifiche.avvisi import chi_segue
+
+	def legge(utente: str) -> bool:
+		return livelli.puo("area.messaggi", utente) and bool(
+			frappe.has_permission("CRM Lead", "read", doc=lead, user=utente)
+		)
+
+	seguono = [utente for utente in chi_segue("CRM Lead", lead, banco=False) if legge(utente)]
+	return seguono or [utente for utente in chat.chi_avvisare() if legge(utente)]
+
+
+def _avvisa_chi_segue(lead: str, messaggio: str) -> None:
+	from crm.notifiche import regole as N
+	from crm.notifiche.avvisi import avvisa
+
+	nome = frappe.db.get_value("CRM Lead", lead, "lead_name") or lead
+	for utente in chi_sente(lead):
+		# the words stay on the board: the notification says only who wrote
+		avvisa(
+			utente,
+			"Area",
+			N.MESSAGGIO_AREA,
+			[nome],
+			riguarda=("CRM Lead", lead),
+			oggetto=(MESSAGGIO, messaggio),
+			frase_molti=N.MESSAGGIO_AREA_MOLTI,
+		)
+
+
+@frappe.whitelist(methods=["GET"])
+def attachment(message: str) -> None:
+	"""The file the person attached, for whoever reads the board in DottorCloud."""
+	livelli.verifica("area.messaggi")
+	doc = frappe.get_doc(MESSAGGIO, message)
+	frappe.has_permission("CRM Lead", "read", doc=doc.lead, throw=True)
+	if not _legge(doc, frappe.session.user) or not doc.attachment:
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	nome = frappe.db.get_value("File", {"file_url": doc.attachment}, "name")
+	if not nome:
+		frappe.throw(_("The file is no longer there"))
+	frappe.local.response.filename = doc.attachment_name or doc.attachment.rsplit("/", 1)[-1]
+	frappe.local.response.filecontent = frappe.get_doc("File", nome).get_content(encodings=[])
+	frappe.local.response.type = "download"

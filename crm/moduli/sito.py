@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Forms on the centre's website (docs/gestionale-medico/design.md, "Il builder").
+"""Forms on the centre's website (docs/verticali/clinica/design.md, "Il builder").
 
 A template of the "Website" use is published at ``/crm-form/<route>``, embedded in
 another site with ``?embed=1``, or placed in a page of the centre's own site

@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The agenda's month (docs/progetto-ghl/56-agenda.md): each day how many
+  The agenda's month (docs/crm/56-agenda.md): each day how many
   appointments it holds and the first of them by their time and their person;
   a day opens on a tap, an appointment on its own. On a phone a day says its
   number and how many it holds.

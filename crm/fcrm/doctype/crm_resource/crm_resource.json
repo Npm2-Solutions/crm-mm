@@ -14,6 +14,7 @@
   "capacity",
   "seats",
   "location",
+  "centre_location",
   "pricing_section",
   "hourly_rate",
   "column_break_pricing",
@@ -78,6 +79,13 @@
    "label": "Location"
   },
   {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "description": "Where the room is, where the centre has more than one location. Empty: in any of them (equipment that moves)."
+  },
+  {
    "fieldname": "pricing_section",
    "fieldtype": "Section Break",
    "label": "Pricing"
@@ -129,7 +137,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Resource",

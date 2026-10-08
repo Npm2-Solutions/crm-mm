@@ -152,6 +152,14 @@
                 </component>
               </template>
             </Draggable>
+            <!-- an empty stage says so, as the phone's does: headers alone read
+                 as a board that did not load -->
+            <p
+              v-if="!column.data?.length"
+              class="px-1 text-p-sm text-ink-gray-5"
+            >
+              {{ __('Nothing in this column') }}
+            </p>
             <div
               v-if="column.column.count < column.column.all_count"
               class="flex items-center justify-center"

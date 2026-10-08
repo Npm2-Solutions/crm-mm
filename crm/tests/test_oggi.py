@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""How an appointment went, and the desk's day (docs/gestionale-medico, fase 1).
+"""How an appointment went, and the desk's day (docs/verticali/clinica, fase 1).
 
 The desk checks people in, and the waiting room counts from there; once each
 participant came or did not, the appointment closes by itself. An invoice issued

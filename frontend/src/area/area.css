@@ -17,14 +17,14 @@
    same rule as the CRM's (telefono.css), which the area does not load. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
-      [type='checkbox'],
-      [type='radio'],
-      [type='range'],
-      [type='color'],
-      [type='file'],
-      [type='button'],
-      [type='submit']
-    ),
+    [type='checkbox'],
+    [type='radio'],
+    [type='range'],
+    [type='color'],
+    [type='file'],
+    [type='button'],
+    [type='submit']
+  ),
   textarea,
   select {
     font-size: 16px !important;
@@ -74,7 +74,7 @@
 }
 
 /* The area's register, as the brand draws the patient's phone (the screens of
-   the video, the ads and the presentation: brand/presentazione/sorgenti/img/
+   the video, the ads and the presentation: brand/dottorcloud/presentazione/sorgenti/img/
    telefono-*.png): Espresso's tokens, larger - titles big and tight, labels in
    small capitals, every card with the cloud's tail, a kind of thing in a cloud of
    its category's colour, the next appointment the page's one deep block,
@@ -350,6 +350,42 @@
   }
   .area-answer.area-state--partly,
   .area-answer.area-state--skipped {
+    box-shadow: none;
+  }
+
+  /* how hard or painful, 1 to 10: ten keys in one row, as wide as it lets them */
+  .area-scala {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .area-scala__punto {
+    justify-content: center;
+    padding: 0;
+    font-variant-numeric: tabular-nums;
+    /* the same ink in both themes: on a done item, in the dark, the step's grey
+       read grey on grey */
+    color: var(--ink-gray-8);
+  }
+  /* a finger's key, wherever a finger taps: sideways and on a tablet too */
+  @media (pointer: coarse) {
+    .area-scala__punto {
+      height: 40px;
+    }
+  }
+  /* on a phone, two rows of five: ten in a row were 28px wide, 21px at 320 */
+  @media (max-width: 479px) {
+    .area-scala {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .area-scala__punto {
+      height: 40px;
+    }
+  }
+  .area-scala__punto.is-scelto {
+    background: var(--brand-solid);
+    color: var(--on-brand-solid);
     box-shadow: none;
   }
 

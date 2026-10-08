@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 import { describe, expect, it } from 'vitest'
-import { flt } from '@/utils/numberFormat'
+import { conIlSimbolo, flt, formatCurrency } from '@/utils/numberFormat'
 
 // An amount typed in a field is read in the site's number format; a phone's
 // decimal pad has only the separator of its own language.
@@ -32,5 +32,37 @@ describe('an amount typed on a phone', () => {
   it('reads numbers as numbers', () => {
     expect(flt(12.5, null, '#.###,##')).toBe(12.5)
     expect(flt('', null, '#,###.##')).toBe(0)
+  })
+})
+
+// The currency's symbol where the reader's language writes it, the digits in
+// the site's format: the deals and companies read «€ 0,00» in Italian.
+describe('an amount in a currency', () => {
+  it('puts the euro after the amount in Italian, before it in English', () => {
+    expect(conIlSimbolo('0,00', '€', 'EUR', 'it')).toBe('0,00 €')
+    expect(conIlSimbolo('1.234,50', '€', 'EUR', 'it')).toBe('1.234,50 €')
+    expect(conIlSimbolo('0.00', '€', 'EUR', 'en')).toBe('€0.00')
+    expect(conIlSimbolo('0,00', '€', 'EUR', 'en')).toBe('€0,00')
+  })
+
+  it('writes a whole amount with the site’s separators and the reader’s place', () => {
+    globalThis.window.sysdefaults = { number_format: '#.###,##' }
+    globalThis.__ = (s) => s
+    try {
+      globalThis.window.lang = 'it'
+      expect(formatCurrency(1234.5, '', 'EUR', 2)).toBe('1.234,50 €')
+      expect(formatCurrency(0, '', 'EUR', 2)).toBe('0,00 €')
+      globalThis.window.lang = 'en'
+      expect(formatCurrency(1234.5, '', 'EUR', 2)).toBe('€1.234,50')
+      expect(formatCurrency(1234.5, '#,###.##', 'EUR', 2)).toBe('€1,234.50')
+    } finally {
+      delete globalThis.window.lang
+      delete globalThis.__
+    }
+  })
+
+  it('a number without a currency stays a number', () => {
+    globalThis.window.sysdefaults = { number_format: '#.###,##' }
+    expect(formatCurrency(5, '', '', 2)).toBe('5,00')
   })
 })

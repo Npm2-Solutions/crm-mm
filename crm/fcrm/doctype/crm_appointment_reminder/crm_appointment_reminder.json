@@ -12,6 +12,7 @@
   "party",
   "lead",
   "starts_on",
+  "second",
   "column_break_who",
   "channel",
   "status",
@@ -62,6 +63,13 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Appointment time"
+  },
+  {
+   "default": "0",
+   "fieldname": "second",
+   "fieldtype": "Check",
+   "label": "Same-day reminder",
+   "description": "The second reminder of the place, the same day"
   },
   {
    "fieldname": "column_break_who",
@@ -152,7 +160,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-06 20:00:00.000000",
+ "modified": "2026-10-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment Reminder",

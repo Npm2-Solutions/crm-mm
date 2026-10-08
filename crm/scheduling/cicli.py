@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Cycles of sessions on the site (docs/gestionale-medico, phase 3: "cicli di sedute
+"""Cycles of sessions on the site (docs/verticali/clinica, phase 3: "cicli di sedute
 (fisioterapia)"): ten sessions of physiotherapy, six of laser. The rules are
 `cicli_regole`; here, the appointments.
 
@@ -172,7 +172,10 @@ def _lascia(appuntamento, persona: str | None) -> None:
 
 def aggancia(appuntamento) -> None:
 	"""`validate` of an appointment, before its price: a new one of a cycle's service
-	joins the cycle; one whose service or person changed leaves it."""
+	joins the cycle; one whose service or person changed leaves it. One brought over
+	from the previous software joins nothing: it happened, or was booked, there."""
+	if appuntamento.flags.get("importato"):
+		return
 	ciclo = appuntamento.get("session_cycle")
 	if ciclo:
 		riga = frappe.db.get_value(CICLO, ciclo, ["service", "lead"], as_dict=True)

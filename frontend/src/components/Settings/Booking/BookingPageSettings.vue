@@ -334,7 +334,7 @@
         </h3>
         <FormControl
           v-model.number="form.max_active_per_customer"
-          class="w-60"
+          class="w-60 impostazioni-strette:w-full"
           type="number"
           inputmode="numeric"
           min="0"
@@ -343,6 +343,48 @@
             __('0 = no limit. The stricter of this and a service limit wins.')
           "
         />
+        <!-- three of a row, each as wide as the settings' fields; one under the
+             other where the pane is narrow -->
+        <div
+          class="grid grid-cols-3 items-end gap-3 impostazioni-strette:grid-cols-1"
+        >
+          <FormControl
+            v-model.number="form.no_show_limit"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            :placeholder="__('Never')"
+            :label="__('Missed appointments before the centre decides')"
+          />
+          <FormControl
+            v-model.number="form.no_show_months"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            :disabled="!form.no_show_limit"
+            :label="__('Counted over the last months')"
+          />
+          <FormControl
+            v-model="form.no_show_action"
+            type="select"
+            :disabled="!form.no_show_limit"
+            :label="__('Then')"
+            :options="[
+              {
+                label: __('The booking waits for the centre’s yes'),
+                value: 'Manual approval',
+              },
+              { label: __('No online booking'), value: 'Refuse' },
+            ]"
+          />
+        </div>
+        <p class="text-p-sm text-ink-gray-5">
+          {{
+            __(
+              'Whoever did not show up this many times books online only with the centre’s yes, or not at all: they are asked to call. Empty: never.',
+            )
+          }}
+        </p>
       </section>
     </div>
   </div>
@@ -500,6 +542,9 @@ const FIELDS = [
   'booking_page_intro',
   'privacy_policy_url',
   'max_active_per_customer',
+  'no_show_limit',
+  'no_show_months',
+  'no_show_action',
   'default_min_notice_hours',
   'default_max_horizon_days',
   'default_online_slot_interval',
@@ -526,6 +571,9 @@ const form = reactive({
   booking_page_intro: '',
   privacy_policy_url: '',
   max_active_per_customer: 0,
+  no_show_limit: '',
+  no_show_months: 12,
+  no_show_action: 'Manual approval',
   default_min_notice_hours: 2,
   default_max_horizon_days: 60,
   default_online_slot_interval: 0,
@@ -554,6 +602,8 @@ createResource({
       if (data[field] !== undefined && data[field] !== null)
         form[field] = field.endsWith('cutoff') ? hhmm(data[field]) : data[field]
     })
+    // no limit on whoever does not show up reads empty, as «Never»
+    if (!form.no_show_limit) form.no_show_limit = ''
   },
 })
 

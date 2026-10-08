@@ -161,6 +161,9 @@ class TestDatiDiProva(IntegrationTestCase):
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the site's own before the demo, which commits part by part
 		cls.prima = _conta()
 		cls.serie_di_prima = _serie()
+		# the bin's rows from before the demo are the centre's: the framework gives a
+		# deleted record's name again, and the demo's people may take it
+		cls.cestino_di_prima = frappe.get_all("Deleted Document", pluck="name") or [""]
 		cls.esito = api.crea(utente="Administrator", scala=cls.SCALA)
 		cls.registrati = registro.registrati()
 
@@ -579,7 +582,10 @@ class TestDatiDiProva(IntegrationTestCase):
 			self.assertFalse(frappe.db.sql("select 1 from tabDefaultValue where parent=%s", utente))
 		self.assertFalse(
 			frappe.db.sql(
-				"select 1 from `tabDeleted Document` where deleted_doctype in ('CRM Lead', 'CRM Appointment', 'CRM Deal') and deleted_name in %(nomi)s",
-				{"nomi": sorted(self.registrati["CRM Lead"] | self.registrati["CRM Appointment"])},
+				"select 1 from `tabDeleted Document` where deleted_doctype in ('CRM Lead', 'CRM Appointment', 'CRM Deal') and deleted_name in %(nomi)s and name not in %(di_prima)s",
+				{
+					"nomi": sorted(self.registrati["CRM Lead"] | self.registrati["CRM Appointment"]),
+					"di_prima": self.cestino_di_prima,
+				},
 			)
 		)

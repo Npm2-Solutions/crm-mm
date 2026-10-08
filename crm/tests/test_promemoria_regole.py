@@ -63,6 +63,66 @@ class QuandoParte(unittest.TestCase):
 		self.assertEqual(R.ore_prima("48"), 48)
 
 
+class IlSecondo(unittest.TestCase):
+	def test_le_ore_del_secondo(self):
+		self.assertIsNone(R.ore_del_secondo(None, 24))
+		self.assertIsNone(R.ore_del_secondo("", 24))
+		self.assertIsNone(R.ore_del_secondo(0, 24))
+		self.assertEqual(R.ore_del_secondo(3, 24), 3)
+		self.assertEqual(R.ore_del_secondo(30, 24), 12)
+		# never as early as the first, or before it
+		self.assertIsNone(R.ore_del_secondo(4, 4))
+		self.assertIsNone(R.ore_del_secondo(6, 2))
+
+	def test_la_mattina_e_mai_la_sera_prima(self):
+		self.assertEqual(R.momento_del_secondo(ora(7, 15), 3, 24), ora(7, 12))
+		# 6:30 is night: the morning, half an hour before 8:30 is still enough
+		self.assertEqual(R.momento_del_secondo(ora(7, 8, 30), 2, 24), ora(7, 8))
+		# 8:15: the morning is within the half hour, and the evening is the first's
+		self.assertIsNone(R.momento_del_secondo(ora(7, 8, 15), 2, 24))
+		# the first moved to the morning itself: the second is not after it
+		self.assertIsNone(R.momento_del_secondo(ora(7, 9), 2, 3))
+
+	def test_dovuto_fino_all_ultima_mezz_ora(self):
+		inizio = ora(7, 15)
+		self.assertFalse(R.dovuto_il_secondo(inizio, ora(7, 11, 59), 3, 24))
+		self.assertTrue(R.dovuto_il_secondo(inizio, ora(7, 12), 3, 24))
+		self.assertTrue(R.dovuto_il_secondo(inizio, ora(7, 14, 30), 3, 24))
+		self.assertFalse(R.dovuto_il_secondo(inizio, ora(7, 14, 31), 3, 24))
+		# an hour before, within the first's last hour
+		self.assertTrue(R.dovuto_il_secondo(inizio, ora(7, 14), 1, 24))
+		# booked this morning: the booking said it all
+		self.assertFalse(R.dovuto_il_secondo(inizio, ora(7, 12), 3, 24, prenotato_il=ora(7, 11)))
+
+	def test_quale_parte(self):
+		inizio = ora(7, 15)
+		self.assertEqual(R.quale(inizio, ora(6, 15), 24, 3), R.PRIMO)
+		self.assertIsNone(R.quale(inizio, ora(6, 16), 24, 3, fatti={R.PRIMO}))
+		self.assertEqual(R.quale(inizio, ora(7, 12), 24, 3, fatti={R.PRIMO}), R.SECONDO)
+		self.assertIsNone(R.quale(inizio, ora(7, 12, 15), 24, 3, fatti={R.PRIMO, R.SECONDO}))
+		# without a second the first goes on until the last hour
+		self.assertIsNone(R.quale(inizio, ora(7, 12), 24, None, fatti={R.PRIMO}))
+		self.assertEqual(R.quale(inizio, ora(7, 12), 24, None), R.PRIMO)
+
+	def test_dovuto_il_secondo_il_primo_non_parte_piu(self):
+		inizio = ora(7, 15)
+		# booked yesterday at noon, the server off all morning: only the second
+		self.assertEqual(R.quale(inizio, ora(7, 13), 24, 3, prenotato_il=ora(6, 12)), R.SECONDO)
+		self.assertIsNone(R.quale(inizio, ora(7, 13), 24, 3, fatti={R.SECONDO}))
+
+	def test_chi_ha_risposto_non_lo_riceve(self):
+		inizio = ora(7, 15)
+		self.assertIsNone(R.quale(inizio, ora(7, 12), 24, 3, fatti={R.PRIMO}, risposto=True))
+		self.assertTrue(R.chiude(R.CONFERMA))
+		self.assertTrue(R.chiude(R.NON_VIENE))
+		self.assertFalse(R.chiude(R.SPOSTA))
+		self.assertFalse(R.chiude(None))
+
+	def test_dove_cercare_arriva_alla_mezz_ora(self):
+		dal, _al = R.da_cercare(ora(7, 12), 24, secondo=True)
+		self.assertEqual(dal, ora(7, 12, 30))
+
+
 class Come(unittest.TestCase):
 	def test_whatsapp_poi_sms_poi_email(self):
 		self.assertEqual(R.canali(True, True, True, True, True), [R.WHATSAPP, R.SMS, R.EMAIL])

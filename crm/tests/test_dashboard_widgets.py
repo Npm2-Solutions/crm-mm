@@ -400,3 +400,104 @@ class TestInvoicingNumbers(IntegrationTestCase):
 		self.assertEqual(self.answer("appointments_to_invoice")["value"], 1)
 		listed = self.answer("appointments_to_invoice_list")
 		self.assertEqual([item["title"] for item in listed["items"]], ["done"])
+
+
+class TestRebooking(IntegrationTestCase):
+	"""Who came in the last month and booked again, and who has nothing ahead.
+
+	Every appointment on the site is set aside first (rolled back at the end): the
+	list about the present counts all of them.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		frappe.set_user("Administrator")
+		for doctype in ("CRM Appointment", "CRM Appointment Participant", "CRM Appointment Staff"):
+			frappe.db.delete(doctype)
+		now = frappe.utils.now_datetime()
+		day = datetime.timedelta(days=1)
+		for key in "ABCDE":
+			frappe.get_doc({"doctype": "CRM Lead", "name": f"RIP-{key}", "lead_name": f"Persona {key}"}).db_insert()
+		frappe.get_doc({"doctype": "CRM Deal", "name": "RIP-DEAL-D", "lead": "RIP-D"}).db_insert()
+		admin = "Administrator"
+		# A came and is booked for tomorrow
+		cls.appointment("A1", now - 10 * day, "Completed", "RIP-A", admin)
+		cls.appointment("A2", now + day, "Scheduled", "RIP-A", admin)
+		# B came, nothing after
+		cls.appointment("B1", now - 5 * day, "Completed", "RIP-B", admin)
+		# C came; what came after was cancelled
+		cls.appointment("C1", now - 20 * day, "Completed", "RIP-C", admin)
+		cls.appointment("C2", now + 3 * day, "Cancelled", "RIP-C", admin)
+		# D came as their deal; booked again, then did not show: booked, nothing ahead
+		cls.appointment("D1", now - 15 * day, "Confirmed", "RIP-DEAL-D", SALES_USER, "Attended", "CRM Deal")
+		cls.appointment("D2", now - 2 * day, "No Show", "RIP-D", SALES_USER)
+		# E never came
+		cls.appointment("E1", now - 4 * day, "No Show", "RIP-E", admin)
+
+	@classmethod
+	def tearDownClass(cls):
+		frappe.db.rollback()
+		super().tearDownClass()
+
+	@staticmethod
+	def appointment(key, starts_on, status, party, user, came=None, party_type="CRM Lead"):
+		name = f"TEST-RIP-{key}"
+		frappe.get_doc(
+			{
+				"doctype": "CRM Appointment",
+				"name": name,
+				"title": key,
+				"starts_on": starts_on,
+				"ends_on": starts_on + datetime.timedelta(hours=1),
+				"status": status,
+			}
+		).db_insert()
+		frappe.get_doc(
+			{
+				"doctype": "CRM Appointment Participant",
+				"name": f"{name}-P",
+				"parent": name,
+				"parenttype": "CRM Appointment",
+				"parentfield": "participants",
+				"party_type": party_type,
+				"party": party,
+				"status": came or ("Cancelled" if status == "Cancelled" else "Booked"),
+			}
+		).db_insert()
+		frappe.get_doc(
+			{
+				"doctype": "CRM Appointment Staff",
+				"name": f"{name}-S",
+				"parent": name,
+				"parenttype": "CRM Appointment",
+				"parentfield": "staff",
+				"user": user,
+			}
+		).db_insert()
+
+	def answer(self, widget_id, **config):
+		widget = registry.get(widget_id)
+		ctx = Context.build(
+			add_days(nowdate(), -29), nowdate(), scope=widget.scope, config=widget.clean_config(config)
+		)
+		return widget.fn(ctx)
+
+	def test_the_share_that_booked_again(self):
+		# A and D booked again (a no-show was booked all the same), B and C did not
+		self.assertEqual(self.answer("rebooking_rate")["value"], 50)
+
+	def test_by_professional(self):
+		answer = self.answer("rebooking_by_staff")
+		values = answer["series"][0]["values"]
+		self.assertEqual(sorted(values), [33.3, 100])
+		self.assertEqual(answer["format"], "percent")
+
+	def test_who_has_nothing_ahead(self):
+		listed = self.answer("without_next_appointment")
+		self.assertEqual([item["title"] for item in listed["items"]], ["Persona C", "Persona D", "Persona B"])
+		self.assertEqual(listed["total"], 3)
+		self.assertEqual(listed["items"][0]["route"], {"name": "Lead", "params": {"leadId": "RIP-C"}})
+		# seen in the last two weeks: only B
+		recent = self.answer("without_next_appointment", days=14)
+		self.assertNotIn("Persona C", [item["title"] for item in recent["items"]])

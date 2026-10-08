@@ -81,3 +81,22 @@ class TestDatiDiProvaConLaClinica(test_demo_data.TestDatiDiProva):
 		)
 		self.assertTrue(cliniche)
 		self.assertTrue(all(piano.status == "Published" and piano.clinical for piano in cliniche))
+		# a care plan paid in instalments (doc 63): the deposit and the instalments due,
+		# invoiced on their days by invoicing's part and paid; never the daily round's
+		a_rate = frappe.get_all(
+			"CRM Quote",
+			filters={"name": ["in", sorted(r["CRM Quote"])], "payment": "Instalments"},
+			pluck="name",
+		)
+		self.assertEqual(len(a_rate), 1)
+		righe = frappe.get_all(
+			"CRM Quote Instalment",
+			filters={"parent": a_rate[0]},
+			fields=["kind", "status", "invoice", "due_on"],
+			order_by="idx",
+		)
+		self.assertEqual(len(righe), 11)
+		pagate = [riga for riga in righe if riga.status == "Paid"]
+		self.assertGreaterEqual(len(pagate), 2)
+		self.assertTrue(all(riga.invoice for riga in pagate))
+		self.assertEqual({riga.status for riga in righe if riga.due_on > frappe.utils.getdate()}, {"To pay"})

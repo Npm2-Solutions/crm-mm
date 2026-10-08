@@ -2,7 +2,7 @@
 
 Strumenti interni per creare in minuti il site di un nuovo cliente, già
 preconfigurato — l'equivalente dello "snapshot" di GoHighLevel. Vedi
-[docs/progetto-ghl/06-white-label-saas.md](../../docs/progetto-ghl/06-white-label-saas.md).
+[docs/crm/06-white-label-saas.md](../../docs/crm/06-white-label-saas.md).
 
 ## Setup una tantum del bench
 

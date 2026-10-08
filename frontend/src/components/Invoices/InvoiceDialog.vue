@@ -314,6 +314,18 @@
               />
               <span v-else />
             </div>
+            <!-- what the line says on the invoice, when it says more than the
+                 service: a fund's pratica (doc 61), its patient and number -->
+            <p
+              v-if="
+                modificabile &&
+                riga.description &&
+                riga.description !== riga.service_label
+              "
+              class="col-span-full text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]"
+            >
+              {{ riga.description }}
+            </p>
           </div>
           <Button
             v-if="modificabile"
@@ -372,6 +384,11 @@
                     ])
                   : __('Still to collect.')
               }}
+              <!-- the reminders the person had of it (Settings > Invoicing >
+                   Payments and reminders) -->
+              <span v-if="!vista.collected_on && solleciti" class="block">
+                {{ solleciti }}
+              </span>
             </span>
             <Button
               v-if="vista.can.collect"
@@ -382,6 +399,60 @@
                 vista.collected_on ? __('Not collected') : __('Collected today')
               "
               @click="incassa(!vista.collected_on)"
+            />
+          </div>
+          <!-- paid online on the centre's Stripe, and the link to send
+               (crm/pagamenti, doc 60); its appointment's deposit -->
+          <div
+            v-if="pagamentiOnline.length || puoMandareIlLink"
+            class="flex flex-col gap-2"
+          >
+            <p
+              v-for="riga in pagamentiOnline"
+              :key="riga"
+              class="text-p-sm text-ink-gray-7"
+            >
+              {{ riga }}
+            </p>
+            <div
+              v-if="puoMandareIlLink"
+              class="flex items-center justify-between gap-3 max-md:flex-col max-md:items-start"
+            >
+              <span class="min-w-0 text-p-sm text-ink-gray-6">
+                {{
+                  linkDiPagamento
+                    ? __(
+                        'Valid until {0}. Send it to the person: they pay by card on Stripe.',
+                        [
+                          formatDate(
+                            linkDiPagamento.expires_at,
+                            'D MMMM YYYY HH:mm',
+                          ),
+                        ],
+                      )
+                    : __(
+                        'A link to pay it by card on Stripe, to send to the person.',
+                      )
+                }}
+              </span>
+              <Button
+                class="shrink-0"
+                variant="subtle"
+                icon-left="lucide-link"
+                :loading="azione === 'link'"
+                :label="
+                  linkDiPagamento ? __('Copy the link') : __('Payment link')
+                "
+                @click="mandaIlLink"
+              />
+            </div>
+            <FormControl
+              v-if="linkDiPagamento"
+              :model-value="linkDiPagamento.url"
+              type="text"
+              readonly
+              :aria-label="__('Payment link')"
+              @focus="(e) => e.target.select()"
             />
           </div>
           <FormControl
@@ -556,11 +627,13 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import {
   datiDaInviare,
+  fraseDeiSolleciti,
   righeDeiTotali,
   rigaVuota,
   titoloDellaFattura,
 } from '@/utils/fattura'
 import { formatEuro } from '@/utils/invoicing'
+import { righeDeiPagamenti } from '@/utils/pagamentiOnline'
 import { spiegazioneDi } from '@/utils/scelte'
 import { tastiera } from '@/utils/tastiera'
 import { watchDebounced } from '@vueuse/core'
@@ -681,6 +754,15 @@ const riepilogoCliente = computed(() => {
     .filter(Boolean)
     .join(' · ')
 })
+
+// «Reminded 2 times, the last on 8 October»: nothing while it never was
+const solleciti = computed(() =>
+  fraseDeiSolleciti(
+    vista.value?.reminders,
+    (testo, valori) => __(testo, valori),
+    (giorno) => formatDate(giorno, 'D MMMM YYYY'),
+  ),
+)
 
 const metodoDiPagamento = computed(() => {
   const metodo = vista.value?.payment?.payment_method
@@ -914,6 +996,42 @@ async function faiPdf() {
     return
   }
   if (risposta) apri()
+}
+
+// what was paid online, the deposit of its appointment (crm/pagamenti)
+const pagamentiOnline = computed(() =>
+  righeDeiPagamenti(vista.value?.online, __, (giorno) =>
+    formatDate(giorno, 'D MMMM YYYY'),
+  ),
+)
+const puoMandareIlLink = computed(
+  () =>
+    vista.value?.docstatus === 1 &&
+    !vista.value?.collected_on &&
+    vista.value?.can?.collect &&
+    vista.value?.online?.can_link,
+)
+const linkDiPagamento = ref(null)
+watch(
+  () => vista.value?.name,
+  () => (linkDiPagamento.value = null),
+)
+
+async function mandaIlLink() {
+  if (!linkDiPagamento.value) {
+    linkDiPagamento.value = await esegui(
+      'link',
+      'crm.pagamenti.pagamenti.payment_link',
+      { invoice: vista.value.name },
+    )
+    if (!linkDiPagamento.value) return
+  }
+  try {
+    await navigator.clipboard.writeText(linkDiPagamento.value.url)
+    toast.success(__('Link copied'))
+  } catch {
+    // no clipboard (an old browser, a frame): the field below has it to copy
+  }
 }
 
 async function incassa(si) {

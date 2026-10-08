@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The design system's StatTile (brand/design-system/espresso/componenti/
+  The design system's StatTile (brand/dottorcloud/design-system/espresso/componenti/
   StatTile): the number, the crosses in its corner; the most important of a
   row is a deep block, one a row.
 -->

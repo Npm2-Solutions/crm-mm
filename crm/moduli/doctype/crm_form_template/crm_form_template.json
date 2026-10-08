@@ -17,6 +17,7 @@
   "services",
   "column_asking",
   "validity",
+  "validity_weeks",
   "send_before",
   "site_section",
   "route",
@@ -106,8 +107,17 @@
    "fieldname": "validity",
    "fieldtype": "Select",
    "label": "Valid",
-   "options": "Forever\nOne year\nEvery appointment",
+   "options": "Forever\nOne year\nEvery few weeks\nEvery appointment",
    "description": "How long a signed one counts before it is asked again."
+  },
+  {
+   "default": "4",
+   "depends_on": "eval:doc.validity=='Every few weeks'",
+   "description": "After how many weeks a signed one is asked again: a questionnaire followed over time.",
+   "fieldname": "validity_weeks",
+   "fieldtype": "Int",
+   "label": "Every how many weeks",
+   "non_negative": 1
   },
   {
    "default": "0",
@@ -201,7 +211,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-09 12:00:00.000000",
+ "modified": "2026-10-10 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Form Template",

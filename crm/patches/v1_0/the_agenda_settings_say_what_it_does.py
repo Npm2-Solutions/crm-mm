@@ -3,7 +3,7 @@
 
 """The agenda's settings say what the agenda does.
 
-The grid's step came with the agenda drawn again (docs/progetto-ghl/56): where
+The grid's step came with the agenda drawn again (docs/crm/56): where
 nothing is written the agenda moves by the field's default, 15 minutes. A
 centre whose settings were saved before had nothing written, as a new field of
 a single document takes no default by itself, so Settings > Agenda > Agenda &

@@ -19,6 +19,8 @@
   "resources_section",
   "resources",
   "location",
+  "centre_location",
+  "video_link",
   "pricing_section",
   "price_list",
   "unit_price",
@@ -27,6 +29,15 @@
   "currency",
   "total_amount",
   "price_source",
+  "convention_section",
+  "convention",
+  "convention_form",
+  "convention_cover",
+  "authorisation",
+  "column_break_convention",
+  "patient_share",
+  "fund_share",
+  "fund_invoice",
   "details_section",
   "notes",
   "cancellation_reason",
@@ -46,7 +57,8 @@
   "column_break_source",
   "external_url",
   "customer_notes",
-  "reschedule_count"
+  "reschedule_count",
+  "import_key"
  ],
  "fields": [
   {
@@ -137,6 +149,21 @@
    "label": "Location / Meeting Link"
   },
   {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "in_standard_filter": 1,
+   "description": "Where the appointment is, from its room or its professional's shift."
+  },
+  {
+   "fieldname": "video_link",
+   "fieldtype": "Data",
+   "options": "URL",
+   "label": "Online visit link",
+   "description": "Where the person and the professional meet by video. Made by itself for an online visit where the agency names a video server; else the professional's own room, or a link pasted here (Meet, Zoom, Teams)."
+  },
+  {
    "fieldname": "pricing_section",
    "fieldtype": "Section Break",
    "label": "Pricing"
@@ -182,6 +209,67 @@
    "fieldtype": "Data",
    "label": "Rate from",
    "read_only": 1
+  },
+  {
+   "fieldname": "convention_section",
+   "fieldtype": "Section Break",
+   "label": "Convention"
+  },
+  {
+   "fieldname": "convention",
+   "fieldtype": "Link",
+   "label": "Convention",
+   "options": "CRM Convention"
+  },
+  {
+   "fieldname": "convention_form",
+   "fieldtype": "Select",
+   "label": "Convention form",
+   "options": "\nDirect\nIndirect",
+   "depends_on": "convention"
+  },
+  {
+   "fieldname": "convention_cover",
+   "fieldtype": "Link",
+   "label": "Cover",
+   "options": "CRM Convention Cover",
+   "depends_on": "convention",
+   "read_only": 1
+  },
+  {
+   "fieldname": "authorisation",
+   "fieldtype": "Data",
+   "label": "Authorisation",
+   "depends_on": "eval:doc.convention_form=='Direct'"
+  },
+  {
+   "fieldname": "column_break_convention",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "patient_share",
+   "fieldtype": "Currency",
+   "label": "Share paid by the person",
+   "options": "currency",
+   "depends_on": "convention",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_share",
+   "fieldtype": "Currency",
+   "label": "Share paid by the fund",
+   "options": "currency",
+   "depends_on": "eval:doc.convention_form=='Direct'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_invoice",
+   "fieldtype": "Link",
+   "label": "Invoice to the fund",
+   "options": "CRM Invoice",
+   "depends_on": "eval:doc.convention_form=='Direct'",
+   "read_only": 1,
+   "no_copy": 1
   },
   {
    "fieldname": "details_section",
@@ -309,10 +397,20 @@
    "label": "Reschedules",
    "read_only": 1,
    "default": "0"
+  },
+  {
+   "description": "The row of the previous software's sheet it was brought over from: brought in once.",
+   "fieldname": "import_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Import Key",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "links": [],
- "modified": "2026-10-04 23:30:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",

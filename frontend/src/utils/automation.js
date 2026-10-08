@@ -53,6 +53,25 @@ export const STEP_CATALOG = {
     defaults: { template: '', template_parameters: [] },
     gateable: true,
   },
+  // a form's link: a survey after a visit, or any published form
+  // (crm/moduli/richieste.py); {{ form_link }} is the link in an SMS or WhatsApp
+  send_form: {
+    label: 'Send a Form',
+    icon: 'clipboard',
+    theme: 'blue',
+    category: 'communication',
+    description:
+      'Sends the link to fill a published form: a survey after a visit opens with the link alone.',
+    defaults: {
+      template: '',
+      template_title: '',
+      via: 'email',
+      message: '',
+      whatsapp_template: '',
+      template_parameters: [],
+    },
+    gateable: true,
+  },
   notify: {
     label: 'Internal Notification',
     icon: 'bell',
@@ -361,6 +380,12 @@ export const TRIGGER_CATALOG = {
   'Appointment Cancelled': { category: 'appointment', icon: 'x-circle' },
   'Appointment No Show': { category: 'appointment', icon: 'user-x' },
   'Appointment Completed': { category: 'appointment', icon: 'check-circle' },
+  // a call nobody answered, from somebody the centre knows (crm.telephony.persa)
+  'Missed Call': {
+    category: 'messaging',
+    icon: 'phone-missed',
+    hint: 'Somebody the centre knows called and nobody answered.',
+  },
   'Incoming SMS': { category: 'messaging', icon: 'message-square' },
   'Customer Replied': {
     category: 'messaging',
@@ -387,6 +412,13 @@ export const TRIGGER_CATALOG = {
     icon: 'clock',
     config: 'date',
     hint: 'A date field comes up — birthdays, renewals, anything.',
+  },
+  // a campaign: nothing starts it by itself (crm/automation/campagne.py)
+  'Started by Hand': {
+    category: 'other',
+    icon: 'send',
+    doctype: 'CRM Lead',
+    hint: 'A campaign: nothing starts it by itself. From People, «Send to a list» enrols the people of a view or the ones chosen.',
   },
   'Inbound Webhook': {
     category: 'other',
@@ -464,9 +496,13 @@ export const MERGE_FIELDS = [
   { token: '{{ lead_name }}', label: 'Full name' },
   { token: '{{ organization }}', label: 'Organization' },
   { token: '{{ email }}', label: 'Email' },
-  { token: '{{ mobile_no }}', label: 'Mobile number' },
+  { token: '{{ mobile_no }}', label: 'Mobile No' },
   { token: '{{ status }}', label: 'Status' },
   { token: '{{ tracked_link("slug") }}', label: 'Tracked link' },
+  { token: '{{ booking_link }}', label: 'Booking page link' },
+  // asks for a review on Google: the server sends it only to who agreed, once
+  // in a while (crm/recensioni), and writes the request first
+  { token: '{{ review_link }}', label: 'Google review link' },
 ]
 
 /** Full class strings per theme — Tailwind only sees literals, not templates. */
@@ -806,18 +842,24 @@ export function operatorsForFieldtype(fieldtype) {
   return CONDITION_OPERATORS
 }
 
-export function conditionSummary(condition) {
+/** A condition in words: the field by its label where the editor's fields know it,
+ * never its fieldname (`mobile_no`). */
+export function conditionSummary(condition, fields = []) {
   if (!condition?.field) return ''
+  const campo = (fields || []).find((f) => f.fieldname === condition.field)
+  const nome = campo?.label || condition.field
   const operator = operatorLabel(condition.operator)
-  if (!needsValue(condition.operator)) return `${condition.field} ${operator}`
-  return `${condition.field} ${operator} ${condition.value ?? ''}`.trim()
+  if (!needsValue(condition.operator)) return `${nome} ${operator}`
+  return `${nome} ${operator} ${condition.value ?? ''}`.trim()
 }
 
-export function groupsSummary(groups) {
+export function groupsSummary(groups, fields = []) {
   const cleaned = cleanGroups(groups)
   if (!cleaned) return __('Always')
   return cleaned
-    .map((group) => group.map(conditionSummary).join(` ${__('and')} `))
+    .map((group) =>
+      group.map((c) => conditionSummary(c, fields)).join(` ${__('and')} `),
+    )
     .join(` ${__('or')} `)
 }
 
@@ -842,7 +884,7 @@ export function waitSummary(step) {
 }
 
 /** What a trigger listens to, in one line: its filters and its conditions. */
-export function triggerSummary(trigger) {
+export function triggerSummary(trigger, fields = []) {
   const parts = []
   const config = trigger?.config || {}
   if (config.tag) parts.push(__('tag «{0}»', [config.tag]))
@@ -859,7 +901,7 @@ export function triggerSummary(trigger) {
     )
   }
   const groups = cleanGroups(trigger?.condition_groups)
-  if (groups) parts.push(groupsSummary(groups))
+  if (groups) parts.push(groupsSummary(groups, fields))
   return parts.join(' · ') || __('every record')
 }
 
@@ -882,7 +924,7 @@ export function segnapostiInParole(testo) {
   )
 }
 
-export function stepSummary(step) {
+export function stepSummary(step, fields = []) {
   switch (step.type) {
     case 'send_email':
       return (
@@ -895,6 +937,8 @@ export function stepSummary(step) {
       return segnapostiInParole(step.message) || __('No message')
     case 'send_whatsapp_template':
       return step.template || __('No template selected')
+    case 'send_form':
+      return step.template_title || step.template || __('No form selected')
     case 'create_task':
       return segnapostiInParole(step.title) || __('Follow up')
     case 'assign':
@@ -926,7 +970,7 @@ export function stepSummary(step) {
     case 'exit':
       return __('The record leaves here')
     case 'stop_if':
-      return groupsSummary(step.condition_groups)
+      return groupsSummary(step.condition_groups, fields)
     case 'if_else':
       return __('{0} branch(es) + None', [(step.branches || []).length])
     case 'split':
@@ -1007,6 +1051,12 @@ export function validateAutomation(draft) {
         break
       case 'send_whatsapp_template':
         if (!step.template) problem('warning', __('no template selected'))
+        break
+      case 'send_form':
+        if (!step.template) problem('warning', __('no form selected'))
+        if (step.via === 'whatsapp' && !step.whatsapp_template) {
+          problem('warning', __('no template selected'))
+        }
         break
       case 'create_task':
         if (!step.title) problem('warning', __('no task title'))
@@ -1179,6 +1229,83 @@ export const RECIPES = [
       newStep('create_task', {
         title: __('Rebook {{ lead_name }}'),
         due_in_days: 0,
+      }),
+    ],
+  },
+  {
+    // off until the centre switches it on, as every recipe: an SMS a minute after
+    // a call nobody answered, with the booking page on a line of its own (left out
+    // where the centre takes no booking online); STOP is never written to
+    key: 'missed_call',
+    title: 'We missed you… missed call',
+    description:
+      'A minute after a call nobody answered, texts the caller the link to book online.',
+    icon: 'phone-missed',
+    trigger_event: 'Missed Call',
+    build: () => [
+      newStep('wait', { mode: 'duration', days: 0, hours: 0, minutes: 1 }),
+      newStep('send_sms', {
+        message: __(
+          'Hi {{ first_name }}, sorry we missed your call. We will call you back.\nTo book now: {{ booking_link }}',
+        ),
+      }),
+    ],
+  },
+  {
+    // off until the centre switches it on, as every recipe: two hours after a
+    // visit, the same words to everybody (Google forbids choosing who is asked);
+    // the server lets it leave only to who agreed, once in so many months, and
+    // never after a service the settings exclude
+    key: 'review_after_visit',
+    title: 'Ask for a review after the visit',
+    description:
+      'Two hours after a visit, the link to review the centre on Google: by SMS, or by email to who has no mobile.',
+    icon: 'star',
+    trigger_event: 'Appointment Completed',
+    build: () => {
+      const domanda = newStep('if_else')
+      domanda.branches[0].label = __('Has a mobile')
+      domanda.branches[0].condition_groups = [
+        [{ field: 'mobile_no', operator: 'is_set', value: '' }],
+      ]
+      domanda.branches[0].steps = [
+        newStep('send_sms', {
+          message: __(
+            'Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went: {{ review_link }}',
+          ),
+        }),
+      ]
+      domanda.else_steps = [
+        newStep('send_email', {
+          subject: __('How did it go, {{ first_name }}?'),
+          message: __(
+            'Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went with a review on Google: {{ review_link }}',
+          ),
+        }),
+      ]
+      return [
+        newStep('wait', { mode: 'duration', days: 0, hours: 2, minutes: 0 }),
+        domanda,
+      ]
+    },
+  },
+  {
+    // off until the centre switches it on: the day after a visit, the link to
+    // a survey of the centre's (a starter in Settings > Clients > Forms), whose
+    // 0 to 10 question makes the dashboard's «Satisfaction (NPS)»
+    key: 'satisfaction_survey',
+    title: 'Satisfaction survey after the visit',
+    description:
+      'The day after a visit, the link to a short survey: how likely they are to recommend the centre, from 0 to 10.',
+    icon: 'smile',
+    trigger_event: 'Appointment Completed',
+    build: () => [
+      newStep('wait', { mode: 'duration', days: 1, hours: 0, minutes: 0 }),
+      newStep('send_form', {
+        via: 'sms',
+        message: __(
+          'Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}',
+        ),
       }),
     ],
   },

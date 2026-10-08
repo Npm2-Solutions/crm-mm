@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A person's summary (crm/persone/riepilogo.py, docs/progetto-ghl/54).
+"""A person's summary (crm/persone/riepilogo.py, docs/crm/54).
 
 Mario has a cycle of physiotherapy going on, two things left to do - one done is not
 among them - and an invoice issued and not collected yet: a collected one, a test
@@ -105,6 +105,27 @@ class IlRiepilogo(RiepilogoCase):
 		# a physiotherapist reads the people in their care: Mario is not, yet
 		with self.assertRaises(frappe.PermissionError):
 			self.riepilogo(casi_dei_cicli.ALTRO)
+
+
+class LeAssenze(RiepilogoCase):
+	def assente(self, giorni_fa):
+		appuntamento = self.seduta(self.giorno(-giorni_fa + 1), servizio=self.visita)
+		frappe.db.set_value("CRM Appointment Participant", {"parent": appuntamento.name}, "status", "No Show")
+		return appuntamento
+
+	def test_gli_appuntamenti_mancati_dell_ultimo_anno(self):
+		self.assente(10)
+		self.assente(40)
+		# more than a year ago: no longer said
+		self.assente(400)
+		fatto = self.riepilogo()["no_shows"]
+		self.assertEqual(fatto["count"], 2)
+		# marketing does not read the agenda: not there, and no refusal
+		self.assertNotIn("no_shows", self.riepilogo(MARKETING))
+
+	def test_nessuna_assenza_niente_da_dire(self):
+		self.seduta(self.giorno(-5), servizio=self.visita)
+		self.assertNotIn("no_shows", self.riepilogo())
 
 
 class IlDaPagare(RiepilogoCase):

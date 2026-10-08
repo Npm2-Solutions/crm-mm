@@ -31,6 +31,9 @@
   "notify_staff_on_booking",
   "send_client_confirmation",
   "max_active_per_customer",
+  "no_show_limit",
+  "no_show_months",
+  "no_show_action",
   "online_defaults_section",
   "default_min_notice_hours",
   "default_max_horizon_days",
@@ -47,7 +50,9 @@
   "default_max_per_customer_per_day",
   "hours_section",
   "default_availability",
-  "default_holiday_list"
+  "default_holiday_list",
+  "video_section",
+  "video_server"
  ],
  "fields": [
   {
@@ -205,6 +210,27 @@
    "non_negative": 1
   },
   {
+   "fieldname": "no_show_limit",
+   "fieldtype": "Int",
+   "label": "Missed appointments before the centre decides",
+   "non_negative": 1,
+   "description": "Empty: never. Whoever did not show up this many times books online only with the centre's yes, or not at all"
+  },
+  {
+   "default": "12",
+   "fieldname": "no_show_months",
+   "fieldtype": "Int",
+   "label": "Counted over the last months",
+   "non_negative": 1
+  },
+  {
+   "default": "Manual approval",
+   "fieldname": "no_show_action",
+   "fieldtype": "Select",
+   "label": "Then",
+   "options": "Manual approval\nRefuse"
+  },
+  {
    "fieldname": "online_defaults_section",
    "fieldtype": "Section Break",
    "label": "Online Booking Defaults",
@@ -310,11 +336,25 @@
    "fieldtype": "Link",
    "label": "Holiday List",
    "options": "CRM Holiday List"
+  },
+  {
+   "fieldname": "video_section",
+   "fieldtype": "Section Break",
+   "label": "Online visits",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "video_server",
+   "fieldtype": "Data",
+   "options": "URL",
+   "label": "Video server",
+   "permlevel": 1,
+   "description": "The address of the Jitsi Meet server online visits are held on (https://…): each appointment gets a room of its own there, with a random name and nothing about the person. It must be a server the centre's data processing agreement covers, in the European Union. Empty: the server in the site's configuration (dottorcloud_video), else the professionals' own rooms."
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-08 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

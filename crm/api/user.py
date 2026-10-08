@@ -148,6 +148,12 @@ def set_user_levels(user: str, levels: str | list) -> None:
 		)
 	if MANAGER not in chiavi:
 		_verifica_gerarchia(user)
+	# somebody who had no level becomes one more user: the Professional plan is
+	# one person's
+	from crm.api.plan import chi_conta, verifica_utenti
+
+	if chiavi and user not in chi_conta():
+		verifica_utenti(1)
 	utenti.assegna_livelli(user, chiavi)
 
 

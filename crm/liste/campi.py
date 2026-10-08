@@ -55,6 +55,8 @@ SOLO_PER_LA_MACCHINA = {
 			"user",
 		}
 	),
+	# the row of the previous software's sheet an appointment came from
+	"CRM Appointment": frozenset({"import_key"}),
 }
 
 

@@ -1,7 +1,7 @@
 <!--
   What the person follows now: their plans, each in the cloud of its kind, with
   how today is going; their programmes stage by stage; their quotes and how they
-  are going.
+  are going, a proposed one answered here.
 -->
 <template>
   <div class="flex flex-col gap-5">
@@ -55,7 +55,23 @@
       <h2 class="area-label">{{ __('Your quotes') }}</h2>
       <template v-for="quote in quotes.data.quotes" :key="quote.name">
         <HiddenCard v-if="quote.hidden" />
-        <QuoteCard v-else :quote="quote" />
+        <!-- one declined here leaves the list: in its place, that the centre knows -->
+        <p
+          v-else-if="quote.declined"
+          role="status"
+          class="area-card text-p-base text-ink-gray-8"
+        >
+          {{ __('We told the centre you do not accept «{0}».', [quote.title]) }}
+        </p>
+        <QuoteCard
+          v-else
+          :quote="quote"
+          :answers="Boolean(quotes.data.can_answer)"
+          :verified="Boolean(quotes.data.verified)"
+          @changed="(data) => (quotes.data = data)"
+          @verified="quotes.data.verified = true"
+          @declined="(data) => afterDecline(quote, data)"
+        />
       </template>
     </section>
   </div>
@@ -87,6 +103,19 @@ const quotes = createResource({
   params: { person: area.person },
   auto: Boolean(section('quotes')),
 })
+
+// a quote declined here is no longer the person's to follow: in its place, that
+// the centre was told
+function afterDecline(quote, data) {
+  const at = quotes.data.quotes.findIndex((q) => q.name === quote.name)
+  const list = [...(data.quotes || [])]
+  list.splice(Math.max(at, 0), 0, {
+    name: quote.name,
+    title: quote.title,
+    declined: true,
+  })
+  quotes.data = { ...data, quotes: list }
+}
 
 function chip(plan) {
   const { colore, icona } = aspetto(plan)

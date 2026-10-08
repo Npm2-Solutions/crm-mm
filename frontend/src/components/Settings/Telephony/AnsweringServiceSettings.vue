@@ -11,7 +11,7 @@
           @click="emit('updateStep', 'telephony-settings')"
         />
         <Badge
-          v-if="settings.doc?.enabled && isDirty"
+          v-if="isDirty"
           :label="__('Not Saved')"
           variant="subtle"
           theme="orange"
@@ -20,17 +20,19 @@
     </template>
 
     <template #header-actions>
-      <div
-        v-if="settings.doc?.enabled && !settings.get.loading"
-        class="flex gap-2"
-      >
+      <div v-if="settings.doc && !settings.get.loading" class="flex gap-2">
         <Button
           v-if="isDirty"
           :label="__('Discard Changes')"
           variant="subtle"
           @click="settings.reload()"
         />
-        <Button :label="__('Disable')" variant="subtle" @click="disable" />
+        <Button
+          v-if="settings.doc.enabled"
+          :label="__('Disable')"
+          variant="subtle"
+          @click="disable"
+        />
         <AzioneImpostazioni
           :loading="settings.save.loading"
           :disabled="!isDirty"
@@ -343,32 +345,97 @@
               @cleared="() => (settings.doc.after_hours_greeting_audio = '')"
             />
           </template>
-
-          <ErrorMessage class="mt-4" :message="settings.save?.error" />
         </div>
 
         <!-- disabled state -->
-        <div v-else class="relative flex h-full w-full justify-center">
+        <div v-else class="flex justify-center px-2 py-10">
           <div
-            class="absolute left-1/2 flex w-80 -translate-x-1/2 flex-col items-center gap-3"
-            :style="{ top: '30%' }"
+            class="flex w-80 max-w-full flex-col items-center gap-1.5 text-center"
           >
-            <div class="flex flex-col items-center gap-1.5 text-center">
-              <PhoneIcon class="size-7.5 text-ink-gray-7" />
-              <span class="text-lg-medium text-ink-gray-8">
-                {{ __('Answering Service Disabled') }}
-              </span>
-              <span class="text-center text-p-base text-ink-gray-6">
-                {{
-                  __(
-                    'When nobody picks up, or for every call: an announcement answers and queues a callback. Twilio is needed.',
-                  )
-                }}
-              </span>
-              <Button :label="__('Enable')" variant="solid" @click="enable" />
-            </div>
+            <PhoneIcon class="size-7.5 text-ink-gray-7" />
+            <span class="text-lg-medium text-ink-gray-8">
+              {{ __('Answering Service Disabled') }}
+            </span>
+            <span class="text-center text-p-base text-ink-gray-6">
+              {{
+                __(
+                  'When nobody picks up, or for every call: an announcement answers and queues a callback. Twilio is needed.',
+                )
+              }}
+            </span>
+            <Button
+              class="mt-1.5"
+              :label="__('Enable')"
+              variant="solid"
+              @click="enable"
+            />
           </div>
         </div>
+
+        <!-- when a call counts as missed: the centre's, with the service on or off -->
+        <div class="flex flex-col">
+          <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
+            {{ __('Missed calls') }}
+          </div>
+          <p class="px-2 pb-1 text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'When a call counts as missed. From somebody the centre knows, the automations hear it («Missed call»); a number nobody knows can get an SMS.',
+              )
+            }}
+          </p>
+
+          <SettingRow
+            :label="__('Nobody answers')"
+            :description="
+              __('Everyone who answers the number rang and nobody picked up.')
+            "
+          >
+            <Switch
+              v-model="settings.doc.missed_when_nobody_answers"
+              size="sm"
+            />
+          </SettingRow>
+
+          <SettingRow
+            :label="__('There is nobody to ring')"
+            :description="
+              __('At that moment nobody answers the number, so nobody rang.')
+            "
+          >
+            <Switch
+              v-model="settings.doc.missed_when_nobody_to_ring"
+              size="sm"
+            />
+          </SettingRow>
+
+          <SettingRow
+            :label="__('The answering service takes every call')"
+            :description="
+              __(
+                'With the answering service answering every call, each call counts as missed.',
+              )
+            "
+          >
+            <Switch
+              v-model="settings.doc.missed_when_service_answers"
+              size="sm"
+            />
+          </SettingRow>
+
+          <SettingRow
+            :label="__('Text callers nobody answered')"
+            :description="
+              __(
+                'A number the centre does not know whose call counts as missed gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.sms_to_missed_callers" size="sm" />
+          </SettingRow>
+        </div>
+
+        <ErrorMessage class="mt-4" :message="settings.save?.error" />
       </div>
 
       <div
