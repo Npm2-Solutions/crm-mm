@@ -364,6 +364,78 @@
           </div>
         </div>
 
+        <!-- under a convention: who pays what, the fund's authorisation, the
+             pratica's state (doc 61) -->
+        <div
+          v-if="doc.convention_info"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-shield-check mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <div class="break-words">
+              {{
+                [
+                  doc.convention_info.title,
+                  nomeDellaForma(doc.convention_info.form, t),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </div>
+            <div
+              v-if="doc.convention_info.form === 'Direct'"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{
+                __("The person's share {0} · the fund's {1}", [
+                  money(doc.convention_info.patient_share, doc.currency),
+                  money(doc.convention_info.fund_share, doc.currency),
+                ])
+              }}
+            </div>
+            <div
+              v-if="doc.convention_info.card_number || doc.authorisation"
+              class="text-p-sm text-ink-gray-6 [overflow-wrap:anywhere]"
+            >
+              {{
+                [
+                  doc.convention_info.card_number
+                    ? __('Card {0}', [doc.convention_info.card_number])
+                    : '',
+                  doc.authorisation
+                    ? __('Authorisation {0}', [doc.authorisation])
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <Badge
+                v-if="doc.convention_info.missing_authorisation"
+                variant="subtle"
+                theme="orange"
+                :label="__('Authorisation missing')"
+              />
+              <Badge
+                v-else-if="doc.convention_info.state"
+                variant="subtle"
+                :theme="statoInParole(doc.convention_info.state, t).theme"
+                :label="statoInParole(doc.convention_info.state, t).label"
+              />
+              <span
+                v-if="doc.convention_info.fund_invoice"
+                class="text-p-sm text-ink-gray-5"
+              >
+                {{ __('Invoice {0}', [doc.convention_info.fund_invoice]) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div
           v-if="doc.location"
           class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
@@ -916,6 +988,76 @@
         </div>
       </div>
 
+      <!-- who pays: the person, or a convention in direct or indirect form;
+           the person's own covers first (doc 61) -->
+      <div
+        v-if="form.service && opzioniConvenzioni.length"
+        class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7"
+      >
+        <span
+          class="lucide-shield-check mt-2 size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <FormControl
+            v-model="form.convention"
+            type="select"
+            variant="outline"
+            :aria-label="__('Who pays')"
+            :options="opzioniConvenzioni"
+            @update:modelValue="cambiaConvenzione"
+          />
+          <FormControl
+            v-if="form.convention && (quote.data?.forms || []).length > 1"
+            v-model="form.convention_form"
+            type="select"
+            variant="outline"
+            :aria-label="__('Form', null, 'Convention')"
+            :options="opzioniForma"
+            @update:modelValue="refreshPrice"
+          />
+          <FormControl
+            v-if="form.convention && form.convention_form === 'Direct'"
+            v-model="form.authorisation"
+            variant="outline"
+            :aria-label="__('Authorisation')"
+            :placeholder="__('Authorisation number from the fund')"
+            v-bind="tastiera('codice')"
+          />
+          <div
+            v-if="form.convention && quote.data?.patient_share != null"
+            class="text-p-sm text-ink-gray-6"
+          >
+            {{
+              form.convention_form === 'Direct'
+                ? __("The person's share {0} · the fund's {1}", [
+                    money(quote.data.patient_share, quote.data.currency),
+                    money(quote.data.fund_share, quote.data.currency),
+                  ])
+                : __('The person pays {0} and asks the fund for it back', [
+                    money(quote.data.patient_share, quote.data.currency),
+                  ])
+            }}
+          </div>
+          <div
+            v-if="
+              form.convention &&
+              quote.data?.requires_authorisation &&
+              !(form.authorisation || '').trim()
+            "
+            class="flex items-center gap-1.5 text-p-sm text-ink-amber-8"
+          >
+            <span
+              class="lucide-triangle-alert size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            {{
+              __('Authorisation missing: the fund wants it before the visit')
+            }}
+          </div>
+        </div>
+      </div>
+
       <CollapsibleSection
         headerClass="mx-4.5 my-2.5"
         :opened="false"
@@ -1027,6 +1169,7 @@ import {
   segnoDelPromemoria,
 } from '@/utils/promemoriaAppuntamenti'
 import { laSeduta } from '@/utils/cicli'
+import { nomeDellaForma, statoInParole } from '@/utils/convenzioni'
 import { appLocale } from '@/utils/locale'
 import {
   adessoDelCentro,
@@ -1059,6 +1202,8 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+
+const t = (text, args, context) => __(text, args, context)
 
 const props = defineProps({
   // details, edit, or new
@@ -1446,6 +1591,9 @@ const emptyForm = () => ({
   participants: [],
   resources: [],
   price_list: '',
+  convention: '',
+  convention_form: '',
+  authorisation: '',
   location: '',
   video_link: '',
   notes: '',
@@ -1620,6 +1768,9 @@ function payload() {
       }),
     resources: form.resources.filter((row) => row.resource),
     price_list: form.price_list || null,
+    convention: form.convention || null,
+    convention_form: form.convention ? form.convention_form || null : null,
+    authorisation: form.convention ? (form.authorisation || '').trim() : null,
     location: form.location,
     video_link: (form.video_link || '').trim(),
     notes: form.notes,
@@ -1641,8 +1792,71 @@ function refreshPrice() {
       staff: form.staff,
       resources: form.resources.map((row) => row.resource).filter(Boolean),
       participants: form.participants.length || 1,
+      convention: form.convention || null,
+      convention_form: form.convention_form || null,
+    })
+    .then((dati) => {
+      // the form the convention allows, when none was chosen yet
+      if (form.convention && dati?.convention_form)
+        form.convention_form = dati.convention_form
     })
     .catch(() => {})
+}
+
+// --- who pays (doc 61) -------------------------------------------------------
+
+const convenzioni = createResource({
+  url: 'crm.convenzioni.api.options_for',
+})
+const personaDelPosto = computed(
+  () =>
+    form.participants.find((row) => row.party && row.party_type === 'CRM Lead')
+      ?.party || '',
+)
+watch(
+  () => [personaDelPosto.value, form.date, props.mode],
+  () => {
+    if (props.mode === 'details') return
+    convenzioni
+      .submit({ person: personaDelPosto.value || null, when: form.date })
+      .catch(() => {})
+  },
+  { immediate: true },
+)
+const opzioniConvenzioni = computed(() => {
+  const elenco = convenzioni.data?.conventions || []
+  if (!elenco.length && !form.convention) return []
+  return [
+    { label: __('The person pays'), value: '' },
+    ...elenco.map((c) => ({
+      label: c.covered
+        ? c.card_number
+          ? __('{0} · their card {1}', [c.convention_name, c.card_number])
+          : __('{0} · they are covered', [c.convention_name])
+        : c.convention_name,
+      value: c.name,
+    })),
+    // one no longer offered stays as it was chosen
+    ...(form.convention && !elenco.some((c) => c.name === form.convention)
+      ? [
+          {
+            label: doc.value?.convention_info?.title || form.convention,
+            value: form.convention,
+          },
+        ]
+      : []),
+  ]
+})
+const opzioniForma = computed(() =>
+  (quote.data?.forms || []).map((forma) => ({
+    label: nomeDellaForma(forma, t),
+    value: forma,
+  })),
+)
+function cambiaConvenzione(valore) {
+  form.convention = valore
+  form.convention_form = ''
+  refreshPrice()
 }
 
 function refreshConflicts() {
@@ -1847,6 +2061,9 @@ function loadInto(data) {
       quantity: row.quantity || 1,
     })),
     price_list: data.price_list || '',
+    convention: data.convention || '',
+    convention_form: data.convention_form || '',
+    authorisation: data.authorisation || '',
     location: data.location || '',
     video_link: data.video_link || '',
     notes: data.notes || '',

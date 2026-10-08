@@ -28,6 +28,15 @@
   "currency",
   "total_amount",
   "price_source",
+  "convention_section",
+  "convention",
+  "convention_form",
+  "convention_cover",
+  "authorisation",
+  "column_break_convention",
+  "patient_share",
+  "fund_share",
+  "fund_invoice",
   "details_section",
   "notes",
   "cancellation_reason",
@@ -193,6 +202,67 @@
    "read_only": 1
   },
   {
+   "fieldname": "convention_section",
+   "fieldtype": "Section Break",
+   "label": "Convention"
+  },
+  {
+   "fieldname": "convention",
+   "fieldtype": "Link",
+   "label": "Convention",
+   "options": "CRM Convention"
+  },
+  {
+   "fieldname": "convention_form",
+   "fieldtype": "Select",
+   "label": "Convention form",
+   "options": "\nDirect\nIndirect",
+   "depends_on": "convention"
+  },
+  {
+   "fieldname": "convention_cover",
+   "fieldtype": "Link",
+   "label": "Cover",
+   "options": "CRM Convention Cover",
+   "depends_on": "convention",
+   "read_only": 1
+  },
+  {
+   "fieldname": "authorisation",
+   "fieldtype": "Data",
+   "label": "Authorisation",
+   "depends_on": "eval:doc.convention_form=='Direct'"
+  },
+  {
+   "fieldname": "column_break_convention",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "patient_share",
+   "fieldtype": "Currency",
+   "label": "Share paid by the person",
+   "options": "currency",
+   "depends_on": "convention",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_share",
+   "fieldtype": "Currency",
+   "label": "Share paid by the fund",
+   "options": "currency",
+   "depends_on": "eval:doc.convention_form=='Direct'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_invoice",
+   "fieldtype": "Link",
+   "label": "Invoice to the fund",
+   "options": "CRM Invoice",
+   "depends_on": "eval:doc.convention_form=='Direct'",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "details_section",
    "fieldtype": "Section Break",
    "label": "Details"
@@ -331,7 +401,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-08 20:00:00.000000",
+ "modified": "2026-10-08 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",

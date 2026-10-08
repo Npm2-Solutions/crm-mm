@@ -31,6 +31,8 @@ SCRITTURA = {
 	"CRM Waiting List Settings": "agenda.configura",
 	"CRM Reminder Settings": "agenda.configura",
 	"CRM Subscription Type": "agenda.configura",
+	# who pays: the funds, insurers and companies the centre has a convention with
+	"CRM Convention": "convenzioni.gestisci",
 	"CRM Holiday List": "agenda.configura",
 	# shifts, holidays and rooms: the front desk's too; a practitioner their own shifts
 	"CRM Staff Schedule": "agenda.turni",

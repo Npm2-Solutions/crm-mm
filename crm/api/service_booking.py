@@ -310,7 +310,15 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		"categories": categories,
 		"services": services,
 		"people": sorted(people.values(), key=lambda p: p["name"]),
+		# the funds and conventions the centre offers here (doc 61): the booking waits for its yes
+		"conventions": _convenzioni_online(),
 	}
+
+
+def _convenzioni_online() -> list[dict]:
+	from crm.convenzioni import convenzioni
+
+	return convenzioni.offerte_online()
 
 
 def _lista_d_attesa() -> dict | None:
@@ -661,6 +669,8 @@ def book(
 	marketing_consent: int | str | None = None,
 	for_name: str | None = None,
 	for_relation: str | None = None,
+	convention: str | None = None,
+	card_number: str | None = None,
 ) -> dict:
 	"""Book a service on a free slot; returns what the confirmation page shows.
 
@@ -756,11 +766,19 @@ def book(
 		booked_by=booker if lead != booker else None,
 	)
 	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
+	# with a fund or a convention offered online (doc 61): the centre checks the cover first
+	from crm.convenzioni import convenzioni
+
+	convenzione = convenzioni.scelta_online(convention)
+	if convenzione:
+		if slot.join_appointment:
+			frappe.throw(_("A place in a class is not booked under a convention online: call the centre"))
+		status = "Scheduled"
 	# paid online first (`crm.pagamenti`): the place held as a request until Stripe says paid
 	from crm.pagamenti import pagamenti
 
 	# whether it asks anything (the amount, once the appointment has its price)
-	chiede_acconto = bool(pagamenti.acconto_da_chiedere(doc, 1, lead, booker))
+	chiede_acconto = not convenzione and bool(pagamenti.acconto_da_chiedere(doc, 1, lead, booker))
 	if assenze == rules_mod.NO_SHOW_APPROVAL:
 		# a seat in a class is no booking of its own to approve: the desk books it
 		if slot.join_appointment:
@@ -793,6 +811,8 @@ def book(
 				"location": doc.get("location") or None,
 			}
 		)
+		if convenzione:
+			convenzioni.prenotata_online(appointment, convenzione, lead, card_number)
 		appointment.insert(ignore_permissions=True)
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
@@ -817,6 +837,8 @@ def book(
 		appointment,
 		_("New online booking to approve: missed appointments")
 		if assenze == rules_mod.NO_SHOW_APPROVAL
+		else _("New online booking to approve: with a convention")
+		if convenzione
 		else _("New online booking"),
 	)
 	# the page says «we emailed you» only when an email is on its way

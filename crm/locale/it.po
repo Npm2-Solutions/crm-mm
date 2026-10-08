@@ -48588,3 +48588,442 @@ msgstr "Pagamenti reali"
 
 msgid "No name on Stripe yet"
 msgstr "Ancora senza nome su Stripe"
+
+# Conventions, health funds and insurances (crm/convenzioni, doc 61)
+msgid "Conventions and funds"
+msgstr "Convenzioni e fondi"
+
+msgid "Health funds, insurances and companies: their prices, the share the person pays, who is billed."
+msgstr "Fondi sanitari, assicurazioni e aziende: i loro prezzi, la quota a carico del paziente, a chi si fattura."
+
+msgid "New convention"
+msgstr "Nuova convenzione"
+
+msgid "Paid by {0}"
+msgstr "Paga {0}"
+
+msgid "1 person covered"
+msgstr "1 persona coperta"
+
+msgid "{0} people covered"
+msgstr "{0} persone coperte"
+
+msgid "UniSalute, Fasi, Dipendenti Rossi S.p.A.…"
+msgstr "UniSalute, Fasi, Dipendenti Rossi S.p.A.…"
+
+msgid "Search a company"
+msgstr "Cerca un'azienda"
+
+msgid "How the person pays"
+msgstr "Come paga la persona"
+
+msgid "Direct form: the fund pays the centre, the person their share"
+msgstr "Forma diretta: il fondo paga il centro, la persona la sua quota"
+
+msgid "The fund authorises each appointment first"
+msgstr "Il fondo autorizza prima ogni appuntamento"
+
+msgid "Indirect form: the person pays everything and asks the fund for it back"
+msgstr "Forma indiretta: la persona paga tutto e chiede il rimborso al fondo"
+
+msgid "Offered on the booking page: the booking then waits for the centre’s yes"
+msgstr "Proposta nella pagina di prenotazione: la prenotazione aspetta poi la conferma del centro"
+
+msgid "Prices"
+msgstr "Prezzi"
+
+msgid "Discount (%)"
+msgstr "Sconto (%)"
+
+msgid "Share paid by the person"
+msgstr "Quota a carico del paziente"
+
+msgid "Fixed share (franchigia)"
+msgstr "Quota fissa (franchigia)"
+
+msgid "Share in percent (scoperto)"
+msgstr "Quota in percentuale (scoperto)"
+
+msgid "Share by service"
+msgstr "Quota per prestazione"
+
+msgid "A service with a share of its own, when the fund says so: it wins over the one above."
+msgstr "Una prestazione con una quota sua, quando il fondo lo prevede: vale al posto di quella sopra."
+
+msgid "Share"
+msgstr "Quota"
+
+msgid "How to ask for the authorisation, the portal, the deadlines…"
+msgstr "Come chiedere l'autorizzazione, il portale, le scadenze…"
+
+msgid "A price list of the agenda"
+msgstr "Un listino dell'agenda"
+
+msgid "Nothing: the fund pays it all"
+msgstr "Niente: paga tutto il fondo"
+
+msgid "A fixed amount"
+msgstr "Un importo fisso"
+
+msgid "A percentage"
+msgstr "Una percentuale"
+
+msgid "In direct form, of a visit of {0} the person pays {1} and the fund {2}."
+msgstr "In forma diretta, di una visita da {0} il paziente paga {1} e il fondo {2}."
+
+msgid "Convention deleted"
+msgstr "Convenzione eliminata"
+
+msgid "The fund, the insurer or the company, with its billing details on its page: in direct form it gets the month's invoice."
+msgstr "Il fondo, l'assicurazione o l'azienda, con i dati di fatturazione nella sua scheda: in forma diretta riceve la fattura del mese."
+
+msgid "The centre's prices"
+msgstr "I prezzi del centro"
+
+msgid "A discount on the centre's prices"
+msgstr "Uno sconto sui prezzi del centro"
+
+msgid "No convention yet"
+msgstr "Ancora nessuna convenzione"
+
+msgid "A health fund in direct form, an insurer, a company whose employees get a discount."
+msgstr "Un fondo sanitario in forma diretta, un'assicurazione, un'azienda i cui dipendenti hanno uno sconto."
+
+msgid "Funds and conventions"
+msgstr "Fondi e convenzioni"
+
+msgid "Add a cover"
+msgstr "Aggiungi una copertura"
+
+msgid "Not valid today"
+msgstr "Non valida oggi"
+
+msgid "No fund nor convention: they pay as everybody does."
+msgstr "Nessun fondo né convenzione: paga come tutti."
+
+msgid "The centre has no convention yet: Settings > Invoicing > Conventions and funds."
+msgstr "Il centro non ha ancora convenzioni: Impostazioni > Fatturazione > Convenzioni e fondi."
+
+msgid "Change the cover"
+msgstr "Modifica la copertura"
+
+msgid "Convention"
+msgstr "Convenzione"
+
+msgid "Policy or card number"
+msgstr "Numero di polizza o di tessera"
+
+msgid "As on the card"
+msgstr "Come sulla tessera"
+
+msgid "Holder, when it is somebody else"
+msgstr "Titolare, quando è un'altra persona"
+
+msgid "Choose the convention"
+msgstr "Scegli la convenzione"
+
+msgid "Cover removed"
+msgstr "Copertura tolta"
+
+msgid "No convention in direct form yet: a fund that pays the centre is set up in Settings > Invoicing > Conventions and funds."
+msgstr "Ancora nessuna convenzione in forma diretta: un fondo che paga il centro si imposta in Impostazioni > Fatturazione > Convenzioni e fondi."
+
+msgid "Export the month"
+msgstr "Esporta il mese"
+
+msgid "Invoice the fund"
+msgstr "Fattura al fondo"
+
+msgid "Pratiche"
+msgstr "Pratiche"
+
+msgid "The people's share"
+msgstr "Quota dei pazienti"
+
+msgid "To bill to the fund"
+msgstr "Da fatturare al fondo"
+
+msgid "of {0} for the month"
+msgstr "su {0} del mese"
+
+msgid "Invoiced to {0}, through the SdI."
+msgstr "Fatturato a {0}, tramite lo SdI."
+
+msgid "No appointment in direct form this month."
+msgstr "Nessun appuntamento in forma diretta in questo mese."
+
+msgid "Authorisation {0}"
+msgstr "Autorizzazione {0}"
+
+msgid "Card {0}"
+msgstr "Tessera {0}"
+
+msgid "{0} the person · {1} the fund"
+msgstr "{0} il paziente · {1} il fondo"
+
+msgid "Draft to the fund ready: check it and issue it"
+msgstr "Bozza al fondo pronta: controllala ed emettila"
+
+msgid "Could not make the invoice"
+msgstr "Impossibile preparare la fattura"
+
+msgid "Could not export"
+msgstr "Impossibile esportare"
+
+msgid "Health fund"
+msgstr "Fondo sanitario"
+
+msgid "Insurance"
+msgstr "Assicurazione"
+
+msgid "Company convention"
+msgstr "Convenzione aziendale"
+
+msgid "Direct form"
+msgstr "Forma diretta"
+
+msgid "Indirect form"
+msgstr "Forma indiretta"
+
+msgid "To authorise"
+msgstr "Da autorizzare"
+
+msgid "Authorised"
+msgstr "Autorizzata"
+
+msgid "Done, to bill"
+msgstr "Eseguita, da fatturare"
+
+msgid "In a draft to the fund"
+msgstr "Nella bozza al fondo"
+
+msgid "Billed to the fund"
+msgstr "Fatturata al fondo"
+
+msgid "Paid by the fund"
+msgstr "Pagata dal fondo"
+
+msgid "Choose what kind of convention it is"
+msgstr "Scegli che tipo di convenzione è"
+
+msgid "Choose the direct form, the indirect form or both"
+msgstr "Scegli la forma diretta, quella indiretta o entrambe"
+
+msgid "In direct form the fund is billed: choose the company that pays"
+msgstr "In forma diretta si fattura al fondo: scegli l'azienda che paga"
+
+msgid "Choose the price list of the convention"
+msgstr "Scegli il listino della convenzione"
+
+msgid "The discount is a percentage between 0 and 100"
+msgstr "Lo sconto è una percentuale tra 0 e 100"
+
+msgid "Direct and indirect form"
+msgstr "Forma diretta e indiretta"
+
+msgid "prices of {0}"
+msgstr "prezzi di {0}"
+
+msgid "{0}% off"
+msgstr "sconto del {0}%"
+
+msgid "the person pays {0}%"
+msgstr "il paziente paga il {0}%"
+
+msgid "the person pays {0}"
+msgstr "il paziente paga {0}"
+
+msgid "the fund pays it all"
+msgstr "paga tutto il fondo"
+
+msgid "holder {0}"
+msgstr "titolare {0}"
+
+msgid "Write the convention's name"
+msgstr "Scrivi il nome della convenzione"
+
+msgid "The person's share is a percentage between 0 and 100"
+msgstr "La quota del paziente è una percentuale tra 0 e 100"
+
+msgid "The person's share cannot be below zero"
+msgstr "La quota del paziente non può essere sotto zero"
+
+msgid "Authorisation missing"
+msgstr "Autorizzazione mancante"
+
+msgid "Authorisation"
+msgstr "Autorizzazione"
+
+msgid "Authorisation number from the fund"
+msgstr "Numero di autorizzazione del fondo"
+
+msgid "The person pays {0} and asks the fund for it back"
+msgstr "Il paziente paga {0} e chiede il rimborso al fondo"
+
+msgid "Authorisation missing: the fund wants it before the visit"
+msgstr "Autorizzazione mancante: il fondo la vuole prima della visita"
+
+msgid "The person pays"
+msgstr "Paga la persona"
+
+msgid "{0} · their card {1}"
+msgstr "{0} · tessera {1}"
+
+msgid "{0} · they are covered"
+msgstr "{0} · è coperta"
+
+msgid "The person's share {0} · the fund's {1}"
+msgstr "Quota del paziente {0} · del fondo {1}"
+
+msgid "Conventions"
+msgstr "Convenzioni"
+
+msgid "Appointments were booked under this convention: switch it off instead"
+msgstr "Ci sono appuntamenti prenotati con questa convenzione: disattivala invece"
+
+msgid "This cover is not this person's"
+msgstr "Questa copertura non è di questa persona"
+
+msgid "A convention is for an appointment of one person"
+msgstr "Una convenzione vale per l'appuntamento di una persona sola"
+
+msgid "A place of a subscription is not paid under a convention"
+msgstr "Un posto di un abbonamento non si paga con una convenzione"
+
+msgid "The convention {0} is not used in direct form"
+msgstr "La convenzione {0} non si usa in forma diretta"
+
+msgid "The convention {0} is not used in indirect form"
+msgstr "La convenzione {0} non si usa in forma indiretta"
+
+msgid "The convention {0} does not hold on that day"
+msgstr "La convenzione {0} non è valida in quel giorno"
+
+msgid "This appointment is billed to the fund already: {0}"
+msgstr "Questo appuntamento è già fatturato al fondo: {0}"
+
+msgid "Choose the company that pays for the convention {0} first"
+msgstr "Scegli prima l'azienda che paga per la convenzione {0}"
+
+msgid "No pratica of the month is done and still to bill"
+msgstr "Nessuna pratica del mese è eseguita e ancora da fatturare"
+
+msgid "Convention {0}: pratiche of {1}"
+msgstr "Convenzione {0}: pratiche di {1}"
+
+msgid "No fiscal card for the service {0}: a service without a card is not billable"
+msgstr "Nessuna scheda fiscale per la prestazione {0}: un servizio senza scheda non si fattura"
+
+msgid "This convention is not offered online: call the centre"
+msgstr "Questa convenzione non è proposta online: chiama il centro"
+
+msgid "Written by the person on the booking page: to check"
+msgstr "Scritta dalla persona nella pagina di prenotazione: da verificare"
+
+msgid "To collect from the funds"
+msgstr "Da incassare dai fondi"
+
+msgid "What the health funds and insurers still owe for their pratiche, by convention and by how long it waits"
+msgstr "Quanto devono ancora fondi sanitari e assicurazioni per le loro pratiche, per convenzione e da quanto aspetta"
+
+msgid "A place in a class is not booked under a convention online: call the centre"
+msgstr "Un posto in una lezione non si prenota online con una convenzione: chiama il centro"
+
+msgid "New online booking to approve: with a convention"
+msgstr "Nuova prenotazione online da confermare: con una convenzione"
+
+msgid "Nothing for the person to pay: the fund pays the whole of it, in the month's statement"
+msgstr "Niente da pagare per il paziente: paga tutto il fondo, nell'estratto del mese"
+
+msgid "Conventions with funds, insurers and companies"
+msgstr "Convenzioni con fondi, assicurazioni e aziende"
+
+msgid "An insurance in direct form with the people it covers, their visits authorised and done and one still to authorise; a company's discount for its employees."
+msgstr "Un'assicurazione in forma diretta con le persone che copre, le loro visite autorizzate ed eseguite e una ancora da autorizzare; lo sconto di un'azienda per i suoi dipendenti."
+
+msgid "CRM Convention"
+msgstr "Convenzione"
+
+msgid "CRM Convention Cover"
+msgstr "Copertura di una convenzione"
+
+msgid "CRM Convention Share"
+msgstr "Quota per prestazione"
+
+msgid "Cover"
+msgstr "Copertura"
+
+msgid "Convention form"
+msgstr "Forma della convenzione"
+
+msgid "Share paid by the fund"
+msgstr "Quota a carico del fondo"
+
+msgid "Invoice to the fund"
+msgstr "Fattura al fondo"
+
+msgid "Direct"
+msgstr "Diretta"
+
+msgid "Indirect"
+msgstr "Indiretta"
+
+msgid "Centre prices"
+msgstr "Prezzi del centro"
+
+msgid "Fixed"
+msgstr "Fissa"
+
+msgid "Percentage"
+msgstr "Percentuale"
+
+msgid "Fixed share"
+msgstr "Quota fissa"
+
+msgid "Share in percent"
+msgstr "Quota in percentuale"
+
+msgid "Authorisation before the appointment"
+msgstr "Autorizzazione prima dell'appuntamento"
+
+msgid "Offered on the booking page"
+msgstr "Proposta nella pagina di prenotazione"
+
+msgid "Holder"
+msgstr "Titolare"
+
+msgid "Holder's name"
+msgstr "Nome del titolare"
+
+msgid "Empty: the person themselves"
+msgstr "Vuoto: la persona stessa"
+
+msgid "The fund, the insurer or the company: billed in direct form, with its billing details"
+msgstr "Il fondo, l'assicurazione o l'azienda: fatturata in forma diretta, con i suoi dati di fatturazione"
+
+msgid "The fund pays the centre; the person pays only their share"
+msgstr "Il fondo paga il centro; la persona paga solo la sua quota"
+
+msgid "The person pays everything and asks the fund for the money back"
+msgstr "La persona paga tutto e chiede il rimborso al fondo"
+
+msgid "The person may say they come with it; the booking then waits for the centre's yes"
+msgstr "La persona può dire che viene con questa convenzione; la prenotazione aspetta la conferma del centro"
+
+msgid "A health fund, an insurance or a company the centre has a convention with: its prices, the person's share, who pays"
+msgstr "Un fondo sanitario, un'assicurazione o un'azienda convenzionata con il centro: i prezzi, la quota del paziente, chi paga"
+
+msgid "A person's cover by a convention: a fund, a policy, their company's"
+msgstr "La copertura di una persona con una convenzione: un fondo, una polizza, quella della sua azienda"
+
+msgctxt "Convention"
+msgid "Active"
+msgstr "Attiva"
+
+msgctxt "Convention"
+msgid "Form"
+msgstr "Forma"
+msgctxt "Pratica"
+msgid "Did not come"
+msgstr "Non presentato"
+

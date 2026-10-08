@@ -260,6 +260,8 @@ permission_query_conditions = {
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# and what they paid online
 	"CRM Online Payment": "crm.pagamenti.pagamenti.get_permission_query_conditions",
+	# and the funds and conventions that cover them
+	"CRM Convention Cover": "crm.convenzioni.api.get_cover_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
@@ -305,6 +307,7 @@ has_permission = {
 	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"CRM Online Payment": "crm.pagamenti.pagamenti.has_permission",
+	"CRM Convention Cover": "crm.convenzioni.api.has_cover_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"CRM Personal Plan": "crm.piani.api.has_permission",
@@ -333,6 +336,7 @@ has_permission = {
 	"CRM Waiting List Settings": "crm.permissions.documenti.has_permission",
 	"CRM Reminder Settings": "crm.permissions.documenti.has_permission",
 	"CRM Subscription Type": "crm.permissions.documenti.has_permission",
+	"CRM Convention": "crm.permissions.documenti.has_permission",
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
 	"CRM Resource": "crm.permissions.documenti.has_permission",
@@ -500,6 +504,8 @@ doc_events = {
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
 			"crm.moduli.consensi.cancella_con_la_persona",
 			"crm.persone.collegate.cancella_con_la_persona",
+			# and the conventions that cover them
+			"crm.convenzioni.convenzioni.cancella_con_la_persona",
 			# and what they waited for
 			"crm.scheduling.attese.cancella_con_la_persona",
 			# and their way through the automations
@@ -534,7 +540,11 @@ doc_events = {
 	},
 	"CRM Appointment": {
 		# a service of an accepted quote: taken, at the price agreed
-		"validate": ["crm.preventivi.appuntamenti.in_validazione"],
+		"validate": [
+			"crm.preventivi.appuntamenti.in_validazione",
+			# under a convention, the person's share and the fund's of the final price
+			"crm.convenzioni.convenzioni.quote_dell_appuntamento",
+		],
 		"after_insert": [
 			"crm.automation.engine.on_appointment_created",
 			# a booking moves the new clients deal
@@ -571,6 +581,9 @@ doc_events = {
 	"CRM Scheduling Settings": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
 	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {
+		# a fund's invoice thrown away or cancelled: its pratiche are to bill again
+		"on_trash": ["crm.convenzioni.convenzioni.fattura_tolta"],
+		"on_cancel": ["crm.convenzioni.convenzioni.fattura_tolta"],
 		"on_submit": [
 			# issued from an appointment: the person came
 			"crm.scheduling.esiti.fattura_emessa",

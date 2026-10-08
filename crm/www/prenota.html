@@ -277,6 +277,8 @@
           morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera", seatsLeft: "posti", people: "Persone",
           tzNote: "Orari nel tuo fuso orario: {0}", continue: "Continua", back: "Indietro",
           name: "Nome e cognome", email: "Email", phone: "Telefono", notes: "Note per lo studio", optional: "facoltativo",
+          convention: "Fondo sanitario, assicurazione o convenzione", convNone: "Nessuna, pago io", cardNumber: "Numero di tessera o di polizza",
+          convHint: "Il centro verifica la tua copertura e ti conferma la prenotazione.",
           consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
           confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
           summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", with: "Con", when: "Quando", duration: "Durata",
@@ -318,6 +320,8 @@
           morning: "Morning", afternoon: "Afternoon", evening: "Evening", seatsLeft: "seats", people: "People",
           tzNote: "Times in your time zone: {0}", continue: "Continue", back: "Back",
           name: "Full name", email: "Email", phone: "Phone", notes: "Notes for us", optional: "optional",
+          convention: "Health fund, insurance or convention", convNone: "None, I pay myself", cardNumber: "Card or policy number",
+          convHint: "The centre checks your cover and confirms your booking.",
           consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
           confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
           summary: "Summary", summaryEmpty: "Pick a service to start.", with: "With", when: "When", duration: "Duration",
@@ -433,7 +437,7 @@
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
         wait: null, waited: null,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", convention: "", card_number: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
@@ -716,8 +720,23 @@
         const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
         form.append(h("h2", {}, T("stepDetails")));
         const other = personFields(form, svc, true);
+        // a fund or a convention the centre offers online: the booking waits for its yes
+        if ((S.catalog.conventions || []).length) {
+          const sel = h("select", { id: "f-convention", name: "convention" },
+            h("option", { value: "" }, T("convNone")),
+            ...S.catalog.conventions.map((c) => h("option", { value: c.id, selected: S.form.convention === c.id || null }, c.name)));
+          sel.addEventListener("change", (e) => { S.form.convention = e.target.value; render(); });
+          // before the ticks, with the person's details
+          const before = form.querySelector("label.check");
+          const put = (node) => (before ? form.insertBefore(node, before) : form.append(node));
+          put(h("div", {}, h("label", { for: "f-convention" }, T("convention"), ` (${T("optional")})`), sel));
+          if (S.form.convention) {
+            put(field("card_number", T("cardNumber"), { autocomplete: "off", autocapitalize: "characters", spellcheck: "false" }));
+            put(h("p", { class: "hint" }, T("convHint")));
+          }
+        }
         // paid online first: said before the button, not discovered after it
-        if (svc.deposit) form.append(h("div", { class: "msg info" }, T("depositNote").replace("{0}", svc.deposit.formatted)));
+        if (svc.deposit && !S.form.convention) form.append(h("div", { class: "msg info" }, T("depositNote").replace("{0}", svc.deposit.formatted)));
         form.append(h("div", { class: "actions" },
           h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
           h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
@@ -876,6 +895,7 @@
           const params = new URLSearchParams(location.search);
           S.result = await api("book", {
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
+            convention: f.convention || "", card_number: f.convention ? (f.card_number || "").trim() : "",
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
             consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
             for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
@@ -965,7 +985,7 @@
       function restart() {
         history.replaceState(null, "", location.pathname);
         Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null });
-        S.form.notes = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
+        S.form.notes = ""; S.form.convention = ""; S.form.card_number = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
         go("service");
       }
 

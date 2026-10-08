@@ -195,6 +195,41 @@
         </button>
       </section>
 
+      <!-- the funds and conventions that cover them today (doc 61): who
+           pays, before the desk asks -->
+      <section v-if="righe.covers" :class="carta">
+        <div :class="[testata, 'cursor-default hover:bg-transparent']">
+          <span>{{ __('Funds and conventions') }}</span>
+        </div>
+        <div
+          v-for="(copertura, i) in righe.covers.covers"
+          :key="i"
+          :class="[riga, 'cursor-default hover:bg-transparent']"
+        >
+          <span
+            class="lucide-shield-check mt-0.5 size-4 shrink-0 text-ink-green-7"
+            aria-hidden="true"
+          />
+          <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span class="break-words text-base text-ink-gray-8">
+              {{ copertura.convention_name }}
+            </span>
+            <span class="break-words text-p-sm text-ink-gray-6">
+              {{
+                [
+                  nomeDelTipo(copertura.kind, t),
+                  rigaDellaCopertura(copertura, t, (g) =>
+                    formatDate(g, 'D MMM YYYY'),
+                  ),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }}
+            </span>
+          </span>
+        </div>
+      </section>
+
       <!-- what is left to collect: the invoices issued, the drafts -->
       <section v-if="righe.to_collect" :class="carta">
         <div :class="[testata, 'cursor-default hover:bg-transparent']">
@@ -437,6 +472,7 @@ import {
   dayjsLocal,
   getCachedResource,
 } from 'frappe-ui'
+import { nomeDelTipo, rigaDellaCopertura } from '@/utils/convenzioni'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 

@@ -501,6 +501,15 @@ export const MENU = [
           "Invoices and deposits paid online by card, on the centre's own Stripe account.",
         condition: puo('pagamenti.gestisci'),
       },
+      // the funds, insurers and companies the centre has a convention with: their
+      // prices, the person's share, who is billed (doc 61)
+      {
+        key: 'Conventions',
+        label: 'Conventions and funds',
+        description:
+          'Health funds, insurances and companies: their prices, the share the person pays, who is billed.',
+        condition: puo('convenzioni.gestisci'),
+      },
       // what a centre opens once a year, if ever: the switches over everything,
       // and the register the accountant confirms
       {

@@ -6,6 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
+from crm.convenzioni import convenzioni
 from crm.permissions.livelli import puo
 from crm.scheduling import abbonamenti, cicli, pricing, visite_online
 from crm.scheduling.availability import find_conflicts, settings
@@ -82,9 +83,13 @@ class CRMAppointment(Document):
 		# them nothing
 		cicli.aggancia(self)
 		abbonamenti.aggancia(self)
+		# a convention prices it on its own list, and splits it between the person
+		# and the fund
+		convenzioni.listino(self)
 		pricing.apply_to(self)
 		cicli.prezzo(self)
 		abbonamenti.prezzo(self)
+		convenzioni.prezzo(self)
 
 	def on_update(self):
 		self.sync_event()

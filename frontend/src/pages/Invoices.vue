@@ -107,7 +107,7 @@
           />
         </div>
 
-        <!-- four tabs scroll sideways on a phone rather than wrap -->
+        <!-- five tabs scroll sideways on a phone rather than wrap -->
         <div class="flex items-center gap-1 overflow-x-auto">
           <Button
             v-for="entry in tabs"
@@ -334,6 +334,9 @@
         <!-- ------------------------------------------- from the suppliers -->
         <ReceivedInvoices v-else-if="tab === 'received'" :company="company" />
 
+        <!-- ------------------------------------- the funds' pratiche (doc 61) -->
+        <ConventionClaims v-else-if="tab === 'conventions'" />
+
         <!-- -------------------------------------------------- sistema ts -->
         <div v-else class="flex flex-col gap-4">
           <div
@@ -478,6 +481,7 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ReceivedInvoices from '@/components/Invoices/ReceivedInvoices.vue'
+import ConventionClaims from '@/components/Invoices/ConventionClaims.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
@@ -524,6 +528,7 @@ const tabs = computed(() => [
   { value: 'todo', label: __('To do') },
   { value: 'invoices', label: __('Invoices') },
   { value: 'received', label: __('Received', null, 'Supplier invoices') },
+  { value: 'conventions', label: __('Conventions') },
   { value: 'ts', label: __('Sistema TS') },
 ])
 

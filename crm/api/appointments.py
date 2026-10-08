@@ -534,6 +534,10 @@ def get_appointment(name: str) -> dict:
 	# the subscriptions an entry is used of
 	data["cycle"] = cicli.della_seduta(doc)
 	data["subscription"] = abbonamenti.del_appuntamento(doc)
+	# under a convention: which, the two shares, the authorisation (doc 61)
+	from crm.convenzioni import convenzioni
+
+	data["convention_info"] = convenzioni.del_appuntamento(doc)
 	# what the panel offers: who reads the agenda without booking (the medical
 	# director, the read-only level) sees the appointment, not the controls the
 	# server would refuse
@@ -769,9 +773,16 @@ def quote_price(
 	staff: str | list | None = None,
 	resources: str | list | None = None,
 	participants: int = 1,
+	convention: str | None = None,
+	convention_form: str | None = None,
 ) -> dict:
-	"""Live price preview while the appointment is still being edited."""
+	"""Live price preview while the appointment is still being edited; under a
+	convention, its price and the two shares (doc 61)."""
 	_check_reader()
+	if convention:
+		from crm.convenzioni import convenzioni
+
+		price_list = convenzioni.listino_di(convention) or price_list
 	price = pricing.resolve_price(
 		service,
 		parse_utc(when),
@@ -780,7 +791,10 @@ def quote_price(
 		resources=_as_list(resources),
 		participants=cint(participants) or 1,
 	)
-	return price.as_dict(cint(participants) or 1)
+	risposta = price.as_dict(cint(participants) or 1)
+	if convention:
+		risposta.update(convenzioni.anteprima(convention, convention_form, risposta["total"], service))
+	return risposta
 
 
 @frappe.whitelist()

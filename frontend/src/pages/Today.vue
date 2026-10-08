@@ -143,6 +143,35 @@
                   >{{ appointmentLine(appointment) }}</span
                 >
               </div>
+              <!-- under a convention: which, and the fund's authorisation
+                   still missing (doc 61) -->
+              <div
+                v-if="appointment.convention"
+                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-p-sm text-ink-gray-6"
+              >
+                <span class="flex min-w-0 items-center gap-1.5">
+                  <span
+                    class="lucide-shield-check size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span class="min-w-0 [overflow-wrap:anywhere]">
+                    {{
+                      [
+                        appointment.convention.title,
+                        nomeDellaForma(appointment.convention.form, t),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                    }}
+                  </span>
+                </span>
+                <Badge
+                  v-if="appointment.convention.missing_authorisation"
+                  variant="subtle"
+                  theme="orange"
+                  :label="__('Authorisation missing')"
+                />
+              </div>
               <ParticipantRow
                 v-for="participant in appointment.participants"
                 :key="participant.name"
@@ -302,6 +331,7 @@ import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
+import { nomeDellaForma } from '@/utils/convenzioni'
 import {
   chiLoFa,
   byDay,
@@ -313,8 +343,10 @@ import {
 } from '@/utils/oggi'
 import { formatDate } from '@/utils'
 import { adessoDelCentro } from '@/utils/scheduler'
-import { Button, createResource, usePageMeta } from 'frappe-ui'
+import { Badge, Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+
+const t = (text, args, context) => __(text, args, context)
 
 const { puo } = usersStore()
 

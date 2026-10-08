@@ -131,6 +131,7 @@
                 <DopoIlDisegno>
                   <BillingProfileSection partyType="CRM Lead" :party="leadId" />
                   <RelatedPeopleSection :lead="leadId" />
+                  <ConventionCoversSection :lead="leadId" />
                   <PatientSection :lead="leadId" />
                   <ConsentsSection :lead="leadId" />
                 </DopoIlDisegno>
@@ -208,6 +209,7 @@ import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
 import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
+import ConventionCoversSection from '@/components/ConventionCoversSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations, openWebsite, copyToClipboard } from '@/utils'

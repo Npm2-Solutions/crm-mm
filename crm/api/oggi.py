@@ -15,6 +15,7 @@ import datetime
 import frappe
 from frappe.utils import get_datetime, getdate
 
+from crm.convenzioni import convenzioni
 from crm.permissions import livelli
 from crm.scheduling import cicli, esiti, promemoria
 
@@ -79,6 +80,8 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 		)
 	# what each of them answered the reminder of this time (docs/crm/59)
 	promemoria.nelle_righe(fuori)
+	# the convention it is under, and an authorisation still missing (doc 61)
+	convenzioni.nelle_righe(fuori)
 	return fuori
 
 

@@ -373,6 +373,13 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 	if not service_provider:
 		service_provider = frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
 
+	from crm.convenzioni import convenzioni
+
+	if convenzioni.nulla_per_la_persona(incontro):
+		frappe.throw(
+			_("Nothing for the person to pay: the fund pays the whole of it, in the month's statement")
+		)
+
 	fattura = frappe.new_doc("CRM Invoice")
 	fattura.appointment = appointment
 	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
@@ -391,7 +398,9 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 			"billable_service": billable_service,
 			"service_provider": service_provider or "",
 			"qty": 1,
-			"rate": incontro.unit_price or 0,
+			# under a convention in direct form, only the person's share: the fund is
+			# billed the rest, and the Sistema TS hears of what the person paid
+			"rate": convenzioni.da_pagare_dalla_persona(incontro),
 		},
 	)
 	return fattura
@@ -849,6 +858,8 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			"unit_price",
 			"status",
 			"session_cycle",
+			"convention_form",
+			"patient_share",
 		],
 		order_by="starts_on desc",
 		limit_page_length=int(limit),
@@ -863,4 +874,6 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 		if i.name not in fatturati
 		and not (i.session_cycle and i.session_cycle in interi)
 		and i.name not in coperti
+		# the fund pays it all: nothing to invoice to the person
+		and not (i.convention_form == "Direct" and not flt(i.patient_share))
 	]
