@@ -345,6 +345,14 @@ def _perche_no(numero, email, fermato) -> str:
 	return _("None of the centre's ways reaches them: call them")
 
 
+def _in_parole(errore: Exception) -> str:
+	"""Why a way did not work, in DottorCloud's words: the framework's sentence for a
+	site with no outgoing mailbox names its Desk («Strumenti > Account Email»)."""
+	if isinstance(errore, frappe.OutgoingEmailError):
+		return _("no mailbox sends the centre's emails yet: Settings > Email > Accounts")
+	return str(errore)
+
+
 def _per_le_vie(registro, vie, appuntamento, persona, email, numero, testo, conf, nota=None) -> bool:
 	"""The reminder by the first of ``vie`` that works, written on its register."""
 	errori = []
@@ -358,7 +366,7 @@ def _per_le_vie(registro, vie, appuntamento, persona, email, numero, testo, conf
 				reference_doctype=PROMEMORIA,
 				reference_name=registro.name,
 			)
-			errori.append(f"{via}: {errore}")
+			errori.append(f"{via}: {_in_parole(errore)}")
 			continue
 		registro.update(
 			{

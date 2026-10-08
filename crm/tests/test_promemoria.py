@@ -206,6 +206,16 @@ class QuandoParte(PromemoriaCase):
 		self.assertEqual(registro.status, R.NON_INVIATO)
 		self.assertIn("call them", registro.reason)
 
+	def test_senza_una_casella_in_uscita_lo_dice_con_le_nostre_parole(self):
+		self.sendmail.side_effect = frappe.OutgoingEmailError(
+			"Please setup default outgoing Email Account from Settings > Email Account"
+		)
+		self.giro()
+		registro = self.registro()
+		self.assertNotEqual(registro.status, R.INVIATO)
+		self.assertIn("Settings > Email > Accounts", registro.reason)
+		self.assertNotIn("Email Account", registro.reason)
+
 
 class PerSms(PromemoriaCase):
 	def setUp(self):
