@@ -102,6 +102,11 @@ def _riga(doc) -> dict:
 		"docstatus": doc.docstatus,
 		"signed_on": doc.signed_on,
 		"addendum_to": doc.addendum_to,
+		# started from the last visit on its sheet: which one, and of when
+		"copied_from": doc.get("copied_from"),
+		"copied_from_date": frappe.db.get_value(DOCTYPE, doc.copied_from, "record_date")
+		if doc.get("copied_from")
+		else None,
 		"appointment": doc.appointment,
 		"mine": doc.practitioner == frappe.session.user,
 		# a visit written on a clinical sheet: its questions, answers and report
@@ -272,10 +277,28 @@ def save_record(
 	return _riga(doc)
 
 
+def ultima_visita(lead: str, template: str):
+	"""The person's last signed visit on ``template`` the session reads, or None:
+	an obscured episode, an "only me" of somebody else's, a record out of the
+	dossier are not read, and nothing of them is copied."""
+	for nome in frappe.get_list(
+		DOCTYPE,
+		filters={"lead": lead, "template": template, "docstatus": 1, "addendum_to": ("is", "not set")},
+		pluck="name",
+		order_by="record_date desc",
+	):
+		doc = frappe.get_doc(DOCTYPE, nome)
+		if puo_leggere(doc):
+			return doc
+	return None
+
+
 @frappe.whitelist(methods=["POST"])
-def start_sheet(lead: str, template: str, appointment: str | None = None) -> dict:
+def start_sheet(lead: str, template: str, appointment: str | None = None, from_last: int = 0) -> dict:
 	"""A visit written on a clinical sheet: the version published now, a draft of
-	its author's until it is signed."""
+	its author's until it is signed. ``from_last``: with the answers of the last
+	visit on the same sheet the session reads (`cartella_regole`), never its
+	signatures, attachments or consents; the draft says which visit it came from."""
 	livelli.verifica("clinica.scrivi")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	from crm.moduli import modelli
@@ -299,7 +322,19 @@ def start_sheet(lead: str, template: str, appointment: str | None = None) -> dic
 			"schema_hash": versione.schema_hash,
 			"answers": "{}",
 		}
-	).insert()
+	)
+	if cint(from_last):
+		from crm.clinica import cartella_regole
+
+		ultima = ultima_visita(lead, modello.name)
+		if ultima:
+			# read to be copied: the access log says so
+			ultima.add_viewed()
+			risposte = frappe.parse_json(ultima.answers or "{}") or {}
+			schema = modelli.carica_schema(versione.schema)
+			doc.answers = json.dumps(cartella_regole.da_ricopiare(schema, risposte), ensure_ascii=False)
+			doc.copied_from = ultima.name
+	doc.insert()
 	return _riga(doc)
 
 

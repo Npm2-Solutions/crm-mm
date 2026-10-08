@@ -108,6 +108,13 @@
       <div v-if="composer.sheet" class="text-base-semibold text-ink-gray-8">
         {{ composer.sheet.title }}
       </div>
+      <div v-if="composer.copiedFrom" class="text-p-sm text-ink-gray-6">
+        {{
+          __('Copied from the visit of {0}', [
+            formatDate(composer.copiedFrom, ''),
+          ])
+        }}
+      </div>
       <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <FormControl
           v-model="composer.kind"
@@ -245,6 +252,13 @@
           <span class="text-p-sm text-ink-gray-5">
             {{ formatDate(entry.record_date, '') }} ·
             {{ entry.practitioner_name }}
+          </span>
+          <span v-if="entry.copied_from_date" class="text-p-sm text-ink-gray-5">
+            {{
+              __('Copied from the visit of {0}', [
+                formatDate(entry.copied_from_date, ''),
+              ])
+            }}
           </span>
         </div>
         <!-- the medical director, at the patient's request: the whole episode -->
@@ -465,6 +479,7 @@ import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'
+import { vociDelleSchede } from '@/utils/cartella'
 import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
@@ -520,29 +535,31 @@ const shownRecords = computed(() =>
 // a free visit, then the sheets one writes on (the server puts them first and
 // marks them), then the others: a sheet's specialty is tied to no
 // qualification, and the dietitian was offered the dental visit beside her own
+// A sheet with a signed visit the reader reads is offered again started from it
 const newOptions = computed(() => {
   const sheets = record.data?.sheets || []
-  const asOption = (sheet) => ({
-    label: sheet.title,
-    icon: 'lucide-clipboard-list',
-    onClick: () => startSheet(sheet.name),
-  })
+  const records = record.data?.records || []
+  const asOptions = (list) =>
+    vociDelleSchede(list, records, __).map((voce) => ({
+      label: voce.label,
+      icon: voce.fromLast ? 'lucide-copy' : 'lucide-clipboard-list',
+      onClick: () => startSheet(voce.sheet.name, voce.fromLast),
+    }))
   const free = {
     label: __('Free visit'),
     icon: 'lucide-file-text',
     onClick: () => startNew(),
   }
-  if (!sheets.some((sheet) => sheet.mine))
-    return [free, ...sheets.map(asOption)]
+  if (!sheets.some((sheet) => sheet.mine)) return [free, ...asOptions(sheets)]
   return [
     free,
     {
       group: __('Your sheets'),
-      items: sheets.filter((sheet) => sheet.mine).map(asOption),
+      items: asOptions(sheets.filter((sheet) => sheet.mine)),
     },
     {
       group: __('Other sheets'),
-      items: sheets.filter((sheet) => !sheet.mine).map(asOption),
+      items: asOptions(sheets.filter((sheet) => !sheet.mine)),
     },
   ]
 })
@@ -555,6 +572,7 @@ const composer = reactive({
   name: null,
   addendumTo: null,
   addendumLabel: '',
+  copiedFrom: null,
   kind: 'Visit',
   visibility: 'Care team',
   content: '',
@@ -573,6 +591,7 @@ function reset(values = {}) {
     name: null,
     addendumTo: null,
     addendumLabel: '',
+    copiedFrom: null,
     kind: 'Visit',
     visibility: 'Care team',
     content: '',
@@ -598,14 +617,16 @@ function startEdit(entry) {
     content: entry.content || '',
     sheet: entry.template ? { title: entry.title, schema: entry.schema } : null,
     answers: { ...(entry.answers || {}) },
+    copiedFrom: entry.copied_from_date || null,
   })
 }
 
-async function startSheet(template) {
+async function startSheet(template, fromLast = false) {
   try {
     const entry = await call('crm.clinica.cartella.start_sheet', {
       lead: props.lead,
       template,
+      from_last: fromLast ? 1 : 0,
     })
     startEdit(entry)
     record.reload()

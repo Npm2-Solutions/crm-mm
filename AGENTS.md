@@ -571,7 +571,7 @@ the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 | `crm/clinica/__init__.py` | `registra()`: plan module, Medical Director level, capabilities, clinic consents |
 | `crm/clinica/regole.py` | How a person becomes a patient — pure, tested |
 | `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls |
-| `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
+| `crm/clinica/cartella.py` + `cartella_regole.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock; «Start from the last visit» (`start_sheet(from_last=1)`, `utils/cartella.js` offers it after a sheet with one): the answers of the last signed visit on the same sheet the session reads (`ultima_visita`: the dossier, obscured and «only me» left out, the reading logged) through the version published now (`pulisci`), never a signature, an attachment or a consent; the draft keeps `copied_from` and says «Copied from the visit of …» |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
 | `crm/clinica/piani_regole.py` | The clinic's kinds on the CRM's plans (`crm.piani.regole`): a menu, an exchange diet, exercises at home, who writes which by qualification; a food and a food group; the nutrients and the shopping list — pure, tested with plain `unittest` |

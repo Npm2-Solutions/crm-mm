@@ -47124,3 +47124,15 @@ msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo; per prenotare sub
 
 msgid "{0}: sorry we missed your call. We will call you back as soon as we can."
 msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo appena possibile."
+
+msgid "Copied from"
+msgstr "Copiata da"
+
+msgid "The visit on the same sheet this one started from: its answers, never its signatures, attachments or consents."
+msgstr "La visita sulla stessa scheda da cui è partita questa: le sue risposte, mai le firme, gli allegati o i consensi."
+
+msgid "Copied from the visit of {0}"
+msgstr "Copiata dalla visita del {0}"
+
+msgid "{0}: start from the last visit"
+msgstr "{0}: parti dall'ultima visita"
