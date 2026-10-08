@@ -2,9 +2,10 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  Settings > The centre > Your data: people brought over from the previous
-  software, a sheet read and shown row by row before anything is written
-  (crm/importazione); everything the centre keeps taken away in one archive
+  Settings > The centre > Your data: people and appointments brought over from
+  the previous software, a sheet read and shown row by row before anything is
+  written (crm/importazione, ImportAppointments.vue); everything the centre
+  keeps taken away in one archive
   (crm/esportazione), made in a job, its progress by the socket and asked again
   while it runs, kept a week for whoever asked.
 -->
@@ -144,6 +145,9 @@
         </div>
       </section>
 
+      <!-- the previous software's agenda, in -->
+      <ImportAppointments v-if="puo('persone.importa')" />
+
       <!-- everything, out -->
       <section
         v-if="puo('dati.esporta') && exports.data"
@@ -265,6 +269,7 @@
 
 <script setup>
 import SettingsRow from '@/components/Settings/SettingsRow.vue'
+import ImportAppointments from '@/components/Settings/ImportAppointments.vue'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'

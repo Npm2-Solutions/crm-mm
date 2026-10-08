@@ -47956,3 +47956,94 @@ msgstr "Inviata"
 msgctxt "Campaign state"
 msgid "Failed"
 msgstr "Non riuscita"
+
+msgid "No date"
+msgstr "Senza data"
+
+msgid "No start time"
+msgstr "Senza ora d'inizio"
+
+msgid "The time {0} is not a time"
+msgstr "L'ora {0} non è un'ora"
+
+msgid "The duration {0} is not a duration"
+msgstr "La durata {0} non è una durata"
+
+msgid "It ends before it starts"
+msgstr "Finisce prima di cominciare"
+
+msgctxt "A service brought over"
+msgid "Other"
+msgstr "Altro"
+
+msgid "Import Key"
+msgstr "Chiave d'importazione"
+
+msgid "The row of the previous software's sheet it was brought over from: brought in once."
+msgstr "La riga del foglio del gestionale di prima da cui è stato portato: portato una volta sola."
+
+msgid "Start time"
+msgstr "Ora d'inizio"
+
+msgid "End time"
+msgstr "Ora di fine"
+
+msgid "Already brought in"
+msgstr "Già portato"
+
+msgid "Nobody here by this name: bring the people over first, or add their fiscal code, email or mobile"
+msgstr "Nessuno qui con questo nome: porta prima le persone, oppure aggiungi codice fiscale, email o cellulare"
+
+msgid "Took place"
+msgstr "Svolto"
+
+msgid "Other (a new service)"
+msgstr "Altro (nuovo servizio)"
+
+msgid "No room"
+msgstr "Nessun ambulatorio"
+
+msgid "Appointments brought in: {0}. New people: {1}. Already brought in before: {2}. Left out: {3}. Not brought in: {4}."
+msgstr "Appuntamenti portati: {0}. Persone nuove: {1}. Già portati prima: {2}. Lasciati fuori: {3}. Non portati: {4}."
+
+msgid "Row {0}: {1}"
+msgstr "Riga {0}: {1}"
+
+msgid "Bring your appointments over"
+msgstr "Porta qui i tuoi appuntamenti"
+
+msgid "Export the agenda from the previous software as Excel or CSV, the past with the appointments to come. {brand} finds each person as it does when bringing people over, shows what it read, and asks what each service, professional and room is here before writing anything. What is past counts as attended unless the sheet says it was cancelled or missed; nobody is written to, and the same sheet brought in again doubles nothing."
+msgstr "Esporta l'agenda dal gestionale di prima in Excel o CSV, il passato insieme agli appuntamenti futuri. {brand} trova ogni persona come quando porti qui le persone, mostra cosa ha letto e chiede cosa sono qui ogni servizio, professionista e ambulatorio prima di scrivere qualcosa. Quello che è passato conta come svolto, a meno che il foglio non dica che è stato annullato o che la persona non è venuta; non si scrive a nessuno, e lo stesso foglio portato di nuovo non raddoppia nulla."
+
+msgid "{0} rows: {1} to bring in, {2} already brought in."
+msgstr "{0} righe: {1} da portare, {2} già portate."
+
+msgid "New people, by fiscal code, email or mobile: {0}."
+msgstr "Persone nuove, per codice fiscale, email o cellulare: {0}."
+
+msgid "Left out: {0} (no person, day or start time)."
+msgstr "Lasciate fuori: {0} (senza persona, giorno o ora d'inizio)."
+
+msgid "1 row"
+msgstr "1 riga"
+
+msgid "{0} rows"
+msgstr "{0} righe"
+
+msgid "What «{0}» is here"
+msgstr "Cos'è qui «{0}»"
+
+msgid "The last sheet brought in"
+msgstr "L'ultimo foglio portato"
+
+msgid "The services of the sheet"
+msgstr "I servizi del foglio"
+
+msgid "No service written"
+msgstr "Nessun servizio scritto"
+
+msgid "The professionals of the sheet"
+msgstr "I professionisti del foglio"
+
+msgid "The rooms of the sheet"
+msgstr "Gli ambulatori del foglio"

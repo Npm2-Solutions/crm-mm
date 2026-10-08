@@ -101,8 +101,8 @@ def _senza_fermare(titolo: str, doc, funzione) -> None:
 def in_validazione(doc, method=None) -> None:
 	"""`validate` of an appointment: a new one of a service still to do, for the
 	person of an accepted quote, will take it at the price agreed; one that has it
-	keeps the price."""
-	if not doc.service or doc.status == "Cancelled":
+	keeps the price. One brought over from the previous software takes none."""
+	if not doc.service or doc.status == "Cancelled" or doc.flags.get("importato"):
 		return
 	try:
 		if doc.is_new():

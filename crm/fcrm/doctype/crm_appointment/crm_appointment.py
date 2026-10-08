@@ -40,6 +40,7 @@ class CRMAppointment(Document):
 		external_id: DF.Data | None
 		external_platform: DF.Data | None
 		external_url: DF.Data | None
+		import_key: DF.Data | None
 		location: DF.Data | None
 		notes: DF.SmallText | None
 		override_conflicts: DF.Check
@@ -241,8 +242,9 @@ class CRMAppointment(Document):
 		if not conflicts:
 			self.conflict_note = None
 			return
-		if self.flags.external_booking:
-			# a booking that already exists on an external platform cannot be refused:
+		if self.flags.external_booking or self.flags.importato:
+			# a booking that already exists on an external platform cannot be refused,
+			# nor one brought over from the previous software (`crm.importazione`):
 			# keep it, and keep the clash visible for whoever has to solve it
 			self.conflict_note = "\n".join(conflicts)
 			return

@@ -149,11 +149,36 @@ def _trova(dati: dict) -> str | None:
 			)
 		elif chiave == "email":
 			trovata = frappe.db.get_value("CRM Lead", {"email": valore}, "name")
+		elif chiave == "name_birth":
+			trovata = _per_nome_e_nascita(dati)
 		else:
 			trovata = frappe.db.get_value("CRM Lead", {"mobile_no": ["like", f"%{valore}"]}, "name")
 		if trovata:
 			return trovata
 	return None
+
+
+def _per_nome_e_nascita(dati: dict) -> str | None:
+	"""The one person here with this name and this birth date (on their billing
+	details); never a guess between two."""
+	nati = frappe.get_all(
+		"CRM Billing Profile",
+		filters={"party_type": "CRM Lead", "birth_date": dati["birth_date"]},
+		pluck="party",
+	)
+	if not nati:
+		return None
+	trovate = frappe.get_all(
+		"CRM Lead",
+		filters={
+			"name": ["in", nati],
+			"first_name": dati.get("first_name") or ["is", "not set"],
+			"last_name": dati.get("last_name") or ["is", "not set"],
+		},
+		pluck="name",
+		limit=2,
+	)
+	return trovate[0] if len(trovate) == 1 else None
 
 
 GENERE = {"M": "Male", "F": "Female"}

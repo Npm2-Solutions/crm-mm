@@ -28,8 +28,9 @@ def _senza_fermare(titolo: str, doc, funzione) -> None:
 
 
 def appuntamento_creato(doc, method=None) -> None:
-	"""A booking moves the person's new clients deal to "appointment booked"."""
-	if doc.status in ("Cancelled", "No Show"):
+	"""A booking moves the person's new clients deal to "appointment booked"; one
+	brought over from the previous software is no news."""
+	if doc.status in ("Cancelled", "No Show") or doc.flags.get("importato"):
 		return
 
 	def sposta():
@@ -50,13 +51,20 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 	):
 		return
 
+	# brought over from the previous software: a client from then, and no news
+	annuncia = not doc.flags.get("importato")
+
 	def registra():
 		for riga in righe:
 			persona = person_of(riga.party_type, riga.party)
 			if regole.accolto(riga.get("arrived_at"), riga.status):
-				cliente.diventa_cliente(persona, regole.ACCETTAZIONE, quando=riga.arrived_at)
+				cliente.diventa_cliente(
+					persona, regole.ACCETTAZIONE, quando=riga.arrived_at, annuncia=annuncia
+				)
 			if regole.presente(doc.status, riga.status):
-				cliente.diventa_cliente(persona, regole.APPUNTAMENTO_SVOLTO, quando=doc.starts_on)
+				cliente.diventa_cliente(
+					persona, regole.APPUNTAMENTO_SVOLTO, quando=doc.starts_on, annuncia=annuncia
+				)
 
 	_senza_fermare(_("Client not recorded from appointment {0}").format(doc.name), doc, registra)
 

@@ -172,7 +172,10 @@ def _lascia(appuntamento, persona: str | None) -> None:
 
 def aggancia(appuntamento) -> None:
 	"""`validate` of an appointment, before its price: a new one of a cycle's service
-	joins the cycle; one whose service or person changed leaves it."""
+	joins the cycle; one whose service or person changed leaves it. One brought over
+	from the previous software joins nothing: it happened, or was booked, there."""
+	if appuntamento.flags.get("importato"):
+		return
 	ciclo = appuntamento.get("session_cycle")
 	if ciclo:
 		riga = frappe.db.get_value(CICLO, ciclo, ["service", "lead"], as_dict=True)

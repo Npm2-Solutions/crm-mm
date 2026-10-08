@@ -262,7 +262,11 @@ ORE_PRIMA = 1
 def appuntamento_prenotato(doc, method=None) -> None:
 	"""An appointment was booked: the forms the templates say to send go by link,
 	once the booking is saved (and in a job: the booking does not wait for mail)."""
-	if doc.get("status") == "Cancelled" or not any(m["send_before"] for m in modelli_che_si_chiedono()):
+	if (
+		doc.get("status") == "Cancelled"
+		# brought over from the previous software: nothing is asked of anybody
+		or doc.flags.get("importato")
+	) or not any(m["send_before"] for m in modelli_che_si_chiedono()):
 		return
 	frappe.enqueue(
 		"crm.moduli.dovuti.manda_con_la_prenotazione",

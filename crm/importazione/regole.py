@@ -124,9 +124,11 @@ def riconosci(intestazione: list) -> dict[int, str]:
 	return mappa
 
 
-def data(valore) -> datetime.date | None:
+def data(valore, anche_futura: bool = False) -> datetime.date | None:
 	"""A date as a sheet gives it: a date, Excel's serial number, «02/01/1980»,
-	«2-1-80», «1980-01-02». None when it is empty; ValueError when it is not one."""
+	«2-1-80», «1980-01-02». None when it is empty; ValueError when it is not one.
+	A birth is never in the future; ``anche_futura`` for a date that may be (an
+	appointment)."""
 	if valore in (None, ""):
 		return None
 	if isinstance(valore, datetime.datetime):
@@ -142,7 +144,7 @@ def data(valore) -> datetime.date | None:
 			giorno = datetime.datetime.strptime(testo, formato).date()
 		except ValueError:
 			continue
-		if giorno.year > datetime.date.today().year:
+		if giorno.year > datetime.date.today().year and not anche_futura:
 			# «80» is 1980, never 2080
 			giorno = giorno.replace(year=giorno.year - 100)
 		return giorno
@@ -209,7 +211,10 @@ def nome_proprio(testo: str) -> str:
 	stays as it is."""
 	testo = " ".join(str(testo or "").split())
 	if testo.isupper() or testo.islower():
-		return " ".join(parola[:1].upper() + parola[1:].lower() for parola in testo.split(" "))
+		# «D'AMICO» is «D'Amico», «ROSSI-BIANCHI» «Rossi-Bianchi»
+		return re.sub(
+			r"[^\s'’-]+", lambda pezzo: pezzo.group(0)[:1].upper() + pezzo.group(0)[1:].lower(), testo
+		)
 	return testo
 
 
@@ -279,7 +284,7 @@ def persona(riga: list, mappa: dict[int, str], intestazione: list) -> tuple[dict
 
 def chiavi(dati: dict) -> list[tuple[str, str]]:
 	"""How a person already here is found, the surest first: their fiscal code,
-	their email, their mobile."""
+	their email, their mobile, else their name with their birth date."""
 	trovate = []
 	if dati.get("fiscal_code"):
 		trovate.append(("fiscal_code", dati["fiscal_code"]))
@@ -287,4 +292,13 @@ def chiavi(dati: dict) -> list[tuple[str, str]]:
 		trovate.append(("email", dati["email"]))
 	if ultime_nove(dati.get("mobile_no")):
 		trovate.append(("mobile_no", ultime_nove(dati["mobile_no"])))
+	nascita = dati.get("birth_date")
+	if nascita and (dati.get("first_name") or dati.get("last_name")):
+		quando = nascita.isoformat() if hasattr(nascita, "isoformat") else str(nascita)
+		trovate.append(
+			(
+				"name_birth",
+				"|".join((semplice(dati.get("first_name")), semplice(dati.get("last_name")), quando)),
+			)
+		)
 	return trovate

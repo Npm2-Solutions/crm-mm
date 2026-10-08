@@ -67,6 +67,8 @@ class IValori(unittest.TestCase):
 		self.assertEqual(R.nome_proprio("ROSSI"), "Rossi")
 		self.assertEqual(R.nome_proprio("de luca"), "De Luca")
 		self.assertEqual(R.nome_proprio("McDonald"), "McDonald")
+		self.assertEqual(R.nome_proprio("D'AMICO ROSA"), "D'Amico Rosa")
+		self.assertEqual(R.nome_proprio("rossi-bianchi"), "Rossi-Bianchi")
 
 
 class UnaRiga(unittest.TestCase):
