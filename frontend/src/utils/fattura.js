@@ -113,3 +113,17 @@ export function rigaVuota(professionista = '') {
     rate: 0,
   }
 }
+
+/**
+ * How many times the person was reminded of an invoice still to pay, and when
+ * last (crm/invoicing/solleciti.py): «Reminded 2 times, the last on 8 October».
+ * Nothing when it never was. `t` translates, `giorno` writes the day.
+ */
+export function fraseDeiSolleciti(solleciti, t, giorno) {
+  const quanti = solleciti?.count || 0
+  if (!quanti) return ''
+  const ultimo = giorno(solleciti.last)
+  return quanti === 1
+    ? t('Reminded once, on {0}', [ultimo])
+    : t('Reminded {0} times, the last on {1}', [quanti, ultimo])
+}

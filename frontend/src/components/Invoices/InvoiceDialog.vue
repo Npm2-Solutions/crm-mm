@@ -372,6 +372,11 @@
                     ])
                   : __('Still to collect.')
               }}
+              <!-- the reminders the person had of it (Settings > Invoicing >
+                   Payments and reminders) -->
+              <span v-if="!vista.collected_on && solleciti" class="block">
+                {{ solleciti }}
+              </span>
             </span>
             <Button
               v-if="vista.can.collect"
@@ -556,6 +561,7 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
 import {
   datiDaInviare,
+  fraseDeiSolleciti,
   righeDeiTotali,
   rigaVuota,
   titoloDellaFattura,
@@ -681,6 +687,15 @@ const riepilogoCliente = computed(() => {
     .filter(Boolean)
     .join(' · ')
 })
+
+// «Reminded 2 times, the last on 8 October»: nothing while it never was
+const solleciti = computed(() =>
+  fraseDeiSolleciti(
+    vista.value?.reminders,
+    (testo, valori) => __(testo, valori),
+    (giorno) => formatDate(giorno, 'D MMMM YYYY'),
+  ),
+)
 
 const metodoDiPagamento = computed(() => {
   const metodo = vista.value?.payment?.payment_method

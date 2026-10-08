@@ -205,6 +205,18 @@
             <span class="text-p-sm text-ink-gray-6">
               {{ formatDate(fattura.posting_date, 'D MMM YYYY') }}
             </span>
+            <span
+              v-if="fattura.reminders?.count"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{
+                fraseDeiSolleciti(
+                  fattura.reminders,
+                  (testo, valori) => __(testo, valori),
+                  (giorno) => formatDate(giorno, 'D MMM YYYY'),
+                )
+              }}
+            </span>
           </span>
           <span class="shrink-0 text-base tabular-nums text-ink-gray-8">
             {{ soldi(fattura.amount, righe.to_collect.currency) }}
@@ -380,6 +392,7 @@ import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { useFattura } from '@/composables/fattura'
+import { fraseDeiSolleciti } from '@/utils/fattura'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
 import { appLocale } from '@/utils/locale'

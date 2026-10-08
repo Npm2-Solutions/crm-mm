@@ -3,6 +3,7 @@
 
 import {
   datiDaInviare,
+  fraseDeiSolleciti,
   righeDeiTotali,
   rigaVuota,
   titoloDellaFattura,
@@ -123,5 +124,25 @@ describe('the invoice dialog', () => {
       rate: 0,
     })
     expect(rigaVuota().service_provider).toBe('')
+  })
+})
+
+describe('the reminders of an invoice still to pay', () => {
+  const t = (testo, valori) =>
+    testo.replace(/\{(\d)\}/g, (_, i) => String(valori[i]))
+  const giorno = (valore) => `[${valore}]`
+
+  it('says nothing of an invoice never reminded', () => {
+    expect(fraseDeiSolleciti(null, t, giorno)).toBe('')
+    expect(fraseDeiSolleciti({ count: 0, last: null }, t, giorno)).toBe('')
+  })
+
+  it('says how many times, and the last day', () => {
+    expect(fraseDeiSolleciti({ count: 1, last: '2026-10-08' }, t, giorno)).toBe(
+      'Reminded once, on [2026-10-08]',
+    )
+    expect(fraseDeiSolleciti({ count: 2, last: '2026-10-22' }, t, giorno)).toBe(
+      'Reminded 2 times, the last on [2026-10-22]',
+    )
   })
 })

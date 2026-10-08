@@ -475,6 +475,13 @@ export const MENU = [
           { key: 'Providers', label: 'Providers' },
         ],
       },
+      // how the clients pay, and the reminders of what they still owe
+      {
+        key: 'Payment reminders',
+        label: 'Payments and reminders',
+        description:
+          'How the clients pay, and the reminders of the invoices still to pay.',
+      },
       // what a centre opens once a year, if ever: the switches over everything,
       // and the register the accountant confirms
       {

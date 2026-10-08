@@ -20,7 +20,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate
 
-from crm.invoicing import documento, incassi, prova, scelte
+from crm.invoicing import documento, incassi, prova, scelte, solleciti
 from crm.invoicing.engine import voci
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.permissions.livelli import puo
@@ -224,6 +224,10 @@ def _vista(doc) -> dict:
 		# when its money reached the centre: empty, still to collect (`incassi`)
 		"collected_on": str(doc.collected_on) if doc.collected_on else None,
 		"collectable": incassi.da_incassare(doc),
+		# how many times the person was reminded of it, and when last (`solleciti`)
+		"reminders": solleciti.di_fatture([doc.name]).get(doc.name)
+		if incassi.da_incassare(doc) and not bozza
+		else None,
 		# what the SdI said when it refused it: the thing to correct
 		"rejection": doc.sdi_message if doc.sdi_status == "scartata" else None,
 		# what the SdI's own checks found in the file before it leaves, each with its code

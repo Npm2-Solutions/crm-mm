@@ -421,6 +421,9 @@ const PAGINE = {
   'Qualification register': aRichiesta(
     () => import('@/components/Settings/Invoicing/QualificationsSettings.vue'),
   ),
+  'Payment reminders': aRichiesta(
+    () => import('@/components/Settings/Invoicing/PaymentReminders.vue'),
+  ),
   'Invoicing defaults': aRichiesta(
     () => import('@/components/Settings/Invoicing/InvoicingDefaults.vue'),
   ),

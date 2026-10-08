@@ -103,6 +103,10 @@ def della_persona(lead: str) -> dict | None:
 	def da_pagare(riga) -> float:
 		return flt(riga.net_payable) or flt(riga.grand_total)
 
+	from crm.invoicing import solleciti
+
+	# how many times each was reminded, and when last (`solleciti`)
+	sollecitate = solleciti.di_fatture([riga.name for riga in aperte[:NEL_RIEPILOGO]])
 	return {
 		"count": len(aperte),
 		"total": sum(da_pagare(riga) for riga in aperte),
@@ -113,6 +117,7 @@ def della_persona(lead: str) -> dict | None:
 				"document_number": riga.document_number,
 				"posting_date": str(riga.posting_date) if riga.posting_date else None,
 				"amount": da_pagare(riga),
+				"reminders": sollecitate.get(riga.name),
 			}
 			for riga in aperte[:NEL_RIEPILOGO]
 		],

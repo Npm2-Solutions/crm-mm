@@ -46794,3 +46794,93 @@ msgstr "1 per niente"
 
 msgid "10 very much"
 msgstr "10 moltissimo"
+
+msgid "Invoice {0} of {1}, for {2}, is still to be paid."
+msgstr "La fattura {0} del {1}, di {2}, risulta ancora da pagare."
+
+msgid "a kind reminder from {0}."
+msgstr "un gentile promemoria da {0}."
+
+msgid "How to pay:"
+msgstr "Come pagare:"
+
+msgid "See your invoices"
+msgstr "Vedi le tue fatture"
+
+msgid "If you have already paid, please ignore this message, and thank you."
+msgstr "Se hai già pagato, ignora questo messaggio, e grazie."
+
+msgid "Payment reminder: invoice {0}"
+msgstr "Promemoria di pagamento: fattura {0}"
+
+msgid "A payment reminder"
+msgstr "Un promemoria di pagamento"
+
+msgid "How to pay: {0}"
+msgstr "Come pagare: {0}"
+
+msgid "If you have already paid, please ignore this message."
+msgstr "Se hai già pagato, ignora questo messaggio."
+
+msgid "CRM Payment Reminder Settings"
+msgstr "Impostazioni dei solleciti di pagamento"
+
+msgid "How to pay"
+msgstr "Come pagare"
+
+msgid "Shown to the person in their area beside what is left to pay, and in the reminders: an IBAN, «at the desk», a payment link. Empty, nothing is said."
+msgstr "Si legge nell'area della persona accanto a quello che resta da pagare, e nei solleciti: un IBAN, «alla cassa», un link di pagamento. Vuoto, non si dice nulla."
+
+msgid "Payment reminders"
+msgstr "Solleciti di pagamento"
+
+msgid "Remind the clients of invoices still to pay"
+msgstr "Sollecita i clienti per le fatture ancora da pagare"
+
+msgid "Every morning, a polite reminder of an invoice issued to a person and not collected yet. Never a credit note nor a test invoice. Off to start with."
+msgstr "Ogni mattina, un promemoria gentile per una fattura emessa a una persona e non ancora incassata. Mai una nota di credito né una fattura di prova. Spento all'inizio."
+
+msgid "First reminder, days after the due date"
+msgstr "Primo sollecito, giorni dopo la scadenza"
+
+msgid "The due date is the last one of the invoice's payment schedule, else the day it was issued."
+msgstr "La scadenza è l'ultima delle rate della fattura, altrimenti il giorno in cui è stata emessa."
+
+msgid "Days between reminders"
+msgstr "Giorni tra un sollecito e l'altro"
+
+msgid "Reminders at most"
+msgstr "Solleciti al massimo"
+
+msgid "Only from this amount"
+msgstr "Solo da questo importo"
+
+msgid "A smaller amount is never reminded."
+msgstr "Un importo più piccolo non si sollecita mai."
+
+msgid "How the reminders go"
+msgstr "Come partono i solleciti"
+
+msgid "With a button to their invoices in the area, where the person has one."
+msgstr "Con un pulsante per le sue fatture nell'area, se la persona ce l'ha."
+
+msgid "By SMS too"
+msgstr "Anche per SMS"
+
+msgid "From the centre's sender; never to who wrote STOP to the centre's SMS."
+msgstr "Dal mittente del centro; mai a chi ha scritto STOP agli SMS del centro."
+
+msgid "Payments and reminders"
+msgstr "Pagamenti e solleciti"
+
+msgid "How the clients pay, and a polite reminder of the invoices they still have to pay."
+msgstr "Come pagano i clienti, e un promemoria gentile per le fatture che devono ancora pagare."
+
+msgid "How the clients pay, and the reminders of the invoices still to pay."
+msgstr "Come pagano i clienti, e i solleciti delle fatture ancora da pagare."
+
+msgid "Reminded once, on {0}"
+msgstr "Sollecitata una volta, il {0}"
+
+msgid "Reminded {0} times, the last on {1}"
+msgstr "Sollecitata {0} volte, l'ultima il {1}"

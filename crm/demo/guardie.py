@@ -18,7 +18,7 @@ So, while the demo data are in (or being made):
   never told of a demo person, a demo ad's preview is never asked of Meta, a demo
   post is marked published at its time, never handed to a network - as a demo SMS
   is kept as sent -, a demo invoice never reaches Fatture in Cloud and a demo
-  appointment is never reminded;
+  appointment is never reminded, nor a demo person of what they owe;
 - the public booking page offers the demo's services only to somebody signed in,
   who is trying the page out: never to a visitor;
 - a message or a call that comes in from a number a demo person has too is never

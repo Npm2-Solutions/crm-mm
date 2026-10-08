@@ -676,6 +676,8 @@ scheduler_events = {
 		"crm.piani.programmi.apri_del_giorno",
 		# subscriptions: how each stands, the instalments due, the end, the renewals
 		"crm.scheduling.abbonamenti.ogni_giorno",
+		# where the centre switched them on, the reminders of what a person still owes
+		"crm.invoicing.solleciti.ogni_giorno",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
