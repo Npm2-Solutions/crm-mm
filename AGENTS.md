@@ -419,6 +419,16 @@ link) is recorded on the `CRM Online Payment` first. A deposit already paid is
 said in the invoice dialog («Acconto già pagato online»), never subtracted from
 the e-invoice.
 
+### Conventions, health funds and insurances (`crm/convenzioni`, docs/crm/61)
+| File | Role |
+|---|---|
+| `crm/convenzioni/regole.py` + `utils/convenzioni.js` | Pure: a convention's price (its price list's, the centre's less a discount, the centre's), the person's share and the fund's to the cent, half up (`quote`: direct form a fixed, percentage or by-service share never over the total, indirect all the person's), a pratica's state from the appointment and the fund's invoice (`stato`: to authorise, authorised, done, drafted, billed, paid, cancelled, missed), the month, the fund's invoice line (`descrizione`: service, patient, day, authorisation, card - no health data it does not need), the month's CSV for the fund's portal — tested on both sides |
+| `crm/convenzioni/convenzioni.py`, `api.py` + `CRM Convention`, `CRM Convention Cover`, `Settings/Invoicing/ConventionsSettings.vue`, `ConventionCoversSection.vue`, `Invoices/ConventionClaims.vue` | Settings > Invoicing > Conventions and funds (`convenzioni.gestisci`): kind, who pays (a `CRM Organization` with its billing details), direct and/or indirect, prices on a `CRM Price List` or a discount, the person's share, authorisation first, /prenota. A person's covers (card, holder, dates) on the Data tab and the summary (`covers`), following the person (`org_hierarchy`), gone with them. The appointment's `convention`, `convention_form`, `authorisation`: the convention's list before the price (`listino`), its discount after the cycles and subscriptions (`prezzo`), the two shares once the price is final, a quote's too (doc_event `quote_dell_appuntamento`); one person only, never a subscription's place; «Autorizzazione mancante» in the panel (`get_appointment.convention_info`) and at the desk (`nelle_righe`). The person's invoice is their share (`invoicing.api._fattura_da_appuntamento`, nothing when the fund pays it all), the Sistema TS hears only of that; the fund's is one a month through the engine, to the company, `soggetto_iva`, a line a pratica (`fattura_al_fondo`, Invoices > Conventions, `fatture.emetti`), thrown away or cancelled its pratiche are to bill again (`fattura_tolta`); /prenota offers the ones `show_online`, the booking then waits for the centre's yes, with no deposit; the dashboard's «Da incassare dai fondi» (`widgets/conventions.py`) — tested on a site |
+
+A convention never invoices beside the engine: the person's share and the fund's
+month are `CRM Invoice` drafts like any other, test mode included; the fund's goes
+to a VAT subject through the SdI and never to the Sistema TS.
+
 ### The settings (docs/crm/31, 35)
 | File | Role |
 |---|---|
