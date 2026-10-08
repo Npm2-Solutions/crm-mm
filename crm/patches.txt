@@ -113,3 +113,4 @@ crm.patches.v1_0.answers_from_the_phone_read_the_conversation
 crm.patches.v1_0.the_agenda_settings_say_what_it_does
 crm.patches.v1_0.the_desk_opens_dottorcloud_in_its_shell
 crm.patches.v1_0.the_desk_opens_on_the_apps
+crm.patches.v1_0.a_call_nobody_answered_is_still_missed

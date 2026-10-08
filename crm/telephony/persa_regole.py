@@ -9,6 +9,10 @@
   number that called - an Italian or a foreign mobile of the countries the centre
   calls, never a premium-rate number nor a landline, which reads no SMS - at most
   once a day for each number.
+
+When a call counts as missed is the centre's (Settings > Phone > Answering
+service, «Missed calls»): nobody picked up after ringing (on to start with),
+there was nobody to ring, the answering service takes every call.
 """
 
 from __future__ import annotations
@@ -25,6 +29,25 @@ CELLULARI = frozenset(
 )
 
 
+#: The cases of a missed call, each with its switch on `CRM Answering Settings` and
+#: what a centre that never saved one reads.
+NESSUNO_RISPONDE = "nessuno_risponde"
+NESSUNO_DA_FAR_SQUILLARE = "nessuno_da_far_squillare"
+SEGRETERIA = "segreteria"
+CASI = {
+	NESSUNO_RISPONDE: ("missed_when_nobody_answers", 1),
+	NESSUNO_DA_FAR_SQUILLARE: ("missed_when_nobody_to_ring", 0),
+	SEGRETERIA: ("missed_when_service_answers", 0),
+}
+
+
+def conta(caso: str, impostazioni) -> bool:
+	"""Whether a call that ended this way counts as missed, as the centre chose."""
+	campo, prima = CASI[caso]
+	valore = (impostazioni or {}).get(campo)
+	return bool(int(prima if valore is None else valore))
+
+
 def a_chi_scrivere(numero: str | None, consentiti) -> str | None:
 	"""The number to text, as Twilio takes it (E.164); ``None`` when it is not a
 	mobile, is premium-rate or of a country the centre does not call."""
@@ -37,5 +60,6 @@ def a_chi_scrivere(numero: str | None, consentiti) -> str | None:
 
 
 def chiave_del_giorno(numero: str, giorno: datetime.date) -> str:
-	"""Once a day for each number: the day is the centre's."""
+	"""The lock two jobs of the same day race for; once a day is the register's
+	(`crm.telephony.persa.gia_scritto`). The day is the centre's."""
 	return f"crm_sms_chiamata_persa:{numero}:{giorno.isoformat()}"

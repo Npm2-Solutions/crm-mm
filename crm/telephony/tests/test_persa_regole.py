@@ -31,5 +31,17 @@ class AChiScrivere(unittest.TestCase):
 		self.assertNotEqual(R.chiave_del_giorno("+39333", oggi), R.chiave_del_giorno("+39333", domani))
 
 
+class Conta(unittest.TestCase):
+	def test_nessuno_risponde_conta_da_subito(self):
+		self.assertTrue(R.conta(R.NESSUNO_RISPONDE, {}))
+		self.assertFalse(R.conta(R.NESSUNO_RISPONDE, {"missed_when_nobody_answers": 0}))
+
+	def test_gli_altri_casi_solo_se_il_centro_li_accende(self):
+		for caso in (R.NESSUNO_DA_FAR_SQUILLARE, R.SEGRETERIA):
+			self.assertFalse(R.conta(caso, {}))
+		self.assertTrue(R.conta(R.NESSUNO_DA_FAR_SQUILLARE, {"missed_when_nobody_to_ring": 1}))
+		self.assertTrue(R.conta(R.SEGRETERIA, {"missed_when_service_answers": 1}))
+
+
 if __name__ == "__main__":
 	unittest.main()
