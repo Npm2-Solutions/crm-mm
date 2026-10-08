@@ -1252,6 +1252,9 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 			"cancel_notice_hours",
 			"reschedule_notice_hours",
 			"max_reschedules",
+			# paid online when booking (`crm.pagamenti`)
+			"online_payment",
+			"online_deposit",
 		)
 		if key in payload
 	}

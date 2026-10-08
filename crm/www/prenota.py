@@ -29,6 +29,8 @@ def get_context(context):
 		"staff": form.get("professionista") or form.get("staff") or path.get("staff", ""),
 		"category": form.get("categoria") or form.get("category") or path.get("category", ""),
 		"token": form.get("token") or "",
+		# back from Stripe's page (`crm.pagamenti`): «fatto» or «annullato»
+		"payment": (form.get("pagamento") or "")[:20],
 		"embed": bool(form.get("embed")),
 		"lang": (form.get("lang") or frappe.local.lang or "it")[:2],
 		# campaigns and the CRM itself can open the page with the client already known

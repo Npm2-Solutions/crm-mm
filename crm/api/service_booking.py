@@ -364,6 +364,23 @@ def _service_card(service) -> dict:
 		"location": service.get("location") or "",
 		# held by video: the page says so, and asks for no room
 		"online_visit": bool(cint(service.get("online_visit"))),
+		# paid online when booking (`crm.pagamenti`): what, before the details
+		"deposit": _acconto_della_scheda(service, prices[0]),
+	}
+
+
+def _acconto_della_scheda(service, prezzo) -> dict | None:
+	"""What the booking page says a service asks online: the deposit, or the price."""
+	from crm.pagamenti import pagamenti
+	from crm.pagamenti import regole as pagamenti_regole
+
+	importo = pagamenti.acconto_da_chiedere(service, prezzo)
+	if not importo:
+		return None
+	return {
+		"full": service.get("online_payment") == pagamenti_regole.TUTTO,
+		"amount": importo,
+		"formatted": _money(importo, service.currency),
 	}
 
 
@@ -739,6 +756,11 @@ def book(
 		booked_by=booker if lead != booker else None,
 	)
 	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
+	# paid online first (`crm.pagamenti`): the place held as a request until Stripe says paid
+	from crm.pagamenti import pagamenti
+
+	# whether it asks anything (the amount, once the appointment has its price)
+	chiede_acconto = bool(pagamenti.acconto_da_chiedere(doc, 1, lead, booker))
 	if assenze == rules_mod.NO_SHOW_APPROVAL:
 		# a seat in a class is no booking of its own to approve: the desk books it
 		if slot.join_appointment:
@@ -760,7 +782,7 @@ def book(
 			{
 				"doctype": "CRM Appointment",
 				"service": doc.name,
-				"status": status,
+				"status": "Scheduled" if chiede_acconto else status,
 				"starts_on": to_system_naive(slot.start),
 				"ends_on": to_system_naive(slot.end),
 				"staff": [{"user": user, "required": 1} for user in slot.staff],
@@ -774,6 +796,22 @@ def book(
 		appointment.insert(ignore_permissions=True)
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
+	if chiede_acconto:
+		importo = pagamenti.acconto_da_chiedere(
+			doc, _il_mio_prezzo(appointment, _my_rows(appointment, token)), lead
+		)
+		if importo:
+			from crm.pagamenti.cliente import ErroreStripe
+
+			try:
+				link = pagamenti.chiedi_acconto(appointment, token, lead, importo, status, email)
+			except ErroreStripe as errore:
+				# nothing booked without its deposit: the request's rollback gives the place back
+				frappe.throw(errore.in_parole(), title=_("Online payment"))
+			# told once it is paid (`pagamenti._acconto_pagato`)
+			return {**public_view(appointment, token), "email_sent": False, "checkout_url": link["url"]}
+		if appointment.status != status and not slot.join_appointment:
+			appointment.db_set("status", status)
 	mandata = send_client_email(appointment, token, "booked")
 	notify_staff(
 		appointment,
@@ -903,6 +941,15 @@ def _my_rows(appointment, token: str) -> list:
 	return [row for row in appointment.participants if row.access_token == token]
 
 
+def _il_mio_prezzo(appointment, mine) -> float:
+	"""What the booking costs whoever holds ``mine``: their seats, or the appointment."""
+	return (
+		sum(flt(r.amount) for r in mine)
+		if cint(appointment.per_participant)
+		else flt(appointment.total_amount)
+	)
+
+
 def public_view(appointment, token: str) -> dict:
 	service = frappe.get_cached_doc("CRM Service", appointment.service)
 	rules = _rules(service)
@@ -916,11 +963,7 @@ def public_view(appointment, token: str) -> dict:
 	cancel_block = rules.check_cancel(start, now) if active else "inactive"
 	move_block = rules.check_reschedule(start, now, appointment.reschedule_count) if active else "inactive"
 	client_tz = next((r.timezone for r in mine if r.get("timezone")), None) or str(scheduling_tz())
-	amount = (
-		sum(flt(r.amount) for r in mine)
-		if cint(appointment.per_participant)
-		else flt(appointment.total_amount)
-	)
+	amount = _il_mio_prezzo(appointment, mine)
 	show_price = _flag(service, "show_price_online")
 	# «I'll be there», from the reminder that linked here (crm.scheduling.promemoria)
 	from crm.scheduling import promemoria
@@ -930,6 +973,9 @@ def public_view(appointment, token: str) -> dict:
 		if active and mine
 		else {"can_confirm": False, "confirmed": False}
 	)
+	from crm.pagamenti import pagamenti
+
+	pagamento = pagamenti.per_la_pagina(appointment, token)
 	return {
 		"token": token,
 		"service": service.service_name,
@@ -937,7 +983,11 @@ def public_view(appointment, token: str) -> dict:
 		"status": status,
 		# waits for the centre's yes: an online booking of a service it approves by hand;
 		# what the desk booked is booked
-		"pending_approval": status == "Scheduled" and appointment.get("source") == "Online",
+		"pending_approval": status == "Scheduled"
+		and appointment.get("source") == "Online"
+		and not (pagamento and pagamento["state"] == "waiting"),
+		# the deposit paid online, or still to pay (`crm.pagamenti`)
+		"payment": pagamento,
 		"start": start.isoformat(),
 		"end": end.isoformat(),
 		"timezone": client_tz,
@@ -1223,6 +1273,8 @@ def send_client_email(appointment, token: str, kind: str) -> bool:
 			lines.append(f"<p>{esc(visite_online.frase(visite_online.area_per(persona)))}</p>")
 		if view["formatted_price"]:
 			lines.append(f"<p>{_('Price')}: <b>{view['formatted_price']}</b></p>")
+		if (view.get("payment") or {}).get("state") == "paid" and kind != "cancelled":
+			lines.append(f"<p>{_('Deposit paid online')}: <b>{view['payment']['formatted_amount']}</b></p>")
 		if view["pending_approval"] and kind == "booked":
 			lines.append(f"<p>{_('We will confirm it shortly.')}</p>")
 		if view["instructions"] and kind != "cancelled":

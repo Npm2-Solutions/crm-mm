@@ -204,6 +204,7 @@
       button.primary:disabled { opacity: .5; cursor: default; }
       button.ghost, a.btn { background: transparent; color: var(--ink); border-color: var(--border); }
       button.ghost:hover, a.btn:hover { background: var(--hover); }
+      a.btn.primary, a.btn.primary:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
       button.danger { background: var(--danger-bg); color: var(--danger); }
       .msg { border-radius: 8px; padding: .75rem 1rem; font-size: .88rem; margin-top: 1rem; }
       .msg.error { background: var(--danger-bg); color: var(--danger); }
@@ -302,6 +303,10 @@
           waitedTitle: "Sei in lista d'attesa", waitedSub: "Ti abbiamo mandato un'email: dal suo link puoi vedere la lista o uscirne.",
           waitedLink: "Vedi o esci dalla lista d'attesa", waitClass: "Lezione", partmorning: "Mattina", partafternoon: "Pomeriggio", partevening: "Sera",
           online: "Visita online", onlineHow: "È una visita online: entri dalla tua area, da 15 minuti prima dell'inizio. Ti scriviamo come entrarci.",
+          deposit: "Acconto online", fullOnline: "Da pagare online", depositNote: "Dopo la conferma paghi {0} con carta su Stripe: la prenotazione è confermata appena il pagamento arriva.",
+          toPay: "Vai al pagamento", payTitle: "Manca il pagamento", paySub: "Il posto è tenuto per 30 minuti: paga {0} per confermare la prenotazione.",
+          payWaiting: "Pagamento ricevuto: stiamo aspettando la conferma di Stripe…", payCancelled: "Il pagamento non è stato fatto: puoi riprovare finché il posto è tenuto.",
+          payExpired: "Il pagamento non è arrivato in tempo: il posto è stato liberato.", depositPaid: "Acconto pagato online", depositRefunded: "Acconto restituito",
         },
         en: {
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
@@ -339,6 +344,10 @@
           waitedTitle: "You are on the waiting list", waitedSub: "We've emailed you: from its link you can see the list or leave it.",
           waitedLink: "See or leave the waiting list", waitClass: "Class", partmorning: "Morning", partafternoon: "Afternoon", partevening: "Evening",
           online: "Online visit", onlineHow: "It is an online visit: you enter it from your area, from 15 minutes before it starts. We write to you how to enter it.",
+          deposit: "Online deposit", fullOnline: "To pay online", depositNote: "After confirming you pay {0} by card on Stripe: the booking is confirmed as soon as the payment arrives.",
+          toPay: "Go to payment", payTitle: "Payment missing", paySub: "Your place is held for 30 minutes: pay {0} to confirm the booking.",
+          payWaiting: "Payment received: waiting for Stripe's confirmation…", payCancelled: "The payment was not made: you can try again while the place is held.",
+          payExpired: "The payment did not arrive in time: the place was freed.", depositPaid: "Deposit paid online", depositRefunded: "Deposit given back",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -488,6 +497,7 @@
         if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
         if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
         if (S.service.formatted_price) box.append(h("div", { class: "price" }, (S.service.per_participant && S.seats > 1 ? `${S.seats} × ` : "") + priceLabel(S.service)));
+        if (S.service.deposit) box.append(row("€", T(S.service.deposit.full ? "fullOnline" : "deposit"), S.service.deposit.formatted));
         if (S.service.manual_approval) box.append(h("div", { class: "msg warn" }, T("manual")));
       }
 
@@ -706,6 +716,8 @@
         const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
         form.append(h("h2", {}, T("stepDetails")));
         const other = personFields(form, svc, true);
+        // paid online first: said before the button, not discovered after it
+        if (svc.deposit) form.append(h("div", { class: "msg info" }, T("depositNote").replace("{0}", svc.deposit.formatted)));
         form.append(h("div", { class: "actions" },
           h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
           h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
@@ -869,8 +881,10 @@
             for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
           }, true);
-          S.busy = false;
           history.replaceState(null, "", "?token=" + encodeURIComponent(S.result.token));
+          // a deposit: to Stripe's page, back to this booking once paid
+          if (S.result.checkout_url) { location.href = S.result.checkout_url; return; }
+          S.busy = false;
           go("done");
         } catch (e) {
           S.busy = false; S.error = e.message;
@@ -878,9 +892,33 @@
           if (/available|disponibil/i.test(e.message)) { S.slot = null; go("time"); S.error = e.message; loadMonth(); } else render();
         }
       }
+      async function waitForPayment(tries) {
+        await new Promise((done) => setTimeout(done, 3000));
+        try { S.manage = await api("get_booking", { token: BOOT.token }); } catch (e) { return; }
+        const waiting = S.manage.payment && S.manage.payment.state === "waiting";
+        if (!waiting || tries >= 20) {
+          // not heard yet after a minute: the page as it is, with the way to pay again
+          if (waiting) BOOT.payment = "";
+          // the confirmation the person was waiting for: «we emailed you» too
+          S.result = S.manage;
+          render();
+          return;
+        }
+        waitForPayment(tries + 1);
+      }
+
       function readCookie(name) { const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; }
 
       function outcome(b, gestione = false) {
+        const pay = b.payment;
+        if (pay && pay.state === "waiting" && b.status !== "Cancelled") {
+          const back = BOOT.payment;
+          const sub = back === "fatto" ? T("payWaiting") : T("paySub").replace("{0}", pay.formatted_amount);
+          const hero = h("div", { class: "done-hero pending" }, h("div", { class: "badge", "aria-hidden": "true" }, "€"), h("h2", {}, T("payTitle")), h("div", { class: "hint", role: "status" }, sub));
+          if (back === "annullato") hero.append(h("div", { class: "msg warn" }, T("payCancelled")));
+          if (pay.checkout_url && back !== "fatto") hero.append(h("div", { class: "actions", style: "justify-content:center" }, h("a", { class: "btn primary", href: pay.checkout_url }, T("toPay"))));
+          return hero;
+        }
         const kind = b.status === "Cancelled" ? "cancelled" : b.pending_approval ? "pending" : "";
         // opened again from its link (an email, a reminder): no «booking confirmed, we emailed you»
         if (gestione && !kind && S.result !== b) return null;
@@ -901,8 +939,10 @@
         add(T("where"), b.online_visit ? T("online") : b.location);
         if (b.seats > 1) add(T("people"), String(b.seats));
         add(T("price"), b.formatted_price);
+        if (b.payment && b.payment.state === "paid") add(T("depositPaid"), b.payment.formatted_amount);
+        if (b.payment && b.payment.state === "refunded") add(T("depositRefunded"), b.payment.refunded || b.payment.formatted_amount);
         // what the desk booked is booked: only an online request waits for the centre's yes
-        add(T("status"), T(b.status === "Scheduled" && !b.pending_approval ? "stBooked" : "st" + b.status));
+        add(T("status"), b.payment && b.payment.state === "waiting" && b.status !== "Cancelled" ? T("payTitle") : T(b.status === "Scheduled" && !b.pending_approval ? "stBooked" : "st" + b.status));
         return dl;
       }
 
@@ -932,6 +972,7 @@
       function viewManage() {
         const b = S.manage;
         const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b, true), details(b));
+        if (b.payment && b.payment.state === "expired") wrap.append(h("div", { class: "msg warn" }, T("payExpired")));
         if (b.online_visit && b.status !== "Cancelled") wrap.append(h("div", { class: "msg info" }, T("onlineHow")));
         if (b.instructions && b.status !== "Cancelled") wrap.append(h("div", { class: "msg warn" }, b.instructions));
         if (b.confirmed && b.status !== "Cancelled") wrap.append(h("div", { class: "msg success", role: "status" }, T("confirmedNote")));
@@ -1007,6 +1048,9 @@
             S.manage = await api("get_booking", { token: BOOT.token });
             S.step = "manage";
             render();
+            // back from Stripe's page: Stripe tells the centre a moment later
+            if (BOOT.payment === "fatto" && S.manage.payment && S.manage.payment.state === "waiting") waitForPayment(0);
+            else if (BOOT.payment === "fatto") { S.result = S.manage; render(); }
             return;
           }
           const pre = BOOT.service && S.catalog.services.find((s) => s.id === BOOT.service || s.name === BOOT.service);

@@ -604,6 +604,9 @@ const emptyForm = () => ({
   price_per_participant: false,
   online_visit: false,
   bookable_online: false,
+  // paid online when booking, on the centre's Stripe (crm/pagamenti)
+  online_payment: '',
+  online_deposit: 0,
   location: '',
   ...ONLINE_DEFAULTS,
   online_overrides: [],
