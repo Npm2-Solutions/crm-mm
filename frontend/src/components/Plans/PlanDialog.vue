@@ -454,7 +454,7 @@
             variant="solid"
             :label="__('Publish')"
             :loading="busy === 'publish'"
-            @click="publish"
+            @click="publish()"
           />
         </div>
         <div

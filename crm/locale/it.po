@@ -47586,3 +47586,9 @@ msgstr "Secondo promemoria inviato"
 #: frontend/src/utils/promemoriaAppuntamenti.js
 msgid "Second reminder not delivered"
 msgstr "Secondo promemoria non arrivato"
+
+msgid "Removed for the whole centre"
+msgstr "Sparisce per tutto il centro"
+
+msgid "Removed for you"
+msgstr "Sparisce solo per te"

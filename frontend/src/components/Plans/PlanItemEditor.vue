@@ -191,6 +191,7 @@
             v-for="dose in DOSI"
             :key="testoDellaDose(dose)"
             size="sm"
+            class="touch-target"
             :variant="eLaDose(dose) ? 'subtle' : 'outline'"
             :label="testoDellaDose(dose)"
             :aria-pressed="eLaDose(dose)"

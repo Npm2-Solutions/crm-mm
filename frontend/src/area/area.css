@@ -363,6 +363,15 @@
     justify-content: center;
     padding: 0;
     font-variant-numeric: tabular-nums;
+    /* the same ink in both themes: on a done item, in the dark, the step's grey
+       read grey on grey */
+    color: var(--ink-gray-8);
+  }
+  /* a finger's key, wherever a finger taps: sideways and on a tablet too */
+  @media (pointer: coarse) {
+    .area-scala__punto {
+      height: 40px;
+    }
   }
   /* on a phone, two rows of five: ten in a row were 28px wide, 21px at 320 */
   @media (max-width: 479px) {

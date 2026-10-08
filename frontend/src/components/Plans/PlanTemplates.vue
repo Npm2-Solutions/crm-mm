@@ -48,6 +48,13 @@
         </button>
         <!-- removed after a second word: a template is lost for the whole centre -->
         <template v-if="template.mine && daTogliere === template.name">
+          <span class="text-p-xs text-ink-gray-7">
+            {{
+              template.shared
+                ? __('Removed for the whole centre')
+                : __('Removed for you')
+            }}
+          </span>
           <Button
             size="sm"
             :label="__('Cancel')"
