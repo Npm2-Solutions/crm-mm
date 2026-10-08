@@ -37,6 +37,7 @@ class CRMAutomationTrigger(Document):
 			"Callback Requested",
 			"Callback Attempt Failed",
 			"Callback Completed",
+			"Missed Call",
 			"Incoming SMS",
 			"Customer Replied",
 			"Email Opened",

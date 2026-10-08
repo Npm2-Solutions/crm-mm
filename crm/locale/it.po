@@ -47094,3 +47094,33 @@ msgstr "Chi è venuto di recente ha già un appuntamento"
 
 msgid "Book again"
 msgstr "Prenota di nuovo"
+
+msgid "Somebody the centre knows called and nobody answered."
+msgstr "Una persona che il centro conosce ha chiamato e nessuno ha risposto."
+
+msgid "Booking page link"
+msgstr "Link alla pagina di prenotazione"
+
+msgid "We missed you… missed call"
+msgstr "Ti abbiamo cercato… richiamata persa"
+
+msgid "A minute after a call nobody answered, texts the caller the link to book online."
+msgstr "Un minuto dopo una chiamata a cui nessuno ha risposto, manda a chi ha chiamato un SMS con il link per prenotare online."
+
+msgid "Hi {{ first_name }}, sorry we missed your call. We will call you back; to book now: {{ booking_link }}"
+msgstr "Ciao {{ first_name }}, ci dispiace non averti risposto. Ti richiameremo; per prenotare subito: {{ booking_link }}"
+
+msgid "Text callers nobody answered"
+msgstr "Manda un SMS a chi chiama e non trova risposta"
+
+msgid "Text Callers Nobody Answered"
+msgstr "Manda un SMS a chi chiama e non trova risposta"
+
+msgid "A number the centre does not know that finds nobody gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number."
+msgstr "Un numero che il centro non conosce e che non trova nessuno riceve un SMS: il centro richiamerà, con la pagina di prenotazione se il centro prende prenotazioni online. Solo a un cellulare dei paesi che il centro chiama, al massimo una volta al giorno per numero."
+
+msgid "{0}: sorry we missed your call. We will call you back; to book now: {1}"
+msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo; per prenotare subito: {1}"
+
+msgid "{0}: sorry we missed your call. We will call you back as soon as we can."
+msgstr "{0}: ci dispiace non averti risposto. Ti richiameremo appena possibile."

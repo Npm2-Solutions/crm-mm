@@ -228,6 +228,17 @@
             </SettingRow>
           </template>
 
+          <SettingRow
+            :label="__('Text callers nobody answered')"
+            :description="
+              __(
+                'A number the centre does not know that finds nobody gets one SMS: the centre will call back, and the booking page where the centre takes bookings online. Only to a mobile of the countries the centre calls, at most once a day for each number.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.sms_to_missed_callers" size="sm" />
+          </SettingRow>
+
           <!-- what the caller hears -->
           <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
             {{ __('Announcement') }}

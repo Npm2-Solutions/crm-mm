@@ -78,6 +78,12 @@ def trattenuto(numero: str | None) -> bool:
 	return registro.raccolta() is not None or numero_di_prova(numero)
 
 
+def sms_dopo_una_chiamata_persa(numero: str | None) -> bool:
+	"""Whether the SMS to a number nobody knows that found no answer stays unsent
+	(`crm.telephony.persa`): while a part is made, and to a number of the demo's."""
+	return trattenuto(numero)
+
+
 def _numeri_della_demo() -> frozenset[str]:
 	return frappe.cache.get_value(CHIAVE_NUMERI, generator=_leggi_i_numeri)
 

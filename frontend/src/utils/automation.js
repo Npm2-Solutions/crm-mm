@@ -361,6 +361,12 @@ export const TRIGGER_CATALOG = {
   'Appointment Cancelled': { category: 'appointment', icon: 'x-circle' },
   'Appointment No Show': { category: 'appointment', icon: 'user-x' },
   'Appointment Completed': { category: 'appointment', icon: 'check-circle' },
+  // a call nobody answered, from somebody the centre knows (crm.telephony.persa)
+  'Missed Call': {
+    category: 'messaging',
+    icon: 'phone-missed',
+    hint: 'Somebody the centre knows called and nobody answered.',
+  },
   'Incoming SMS': { category: 'messaging', icon: 'message-square' },
   'Customer Replied': {
     category: 'messaging',
@@ -467,6 +473,7 @@ export const MERGE_FIELDS = [
   { token: '{{ mobile_no }}', label: 'Mobile number' },
   { token: '{{ status }}', label: 'Status' },
   { token: '{{ tracked_link("slug") }}', label: 'Tracked link' },
+  { token: '{{ booking_link }}', label: 'Booking page link' },
 ]
 
 /** Full class strings per theme — Tailwind only sees literals, not templates. */
@@ -1179,6 +1186,24 @@ export const RECIPES = [
       newStep('create_task', {
         title: __('Rebook {{ lead_name }}'),
         due_in_days: 0,
+      }),
+    ],
+  },
+  {
+    // off until the centre switches it on, as every recipe: an SMS a minute after
+    // a call nobody answered, with the booking page; STOP is never written to
+    key: 'missed_call',
+    title: 'We missed you… missed call',
+    description:
+      'A minute after a call nobody answered, texts the caller the link to book online.',
+    icon: 'phone-missed',
+    trigger_event: 'Missed Call',
+    build: () => [
+      newStep('wait', { mode: 'duration', days: 0, hours: 0, minutes: 1 }),
+      newStep('send_sms', {
+        message: __(
+          'Hi {{ first_name }}, sorry we missed your call. We will call you back; to book now: {{ booking_link }}',
+        ),
       }),
     ],
   },

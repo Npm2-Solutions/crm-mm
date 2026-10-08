@@ -30,6 +30,7 @@ class CRMAnsweringSettings(Document):
 		message_seconds: DF.Int
 		retry_after_hours: DF.Int
 		ring_seconds: DF.Int
+		sms_to_missed_callers: DF.Check
 		take_messages: DF.Check
 		use_working_hours: DF.Check
 		voice: DF.Literal["alice", "man", "woman", "Polly.Bianca", "Polly.Carla", "Polly.Giorgio"]

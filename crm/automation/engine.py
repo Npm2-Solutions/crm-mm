@@ -47,7 +47,7 @@ Conditions: a group is a list of {field, operator, value} ANDed together;
 contains, is_set, is_not_set, greater_than, less_than.
 
 Text fields render Jinja against the record: "Ciao {{ first_name }}"; tracked
-links via {{ tracked_link("slug") }}.
+links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }}.
 """
 
 import json
@@ -84,6 +84,8 @@ EVENT_TO_TRIGGER = {
 	"callback_requested": "Callback Requested",
 	"callback_attempt_failed": "Callback Attempt Failed",
 	"callback_completed": "Callback Completed",
+	# a call nobody answered, from somebody the centre knows (`crm.telephony.persa`)
+	"call_missed": "Missed Call",
 	"sms_received": "Incoming SMS",
 	"reply_received": "Customer Replied",
 	"email_opened": "Email Opened",
@@ -1015,6 +1017,8 @@ def render(text: str, ref_doc, preview: bool = False) -> str:
 
 	context = ref_doc.as_dict()
 	context["tracked_link"] = tracked_link
+	# the booking page, where the centre takes bookings online (the missed call's recipe)
+	context["booking_link"] = frappe.utils.get_url("/prenota")
 	if preview:
 		try:
 			return _automation_jenv().from_string(text).render(context)
