@@ -455,7 +455,7 @@ into an appointment with a contact is found or made the same way
 | File | Role |
 |---|---|
 | `crm/area/accesso.py` + `crm/www/area.py` | The door: invitation (`CRM Area Access`, role "Client Area User"), a code by email, step-up before a download; every call derives the session's people on the server |
-| `crm/area/api.py` | Appointments with the booking page's link, cycles, invoices; "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session |
+| `crm/area/api.py` | Appointments with the booking page's link, cycles, invoices with what is left to pay of each (`to_pay`, `incassi.da_pagare`: never collected, a credit note or refused) and the total beside the centre's «How to pay» (`solleciti.come_pagare`; in a preview only what the previewer reads counts); "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session |
 | `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the plans, the documents given online, the quotes, shown to whom they have something |
 | `crm/area/messaggi.py` | The board (`CRM Area Message`): the desk writes administration, the chat passes questions; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers |
 | `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |

@@ -487,29 +487,63 @@ def _fatture(person: str) -> list:
 		"CRM Invoice",
 		# a test invoice is the centre's rehearsal, never the person's
 		filters={"party_type": "CRM Lead", "party": person, "docstatus": 1, "test_document": 0},
-		fields=["name", "document_number", "posting_date", "grand_total", "pdf_file"],
+		fields=[
+			"name",
+			"document_number",
+			"posting_date",
+			"grand_total",
+			"net_payable",
+			"pdf_file",
+			"document_type",
+			"collected_on",
+			"sdi_status",
+		],
 		order_by="posting_date desc",
 		limit=50,
 	)
 
 
+def _da_pagare(fattura) -> float:
+	"""What is left to pay of an invoice, by the desk's rule (`incassi`): issued, not
+	a credit note, not collected, not sent back by the SdI. Nothing for the rest."""
+	from crm.invoicing import incassi
+
+	if (
+		fattura.collected_on
+		or (fattura.document_type or "TD01") in incassi.NOTE_DI_CREDITO
+		or fattura.sdi_status == "scartata"
+	):
+		return 0.0
+	return incassi.da_pagare(fattura)
+
+
 @frappe.whitelist()
 def get_invoices(person: str) -> dict:
+	"""The person's invoices, each with what is left to pay of it; the total left,
+	and how the centre is paid (`solleciti.come_pagare`)."""
+	from crm.invoicing import solleciti
+
 	_mia(person, anche_in_anteprima=True)
+	fatture = anteprima.filtra(
+		"CRM Invoice",
+		[
+			{
+				"name": f.name,
+				"number": f.document_number or f.name,
+				"date": f.posting_date,
+				"total": f.grand_total,
+				"to_pay": _da_pagare(f),
+				"has_pdf": bool(f.pdf_file),
+			}
+			for f in _fatture(person)
+		],
+	)
+	# in the centre's preview, only what whoever previews reads counts
+	totale = round(sum(f.get("to_pay") or 0 for f in fatture if not f.get("hidden")), 2)
 	return {
-		"invoices": anteprima.filtra(
-			"CRM Invoice",
-			[
-				{
-					"name": f.name,
-					"number": f.document_number or f.name,
-					"date": f.posting_date,
-					"total": f.grand_total,
-					"has_pdf": bool(f.pdf_file),
-				}
-				for f in _fatture(person)
-			],
-		)
+		"invoices": fatture,
+		"to_pay": totale,
+		"how_to_pay": solleciti.come_pagare() if totale else "",
 	}
 
 

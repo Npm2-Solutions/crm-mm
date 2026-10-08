@@ -1,7 +1,7 @@
 <!--
   The person's papers, in one place as on the brand's phone: what the centre gave
   online - until when, and a download after a code verified in the last minutes -
-  and the invoices, with their PDF.
+  and the invoices, with their PDF, what is left to pay of each and how to pay.
 -->
 <template>
   <div class="flex flex-col gap-5">
@@ -45,6 +45,23 @@
     </section>
     <section class="flex flex-col gap-2">
       <h2 class="area-label">{{ __('Invoices') }}</h2>
+      <!-- what is left to pay of them, and how the centre is paid -->
+      <div v-if="invoices.data?.to_pay" class="area-card flex flex-col gap-1.5">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+          <span class="area-row__title">{{ __('To pay') }}</span>
+          <span class="text-xl font-semibold tabular-nums text-ink-gray-9">
+            {{ money(invoices.data.to_pay) }}
+          </span>
+        </div>
+        <template v-if="invoices.data.how_to_pay">
+          <span class="area-row__sub">{{ __('How to pay') }}</span>
+          <p
+            class="whitespace-pre-line text-p-base text-ink-gray-8 [overflow-wrap:anywhere]"
+          >
+            {{ invoices.data.how_to_pay }}
+          </p>
+        </template>
+      </div>
       <template
         v-for="invoice in invoices.data?.invoices || []"
         :key="invoice.name"
@@ -58,6 +75,12 @@
             </span>
             <span class="area-row__sub tabular-nums">
               {{ day(invoice.date) }} · {{ money(invoice.total) }}
+            </span>
+            <span
+              v-if="invoice.to_pay"
+              class="area-row__sub tabular-nums font-semibold text-ink-amber-8"
+            >
+              {{ __('To pay: {0}', [money(invoice.to_pay)]) }}
             </span>
           </div>
           <!-- the centre's preview downloads nothing -->

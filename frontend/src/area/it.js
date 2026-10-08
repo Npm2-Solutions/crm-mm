@@ -45,6 +45,9 @@ export default {
   Cancel: 'Annulla',
   'Invoice {0}': 'Fattura {0}',
   'PDF not ready': 'PDF non ancora pronto',
+  'To pay': 'Da pagare',
+  'To pay: {0}': 'Da pagare: {0}',
+  'How to pay': 'Come pagare',
   'Whose area': 'Di chi è l’area',
   'Something went wrong: try again.': 'Qualcosa non è andato: riprova.',
   'The code has expired: ask for a new one':

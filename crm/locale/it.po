@@ -46965,3 +46965,6 @@ msgstr "{0} in più del previsto"
 
 msgid "What the day collected, by way of paying, and the cash in the drawer."
 msgstr "Cosa ha incassato la giornata, per metodo di pagamento, e i contanti in cassa."
+
+msgid "To pay: {0}"
+msgstr "Da pagare: {0}"

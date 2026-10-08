@@ -456,3 +456,86 @@ class IMessaggi(AreaCase):
 		for chiamata in (messaggi.area_messages, messaggi.mark_read):
 			with self.assertRaises(frappe.PermissionError, msg=chiamata.__name__):
 				chiamata(self.anna.name)
+
+
+class IlDaPagare(AreaCase):
+	"""What is left to pay of each invoice, the total and how the centre is paid:
+	never a test invoice, nothing for one collected."""
+
+	def fattura(self, **valori):
+		from crm.invoicing.install import semina_qualifiche
+		from crm.tests.test_invoicing import CF_PAZIENTE, InvoicingBase
+
+		frappe.set_user("Administrator")
+		semina_qualifiche()
+		azienda = InvoicingBase.crea_azienda()
+		erogatore = InvoicingBase.crea_erogatore("Studio Neri", "societa_servizi")
+		servizio = InvoicingBase.crea_servizio("Consulenza", healthcare=False, exempt=False)
+		documento = frappe.get_doc(
+			{
+				"doctype": "CRM Invoice",
+				"company": azienda.name,
+				"recipient_type": "persona_fisica",
+				"party_type": "CRM Lead",
+				"party": self.anna.name,
+				"billing_name": "Anna Area",
+				"first_name": "Anna",
+				"last_name": "Area",
+				"fiscal_code": CF_PAZIENTE,
+				"address_line": "Via Verdi 3",
+				"postal_code": "00100",
+				"city": "Roma",
+				"province": "RM",
+				"payment_method": "MP05",
+				"items": [
+					{
+						"billable_service": servizio.name,
+						"service_provider": erogatore.name,
+						"qty": 1,
+						"rate": 65,
+					}
+				],
+			}
+		).insert()
+		documento.submit()
+		frappe.db.set_value(
+			"CRM Invoice", documento.name, {"collected_on": None, "test_document": 0, **valori}
+		)
+		return documento.name
+
+	def test_quanto_resta_e_come_si_paga(self):
+		da_pagare = self.fattura()
+		pagata = self.fattura(collected_on=frappe.utils.today())
+		di_prova = self.fattura(test_document=1)
+		frappe.db.set_single_value(
+			"CRM Payment Reminder Settings", "how_to_pay", "IBAN IT60X0542811101000000123456"
+		)
+		self.invita()
+		self.entra()
+		fatto = api.get_invoices(self.anna.name)
+		righe = {riga["name"]: riga for riga in fatto["invoices"]}
+		self.assertNotIn(di_prova, righe)
+		self.assertEqual(righe[pagata]["to_pay"], 0)
+		self.assertGreater(righe[da_pagare]["to_pay"], 0)
+		self.assertEqual(fatto["to_pay"], righe[da_pagare]["to_pay"])
+		self.assertIn("IT60X0542811101000000123456", fatto["how_to_pay"])
+
+		# in the centre's preview, an invoice the previewer does not read does not count
+		from crm.area import anteprima
+
+		with mock.patch.object(
+			api.anteprima,
+			"filtra",
+			side_effect=lambda doctype, righe: [
+				anteprima.coperta(riga) if riga["name"] == da_pagare else riga for riga in righe
+			],
+		):
+			nascosta = api.get_invoices(self.anna.name)
+		self.assertEqual(nascosta["to_pay"], 0)
+		self.assertEqual(nascosta["how_to_pay"], "")
+
+		# all paid: nothing to say on how to pay
+		frappe.set_user("Administrator")
+		frappe.db.set_value("CRM Invoice", da_pagare, "collected_on", frappe.utils.today())
+		frappe.set_user(ANNA)
+		self.assertEqual(api.get_invoices(self.anna.name)["to_pay"], 0)
