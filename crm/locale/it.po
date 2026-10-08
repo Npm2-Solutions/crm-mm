@@ -16962,7 +16962,7 @@ msgstr "Nessun indirizzo email: dai il link insieme al codice"
 
 #: crm/scheduling/attese.py
 msgid "No email or mobile on file: call them"
-msgstr "Nessuna email né cellulare: chiamala"
+msgstr "Nessuna email né cellulare: da chiamare"
 
 #: crm/invoicing/sdi/itala.py
 msgid "No endpoint for provider {0}: the XML is ready, the channel is not."
@@ -18384,7 +18384,7 @@ msgstr "Proposta da"
 
 #: frontend/src/components/Waiting/WaitingDialog.vue
 msgid "Offered, but nothing could be sent: call them"
-msgstr "Proposto, ma non è partito niente: chiamala"
+msgstr "Proposto, ma non è partito niente: da chiamare"
 
 #: frontend/src/components/Settings/Scheduling/WaitingListSettings.vue
 msgid "Offers"
@@ -40150,7 +40150,7 @@ msgstr "Ha scritto STOP agli SMS del centro: non inviato"
 
 #: crm/scheduling/attese.py
 msgid "They wrote STOP to the centre's SMS and have no email on file: call them"
-msgstr "Ha scritto STOP agli SMS del centro e non ha un'email: chiamala"
+msgstr "Ha scritto STOP agli SMS del centro e non ha un'email: da chiamare"
 
 #: crm/telephony/sms.py
 msgid "Wrote STOP by SMS"
@@ -45900,7 +45900,7 @@ msgstr "{0} per {1}"
 
 #: crm/scheduling/promemoria.py
 msgid "None of the centre's ways reaches them: call them"
-msgstr "Nessun canale del centro la raggiunge: chiamala"
+msgstr "Nessun canale del centro la raggiunge: da chiamare"
 
 #: crm/scheduling/promemoria.py
 msgid "{0}: a reminder of your appointment: {1}, {2}. Reply YES to confirm, NO if you cannot come. To move it: {3}"
@@ -47042,7 +47042,7 @@ msgid "This is not your appointment"
 msgstr "Questo non è un tuo appuntamento"
 
 msgid "It is a little early: you can say you are here from half an hour before."
-msgstr "È un po' presto: puoi segnalare che sei arrivato da mezz'ora prima."
+msgstr "È un po' presto: puoi dire che sei qui da mezz'ora prima."
 
 msgid "This appointment is over."
 msgstr "Questo appuntamento è finito."
@@ -47054,13 +47054,13 @@ msgid "The centre already knows how this appointment went."
 msgstr "Il centro sa già com'è andato questo appuntamento."
 
 msgid "The person says «I'm here» from their area"
-msgstr "La persona segnala «Sono arrivato» dalla sua area"
+msgstr "La persona segnala «Sono qui» dalla sua area"
 
 msgid "From half an hour before their appointment until it ends: the desk's waiting room counts from then"
 msgstr "Da mezz'ora prima dell'appuntamento fino alla fine: la sala d'attesa dell'accoglienza conta da allora"
 
 msgid "«I’m here» from the phone"
-msgstr "«Sono arrivato» dal telefono"
+msgstr "«Sono qui» dal telefono"
 
 msgid "From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told."
 msgstr "Da mezz'ora prima dell'appuntamento fino alla fine, la persona segnala dalla sua area che è al centro: entra in sala d'attesa all'accoglienza, e l'accoglienza viene avvisata."
@@ -47394,3 +47394,63 @@ msgstr "Estremamente probabile"
 
 msgid "What is the main reason for your score?"
 msgstr "Qual è il motivo principale del tuo voto?"
+
+msgid "portion"
+msgstr "porzione"
+
+msgid "portions"
+msgstr "porzioni"
+
+msgid "Left side"
+msgstr "Lato sinistro"
+
+msgid "Right side"
+msgstr "Lato destro"
+
+msgid "Add as an alternative:"
+msgstr "Aggiungi come alternativa:"
+
+msgid "1 done this week"
+msgstr "1 fatta questa settimana"
+
+msgid "It replaces your template «{0}»."
+msgstr "Sostituisce il tuo modello «{0}»."
+
+msgid "Publishing it closes «{0}», which the person follows now: their area will show only this one."
+msgstr "Pubblicandolo si chiude «{0}», che la persona segue ora: nella sua area resterà solo questo."
+
+msgid "Publish and close the other"
+msgstr "Pubblica e chiudi l'altro"
+
+msgid "Closed, the plan leaves the person’s area; what they ticked stays here."
+msgstr "Chiuso, il piano esce dall'area della persona; quello che ha segnato resta qui."
+
+msgid "The draft is deleted with what is written in it."
+msgstr "La bozza viene eliminata con quello che c'è scritto."
+
+msgid "A food needs its kcal for 100 g"
+msgstr "Un alimento ha bisogno delle sue kcal per 100 g"
+
+msgid "Secondary muscles"
+msgstr "Muscoli secondari"
+
+msgid "Effort or pain in the last two weeks: {0}/10 on average, last {1}"
+msgstr "Fatica o dolore nelle ultime due settimane: {0}/10 in media, l'ultima {1}"
+
+msgid "Nothing in this column"
+msgstr "Niente in questa colonna"
+
+msgid "The first reminder leaves from 1 to 365 days after the due date"
+msgstr "Il primo sollecito parte da 1 a 365 giorni dopo la scadenza"
+
+msgid "Between one reminder and the next, from 1 to 365 days"
+msgstr "Tra un sollecito e il successivo, da 1 a 365 giorni"
+
+msgid "From 1 to 10 reminders for an invoice"
+msgstr "Da 1 a 10 solleciti per fattura"
+
+msgid "The minimum amount cannot be below zero"
+msgstr "L'importo minimo non può essere sotto zero"
+
+msgid "A cash closing is made from the reception desk"
+msgstr "Una chiusura di cassa si fa dall'accoglienza"
