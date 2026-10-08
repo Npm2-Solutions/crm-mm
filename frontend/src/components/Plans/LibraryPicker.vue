@@ -40,6 +40,28 @@
         aria-hidden="true"
       />
     </template>
+    <!-- a food's name is read whole, on as many lines as it takes, never cut:
+         «Pasta secca, stand…» at 320px; the framework's button keeps one -->
+    <template v-if="kind === 'food'" #trigger="{ selectedOption, open }">
+      <button
+        type="button"
+        class="flex min-h-8 w-full items-center gap-2 rounded bg-surface-gray-2 px-2 py-1 text-left text-base hover:bg-surface-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3 max-md:min-h-10"
+        aria-haspopup="listbox"
+        :aria-expanded="open"
+      >
+        <span
+          class="min-w-0 flex-1 break-words"
+          :class="selectedOption ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+        >
+          {{ selectedOption?.label ?? __('Choose a food') }}
+        </span>
+        <span
+          class="lucide-chevron-down size-4 shrink-0 text-ink-gray-4 transition-transform"
+          :class="open && 'rotate-180'"
+          aria-hidden="true"
+        />
+      </button>
+    </template>
     <template v-if="credito" #footer>
       <p class="px-2.5 py-1.5 text-p-xs text-ink-gray-5">{{ credito }}</p>
     </template>

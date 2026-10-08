@@ -237,13 +237,18 @@
         class="flex flex-col gap-1.5"
       >
         <div class="flex flex-wrap items-center gap-2">
+          <!-- its words wrap inside the card at 320px, never past its edge -->
           <Button
             size="sm"
             icon-left="refresh-cw"
-            :label="__('Same energy, another food')"
+            class="!h-auto min-h-7 max-w-full py-1"
             :loading="equivalenti.loading"
             @click="cercaEquivalenti"
-          />
+          >
+            <span class="whitespace-normal text-left">
+              {{ __('Same energy, another food') }}
+            </span>
+          </Button>
           <span
             v-if="equivalenti.fatto && !equivalenti.righe.length"
             class="text-p-xs text-ink-gray-6"
