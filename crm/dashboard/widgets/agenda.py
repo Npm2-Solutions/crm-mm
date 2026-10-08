@@ -521,7 +521,7 @@ def rebooking(ctx: Context, previous: bool = False) -> float | None:
 	title=_lt("Rebooking rate"),
 	description=_lt("Of the people who came in the period, the share with a later appointment booked"),
 	requires=AGENDA,
-	keywords=("retention", "rebooking", "came back", "return"),
+	keywords=("retention", "rebooking", "came back", "return", "riprenotazione", "fidelizzazione"),
 )
 def rebooking_rate(ctx: Context):
 	now = rebooking(ctx)
@@ -539,7 +539,7 @@ def rebooking_rate(ctx: Context):
 	size=(10, 8),
 	requires=AGENDA,
 	managers_only=True,
-	keywords=("retention", "rebooking"),
+	keywords=("retention", "rebooking", "riprenotazione", "professionista"),
 )
 def rebooking_by_staff(ctx: Context):
 	visits = seen_people(ctx, *ctx.span(), by_staff=True)
@@ -568,7 +568,7 @@ DAYS = Option("days", _lt("Seen in the last days"), type="int", default=90, min=
 	options=(ROWS, DAYS),
 	# a list shows the people themselves, not a number: whoever reads the agenda
 	reader="agenda.vedi",
-	keywords=("rebooking", "recall", "follow-up", "lost"),
+	keywords=("rebooking", "recall", "follow-up", "lost", "riprenotazione", "richiamo", "persi"),
 )
 def without_next_appointment(ctx: Context):
 	low = datetime.datetime.combine(

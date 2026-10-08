@@ -343,10 +343,13 @@
             __('0 = no limit. The stricter of this and a service limit wins.')
           "
         />
-        <div class="flex flex-wrap gap-3">
+        <!-- three of a row, each as wide as the settings' fields; one under the
+             other where the pane is narrow -->
+        <div
+          class="grid grid-cols-3 items-end gap-3 impostazioni-strette:grid-cols-1"
+        >
           <FormControl
             v-model.number="form.no_show_limit"
-            class="w-60"
             type="number"
             inputmode="numeric"
             min="0"
@@ -355,7 +358,6 @@
           />
           <FormControl
             v-model.number="form.no_show_months"
-            class="w-60"
             type="number"
             inputmode="numeric"
             min="1"
@@ -364,7 +366,6 @@
           />
           <FormControl
             v-model="form.no_show_action"
-            class="w-60"
             type="select"
             :disabled="!form.no_show_limit"
             :label="__('Then')"

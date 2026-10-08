@@ -553,4 +553,7 @@ class IlSecondo(PromemoriaCase):
 	def test_le_ore_del_secondo_dopo_il_primo(self):
 		with self.assertRaises(frappe.ValidationError):
 			P.save_settings({"hours_before": 2, "second_hours_before": 3})
-		self.assertEqual(P.save_settings({"second_hours_before": 20})["second_hours_before"], 12)
+		# out of its hours it is said, as the page says it, never put right in silence
+		with self.assertRaises(frappe.ValidationError):
+			P.save_settings({"second_hours_before": 20})
+		self.assertEqual(P.save_settings({"second_hours_before": 12})["second_hours_before"], 12)

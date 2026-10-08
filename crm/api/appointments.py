@@ -1675,6 +1675,8 @@ def get_scheduling_settings() -> dict:
 		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.default_availability
 	]
+	# a field never saved reads its default, never 0: the months the misses count over
+	data["no_show_months"] = data.get("no_show_months") or 12
 	# what an empty time zone means, for the settings page to say it
 	data["site_timezone"] = frappe.utils.get_system_timezone()
 	# what the booking page falls back to, for the settings to show it. One field

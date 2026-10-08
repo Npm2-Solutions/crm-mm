@@ -923,7 +923,11 @@ def save_settings(data: dict | str) -> dict:
 		if campo in dati:
 			doc.set(campo, dati[campo])
 	secondo = cint(doc.get("second_hours_before"))
-	if secondo and not R.ore_del_secondo(secondo, R.ore_prima(doc.hours_before)):
+	minimo, massimo = R.ORE_DEL_SECONDO
+	# out of its hours it is said, as the page says it, never put right in silence
+	if secondo and (
+		not minimo <= secondo <= massimo or not R.ore_del_secondo(secondo, R.ore_prima(doc.hours_before))
+	):
 		frappe.throw(
 			_("The second reminder leaves from 1 to 12 hours before, and fewer hours than the first.")
 		)
