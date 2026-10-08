@@ -21,7 +21,7 @@
         <div class="cassa-numeri dc-stat-row grid grid-cols-3 gap-3">
           <StatTile
             :label="__('Collected')"
-            :value="formatEuro(conti.total)"
+            :value="formatEuro(conti.collected)"
             blocco
           />
           <StatTile
@@ -102,8 +102,11 @@
             min="0"
             :label="__('Cash counted in the drawer')"
           />
+          <p v-if="Number(contati) < 0" class="text-p-base text-ink-amber-7">
+            {{ __('The cash counted cannot be below zero') }}
+          </p>
           <p
-            v-if="frase"
+            v-else-if="frase"
             class="text-p-base"
             :class="tono === 'green' ? 'text-ink-green-7' : 'text-ink-amber-7'"
           >

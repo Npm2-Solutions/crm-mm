@@ -14,6 +14,8 @@ describe('the cash closing', () => {
   it('says nothing while nothing was counted', () => {
     expect(differenzaDiCassa('', 100)).toBeNull()
     expect(differenzaDiCassa(null, 100)).toBeNull()
+    // a drawer below zero is a typing error, not money missing
+    expect(differenzaDiCassa('-5', 60.5)).toBeNull()
     expect(fraseDellaDifferenza(null, (t) => t, String)).toBe('')
     expect(tonoDellaDifferenza(null)).toBe('')
   })

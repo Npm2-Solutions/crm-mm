@@ -109,7 +109,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-08 11:00:00.000000",
+ "modified": "2026-10-08 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Cash Closing",
@@ -128,26 +128,20 @@
    "write": 1
   },
   {
-   "create": 1,
-   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Invoicing Manager",
-   "share": 1,
-   "write": 1
+   "role": "Invoicing Manager"
   },
   {
-   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Invoicing User",
-   "write": 1
+   "role": "Invoicing User"
   }
  ],
  "row_format": "Dynamic",

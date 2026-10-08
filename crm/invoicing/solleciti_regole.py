@@ -60,15 +60,23 @@ def scadenza(emessa: datetime.date, scadenze: Iterable[datetime.date | None] = (
 
 
 def prossimo(
-	scade: datetime.date, inviati: Iterable[datetime.date], primo: int, ogni: int, massimo: int
+	scade: datetime.date,
+	inviati: Iterable[datetime.date],
+	primo: int,
+	ogni: int,
+	massimo: int,
+	tentati: Iterable[datetime.date] = (),
 ) -> datetime.date | None:
-	"""The day the next reminder is due, or None once ``massimo`` were tried."""
+	"""The day the next reminder is due, or None once ``massimo`` reached the person.
+	A try that reached nobody (``tentati``: no way to them, or every way failed)
+	spaces the next one but does not count towards ``massimo``."""
 	giorni = sorted(inviati)
 	if len(giorni) >= massimo:
 		return None
-	if not giorni:
+	tutti = sorted([*giorni, *tentati])
+	if not tutti:
 		return scade + datetime.timedelta(days=primo)
-	return giorni[-1] + datetime.timedelta(days=ogni)
+	return tutti[-1] + datetime.timedelta(days=ogni)
 
 
 def da_sollecitare(
@@ -81,11 +89,12 @@ def da_sollecitare(
 	ogni: int = OGNI,
 	massimo: int = MASSIMO,
 	minimo: float = MINIMO,
+	tentati: Iterable[datetime.date] = (),
 ) -> bool:
 	"""Whether an invoice still to collect gets a reminder today."""
 	if not importo or importo <= 0 or importo < minimo:
 		return False
-	giorno = prossimo(scade, inviati, primo, ogni, massimo)
+	giorno = prossimo(scade, inviati, primo, ogni, massimo, tentati)
 	return giorno is not None and giorno <= oggi
 
 

@@ -82,6 +82,10 @@
             >
               {{ __('To pay: {0}', [money(invoice.to_pay)]) }}
             </span>
+            <!-- under the words, not beside them: at 320 the row has no room -->
+            <span v-if="!invoice.has_pdf" class="area-row__sub">
+              {{ __('PDF not ready') }}
+            </span>
           </div>
           <!-- the centre's preview downloads nothing -->
           <Button
@@ -92,12 +96,6 @@
             label="PDF"
             :link="pdf(invoice)"
           />
-          <span
-            v-else-if="!invoice.has_pdf"
-            class="shrink-0 text-p-sm text-ink-gray-5"
-          >
-            {{ __('PDF not ready') }}
-          </span>
         </div>
       </template>
       <p

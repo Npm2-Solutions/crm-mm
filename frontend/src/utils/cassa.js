@@ -16,6 +16,8 @@ function centesimi(valore) {
  */
 export function differenzaDiCassa(contati, attesi) {
   if (contati === null || contati === undefined || contati === '') return null
+  // a drawer holds nothing below zero: no difference to say about it
+  if (Number(contati) < 0) return null
   return centesimi(centesimi(contati) - centesimi(attesi))
 }
 

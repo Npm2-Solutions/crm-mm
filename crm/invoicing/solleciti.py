@@ -125,11 +125,17 @@ def dovute(conf=None, oggi=None) -> list[frappe._dict]:
 		fields=["parent", "due_date"],
 	):
 		scadenze.setdefault(riga.parent, []).append(getdate(riga.due_date) if riga.due_date else None)
+	# what reached the person counts towards the most; a try that reached nobody
+	# only waits its days before the next
 	inviati: dict[str, list] = {}
+	tentati: dict[str, list] = {}
 	for riga in frappe.get_all(
-		LOG, filters={"invoice": ["in", nomi], "event": EVENTO}, fields=["invoice", "occurred_on"]
+		LOG,
+		filters={"invoice": ["in", nomi], "event": EVENTO},
+		fields=["invoice", "occurred_on", "status"],
 	):
-		inviati.setdefault(riga.invoice, []).append(getdate(riga.occurred_on))
+		dove = inviati if riga.status == R.INVIATO else tentati
+		dove.setdefault(riga.invoice, []).append(getdate(riga.occurred_on))
 	dovute_ = []
 	for riga in righe:
 		# nothing about the demo leaves (crm/demo/guardie.py)
@@ -145,6 +151,7 @@ def dovute(conf=None, oggi=None) -> list[frappe._dict]:
 			ogni=conf.ogni,
 			massimo=conf.massimo,
 			minimo=conf.minimo,
+			tentati=tentati.get(riga.name, []),
 		):
 			riga.scadenza = scade
 			dovute_.append(riga)

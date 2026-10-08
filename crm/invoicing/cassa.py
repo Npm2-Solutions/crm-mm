@@ -122,7 +122,8 @@ def chiudi(giorno, contati, nota: str | None = None) -> dict:
 			"expected_cash": conti["expected_cash"],
 			"counted_cash": R.centesimi(contati),
 			"difference": R.differenza(contati, conti["expected_cash"]),
-			"note": (nota or "").strip(),
+			# closed again with nothing written, the day keeps what was written
+			"note": (nota or "").strip() or doc.get("note") or "",
 		}
 	)
 	doc.set(
@@ -138,5 +139,7 @@ def chiudi(giorno, contati, nota: str | None = None) -> dict:
 			for voce in conti["methods"]
 		],
 	)
+	# only this door writes a closing: its numbers are the day's, never typed
+	doc.flags.dalla_cassa = True
 	doc.save(ignore_permissions=True)
 	return riepilogo_del_giorno(giorno)

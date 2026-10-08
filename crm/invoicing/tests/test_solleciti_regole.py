@@ -33,6 +33,13 @@ class QuandoSiSollecita(unittest.TestCase):
 		self.assertTrue(R.da_sollecitare(giorno(22), giorno(1), [giorno(8)], 50, ogni=14))
 		self.assertFalse(R.da_sollecitare(giorno(30, 12), giorno(1), [giorno(8), giorno(22)], 50, massimo=2))
 		self.assertIsNone(R.prossimo(giorno(1), [giorno(8), giorno(22)], 7, 14, 2))
+		# a try that reached nobody waits its days, but leaves the most untouched
+		self.assertFalse(R.da_sollecitare(giorno(21), giorno(1), [], 50, ogni=14, tentati=[giorno(8)]))
+		self.assertTrue(
+			R.da_sollecitare(
+				giorno(30, 12), giorno(1), [giorno(8)], 50, massimo=2, ogni=14, tentati=[giorno(22)]
+			)
+		)
 
 	def test_sotto_la_soglia_mai(self):
 		self.assertFalse(R.da_sollecitare(giorno(30), giorno(1), [], 9.99, minimo=10))

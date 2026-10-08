@@ -75,3 +75,23 @@ class CassaTest(InvoicingBase):
 			oggi.close_cash_day(add_days(nowdate(), 1), 10)
 		with self.assertRaises(frappe.ValidationError):
 			oggi.close_cash_day(nowdate(), -1)
+
+	def test_una_chiusura_non_si_scrive_a_mano(self):
+		self.incassata("MP01")
+		conti = oggi.get_cash_summary(nowdate())
+		chiusa = oggi.close_cash_day(nowdate(), conti["expected_cash"], "Counted twice")
+		# closed again with nothing written, the note stays
+		di_nuovo = oggi.close_cash_day(nowdate(), conti["expected_cash"])
+		self.assertEqual(di_nuovo["closing"]["note"], "Counted twice")
+		utente = "cassa.collaudo@example.com"
+		if not frappe.db.exists("User", utente):
+			frappe.get_doc(
+				{"doctype": "User", "email": utente, "first_name": "Cassa", "send_welcome_email": 0}
+			).insert(ignore_permissions=True)
+		frappe.get_doc("User", utente).add_roles("Invoicing User", "Invoicing Manager")
+		frappe.set_user(utente)
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				frappe.client.set_value("CRM Cash Closing", chiusa["closing"]["name"], "counted_cash", 999)
+		finally:
+			frappe.set_user("Administrator")
