@@ -1716,6 +1716,9 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"notify_staff_on_booking",
 		"send_client_confirmation",
 		"max_active_per_customer",
+		"no_show_limit",
+		"no_show_months",
+		"no_show_action",
 		# online defaults every service inherits
 		"default_min_notice_hours",
 		"default_max_horizon_days",

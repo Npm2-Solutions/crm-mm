@@ -136,6 +136,21 @@
             />
           </button>
         </template>
+        <!-- the ones they did not show up to: the desk thinks twice -->
+        <button
+          v-if="righe.no_shows"
+          type="button"
+          :class="riga"
+          @click="apri('events')"
+        >
+          <span
+            class="lucide-calendar-x size-4 shrink-0 text-ink-red-7"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 flex-1 break-words text-p-sm text-ink-gray-8">
+            {{ fraseDelleAssenze(righe.no_shows, (s, v) => __(s, v)) }}
+          </span>
+        </button>
       </section>
 
       <!-- what they have going: cycles, subscriptions, a place in the line;
@@ -406,6 +421,7 @@ import { APERTE, STATO as STATO_ATTESA, quandoPuo } from '@/utils/attese'
 import { STATO as STATO_PREVENTIVO } from '@/utils/preventivi'
 import {
   TEMA_DELLO_STATO,
+  fraseDelleAssenze,
   prossimi,
   qualcosaDaDire,
   scadenza,

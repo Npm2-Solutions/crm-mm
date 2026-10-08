@@ -247,3 +247,38 @@ class TestInheritance(unittest.TestCase):
 	def test_garbage_override_list_means_nothing_customised(self):
 		self.assertEqual(R.overridden_keys({"online_overrides": "not json"}), set())
 		self.assertEqual(R.overridden_keys({"online_overrides": ["max_reschedules"]}), {"max_reschedules"})
+
+
+class TestNoShows(unittest.TestCase):
+	def history(self, *days_ago):
+		return R.ClientHistory(no_shows=[NOW - datetime.timedelta(days=d) for d in days_ago])
+
+	def test_off_without_a_limit(self):
+		self.assertIsNone(R.check_no_shows(self.history(1, 2, 3), NOW, None))
+		self.assertIsNone(R.check_no_shows(self.history(1, 2, 3), NOW, 0))
+
+	def test_waits_for_approval_from_the_limit(self):
+		self.assertIsNone(R.check_no_shows(self.history(10, 20), NOW, 3))
+		self.assertEqual(R.check_no_shows(self.history(10, 20, 30), NOW, 3), R.NO_SHOW_APPROVAL)
+		self.assertEqual(
+			R.check_no_shows(self.history(10, 20, 30), NOW, 3, action=R.NO_SHOW_APPROVAL), R.NO_SHOW_APPROVAL
+		)
+
+	def test_refused_where_the_centre_chose_so(self):
+		self.assertEqual(
+			R.check_no_shows(self.history(10, 20, 30), NOW, 3, action=R.NO_SHOW_REFUSE), R.LIMIT_NO_SHOWS
+		)
+
+	def test_only_the_last_months_count(self):
+		# 12 months by default: one of 400 days ago no longer counts
+		self.assertIsNone(R.check_no_shows(self.history(10, 20, 400), NOW, 3))
+		self.assertIsNone(R.check_no_shows(self.history(10, 20, 100), NOW, 3, months=3))
+		self.assertEqual(R.check_no_shows(self.history(10, 20, 80), NOW, 3, months=3), R.NO_SHOW_APPROVAL)
+		# an appointment still ahead is no miss yet
+		self.assertEqual(R.missed([NOW + datetime.timedelta(days=1)], NOW), 0)
+
+	def test_months_before(self):
+		self.assertEqual(R.months_before(NOW, 12), NOW.replace(year=2025))
+		marzo = datetime.datetime(2026, 3, 31, tzinfo=UTC)
+		self.assertEqual(R.months_before(marzo, 1), datetime.datetime(2026, 2, 28, tzinfo=UTC))
+		self.assertEqual(R.months_before(marzo, 3), datetime.datetime(2025, 12, 31, tzinfo=UTC))

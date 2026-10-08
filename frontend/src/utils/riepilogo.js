@@ -95,8 +95,20 @@ export function qualcosaDaDire({
 } = {}) {
   return Boolean(
     messaggio ||
-      appuntamenti.length ||
-      ultimoAppuntamento ||
-      Object.keys(righe || {}).length,
+    appuntamenti.length ||
+    ultimoAppuntamento ||
+    Object.keys(righe || {}).length,
   )
+}
+
+/**
+ * The appointments the person did not show up to in the last year
+ * (`no_shows` of the summary), in one sentence: nothing when there are none.
+ */
+export function fraseDelleAssenze(assenze, t = (s) => s) {
+  const quante = Number(assenze?.count) || 0
+  if (!quante) return ''
+  return quante === 1
+    ? t('1 missed appointment in the last year')
+    : t('{0} missed appointments in the last year', [quante])
 }

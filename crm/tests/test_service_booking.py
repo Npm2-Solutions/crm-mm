@@ -22,6 +22,8 @@ class TestServiceBooking(SchedulingCase):
 		settings.online_booking_enabled = 1
 		settings.require_privacy_consent = 0
 		settings.max_active_per_customer = 0
+		settings.no_show_limit = 0
+		settings.no_show_action = "Manual approval"
 		# permissive booking-page defaults: each test customises what it checks
 		settings.default_min_notice_hours = 0
 		settings.default_max_horizon_days = 30
@@ -160,6 +162,52 @@ class TestServiceBooking(SchedulingCase):
 		self.book(service, self.tomorrow(9))
 		with self.assertRaises(frappe.ValidationError):
 			self.book(service, self.tomorrow(15))
+
+	def mancati(self, service, quanti, giorni_fa=10):
+		"""``quanti`` appointments of the client's, ``giorni_fa`` ago, never shown up to."""
+		for ora in range(9, 9 + quanti):
+			result = self.book(service, self.tomorrow(ora))
+			parent = frappe.db.get_value(
+				"CRM Appointment Participant", {"access_token": result["token"]}, "parent"
+			)
+			passato = frappe.db.get_value("CRM Appointment", parent, "starts_on") - datetime.timedelta(
+				days=giorni_fa
+			)
+			frappe.db.set_value("CRM Appointment", parent, "starts_on", passato, update_modified=False)
+			frappe.db.set_value("CRM Appointment Participant", {"parent": parent}, "status", "No Show")
+
+	def no_show(self, limite, azione="Manual approval", mesi=12):
+		settings = frappe.get_doc("CRM Scheduling Settings")
+		settings.update({"no_show_limit": limite, "no_show_action": azione, "no_show_months": mesi})
+		settings.save()
+		forget_settings()
+
+	def test_who_does_not_show_up_waits_for_approval(self):
+		service = self.online_service()
+		self.mancati(service, 2)
+		self.no_show(2)
+		result = self.book(service, self.tomorrow(14))
+		self.assertEqual(result["status"], "Scheduled")
+		self.assertTrue(result["pending_approval"])
+		# somebody else books as before
+		self.assertEqual(
+			self.book(service, self.tomorrow(15), email="altra@example.com")["status"], "Confirmed"
+		)
+
+	def test_who_does_not_show_up_is_refused_where_the_centre_chose_so(self):
+		service = self.online_service()
+		self.mancati(service, 2)
+		self.no_show(2, "Refuse")
+		with self.assertRaises(frappe.ValidationError):
+			self.book(service, self.tomorrow(14))
+
+	def test_no_shows_off_or_old_change_nothing(self):
+		service = self.online_service()
+		self.mancati(service, 2, giorni_fa=100)
+		self.assertEqual(self.book(service, self.tomorrow(14))["status"], "Confirmed")
+		# only the last three months count: the misses are older
+		self.no_show(2, mesi=3)
+		self.assertEqual(self.book(service, self.tomorrow(15))["status"], "Confirmed")
 
 	def test_daily_cap_hides_slots(self):
 		service = self.online_service(max_bookings_per_day=1)

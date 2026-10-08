@@ -31,6 +31,9 @@
   "notify_staff_on_booking",
   "send_client_confirmation",
   "max_active_per_customer",
+  "no_show_limit",
+  "no_show_months",
+  "no_show_action",
   "online_defaults_section",
   "default_min_notice_hours",
   "default_max_horizon_days",
@@ -205,6 +208,27 @@
    "non_negative": 1
   },
   {
+   "fieldname": "no_show_limit",
+   "fieldtype": "Int",
+   "label": "Missed appointments before the centre decides",
+   "non_negative": 1,
+   "description": "Empty: never. Whoever did not show up this many times books online only with the centre's yes, or not at all"
+  },
+  {
+   "default": "12",
+   "fieldname": "no_show_months",
+   "fieldtype": "Int",
+   "label": "Counted over the last months",
+   "non_negative": 1
+  },
+  {
+   "default": "Manual approval",
+   "fieldname": "no_show_action",
+   "fieldtype": "Select",
+   "label": "Then",
+   "options": "Manual approval\nRefuse"
+  },
+  {
    "fieldname": "online_defaults_section",
    "fieldtype": "Section Break",
    "label": "Online Booking Defaults",
@@ -314,7 +338,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

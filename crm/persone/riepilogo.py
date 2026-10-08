@@ -222,6 +222,36 @@ def _in_attesa(lead: str) -> list[dict]:
 	return fatto
 
 
+def assenze(lead: str) -> dict | None:
+	"""The appointments the person did not show up to in the last year, for whoever
+	reads the agenda: as the online booking counts them (`booking_rules.missed`)."""
+	if not livelli.puo("agenda.vedi"):
+		return None
+	from frappe.utils import add_months, now_datetime
+
+	appuntamento = frappe.qb.DocType("CRM Appointment")
+	posto = frappe.qb.DocType("CRM Appointment Participant")
+	adesso = now_datetime()
+	righe = (
+		frappe.qb.from_(posto)
+		.join(appuntamento)
+		.on(posto.parent == appuntamento.name)
+		.select(appuntamento.name, appuntamento.starts_on)
+		.where((posto.party_type == "CRM Lead") & (posto.party == lead))
+		.where(appuntamento.starts_on.between(add_months(adesso, -12), adesso))
+		.where(
+			(posto.status == "No Show")
+			| ((appuntamento.status == "No Show") & posto.status.isin(("Booked", "No Show")))
+		)
+		.orderby(appuntamento.starts_on)
+		.run(as_dict=True)
+	)
+	giorni = {riga.name: riga.starts_on for riga in righe}
+	if not giorni:
+		return None
+	return {"count": len(giorni), "last": str(max(giorni.values()))}
+
+
 def trattative(lead: str) -> dict | None:
 	"""The person's deals still open, the last one moved first: the stage each is
 	at, in the pipeline it belongs to."""
@@ -263,3 +293,4 @@ def registra() -> None:
 	registra_voce(Voce("in_progress", in_corso))
 	registra_voce(Voce("tasks", da_fare))
 	registra_voce(Voce("deals", trattative))
+	registra_voce(Voce("no_shows", assenze))

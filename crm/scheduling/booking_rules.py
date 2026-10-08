@@ -42,6 +42,14 @@ LIMIT_RESCHEDULE_DISABLED = "reschedule_disabled"
 LIMIT_RESCHEDULE_NOTICE = "reschedule_notice"
 LIMIT_RESCHEDULE_COUNT = "reschedule_count"
 LIMIT_IN_PAST = "in_past"
+LIMIT_NO_SHOWS = "no_shows"
+
+#: What the centre does with whoever missed too many appointments: the booking
+#: waits for its yes, or the page refuses it (`CRM Scheduling Settings.no_show_action`).
+NO_SHOW_APPROVAL = "Manual approval"
+NO_SHOW_REFUSE = "Refuse"
+#: How far back the missed appointments count, where the centre said nothing.
+NO_SHOW_MONTHS = 12
 
 Interval = tuple[datetime.datetime, datetime.datetime]
 
@@ -312,6 +320,42 @@ class ClientHistory:
 	all_starts: list[datetime.datetime] = field(default_factory=list)
 	#: has the client ever been seen before (any past appointment or record)
 	is_returning: bool = False
+	#: when the appointments they did not show up to started
+	no_shows: list[datetime.datetime] = field(default_factory=list)
+
+
+def months_before(moment: datetime.datetime, months: int) -> datetime.datetime:
+	"""The same day ``months`` calendar months earlier (the month's last day where
+	it is shorter: 31 March less one month is 28 or 29 February)."""
+	import calendar
+
+	total = moment.year * 12 + moment.month - 1 - _int(months)
+	year, month = divmod(total, 12)
+	day = min(moment.day, calendar.monthrange(year, month + 1)[1])
+	return moment.replace(year=year, month=month + 1, day=day)
+
+
+def missed(no_shows: list[datetime.datetime], now: datetime.datetime, months: int = NO_SHOW_MONTHS) -> int:
+	"""How many appointments the client did not show up to in the last ``months``."""
+	since = months_before(now, months or NO_SHOW_MONTHS)
+	return sum(1 for start in no_shows if since <= start <= now)
+
+
+def check_no_shows(
+	history: ClientHistory,
+	now: datetime.datetime,
+	limit,
+	months=None,
+	action: str | None = None,
+) -> str | None:
+	"""Whoever missed ``limit`` appointments or more in the last ``months``: their
+	online booking waits for the centre's yes (``NO_SHOW_APPROVAL``), or is refused
+	(``LIMIT_NO_SHOWS``) where the centre chose so. ``None``: nothing to say - no
+	limit (empty or 0), or fewer misses."""
+	limit = _int(limit)
+	if not limit or missed(history.no_shows, now, _int(months) or NO_SHOW_MONTHS) < limit:
+		return None
+	return LIMIT_NO_SHOWS if action == NO_SHOW_REFUSE else NO_SHOW_APPROVAL
 
 
 def peak_overlap(booked: list[Interval], start: datetime.datetime, end: datetime.datetime) -> int:

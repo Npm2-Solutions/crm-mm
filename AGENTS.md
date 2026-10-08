@@ -126,7 +126,7 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 ### Service booking & external platforms
 | File | Role |
 |---|---|
-| `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest` |
+| `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest`; whoever missed `no_show_limit` appointments in the last `no_show_months` (`CRM Scheduling Settings`, off where empty; counted from the participants' «No Show», `missed`) books only with the centre's yes, or not at all (`check_no_shows`, `no_show_action`), a class's seat then refused |
 | `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine |
 | `crm/scheduling/unify.py` | One booking system: legacy Booking Calendars → services, /book redirects |
 | `crm/api/booking_admin.py` | Who-does-what matrix, team rota, "why not available" explainer |
@@ -410,7 +410,7 @@ one sets up there.
 ### A person: one page, two doors (docs/crm/54)
 | File | Role |
 |---|---|
-| `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`) — tested |
+| `crm/persone/riepilogo.py` | A person's summary in one call (`get_summary`): each module adds its lines (`registra_voce`, from its `registra()`), each deciding what the session reads, left out (never refused) where it may not; a line that breaks is logged and the rest opens. The base's: what they have going (cycles, subscriptions, a place in a waiting list), the tasks still to do, the open deals; invoicing's what is left to collect (`incassi.della_persona`), the forms' what is owed (`dovuti.nel_riepilogo`), the quotes' the ones waiting or going on (`api.nel_riepilogo`), the agenda's the appointments missed in the last year (`assenze`, `no_shows`) — tested |
 | `frontend/src/components/Activities/SummaryArea.vue` + `utils/riepilogo.js` | The Summary tab (first on the desk and the phone) and the column beside a conversation (`compatto`): the last message the person carries, the appointments the page's head asked for (the same resource), the server's lines, each a tap from its tab; three lines of a list, the rest on its tab — the pure part tested |
 | `frontend/src/router.js`, `notifiche/api.py` `percorso`, `Conversations/ConversationAside.vue` | The doors: a person opens on `#summary` wherever one comes without naming a tab (not the tab left last time); a message opens the Chat (its notification names it, the conversations' «Open the record» says `#activity`) |
 | `components/ViewControls.vue`, `Mobile/ElencoPersone.vue`, `api/sul_telefono.get_people(relationship=)` | The People list: one list, its step as views (the quick filter drawn as buttons), at `/crm/persone` - the old `/crm/leads` addresses redirect |

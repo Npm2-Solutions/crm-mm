@@ -58,6 +58,9 @@ def limit_message(code: str) -> str:
 	"""The client-facing sentence for a ``booking_rules`` code."""
 	return {
 		rules_mod.LIMIT_IN_PAST: _("This time is in the past."),
+		rules_mod.LIMIT_NO_SHOWS: _(
+			"This appointment cannot be booked online: please contact us to book it."
+		),
 		rules_mod.LIMIT_TOO_SOON: _("This time is too close: it can no longer be booked online."),
 		rules_mod.LIMIT_TOO_FAR: _("This date is too far ahead to be booked yet."),
 		rules_mod.LIMIT_NOT_OPEN_YET: _("Online booking for this service is not open yet for this date."),
@@ -569,6 +572,20 @@ def _client_history(service_name: str, email: str, phone: str, lead: str | None)
 		.where(appointment.status.isin(ACTIVE_STATUSES))
 		.run(as_dict=True)
 	)
+	# the appointments they did not show up to (doc 59's outcomes, `esiti`): their
+	# place marked so, or the whole appointment where nobody said otherwise of them
+	missed = (
+		frappe.qb.from_(participant)
+		.join(appointment)
+		.on(participant.parent == appointment.name)
+		.select(appointment.name, appointment.starts_on)
+		.where(condition)
+		.where(
+			(participant.status == "No Show")
+			| ((appointment.status == "No Show") & participant.status.isin(("Booked", "No Show")))
+		)
+		.run(as_dict=True)
+	)
 	now = datetime.datetime.now(UTC)
 	unique = {row.name: row for row in rows}.values()
 	starts = [(row.service, from_system_naive(row.starts_on)) for row in unique]
@@ -576,6 +593,7 @@ def _client_history(service_name: str, email: str, phone: str, lead: str | None)
 		service_starts=[s for svc, s in starts if svc == service_name],
 		all_starts=[s for _svc, s in starts],
 		is_returning=any(s < now for _svc, s in starts),
+		no_shows=[from_system_naive(row.starts_on) for row in {r.name: r for r in missed}.values()],
 	)
 
 
@@ -673,6 +691,16 @@ def book(
 		history = _client_history(doc.name, email, phone, existing)
 	if code := rules.check_client(start_utc, now, tz, history):
 		frappe.throw(limit_message(code))
+	# whoever missed too many appointments: the centre's yes first, or no online booking
+	assenze = rules_mod.check_no_shows(
+		history,
+		now,
+		config.get("no_show_limit"),
+		config.get("no_show_months"),
+		config.get("no_show_action"),
+	)
+	if assenze == rules_mod.LIMIT_NO_SHOWS:
+		frappe.throw(limit_message(assenze))
 
 	staff_user = _staff_from_public_id(doc, staff) if staff and _flag(doc, "allow_staff_choice") else None
 	slot = _find_slot(doc, start_utc, staff_user, seats)
@@ -709,6 +737,11 @@ def book(
 		booked_by=booker if lead != booker else None,
 	)
 	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
+	if assenze == rules_mod.NO_SHOW_APPROVAL:
+		# a seat in a class is no booking of its own to approve: the desk books it
+		if slot.join_appointment:
+			frappe.throw(limit_message(rules_mod.LIMIT_NO_SHOWS))
+		status = "Scheduled"
 
 	if slot.join_appointment:
 		appointment = frappe.get_doc("CRM Appointment", slot.join_appointment)
@@ -740,7 +773,12 @@ def book(
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
 	send_client_email(appointment, token, "booked")
-	notify_staff(appointment, _("New online booking"))
+	notify_staff(
+		appointment,
+		_("New online booking to approve: missed appointments")
+		if assenze == rules_mod.NO_SHOW_APPROVAL
+		else _("New online booking"),
+	)
 	return public_view(appointment, token)
 
 

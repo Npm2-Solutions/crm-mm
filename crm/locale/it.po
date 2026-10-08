@@ -46992,3 +46992,42 @@ msgstr "Da 1 a 12 ore prima."
 
 msgid "Fewer hours than the first reminder."
 msgstr "Meno ore del primo promemoria."
+
+msgid "1 missed appointment in the last year"
+msgstr "1 appuntamento mancato nell'ultimo anno"
+
+msgid "{0} missed appointments in the last year"
+msgstr "{0} appuntamenti mancati nell'ultimo anno"
+
+msgid "Missed appointments before the centre decides"
+msgstr "Appuntamenti mancati prima che decida il centro"
+
+msgid "Empty: never. Whoever did not show up this many times books online only with the centre's yes, or not at all"
+msgstr "Vuoto: mai. Chi non si è presentato tante volte prenota online solo con il sì del centro, o per niente"
+
+msgid "Counted over the last months"
+msgstr "Contati negli ultimi mesi"
+
+msgid "Then"
+msgstr "Poi"
+
+msgid "Refuse"
+msgstr "Rifiuta"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "The booking waits for the centre’s yes"
+msgstr "La prenotazione aspetta il sì del centro"
+
+msgid "No online booking"
+msgstr "Niente prenotazione online"
+
+msgid "Whoever did not show up this many times books online only with the centre’s yes, or not at all: they are asked to call. Empty: never."
+msgstr "Chi non si è presentato tante volte prenota online solo con il sì del centro, o per niente: gli si chiede di chiamare. Vuoto: mai."
+
+msgid "This appointment cannot be booked online: please contact us to book it."
+msgstr "Questo appuntamento non si può prenotare online: contattaci per prenotarlo."
+
+msgid "New online booking to approve: missed appointments"
+msgstr "Nuova prenotazione online da approvare: appuntamenti mancati"
