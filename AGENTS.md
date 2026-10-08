@@ -88,7 +88,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 ### Dashboard
 | File | Role |
 |---|---|
-| `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store |
+| `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store; `riprenotazione_regole.py` pure: who came and booked again (each person by their last visit, any later appointment not cancelled), who has nothing ahead — the agenda's «Rebooking rate», per professional and «No next appointment» (the people the viewer sees, `org_hierarchy.visible_leads`), tested with plain `unittest` |
 | `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)`; who reads a widget is the capability of its category (`registry.READERS`: doc 30's numbers) or its own `reader`, a template's `reader` says whom it is for (`store.reads`, `store.offers`) |
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |

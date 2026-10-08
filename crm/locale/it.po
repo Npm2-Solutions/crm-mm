@@ -47064,3 +47064,30 @@ msgstr "«Sono arrivato» dal telefono"
 
 msgid "From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told."
 msgstr "Da mezz'ora prima dell'appuntamento fino alla fine, la persona segnala dalla sua area che è al centro: entra in sala d'attesa all'accoglienza, e l'accoglienza viene avvisata."
+
+msgid "Rebooking rate"
+msgstr "Tasso di riprenotazione"
+
+msgid "Of the people who came in the period, the share with a later appointment booked"
+msgstr "Delle persone venute nel periodo, la quota che ha già prenotato un appuntamento successivo"
+
+msgid "Rebooking per professional"
+msgstr "Riprenotazione per professionista"
+
+msgid "Of the people each professional saw in the period, the share that booked again"
+msgstr "Delle persone viste da ciascun professionista nel periodo, la quota che ha prenotato di nuovo"
+
+msgid "Booked again"
+msgstr "Hanno riprenotato"
+
+msgid "Seen in the last days"
+msgstr "Viste negli ultimi giorni"
+
+msgid "No next appointment"
+msgstr "Senza un prossimo appuntamento"
+
+msgid "People seen lately with nothing booked ahead, the longest ago first"
+msgstr "Le persone viste di recente senza nulla in agenda, prima chi è venuto da più tempo"
+
+msgid "Everybody seen lately has something booked"
+msgstr "Chi è venuto di recente ha già un appuntamento"
