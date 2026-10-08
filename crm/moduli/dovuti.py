@@ -170,15 +170,25 @@ def dovuti(
 	"""What each person owes: for the appointment given for them (or in general),
 	with why, and whether something is already under way. The forms with health
 	data only for whoever reads them (``clinici``)."""
+	dovute = per_appuntamenti([(persona, appuntamenti.get(persona)) for persona in persone], clinici=clinici)
+	return {persona: dovute[(persona, (appuntamenti.get(persona) or {}).get("name"))] for persona in persone}
+
+
+def per_appuntamenti(
+	coppie: list[tuple[str, dict | None]], *, clinici: bool
+) -> dict[tuple[str, str | None], list[dict]]:
+	"""`dovuti` for many people and appointments at once - a day at the desk, the
+	same person maybe twice: by (person, appointment's name), the templates, what
+	was signed and what is under way read once for all of them, not once a row."""
 	modelli = [m for m in modelli_che_si_chiedono() if clinici or not m["clinical"]]
+	persone = list({persona for persona, _ in coppie})
+	risposta: dict[tuple[str, str | None], list[dict]] = {}
 	if not modelli or not persone:
-		return {persona: [] for persona in persone}
+		return {(persona, (appuntamento or {}).get("name")): [] for persona, appuntamento in coppie}
 	firmati = _firmati(persone)
 	in_corso = _in_corso(persone)
 	oggi = getdate()
-	risposta: dict[str, list[dict]] = {}
-	for persona in persone:
-		appuntamento = appuntamenti.get(persona)
+	for persona, appuntamento in coppie:
 		voci = []
 		for modello in modelli:
 			if guardie.solo_per_la_demo(MODELLO, modello["name"], persona):
@@ -195,7 +205,7 @@ def dovuti(
 						"appointment": appuntamento.get("name") if appuntamento else None,
 					}
 				)
-		risposta[persona] = voci
+		risposta[(persona, appuntamento.get("name") if appuntamento else None)] = voci
 	return risposta
 
 

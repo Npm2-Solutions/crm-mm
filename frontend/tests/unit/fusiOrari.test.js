@@ -61,6 +61,12 @@ describe('the time zones a centre picks from', () => {
 
   it('names nothing it cannot', () => {
     expect(nomeDelFuso('Not/A_Zone')).toBe('')
+    // asked again, the same words (kept, not formatted anew)
+    expect(nomeDelFuso('Not/A_Zone')).toBe('')
+    expect(nomeDelFuso(ITALIA, 'it')).toBe(nomeDelFuso(ITALIA, 'it'))
+    expect(nomeDelFuso(ITALIA, 'it', new Date(2026, 0, 15))).toBe(
+      nomeDelFuso(ITALIA, 'it'),
+    )
   })
 })
 

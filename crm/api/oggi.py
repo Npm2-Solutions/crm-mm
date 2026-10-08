@@ -52,6 +52,10 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 	):
 		staff.setdefault(riga.parent, []).append(riga.user)
 
+	if solo_aperti:
+		# the days before: only what nobody closed, before anything else is asked of them
+		righe = [r for r in righe if any(p.status == "Booked" for p in partecipanti.get(r.name, []))]
+		nomi = [riga.name for riga in righe]
 	dovuti = _moduli_dovuti(righe, partecipanti)
 	# "session 4 of 10": which session of its cycle it is
 	sedute = cicli.numero_della_seduta(nomi)
@@ -61,8 +65,6 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 		for persona in persone:
 			# the forms they owe for this appointment: to sign while they wait
 			persona["due_forms"] = dovuti.get((riga.name, persona.party), [])
-		if solo_aperti and not any(p.status == "Booked" for p in persone):
-			continue
 		chi = staff.get(riga.name, [])
 		fuori.append(
 			{
@@ -87,20 +89,23 @@ def _moduli_dovuti(righe: list, partecipanti: dict) -> dict[tuple[str, str], lis
 		return {}
 	from crm.moduli import compilazioni, dovuti
 
-	clinici = compilazioni.legge_dati_clinici()
+	coppie = [
+		(p.party, {"name": riga.name, "service": riga.service})
+		for riga in righe
+		for p in partecipanti.get(riga.name, [])
+		if p.party_type == "CRM Lead" and p.party
+	]
+	if not coppie:
+		return {}
+	# the whole day in one go: the templates and each person's forms read once
 	risposta = {}
-	for riga in righe:
-		persone = [p.party for p in partecipanti.get(riga.name, []) if p.party_type == "CRM Lead" and p.party]
-		if not persone:
-			continue
-		appuntamento = {"name": riga.name, "service": riga.service}
-		for persona, voci in dovuti.dovuti(
-			persone, {persona: appuntamento for persona in persone}, clinici=clinici
-		).items():
-			if voci:
-				risposta[(riga.name, persona)] = [
-					{"template": v["template"], "title": v["title"], "pending": v["pending"]} for v in voci
-				]
+	for (persona, appuntamento), voci in dovuti.per_appuntamenti(
+		coppie, clinici=compilazioni.legge_dati_clinici()
+	).items():
+		if voci:
+			risposta[(appuntamento, persona)] = [
+				{"template": v["template"], "title": v["title"], "pending": v["pending"]} for v in voci
+			]
 	return risposta
 
 
