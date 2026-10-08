@@ -374,10 +374,13 @@ class CRMAppointment(Document):
 		if not self.event:
 			return
 		frappe.flags.in_appointment_sync = True
+		evento = self.event
 		try:
-			if frappe.db.exists("Event", self.event):
-				frappe.delete_doc("Event", self.event, ignore_permissions=True, delete_permanently=True)
+			# the link goes first: the copy is linked to this appointment, and the
+			# framework refuses to delete what is linked («Impossibile eliminare…»)
 			self.db_set("event", None, update_modified=False)
+			if frappe.db.exists("Event", evento):
+				frappe.delete_doc("Event", evento, ignore_permissions=True, delete_permanently=True)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"Appointment {self.name}: calendar cleanup failed")
 		finally:
