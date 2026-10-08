@@ -268,6 +268,7 @@
       // --- i18n -----------------------------------------------------------
       const DICT = {
         it: {
+          stepLocation: "Sede", pickLocation: "In quale sede?", anyLocation: "Qualsiasi sede", anyLocationSub: "Il primo orario libero in tutte le sedi", openMap: "Apri la mappa", map: "Mappa",
           stepService: "Servizio", stepStaff: "Professionista", stepTime: "Data e ora", stepDetails: "I tuoi dati", stepDone: "Conferma",
           search: "Cerca un servizio…", all: "Tutti", noServices: "Nessun servizio prenotabile online al momento.",
           noMatch: "Nessun servizio corrisponde alla ricerca.", minutes: "min", group: "Di gruppo", from: "da",
@@ -311,6 +312,7 @@
           payExpired: "Il pagamento non è arrivato in tempo: il posto è stato liberato.", depositPaid: "Acconto pagato online", depositRefunded: "Acconto restituito",
         },
         en: {
+          stepLocation: "Location", pickLocation: "Which location?", anyLocation: "Any location", anyLocationSub: "The earliest free time in every location", openMap: "Open the map", map: "Map",
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
           search: "Search a service…", all: "All", noServices: "No service can be booked online right now.",
           noMatch: "No service matches your search.", minutes: "min", group: "Group", from: "from",
@@ -433,7 +435,7 @@
 
       // --- state ---------------------------------------------------------------
       const S = {
-        catalog: null, step: "service", query: "", category: "",
+        catalog: null, step: "service", query: "", category: "", location: "",
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
         wait: null, waited: null,
@@ -441,8 +443,12 @@
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
+      // more than one location (docs/crm/62): the person picks where first
+      const LOCATIONS = () => (S.catalog && S.catalog.locations) || [];
+      const hasLocations = () => LOCATIONS().length > 1;
+      const locationOf = (id) => LOCATIONS().find((l) => l.id === id) || null;
       const STEPS = () => {
-        const list = [["service", T("stepService")]];
+        const list = hasLocations() ? [["location", T("stepLocation")], ["service", T("stepService")]] : [["service", T("stepService")]];
         if (S.service?.can_pick_staff) list.push(["staff", T("stepStaff")]);
         list.push(["time", T("stepTime")], ["details", T("stepDetails")], ["done", T("stepDone")]);
         return list;
@@ -460,7 +466,7 @@
         renderSummary();
         const main = $("main");
         main.replaceChildren();
-        const view = { service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage, wait: viewWait, waited: viewWaited }[S.step];
+        const view = { location: viewLocation, service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage, wait: viewWait, waited: viewWaited }[S.step];
         try { main.append(view()); } catch (e) { console.error(e); main.append(h("div", { class: "msg error", role: "alert" }, T("genericError"))); }
         if (S.error) main.append(h("div", { class: "msg error", role: "alert" }, S.error));
       }
@@ -483,8 +489,11 @@
         const box = $("summary");
         box.replaceChildren(h("h2", {}, T("summary")));
         const svc = S.manage ? { name: S.manage.service } : S.service;
-        if (!svc) { box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
         const row = (ico, label, value) => h("div", { class: "row" }, h("span", { class: "ico", "aria-hidden": "true" }, ico), h("div", {}, h("div", {}, label), h("b", {}, value)));
+        // where, once chosen: a location's name and address
+        const sede = !S.manage && locationOf((S.slot && S.slot.location_id) || S.location);
+        if (sede) box.append(row("⌖", T("stepLocation"), [sede.name, sede.address].filter(Boolean).join(", ")));
+        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
         box.append(row("◆", T("stepService"), svc.name));
         if (S.manage) {
           if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));
@@ -496,7 +505,7 @@
         }
         box.append(row("⏱", T("duration"), durationLabel(S.service)));
         if (S.service.online_visit) box.append(row("▶", T("where"), T("online")));
-        else if (S.service.location) box.append(row("⌖", T("where"), S.service.location));
+        else if (S.service.location && !sede) box.append(row("⌖", T("where"), S.service.location));
         if (S.staffName || S.service.can_pick_staff) box.append(row("☺", T("with"), S.staffName || T("anyone")));
         if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
         if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
@@ -504,6 +513,32 @@
         if (S.service.deposit) box.append(row("€", T(S.service.deposit.full ? "fullOnline" : "deposit"), S.service.deposit.formatted));
         if (S.service.manual_approval) box.append(h("div", { class: "msg warn" }, T("manual")));
       }
+
+      function viewLocation() {
+        const wrap = h("section", {}, h("h2", {}, T("pickLocation")));
+        const grid = h("div", { class: "staff-grid" });
+        grid.append(h("button", { class: "person", "aria-pressed": String(!S.location), onclick: () => pickLocation("") },
+          h("span", { class: "avatar" }, "★"), h("span", {}, h("div", { class: "who" }, T("anyLocation")), h("div", { class: "sub" }, T("anyLocationSub")))));
+        for (const l of LOCATIONS()) {
+          const subs = [l.address, l.opening_hours].filter(Boolean);
+          grid.append(h("button", { class: "person", "aria-pressed": String(S.location === l.id), onclick: () => pickLocation(l.id) },
+            h("span", { class: "avatar", "aria-hidden": "true" }, "⌖"),
+            h("span", {}, h("div", { class: "who" }, l.name), ...subs.map((x) => h("div", { class: "sub" }, x)))));
+        }
+        wrap.append(grid);
+        return wrap;
+      }
+
+      function pickLocation(id) {
+        if (S.location !== id) { S.slot = null; S.date = null; S.month = null; S.days = {}; }
+        S.location = id;
+        // a service not held there is offered no more
+        if (S.service && !heldAt(S.service)) S.service = null;
+        go("service");
+      }
+
+      // whether a service is held at the location chosen (null: anywhere)
+      const heldAt = (s) => !S.location || !s.locations || s.locations.includes(S.location);
 
       function viewServices() {
         const wrap = h("section", {});
@@ -537,7 +572,7 @@
           list.replaceChildren();
           const q = S.query.trim().toLowerCase();
           const items = c.services.filter((s) =>
-            (s.listed || s.id === BOOT.service) &&
+            (s.listed || s.id === BOOT.service) && heldAt(s) &&
             (!S.person || S.person.services.includes(s.id)) &&
             (!S.category || s.category === S.category) &&
             (!q || (s.name + " " + s.description + " " + s.category).toLowerCase().includes(q)));
@@ -605,7 +640,7 @@
         const last = iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)));
         S.loadingSlots = true; render();
         try {
-          const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ });
+          const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ, location: S.location });
           S.days = r.days; S.full = r.full || {}; S.minDate = r.min_date; S.maxDate = r.max_date;
           const available = [...new Set([...Object.keys(S.days), ...Object.keys(S.full)])].sort();
           if (!S.date || !(S.days[S.date] || S.full[S.date])) S.date = available[0] || null;
@@ -676,7 +711,9 @@
             times.append(h("div", { class: "hint", style: "margin:.6rem 0 .35rem" }, T(bucket)));
             const g = h("div", { class: "times" });
             for (const slot of list) {
-              const sub = S.service.group ? `${slot.seats_left} ${T("seatsLeft")}` : slot.staff.length && !S.staff && S.service.can_pick_staff ? slot.staff.join(", ") : null;
+              const who = S.service.group ? `${slot.seats_left} ${T("seatsLeft")}` : slot.staff.length && !S.staff && S.service.can_pick_staff ? slot.staff.join(", ") : null;
+              // «Any location»: where each time is
+              const sub = [slot.location, who].filter(Boolean).join(" · ") || null;
               g.append(h("button", { class: "time", "aria-pressed": String(S.slot?.start === slot.start), onclick: () => { S.slot = slot; S.moving ? confirmMove() : go("details"); } },
                 slot.time, sub ? h("small", {}, sub) : null));
             }
@@ -897,6 +934,7 @@
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
             convention: f.convention || "", card_number: f.convention ? (f.card_number || "").trim() : "",
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
+            location: (S.slot && S.slot.location_id) || S.location,
             consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
             for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
@@ -957,6 +995,7 @@
         add(T("duration"), duration(b.duration));
         add(T("with"), b.staff.join(", "));
         add(T("where"), b.online_visit ? T("online") : b.location);
+        if (!b.online_visit && b.map_link) add(T("map"), h("a", { href: b.map_link, target: "_blank", rel: "noopener" }, T("openMap")));
         if (b.seats > 1) add(T("people"), String(b.seats));
         add(T("price"), b.formatted_price);
         if (b.payment && b.payment.state === "paid") add(T("depositPaid"), b.payment.formatted_amount);
@@ -984,9 +1023,9 @@
 
       function restart() {
         history.replaceState(null, "", location.pathname);
-        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null });
+        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null, location: "" });
         S.form.notes = ""; S.form.convention = ""; S.form.card_number = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
-        go("service");
+        go(hasLocations() ? "location" : "service");
       }
 
       function viewManage() {
@@ -1041,6 +1080,8 @@
         const svc = S.catalog.services.find((s) => s.id === S.manage.service_id);
         if (!svc) { S.error = T("genericError"); render(); return; }
         S.service = svc; S.moving = true; S.staff = ""; S.slot = null; S.date = null; S.month = null; S.seats = S.manage.seats || 1;
+        // moved, it stays where it was booked
+        S.location = S.manage.location_id || "";
         go("time");
         loadMonth();
       }
@@ -1082,6 +1123,8 @@
             if (!(pre.can_pick_staff && !person)) loadMonth();
             return;
           }
+          // more than one location: where, first; a professional's page knows who
+          if (hasLocations() && !S.person) S.step = "location";
           render();
         } catch (e) {
           $("main").replaceChildren(h("div", { class: "msg error", role: "alert" }, e.message || T("genericError")));

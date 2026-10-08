@@ -34,6 +34,7 @@ from crm.demo import guardie
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 from crm.scheduling import booking_rules as rules_mod
+from crm.scheduling import sedi, sedi_regole
 from crm.scheduling.availability import ACTIVE_STATUSES, get_slots, settings
 from crm.scheduling.timeutils import (
 	UTC,
@@ -307,12 +308,55 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		# when no time suits, or a class is full: the waiting list, where the centre offers it
 		"waiting_list": _lista_d_attesa(),
 		"timezone": str(scheduling_tz()),
+		# where the centre has more than one location (docs/crm/62): picked first
+		"locations": _sedi_pubbliche(),
 		"categories": categories,
 		"services": services,
 		"people": sorted(people.values(), key=lambda p: p["name"]),
 		# the funds and conventions the centre offers here (doc 61): the booking waits for its yes
 		"conventions": _convenzioni_online(),
 	}
+
+
+def _sedi_pubbliche() -> list[dict]:
+	"""The locations the person picks from, with what finds them; none with one."""
+	if not sedi.piu_sedi():
+		return []
+	return [
+		{
+			"id": riga["name"],
+			"name": riga["location_name"],
+			"address": sedi_regole.indirizzo(riga),
+			"city": riga["city"] or "",
+			"map_link": riga["map_link"] or "",
+			"phone": riga["phone"] or "",
+			"opening_hours": riga["opening_hours"] or "",
+		}
+		for riga in sedi.attive()
+	]
+
+
+def _sedi_del_servizio(service, online_staff: list[str]) -> list[str] | None:
+	"""Where a service can be held, for the page to offer it at a location; None
+	where anywhere (or the centre has one location)."""
+	if not sedi.piu_sedi():
+		return None
+	from crm.scheduling.availability import staff_working_hours
+	from crm.scheduling.visite_online import serve_la_stanza
+
+	stanze = frappe.get_all(
+		"CRM Resource", filters={"enabled": 1}, fields=["name", "resource_type", "centre_location"]
+	)
+	richieste = [
+		{"resource": riga.resource, "resource_type": riga.resource_type}
+		for riga in service.resources
+		if cint(riga.required) and serve_la_stanza(service, riga)
+	]
+	professionisti = [
+		[riga.get("centre_location") or "" for riga in staff_working_hours(user).rows] or [""]
+		for user in online_staff
+	]
+	return sedi_regole.sedi_del_servizio(richieste, stanze, professionisti, sedi.nomi())
 
 
 def _convenzioni_online() -> list[dict]:
@@ -370,6 +414,8 @@ def _service_card(service) -> dict:
 		"bookable": bool(online_staff),
 		"listed": not cint(service.get("hide_from_menu")),
 		"location": service.get("location") or "",
+		# the locations it is held in (docs/crm/62); None: any
+		"locations": None if cint(service.get("online_visit")) else _sedi_del_servizio(service, online_staff),
 		# held by video: the page says so, and asks for no room
 		"online_visit": bool(cint(service.get("online_visit"))),
 		# paid online when booking (`crm.pagamenti`): what, before the details
@@ -438,8 +484,10 @@ def online_slots(
 	staff_user: str | None = None,
 	participants: int = 1,
 	exclude_appointment: str | None = None,
+	location: str | None = None,
 ) -> list:
-	"""Engine slots narrowed by the service's online rules."""
+	"""Engine slots narrowed by the service's online rules; at one location where
+	the person picked one (docs/crm/62)."""
 	rules = _rules(service)
 	now = datetime.datetime.now(UTC)
 	earliest, latest = rules.window(now)
@@ -453,6 +501,7 @@ def online_slots(
 		online=True,
 		# the online notice/horizon (own or inherited) decide, not the internal ones
 		window=(earliest, latest or now + datetime.timedelta(days=3650)),
+		location=sedi.valida(location),
 	)
 	tz = scheduling_tz()
 	window_start = datetime.datetime.combine(first, datetime.time.min, tzinfo=tz)
@@ -476,6 +525,7 @@ def get_slots_public(
 	staff: str | None = None,
 	participants: int = 1,
 	timezone: str | None = None,
+	location: str | None = None,
 ) -> dict:
 	"""Free start times for a service between two dates.
 
@@ -495,7 +545,7 @@ def get_slots_public(
 
 	days: dict[str, list[dict]] = {}
 	seen = set()
-	for slot in online_slots(doc, first, last, user, seats):
+	for slot in online_slots(doc, first, last, user, seats, location=location):
 		key = (slot.start, slot.join_appointment)
 		if key in seen:
 			continue
@@ -507,6 +557,9 @@ def get_slots_public(
 				"time": local.strftime("%H:%M"),
 				"seats_left": cint(slot.seats_left),
 				"group": bool(slot.join_appointment),
+				# «Any location»: where this one is, and the booking goes there
+				"location": sedi.nome_di(slot.location) if slot.location and not location else "",
+				"location_id": slot.location or "",
 				"staff": [_staff_card(u)["name"] for u in slot.staff]
 				if doc.staff_selection != "All required"
 				else [],
@@ -640,10 +693,10 @@ def _clean_phone(value: str | None) -> str:
 	return to_e164(value) or value
 
 
-def _find_slot(service, start_utc, staff_user, seats, exclude_appointment=None):
+def _find_slot(service, start_utc, staff_user, seats, exclude_appointment=None, location=None):
 	tz = scheduling_tz()
 	day = start_utc.astimezone(tz).date()
-	for slot in online_slots(service, day, day, staff_user, seats, exclude_appointment):
+	for slot in online_slots(service, day, day, staff_user, seats, exclude_appointment, location):
 		if slot.start == start_utc:
 			return slot
 	return None
@@ -671,6 +724,7 @@ def book(
 	for_relation: str | None = None,
 	convention: str | None = None,
 	card_number: str | None = None,
+	location: str | None = None,
 ) -> dict:
 	"""Book a service on a free slot; returns what the confirmation page shows.
 
@@ -732,7 +786,7 @@ def book(
 		frappe.throw(limit_message(assenze))
 
 	staff_user = _staff_from_public_id(doc, staff) if staff and _flag(doc, "allow_staff_choice") else None
-	slot = _find_slot(doc, start_utc, staff_user, seats)
+	slot = _find_slot(doc, start_utc, staff_user, seats, location=location)
 	if not slot:
 		frappe.throw(_("This slot is no longer available. Please pick another one."))
 
@@ -809,6 +863,8 @@ def book(
 				"source": "Online",
 				"customer_notes": notes,
 				"location": doc.get("location") or None,
+				# where the slot is (docs/crm/62): its room says it too
+				"centre_location": slot.location,
 			}
 		)
 		if convenzione:
@@ -1015,7 +1071,10 @@ def public_view(appointment, token: str) -> dict:
 		"timezone": client_tz,
 		"duration": int((end - start).total_seconds() // 60),
 		"staff": [_staff_card(row.user)["name"] for row in appointment.staff],
-		"location": appointment.location or "",
+		# where to go: the location's name and address, else the place written on it
+		"location": sedi.indirizzo_di(appointment),
+		"location_id": appointment.get("centre_location") if sedi.piu_sedi() else None,
+		"map_link": (sedi.sede(appointment.get("centre_location")) or {}).get("map_link") or "",
 		# held by video: one enters it from the area, never from this page
 		"online_visit": bool(cint(service.get("online_visit"))),
 		"seats": len([r for r in mine if r.status != "Cancelled"]) or len(mine),
@@ -1028,7 +1087,7 @@ def public_view(appointment, token: str) -> dict:
 		"cancel_block": limit_message(cancel_block) if cancel_block and cancel_block != "inactive" else "",
 		"can_reschedule": not move_block,
 		"reschedule_block": limit_message(move_block) if move_block and move_block != "inactive" else "",
-		"calendar_links": _calendar_links(service.service_name, start, end, appointment.location),
+		"calendar_links": _calendar_links(service.service_name, start, end, sedi.indirizzo_di(appointment)),
 		**reminder,
 	}
 
@@ -1120,10 +1179,12 @@ def reschedule(token: str, start: str) -> dict:
 	if not others:
 		# the whole appointment is this client's: move it, keeping the professional if possible
 		current_staff = [row.user for row in appointment.staff]
+		# moved, it stays where it was booked (docs/crm/62)
+		sede = sedi.valida(appointment.get("centre_location"))
 		slot = None
 		if len(current_staff) == 1:
-			slot = _find_slot(service, new_start, current_staff[0], seats, appointment.name)
-		slot = slot or _find_slot(service, new_start, None, seats, appointment.name)
+			slot = _find_slot(service, new_start, current_staff[0], seats, appointment.name, sede)
+		slot = slot or _find_slot(service, new_start, None, seats, appointment.name, sede)
 		if not slot or slot.join_appointment:
 			frappe.throw(_("This slot is no longer available. Please pick another one."))
 		appointment.starts_on = to_system_naive(slot.start)
@@ -1135,7 +1196,9 @@ def reschedule(token: str, start: str) -> dict:
 		target = appointment
 	else:
 		# a seat in a group: leave this session, take a seat in (or open) another
-		slot = _find_slot(service, new_start, None, seats)
+		slot = _find_slot(
+			service, new_start, None, seats, location=sedi.valida(appointment.get("centre_location"))
+		)
 		if not slot:
 			frappe.throw(_("This slot is no longer available. Please pick another one."))
 		carried = [

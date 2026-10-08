@@ -279,6 +279,7 @@
             "
             :nomeDi="nomeDi"
             :nomeStanza="nomeStanza"
+            :nomeSede="nomeSede"
             @apri="(cosa) => $emit('apri', cosa)"
             @modifica="(cosa) => $emit('modifica', cosa)"
             @prendi="(evento, cosa) => prendi(evento, cosa, colonna)"
@@ -333,6 +334,8 @@ const props = defineProps({
   serviceColors: { type: Object, default: () => ({}) },
   nomeDi: { type: Function, default: (utente) => utente },
   nomeStanza: { type: Function, default: (stanza) => stanza },
+  /** where an appointment is, while every location is shown: '' otherwise */
+  nomeSede: { type: Function, default: () => '' },
   /** what the columns draw has come for these days: the hours open where they matter */
   pronto: { type: Boolean, default: true },
 })

@@ -348,6 +348,18 @@
           <div>{{ resourceSummary(doc.resources) }}</div>
         </div>
 
+        <!-- which location, where the centre has more than one (docs/crm/62) -->
+        <div
+          v-if="sedeDellAppuntamento"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-map-pin mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="min-w-0 break-words">{{ sedeDellAppuntamento }}</div>
+        </div>
+
         <div
           v-if="doc.total_amount"
           class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
@@ -1152,6 +1164,8 @@
 </template>
 
 <script setup>
+import { useSedi } from '@/composables/sedi'
+import { nomeDellaSede } from '@/utils/sedi'
 import { chiedi } from '@/utils/chiedi'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import DescriptionIcon from '@/components/Icons/DescriptionIcon.vue'
@@ -1721,6 +1735,12 @@ function setStart(value) {
 function setEnd(value) {
   if (value) form.end = value
 }
+
+// where it is, where the centre has more than one location (docs/crm/62)
+const { sedi, piuSedi } = useSedi()
+const sedeDellAppuntamento = computed(() =>
+  piuSedi.value ? nomeDellaSede(sedi.value, doc.value?.centre_location) : '',
+)
 
 const quote = createResource({ url: 'crm.api.appointments.quote_price' })
 const slots = createResource({

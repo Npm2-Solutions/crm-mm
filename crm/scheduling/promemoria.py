@@ -39,6 +39,7 @@ from frappe.utils import cint, escape_html, format_datetime, get_datetime, get_f
 from crm.notifiche import regole as N
 from crm.permissions import livelli
 from crm.scheduling import promemoria_regole as R
+from crm.scheduling import sedi
 from crm.scheduling import visite_online
 from crm.scheduling.timeutils import from_system_naive, scheduling_tz, to_system_naive
 from crm.telephony import sms as sms_del_centro
@@ -186,6 +187,11 @@ def _testo(appuntamento, riga, persona: str | None) -> dict:
 	online = visite_online.del_servizio(appuntamento.service)
 	if online:
 		servizio = _("{0}, online visit").format(servizio)
+	elif sedi.piu_sedi() and appuntamento.get("centre_location"):
+		# which of the centre's locations (docs/crm/62): every way says it
+		servizio = _("{0} at {1}", context="Place").format(
+			servizio, sedi.nome_di(appuntamento.centre_location)
+		)
 	return {
 		"nome": nome,
 		"cosa": _("{0} for {1}").format(servizio, riga.participant_name)
@@ -194,6 +200,8 @@ def _testo(appuntamento, riga, persona: str | None) -> dict:
 		"quando": quando(appuntamento.starts_on),
 		"centro": _nome_del_centro(),
 		"con": ", ".join(get_fullname(s.user) for s in appuntamento.staff if s.user),
+		# where to go: the address of the location it is at (docs/crm/62)
+		"dove": sedi.indirizzo_di(appuntamento) if appuntamento.get("centre_location") and not online else "",
 		# whose area: the person who comes (a child's, entered by the parent)
 		"online": visite_online.frase(
 			visite_online.area_per(riga.party if riga.party_type == "CRM Lead" else persona)
@@ -449,6 +457,7 @@ def _per_email(appuntamento, email: str, testo: dict) -> None:
 		f"<p>{esc(_('a reminder of your appointment at {0}:').format(testo['centro']))}</p>",
 		f"<p><b>{esc(testo['cosa'])}</b><br>{esc(testo['quando'])}"
 		+ (f"<br>{esc(_('With {0}').format(testo['con']))}" if testo["con"] else "")
+		+ (f"<br>{esc(_('Where: {0}').format(testo['dove']))}" if testo.get("dove") else "")
 		+ "</p>",
 		f"<p>{esc(testo['online'])}</p>" if testo.get("online") else "",
 		pulsante(testo["link"], _("Confirm, move or cancel")),

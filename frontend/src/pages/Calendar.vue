@@ -105,8 +105,15 @@
             @update:modelValue="cambiaVista"
           />
           <ChiNellAgenda v-bind="chi" @update:modelValue="cambiaChi" />
+          <!-- which location, where the centre has more than one (docs/crm/62);
+               on a phone it is in the filters' sheet -->
+          <ChiNellAgenda
+            v-if="piuSedi && !isMobileView"
+            v-bind="sedeDellAgenda"
+            @update:modelValue="cambiaSede"
+          />
           <FiltriAgenda
-            :modelValue="filters"
+            :modelValue="valoriDeiFiltri"
             :gruppi="gruppiDeiFiltri"
             @cambia="cambiaFiltro"
             @azzera="resetFilters"
@@ -140,7 +147,7 @@
       >
         <ChiNellAgenda v-bind="chi" @update:modelValue="cambiaChi" />
         <FiltriAgenda
-          :modelValue="filters"
+          :modelValue="valoriDeiFiltri"
           :gruppi="gruppiDeiFiltri"
           @cambia="cambiaFiltro"
           @azzera="resetFilters"
@@ -193,6 +200,7 @@
         :serviceColors="serviceColors"
         :nomeDi="nomeDi"
         :nomeStanza="nomeStanza"
+        :nomeSede="nomeSedeDelBlocco"
         :pronto="pronto"
         @apri="apri"
         @modifica="modifica"
@@ -291,6 +299,13 @@ import { getSettings } from '@/stores/settings'
 import { isMobileView } from '@/composables/breakpoints'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSchedulerMeta } from '@/composables/scheduling'
+import { useSedi } from '@/composables/sedi'
+import {
+  nellaSede,
+  nomeDellaSede,
+  opzioniDelleSedi,
+  sedeValida,
+} from '@/utils/sedi'
 import {
   ALTEZZE,
   ALTEZZA_PREDEFINITA,
@@ -387,6 +402,8 @@ const prefs = reactive({
   // whose day and month: the professionals or the rooms ticked, by what the
   // columns are
   chi: salvate.chi && typeof salvate.chi === 'object' ? salvate.chi : {},
+  // which of the centre's locations, where it has more than one: '' all
+  sede: typeof salvate.sede === 'string' ? salvate.sede : '',
 })
 watch(
   prefs,
@@ -610,16 +627,85 @@ function resetFilters() {
   filters.statuses = []
   filters.sources = []
   prefs.chi = { staff: [], resource: [] }
+  // on a phone the location is one of the filters
+  if (isMobileView.value) prefs.sede = ''
   reloadScheduler()
 }
 
 function cambiaFiltro(chiave, valori) {
+  if (chiave === 'sede') return cambiaSede(valori[0] || '')
   filters[chiave] = valori
   reloadScheduler()
 }
 
+// ---------------------------------------------------------------------------
+// which location (docs/crm/62): nothing of it where the centre has one
+// ---------------------------------------------------------------------------
+
+const { sedi, piuSedi } = useSedi()
+const sedeScelta = computed(() =>
+  piuSedi.value ? sedeValida(sedi.value, prefs.sede) : '',
+)
+
+function cambiaSede(valore) {
+  prefs.sede = valore || ''
+  reloadScheduler()
+}
+
+const opzioniSedi = computed(() =>
+  opzioniDelleSedi(sedi.value, __('All locations')),
+)
+
+const sedeDellAgenda = computed(() => ({
+  modelValue: sedeScelta.value,
+  singolo: true,
+  opzioni: opzioniSedi.value,
+  titolo: __('Locations'),
+  tutti: __('All locations'),
+  icona: 'lucide-map-pin',
+}))
+
+// a block says where it is while every location is shown
+function nomeSedeDelBlocco(appuntamento) {
+  if (!piuSedi.value || sedeScelta.value) return ''
+  return nomeDellaSede(sedi.value, appuntamento?.centre_location)
+}
+
+// whether a column belongs to the location chosen, on the day drawn
+function colonnaNellaSede(chiave) {
+  if (!sedeScelta.value) return true
+  if (perStanza.value)
+    return nellaSede(sedeScelta.value, {
+      stanza:
+        stanze.value.find((s) => s.name === chiave)?.centre_location || '',
+    })
+  return nellaSede(sedeScelta.value, {
+    delGiorno: ore.value.staff?.[chiave]?.[giorno.value]?.sedi,
+    diSempre: professionisti.value.find((p) => p.name === chiave)?.sedi || [],
+  })
+}
+
+// what the filters' list shows ticked: the location too, on a phone
+const valoriDeiFiltri = computed(() => ({
+  ...filters,
+  sede: sedeScelta.value ? [sedeScelta.value] : [],
+}))
+
 // the other filters, by what the columns are not
 const gruppiDeiFiltri = computed(() => [
+  ...(piuSedi.value && isMobileView.value
+    ? [
+        {
+          chiave: 'sede',
+          titolo: __('Centre location'),
+          singolo: true,
+          opzioni: opzioniSedi.value.map(({ value, label }) => ({
+            value,
+            label,
+          })),
+        },
+      ]
+    : []),
   {
     chiave: 'services',
     titolo: __('Services'),
@@ -828,7 +914,7 @@ const comeData = (data) => {
 // its windows - none when it does not work
 function apertoDi(orari, data) {
   if (orari === null) return null
-  return orari ? orari[data]?.open ?? [] : undefined
+  return orari ? (orari[data]?.open ?? []) : undefined
 }
 
 const colonne = computed(() => {
@@ -867,6 +953,7 @@ const colonne = computed(() => {
     occupati: occupatiNelGiorno.value,
     scelti: perStanza.value ? filters.resources : filters.staff,
     mostraTutti: prefs.tutti,
+    nellaSede: colonnaNellaSede,
   })
   // one's own events need a column: one's own, first
   if (
@@ -996,6 +1083,7 @@ function reloadScheduler() {
       sources: filters.sources,
       include_events: false,
       with_hours: ['giorno', 'settimana'].includes(vista.value),
+      location: sedeScelta.value || undefined,
     },
     {
       onSuccess: () => {

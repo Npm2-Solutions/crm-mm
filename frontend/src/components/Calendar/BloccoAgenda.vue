@@ -133,6 +133,8 @@ const props = defineProps({
   trascinabile: { type: Boolean, default: false },
   nomeDi: { type: Function, default: (utente) => utente },
   nomeStanza: { type: Function, default: (stanza) => stanza },
+  /** where an appointment is, while every location is shown (docs/crm/62) */
+  nomeSede: { type: Function, default: () => '' },
 })
 defineEmits(['apri', 'modifica', 'prendi'])
 
@@ -157,6 +159,7 @@ const testo = computed(() => {
     modo: props.modo,
     nomeDi: props.nomeDi,
     nomeStanza: props.nomeStanza,
+    nomeSede: props.nomeSede(dati.value),
     t,
   })
 })
@@ -190,6 +193,7 @@ const parole = computed(() => {
     modo: props.modo,
     nomeDi: props.nomeDi,
     nomeStanza: props.nomeStanza,
+    nomeSede: props.nomeSede(dati.value),
     t,
   })
 })

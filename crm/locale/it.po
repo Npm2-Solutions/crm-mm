@@ -49027,3 +49027,146 @@ msgctxt "Pratica"
 msgid "Did not come"
 msgstr "Non presentato"
 
+msgid "CRM Location"
+msgstr "Sede"
+
+msgid "Centre location"
+msgstr "Sede"
+
+msgid "Locations"
+msgstr "Sedi"
+
+msgid "All locations"
+msgstr "Tutte le sedi"
+
+msgid "Any location"
+msgstr "Qualsiasi sede"
+
+msgid "Usual location"
+msgstr "Sede abituale"
+
+msgid "Where the room is, where the centre has more than one location. Empty: in any of them (equipment that moves)."
+msgstr "Dove si trova l'ambulatorio, se il centro ha più di una sede. Vuoto: in tutte (un'attrezzatura che si sposta)."
+
+msgid "Where these hours are worked. Empty: anywhere, the room decides."
+msgstr "Dove si lavorano queste ore. Vuoto: in qualsiasi sede, decide l'ambulatorio."
+
+msgid "Where the appointment is, from its room or its professional's shift."
+msgstr "Dove si tiene l'appuntamento, dal suo ambulatorio o dal turno del professionista."
+
+msgid "Where it was made: its appointment's location, else where whoever made it works."
+msgstr "Dove è stata fatta: la sede del suo appuntamento, altrimenti quella di chi l'ha fatta."
+
+msgid "The location whose desk was closed; empty: the whole centre."
+msgstr "La sede la cui cassa è stata chiusa; vuoto: tutto il centro."
+
+msgid "Who invoices what is done here, when it is not the centre's usual issuing company."
+msgstr "Chi fattura quello che si fa qui, quando non è l'azienda emittente di sempre del centro."
+
+msgid "Postcode"
+msgstr "CAP"
+
+msgid "Map link"
+msgstr "Link alla mappa"
+
+msgid "How the centre's people and its clients call it: «Sede di Monza»."
+msgstr "Come la chiamano il centro e i suoi clienti: «Sede di Monza»."
+
+msgid "In the centre's words, for its clients: «Mon-Fri 8-20, Sat 8-13»."
+msgstr "Con le parole del centro, per i suoi clienti: «Lun-Ven 8-20, Sab 8-13»."
+
+msgid "A location of the centre: its rooms, the shifts worked there, its address on what the people booked receive."
+msgstr "Una sede del centro: i suoi ambulatori, i turni che vi si lavorano, il suo indirizzo in quello che ricevono le persone prenotate."
+
+msgid "The map link must be an address starting with https://"
+msgstr "Il link alla mappa deve essere un indirizzo che inizia con https://"
+
+msgid "{0} has rooms or appointments: switch it off instead of deleting it"
+msgstr "{0} ha ambulatori o appuntamenti: disattivala invece di eliminarla"
+
+msgid "{0} works at {1} at this time, the room is at {2}"
+msgstr "{0} a quest'ora lavora presso {1}, l'ambulatorio è presso {2}"
+
+msgid "Only the centre's manager changes its locations"
+msgstr "Solo il responsabile del centro modifica le sue sedi"
+
+msgid "Give the location a name"
+msgstr "Dai un nome alla sede"
+
+msgid "This day is already closed: close it again from the reception desk"
+msgstr "Questo giorno è già chiuso: chiudilo di nuovo dall'accoglienza"
+
+msgid "Where: {0}"
+msgstr "Dove: {0}"
+
+msgid "Two locations"
+msgstr "Due sedi"
+
+msgid "A second location in Monza with two rooms of its own, where the osteopath works on Tuesdays and Thursdays. Only where the centre has no locations of its own."
+msgstr "Una seconda sede a Monza con due ambulatori suoi, dove l'osteopata lavora il martedì e il giovedì. Solo se il centro non ha sedi sue."
+
+msgid "Where the centre is: each location with its address, its rooms and who works there."
+msgstr "Dove si trova il centro: ogni sede con il suo indirizzo, i suoi ambulatori e chi ci lavora."
+
+msgid "Where the centre is. From the second location on, the agenda, the booking page and the reception desk let you choose one, and every room and shift says where it is."
+msgstr "Dove si trova il centro. Dalla seconda sede in poi l'agenda, la pagina di prenotazione e l'accoglienza fanno scegliere la sede, e ogni ambulatorio e ogni turno dice dove si trova."
+
+msgid "New location"
+msgstr "Nuova sede"
+
+msgid "Edit location"
+msgstr "Modifica la sede"
+
+msgid "With one location nothing changes: add the second to choose where in the agenda, the booking page and the reception desk."
+msgstr "Con una sede non cambia niente: aggiungi la seconda per scegliere dove nell'agenda, nella pagina di prenotazione e all'accoglienza."
+
+msgid "One centre, one place"
+msgstr "Un centro, un posto"
+
+msgid "Add your locations if the centre has more than one: each with its address, its rooms and who works there."
+msgstr "Aggiungi le tue sedi se il centro ne ha più di una: ognuna con il suo indirizzo, i suoi ambulatori e chi ci lavora."
+
+msgid "e.g. Monza location"
+msgstr "es. Sede di Monza"
+
+msgid "The link of the place on a map, for whoever books there."
+msgstr "Il link del posto su una mappa, per chi prenota lì."
+
+msgid "e.g. Mon-Fri 8-20, Sat 8-13"
+msgstr "es. Lun-Ven 8-20, Sab 8-13"
+
+msgid "Who invoices what is done here. Empty: the centre's usual issuing company."
+msgstr "Chi fattura quello che si fa qui. Vuoto: l'azienda emittente di sempre del centro."
+
+msgid "Switched off, it is offered nowhere: its rooms and shifts keep it for when it is back."
+msgstr "Disattivata, non si offre da nessuna parte: i suoi ambulatori e i turni la tengono per quando torna."
+
+msgid "The centre's usual company"
+msgstr "L'azienda emittente di sempre"
+
+msgid "No address yet"
+msgstr "Nessun indirizzo"
+
+msgid "1 room"
+msgstr "1 ambulatorio"
+
+msgid "Location saved"
+msgstr "Sede salvata"
+
+msgid "Empty: in any of them, as equipment that moves from one to another."
+msgstr "Vuoto: in tutte, come un'attrezzatura che si sposta da una all'altra."
+
+msgid "Where you usually work: the reception desk opens on it, and what you invoice there counts in its cash closing."
+msgstr "Dove lavori di solito: l'accoglienza si apre su questa sede, e quello che fatturi conta nella sua chiusura di cassa."
+
+msgctxt "Place"
+msgid "{0} at {1}"
+msgstr "{0} presso {1}"
+
+msgctxt "Location"
+msgid "Active"
+msgstr "Attiva"
+
+msgctxt "Location"
+msgid "Off"
+msgstr "Disattivata"

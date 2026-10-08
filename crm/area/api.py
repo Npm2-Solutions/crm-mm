@@ -34,7 +34,7 @@ from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.area import accesso, anteprima, sezioni
 from crm.area import prenota_regole as P
-from crm.scheduling import abbonamenti, attese, cicli, visite_online
+from crm.scheduling import abbonamenti, attese, cicli, sedi, visite_online
 from crm.scheduling import arrivi_regole as A
 from crm.scheduling import attese_regole as R
 from crm.scheduling import visite_online_regole as V
@@ -151,7 +151,17 @@ def get_appointments(person: str) -> dict:
 		appuntamento = frappe.db.get_value(
 			"CRM Appointment",
 			riga.parent,
-			["name", "title", "service", "starts_on", "ends_on", "status", "location", "video_link"],
+			[
+				"name",
+				"title",
+				"service",
+				"starts_on",
+				"ends_on",
+				"status",
+				"location",
+				"centre_location",
+				"video_link",
+			],
 			as_dict=True,
 		)
 		if not appuntamento:
@@ -181,7 +191,8 @@ def get_appointments(person: str) -> dict:
 			"starts_on": appuntamento.starts_on,
 			"ends_on": appuntamento.ends_on,
 			# held by video: no place to come to, the room's door instead
-			"location": None if online else appuntamento.location,
+			# where to go: the location's name and address (docs/crm/62), else the place written
+			"location": None if online else (sedi.indirizzo_di(appuntamento) or None),
 			"online": online,
 			"status": "Cancelled" if annullato else appuntamento.status,
 			"session": {
