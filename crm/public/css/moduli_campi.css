@@ -87,3 +87,21 @@
 }
 .crm-campi button.secondary { background: var(--card); color: var(--ink-strong); border: 1px solid var(--border); }
 .crm-campi button.ghost { background: transparent; color: var(--muted); border: none; padding-left: 0; }
+/* the body chart: white paper, as the signature's, with the outlines side by side */
+.crm-campi .corpo { gap: .6rem; }
+.crm-campi .corpo .carta {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; max-width: 28rem;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: .75rem .75rem .4rem;
+}
+.crm-campi .corpo .carta.una { grid-template-columns: minmax(0, 1fr); max-width: 15rem; }
+.crm-campi .corpo .figura { margin: 0; display: flex; flex-direction: column; align-items: center; gap: .25rem; min-width: 0; }
+.crm-campi .corpo .figura figcaption { font-size: .85rem; color: #5f6368; }
+.crm-campi .corpo svg.sagoma {
+  width: 100%; height: auto; aspect-ratio: 200 / 460; cursor: crosshair;
+  /* a tap marks and a swipe scrolls; drawing keeps the finger */
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.crm-campi .corpo svg.sagoma.disegna { touch-action: none; }
+.crm-campi .corpo svg.sagoma.disegna .segno { pointer-events: none; }
+.crm-campi .corpo .segno { cursor: pointer; }
+.crm-campi .corpo .punto { display: flex; flex-direction: column; gap: .6rem; border: 1px solid var(--border); border-radius: 10px; padding: .75rem; max-width: 28rem; }

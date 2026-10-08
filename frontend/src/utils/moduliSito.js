@@ -70,6 +70,15 @@ export function useProblems(
         args: [label],
       })
     }
+    // where it hurts is health data: told at the centre, never to anybody's form
+    if (field.type === 'body_chart') {
+      problems.push({
+        field: field.id,
+        message:
+          '{0}: where it hurts is asked at the centre, not on the website',
+        args: [label],
+      })
+    }
     if (field.person && !known.has(field.person)) {
       problems.push({
         field: field.id,

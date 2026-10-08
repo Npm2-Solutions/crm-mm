@@ -211,6 +211,29 @@
       }
     }
   ],
+  "body_charts": [
+    {"name": "nothing marked", "field": {}, "value": {"marks": [], "strokes": []}, "expected": null, "error": false},
+    {"name": "a point, its words and how much", "field": {},
+     "value": {"marks": [{"view": "back", "x": 0.51234, "y": 0.4, "label": "  lower   back ", "intensity": "7", "colour": "red"}]},
+     "expected": {"marks": [{"view": "back", "x": 0.512, "y": 0.4, "label": "lower back", "intensity": 7}]}, "error": false},
+    {"name": "a point without words nor intensity", "field": {"views": ["front"]},
+     "value": {"marks": [{"view": "front", "x": 0, "y": 1, "label": "", "intensity": null}]},
+     "expected": {"marks": [{"view": "front", "x": 0, "y": 1}]}, "error": false},
+    {"name": "a stroke, to the thousandth", "field": {},
+     "value": {"strokes": [{"view": "front", "points": [[0.1, 0.2], [0.10049, 0.2006]]}]},
+     "expected": {"strokes": [{"view": "front", "points": [[0.1, 0.2], [0.1, 0.201]]}]}, "error": false},
+    {"name": "a point off the outline", "field": {}, "value": {"marks": [{"view": "front", "x": 1.2, "y": 0.5}]}, "expected": null, "error": true},
+    {"name": "a point where the question does not look", "field": {"views": ["front"]}, "value": {"marks": [{"view": "back", "x": 0.5, "y": 0.5}]}, "expected": null, "error": true},
+    {"name": "a point written as words", "field": {}, "value": {"marks": [{"view": "front", "x": "0.5", "y": 0.5}]}, "expected": null, "error": true},
+    {"name": "an intensity beyond 10", "field": {}, "value": {"marks": [{"view": "front", "x": 0.5, "y": 0.5, "intensity": 11}]}, "expected": null, "error": true},
+    {"name": "an intensity in halves", "field": {}, "value": {"marks": [{"view": "front", "x": 0.5, "y": 0.5, "intensity": 6.5}]}, "expected": null, "error": true},
+    {"name": "a yes is no intensity", "field": {}, "value": {"marks": [{"view": "front", "x": 0.5, "y": 0.5, "intensity": true}]}, "expected": null, "error": true},
+    {"name": "words that are a list", "field": {}, "value": {"marks": [{"view": "front", "x": 0.5, "y": 0.5, "label": ["a"]}]}, "expected": null, "error": true},
+    {"name": "a stroke without points", "field": {}, "value": {"strokes": [{"view": "front", "points": []}]}, "expected": null, "error": true},
+    {"name": "a stroke of odd points", "field": {}, "value": {"strokes": [{"view": "front", "points": [[0.1, 0.2, 0.3]]}]}, "expected": null, "error": true},
+    {"name": "marks that are not a list", "field": {}, "value": {"marks": {"view": "front"}}, "expected": null, "error": true},
+    {"name": "a list is not a chart", "field": {}, "value": [{"view": "front", "x": 0.5, "y": 0.5}], "expected": null, "error": true}
+  ],
   "validations": [
     {"name": "not a form", "schema": {}, "expected": ["not_a_schema"]},
     {"name": "the visit is valid", "schema": "visit", "expected": []},
@@ -281,6 +304,19 @@
       {"id": "t", "type": "table", "label": "T", "columns": [{"id": "x", "label": "X", "type": "colour"}]}]}]}, "expected": ["invalid_column"]},
     {"name": "sides of an unknown kind", "schema": {"sections": [{"id": "s", "fields": [
       {"id": "k", "type": "sides", "label": "K", "input": "colour"}]}]}, "expected": ["invalid_sides_input"]},
+    {"name": "a body chart from the front only", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts", "views": ["front"]}]}]}, "expected": []},
+    {"name": "a body chart from both sides by default", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts"}]}]}, "expected": []},
+    {"name": "a body chart from the side", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts", "views": ["side"]}]}]}, "expected": ["invalid_body_views"]},
+    {"name": "a body chart from nowhere", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts", "views": []}]}]}, "expected": ["invalid_body_views"]},
+    {"name": "a body chart from the front twice", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts", "views": ["front", "front"]}]}]}, "expected": ["invalid_body_views"]},
+    {"name": "a body chart is only given or not", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "b", "type": "body_chart", "label": "Where it hurts"},
+      {"id": "a", "type": "text", "label": "A", "show_if": [[{"field": "b", "operator": "contains", "value": "back"}]]}]}]}, "expected": ["invalid_operator"]},
     {"name": "two problems, in the order met", "schema": {"sections": [{"id": "s", "fields": [
       {"id": "a", "type": "choice", "options": []}]}]}, "expected": ["missing_label", "missing_options"]}
   ]

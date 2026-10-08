@@ -48056,3 +48056,88 @@ msgstr "1 riga selezionata"
 
 msgid "{0} rows selected"
 msgstr "{0} righe selezionate"
+
+msgid "How to mark"
+msgstr "Come segnare"
+
+msgid "Mark a point"
+msgstr "Segna un punto"
+
+msgid "Draw"
+msgstr "Disegna"
+
+msgid "Draw on the body with your finger, or with the mouse"
+msgstr "Disegna sul corpo con il dito, o con il mouse"
+
+msgid "Tap the body where it hurts: each tap is a numbered point"
+msgstr "Tocca il corpo dove fa male: ogni tocco è un punto numerato"
+
+msgid "Undo the last stroke"
+msgstr "Togli l'ultimo tratto"
+
+msgid "That is as many as a body chart holds"
+msgstr "Il disegno non ne tiene altri"
+
+msgid "Point {0}"
+msgstr "Punto {0}"
+
+msgid "Remove the point"
+msgstr "Togli il punto"
+
+msgid "What it feels like, where"
+msgstr "Cosa senti, dove"
+
+msgid "Burning, down the leg"
+msgstr "Bruciore, scende lungo la gamba"
+
+msgid "How much, from 0 (nothing) to 10 (the worst)"
+msgstr "Quanto, da 0 (niente) a 10 (il peggio)"
+
+msgid "Nothing marked"
+msgstr "Niente segnato"
+
+msgctxt "Body chart side"
+msgid "R"
+msgstr "D"
+
+msgctxt "Body chart side"
+msgid "L"
+msgstr "S"
+
+msgctxt "Body chart"
+msgid "Front"
+msgstr "Davanti"
+
+msgctxt "Body chart"
+msgid "Back"
+msgstr "Dietro"
+
+msgid "Drawn by hand: {0}"
+msgstr "Disegnato a mano: {0}"
+
+msgid "Body chart"
+msgstr "Disegno sul corpo"
+
+msgid "Where it hurts: points and strokes on the body, front and back"
+msgstr "Dove fa male: punti e tratti sul corpo, davanti e dietro"
+
+msgid "{0}: the body is shown from the front, from the back, or both"
+msgstr "{0}: il corpo si mostra davanti, dietro o da tutte e due le parti"
+
+msgid "The body seen"
+msgstr "Il corpo visto"
+
+msgid "From the front and from the back"
+msgstr "Davanti e dietro"
+
+msgid "From the front"
+msgstr "Davanti"
+
+msgid "From the back"
+msgstr "Dietro"
+
+msgid "Drawing by hand too"
+msgstr "Anche il disegno a mano"
+
+msgid "{0}: where it hurts is asked at the centre, not on the website"
+msgstr "{0}: dove fa male si chiede al centro, non sul sito"

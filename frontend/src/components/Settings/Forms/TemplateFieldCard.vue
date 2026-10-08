@@ -301,6 +301,30 @@
       </div>
 
       <div
+        v-else-if="field.type === 'body_chart'"
+        class="grid grid-cols-2 gap-2 max-md:grid-cols-1"
+      >
+        <FormControl
+          :model-value="bodyViewsChoice"
+          type="select"
+          :label="__('The body seen')"
+          :options="[
+            { label: __('From the front and from the back'), value: 'both' },
+            { label: __('From the front'), value: 'front' },
+            { label: __('From the back'), value: 'back' },
+          ]"
+          @update:model-value="
+            (value) =>
+              (field.views = value === 'both' ? ['front', 'back'] : [value])
+          "
+        />
+        <TemplateSwitch
+          v-model="field.drawing"
+          :label="__('Drawing by hand too')"
+        />
+      </div>
+
+      <div
         v-else-if="field.type === 'attachment'"
         class="grid grid-cols-2 gap-2 max-md:grid-cols-1"
       >
@@ -575,7 +599,7 @@ import TemplatePhrases from './TemplatePhrases.vue'
 import TemplateSwitch from './TemplateSwitch.vue'
 import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
 import { componentIcon } from '@/components/Moduli/moduliIcons'
-import { component, conditionFields } from '@/utils/moduli'
+import { bodyViews, component, conditionFields } from '@/utils/moduli'
 import LucideChevronDown from '~icons/lucide/chevron-down'
 import { Badge, Button, Checkbox, Dropdown, FormControl } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
@@ -613,6 +637,11 @@ const personLabel = computed(
     props.personFields.find((option) => option.value === field.value.person)
       ?.label,
 )
+// both outlines unless the question names one (moduli.js, bodyViews)
+const bodyViewsChoice = computed(() => {
+  const views = bodyViews(field.value)
+  return views.length === 2 ? 'both' : views[0]
+})
 const labelCaption = computed(() =>
   kind.value?.answer ? __('The question') : __('Its name'),
 )

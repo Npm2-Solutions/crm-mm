@@ -24,6 +24,7 @@
 	.domanda { margin: 0 0 7pt; page-break-inside: avoid; }
 	.etichetta { font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 1pt; }
 	.risposta { white-space: pre-wrap; }
+	.corpo img { height: 80mm; max-width: 100%; margin: 2pt 0 4pt; }
 	.vuota { color: #9a9a9a; }
 	.testo { white-space: pre-wrap; background: #f6f6f6; padding: 7pt 9pt; border-radius: 3pt; margin: 0 0 7pt; }
 	.avviso { border: 0.8pt solid #d9534f; color: #a02622; padding: 5pt 8pt; border-radius: 3pt; margin: 4pt 0 8pt; }
@@ -52,6 +53,12 @@
 		{% for voce in sezione.voci %}
 			{% if voce.tipo == "paragraph" %}
 				<div class="testo">{{ voce.testo }}</div>
+			{% elif voce.tipo == "body_chart" %}
+				<div class="domanda corpo">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					<img src="{{ voce.immagine }}" alt="">
+					{% if voce.risposta %}<div class="risposta">{{ voce.risposta }}</div>{% endif %}
+				</div>
 			{% elif voce.tipo == "table" %}
 				<div class="domanda">
 					<div class="etichetta">{{ voce.etichetta }}</div>

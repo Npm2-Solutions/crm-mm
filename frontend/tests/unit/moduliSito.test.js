@@ -49,6 +49,22 @@ describe('what a use allows', () => {
     expect(wrong[0].field).toBe('firma')
   })
 
+  it('a form of the website asks nobody where it hurts', () => {
+    const site = { onTheSite: true, personFields: PERSON }
+    const wrong = useProblems(
+      form([...contact, { id: 'dolore', type: 'body_chart', label: 'Dolore' }]),
+      site,
+    )
+    expect(codes(wrong)).toEqual([
+      '{0}: where it hurts is asked at the centre, not on the website',
+    ])
+    expect(wrong[0].field).toBe('dolore')
+    // a form of the desk does
+    expect(
+      useProblems(form([{ id: 'dolore', type: 'body_chart', label: 'D' }])),
+    ).toEqual([])
+  })
+
   it('a survey opens with its link alone: no consent, signature or file', () => {
     const survey = { withoutCode: true }
     const wrong = useProblems(

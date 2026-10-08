@@ -48,6 +48,7 @@ TABELLA = "table"
 LATI = "sides"
 FILE = "file"
 FIRMA = "signature"
+CORPO = "body"
 
 #: How a component may appear in a condition.
 TUTTI_GLI_OPERATORI = "all"
@@ -63,6 +64,8 @@ FIRMATARI = ("patient", "operator", "guardian")
 LIVELLI_FIRMA = ("simple", "advanced", "qualified")
 TIPI_COLONNA = ("text", "number", "date", "yesno")
 TIPI_LATO = ("number", "text")
+#: The body chart's two outlines (`corpo.py` draws them): from the front, from the back.
+VISTE = ("front", "back")
 
 MAX_SEZIONI = 50
 MAX_CAMPI = 400
@@ -71,6 +74,11 @@ MAX_COLONNE = 20
 MAX_RIGHE = 200
 MAX_TESTO = 20000
 MAX_DECIMALI = 6
+#: What a body chart holds: numbered points, strokes by hand and their points.
+MAX_SEGNI = 40
+MAX_TRATTI = 40
+MAX_PUNTI = 500
+MAX_PAROLE_SEGNO = 120
 
 _ID = re.compile(r"^[a-z][a-z0-9_]{0,59}$")
 _NUMERO_TESTO = re.compile(r"^\s*-?[0-9]+(?:[.,][0-9]+)?\s*$")
@@ -183,6 +191,8 @@ for _c in (
 	Componente("sides", "Left and right", LATI, condizione=SOLO_PRESENZA, proprieta=("input", "unit")),
 	Componente("attachment", "Attachment", FILE, condizione=SOLO_PRESENZA, proprieta=("accept", "multiple")),
 	Componente("signature", "Signature", FIRMA, condizione=SOLO_PRESENZA, proprieta=("signer", "level")),
+	# where it hurts: points on the body's outline, front and back, and strokes by hand
+	Componente("body_chart", "Body chart", CORPO, condizione=SOLO_PRESENZA, proprieta=("views", "drawing")),
 	# the words are the register's: frozen into the version when it is published
 	Componente(
 		"consent",
@@ -750,6 +760,74 @@ def _booleano(valore) -> bool:
 	raise ValueError
 
 
+def viste(campo: dict) -> list[str]:
+	"""The outlines a body chart shows: the ones it names, in their order, else both."""
+	scelte = [v for v in VISTE if v in _lista(campo.get("views"))]
+	return scelte or list(VISTE)
+
+
+def _coordinata(valore) -> int | float:
+	"""Where on the outline, from 0 to 1 of its width or height, to the thousandth."""
+	n = numero(valore) if not isinstance(valore, str) else None
+	if n is None or not 0 <= n <= 1:
+		raise ValueError
+	return _intero_se_puo(arrotonda(n, 3))
+
+
+def pulisci_corpo(campo: dict, valore) -> dict | None:
+	"""A body chart's answer as it is kept: its points (where, on which outline, the
+	words and the intensity from 0 to 10 if given) and its strokes, numbers to the
+	thousandth. Raises ValueError for anything else: a point off the outline, on an
+	outline the question does not show, too many of them."""
+	if not isinstance(valore, dict):
+		raise ValueError
+	ammesse = viste(campo)
+	segni, tratti = valore.get("marks") or [], valore.get("strokes") or []
+	if not isinstance(segni, list) or not isinstance(tratti, list):
+		raise ValueError
+	if len(segni) > MAX_SEGNI or len(tratti) > MAX_TRATTI:
+		raise ValueError
+	puliti = []
+	for segno in segni:
+		if not isinstance(segno, dict) or segno.get("view") not in ammesse:
+			raise ValueError
+		pulito = {"view": segno["view"], "x": _coordinata(segno.get("x")), "y": _coordinata(segno.get("y"))}
+		parole = segno.get("label")
+		if not vuoto(parole):
+			parole = " ".join(_come_parola(parole).split())
+			if len(parole) > MAX_PAROLE_SEGNO:
+				raise ValueError
+			if parole:
+				pulito["label"] = parole
+		intensita = segno.get("intensity")
+		if not vuoto(intensita):
+			n = numero(intensita)
+			if n is None or not n.is_integer() or not 0 <= n <= 10:
+				raise ValueError
+			pulito["intensity"] = int(n)
+		puliti.append(pulito)
+	disegnati = []
+	for tratto in tratti:
+		if not isinstance(tratto, dict) or tratto.get("view") not in ammesse:
+			raise ValueError
+		punti = tratto.get("points")
+		if not isinstance(punti, list):
+			raise ValueError
+		if not 1 <= len(punti) <= MAX_PUNTI:
+			raise ValueError
+		if not all(isinstance(p, list) and len(p) == 2 for p in punti):
+			raise ValueError
+		disegnati.append(
+			{"view": tratto["view"], "points": [[_coordinata(x), _coordinata(y)] for x, y in punti]}
+		)
+	pulito = {}
+	if puliti:
+		pulito["marks"] = puliti
+	if disegnati:
+		pulito["strokes"] = disegnati
+	return pulito or None
+
+
 def _converti(campo: dict, valore):
 	"""The answer as the field keeps it, or an Errore."""
 	tipo = campo.get("type")
@@ -841,6 +919,8 @@ def _converti(campo: dict, valore):
 				raise ValueError
 			file = [f.strip() for f in file]
 			return (file if campo.get("multiple") else file[0]), None
+		if tipo == "body_chart":
+			return pulisci_corpo(campo, valore), None
 		# a signature, and another module's component: theirs to check
 		return valore, None
 	except (ValueError, TypeError):
@@ -1085,6 +1165,22 @@ def _controlla_campo(errori: list, campo: dict, prima: dict, tutti: dict, posto:
 					(etichetta,),
 				)
 			)
+	if nome == "body_chart":
+		scelte = campo.get("views")
+		if scelte is not None and (
+			not isinstance(scelte, list)
+			or not scelte
+			or any(v not in VISTE for v in scelte)
+			or len(set(scelte)) != len(scelte)
+		):
+			errori.append(
+				Errore(
+					"invalid_body_views",
+					chiave,
+					"{0}: the body is shown from the front, from the back, or both",
+					(etichetta,),
+				)
+			)
 	if nome == "consent" and not _testo(campo.get("consent_type")):
 		errori.append(Errore("missing_consent_type", chiave, "{0}: which consent it records", (etichetta,)))
 
@@ -1187,6 +1283,8 @@ def _parte(origine: dict, chiavi) -> dict:
 			valore = _solo(valore, ("from", "to", "label"))
 		elif chiave == "scores" and isinstance(valore, dict):
 			valore = {k: valore[k] for k in ("yes", "no") if not _niente(valore.get(k))}
+		elif chiave == "views" and isinstance(valore, list):
+			valore = [v for v in valore if isinstance(v, str)]
 		elif chiave in ("phrases", "sources") and isinstance(valore, list):
 			valore = [v for v in valore if isinstance(v, str) and v.strip()]
 		if not _niente(valore):

@@ -13,6 +13,7 @@ import LucideSigma from '~icons/lucide/sigma'
 import LucideShieldCheck from '~icons/lucide/shield-check'
 import LucideSignature from '~icons/lucide/signature'
 import LucideSquareDashed from '~icons/lucide/square-dashed'
+import LucidePersonStanding from '~icons/lucide/person-standing'
 
 // one icon per component, shared by the palette, the field cards and the list
 const ICONS = {
@@ -30,6 +31,7 @@ const ICONS = {
   score: LucideSigma,
   consent: LucideShieldCheck,
   signature: LucideSignature,
+  body_chart: LucidePersonStanding,
 }
 
 export function componentIcon(type) {
@@ -52,6 +54,7 @@ const NAMES = {
   score: 'lucide-sigma',
   consent: 'lucide-shield-check',
   signature: 'lucide-signature',
+  body_chart: 'lucide-person-standing',
 }
 
 export function componentIconName(type) {

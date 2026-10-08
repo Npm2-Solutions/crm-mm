@@ -58,6 +58,16 @@ class ICasiCondivisi(UnitTestCase):
 			with self.subTest(caso["name"]):
 				self.assertEqual([e.codice for e in S.valida_schema(_schema(caso))], caso["expected"])
 
+	def test_il_disegno_sul_corpo(self):
+		for caso in CASI["body_charts"]:
+			with self.subTest(caso["name"]):
+				campo = {"id": "b", "type": "body_chart", "label": "B", **caso["field"]}
+				valore, errore = S._converti(campo, copy.deepcopy(caso["value"]))
+				self.assertEqual(valore, caso["expected"])
+				self.assertEqual(errore is not None, caso["error"])
+				if errore:
+					self.assertEqual(errore.codice, "invalid_value")
+
 
 class LaPulizia(UnitTestCase):
 	"""What is kept of the answers: server side only, on the way in."""

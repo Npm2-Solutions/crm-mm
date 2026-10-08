@@ -181,6 +181,13 @@ def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
 			)
 		if campo.get("type") == "attachment":
 			problema("file_on_the_site", campo, _("{0}: no file is sent from the website").format(etichetta))
+		if campo.get("type") == "body_chart":
+			# where it hurts is health data: told at the centre, never to anybody's form
+			problema(
+				"body_chart_on_the_site",
+				campo,
+				_("{0}: where it hurts is asked at the centre, not on the website").format(etichetta),
+			)
 		if campo.get("person") and campo.get("person") not in CAMPI_PERSONA:
 			problema(
 				"person_field_unknown",
