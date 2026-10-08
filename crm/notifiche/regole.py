@@ -100,6 +100,11 @@ PREVENTIVO_RIFIUTATO = "{0} declined a quote in their area"
 MESSAGGIO_AREA = "{0} wrote to the centre from their area"
 MESSAGGIO_AREA_MOLTI = "{0} wrote {1} messages to the centre from their area"
 
+#: Paid online on the centre's Stripe (`crm.pagamenti`), and given back there: a
+#: refund never takes the collection back by itself, whoever manages invoicing does.
+PAGATA_ONLINE = "{0} paid invoice {1} online: {2}"
+RIMBORSO_FATTURA = "Stripe gave back {0} to {1} for invoice {2}: it is still marked as collected"
+RIMBORSO_ACCONTO = "Stripe gave back {0} of the online deposit to {1}"
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -146,6 +151,9 @@ FRASI = (
 	PREVENTIVO_RIFIUTATO,
 	MESSAGGIO_AREA,
 	MESSAGGIO_AREA_MOLTI,
+	PAGATA_ONLINE,
+	RIMBORSO_FATTURA,
+	RIMBORSO_ACCONTO,
 )
 
 #: The sentences that take something away: the panel draws them apart.

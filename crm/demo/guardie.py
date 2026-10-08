@@ -155,6 +155,12 @@ def mai_fuori(doctype: str, nome: str | None) -> bool:
 	return registro.raccolta() is not None or str(nome) in registro.nomi_di_prova(doctype)
 
 
+def mai_a_stripe(*riferimenti: tuple[str, str | None]) -> bool:
+	"""Whether a payment would be asked online for the demo (`crm.pagamenti`): an
+	invoice, a service, a person of the demo's. Stripe is never called for it."""
+	return any(mai_fuori(doctype, nome) for doctype, nome in riferimenti if nome)
+
+
 def visita_di_prova(appuntamento) -> bool:
 	"""Whether an online visit is the demo's, which gets no room on a real video
 	server (`crm.scheduling.visite_online`): made while a part runs, the demo's

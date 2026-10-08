@@ -48255,3 +48255,333 @@ msgstr "Da qui entri nella visita dalle {0}, 15 minuti prima dell'inizio."
 
 msgid "The link to enter the visit will be here: the centre adds it."
 msgstr "Il link per entrare nella visita sarà qui: lo aggiunge il centro."
+
+msgid "Online payments"
+msgstr "Pagamenti online"
+
+msgctxt "Stripe"
+msgid "Connected"
+msgstr "Collegato"
+
+msgctxt "Stripe"
+msgid "Not connected"
+msgstr "Non collegato"
+
+msgid "Invoices and deposits paid online by card, on the centre's own Stripe account."
+msgstr "Fatture e acconti pagati online con carta, sull'account Stripe del centro."
+
+msgid "The money goes straight to your Stripe account, at Stripe's prices: {brand} never holds it. The person pays by card on Stripe's page; the invoice is marked collected by itself."
+msgstr "I soldi vanno direttamente sul tuo account Stripe, ai prezzi di Stripe: {brand} non li tiene mai. La persona paga con carta sulla pagina di Stripe; la fattura risulta incassata da sola."
+
+msgctxt "Stripe"
+msgid "Secret key"
+msgstr "Chiave segreta"
+
+msgid "Connect Stripe"
+msgstr "Collega Stripe"
+
+msgid "The account answers. The webhook endpoint was missing on Stripe: it was made again."
+msgstr "L'account risponde. Su Stripe mancava l'endpoint del webhook: è stato rifatto."
+
+msgid "The account answers, and its webhook endpoint is there."
+msgstr "L'account risponde, e il suo endpoint del webhook c'è."
+
+msgid "Open Stripe"
+msgstr "Apri Stripe"
+
+msgid "Deposits at online booking"
+msgstr "Acconti alla prenotazione online"
+
+msgid "Which services ask a deposit, or the whole price, is chosen on each service: Agenda > Services > Online rules."
+msgstr "Quali servizi chiedono un acconto, o il prezzo intero, si sceglie su ogni servizio: Agenda > Servizi > Regole online."
+
+msgid "Give the deposit back when the person cancels in time"
+msgstr "Restituisci l'acconto se la persona disdice in tempo"
+
+msgid "Refunded on Stripe by itself, the same day."
+msgstr "Rimborsato su Stripe da solo, il giorno stesso."
+
+msgid "Hours before the appointment"
+msgstr "Ore prima dell'appuntamento"
+
+msgid "A later cancellation keeps the deposit."
+msgstr "Con una disdetta più tardi l'acconto resta al centro."
+
+msgid "Payment data are handled by Stripe as the centre's own processor: {brand} never sees the card. The key is kept encrypted and used only to make the payment links, read their outcome and give a deposit back."
+msgstr "I dati di pagamento li tratta Stripe, come fornitore del centro: {brand} non vede mai la carta. La chiave è conservata cifrata e serve solo a creare i link di pagamento, leggerne l'esito e restituire un acconto."
+
+msgid "Create your account on Stripe, if you have none, and activate it with the centre's details and bank account."
+msgstr "Crea il tuo account su Stripe, se non ce l'hai, e attivalo con i dati e il conto del centro."
+
+msgid "In the Stripe dashboard, Developers > API keys, copy the secret key: start in test mode (sk_test_…) to try it."
+msgstr "Nella dashboard di Stripe, Sviluppatori > Chiavi API, copia la chiave segreta: comincia in modalità di prova (sk_test_…) per provare."
+
+msgid "Open the API keys"
+msgstr "Apri le chiavi API"
+
+msgid "Paste it here and connect."
+msgstr "Incollala qui e collega."
+
+msgid "Stripe connected"
+msgstr "Stripe collegato"
+
+msgid "Could not check"
+msgstr "Controllo non riuscito"
+
+msgid "Stripe disconnected"
+msgstr "Stripe scollegato"
+
+msgid "Disconnect Stripe?"
+msgstr "Scollegare Stripe?"
+
+msgid "Nobody will be able to pay online: the links already sent stop working. The payments made stay in your Stripe account."
+msgstr "Nessuno potrà più pagare online: i link già mandati smettono di funzionare. I pagamenti fatti restano sul tuo account Stripe."
+
+msgid "Valid until {0}. Send it to the person: they pay by card on Stripe."
+msgstr "Valido fino al {0}. Mandalo alla persona: paga con carta su Stripe."
+
+msgid "A link to pay it by card on Stripe, to send to the person."
+msgstr "Un link per pagarla con carta su Stripe, da mandare alla persona."
+
+msgid "Payment link"
+msgstr "Link di pagamento"
+
+msgid "Link copied"
+msgstr "Link copiato"
+
+msgid "Thank you: the payment went through. The invoice shows as paid in a moment."
+msgstr "Grazie: il pagamento è andato a buon fine. Tra un momento la fattura risulta pagata."
+
+msgid "The payment was not made: you can try again when you like."
+msgstr "Il pagamento non è stato fatto: puoi riprovare quando vuoi."
+
+msgid "Paid online on {0}"
+msgstr "Pagata online il {0}"
+
+msgid "Pay online"
+msgstr "Paga online"
+
+msgid "The payment could not start: try again."
+msgstr "Il pagamento non è partito: riprova."
+
+msgid "Pay online when booking"
+msgstr "Pagamento online alla prenotazione"
+
+msgid "Deposit"
+msgstr "Acconto"
+
+msgid "Connect Stripe first, in Settings > Invoicing > Online payments: the money goes to the centre's own account."
+msgstr "Prima collega Stripe, in Impostazioni > Fatturazione > Pagamenti online: i soldi vanno sull'account del centro."
+
+msgid "The place is held for half an hour while the person pays on Stripe; the booking is confirmed once paid."
+msgstr "Il posto resta tenuto per mezz'ora mentre la persona paga su Stripe; la prenotazione è confermata appena pagato."
+
+msgid "Nothing is paid online: the person pays at the centre."
+msgstr "Online non si paga nulla: la persona paga al centro."
+
+msgid "Nothing, paid at the centre"
+msgstr "Nulla, si paga al centro"
+
+msgid "A deposit"
+msgstr "Un acconto"
+
+msgid "The whole price"
+msgstr "Il prezzo intero"
+
+msgid "Paste the secret key of your Stripe account."
+msgstr "Incolla la chiave segreta del tuo account Stripe."
+
+msgid "This is the publishable key: paste the secret key (sk_…) or a restricted key (rk_…)."
+msgstr "Questa è la chiave pubblicabile: incolla la chiave segreta (sk_…) o una chiave con restrizioni (rk_…)."
+
+msgid "This is not a Stripe secret key: it starts with sk_ or rk_."
+msgstr "Questa non è una chiave segreta di Stripe: comincia con sk_ o rk_."
+
+msgid "Test mode"
+msgstr "Modalità di prova"
+
+msgid "Test mode: no real money moves. Pay with the card 4242 4242 4242 4242."
+msgstr "Modalità di prova: non si muovono soldi veri. Paga con la carta 4242 4242 4242 4242."
+
+msgid "Live: the payments are real and reach your account."
+msgstr "Pagamenti reali: arrivano sul tuo conto."
+
+msgid "Paid online on {0}: {1}, {2} given back on Stripe"
+msgstr "Pagata online il {0}: {1}, {2} restituiti su Stripe"
+
+msgid "Paid online on {0}: {1}"
+msgstr "Pagata online il {0}: {1}"
+
+msgid "Deposit already paid online: {0}"
+msgstr "Acconto già pagato online: {0}"
+
+msgid "Stripe did not answer: try again in a few minutes."
+msgstr "Stripe non ha risposto: riprova tra qualche minuto."
+
+msgid "Stripe did not accept the key: copy it again from the Stripe dashboard, Developers > API keys."
+msgstr "Stripe non ha accettato la chiave: copiala di nuovo dalla dashboard di Stripe, Sviluppatori > Chiavi API."
+
+msgid "The restricted key may not do this: give it Checkout Sessions, Webhook Endpoints and Refunds (write) and Charges (read), or use the secret key."
+msgstr "La chiave con restrizioni non può farlo: dalle Checkout Sessions, Webhook Endpoints e Refunds (scrittura) e Charges (lettura), oppure usa la chiave segreta."
+
+msgid "Stripe does not have it any more."
+msgstr "Stripe non ce l'ha più."
+
+msgid "Stripe asks to slow down: try again in a minute."
+msgstr "Stripe chiede di rallentare: riprova tra un minuto."
+
+msgid "Stripe refused this site's address: it must be public and on https."
+msgstr "Stripe ha rifiutato l'indirizzo di questo sito: deve essere pubblico e in https."
+
+msgid "Stripe refused the request."
+msgstr "Stripe ha rifiutato la richiesta."
+
+msgid "Stripe is not connected."
+msgstr "Stripe non è collegato."
+
+msgid "Stripe did not give the webhook's signing secret: try again."
+msgstr "Stripe non ha dato il segreto di firma del webhook: riprova."
+
+msgid "Online payments are not connected: Settings > Invoicing > Online payments."
+msgstr "I pagamenti online non sono collegati: Impostazioni > Fatturazione > Pagamenti online."
+
+msgid "Only an issued invoice is paid online, never a credit note."
+msgstr "Online si paga solo una fattura emessa, mai una nota di credito."
+
+msgid "A test invoice is never paid."
+msgstr "Una fattura di prova non si paga mai."
+
+msgid "Only an invoice to a person is paid online."
+msgstr "Online si paga solo una fattura a una persona."
+
+msgid "This invoice is already collected."
+msgstr "Questa fattura è già incassata."
+
+msgid "The SdI sent this invoice back: correct it first."
+msgstr "Lo SdI ha scartato questa fattura: prima correggila."
+
+msgid "Nothing is left to pay on this invoice."
+msgstr "Su questa fattura non resta nulla da pagare."
+
+msgid "The demo's invoices are never paid online."
+msgstr "Le fatture dei dati di prova non si pagano mai online."
+
+msgid "Invoice {0} · {1}"
+msgstr "Fattura {0} · {1}"
+
+msgid "Deposit · {0} · {1}"
+msgstr "Acconto · {0} · {1}"
+
+msgid "Paid online by card on Stripe ({0})"
+msgstr "Pagata online con carta su Stripe ({0})"
+
+msgid "New online booking, deposit paid"
+msgstr "Nuova prenotazione online, acconto pagato"
+
+msgid "The deposit was not paid in time"
+msgstr "L'acconto non è stato pagato in tempo"
+
+msgid "Stripe gave back {0} of the online payment"
+msgstr "Stripe ha restituito {0} del pagamento online"
+
+msgid "{0} paid invoice {1} online: {2}"
+msgstr "{0} ha pagato online la fattura {1}: {2}"
+
+msgid "Stripe gave back {0} to {1} for invoice {2}: it is still marked as collected"
+msgstr "Stripe ha restituito {0} a {1} per la fattura {2}: risulta ancora incassata"
+
+msgid "Stripe gave back {0} of the online deposit to {1}"
+msgstr "Stripe ha restituito {0} dell'acconto online a {1}"
+
+msgid "Online payment"
+msgstr "Pagamento online"
+
+msgid "Deposit paid online"
+msgstr "Acconto pagato online"
+
+msgid "Full price"
+msgstr "Prezzo intero"
+
+msgid "Asked on the booking page through the centre's Stripe account; the booking is confirmed once paid"
+msgstr "Chiesto sulla pagina di prenotazione tramite l'account Stripe del centro; la prenotazione è confermata appena pagato"
+
+msgid "CRM Online Payment"
+msgstr "Pagamento online"
+
+msgid "CRM Stripe Settings"
+msgstr "Impostazioni Stripe"
+
+msgid "CRM Stripe Event"
+msgstr "Evento Stripe"
+
+msgid "The centre's own Stripe account, for online payments: the money goes to the centre, never through DottorCloud"
+msgstr "L'account Stripe del centro, per i pagamenti online: i soldi vanno al centro, mai attraverso DottorCloud"
+
+msgid "A payment asked online through the centre's Stripe account: an invoice, or a booking's deposit"
+msgstr "Un pagamento chiesto online tramite l'account Stripe del centro: una fattura o l'acconto di una prenotazione"
+
+msgid "Every event Stripe sent, kept before it is applied: each is applied once"
+msgstr "Ogni evento mandato da Stripe, conservato prima di applicarlo: ognuno si applica una volta"
+
+msgid "Stripe account"
+msgstr "Account Stripe"
+
+msgid "Account name"
+msgstr "Nome dell'account"
+
+msgid "Webhook endpoint"
+msgstr "Endpoint del webhook"
+
+msgid "Webhook address"
+msgstr "Indirizzo del webhook"
+
+msgid "Deposits"
+msgstr "Acconti"
+
+msgid "Refund the deposit when the person cancels in time"
+msgstr "Rimborsa l'acconto se la persona disdice in tempo"
+
+msgid "Given back on Stripe by itself when the booking is cancelled at least the hours below before the appointment"
+msgstr "Restituito su Stripe da solo quando la prenotazione è disdetta almeno le ore qui sotto prima dell'appuntamento"
+
+msgid "A cancellation later than this keeps the deposit"
+msgstr "Con una disdetta più tarda l'acconto resta al centro"
+
+msgid "Refunded"
+msgstr "Rimborsato"
+
+msgid "Refunded on"
+msgstr "Rimborsato il"
+
+msgid "Checkout session"
+msgstr "Sessione di pagamento"
+
+msgid "Link valid until"
+msgstr "Link valido fino al"
+
+msgid "Payment intent"
+msgstr "Payment intent di Stripe"
+
+msgid "How it was paid, as FatturaPA codes it: MP08, by card"
+msgstr "Come è stato pagato: con carta"
+
+msgid "Last problem"
+msgstr "Ultimo problema"
+
+msgid "Booking token"
+msgstr "Codice della prenotazione"
+
+msgid "Appointment status once paid"
+msgstr "Stato dell'appuntamento una volta pagato"
+
+msgid "Partly refunded"
+msgstr "Rimborsato in parte"
+
+msgid "Last error"
+msgstr "Ultimo errore"
+
+msgid "Connect Stripe, the deposits' rule"
+msgstr "Collegare Stripe, la regola degli acconti"
+
+msgid "Live payments"
+msgstr "Pagamenti reali"

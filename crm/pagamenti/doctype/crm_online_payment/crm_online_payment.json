@@ -1,0 +1,230 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 18:00:00.000000",
+ "description": "A payment asked online through the centre's Stripe account: an invoice, or a booking's deposit",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "party",
+  "party_name",
+  "purpose",
+  "invoice",
+  "appointment",
+  "column_break_who",
+  "status",
+  "amount",
+  "currency",
+  "paid_on",
+  "refunded_amount",
+  "refunded_on",
+  "stripe_section",
+  "mode",
+  "checkout_session",
+  "checkout_url",
+  "expires_at",
+  "column_break_stripe",
+  "payment_intent",
+  "payment_method",
+  "last_error",
+  "booking_section",
+  "access_token",
+  "status_when_paid"
+ ],
+ "fields": [
+  {
+   "fieldname": "party",
+   "fieldtype": "Link",
+   "label": "Person",
+   "options": "CRM Lead",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "party_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "fetch_from": "party.lead_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Select",
+   "label": "For",
+   "options": "Invoice\nDeposit",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "CRM Invoice",
+   "search_index": 1
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "CRM Appointment",
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Waiting\nPaid\nExpired\nFailed\nRefunded\nPartly refunded\nCancelled",
+   "default": "Waiting",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "options": "currency",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "paid_on",
+   "fieldtype": "Datetime",
+   "label": "Paid on"
+  },
+  {
+   "fieldname": "refunded_amount",
+   "fieldtype": "Currency",
+   "label": "Refunded",
+   "options": "currency"
+  },
+  {
+   "fieldname": "refunded_on",
+   "fieldtype": "Datetime",
+   "label": "Refunded on"
+  },
+  {
+   "fieldname": "stripe_section",
+   "fieldtype": "Section Break",
+   "label": "Stripe"
+  },
+  {
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "\ntest\nlive"
+  },
+  {
+   "fieldname": "checkout_session",
+   "fieldtype": "Data",
+   "label": "Checkout session",
+   "search_index": 1
+  },
+  {
+   "fieldname": "checkout_url",
+   "fieldtype": "Small Text",
+   "label": "Payment link"
+  },
+  {
+   "fieldname": "expires_at",
+   "fieldtype": "Datetime",
+   "label": "Link valid until"
+  },
+  {
+   "fieldname": "column_break_stripe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payment_intent",
+   "fieldtype": "Data",
+   "label": "Payment intent",
+   "search_index": 1
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Data",
+   "label": "Payment method",
+   "default": "MP08",
+   "description": "How it was paid, as FatturaPA codes it: MP08, by card"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last problem"
+  },
+  {
+   "fieldname": "booking_section",
+   "fieldtype": "Section Break",
+   "label": "Booking",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Data",
+   "label": "Booking token",
+   "hidden": 1
+  },
+  {
+   "fieldname": "status_when_paid",
+   "fieldtype": "Data",
+   "label": "Appointment status once paid",
+   "hidden": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-08 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Pagamenti",
+ "name": "CRM Online Payment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "format:PAY-{#####}",
+ "naming_rule": "Expression",
+ "track_changes": 1,
+ "title_field": "party_name"
+}

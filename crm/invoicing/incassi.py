@@ -46,7 +46,6 @@ def alla_cassa(doc) -> None:
 @frappe.whitelist(methods=["POST"])
 def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	"""Collected on a day, or - no day - still to collect."""
-	from crm.invoicing import documento
 	from crm.permissions.livelli import verifica_nel_crm
 
 	verifica_nel_crm("fatture.incassi", messaggio=_("You are not allowed to record payments"))
@@ -57,6 +56,15 @@ def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	giorno = getdate(collected_on) if collected_on else None
 	if giorno and doc.posting_date and giorno < getdate(doc.posting_date) and not doc.advance_payment:
 		frappe.throw(_("Collected before it was issued: mark it as paid before the invoice instead."))
+	segna(doc, giorno)
+	return {"collected_on": str(giorno) if giorno else None}
+
+
+def segna(doc, giorno, messaggio: str | None = None, payload: dict | None = None) -> None:
+	"""Collected on ``giorno`` (None: back to collect), in the invoice's log: the one
+	door, the desk's «Collected today» and a payment online (`crm.pagamenti`)."""
+	from crm.invoicing import documento
+
 	doc.db_set("collected_on", giorno, update_modified=False)
 	# made in Fatture in Cloud: the payment is marked there too
 	if doc.get("fic_document_id"):
@@ -66,9 +74,10 @@ def set_collected(invoice: str, collected_on: str | None = None) -> dict:
 	documento.registra(
 		doc,
 		"collected",
-		_("Collected on {0}").format(frappe.format(giorno, "Date")) if giorno else _("Back to collect"),
+		messaggio
+		or (_("Collected on {0}").format(frappe.format(giorno, "Date")) if giorno else _("Back to collect")),
+		payload=payload,
 	)
-	return {"collected_on": str(giorno) if giorno else None}
 
 
 #: How many of the invoices still to collect the person's summary names.

@@ -224,6 +224,8 @@ def _vista(doc) -> dict:
 		# when its money reached the centre: empty, still to collect (`incassi`)
 		"collected_on": str(doc.collected_on) if doc.collected_on else None,
 		"collectable": incassi.da_incassare(doc),
+		# paid online on the centre's Stripe, its link, its appointment's deposit (`crm.pagamenti`)
+		"online": _online(doc),
 		# how many times the person was reminded of it, and when last (`solleciti`)
 		"reminders": solleciti.di_fatture([doc.name]).get(doc.name)
 		if incassi.da_incassare(doc) and not bozza
@@ -243,6 +245,14 @@ def _vista(doc) -> dict:
 		"shape": _forma(doc.company),
 		"can": _puo(doc),
 	}
+
+
+def _online(doc) -> dict | None:
+	from crm.pagamenti import pagamenti
+
+	if cint(doc.test_document):
+		return None
+	return pagamenti.per_la_fattura(doc)
 
 
 def _stato(stato: str | None) -> str:

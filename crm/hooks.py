@@ -258,6 +258,8 @@ permission_query_conditions = {
 	"CRM Form Request": "crm.moduli.richieste.get_permission_query_conditions",
 	# and the people they are linked to, from either side
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
+	# and what they paid online
+	"CRM Online Payment": "crm.pagamenti.pagamenti.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
@@ -302,6 +304,7 @@ has_permission = {
 	"CRM Form": "crm.moduli.compilazioni.has_permission",
 	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
+	"CRM Online Payment": "crm.pagamenti.pagamenti.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"CRM Personal Plan": "crm.piani.api.has_permission",
@@ -503,6 +506,8 @@ doc_events = {
 			"crm.automation.engine.cancella_con_il_riferimento",
 			# and the review requests they were sent
 			"crm.recensioni.chiedi.cancella_con_la_persona",
+			# and what they paid online
+			"crm.pagamenti.pagamenti.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
@@ -548,6 +553,8 @@ doc_events = {
 			"crm.preventivi.appuntamenti.aggiornato",
 			# cancelled, moved, a seat freed: offered to who waits
 			"crm.scheduling.attese.appuntamento_aggiornato",
+			# cancelled in time: the deposit paid online goes back
+			"crm.pagamenti.pagamenti.alla_disdetta",
 		],
 		"on_trash": [
 			"crm.booking_platforms.sync.on_appointment_change",
@@ -720,6 +727,8 @@ scheduler_events = {
 			"crm.invoicing.monitoraggio.riconcilia_provider",
 			# the same, for the invoices that left from Fatture in Cloud
 			"crm.invoicing.fic.emissione.riconcilia",
+			# an online payment's link nobody paid in time: a deposit's place freed
+			"crm.pagamenti.pagamenti.ogni_dieci_minuti",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 		# what is still unread in the panel after a few minutes, by email to who wants it
@@ -767,7 +776,14 @@ override_whitelisted_methods = {
 # -----------------------------------------------------------
 
 # the audit log outlives what it records: a document taken away keeps its events
-ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log", "CRM Review Request"]
+ignore_links_on_delete = [
+	"Failed Lead Sync Log",
+	"CRM Audit Log",
+	"CRM Review Request",
+	# a payment stays in the register when its appointment is deleted
+	"CRM Online Payment",
+	"CRM Stripe Event",
+]
 
 # Request Events
 # ----------------

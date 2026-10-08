@@ -706,9 +706,19 @@ def _da_pagare(fattura) -> float:
 def get_invoices(person: str) -> dict:
 	"""The person's invoices, each with what is left to pay of it; the total left,
 	and how the centre is paid (`solleciti.come_pagare`)."""
+	from crm.demo import guardie
 	from crm.invoicing import solleciti
+	from crm.pagamenti import collegamento, pagamenti
 
 	_mia(person, anche_in_anteprima=True)
+	righe = _fatture(person)
+	# paid online on Stripe (`crm.pagamenti`): «Pay online», and «Paid online on…»
+	online = (
+		collegamento.collegato()
+		and not anteprima.in_anteprima()
+		and not guardie.mai_a_stripe(("CRM Lead", person))
+	)
+	pagate = pagamenti.pagate_online([f.name for f in righe])
 	fatture = anteprima.filtra(
 		"CRM Invoice",
 		[
@@ -719,8 +729,12 @@ def get_invoices(person: str) -> dict:
 				"total": f.grand_total,
 				"to_pay": _da_pagare(f),
 				"has_pdf": bool(f.pdf_file),
+				"pay_online": bool(
+					online and _da_pagare(f) > 0 and not guardie.mai_a_stripe(("CRM Invoice", f.name))
+				),
+				"paid_online_on": pagate.get(f.name),
 			}
-			for f in _fatture(person)
+			for f in righe
 		],
 	)
 	# in the centre's preview, only what whoever previews reads counts
@@ -730,6 +744,18 @@ def get_invoices(person: str) -> dict:
 		"to_pay": totale,
 		"how_to_pay": solleciti.come_pagare() if totale else "",
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def pay_invoice(person: str, invoice: str) -> dict:
+	"""«Pay online»: the Stripe link that pays what is left of one of the person's
+	invoices, back to the area once paid. Never in the centre's preview."""
+	from crm.pagamenti import pagamenti
+
+	_mia(person)
+	if not any(f.name == invoice for f in _fatture(person)):
+		frappe.throw(_("This is not your area"), frappe.PermissionError)
+	return pagamenti.link_della_fattura(invoice, frappe.utils.get_url("/area/documents"))
 
 
 @frappe.whitelist(methods=["GET"])

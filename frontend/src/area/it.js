@@ -368,4 +368,13 @@ export default {
     'Da qui entri nella visita dalle {0}, 15 minuti prima dell’inizio.',
   'The link to enter the visit will be here: the centre adds it.':
     'Il link per entrare nella visita sarà qui: lo aggiunge il centro.',
+  // paid online on the centre's Stripe (crm/pagamenti)
+  'Pay online': 'Paga online',
+  'Paid online on {0}': 'Pagata online il {0}',
+  'Thank you: the payment went through. The invoice shows as paid in a moment.':
+    'Grazie: il pagamento è andato a buon fine. Tra un momento la fattura risulta pagata.',
+  'The payment was not made: you can try again when you like.':
+    'Il pagamento non è stato fatto: puoi riprovare quando vuoi.',
+  'The payment could not start: try again.':
+    'Il pagamento non è partito: riprova.',
 }
