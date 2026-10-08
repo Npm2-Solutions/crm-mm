@@ -170,6 +170,19 @@ describe('frappe-ui in the user’s language', () => {
     }
   })
 
+  it('says the chosen rows of a list in the reader’s words', () => {
+    const barra = tradotto('ListView/ListSelectBanner.vue')
+    expect(barra).toContain(`{{ __('Select all') }}`)
+    expect(barra).not.toMatch(/>\s*Select all\s*</)
+    const lista = tradotto('ListView/ListView.vue')
+    expect(lista).not.toContain('rows selected`')
+    const testo = lista.match(/\(\(val\) => val === 1 \?[^\n]*\)\)/)[0]
+    // without the app's translator, the English with its number
+    const scelte = new Function(`return ${testo}`)()
+    expect(scelte(1)).toBe('1 row selected')
+    expect(scelte(3)).toBe('3 rows selected')
+  })
+
   it('makes the defaults when the component is, through the translator', () => {
     const select = tradotto('Select/Select.vue')
     expect(select).toContain(

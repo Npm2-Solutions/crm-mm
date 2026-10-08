@@ -206,6 +206,14 @@ const SOSTITUZIONI = {
     ],
   ],
   'ListView/ListFooter.vue': [attributo('label', 'Load More'), testo('of')],
+  // the bar over a list's chosen rows: «3 rows selected», «Select all»
+  'ListView/ListSelectBanner.vue': [frase('Select all')],
+  'ListView/ListView.vue': [
+    [
+      "((val) => (val === 1 ? '1 row selected' : `${val} rows selected`))",
+      `((val) => val === 1 ? ${TRADUCI}('1 row selected') : ${TRADUCI}('{0} rows selected', [val]).replace('{0}', val))`,
+    ],
+  ],
   'Autocomplete/Autocomplete.vue': [
     attributo('placeholder', 'Search'),
     attributo('label', 'Select All'),
