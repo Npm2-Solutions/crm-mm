@@ -10,8 +10,10 @@
   squeezing them into a column one word wide.
 -->
 <template>
+  <!-- a switch stays beside its words, however narrow: only a wider control
+       (a field, a select) goes under them -->
   <div
-    class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 px-2"
+    class="flex flex-wrap has-[[role=switch]]:flex-nowrap items-center justify-between gap-x-4 gap-y-2 py-3 px-2"
   >
     <div class="flex min-w-0 flex-1 basis-60 flex-col">
       <!-- the words name the control beside them, and tapping them flips a

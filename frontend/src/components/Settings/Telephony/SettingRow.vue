@@ -5,8 +5,10 @@
   As SettingsRow: the control goes under the words when both do not fit.
 -->
 <template>
+  <!-- a switch stays beside its words, however narrow: only a wider control
+       (a field, a select) goes under them -->
   <div
-    class="flex flex-wrap items-center justify-between gap-x-8 gap-y-2 py-3 pl-2 pr-1"
+    class="flex flex-wrap has-[[role=switch]]:flex-nowrap items-center justify-between gap-x-8 gap-y-2 py-3 pl-2 pr-1"
   >
     <div class="flex min-w-0 flex-1 basis-60 flex-col">
       <!-- the words name the control beside them, and tapping them flips a

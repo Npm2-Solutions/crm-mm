@@ -197,6 +197,9 @@ async function save() {
     // Sistema TS would not take, a stamp duty without its authorisation. The
     // message is theirs, not a generic failure.
     error.value = stripHtml(e.messages?.[0] || e.message)
+    // said where the eye is: on a phone the bar holding it sat under the
+    // settings' own, and a number refused read as a save that did nothing
+    toast.error(error.value)
   } finally {
     saving.value = false
   }
