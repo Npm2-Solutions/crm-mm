@@ -35,3 +35,38 @@ export function tonoDellaDifferenza(differenza) {
   if (differenza === null || differenza === undefined) return ''
   return differenza === 0 ? 'green' : 'amber'
 }
+
+/**
+ * The cash counted as the reader writes it, to the cent («60,50» in Italian,
+ * «60.50» in English): a number field showed the server's «60.5».
+ */
+export function cifreDellaCassa(valore, lingua) {
+  if (valore === null || valore === undefined || valore === '') return ''
+  const numero = Number(valore)
+  if (!Number.isFinite(numero)) return String(valore)
+  try {
+    return new Intl.NumberFormat(lingua || 'it', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      useGrouping: false,
+    }).format(numero)
+  } catch {
+    return numero.toFixed(2)
+  }
+}
+
+/**
+ * The cash typed, read whatever the separator («60,5», «60.50», «1.234,50»):
+ * the last comma or point is the decimal one. Null for nothing or not a number.
+ */
+export function letturaDellaCassa(testo) {
+  let cifre = String(testo ?? '').replace(/[\s\u00a0€]/g, '')
+  if (!cifre) return null
+  const ultimo = Math.max(cifre.lastIndexOf(','), cifre.lastIndexOf('.'))
+  if (ultimo >= 0) {
+    const intero = cifre.slice(0, ultimo).replace(/[.,]/g, '')
+    cifre = `${intero}.${cifre.slice(ultimo + 1)}`
+  }
+  const numero = Number(cifre)
+  return Number.isFinite(numero) ? numero : null
+}

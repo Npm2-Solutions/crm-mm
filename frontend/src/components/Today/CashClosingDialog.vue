@@ -95,14 +95,16 @@
 
         <!-- what the drawer holds, counted by hand -->
         <section class="flex flex-col gap-3">
+          <!-- words, not a number field: the reader's comma, to the cent -->
           <FormControl
             v-model="contati"
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
             :label="__('Cash counted in the drawer')"
+            @blur="contati = cifreDellaCassa(contato ?? contati, appLocale())"
           />
-          <p v-if="Number(contati) < 0" class="text-p-base text-ink-amber-7">
+          <p v-if="contato < 0" class="text-p-base text-ink-amber-7">
             {{ __('The cash counted cannot be below zero') }}
           </p>
           <p
@@ -151,11 +153,14 @@ import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import { formatDate } from '@/utils'
 import {
+  cifreDellaCassa,
   differenzaDiCassa,
+  letturaDellaCassa,
   fraseDellaDifferenza,
   tonoDellaDifferenza,
 } from '@/utils/cassa'
 import { formatEuro } from '@/utils/invoicing'
+import { appLocale } from '@/utils/locale'
 import {
   Button,
   Dialog,
@@ -180,7 +185,9 @@ const chiudendo = ref(false)
 
 function prendi(dati) {
   conti.value = dati
-  contati.value = dati.closing ? dati.closing.counted_cash : ''
+  contati.value = dati.closing
+    ? cifreDellaCassa(dati.closing.counted_cash, appLocale())
+    : ''
   nota.value = dati.closing?.note || ''
 }
 
@@ -200,8 +207,10 @@ watch(
   { immediate: true },
 )
 
+// what was typed, as a number (null while nothing or no number)
+const contato = computed(() => letturaDellaCassa(contati.value))
 const differenza = computed(() =>
-  differenzaDiCassa(contati.value, conti.value?.expected_cash),
+  differenzaDiCassa(contato.value, conti.value?.expected_cash),
 )
 const frase = computed(() =>
   fraseDellaDifferenza(
@@ -219,7 +228,7 @@ async function chiudi() {
     prendi(
       await call('crm.api.oggi.close_cash_day', {
         date: conti.value.date,
-        counted_cash: contati.value,
+        counted_cash: contato.value ?? contati.value,
         note: nota.value,
       }),
     )

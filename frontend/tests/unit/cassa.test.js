@@ -2,6 +2,8 @@
 // For license information, please see license.txt
 
 import {
+  cifreDellaCassa,
+  letturaDellaCassa,
   differenzaDiCassa,
   fraseDellaDifferenza,
   tonoDellaDifferenza,
@@ -37,5 +39,26 @@ describe('the cash closing', () => {
     expect(fraseDellaDifferenza(2, t, soldi)).toBe('2.00 € more than expected')
     expect(tonoDellaDifferenza(0)).toBe('green')
     expect(tonoDellaDifferenza(-1)).toBe('amber')
+  })
+})
+
+describe('the cash counted, typed and shown', () => {
+  it('shows the amount to the cent in the reader’s language', () => {
+    expect(cifreDellaCassa(60.5, 'it')).toBe('60,50')
+    expect(cifreDellaCassa('60.5', 'en-GB')).toBe('60.50')
+    expect(cifreDellaCassa(1234.5, 'it')).toBe('1234,50')
+    expect(cifreDellaCassa('', 'it')).toBe('')
+    expect(cifreDellaCassa(null, 'it')).toBe('')
+  })
+
+  it('reads a comma or a point as the decimal separator', () => {
+    expect(letturaDellaCassa('60,5')).toBe(60.5)
+    expect(letturaDellaCassa('60.50')).toBe(60.5)
+    expect(letturaDellaCassa('1.234,50')).toBe(1234.5)
+    expect(letturaDellaCassa('1,234.50')).toBe(1234.5)
+    expect(letturaDellaCassa(' 45 € ')).toBe(45)
+    expect(letturaDellaCassa('-3')).toBe(-3)
+    expect(letturaDellaCassa('')).toBe(null)
+    expect(letturaDellaCassa('abc')).toBe(null)
   })
 })

@@ -334,7 +334,7 @@
         </h3>
         <FormControl
           v-model.number="form.max_active_per_customer"
-          class="w-60"
+          class="w-60 impostazioni-strette:w-full"
           type="number"
           inputmode="numeric"
           min="0"
