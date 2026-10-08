@@ -21,6 +21,16 @@
   "column_totals",
   "total_net",
   "total_done",
+  "payment_section",
+  "payment",
+  "deposit_type",
+  "deposit_value",
+  "column_payment",
+  "instalments_count",
+  "every_months",
+  "first_due_on",
+  "instalments_invoiced",
+  "instalments",
   "quote_section",
   "proposed_on",
   "quote_pdf",
@@ -163,6 +173,71 @@
    "label": "Done",
    "options": "currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "default": "Single payment",
+   "fieldname": "payment",
+   "fieldtype": "Select",
+   "label": "Payment",
+   "options": "Single payment\nInstalments"
+  },
+  {
+   "default": "Amount",
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "deposit_type",
+   "fieldtype": "Select",
+   "label": "Deposit as",
+   "options": "Amount\nPercent"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "deposit_value",
+   "fieldtype": "Float",
+   "label": "Deposit",
+   "description": "An amount, or a share of the total; 0 for none"
+  },
+  {
+   "fieldname": "column_payment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "instalments_count",
+   "fieldtype": "Int",
+   "label": "Instalments",
+   "description": "From 2 to 36, equal to the cent"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "every_months",
+   "fieldtype": "Int",
+   "label": "Every how many months"
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "first_due_on",
+   "fieldtype": "Date",
+   "label": "First instalment on"
+  },
+  {
+   "description": "Copied from the settings when it is proposed: each instalment is invoiced when it falls due, and the appointments of its services are not invoiced again",
+   "fieldname": "instalments_invoiced",
+   "fieldtype": "Check",
+   "label": "Each instalment invoiced when due",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.payment=='Instalments'",
+   "fieldname": "instalments",
+   "fieldtype": "Table",
+   "label": "Payment plan",
+   "options": "CRM Quote Instalment"
   },
   {
    "fieldname": "quote_section",
@@ -352,7 +427,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-08 12:00:00.000000",
+ "modified": "2026-10-09 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Preventivi",
  "name": "CRM Quote",

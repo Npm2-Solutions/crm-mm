@@ -49170,3 +49170,296 @@ msgstr "Attiva"
 msgctxt "Location"
 msgid "Off"
 msgstr "Disattivata"
+
+msgid "Instalments: from {0} to {1}"
+msgstr "Rate: da {0} a {1}"
+
+msgid "Instalments go every month or every two months"
+msgstr "Le rate vanno ogni mese o ogni due mesi"
+
+msgid "The deposit is less than the total"
+msgstr "L'acconto è meno del totale"
+
+msgid "Choose the day of the first instalment"
+msgstr "Scegli il giorno della prima rata"
+
+msgid "The first instalment is not in the past"
+msgstr "La prima rata non è nel passato"
+
+msgid "Too many instalments for what is left to pay"
+msgstr "Troppe rate per quello che resta da pagare"
+
+msgid "Balance of the quote «{0}»"
+msgstr "Saldo del preventivo «{0}»"
+
+msgid "Deposit on the quote «{0}»"
+msgstr "Acconto sul preventivo «{0}»"
+
+msgid "Instalment {0} of {1} of the quote «{2}»"
+msgstr "Rata {0} di {1} del preventivo «{2}»"
+
+msgid "This quote has no instalments going on"
+msgstr "Questo preventivo non ha rate in corso"
+
+msgid "The centre invoices this quote's instalments by itself"
+msgstr "Le rate di questo preventivo le fattura il centro da sé"
+
+msgid "This instalment is not to invoice"
+msgstr "Questa rata non è da fatturare"
+
+msgid "Nothing is left to pay on this quote"
+msgstr "Su questo preventivo non resta niente da pagare"
+
+msgid "Its invoice says when it is paid"
+msgstr "Quando è pagata lo dice la sua fattura"
+
+msgid "No fiscal card for this quote's services: a service without a card is not billable"
+msgstr "Nessuna scheda fiscale per i servizi di questo preventivo: un servizio senza scheda non si fattura"
+
+msgid "No provider for this quote: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+msgstr "Nessun professionista per questo preventivo: la qualifica decide il tipo di spesa e il regime IVA, quindi non si può lasciare a un valore predefinito"
+
+msgid "This appointment is paid with the instalments of its quote"
+msgstr "Questo appuntamento si paga con le rate del suo preventivo"
+
+msgid "Invoice {0} of {1}, the deposit on your quote, for {2}, is still to be paid."
+msgstr "La fattura {0} del {1}, l'acconto sul tuo preventivo, di {2}, risulta ancora da pagare."
+
+msgid "Invoice {0} of {1}, instalment {2} of {3} of your quote, for {4}, is still to be paid."
+msgstr "La fattura {0} del {1}, la rata {2} di {3} del tuo preventivo, di {4}, risulta ancora da pagare."
+
+msgid "Instalments to collect"
+msgstr "Rate da incassare"
+
+msgid "What the instalments of the quotes accepted are worth that fall due in the next 30 days or are late, today"
+msgstr "Quanto valgono oggi le rate dei preventivi accettati che scadono nei prossimi 30 giorni o sono in ritardo"
+
+msgid "{0} late"
+msgstr "{0} in ritardo"
+
+msgid "Payment plan"
+msgstr "Piano dei pagamenti"
+
+msgid "Due"
+msgstr "Scadenza"
+
+msgid "Instalment {0} of {1}"
+msgstr "Rata {0} di {1}"
+
+msgid "On acceptance"
+msgstr "All'accettazione"
+
+msgid "Paid in instalments to the centre, without interest or fees."
+msgstr "Pagamento rateale direttamente al centro, senza interessi né spese."
+
+msgid "Each payment is invoiced when it falls due."
+msgstr "Ogni pagamento è fatturato alla sua scadenza."
+
+msgid "CRM Quote Instalment"
+msgstr "Rata del preventivo"
+
+msgid "An instalment of a quote paid in instalments: when, how much, how it goes"
+msgstr "Una rata di un preventivo pagato a rate: quando, quanto, come va"
+
+msgid "The instalment's place in the plan: 0 for the deposit"
+msgstr "Il posto della rata nel piano: 0 per l'acconto"
+
+msgid "The deposit's is the day the quote was accepted"
+msgstr "Per l'acconto è il giorno in cui il preventivo è stato accettato"
+
+msgid "Where the centre invoices by itself: the day it was marked paid"
+msgstr "Dove il centro fattura da sé: il giorno in cui è stata segnata pagata"
+
+msgid "What stopped its invoice"
+msgstr "Cosa ha fermato la sua fattura"
+
+msgid "Instalment"
+msgstr "Rata"
+
+msgid "Single payment"
+msgstr "Unica soluzione"
+
+msgid "Percent"
+msgstr "Percentuale"
+
+msgid "Deposit as"
+msgstr "Acconto come"
+
+msgid "An amount, or a share of the total; 0 for none"
+msgstr "Un importo, o una parte del totale; 0 per nessuno"
+
+msgid "From 2 to 36, equal to the cent"
+msgstr "Da 2 a 36, uguali al centesimo"
+
+msgid "Every how many months"
+msgstr "Ogni quanti mesi"
+
+msgid "First instalment on"
+msgstr "Prima rata il"
+
+msgid "Each instalment invoiced when due"
+msgstr "Ogni rata fatturata alla scadenza"
+
+msgid "Copied from the settings when it is proposed: each instalment is invoiced when it falls due, and the appointments of its services are not invoiced again"
+msgstr "Copiato dalle impostazioni quando è proposto: ogni rata è fatturata alla sua scadenza, e gli appuntamenti dei suoi servizi non si fatturano di nuovo"
+
+msgid "A quote paid in instalments: an invoice for each one when it falls due, or the centre invoices by itself and the instalments are only followed"
+msgstr "Un preventivo pagato a rate: una fattura per ognuna alla scadenza, oppure il centro fattura da sé e le rate sono solo seguite"
+
+msgid "Each instalment when due"
+msgstr "Ogni rata alla scadenza"
+
+msgid "Track only"
+msgstr "Solo seguite"
+
+msgid "Issue the instalments' invoices"
+msgstr "Emetti le fatture delle rate"
+
+msgid "Issued at once, else left as drafts to issue"
+msgstr "Emesse subito, altrimenti lasciate in bozza da emettere"
+
+msgid "How quotes go: the pipeline they move, how long they hold, how their instalments are invoiced"
+msgstr "Come vanno i preventivi: la pipeline che fanno avanzare, quanto restano validi, come si fatturano le loro rate"
+
+msgid "A quote paid in instalments: the instalments this invoice is for are on the quote"
+msgstr "Un preventivo pagato a rate: le rate di questa fattura sono sul preventivo"
+
+msgctxt "Instalment"
+msgid "To pay"
+msgstr "Da pagare"
+
+msgctxt "Instalment"
+msgid "Invoiced"
+msgstr "Fatturata"
+
+msgctxt "Instalment"
+msgid "Paid"
+msgstr "Pagata"
+
+msgctxt "Instalment"
+msgid "Cancelled"
+msgstr "Annullata"
+
+msgctxt "Instalments"
+msgid "How often"
+msgstr "Ogni quanto"
+
+msgid "2 to 36"
+msgstr "da 2 a 36"
+
+msgid "A share of the total"
+msgstr "Una parte del totale"
+
+msgid "An amount"
+msgstr "Un importo"
+
+msgid "At once"
+msgstr "In un'unica soluzione"
+
+msgid "Back to pay"
+msgstr "Di nuovo da pagare"
+
+msgid "Could not invoice it"
+msgstr "Non è stato possibile fatturarla"
+
+msgid "Deposit of {0} on acceptance"
+msgstr "Acconto di {0} all'accettazione"
+
+msgid "Deposit, %"
+msgstr "Acconto, %"
+
+msgid "Deposit, {0}"
+msgstr "Acconto, {0}"
+
+msgid "{brand} invoices each instalment"
+msgstr "{brand} fattura ogni rata"
+
+msgid "Due on {0}"
+msgstr "Scade il {0}"
+
+msgid "Every two months"
+msgstr "Ogni due mesi"
+
+msgid "Invoice it now"
+msgstr "Fatturala ora"
+
+msgid "Mark it paid"
+msgstr "Segna come pagata"
+
+msgid "Pay off the rest"
+msgstr "Salda il resto"
+
+msgid "Pay off the rest, {0}"
+msgstr "Salda il resto, {0}"
+
+msgid "Pay off the rest?"
+msgstr "Saldare il resto?"
+
+msgid "Quote closed: the 1 instalment not invoiced yet is cancelled"
+msgstr "Preventivo chiuso: la rata non ancora fatturata è annullata"
+
+msgid "Quote closed: the {0} instalments not invoiced yet are cancelled"
+msgstr "Preventivo chiuso: le {0} rate non ancora fatturate sono annullate"
+
+msgid "Quotes paid in instalments"
+msgstr "Preventivi pagati a rate"
+
+msgid "The instalments still to pay are marked paid today."
+msgstr "Le rate ancora da pagare sono segnate come pagate oggi."
+
+msgid "Was due on {0}"
+msgstr "Scadeva il {0}"
+
+msgid "due {0}"
+msgstr "scadenza {0}"
+
+msgid "due {0} · late"
+msgstr "scadenza {0} · in ritardo"
+
+msgid "due {0} · paid {1}"
+msgstr "scadenza {0} · pagata il {1}"
+
+msgid "{0} instalments of {1}"
+msgstr "{0} rate da {1}"
+
+msgid "{0} instalments of {1}, the last {2}"
+msgstr "{0} rate da {1}, l'ultima {2}"
+
+msgid "Each payment is invoiced by itself when it falls due; the appointments of these services are not invoiced again."
+msgstr "Ogni pagamento è fatturato da solo alla sua scadenza; gli appuntamenti di questi servizi non si fatturano di nuovo."
+
+msgid "Issue them at once, rather than leaving drafts to check and issue"
+msgstr "Emettile subito, invece di lasciare bozze da controllare ed emettere"
+
+msgid "On the day each payment falls due {brand} makes its invoice, and the appointments of the quote are not invoiced again. Money received before a service is done is invoiced when it is received."
+msgstr "Il giorno in cui ogni pagamento scade {brand} ne fa la fattura, e gli appuntamenti del preventivo non si fatturano di nuovo. Il denaro ricevuto prima che un servizio sia fatto si fattura quando lo si riceve."
+
+msgid "One invoice of {0} takes the place of the instalments still to invoice: it opens as a draft."
+msgstr "Una fattura di {0} prende il posto delle rate ancora da fatturare: si apre in bozza."
+
+msgid "The centre invoices by itself"
+msgstr "Il centro fattura da sé"
+
+msgid "The centre invoices the work by itself as it is done; the instalments are only followed, and marked paid by whoever records payments."
+msgstr "Il centro fattura da sé il lavoro man mano che è fatto; le rate sono solo seguite, e le segna pagate chi registra gli incassi."
+
+msgid "The centre invoices these payments by itself: mark each one paid here."
+msgstr "Questi pagamenti li fattura il centro da sé: segna qui quando ognuno è pagato."
+
+msgid "Instalments: all {0} paid"
+msgstr "Rate: tutte e {0} pagate"
+
+msgid "Instalments: {0} of {1} paid"
+msgstr "Rate: {0} di {1} pagate"
+
+msgid "next the deposit, {0}"
+msgstr "prossimo l'acconto, {0}"
+
+msgid "next {0}, {1}"
+msgstr "prossima {0}, {1}"
+
+msgid "1 late, {0}"
+msgstr "1 in ritardo, {0}"
+
+msgid "{0} late, {1}"
+msgstr "{0} in ritardo, {1}"

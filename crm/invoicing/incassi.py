@@ -41,6 +41,10 @@ def alla_cassa(doc) -> None:
 	"""An invoice to a person, issued at the desk, was paid at the desk."""
 	if da_incassare(doc) and doc.recipient_type == "persona_fisica" and not doc.collected_on:
 		doc.db_set("collected_on", doc.payment_date or doc.posting_date, update_modified=False)
+		if doc.get("quote"):
+			from crm.preventivi import rate
+
+			rate.allinea(doc)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -71,6 +75,11 @@ def segna(doc, giorno, messaggio: str | None = None, payload: dict | None = None
 		from crm.invoicing.fic import emissione as fic
 
 		fic.segna_incasso(doc)
+	# an instalment of a quote: paid, or to collect again
+	if doc.get("quote"):
+		from crm.preventivi import rate
+
+		rate.allinea(doc)
 	documento.registra(
 		doc,
 		"collected",

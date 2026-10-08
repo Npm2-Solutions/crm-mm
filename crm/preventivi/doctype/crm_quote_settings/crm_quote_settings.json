@@ -1,12 +1,14 @@
 {
  "actions": [],
  "creation": "2026-10-06 12:00:00.000000",
- "description": "How quotes go: the pipeline they move, how long they hold",
+ "description": "How quotes go: the pipeline they move, how long they hold, how their instalments are invoiced",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "quotes_pipeline",
-  "valid_days"
+  "valid_days",
+  "instalment_invoicing",
+  "issue_instalment_invoices"
  ],
  "fields": [
   {
@@ -21,12 +23,27 @@
    "fieldname": "valid_days",
    "fieldtype": "Int",
    "label": "Valid for days"
+  },
+  {
+   "default": "Each instalment when due",
+   "description": "A quote paid in instalments: an invoice for each one when it falls due, or the centre invoices by itself and the instalments are only followed",
+   "fieldname": "instalment_invoicing",
+   "fieldtype": "Select",
+   "label": "Instalments",
+   "options": "Each instalment when due\nTrack only"
+  },
+  {
+   "depends_on": "eval:doc.instalment_invoicing!='Track only'",
+   "description": "Issued at once, else left as drafts to issue",
+   "fieldname": "issue_instalment_invoices",
+   "fieldtype": "Check",
+   "label": "Issue the instalments' invoices"
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-06 12:00:00.000000",
+ "modified": "2026-10-09 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Preventivi",
  "name": "CRM Quote Settings",

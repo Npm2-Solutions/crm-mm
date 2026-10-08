@@ -100,6 +100,12 @@ def impronta_di(doc) -> str:
 			"total_net": doc.total_net,
 			"currency": doc.currency,
 			"valid_until": doc.valid_until,
+			# paid in instalments: the plan is signed with the services
+			**(
+				{"instalments": [(r.kind, r.number, r.due_on, r.amount) for r in doc.instalments]}
+				if doc.instalments
+				else {}
+			),
 		}
 	)
 

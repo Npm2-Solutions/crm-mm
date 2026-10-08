@@ -15,9 +15,11 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import formatdate, get_fullname, getdate, now_datetime
+from frappe.utils import cint, formatdate, get_fullname, getdate, now_datetime
 
 from crm import marchio
+from crm.preventivi import rate
+from crm.preventivi import rate_regole as RR
 from crm.preventivi import regole as R
 from crm.preventivi.api import DOCTYPE, leggi_voce
 
@@ -42,6 +44,14 @@ def _contesto(doc, firma: dict | None = None) -> dict:
 		"fasi": gruppi,
 		"piu_fasi": len(gruppi) > 1,
 		"totali": R.totali(voci),
+		# paid in instalments: the plan, the deposit at acceptance
+		"rate": [
+			{**riga, "quando": formatdate(riga["due_on"], "d MMMM yyyy") if riga["due_on"] else None}
+			for riga in rate.righe(doc)
+		]
+		if doc.payment == RR.A_RATE
+		else [],
+		"rate_fatturate": cint(doc.instalments_invoiced),
 		"valuta": doc.currency or "EUR",
 		"soldi": lambda valore: frappe.utils.fmt_money(valore, currency=doc.currency or "EUR"),
 		"parola": parola,

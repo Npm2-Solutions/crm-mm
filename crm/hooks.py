@@ -595,9 +595,12 @@ doc_events = {
 	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {
 		# a fund's invoice thrown away or cancelled: its pratiche are to bill again
-		"on_trash": ["crm.convenzioni.convenzioni.fattura_tolta"],
-		"on_cancel": ["crm.convenzioni.convenzioni.fattura_tolta"],
+		# and a quote's instalments it was for are to pay again (crm.preventivi.rate)
+		"on_trash": ["crm.convenzioni.convenzioni.fattura_tolta", "crm.preventivi.rate.allinea"],
+		"on_cancel": ["crm.convenzioni.convenzioni.fattura_tolta", "crm.preventivi.rate.allinea"],
 		"on_submit": [
+			# a quote's instalments it is for are invoiced
+			"crm.preventivi.rate.allinea",
 			# issued from an appointment: the person came
 			"crm.scheduling.esiti.fattura_emessa",
 			"crm.clienti.eventi.fattura_confermata",
@@ -723,6 +726,8 @@ scheduler_events = {
 		"crm.piani.programmi.apri_del_giorno",
 		# subscriptions: how each stands, the instalments due, the end, the renewals
 		"crm.scheduling.abbonamenti.ogni_giorno",
+		# the quotes' instalments due get their invoices
+		"crm.preventivi.rate.ogni_giorno",
 		# where the centre switched them on, the reminders of what a person still owes
 		"crm.invoicing.solleciti.ogni_giorno",
 	],

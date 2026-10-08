@@ -14,10 +14,12 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import cint, flt
 
 from crm import lingue
 from crm.permissions import livelli
+from crm.preventivi import rate
+from crm.preventivi import rate_regole as RR
 from crm.preventivi.api import DOCTYPE, IMPOSTAZIONI
 
 #: The stages, in the centre's language (`crm.lingue`): data the board shows, not
@@ -222,17 +224,31 @@ def get_settings() -> dict:
 	return {
 		"quotes_pipeline": quale(),
 		"valid_days": frappe.db.get_single_value(IMPOSTAZIONI, "valid_days") or None,
+		# a quote paid in instalments (crm.preventivi.rate): how they are invoiced
+		"instalment_invoicing": rate.modo(),
+		"issue_instalment_invoices": 1 if rate.si_emettono() else 0,
 	}
 
 
 @frappe.whitelist(methods=["POST"])
-def save_settings(quotes_pipeline: str | None = None, valid_days: int | None = None) -> dict:
+def save_settings(
+	quotes_pipeline: str | None = None,
+	valid_days: int | None = None,
+	instalment_invoicing: str | None = None,
+	issue_instalment_invoices: int | str | None = None,
+) -> dict:
 	livelli.verifica("pipeline.configura")
 	if quotes_pipeline and not frappe.db.exists("CRM Pipeline", quotes_pipeline):
 		frappe.throw(_("{0} is not a pipeline").format(quotes_pipeline))
 	doc = frappe.get_single(IMPOSTAZIONI)
 	doc.quotes_pipeline = quotes_pipeline or None
 	doc.valid_days = max(int(valid_days or 0), 0) or None
+	if instalment_invoicing is not None:
+		doc.instalment_invoicing = (
+			RR.SOLO_SEGUITE if instalment_invoicing == RR.SOLO_SEGUITE else RR.OGNI_RATA
+		)
+	if issue_instalment_invoices is not None:
+		doc.issue_instalment_invoices = 1 if cint(issue_instalment_invoices) else 0
 	doc.save(ignore_permissions=True)
 	return get_settings()
 

@@ -120,6 +120,7 @@
   "centre_location",
   "session_cycle",
   "subscription",
+  "quote",
   "column_references",
   "purchase_order",
   "cig",
@@ -869,6 +870,13 @@
    "options": "CRM Subscription"
   },
   {
+   "description": "A quote paid in instalments: the instalments this invoice is for are on the quote",
+   "fieldname": "quote",
+   "fieldtype": "Link",
+   "label": "Quote",
+   "options": "CRM Quote"
+  },
+  {
    "fieldname": "column_references",
    "fieldtype": "Column Break"
   },
@@ -928,7 +936,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-08 22:00:00.000000",
+ "modified": "2026-10-09 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

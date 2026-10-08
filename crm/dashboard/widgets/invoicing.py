@@ -49,6 +49,9 @@ Supplier = DocType("CRM Supplier Invoice")
 Appt = DocType("CRM Appointment")
 Cycle = DocType("CRM Session Cycle")
 Place = DocType("CRM Appointment Participant")
+Quote = DocType("CRM Quote")
+QuoteItem = DocType("CRM Quote Item")
+Instalment = DocType("CRM Quote Instalment")
 
 INVOICING = ("invoicing",)
 FROM_THE_AGENDA = ("invoicing", "agenda")
@@ -274,8 +277,22 @@ def not_invoiced(ctx: Context):
 			& (IfNull(Place.subscription, "") == "")
 		)
 	)
+	# a service of a quote whose instalments DottorCloud invoices: they pay for it
+	by_instalments = (
+		frappe.qb.from_(QuoteItem)
+		.join(Quote)
+		.on(Quote.name == QuoteItem.parent)
+		.select(QuoteItem.appointment)
+		.where(
+			(QuoteItem.parenttype == "CRM Quote")
+			& QuoteItem.appointment.isnotnull()
+			& (Quote.instalments_invoiced == 1)
+			& Quote.status.isin(("Accepted", "Completed", "Closed"))
+		)
+	)
 	return (
-		(Appt.starts_on >= since)
+		Appt.name.notin(by_instalments)
+		& (Appt.starts_on >= since)
 		& (Appt.starts_on <= ctx.now)
 		& Appt.status.notin(("Cancelled", "No Show"))
 		& Appt.name.notin(invoiced)
@@ -698,6 +715,40 @@ def to_collect(ctx: Context):
 		format="currency",
 		currency=EURO,
 		route=INVOICES,
+	)
+
+
+@widget(
+	"instalments_to_collect",
+	category="invoicing",
+	kind="number",
+	title=_lt("Instalments to collect"),
+	description=_lt(
+		"What the instalments of the quotes accepted are worth that fall due in the next 30 days or are late, today"
+	),
+	live=True,
+	requires=INVOICING,
+	scope="site",
+	keywords=("rate", "instalments", "piano di pagamento", "rateale"),
+)
+def instalments_to_collect(ctx: Context):
+	"""The quotes' instalments not paid (`crm.preventivi.rate`): due within 30 days, or
+	late; the late ones said beside."""
+	ahead = add_days(ctx.today, 30)
+	open_ = (
+		(Instalment.parenttype == "CRM Quote")
+		& Instalment.status.isin(("To pay", "Invoiced"))
+		& Instalment.due_on.isnotnull()
+		& Quote.status.isin(("Accepted", "Completed"))
+	)
+	joins = ((Quote, Quote.name == Instalment.parent),)
+	value = total(Instalment, open_ & (Instalment.due_on <= ahead), value=Instalment.amount, joins=joins)
+	late = total(Instalment, open_ & (Instalment.due_on < ctx.today), value=Instalment.amount, joins=joins)
+	return charts.number(
+		value,
+		format="currency",
+		currency=EURO,
+		hint=_("{0} late").format(frappe.utils.fmt_money(late, currency=EURO)) if late else None,
 	)
 
 

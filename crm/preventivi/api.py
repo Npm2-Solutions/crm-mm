@@ -34,6 +34,7 @@ from frappe import _
 from frappe.utils import add_days, cint, flt, get_fullname, getdate, now_datetime
 
 from crm.permissions import livelli, org_hierarchy, sanitari
+from crm.preventivi import rate
 from crm.preventivi import regole as R
 
 DOCTYPE = "CRM Quote"
@@ -230,6 +231,8 @@ def calcola(doc) -> None:
 	doc.total_discount = somme["discount"]
 	doc.total_net = somme["net"]
 	doc.total_done = somme["done"]
+	# paid in instalments: the schedule from the terms, while it is a draft
+	rate.calcola(doc)
 
 
 # ------------------------------------------------------------------ reading
@@ -280,6 +283,8 @@ def _riga(doc) -> dict:
 		"done": fatte,
 		"clinical": cint(doc.clinical),
 		"mine": doc.practitioner == frappe.session.user,
+		# paid in instalments: how many are paid, the next one, the late ones
+		"instalments": rate.riassunto(doc),
 	}
 	for estensione in _estensioni:
 		if estensione.legge:
@@ -326,6 +331,12 @@ def _dettaglio(doc) -> dict:
 		"can_close": doc.status == R.ACCETTATO and (mio or gestisce()),
 		"can_copy": scrive() and doc.status != R.BOZZA,
 		"offers": offre(),
+		# how it is paid, and the instalments as they go
+		**rate.leggi(
+			doc,
+			puo_fatturare=(mio or gestisce()) and bool(frappe.has_permission("CRM Invoice", "create")),
+			puo_incassare=livelli.puo("fatture.incassi"),
+		),
 	}
 
 
@@ -502,11 +513,14 @@ def save_quote(lead: str, data: str | dict, name: str | None = None, deal: str |
 	doc.set("items", [])
 	for voce in voci:
 		doc.append("items", {**voce, "status": R.DA_FARE})
+	rate.termini_da(doc, dati)
 	marca(doc)
 	if doc.is_new():
 		doc.insert()
 	else:
 		doc.save()
+	# a draft may leave the first instalment's day for later, never be wrong
+	_problemi(rate.problemi(doc))
 	return _dettaglio(doc)
 
 
@@ -527,6 +541,8 @@ def propose_quote(name: str) -> dict:
 	"""Handed to the person: frozen, its PDF made, the quotes deal moved."""
 	doc = _mio(name, R.BOZZA)
 	valida([voce.as_dict() for voce in doc.items])
+	_problemi(rate.problemi(doc, getdate()))
+	rate.al_proposto(doc)
 	doc.status = R.PROPOSTO
 	doc.proposed_on = now_datetime()
 	doc.valid_until = doc.valid_until or add_days(getdate(), giorni_di_validita())
@@ -576,9 +592,25 @@ def accetta(doc, chi: str, nota: str | None = None, dove: str = R.AL_BANCO) -> N
 	doc.accepted_by = chi
 	doc.acceptance_note = (nota or "").strip() or None
 	doc.answered_in = dove
+	rate.all_accettazione(doc)
 	salva(doc)
 	pipeline.segui(doc, accettato=True)
 	appuntamenti.raccogli(doc.name)
+	sostituisce(doc)
+
+
+def sostituisce(doc) -> None:
+	"""A new version accepted takes the place of the one it replaces, if that was
+	going on: closed, its instalments not invoiced yet cancelled."""
+	if not doc.replaces:
+		return
+	vecchio = frappe.get_doc(DOCTYPE, doc.replaces)
+	if vecchio.status != R.ACCETTATO:
+		return
+	vecchio.status = R.CHIUSO
+	vecchio.closed_on = now_datetime()
+	salva(vecchio)
+	rate.annulla(vecchio)
 
 
 def rifiuta(doc, motivo: str | None = None, nota: str | None = None, dove: str = R.AL_BANCO) -> None:
@@ -590,6 +622,7 @@ def rifiuta(doc, motivo: str | None = None, nota: str | None = None, dove: str =
 	doc.decline_reason = ", ".join(v for v in ((motivo or "").strip(), (nota or "").strip()) if v) or None
 	doc.answered_in = dove
 	salva(doc)
+	rate.annulla(doc)
 	pipeline.segui(doc, accettato=False, motivo=motivo, note=nota)
 
 
@@ -606,7 +639,7 @@ def decline_quote(name: str, reason: str | None = None, note: str | None = None)
 	"""The person said no, at the desk, and maybe why."""
 	doc = _decide(name)
 	rifiuta(doc, reason, note)
-	return _dettaglio(doc)
+	return _dettaglio(frappe.get_doc(DOCTYPE, doc.name))
 
 
 @frappe.whitelist(methods=["POST"])
@@ -649,7 +682,9 @@ def close_quote(name: str) -> dict:
 	doc.status = R.CHIUSO
 	doc.closed_on = now_datetime()
 	salva(doc)
-	return _dettaglio(doc)
+	# the instalments not invoiced yet go with it
+	annullate = rate.annulla(doc)
+	return {**_dettaglio(frappe.get_doc(DOCTYPE, doc.name)), "cancelled_instalments": annullate}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -663,6 +698,7 @@ def copy_quote(name: str) -> dict:
 	doc.price_list = fonte.price_list
 	doc.patient_notes = fonte.patient_notes
 	doc.replaces = fonte.name
+	rate.copia(fonte, doc)
 	# the same deal while it is open: a closed one is never opened again by a quote
 	from crm.preventivi import pipeline
 

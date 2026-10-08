@@ -92,9 +92,30 @@
 
 	{% if doc.patient_notes %}<div class="testo">{{ doc.patient_notes }}</div>{% endif %}
 
+	{% if rate %}
+	{#- paid in instalments: the centre's own plan, no interest nor fees -#}
+	<h2>{{ _("Payment plan") }}</h2>
+	<table class="rate">
+		<tr>
+			<th>{{ _("Payment") }}</th>
+			<th>{{ _("Due") }}</th>
+			<th class="numero">{{ _("Amount") }}</th>
+		</tr>
+		{% for riga in rate %}{% if riga.status != "Cancelled" %}
+		<tr>
+			<td>{% if riga.kind == "Deposit" %}{{ _("Deposit") }}{% else %}{{ _("Instalment {0} of {1}").format(riga.number, rate|selectattr("kind", "equalto", "Instalment")|list|length) }}{% endif %}</td>
+			<td>{% if riga.quando %}{{ riga.quando }}{% else %}{{ _("On acceptance") }}{% endif %}</td>
+			<td class="numero">{{ soldi(riga.amount) }}</td>
+		</tr>
+		{% endif %}{% endfor %}
+		<tr class="totale"><td colspan="2">{{ _("Total") }}</td><td class="numero">{{ soldi(totali.net) }}</td></tr>
+	</table>
+	<p class="sommesso">{{ _("Paid in instalments to the centre, without interest or fees.") }}</p>
+	{% endif %}
+
 	<div class="firma">
 		{% if valido_fino %}<p>{{ _("This quote is valid until {0}.").format(valido_fino) }}</p>{% endif %}
-		<p class="sommesso">{{ _("Each service is invoiced when it is done, at the price above.") }}</p>
+		<p class="sommesso">{% if rate and rate_fatturate %}{{ _("Each payment is invoiced when it falls due.") }}{% else %}{{ _("Each service is invoiced when it is done, at the price above.") }}{% endif %}</p>
 		<p>{{ _("For acceptance") }}</p>
 		{% if firma %}
 		<div class="linee">

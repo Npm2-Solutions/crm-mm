@@ -111,6 +111,7 @@ def dovute(conf=None, oggi=None) -> list[frappe._dict]:
 			"posting_date",
 			"grand_total",
 			"net_payable",
+			"quote",
 		],
 		order_by="posting_date asc, creation asc",
 		limit_page_length=0,
@@ -298,15 +299,42 @@ def _testo(fattura, dove, conf) -> dict:
 	# format put «dell'01/09/2026» in an SMS
 	giorno = formatdate(getdate(fattura.posting_date), "d MMMM yyyy")
 	importo = in_euro(Decimal(str(incassi.da_pagare(fattura))))
+	# an instalment of a quote says which one («la rata 4 di 10»)
+	rata = _la_rata(fattura)
+	if rata and rata[0] == "Deposit":
+		frase = _("Invoice {0} of {1}, the deposit on your quote, for {2}, is still to be paid.").format(
+			numero, giorno, importo
+		)
+	elif rata:
+		frase = _(
+			"Invoice {0} of {1}, instalment {2} of {3} of your quote, for {4}, is still to be paid."
+		).format(numero, giorno, rata[1], rata[2], importo)
+	else:
+		frase = _("Invoice {0} of {1}, for {2}, is still to be paid.").format(numero, giorno, importo)
 	return {
 		"nome": dove.nome,
 		"centro": nome_del_centro() or _("the centre"),
 		"numero": numero,
-		"frase": con_l_apostrofo(
-			_("Invoice {0} of {1}, for {2}, is still to be paid.").format(numero, giorno, importo)
-		),
+		"frase": con_l_apostrofo(frase),
 		"come": conf.come_pagare,
 	}
+
+
+def _la_rata(fattura) -> tuple[str, int, int] | None:
+	"""The one row of a quote's plan an invoice is for: its kind, its number, of how
+	many instalments. None for another invoice, or one of several rows (the rest)."""
+	if not fattura.get("quote"):
+		return None
+	righe = frappe.get_all(
+		"CRM Quote Instalment",
+		filters={"parenttype": "CRM Quote", "parent": fattura.quote},
+		fields=["kind", "number", "invoice", "status"],
+	)
+	sue = [riga for riga in righe if riga.invoice == fattura.name]
+	if len(sue) != 1:
+		return None
+	quante = sum(1 for riga in righe if riga.kind == "Instalment" and riga.status != "Cancelled")
+	return sue[0].kind, cint(sue[0].number), quante
 
 
 def _bottone(lead: str, email: str) -> str:
