@@ -169,6 +169,9 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set, chiamate: 
 		# a message opens the chat, the person's other door: their summary is
 		# where a page opens that says nothing (docs/crm/54)
 		segno = "#activity"
+	elif genere == "area" and riga.notification_type_doctype == "CRM Quote":
+		# a quote answered in the area: the person's quotes
+		segno = "#quotes"
 	elif genere == "area":
 		segno = "#area"
 	elif genere == "call":

@@ -16,6 +16,8 @@ preventivo").
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 
 BOZZA, PROPOSTO, ACCETTATO, RIFIUTATO, COMPLETATO, CHIUSO = (
@@ -149,3 +151,37 @@ def valida(voci: list[dict]) -> list[Problema]:
 		if not 0 <= float(voce.get("discount") or 0) <= 100:
 			problemi.append(Problema("Row {0}: the discount is from 0 to 100%", (n,)))
 	return problemi
+
+
+# ------------------------------------------------------------------ the person's answer
+
+#: Where the person said yes or no: at the desk, recorded by the centre, or in
+#: their client area, with their own signature.
+AL_BANCO, NELL_AREA = "At the desk", "In the client area"
+#: The most a reason written in the area keeps.
+MAX_MOTIVO = 500
+
+
+def da_rispondere(stato: str, valido_fino, oggi) -> Problema | None:
+	"""Whether the person may still accept or decline the quote from their area:
+	proposed, and not past the day it holds until. ``valido_fino`` and ``oggi``
+	are dates; what is wrong says the day as the caller words it."""
+	if stato != PROPOSTO:
+		return Problema("This quote is no longer waiting for an answer")
+	if valido_fino and valido_fino < oggi:
+		return Problema("This quote was valid until {0}: ask the centre for a new one", (valido_fino,))
+	return None
+
+
+def motivo(testo: str | None) -> str | None:
+	"""A reason the person wrote: its words, without the spaces around them, and
+	not a book."""
+	parole = (testo or "").strip()
+	return parole[:MAX_MOTIVO].rstrip() or None
+
+
+def impronta(contenuto: dict) -> str:
+	"""The SHA-256 of what a signature is put on, written the one way: the same
+	services and sums give the same fingerprint, whatever order they came in."""
+	testo = json.dumps(contenuto, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+	return hashlib.sha256(testo.encode("utf-8")).hexdigest()

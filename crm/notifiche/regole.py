@@ -90,6 +90,11 @@ PROMEMORIA = frozenset({PROMEMORIA_DISDETTO, PROMEMORIA_NON_VIENE, PROMEMORIA_SP
 #: «I'm here» from the client area (`crm.area.api.check_in`).
 ARRIVATO_DALL_AREA = "{0} is in the waiting room: they checked in from their phone"
 
+#: A quote answered in the client area (`crm.preventivi.firma`): never its title,
+#: which may say what a care plan is about. It opens the person's quotes.
+PREVENTIVO_FIRMATO = "{0} accepted and signed a quote in their area"
+PREVENTIVO_RIFIUTATO = "{0} declined a quote in their area"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -132,6 +137,8 @@ FRASI = (
 	PROMEMORIA_NON_VIENE,
 	PROMEMORIA_SPOSTA,
 	ARRIVATO_DALL_AREA,
+	PREVENTIVO_FIRMATO,
+	PREVENTIVO_RIFIUTATO,
 )
 
 #: The sentences that take something away: the panel draws them apart.

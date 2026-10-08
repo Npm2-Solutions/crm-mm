@@ -325,4 +325,27 @@ export default {
     'Sei in sala d’attesa: il centro sa che sei qui.',
   'Book again': 'Prenota di nuovo',
   'Book an appointment': 'Prenota un appuntamento',
+  // a quote answered in the area (crm.preventivi.firma)
+  'This quote was valid until {0}: ask the centre for a new one.':
+    'Questo preventivo valeva fino al {0}: chiedine uno nuovo al centro.',
+  'Accepted and signed on {0}.': 'Accettato e firmato il {0}.',
+  'Signed copy': 'Copia firmata',
+  'Read the PDF': 'Leggi il PDF',
+  'I do not accept': 'Non accetto',
+  'Accept and sign': 'Accetta e firma',
+  'By signing you accept the quote as it is, at the prices shown. The centre receives your signature and you get a signed copy here.':
+    'Firmando accetti il preventivo così com’è, ai prezzi indicati. Il centro riceve la tua firma e qui trovi una copia firmata.',
+  'Read the quote (PDF)': 'Leggi il preventivo (PDF)',
+  'Sign here with your finger': 'Firma qui con il dito',
+  'Sign and accept': 'Firma e accetta',
+  'We tell the centre you do not accept «{0}». If you want, say why: it helps them propose something else.':
+    'Diciamo al centro che non accetti «{0}». Se vuoi, scrivi perché: lo aiuta a proporti qualcos’altro.',
+  'Why (if you want)': 'Perché (se vuoi)',
+  'We told the centre you do not accept «{0}».':
+    'Abbiamo detto al centro che non accetti «{0}».',
+  'Not signed': 'Non firmato',
+  'Sign again': 'Firma di nuovo',
+  Clear: 'Cancella',
+  'To sign we send you a code again: it says the signature is yours.':
+    'Per firmare ti mandiamo di nuovo un codice: dice che la firma è tua.',
 }

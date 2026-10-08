@@ -47602,3 +47602,159 @@ msgstr "Risposto"
 
 msgid "no mailbox sends the centre's emails yet: Settings > Email > Accounts"
 msgstr "nessuna casella invia ancora le email del centro: Impostazioni > Email > Account"
+
+msgid "Signed in the client area"
+msgstr "Firmato nell'area clienti"
+
+msgid "In the client area"
+msgstr "Nell'area clienti"
+
+msgid "Sent to sign on"
+msgstr "Mandato da firmare il"
+
+msgid "Sent to sign to"
+msgstr "Mandato da firmare a"
+
+msgid "Signed by"
+msgstr "Firmato da"
+
+msgid "The quote signed (SHA-256)"
+msgstr "Il preventivo firmato (SHA-256)"
+
+msgid "Signed copy"
+msgstr "Copia firmata"
+
+msgid "Signed copy (SHA-256)"
+msgstr "Copia firmata (SHA-256)"
+
+msgid "Signed copy's format"
+msgstr "Formato della copia firmata"
+
+msgid "This quote is no longer waiting for an answer"
+msgstr "Questo preventivo non aspetta più una risposta"
+
+msgid "This quote was valid until {0}: ask the centre for a new one"
+msgstr "Questo preventivo valeva fino al {0}: chiedine uno nuovo al centro"
+
+msgid "Sent to sign"
+msgstr "Mandato da firmare"
+
+msgid "Opened in the client area"
+msgstr "Aperto nell'area clienti"
+
+msgid "Accepted and signed"
+msgstr "Accettato e firmato"
+
+msgid "Its PDF as it was proposed"
+msgstr "Il suo PDF così come è stato proposto"
+
+msgid "Its services and sums"
+msgstr "Le sue prestazioni e i suoi totali"
+
+msgid "Quote accepted and signed"
+msgstr "Preventivo accettato e firmato"
+
+msgid "Level"
+msgstr "Livello"
+
+msgid "Simple signature"
+msgstr "Firma semplice"
+
+msgid "drawn on the screen"
+msgstr "tracciata sullo schermo"
+
+msgid "When, by the server's clock"
+msgstr "Quando, secondo l'orologio del server"
+
+msgid "What was signed"
+msgstr "Cosa è stato firmato"
+
+msgid "Its SHA-256"
+msgstr "Il suo SHA-256"
+
+msgid "This document was generated once, when the quote was signed. Its SHA-256 is recorded with the quote: a copy that gives a different one is not this document."
+msgstr "Questo documento è stato generato una volta sola, quando il preventivo è stato firmato. Il suo SHA-256 è registrato con il preventivo: una copia che ne dà uno diverso non è questo documento."
+
+msgid "This quote is not yours"
+msgstr "Questo preventivo non è tuo"
+
+msgid "Only the person, or a parent or guardian, answers a quote"
+msgstr "Solo la persona, o un genitore o tutore, risponde a un preventivo"
+
+msgid "In the client area, entered as {0}: the address was checked by a code or the area's link in the last {1} minutes"
+msgstr "Nell'area clienti, entrando come {0}: l'indirizzo è stato verificato con un codice o con il link dell'area negli ultimi {1} minuti"
+
+msgid "Enter your code again to sign it"
+msgstr "Inserisci di nuovo il codice per firmarlo"
+
+msgid "Your signature"
+msgstr "La tua firma"
+
+msgid "There is no PDF of this quote"
+msgstr "Questo preventivo non ha un PDF"
+
+msgid "Only to the number of the person's that wrote to the centre on {0}, once their area is open"
+msgstr "Solo al numero della persona che ha scritto al centro su {0}, quando la sua area è aperta"
+
+msgid "A quote to read in your area at {0}"
+msgstr "Un preventivo da leggere nella tua area di {0}"
+
+msgid "A quote to read"
+msgstr "Un preventivo da leggere"
+
+msgid "{0} sent you a quote. Read it in your area: there you accept and sign it, or say you do not accept it."
+msgstr "{0} ti ha mandato un preventivo. Leggilo nella tua area: lì lo accetti e lo firmi, oppure dici che non lo accetti."
+
+msgid "Read the quote"
+msgstr "Leggi il preventivo"
+
+msgid "{0} sent you a quote to read in your area: {1}"
+msgstr "{0} ti ha mandato un preventivo da leggere nella tua area: {1}"
+
+msgid "{0} is not a way to send it"
+msgstr "{0} non è un modo per mandarlo"
+
+msgid "This is a person of the demo data: nothing is sent to them"
+msgstr "È una persona dei dati di prova: non le si manda niente"
+
+msgid "There is no email to send it to: open the person's area first"
+msgstr "Non c'è un'email a cui mandarlo: apri prima l'area della persona"
+
+msgid "{0} accepted and signed a quote in their area"
+msgstr "{0} ha accettato e firmato un preventivo nella sua area"
+
+msgid "{0} declined a quote in their area"
+msgstr "{0} ha rifiutato un preventivo nella sua area"
+
+msgid "Declined by the person"
+msgstr "Rifiutato dalla persona"
+
+msgid "The person reads it in their area and accepts and signs it there, or says no. The message says only that there is a quote to read."
+msgstr "La persona lo legge nella sua area e lì lo accetta e lo firma, oppure dice di no. Il messaggio dice soltanto che c'è un preventivo da leggere."
+
+msgid "Signed copy (PDF)"
+msgstr "Copia firmata (PDF)"
+
+msgid "Send to sign"
+msgstr "Manda da firmare"
+
+msgid "sent to sign on {0}"
+msgstr "mandato da firmare il {0}"
+
+msgid "signed in the client area by {0} on {1}"
+msgstr "firmato nell'area clienti da {0} il {1}"
+
+msgid "declined in the client area on {0}"
+msgstr "rifiutato nell'area clienti il {0}"
+
+msgid "Sent: the person reads it in their area"
+msgstr "Mandato: la persona lo legge nella sua area"
+
+msgid "This quote is valid until {0}."
+msgstr "Questo preventivo vale fino al {0}."
+
+msgid "Each service is invoiced when it is done, at the price above."
+msgstr "Ogni prestazione si fattura quando è fatta, al prezzo indicato."
+
+msgid "For acceptance"
+msgstr "Per accettazione"

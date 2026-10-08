@@ -5,7 +5,9 @@
   A quote (crm.preventivi). Its author writes the draft: services from the price
   list, in phases, with a discount - and what a module adds to a row, where the
   server offers it: the clinic's tooth and surfaces, to a dentist. Proposed, it is
-  a PDF to hand over, which the desk records accepted or declined. Accepted, its
+  a PDF to hand over, which the desk records accepted or declined - or sends to
+  the person, who accepts and signs it in their area (crm.preventivi.firma): the
+  signed copy is kept with it. Accepted, its
   services are done as the appointments go: booked from here, marked by hand when
   it happened otherwise.
 -->
@@ -308,12 +310,53 @@
           {{ plan.patient_notes }}
         </p>
 
-        <!-- the desk records what the person said -->
+        <!-- the desk records what the person said, or sends it to sign -->
         <div
           v-if="deciding"
           class="flex flex-col gap-3 rounded-md border border-outline-gray-2 p-3"
         >
-          <template v-if="deciding === 'accept'">
+          <template v-if="deciding === 'send'">
+            <p class="text-p-sm text-ink-gray-7">
+              {{
+                __(
+                  'The person reads it in their area and accepts and signs it there, or says no. The message says only that there is a quote to read.',
+                )
+              }}
+            </p>
+            <p v-if="!sendOptions" class="text-p-sm text-ink-gray-5">…</p>
+            <p v-else-if="sendOptions.demo" class="text-p-sm text-ink-gray-7">
+              {{
+                __('This is a person of the demo data: nothing is sent to them')
+              }}
+            </p>
+            <div v-else role="radiogroup" class="flex flex-col gap-1.5">
+              <button
+                v-for="via in sendOptions.channels"
+                :key="via.channel"
+                type="button"
+                role="radio"
+                :aria-checked="sending === via.channel"
+                :disabled="!via.to"
+                class="flex min-h-10 items-start gap-2 rounded-md border px-3 py-2 text-left disabled:cursor-not-allowed disabled:opacity-60"
+                :class="
+                  sending === via.channel
+                    ? 'border-outline-gray-4 bg-surface-gray-2'
+                    : 'border-outline-gray-2'
+                "
+                @click="sending = via.channel"
+              >
+                <span class="min-w-0 flex-1">
+                  <span class="block text-p-base text-ink-gray-9">
+                    {{ __(via.channel) }}
+                  </span>
+                  <span class="block text-p-sm text-ink-gray-6">
+                    {{ via.to || via.reason }}
+                  </span>
+                </span>
+              </button>
+            </div>
+          </template>
+          <template v-else-if="deciding === 'accept'">
             <FormControl
               v-model="decision.note"
               :label="__('How it was accepted')"
@@ -337,14 +380,17 @@
             <Button :label="__('Cancel')" @click="deciding = ''" />
             <Button
               variant="solid"
-              :theme="deciding === 'accept' ? 'gray' : 'red'"
+              :theme="deciding === 'decline' ? 'red' : 'gray'"
               :label="
-                deciding === 'accept'
-                  ? __('Record accepted')
-                  : __('Record declined')
+                deciding === 'send'
+                  ? __('Send')
+                  : deciding === 'accept'
+                    ? __('Record accepted')
+                    : __('Record declined')
               "
+              :disabled="deciding === 'send' && (!sending || sendOptions?.demo)"
               :loading="busy === deciding"
-              @click="decide"
+              @click="deciding === 'send' ? sendToSign() : decide()"
             />
           </div>
         </div>
@@ -389,6 +435,19 @@
             icon-left="file-text"
             :label="__('Quote (PDF)')"
             @click="openQuote"
+          />
+          <!-- on a phone the row is one: these go under «More» -->
+          <Button
+            v-if="plan.signed_pdf && !isMobileView"
+            icon-left="file-text"
+            :label="__('Signed copy (PDF)')"
+            @click="openSigned"
+          />
+          <Button
+            v-if="plan.can_send_to_sign && !deciding && !isMobileView"
+            icon-left="send"
+            :label="__('Send to sign')"
+            @click="startSending"
           />
           <Dropdown v-if="moreOptions.length" :options="moreOptions">
             <Button :label="__('More')" icon-right="chevron-down" />
@@ -468,6 +527,9 @@ const busy = ref('')
 const error = ref('')
 const deciding = ref('')
 const decision = reactive({ reason: '', note: '' })
+// where the quote may go to sign, and the way chosen
+const sendOptions = ref(null)
+const sending = ref('')
 
 const editing = computed(() => !plan.name || plan.can_edit)
 // a dentist writes the tooth and its surfaces on a row: the clinic offers them
@@ -574,14 +636,31 @@ const facts = computed(() => {
     parts.push(
       __('valid until {0}', [formatDate(plan.valid_until, 'D MMM YYYY')]),
     )
-  if (plan.accepted_on)
+  if (plan.status === 'Proposed' && plan.sent_to_sign_on)
+    parts.push(
+      __('sent to sign on {0}', [
+        formatDate(plan.sent_to_sign_on, 'D MMM YYYY'),
+      ]),
+    )
+  if (plan.signed_on)
+    parts.push(
+      __('signed in the client area by {0} on {1}', [
+        plan.signer_name,
+        formatDate(plan.signed_on, 'D MMM YYYY, HH:mm'),
+      ]),
+    )
+  else if (plan.accepted_on)
     parts.push(
       __('accepted on {0}', [formatDate(plan.accepted_on, 'D MMM YYYY')]) +
         (plan.acceptance_note ? ` (${plan.acceptance_note})` : ''),
     )
   if (plan.declined_on)
     parts.push(
-      __('declined on {0}', [formatDate(plan.declined_on, 'D MMM YYYY')]) +
+      (plan.answered_in === 'In the client area'
+        ? __('declined in the client area on {0}', [
+            formatDate(plan.declined_on, 'D MMM YYYY'),
+          ])
+        : __('declined on {0}', [formatDate(plan.declined_on, 'D MMM YYYY')])) +
         (plan.decline_reason ? ` (${plan.decline_reason})` : ''),
     )
   if (plan.closed_on)
@@ -756,6 +835,33 @@ function startDeciding(what) {
   deciding.value = what
 }
 
+async function startSending() {
+  error.value = ''
+  sendOptions.value = null
+  sending.value = ''
+  deciding.value = 'send'
+  try {
+    sendOptions.value = await call('crm.preventivi.firma.sign_options', {
+      name: plan.name,
+    })
+    sending.value =
+      sendOptions.value.channels.find((via) => via.to)?.channel || ''
+  } catch (e) {
+    error.value = e.messages?.[0] || __('Could not change it')
+    deciding.value = ''
+  }
+}
+
+async function sendToSign() {
+  await act(
+    'send',
+    'crm.preventivi.firma.send_to_sign',
+    { channel: sending.value },
+    __('Sent: the person reads it in their area'),
+  )
+  if (!error.value) deciding.value = ''
+}
+
 async function act(what, url, params = {}, done) {
   busy.value = what
   error.value = ''
@@ -828,6 +934,18 @@ function markOptions(item) {
 
 const moreOptions = computed(() => {
   const options = []
+  if (isMobileView.value && plan.signed_pdf)
+    options.push({
+      label: __('Signed copy (PDF)'),
+      icon: 'file-text',
+      onClick: openSigned,
+    })
+  if (isMobileView.value && plan.can_send_to_sign && !deciding.value)
+    options.push({
+      label: __('Send to sign'),
+      icon: 'send',
+      onClick: startSending,
+    })
   if (plan.can_withdraw)
     options.push({
       label: __('Take it back to change it'),
@@ -865,6 +983,10 @@ async function copy() {
 
 function openQuote() {
   window.open(plan.quote_pdf, '_blank')
+}
+
+function openSigned() {
+  window.open(plan.signed_pdf, '_blank')
 }
 
 // on the calendar: a new appointment of the row's service, for the person

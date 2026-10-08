@@ -2,7 +2,8 @@
   A quote as the person reads it (crm.preventivi.area): proposed, to think about;
   accepted, the services done and the ones to come, with when the next one is
   booked - a dental care plan says the tooth too. What it costs, in all and done
-  so far.
+  so far. Proposed, it is answered here (`QuoteAnswer`): accepted and signed, or
+  not.
 -->
 <template>
   <article class="area-card flex flex-col gap-3">
@@ -88,6 +89,14 @@
     >
       {{ quote.patient_notes }}
     </p>
+    <QuoteAnswer
+      :quote="quote"
+      :answers="answers"
+      :verified="verified"
+      @changed="(data) => emit('changed', data)"
+      @verified="emit('verified')"
+      @declined="(data) => emit('declined', data)"
+    />
   </article>
 </template>
 
@@ -96,8 +105,14 @@ import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import { Badge } from 'frappe-ui'
 import LucideCheck from '~icons/lucide/check'
 import { day, when } from '../dates'
+import QuoteAnswer from './QuoteAnswer.vue'
 
-const props = defineProps({ quote: { type: Object, required: true } })
+const props = defineProps({
+  quote: { type: Object, required: true },
+  answers: { type: Boolean, default: false },
+  verified: { type: Boolean, default: false },
+})
+const emit = defineEmits(['changed', 'verified', 'declined'])
 
 const labels = {
   Proposed: __('To decide'),

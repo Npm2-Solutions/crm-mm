@@ -308,9 +308,18 @@ def _dettaglio(doc) -> dict:
 		"decline_reason": doc.decline_reason,
 		"closed_on": str(doc.closed_on) if doc.closed_on else None,
 		"replaces": doc.replaces,
+		# the answer the person gave in their area, and what keeps it
+		"answered_in": doc.answered_in,
+		"signer_name": doc.signer_name,
+		"signed_on": str(doc.signed_on) if doc.signed_on else None,
+		"signed_pdf": doc.signed_pdf,
+		"sent_to_sign_on": str(doc.sent_to_sign_on) if doc.sent_to_sign_on else None,
+		"sent_to_sign_to": doc.sent_to_sign_to,
 		"can_edit": mio and doc.status == R.BOZZA,
 		"can_withdraw": mio and doc.status == R.PROPOSTO,
 		"can_decide": decide,
+		# the person accepts and signs it in their area: the link to do so
+		"can_send_to_sign": decide,
 		# the deal's lost reasons, for a quote declined
 		"lost_reasons": frappe.get_all("CRM Lost Reason", pluck="name", order_by="name") if decide else [],
 		"can_mark": doc.status in (R.ACCETTATO, R.COMPLETATO) and (mio or scrive()),
@@ -556,34 +565,47 @@ def _decide(name: str):
 	return doc
 
 
-@frappe.whitelist(methods=["POST"])
-def accept_quote(name: str, note: str | None = None) -> dict:
-	"""The person said yes: how, in a few words. The appointments already booked for
-	its services take them."""
+def accetta(doc, chi: str, nota: str | None = None, dove: str = R.AL_BANCO) -> None:
+	"""The person said yes - at the desk, recorded by ``chi``, or in their area,
+	where ``chi`` is who entered it: the quotes deal is won, and the appointments
+	already booked for its services take them."""
 	from crm.preventivi import appuntamenti, pipeline
 
-	doc = _decide(name)
 	doc.status = R.ACCETTATO
 	doc.accepted_on = now_datetime()
-	doc.accepted_by = frappe.session.user
-	doc.acceptance_note = (note or "").strip() or None
+	doc.accepted_by = chi
+	doc.acceptance_note = (nota or "").strip() or None
+	doc.answered_in = dove
 	salva(doc)
 	pipeline.segui(doc, accettato=True)
 	appuntamenti.raccogli(doc.name)
+
+
+def rifiuta(doc, motivo: str | None = None, nota: str | None = None, dove: str = R.AL_BANCO) -> None:
+	"""The person said no, and maybe why: the reason is the deal's lost reason."""
+	from crm.preventivi import pipeline
+
+	doc.status = R.RIFIUTATO
+	doc.declined_on = now_datetime()
+	doc.decline_reason = ", ".join(v for v in ((motivo or "").strip(), (nota or "").strip()) if v) or None
+	doc.answered_in = dove
+	salva(doc)
+	pipeline.segui(doc, accettato=False, motivo=motivo, note=nota)
+
+
+@frappe.whitelist(methods=["POST"])
+def accept_quote(name: str, note: str | None = None) -> dict:
+	"""The person said yes, at the desk: how, in a few words."""
+	doc = _decide(name)
+	accetta(doc, frappe.session.user, note)
 	return _dettaglio(frappe.get_doc(DOCTYPE, doc.name))
 
 
 @frappe.whitelist(methods=["POST"])
 def decline_quote(name: str, reason: str | None = None, note: str | None = None) -> dict:
-	"""The person said no, and maybe why: the reason is the deal's lost reason."""
-	from crm.preventivi import pipeline
-
+	"""The person said no, at the desk, and maybe why."""
 	doc = _decide(name)
-	doc.status = R.RIFIUTATO
-	doc.declined_on = now_datetime()
-	doc.decline_reason = ", ".join(v for v in ((reason or "").strip(), (note or "").strip()) if v) or None
-	salva(doc)
-	pipeline.segui(doc, accettato=False, motivo=reason, note=note)
+	rifiuta(doc, reason, note)
 	return _dettaglio(doc)
 
 
