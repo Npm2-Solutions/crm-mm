@@ -34,7 +34,7 @@
     >
       <canvas
         ref="canvas"
-        class="absolute inset-0 size-full cursor-crosshair touch-none"
+        class="firma-tela cursor-crosshair touch-none"
         :aria-label="placeholder"
         @pointerdown="start"
         @pointermove="move"
@@ -43,7 +43,7 @@
         @pointerleave="end"
       />
       <span
-        class="pointer-events-none absolute inset-x-4 bottom-3 border-t pt-1 text-sm"
+        class="firma-riga text-sm"
         :style="{ borderColor: LINE, color: HINT }"
       >
         {{ placeholder }}
@@ -206,3 +206,25 @@ watch(showSaved, async (saved) => {
 })
 onBeforeUnmount(() => observer?.disconnect())
 </script>
+
+<style scoped>
+/* where the pen goes and the line it signs on, in the component's own rules:
+   the client area builds its classes apart (tailwind.area.config.js), and a
+   build without these left the words over the box's top-left corner */
+.firma-tela {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.firma-riga {
+  pointer-events: none;
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.75rem;
+  border-top-width: 1px;
+  border-top-style: solid;
+  padding-top: 0.25rem;
+}
+</style>
