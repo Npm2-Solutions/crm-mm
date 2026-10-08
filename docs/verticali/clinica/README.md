@@ -21,7 +21,8 @@ scrivere codice vanno chiuse le [domande](#le-domande-da-chiudere-prima) in fond
 Le richieste puntuali (livelli, Sito senza Builder, moduli con firma, archivio,
 area cliente), verificate sul codice, sono in [requisiti.md](./requisiti.md).
 Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
-[ricerca.md](./ricerca.md). Il design, con i tre strati (CRM, fatturazione,
+[ricerca.md](./ricerca.md); il Fascicolo e la ricetta, per uno sviluppo futuro, in
+[fascicolo-e-ricetta.md](./fascicolo-e-ricetta.md). Il design, con i tre strati (CRM, fatturazione,
 clinica), è in [design.md](./design.md); il listino in
 [listino.md](../../marchi/dottorcloud/listino.md); ruoli e permessi nel
 [doc 30](../../crm/30-ruoli-e-permessi.md).
@@ -2024,7 +2025,7 @@ prova con il centro pilota.
 | **1 — Le cuciture** | La conversione a paziente che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; l'accettazione con la sala d'attesa, per chi ha la segreteria, che entra nella lista delle regole; visita, accettazione e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
 | **2 — Cartella, moduli e referti** | Cartella completa sul modello della specialità; il builder dei moduli del centro con la firma come componente (privacy, consensi, anamnesi) e il registro dei consensi; firma semplice nostra e avanzata con un fornitore, per i consensi informati ([design](./design.md#la-firma)); referto in PDF/A con firma; archivio clinico dei documenti; registro degli accessi; dossier e oscuramento; consegna del referto | 8–10 | …spegnere il vecchio gestionale |
 | **3 — Area cliente ed extra** | Area cliente: appuntamenti, piani (nutrizionale, dieta, allenamento), documenti, comunicazioni dell'operatore, fatture, moduli da firmare (6–8 sp, [requisiti §6](./requisiti.md#6-area-cliente)); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
-| **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
+| **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)). Il piano per quando si parte, con la ricetta dematerializzata: [fascicolo-e-ricetta.md](./fascicolo-e-ricetta.md) | — | — |
 | **E poi** | AI Act: trasparenza dal 2 agosto 2026, dispositivi medici con IA dal 2 agosto 2028; spazio europeo dei dati sanitari (EHDS): formati comuni dal 2027, marchio CE autodichiarato per le cartelle in cloud dal 2031 ([design](./design.md#le-norme-e-il-calendario)) | — | — |
 
 **Fasi 0–2: 15–19 sp, tre-quattro mesi per una persona.** Le prime due
