@@ -316,8 +316,23 @@
             {{ __(outcome) }}
           </span>
         </div>
+        <!-- how hard or painful it felt, as the person said it in their area -->
+        <p
+          v-if="plan.status !== 'Draft' && fatica"
+          class="flex items-center gap-1.5 text-p-sm text-ink-gray-7"
+        >
+          <span class="lucide-activity size-4" aria-hidden="true" />
+          {{
+            __(
+              'Effort or pain in the last two weeks: {0}/10 on average, last {1}',
+              [numeroDelleTabelle(fatica.average, appLocale()), fatica.last],
+            )
+          }}
+        </p>
         <section
-          v-for="moment in plan.moments.filter((m) => itemsOf(m.key).length)"
+          v-for="moment in inOrdineDiGiorno(plan.moments).filter(
+            (m) => itemsOf(m.key).length,
+          )"
           :key="moment.key"
           class="flex flex-col gap-2"
         >
@@ -406,13 +421,23 @@
             variant="ghost"
             theme="red"
             :label="__('Delete the draft')"
-            @click="remove"
+            @click="conferma = 'delete'"
           />
+          <!-- on a phone its icon: the row of actions stays one row -->
           <Button
             v-if="plan.items.length"
             variant="ghost"
             icon-left="bookmark"
+            class="max-md:hidden"
             :label="__('Save as a template')"
+            @click="openTemplating"
+          />
+          <Button
+            v-if="plan.items.length"
+            variant="ghost"
+            icon="bookmark"
+            class="md:hidden"
+            :aria-label="__('Save as a template')"
             @click="openTemplating"
           />
         </div>
@@ -432,6 +457,50 @@
             @click="publish"
           />
         </div>
+        <div
+          v-if="conferma === 'delete'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{ __('The draft is deleted with what is written in it.') }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              theme="red"
+              :label="__('Delete the draft')"
+              :loading="busy === 'delete'"
+              @click="remove"
+            />
+          </div>
+        </div>
+        <!-- publishing closes the plan of the same kind the person follows now:
+             said, and asked, before it happens -->
+        <div
+          v-if="conferma === 'publish'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{
+              __(
+                'Publishing it closes «{0}», which the person follows now: their area will show only this one.',
+                [plan.closes_on_publish.map((p) => p.title).join(', ')],
+              )
+            }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              :label="__('Publish and close the other')"
+              :loading="busy === 'publish'"
+              @click="publish(true)"
+            />
+          </div>
+        </div>
       </div>
       <div v-else class="dialog-footer flex flex-wrap justify-end gap-2">
         <Button
@@ -441,11 +510,33 @@
           @click="shopping = true"
         />
         <Button
-          v-if="plan.can_close"
+          v-if="plan.can_close && conferma !== 'close'"
           :label="__('Close the plan')"
           :loading="busy === 'close'"
-          @click="close"
+          @click="conferma = 'close'"
         />
+        <div
+          v-if="conferma === 'close'"
+          class="flex w-full flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+          role="alertdialog"
+        >
+          <p class="text-p-sm text-ink-gray-8">
+            {{
+              __(
+                'Closed, the plan leaves the person’s area; what they ticked stays here.',
+              )
+            }}
+          </p>
+          <div class="flex flex-wrap justify-end gap-2">
+            <Button :label="__('Cancel')" @click="conferma = ''" />
+            <Button
+              variant="solid"
+              :label="__('Close the plan')"
+              :loading="busy === 'close'"
+              @click="close"
+            />
+          </div>
+        </div>
         <Button
           v-if="plan.can_version"
           variant="solid"
@@ -474,6 +565,7 @@ import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
 import ShoppingListDialog from '@/components/Clinic/ShoppingListDialog.vue'
 import { dateFormat, formatDate } from '@/utils'
+import { appLocale } from '@/utils/locale'
 import { hhmm } from '@/utils/scheduler'
 import {
   CIBO,
@@ -488,6 +580,9 @@ import {
   descrivi,
   giorniDellaVoce,
   grammiIniziali,
+  inOrdineDiGiorno,
+  numeroDelleTabelle,
+  faticaDetta,
   momentiDelGiorno,
   momentiIniziali,
   momentiPerGiorno,
@@ -540,6 +635,7 @@ const tipo = computed(() => ({
 
 // what the server gives, as the editor holds it
 function fill(data) {
+  conferma.value = ''
   for (const key of Object.keys(plan)) delete plan[key]
   Object.assign(plan, data, {
     show_calories: Boolean(data.show_calories),
@@ -877,9 +973,26 @@ async function save(quiet = false) {
   return done
 }
 
-async function publish() {
+// what the person said of the effort, in the order of the days (0 is not said)
+const fatica = computed(() =>
+  faticaDetta(
+    [...(plan.logs || [])]
+      .sort((a, b) => String(a.log_date).localeCompare(String(b.log_date)))
+      .map((l) => l.effort),
+  ),
+)
+
+// an action asked again before it happens: 'publish' or 'close'
+const conferma = ref('')
+
+async function publish(confermato = false) {
   // what is on screen is saved first: the draft published is the one shown
   if (!(await save(true))) return
+  if (!confermato && plan.closes_on_publish?.length) {
+    conferma.value = 'publish'
+    return
+  }
+  conferma.value = ''
   const done = await run('publish', 'publish_plan', { name: plan.name })
   if (done) {
     toast.success(__('Published: the person finds it in their area'))
@@ -888,6 +1001,7 @@ async function publish() {
 }
 
 async function close() {
+  conferma.value = ''
   await run('close', 'close_plan', { name: plan.name })
 }
 

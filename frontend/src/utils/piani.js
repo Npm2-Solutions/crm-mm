@@ -436,6 +436,52 @@ export function versoGliObiettivi(totale, obiettivi) {
   })
 }
 
+/**
+ * The moments as a week is read: every day's first, then Monday to Sunday,
+ * each day's by its time (those without one after); otherwise as written.
+ */
+export function inOrdineDiGiorno(momenti) {
+  const giorni = [OGNI_GIORNO, ...GIORNI]
+  const posto = (m) => {
+    const i = giorni.indexOf(m.day || OGNI_GIORNO)
+    return i < 0 ? giorni.length : i
+  }
+  return (momenti || [])
+    .map((m, i) => ({ m, i }))
+    .sort(
+      (a, b) =>
+        posto(a.m) - posto(b.m) ||
+        (a.m.time || '99').localeCompare(b.m.time || '99') ||
+        a.i - b.i,
+    )
+    .map(({ m }) => m)
+}
+
+/**
+ * How hard or painful the person said it was, 1 to 10, in the order said (0 is
+ * not said): the average to one decimal, the last, how many; null when none —
+ * the same as the server's `regole.fatica`.
+ */
+export function faticaDetta(valori) {
+  const detti = (valori || [])
+    .map(Number)
+    .filter((v) => Number.isInteger(v) && v >= 1 && v <= 10)
+  if (!detti.length) return null
+  const media = detti.reduce((s, v) => s + v, 0) / detti.length
+  return {
+    average: Math.round(media * 10) / 10,
+    last: detti[detti.length - 1],
+    said: detti.length,
+  }
+}
+
+/** A number of the food tables as the reader writes it: «87,6», «1.800». */
+export function numeroDelleTabelle(n, locale = 'it-IT') {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
+    Number(n) || 0,
+  )
+}
+
 // ------------------------------------------------------------------ how a food looks
 
 /** Each group's mark and the category colour it is drawn in. */

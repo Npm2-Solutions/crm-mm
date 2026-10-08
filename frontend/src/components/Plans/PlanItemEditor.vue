@@ -54,14 +54,19 @@
             :aria-label="__('Group')"
           />
         </div>
-        <div class="w-24 shrink-0">
-          <FormControl
-            v-model="item.portions"
-            type="number"
-            inputmode="decimal"
-            :aria-label="__('Portions')"
-            :placeholder="__('Portions')"
-          />
+        <div class="flex shrink-0 items-center gap-2">
+          <div class="w-20">
+            <FormControl
+              v-model="item.portions"
+              type="number"
+              inputmode="decimal"
+              :aria-label="__('Portions')"
+              :placeholder="__('Portions')"
+            />
+          </div>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ Number(item.portions) === 1 ? __('portion') : __('portions') }}
+          </span>
         </div>
       </template>
 
@@ -189,13 +194,13 @@
             :variant="eLaDose(dose) ? 'subtle' : 'outline'"
             :label="testoDellaDose(dose)"
             :aria-pressed="eLaDose(dose)"
-            @click="item = conLaDose(item, dose)"
+            @click="daiLaDose(dose)"
           />
         </div>
       </div>
       <div
         v-if="item.kind === ESERCIZIO"
-        class="grid grid-cols-4 gap-2 max-md:grid-cols-2"
+        class="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-2"
       >
         <FormControl
           v-model="item.side"
@@ -252,16 +257,17 @@
             size="sm"
             variant="outline"
             icon-left="plus"
-            :label="`${alt.food_name} ${alt.grams} g`"
-            :aria-label="
-              __('Add as an alternative: {0}', [
-                `${alt.food_name} ${alt.grams} g`,
-              ])
-            "
+            class="max-w-full"
             @click="
               item.alternatives = aggiungiAlternativa(item.alternatives, alt)
             "
-          />
+          >
+            <!-- the words a screen reader says: frappe-ui's button keeps no aria-label of ours -->
+            <span class="sr-only">{{ __('Add as an alternative:') }}</span>
+            <span class="truncate">{{
+              `${alt.food_name} ${alt.grams} g`
+            }}</span>
+          </Button>
         </div>
       </div>
       <div
@@ -336,11 +342,16 @@ const weekly = [
 // which side: both when nothing is said
 const sides = [
   { label: __('Both sides'), value: '' },
-  ...Object.entries(LATI).map(([value, label]) => ({
-    label: __(label),
-    value,
-  })),
+  { label: __('Each side'), value: 'Each side' },
+  { label: __('Left side'), value: 'Left' },
+  { label: __('Right side'), value: 'Right' },
 ]
+
+// a dose is one tap, written into the row the plan holds (never a copy of it:
+// the plan's row would be left behind, and the dose lost at saving)
+function daiLaDose(dose) {
+  Object.assign(item.value, conLaDose(item.value, dose))
+}
 
 // a dose is one tap; the one given lights up
 function eLaDose(dose) {
@@ -425,6 +436,7 @@ const riassunto = computed(() => {
     if (voce.duration) parti.push(voce.duration)
     if (voce.rest) parti.push(__('rest {0}', [voce.rest]))
     if (voce.load) parti.push(voce.load)
+    if (LATI[voce.side]) parti.push(__(LATI[voce.side]))
   }
   if (voce.alternatives) parti.push(__('Or instead: {0}', [voce.alternatives]))
   const volte = Number(voce.times_per_week)

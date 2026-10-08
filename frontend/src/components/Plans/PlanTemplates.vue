@@ -46,13 +46,30 @@
             }}
           </span>
         </button>
+        <!-- removed after a second word: a template is lost for the whole centre -->
+        <template v-if="template.mine && daTogliere === template.name">
+          <Button
+            size="sm"
+            :label="__('Cancel')"
+            class="shrink-0"
+            @click="daTogliere = ''"
+          />
+          <Button
+            size="sm"
+            theme="red"
+            variant="subtle"
+            :label="__('Remove')"
+            class="shrink-0"
+            @click="remove(template)"
+          />
+        </template>
         <Button
-          v-if="template.mine"
+          v-else-if="template.mine"
           variant="ghost"
           icon="trash-2"
           class="touch-target shrink-0"
           :aria-label="__('Remove the template {0}', [template.title])"
-          @click="remove(template)"
+          @click="daTogliere = template.name"
         />
       </li>
     </ul>
@@ -74,6 +91,8 @@ const templates = createResource({
   auto: true,
 })
 const busy = ref(false)
+// the template whose removal waits for its second word
+const daTogliere = ref('')
 
 async function use(template) {
   busy.value = true
@@ -98,6 +117,7 @@ async function use(template) {
 }
 
 async function remove(template) {
+  daTogliere.value = ''
   try {
     await call('crm.piani.modelli.delete_template', { name: template.name })
     templates.reload()

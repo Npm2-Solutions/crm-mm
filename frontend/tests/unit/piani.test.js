@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  faticaDetta,
+  inOrdineDiGiorno,
+  numeroDelleTabelle,
   aggiungiAlternativa,
   alternativeEquivalenti,
   aspettoDelCibo,
@@ -589,5 +592,43 @@ describe('an exercise’s dose', () => {
         side: 'Each side',
       }),
     ).toBe('Affondo · 3 × 10 · each side')
+  })
+})
+
+describe('a week as it is read', () => {
+  it('puts every day first, then Monday to Sunday, each by its time', () => {
+    const m = (key, day, time) => ({ key, day, time })
+    const ordinati = inOrdineDiGiorno([
+      m('pranzo-mar', 'Tuesday', '13:00'),
+      m('cena', 'Every day', '20:00'),
+      m('pranzo-lun', 'Monday', '13:00'),
+      m('colazione', 'Every day', '07:30'),
+      m('nota-lun', 'Monday', ''),
+      m('colazione-lun', 'Monday', '08:00'),
+    ])
+    expect(ordinati.map((x) => x.key)).toEqual([
+      'colazione',
+      'cena',
+      'colazione-lun',
+      'pranzo-lun',
+      'nota-lun',
+      'pranzo-mar',
+    ])
+  })
+  it('writes the tables’ numbers as the reader does', () => {
+    expect(numeroDelleTabelle(87.6)).toBe('87,6')
+    expect(numeroDelleTabelle(1800)).toBe('1800')
+    expect(numeroDelleTabelle(14.75, 'en-GB')).toBe('14.8')
+  })
+})
+
+describe('the effort the person said', () => {
+  it('is the same as the server counts it', () => {
+    expect(faticaDetta([0, 4, null, 7, 6])).toEqual({
+      average: 5.7,
+      last: 6,
+      said: 3,
+    })
+    expect(faticaDetta([0, null, 11])).toBe(null)
   })
 })

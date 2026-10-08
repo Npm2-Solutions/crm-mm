@@ -34,6 +34,7 @@
               v-model="form.kcal"
               type="number"
               :label="__('kcal per 100 g')"
+              :required="true"
             />
           </div>
           <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
@@ -78,7 +79,9 @@
         <Button
           variant="solid"
           :label="__('Add to the library')"
-          :disabled="!form.name.trim()"
+          :disabled="
+            !form.name.trim() || (kind === 'food' && !(Number(form.kcal) > 0))
+          "
           :loading="form.busy"
           @click="add"
         />

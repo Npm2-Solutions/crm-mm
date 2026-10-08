@@ -311,6 +311,11 @@ class LeLibrerie(PianiCase):
 		with self.assertRaises(frappe.PermissionError):
 			piani_clinica.add_food("Pane", "Cereals and tubers")
 
+	def test_un_alimento_nuovo_dice_la_sua_energia(self):
+		self.come(DOC1)
+		with self.assertRaises(frappe.ValidationError):
+			piani_clinica.add_food("Pane senza numeri", "Cereals and tubers")
+
 
 class LaSpesa(PianiCase):
 	def test_la_lista_di_una_settimana_da_dare_al_paziente(self):

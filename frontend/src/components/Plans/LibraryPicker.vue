@@ -54,6 +54,8 @@
 
 <script setup>
 import LibraryAddDialog from '@/components/Plans/LibraryAddDialog.vue'
+import { appLocale } from '@/utils/locale'
+import { numeroDelleTabelle } from '@/utils/piani'
 import { Combobox, createResource, debounce } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
@@ -84,8 +86,14 @@ const search = debounce((text) => {
 function describe(row) {
   if (props.kind === 'food') {
     const parts = [__(row.food_group)]
-    if (row.portion_g) parts.push(__('portion {0} g', [row.portion_g]))
-    if (row.kcal) parts.push(__('{0} kcal/100 g', [row.kcal]))
+    if (row.portion_g)
+      parts.push(
+        __('portion {0} g', [numeroDelleTabelle(row.portion_g, appLocale())]),
+      )
+    if (row.kcal)
+      parts.push(
+        __('{0} kcal/100 g', [numeroDelleTabelle(row.kcal, appLocale())]),
+      )
     // where the numbers come from: a table, or the centre
     if (row.source && row.source !== 'Centre') parts.push(row.source)
     return parts.join(' · ')

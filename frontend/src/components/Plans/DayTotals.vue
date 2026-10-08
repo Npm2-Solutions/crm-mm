@@ -67,6 +67,7 @@
         <span class="tabular-nums text-ink-gray-8">
           {{ QUOTE[quota.key](quota.share) }}
         </span>
+        <template v-if="quota.within === false">{{ ' ' }}</template>
         <span v-if="quota.within === false">
           {{ __('(LARN {0}–{1}%)', [quota.min, quota.max]) }}
         </span>

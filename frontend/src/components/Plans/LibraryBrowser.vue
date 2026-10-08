@@ -67,11 +67,11 @@
               class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-p-sm"
             >
               <template v-if="detail.primary_muscles">
-                <dt class="text-ink-gray-5">{{ __('Muscles') }}</dt>
+                <dt class="text-ink-gray-5">{{ __('Main muscles') }}</dt>
                 <dd class="text-ink-gray-8">{{ detail.primary_muscles }}</dd>
               </template>
               <template v-if="detail.secondary_muscles">
-                <dt class="text-ink-gray-5">{{ __('Also') }}</dt>
+                <dt class="text-ink-gray-5">{{ __('Secondary muscles') }}</dt>
                 <dd class="text-ink-gray-8">{{ detail.secondary_muscles }}</dd>
               </template>
             </dl>
@@ -319,6 +319,8 @@
 <script setup>
 import FoodMark from '@/components/Plans/FoodMark.vue'
 import LibraryAddDialog from '@/components/Plans/LibraryAddDialog.vue'
+import { appLocale } from '@/utils/locale'
+import { numeroDelleTabelle } from '@/utils/piani'
 import { tastiera } from '@/utils/tastiera'
 import {
   Button,
@@ -432,8 +434,14 @@ function name(row) {
 function describe(row) {
   if (props.kind === 'food') {
     const parts = [__(row.food_group)]
-    if (row.kcal) parts.push(__('{0} kcal/100 g', [row.kcal]))
-    if (row.portion_g) parts.push(__('portion {0} g', [row.portion_g]))
+    if (row.kcal)
+      parts.push(
+        __('{0} kcal/100 g', [numeroDelleTabelle(row.kcal, appLocale())]),
+      )
+    if (row.portion_g)
+      parts.push(
+        __('portion {0} g', [numeroDelleTabelle(row.portion_g, appLocale())]),
+      )
     return parts.join(' · ')
   }
   return [
@@ -488,6 +496,9 @@ function toggle(row, fromDetail = false) {
 function added(row) {
   // what was added goes in with the others chosen
   rows.value = [row, ...rows.value]
+  // the count says it too: «1 of 0» read as a broken list
+  if (data.value)
+    data.value = { ...data.value, total: (data.value.total || 0) + 1 }
   toggle(row)
 }
 

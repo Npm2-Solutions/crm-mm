@@ -231,6 +231,9 @@ def add_food(
 	"""A food of the centre, when the library has not got it: its values for 100 g
 	from a table, whose name goes with it."""
 	livelli.verifica("piani.scrivi")
+	# a food without its energy counts nothing in a diet: the library leaves one out too
+	if not flt(kcal) > 0:
+		frappe.throw(_("A food needs its kcal for 100 g"))
 	valori = {"kcal": kcal, "protein_g": protein_g, "carbs_g": carbs_g, "fat_g": fat_g, "fibre_g": fibre_g}
 	doc = frappe.get_doc(
 		{

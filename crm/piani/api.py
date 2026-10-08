@@ -419,6 +419,20 @@ def get_plan(name: str) -> dict:
 		and doc.plan_type in tipi_consentiti()
 		and not doc.replaced_by
 		and not frappe.db.exists(PIANO, {"replaces": doc.name, "status": BOZZA}),
+		# what publishing this draft closes: the person's plan of the same kind
+		# followed now, said before it happens
+		"closes_on_publish": frappe.get_all(
+			PIANO,
+			filters={
+				"lead": doc.lead,
+				"plan_type": doc.plan_type,
+				"status": PUBBLICATO,
+				"name": ("!=", doc.name),
+			},
+			fields=["name", "title"],
+		)
+		if doc.status == BOZZA
+		else [],
 		"programme": doc.get("programme"),
 		"programme_title": frappe.db.get_value("CRM Programme", doc.programme, "title")
 		if doc.get("programme")

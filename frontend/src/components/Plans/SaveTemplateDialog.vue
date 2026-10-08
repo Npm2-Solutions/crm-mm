@@ -21,6 +21,10 @@
           }}
         </p>
         <FormControl v-model="title" :label="__('Title')" />
+        <!-- one's own template of the same title is written again, not doubled -->
+        <p v-if="esistente" class="text-p-sm text-ink-gray-7">
+          {{ __('It replaces your template «{0}».', [esistente.title]) }}
+        </p>
         <label class="flex items-center gap-2">
           <Checkbox v-model="shared" class="touch-target shrink-0" />
           <span class="text-base text-ink-gray-8">
@@ -55,7 +59,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   // the editor's content, as save_plan takes it
@@ -70,12 +74,42 @@ const shared = ref(false)
 const busy = ref(false)
 const error = ref('')
 
-watch(show, (aperto) => {
-  if (!aperto) return
-  title.value = props.suggestedTitle
-  shared.value = false
-  error.value = ''
+// one's own templates of this kind: the same title writes one of them again
+const miei = ref([])
+const esistente = computed(() =>
+  miei.value.find((m) => m.title === title.value.trim()),
+)
+// a template written again keeps whether the centre shares it, unless changed
+watch(esistente, (m) => {
+  if (m) shared.value = Boolean(m.shared)
 })
+
+// filled at every opening, the first one too: the dialog is mounted open
+watch(
+  show,
+  async (aperto) => {
+    if (!aperto) return
+    title.value = props.suggestedTitle
+    shared.value = false
+    error.value = ''
+    miei.value = []
+    let tipo
+    try {
+      tipo = JSON.parse(props.data).plan_type
+    } catch {
+      return
+    }
+    try {
+      const modelli = await call('crm.piani.modelli.get_templates', {
+        plan_type: tipo,
+      })
+      miei.value = (modelli || []).filter((m) => m.mine)
+    } catch {
+      miei.value = []
+    }
+  },
+  { immediate: true },
+)
 
 async function save() {
   busy.value = true
