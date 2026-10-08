@@ -218,6 +218,7 @@
                   aria-hidden="true"
                 />
               </span>
+              <FoodMark v-else :food="row" size="lg" />
               <span class="flex min-w-0 flex-1 flex-col gap-0.5 p-2.5">
                 <span
                   class="line-clamp-2 text-p-sm font-medium text-ink-gray-8"
@@ -316,6 +317,7 @@
 </template>
 
 <script setup>
+import FoodMark from '@/components/Plans/FoodMark.vue'
 import LibraryAddDialog from '@/components/Plans/LibraryAddDialog.vue'
 import { tastiera } from '@/utils/tastiera'
 import {

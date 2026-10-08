@@ -60,12 +60,25 @@
         </span>
       </div>
     </div>
+    <!-- where the energy comes from; a share out of LARN's range says the range -->
+    <p v-if="quote.length" class="text-p-xs text-ink-gray-6">
+      {{ __('Energy from') }}
+      <template v-for="(quota, i) in quote" :key="quota.key">
+        <span class="tabular-nums text-ink-gray-8">
+          {{ QUOTE[quota.key](quota.share) }}
+        </span>
+        <span v-if="quota.within === false">
+          {{ __('(LARN {0}–{1}%)', [quota.min, quota.max]) }}
+        </span>
+        <template v-if="i < quote.length - 1"> · </template>
+      </template>
+    </p>
   </div>
 </template>
 
 <script setup>
 import { appLocale } from '@/utils/locale'
-import { versoGliObiettivi } from '@/utils/piani'
+import { ripartizioneEnergia, versoGliObiettivi } from '@/utils/piani'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -75,6 +88,13 @@ const props = defineProps({
   // whose day: «Monday», «Every day»
   title: { type: String, default: '' },
 })
+
+const QUOTE = {
+  protein_g: (n) => __('proteins {0}%', [n]),
+  carbs_g: (n) => __('carbohydrates {0}%', [n]),
+  fat_g: (n) => __('fats {0}%', [n]),
+}
+const quote = computed(() => ripartizioneEnergia(props.totals))
 
 const NOMI = {
   protein_g: __('Proteins'),

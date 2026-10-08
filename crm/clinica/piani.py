@@ -66,6 +66,8 @@ def _cibo_per_l_autore(voce: dict, cibo: dict | None) -> dict:
 def _cibo_per_il_paziente(voce: dict, piano, contesto: dict) -> dict:
 	riga = {
 		"food_name": voce.get("food_name"),
+		# its group: the food's mark, and the kitchen's measure of its grams
+		"food_group": (voce.get("food_detail") or {}).get("food_group"),
 		"quantity_g": voce.get("quantity_g"),
 		"alternatives": voce.get("alternatives"),
 	}

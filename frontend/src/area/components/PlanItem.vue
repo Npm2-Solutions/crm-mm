@@ -15,6 +15,11 @@
         loading="lazy"
         @error="nonCaricata = true"
       />
+      <FoodMark
+        v-else-if="item.kind === 'Food' || item.kind === 'Food group'"
+        :food="item"
+        size="md"
+      />
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         <p class="text-[16px] font-semibold leading-snug text-ink-gray-9">
           {{ describe(item) }}
@@ -88,6 +93,40 @@
       </button>
     </div>
 
+    <!-- an exercise done: how hard or how painful it was, one tap; tapped again
+         it is taken back. The practitioner reads it beside the plan -->
+    <fieldset
+      v-if="
+        canLog &&
+        item.kind === 'Exercise' &&
+        (item.outcome === 'Done' || item.outcome === 'Partly')
+      "
+      class="flex flex-col gap-1.5"
+    >
+      <legend class="mb-1.5 text-p-sm text-ink-gray-7">
+        {{ __('How hard or painful was it?') }}
+      </legend>
+      <div class="area-scala">
+        <button
+          v-for="n in 10"
+          :key="n"
+          type="button"
+          class="area-answer area-scala__punto touch-target"
+          :class="{ 'is-scelto': item.effort === n }"
+          :aria-pressed="item.effort === n"
+          :aria-label="__('{0} out of 10', [n])"
+          :disabled="busy"
+          @click="$emit('effort', item.effort === n ? 0 : n)"
+        >
+          {{ n }}
+        </button>
+      </div>
+      <div class="flex justify-between text-p-xs text-ink-gray-6">
+        <span>{{ __('1 hardly') }}</span>
+        <span>{{ __('10 very much') }}</span>
+      </div>
+    </fieldset>
+
     <!-- an exchange diet: the patient chooses, a portion each -->
     <details v-if="item.choices?.length" class="text-p-sm text-ink-gray-7">
       <summary class="area-link cursor-pointer">
@@ -143,6 +182,7 @@
 </template>
 
 <script setup>
+import FoodMark from '@/components/Plans/FoodMark.vue'
 import { descrivi } from '@/utils/piani'
 import { ref } from 'vue'
 import LucideCheck from '~icons/lucide/check'
@@ -152,7 +192,7 @@ defineProps({
   canLog: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
 })
-defineEmits(['log'])
+defineEmits(['log', 'effort'])
 
 // the exercise's picture did not load: its place is left to the words
 const nonCaricata = ref(false)

@@ -295,6 +295,8 @@ def _riga(doc, andamento: list | None = None) -> dict:
 		"clinical": cint(doc.get("clinical")),
 		# how the last days went, counted: not a score
 		"summary": R.riepilogo([r.outcome for r in andamento or []]),
+		# how hard or painful the exercises felt, as the person said it this week
+		"effort": R.fatica([r.effort for r in andamento or []]),
 	}
 
 
@@ -773,6 +775,7 @@ def _esercizio_per_la_persona(voce: dict, piano, contesto: dict) -> dict:
 		"duration": voce.get("duration"),
 		"rest": voce.get("rest"),
 		"load": voce.get("load"),
+		"side": voce.get("side"),
 		"instructions": esercizio.get("instructions"),
 		"image": immagine,
 		"video_url": esercizio.get("video_url"),

@@ -103,9 +103,11 @@ export function descrivi(voce, t = (s, a) => format(s, a)) {
   const aSettimana = volte ? ' · ' + t('{0} times a week', [volte]) : ''
   if (voce.kind === CIBO) {
     const grammi = numero(voce.quantity_g)
+    const misura = grammi ? misuraCasalinga(voce, grammi, t) : ''
     return (
       (voce.food_name || t('Food')) +
       (grammi ? ` · ${grammi} g` : '') +
+      (misura ? ` (${misura})` : '') +
       aSettimana
     )
   }
@@ -125,6 +127,7 @@ export function descrivi(voce, t = (s, a) => format(s, a)) {
     else if (serie) parti.push(t('{0} sets', [serie]))
     if (voce.duration) parti.push(voce.duration)
     if (voce.load) parti.push(voce.load)
+    if (LATI[voce.side]) parti.push(t(LATI[voce.side]))
     if (voce.rest) parti.push(t('rest {0}', [voce.rest]))
     return parti.join(' · ') + aSettimana
   }
@@ -431,4 +434,278 @@ export function versoGliObiettivi(totale, obiettivi) {
       left: mezzoSu(obiettivo - fatto, nome === 'kcal' ? 0 : 1),
     }
   })
+}
+
+// ------------------------------------------------------------------ how a food looks
+
+/** Each group's mark and the category colour it is drawn in. */
+export const ASPETTO_DEI_GRUPPI = {
+  'Cereals and tubers': { icona: 'lucide-wheat', colore: 'amber' },
+  Legumes: { icona: 'lucide-bean', colore: 'green' },
+  Meat: { icona: 'lucide-beef', colore: 'rose' },
+  Fish: { icona: 'lucide-fish', colore: 'blue' },
+  Eggs: { icona: 'lucide-egg', colore: 'amber' },
+  'Milk and dairy': { icona: 'lucide-milk', colore: 'blue' },
+  Vegetables: { icona: 'lucide-carrot', colore: 'green' },
+  Fruit: { icona: 'lucide-apple', colore: 'rose' },
+  'Oils and fats': { icona: 'lucide-droplet', colore: 'amber' },
+  'Nuts and seeds': { icona: 'lucide-nut', colore: 'amber' },
+  Sweets: { icona: 'lucide-candy', colore: 'rose' },
+  Drinks: { icona: 'lucide-cup-soda', colore: 'blue' },
+  Other: { icona: 'lucide-utensils', colore: 'violet' },
+}
+
+// what a food's name says it is, in Italian and in English, before its group:
+// the first that matches the start of a word
+const ICONE_PER_NOME = [
+  [/\b(acqua|water)\b/, 'lucide-glass-water'],
+  [/\b(caff[eè]|coffee|espresso|cappuccino)/, 'lucide-coffee'],
+  [/\b(vin[oi]|wine)\b/, 'lucide-wine'],
+  [/\b(birr[ae]|beer)\b/, 'lucide-beer'],
+  [/\b(gelat[oi]|sorbett|ice cream|sorbet)/, 'lucide-ice-cream-cone'],
+  [/\b(tort[ae]|crostat|cake|tart\b)/, 'lucide-cake-slice'],
+  [/\b(ciambell|krapfen|donut|doughnut)/, 'lucide-donut'],
+  [/\b(cornett|brioche|croissant)/, 'lucide-croissant'],
+  [/\b(biscott|frollin|cookie|biscuit)/, 'lucide-cookie'],
+  [/\b(caramell|lecca|lollipop|sweet candy)/, 'lucide-lollipop'],
+  [/\b(pizz[ae])\b/, 'lucide-pizza'],
+  [/\b(hamburger|burger)/, 'lucide-hamburger'],
+  [/\b(panin[oi]|tramezzin|sandwich)/, 'lucide-sandwich'],
+  [/\b(zupp|minestr|vellutat|brodo|soup|broth)/, 'lucide-soup'],
+  [/\b(popcorn)/, 'lucide-popcorn'],
+  [/\b(prosciutt|salam|mortadell|speck|bresaola|ham\b|salami)/, 'lucide-ham'],
+  [/\b(poll[oi]|tacchin|chicken|turkey)/, 'lucide-drumstick'],
+  [
+    /\b(cozz|vongol|gamber|scamp|calamar|totan|polp[oi]|seppi|mussel|clam|shrimp|prawn|squid|octopus|oyster|ostric)/,
+    'lucide-shell',
+  ],
+  [/\b(insalat|lattug|rucol|salad|lettuce)/, 'lucide-salad'],
+  [
+    /\b(spinac|biet[ae]|bietol|cavol|broccol|verz|cicori|kale|spinach|chard|cabbage)/,
+    'lucide-leafy-green',
+  ],
+  [/\b(banan)/, 'lucide-banana'],
+  [/\b(ciliegi|amaren|cherr)/, 'lucide-cherry'],
+  [
+    /\b(arance?|aranci[ae]|limon|mandarin|clementin|pompelm|orange|lemon|grapefruit)/,
+    'lucide-citrus',
+  ],
+  [/\b(uva|uvett|grape|raisin)/, 'lucide-grape'],
+  [/\b(uov[oa]|egg)/, 'lucide-egg'],
+  [/\b(latte|milk)\b/, 'lucide-milk'],
+]
+
+/** A food's mark and colour: by what its name says, else by its group. */
+export function aspettoDelCibo(cibo) {
+  const gruppo =
+    ASPETTO_DEI_GRUPPI[cibo?.food_group] || ASPETTO_DEI_GRUPPI.Other
+  const nome = (cibo?.food_name || '').toLowerCase()
+  const trovata = ICONE_PER_NOME.find(([parola]) => parola.test(nome))
+  return { icona: trovata ? trovata[1] : gruppo.icona, colore: gruppo.colore }
+}
+
+// ------------------------------------------------------------------ household measures
+
+// the measures an Italian kitchen weighs by (CREA's and SINU's portions), first
+// by what the name says, then by the group; a food with none is weighed
+const MISURE_PER_NOME = [
+  [/\b(fett[ae] biscottat|rusk)/, 10, ['{0} rusk', '{0} rusks']],
+  [/\b(biscott|frollin|cookie|biscuit)/, 10, ['{0} biscuit', '{0} biscuits']],
+  [/\b(pane|bread)\b/, 50, ['{0} slice', '{0} slices']],
+  [/\b(uov[oa]|egg)/, 60, ['{0} egg', '{0} eggs']],
+  [/\b(yogurt|yoghurt)/, 125, ['{0} jar', '{0} jars']],
+  [
+    /\b(zucchero|sugar|miele|honey|marmellat|confettur|jam)\b/,
+    5,
+    ['{0} teaspoon', '{0} teaspoons'],
+  ],
+  [/\b(grattugiat|grated)/, 10, ['{0} tablespoon', '{0} tablespoons']],
+  [/\b(latte|milk|succo|juice)\b/, 125, ['{0} glass', '{0} glasses']],
+  [
+    /\b(fragol|mirtill|lampon|ribes|more|frutti di bosco|ciliegi|uva|strawberr|blueberr|raspberr|currant|cherr|grape)/,
+    null,
+  ],
+]
+const MISURE_PER_GRUPPO = {
+  'Oils and fats': [10, ['{0} tablespoon', '{0} tablespoons']],
+  'Nuts and seeds': [30, ['{0} handful', '{0} handfuls']],
+  Fruit: [150, ['{0} medium fruit', '{0} medium fruits']],
+}
+
+// halves as a cook writes them
+function mezzi(n) {
+  const intero = Math.floor(n)
+  const mezzo = n - intero >= 0.5
+  if (!mezzo) return String(intero)
+  return intero ? `${intero}½` : '½'
+}
+
+/**
+ * The grams of a food as a kitchen measures them («1 tablespoon», «1½ slices»),
+ * when they are near one (within 15%, in halves up to ten); '' otherwise.
+ */
+export function misuraCasalinga(cibo, grammi, t = (s, a) => format(s, a)) {
+  const g = Number(grammi)
+  if (!(g > 0)) return ''
+  const nome = (cibo?.food_name || '').toLowerCase()
+  const perNome = MISURE_PER_NOME.find(([parola]) => parola.test(nome))
+  const misura = perNome
+    ? perNome[1] && [perNome[1], perNome[2]]
+    : MISURE_PER_GRUPPO[cibo?.food_group]
+  if (!misura) return ''
+  const [unita, [una, tante]] = misura
+  const n = Math.round((g / unita) * 2) / 2
+  if (n < 0.5 || n > 10) return ''
+  if (Math.abs(n * unita - g) / g > 0.15) return ''
+  return t(n > 1 ? tante : una, [mezzi(n)])
+}
+
+// ------------------------------------------------------------------ the same, another food
+
+/**
+ * A food's name to the first comma, without what is in brackets: «Pera,
+ * cruda» is a pear, «Latte intero (alimento medio)» whole milk.
+ */
+export function nomeBreve(nome) {
+  return (nome || '')
+    .split(',')[0]
+    .replace(/\s*\([^)]*\)/g, '')
+    .trim()
+}
+
+/** The grams of ``cibo`` that give ``kcal``, to 5 g; null without its energy. */
+export function grammiEquivalenti(kcal, cibo) {
+  const perCento = Number(cibo?.kcal)
+  if (!(perCento > 0) || !(Number(kcal) > 0)) return null
+  return Math.max(5, Math.round((kcal * 100) / perCento / 5) * 5)
+}
+
+// where a food's energy comes from, as three shares: what makes two foods alike
+function profilo(cibo) {
+  const e = Object.entries(KCAL_PER_GRAMMO).map(
+    ([chiave, k]) => (Number(cibo?.[chiave]) || 0) * k,
+  )
+  const somma = e.reduce((s, x) => s + x, 0)
+  return somma > 0 ? e.map((x) => x / somma) : null
+}
+
+function distanza(a, b) {
+  if (!a || !b) return 1
+  return a.reduce((s, x, i) => s + Math.abs(x - b[i]), 0)
+}
+
+// a food's kind: the first word of its name («Olio», «Burro», «Pera»)
+function genereDelNome(nome) {
+  return nomeBreve(nome).split(/\s+/)[0].toLowerCase()
+}
+
+/**
+ * Foods of the same group that give what ``voce`` gives, each with its grams:
+ * the alternatives a diet offers («Pera 160 g»), the most alike first (where
+ * their energy comes from), one of each kind, the food itself left out.
+ */
+export function alternativeEquivalenti(voce, cibi, quante = 6) {
+  const dettaglio = voce?.food_detail || {}
+  const kcal = (Number(dettaglio.kcal) * Number(voce?.quantity_g)) / 100
+  if (!(kcal > 0)) return []
+  const suo = profilo(dettaglio)
+  const proprio = nomeBreve(dettaglio.food_name || voce.food_name)
+  const ordinati = (cibi || [])
+    .map((cibo, i) => ({ cibo, i, d: distanza(suo, profilo(cibo)) }))
+    // alike first; as alike, in the order the library gave them (the used first)
+    .sort((a, b) => Math.round((a.d - b.d) * 100) || a.i - b.i)
+  const generi = new Set()
+  const fuori = []
+  for (const { cibo } of ordinati) {
+    if (cibo.name === voce.food) continue
+    const nome = nomeBreve(cibo.food_name)
+    const genere = genereDelNome(cibo.food_name)
+    if (!nome || nome === proprio || generi.has(genere)) continue
+    const grammi = grammiEquivalenti(kcal, cibo)
+    if (!grammi) continue
+    generi.add(genere)
+    fuori.push({ name: cibo.name, food_name: nome, grams: grammi })
+    if (fuori.length >= quante) break
+  }
+  return fuori
+}
+
+/** Alternatives written in one line, after what was there. */
+export function aggiungiAlternativa(scritte, alternativa) {
+  const parola = `${alternativa.food_name} ${alternativa.grams} g`
+  const prima = (scritte || '').trim()
+  if (!prima) return parola
+  if (prima.includes(parola)) return prima
+  return `${prima}; ${parola}`
+}
+
+// ------------------------------------------------------------------ where the energy comes from
+
+/** Kilocalories in a gram (Atwater): what the shares are counted on. */
+export const KCAL_PER_GRAMMO = { protein_g: 4, carbs_g: 4, fat_g: 9 }
+/**
+ * The adult's reference intake ranges (LARN 2014, RI), as a share of the
+ * energy; proteins have none there, they are given in grams per kilo.
+ */
+export const INTERVALLI_LARN = {
+  carbs_g: [45, 60],
+  fat_g: [20, 35],
+}
+
+/**
+ * Where a day's energy comes from: each macronutrient's share in whole
+ * percents, and whether it is within LARN's range; [] when nothing counts.
+ */
+export function ripartizioneEnergia(totale) {
+  const energie = Object.entries(KCAL_PER_GRAMMO).map(([chiave, k]) => [
+    chiave,
+    (Number(totale?.[chiave]) || 0) * k,
+  ])
+  const somma = energie.reduce((s, [, e]) => s + e, 0)
+  if (!(somma > 0)) return []
+  return energie.map(([chiave, e]) => {
+    const share = Math.round((e / somma) * 100)
+    const [min, max] = INTERVALLI_LARN[chiave] || [null, null]
+    return {
+      key: chiave,
+      share,
+      min,
+      max,
+      within: min === null ? null : share >= min && share <= max,
+    }
+  })
+}
+
+// ------------------------------------------------------------------ an exercise's dose
+
+/** Which side an exercise is done on, in the words its row says. */
+export const LATI = {
+  'Each side': 'each side',
+  Left: 'left side',
+  Right: 'right side',
+}
+
+/** The doses a physiotherapist gives most, one tap each. */
+export const DOSI = [
+  { sets: 3, reps: '10' },
+  { sets: 3, reps: '12' },
+  { sets: 3, reps: '15' },
+  { sets: 2, reps: '20' },
+  { sets: 3, duration: '30 s' },
+  { sets: 1, duration: '60 s' },
+]
+
+/** A dose as its chip reads it: «3 × 10», «3 × 30 s». */
+export function testoDellaDose(dose) {
+  return `${dose.sets} × ${dose.reps || dose.duration}`
+}
+
+/** The dose given to an item: sets with reps, or sets held for a time. */
+export function conLaDose(voce, dose) {
+  return {
+    ...voce,
+    sets: dose.sets,
+    reps: dose.reps || '',
+    duration: dose.duration || '',
+  }
 }

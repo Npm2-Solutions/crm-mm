@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  aggiungiAlternativa,
+  alternativeEquivalenti,
+  aspettoDelCibo,
+  conLaDose,
+  grammiEquivalenti,
+  misuraCasalinga,
+  nomeBreve,
+  ripartizioneEnergia,
+  testoDellaDose,
+  DOSI,
   chiLoScrive,
   copiaGiorno,
   copiaMomento,
@@ -406,5 +416,178 @@ describe('the week', () => {
     // over the target: the bar full, what is over said as a negative left
     expect(proteine).toMatchObject({ share: 1, left: -10 })
     expect(carboidrati).toMatchObject({ target: null, share: null })
+  })
+})
+
+describe('how a food looks', () => {
+  it('takes its mark from its name, else from its group', () => {
+    expect(
+      aspettoDelCibo({ food_name: 'Banana, polpa', food_group: 'Fruit' }),
+    ).toEqual({ icona: 'lucide-banana', colore: 'rose' })
+    expect(
+      aspettoDelCibo({ food_name: 'Petto di pollo', food_group: 'Meat' }),
+    ).toEqual({ icona: 'lucide-drumstick', colore: 'rose' })
+    // «mela» is not the start of «melanzana»
+    expect(
+      aspettoDelCibo({
+        food_name: 'Melanzana, cotta',
+        food_group: 'Vegetables',
+      }).icona,
+    ).toBe('lucide-carrot')
+    expect(
+      aspettoDelCibo({ food_name: 'Acqua minerale', food_group: 'Drinks' })
+        .icona,
+    ).toBe('lucide-glass-water')
+    expect(
+      aspettoDelCibo({ food_name: 'Cosa', food_group: 'Unknown' }),
+    ).toEqual({ icona: 'lucide-utensils', colore: 'violet' })
+  })
+})
+
+describe('a household measure', () => {
+  const olio = {
+    food_name: 'Olio extravergine di oliva',
+    food_group: 'Oils and fats',
+  }
+  it('says the grams as a kitchen measures them, in halves', () => {
+    expect(misuraCasalinga(olio, 10)).toBe('1 tablespoon')
+    expect(misuraCasalinga(olio, 20)).toBe('2 tablespoons')
+    expect(misuraCasalinga({ food_name: 'Pane comune' }, 80)).toBe('1½ slices')
+    expect(misuraCasalinga({ food_name: 'Pane comune' }, 25)).toBe('½ slice')
+    expect(misuraCasalinga({ food_name: 'Uovo intero' }, 120)).toBe('2 eggs')
+    expect(
+      misuraCasalinga({ food_name: 'Mela', food_group: 'Fruit' }, 150),
+    ).toBe('1 medium fruit')
+  })
+  it('says nothing far from a measure, or for what is weighed', () => {
+    expect(misuraCasalinga(olio, 7)).toBe('')
+    expect(
+      misuraCasalinga({ food_name: 'Fragole', food_group: 'Fruit' }, 150),
+    ).toBe('')
+    expect(
+      misuraCasalinga(
+        { food_name: 'Pasta di semola', food_group: 'Cereals and tubers' },
+        80,
+      ),
+    ).toBe('')
+    expect(misuraCasalinga(olio, 0)).toBe('')
+  })
+  it('is said in the patient’s line', () => {
+    expect(
+      descrivi({
+        kind: CIBO,
+        food_name: 'Olio extravergine',
+        food_group: 'Oils and fats',
+        quantity_g: 10,
+      }),
+    ).toBe('Olio extravergine · 10 g (1 tablespoon)')
+  })
+})
+
+describe('the same, another food', () => {
+  const banana = { name: 'b', food_name: 'Banana, cruda', kcal: 89 }
+  const voce = { food: 'b', quantity_g: 150, food_detail: banana }
+  it('gives the grams of the same energy, to 5 g', () => {
+    expect(grammiEquivalenti(133.5, { kcal: 50 })).toBe(265)
+    expect(grammiEquivalenti(100, { kcal: 0 })).toBe(null)
+  })
+  it('offers each food of the group once, never itself', () => {
+    const cibi = [
+      banana,
+      { name: 'p', food_name: 'Pera, cruda', kcal: 58 },
+      { name: 'p2', food_name: 'Pera, cotta', kcal: 60 },
+      { name: 'm', food_name: 'Mela', kcal: 52 },
+      { name: 'x', food_name: 'Senza energia', kcal: 0 },
+    ]
+    expect(alternativeEquivalenti(voce, cibi)).toEqual([
+      { name: 'p', food_name: 'Pera', grams: 230 },
+      { name: 'm', food_name: 'Mela', grams: 255 },
+    ])
+    expect(alternativeEquivalenti({ ...voce, quantity_g: 0 }, cibi)).toEqual([])
+  })
+  it('puts the most alike first, one of each kind', () => {
+    const olio = {
+      name: 'o',
+      food_name: 'Olio extravergine',
+      kcal: 899,
+      fat_g: 99.9,
+    }
+    const cibi = [
+      { name: 'b1', food_name: 'Burro', kcal: 717, fat_g: 81, protein_g: 0.9 },
+      {
+        name: 'b2',
+        food_name: 'Burro light',
+        kcal: 400,
+        fat_g: 40,
+        protein_g: 3,
+      },
+      { name: 'p', food_name: 'Pancetta', kcal: 300, fat_g: 25, protein_g: 18 },
+      { name: 's', food_name: 'Olio di semi', kcal: 900, fat_g: 100 },
+    ]
+    expect(
+      alternativeEquivalenti(
+        { food: 'o', quantity_g: 10, food_detail: olio },
+        cibi,
+      ),
+    ).toEqual([
+      { name: 's', food_name: 'Olio di semi', grams: 10 },
+      { name: 'b1', food_name: 'Burro', grams: 15 },
+      { name: 'p', food_name: 'Pancetta', grams: 30 },
+    ])
+  })
+  it('writes them one after another, once', () => {
+    const pera = { food_name: 'Pera', grams: 230 }
+    expect(aggiungiAlternativa('', pera)).toBe('Pera 230 g')
+    expect(aggiungiAlternativa('Mela 255 g', pera)).toBe(
+      'Mela 255 g; Pera 230 g',
+    )
+    expect(aggiungiAlternativa('Pera 230 g', pera)).toBe('Pera 230 g')
+    expect(nomeBreve('Mandorla, pelata, senza sale')).toBe('Mandorla')
+    expect(nomeBreve('Latte intero (alimento medio)')).toBe('Latte intero')
+  })
+})
+
+describe('where the energy comes from', () => {
+  it('shares the energy of proteins, carbohydrates and fats', () => {
+    const [proteine, carboidrati, grassi] = ripartizioneEnergia({
+      protein_g: 90,
+      carbs_g: 220,
+      fat_g: 60,
+    })
+    expect(proteine).toMatchObject({ share: 20, within: null })
+    expect(carboidrati).toMatchObject({
+      share: 49,
+      min: 45,
+      max: 60,
+      within: true,
+    })
+    expect(grassi).toMatchObject({ share: 30, within: true })
+    expect(ripartizioneEnergia({ fat_g: 50, carbs_g: 10 })[2].within).toBe(
+      false,
+    )
+    expect(ripartizioneEnergia({})).toEqual([])
+  })
+})
+
+describe('an exercise’s dose', () => {
+  it('is one tap: sets with reps, or held for a time', () => {
+    expect(DOSI.map(testoDellaDose)).toContain('3 × 30 s')
+    const voce = { kind: ESERCIZIO, sets: 3, reps: '10', duration: '' }
+    expect(conLaDose(voce, { sets: 1, duration: '60 s' })).toMatchObject({
+      sets: 1,
+      reps: '',
+      duration: '60 s',
+    })
+  })
+  it('says the side in its line', () => {
+    expect(
+      descrivi({
+        kind: ESERCIZIO,
+        exercise_name: 'Affondo',
+        sets: 3,
+        reps: '10',
+        side: 'Each side',
+      }),
+    ).toBe('Affondo · 3 × 10 · each side')
   })
 })

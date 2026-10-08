@@ -11,7 +11,11 @@
     <div class="flex min-w-0 flex-wrap items-center gap-2">
       <!-- a food: the library's name, its grams, what they give -->
       <template v-if="item.kind === CIBO">
-        <div class="min-w-[12rem] flex-1">
+        <FoodMark
+          :food="item.food_detail || { food_name: item.food_name }"
+          size="sm"
+        />
+        <div class="min-w-[10rem] flex-1">
           <LibraryPicker
             v-model="item.food"
             kind="food"
@@ -41,7 +45,8 @@
 
       <!-- the portions of a food group -->
       <template v-else-if="item.kind === GRUPPO">
-        <div class="min-w-[12rem] flex-1">
+        <FoodMark :food="{ food_group: item.food_group }" size="sm" />
+        <div class="min-w-[10rem] flex-1">
           <FormControl
             v-model="item.food_group"
             type="select"
@@ -153,6 +158,14 @@
       </div>
     </div>
 
+    <!-- the grams as a kitchen measures them: what the patient reads too -->
+    <p
+      v-if="item.kind === CIBO && misura"
+      class="pl-10 text-p-xs text-ink-gray-6"
+    >
+      {{ __('About {0}', [misura]) }}
+    </p>
+
     <!-- what is written but folded away, said in a line -->
     <button
       v-if="!open && riassunto"
@@ -164,10 +177,33 @@
     </button>
 
     <div v-if="open" class="flex flex-col gap-2 pt-1">
+      <div v-if="item.kind === ESERCIZIO" class="flex flex-col gap-1.5">
+        <span class="text-p-sm text-ink-gray-6">{{
+          __('Frequent doses')
+        }}</span>
+        <div class="flex flex-wrap gap-1.5">
+          <Button
+            v-for="dose in DOSI"
+            :key="testoDellaDose(dose)"
+            size="sm"
+            :variant="eLaDose(dose) ? 'subtle' : 'outline'"
+            :label="testoDellaDose(dose)"
+            :aria-pressed="eLaDose(dose)"
+            @click="item = conLaDose(item, dose)"
+          />
+        </div>
+      </div>
       <div
         v-if="item.kind === ESERCIZIO"
-        class="grid grid-cols-3 gap-2 max-md:grid-cols-1"
+        class="grid grid-cols-4 gap-2 max-md:grid-cols-2"
       >
+        <FormControl
+          v-model="item.side"
+          type="select"
+          :label="__('Side')"
+          :placeholder="__('Both sides')"
+          :options="sides"
+        />
         <FormControl
           v-model="item.duration"
           :label="__('Duration')"
@@ -190,6 +226,44 @@
         :label="__('Or instead')"
         :placeholder="__('Another food, how much')"
       />
+      <div
+        v-if="item.kind === CIBO && item.food && kcal"
+        class="flex flex-col gap-1.5"
+      >
+        <div class="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            icon-left="refresh-cw"
+            :label="__('Same energy, another food')"
+            :loading="equivalenti.loading"
+            @click="cercaEquivalenti"
+          />
+          <span
+            v-if="equivalenti.fatto && !equivalenti.righe.length"
+            class="text-p-xs text-ink-gray-6"
+          >
+            {{ __('No other food of this group with its values') }}
+          </span>
+        </div>
+        <div v-if="equivalenti.righe.length" class="flex flex-wrap gap-1.5">
+          <Button
+            v-for="alt in equivalenti.righe"
+            :key="alt.name"
+            size="sm"
+            variant="outline"
+            icon-left="plus"
+            :label="`${alt.food_name} ${alt.grams} g`"
+            :aria-label="
+              __('Add as an alternative: {0}', [
+                `${alt.food_name} ${alt.grams} g`,
+              ])
+            "
+            @click="
+              item.alternatives = aggiungiAlternativa(item.alternatives, alt)
+            "
+          />
+        </div>
+      </div>
       <div
         class="grid grid-cols-[minmax(0,1fr)_10rem] gap-2 max-md:grid-cols-1"
       >
@@ -225,18 +299,26 @@
 </template>
 
 <script setup>
+import FoodMark from '@/components/Plans/FoodMark.vue'
 import LibraryBrowser from '@/components/Plans/LibraryBrowser.vue'
 import LibraryPicker from '@/components/Plans/LibraryPicker.vue'
 import {
   CIBO,
+  DOSI,
   ESERCIZIO,
   GRUPPI,
   GRUPPO,
+  LATI,
+  aggiungiAlternativa,
+  alternativeEquivalenti,
+  conLaDose,
   grammiIniziali,
+  misuraCasalinga,
   nutrienti,
+  testoDellaDose,
 } from '@/utils/piani'
-import { Button, FormControl } from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { Button, FormControl, call } from 'frappe-ui'
+import { computed, reactive, ref, watch } from 'vue'
 
 defineEmits(['remove'])
 const item = defineModel({ type: Object, required: true })
@@ -251,6 +333,25 @@ const weekly = [
   })),
 ]
 
+// which side: both when nothing is said
+const sides = [
+  { label: __('Both sides'), value: '' },
+  ...Object.entries(LATI).map(([value, label]) => ({
+    label: __(label),
+    value,
+  })),
+]
+
+// a dose is one tap; the one given lights up
+function eLaDose(dose) {
+  const voce = item.value
+  return (
+    Number(voce.sets) === dose.sets &&
+    (voce.reps || '') === (dose.reps || '') &&
+    (voce.duration || '') === (dose.duration || '')
+  )
+}
+
 // what is folded away opens with a tap
 const open = ref(false)
 
@@ -261,6 +362,35 @@ function pickedFood(row) {
   item.value.food_detail = row
   if (!Number(item.value.quantity_g))
     item.value.quantity_g = grammiIniziali(row)
+}
+
+// the grams in a kitchen's words: «1 tablespoon»
+const misura = computed(() =>
+  misuraCasalinga(
+    item.value.food_detail || item.value,
+    item.value.quantity_g,
+    (testo, argomenti) => __(testo, argomenti),
+  ),
+)
+
+// foods of the same group at the same energy, the most used first
+const equivalenti = reactive({ righe: [], loading: false, fatto: false })
+watch(
+  () => [item.value.food, item.value.quantity_g],
+  () => Object.assign(equivalenti, { righe: [], fatto: false }),
+)
+async function cercaEquivalenti() {
+  const gruppo = item.value.food_detail?.food_group
+  equivalenti.loading = true
+  try {
+    const pagina = await call('crm.clinica.piani.browse_foods', {
+      group: gruppo || null,
+    })
+    equivalenti.righe = alternativeEquivalenti(item.value, pagina.rows || [])
+  } finally {
+    equivalenti.loading = false
+    equivalenti.fatto = true
+  }
 }
 
 const kcal = computed(() => {

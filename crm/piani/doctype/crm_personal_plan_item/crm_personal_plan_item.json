@@ -15,6 +15,7 @@
   "duration",
   "rest",
   "load",
+  "side",
   "column_more",
   "text",
   "times_per_week",
@@ -78,6 +79,13 @@
    "label": "Load"
   },
   {
+   "description": "Empty: both sides, or the exercise has none",
+   "fieldname": "side",
+   "fieldtype": "Select",
+   "label": "Side",
+   "options": "\nEach side\nLeft\nRight"
+  },
+  {
    "fieldname": "column_more",
    "fieldtype": "Column Break"
   },
@@ -99,7 +107,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 19:00:00.000000",
+ "modified": "2026-10-08 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "Piani",
  "name": "CRM Personal Plan Item",
