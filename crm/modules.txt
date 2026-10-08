@@ -12,3 +12,4 @@ Documenti
 Preventivi
 Clienti
 Recensioni
+Pagamenti

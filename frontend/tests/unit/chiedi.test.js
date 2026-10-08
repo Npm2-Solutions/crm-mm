@@ -1,5 +1,6 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // A call asked once: a refusal told by its onError leaves no uncaught rejection.
+import { expect, test, vi } from 'vitest'
 import { chiedi } from '@/utils/chiedi'
 
 const fatte = []

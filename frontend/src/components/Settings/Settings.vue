@@ -427,6 +427,9 @@ const PAGINE = {
   'Payment reminders': aRichiesta(
     () => import('@/components/Settings/Invoicing/PaymentReminders.vue'),
   ),
+  'Online payments': aRichiesta(
+    () => import('@/components/Settings/Invoicing/OnlinePayments.vue'),
+  ),
   'Invoicing defaults': aRichiesta(
     () => import('@/components/Settings/Invoicing/InvoicingDefaults.vue'),
   ),

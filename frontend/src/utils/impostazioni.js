@@ -492,6 +492,15 @@ export const MENU = [
         description:
           'How the clients pay, and the reminders of the invoices still to pay.',
       },
+      // the centre's own Stripe account: invoices paid from the area or a link,
+      // deposits at online booking (doc 60)
+      {
+        key: 'Online payments',
+        label: 'Online payments',
+        description:
+          "Invoices and deposits paid online by card, on the centre's own Stripe account.",
+        condition: puo('pagamenti.gestisci'),
+      },
       // what a centre opens once a year, if ever: the switches over everything,
       // and the register the accountant confirms
       {

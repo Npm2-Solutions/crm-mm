@@ -44,6 +44,7 @@ def carica(*args, **kwargs) -> None:
 		from crm.documenti import registra as registra_documenti
 		from crm.invoicing import registra as registra_fatturazione
 		from crm.moduli import registra as registra_moduli
+		from crm.pagamenti import registra as registra_pagamenti
 		from crm.permissions import catalogo
 		from crm.persone import riepilogo
 		from crm.piani import registra as registra_piani
@@ -74,6 +75,8 @@ def carica(*args, **kwargs) -> None:
 		registra_preventivi()
 		# asking how a visit went: every centre's, with marketing's automations
 		registra_recensioni()
+		# online payments on the centre's own Stripe account: every centre's
+		registra_pagamenti()
 		# the clinic, a vertical: on every site, switched on by the plan; it adds to
 		# the area, so after it
 		registra_clinica()
