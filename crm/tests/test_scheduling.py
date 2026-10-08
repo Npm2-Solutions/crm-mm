@@ -882,6 +882,40 @@ class TestAppointmentApi(SchedulingCase):
 		frappe.db.set_value("CRM Lead", lead.name, "client_since", "2020-01-01")
 		self.assertFalse(marks()[first.name])
 
+	def test_the_calendar_mirror_takes_a_person_with_an_email(self):
+		# booked from /prenota, a person with an email: the event names them by
+		# their record, as the framework's Event Participants wants
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita specchio", [anna])
+		lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Specchio", "email": "specchio@example.com"}
+		).insert(ignore_permissions=True)
+		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		try:
+			appointment = self.make_appointment(
+				"Visita specchio",
+				self.tomorrow(10),
+				[anna],
+				participants=[
+					{
+						"party_type": "CRM Lead",
+						"party": lead.name,
+						"participant_name": "Specchio",
+						"email": "specchio@example.com",
+					},
+				],
+			)
+			appointment.reload()
+			self.assertTrue(appointment.event)
+			righe = frappe.get_all(
+				"Event Participants",
+				filters={"parent": appointment.event},
+				fields=["reference_doctype", "reference_docname"],
+			)
+			self.assertIn({"reference_doctype": "CRM Lead", "reference_docname": lead.name}, righe)
+		finally:
+			frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 0)
+
 	def test_calendar_feed_filters_by_professional(self):
 		anna = self.make_user("anna_sched@example.com")
 		bruno = self.make_user("bruno_sched@example.com")

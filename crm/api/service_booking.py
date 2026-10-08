@@ -772,14 +772,15 @@ def book(
 		appointment.insert(ignore_permissions=True)
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
-	send_client_email(appointment, token, "booked")
+	mandata = send_client_email(appointment, token, "booked")
 	notify_staff(
 		appointment,
 		_("New online booking to approve: missed appointments")
 		if assenze == rules_mod.NO_SHOW_APPROVAL
 		else _("New online booking"),
 	)
-	return public_view(appointment, token)
+	# the page says «we emailed you» only when an email is on its way
+	return {**public_view(appointment, token), "email_sent": mandata}
 
 
 def _marketing_offerto(config) -> dict | None:
@@ -1172,13 +1173,14 @@ def ics_file(uid: str, title: str, start, end, location: str | None, cancelled: 
 	return {"fname": "appuntamento.ics", "fcontent": "\r\n".join(lines)}
 
 
-def send_client_email(appointment, token: str, kind: str) -> None:
-	"""Tell the client what just happened to their booking. Never blocks a booking."""
+def send_client_email(appointment, token: str, kind: str) -> bool:
+	"""Tell the client what just happened to their booking. Never blocks a booking.
+	Whether an email is on its way."""
 	if not _flag(settings(), "send_client_confirmation"):
-		return
+		return False
 	mine = [r for r in appointment.participants if r.access_token == token and r.email]
 	if not mine:
-		return
+		return False
 	try:
 		view = public_view(appointment, token)
 		tz = _tz_or(view["timezone"], scheduling_tz())
@@ -1229,8 +1231,10 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 			reference_doctype="CRM Appointment",
 			reference_name=appointment.name,
 		)
+		return True
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), f"Service booking: {kind} email failed")
+		return False
 
 
 def notify_staff(appointment, subject: str) -> None:

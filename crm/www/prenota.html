@@ -878,7 +878,8 @@
         // opened again from its link (an email, a reminder): no «booking confirmed, we emailed you»
         if (gestione && !kind && S.result !== b) return null;
         const title = kind === "cancelled" ? T("cancelledTitle") : kind === "pending" ? T("pendingTitle") : T("doneTitle");
-        const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : T("doneSub");
+        // «we emailed you» only when an email is on its way (none went: no address, the centre's choice, a failure)
+        const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : b.email_sent === false ? "" : T("doneSub");
         return h("div", { class: "done-hero " + kind }, h("div", { class: "badge", "aria-hidden": "true" }, kind === "cancelled" ? "✕" : kind === "pending" ? "…" : "✓"), h("h2", {}, title), sub ? h("div", { class: "hint" }, sub) : null);
       }
 

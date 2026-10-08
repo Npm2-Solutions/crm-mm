@@ -109,13 +109,16 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
     assigneesCache[doctype][docname || ''] = createResource({
       url: 'crm.api.doc.get_assigned_users',
       cache: `assignees:${doctype}:${docname}`,
-      auto: docname ? true : false,
+      // asked beside the document, never after it; a record one may not open
+      // refuses it too, and its page says why: no uncaught error over it
+      auto: false,
       params: {
         doctype: doctype,
         name: docname,
       },
       transform: (data) => parseAssignees(data),
     })
+    if (docname) assigneesCache[doctype][docname].fetch().catch(() => {})
   }
 
   permissionsCache[doctype] = permissionsCache[doctype] || {}
@@ -124,13 +127,14 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
     permissionsCache[doctype][docname || ''] = createResource({
       url: 'crm.api.doc.get_doc_permissions',
       cache: `permissions:${doctype}:${docname}`,
-      auto: docname ? true : false,
+      auto: false,
       params: {
         doctype: doctype,
         docname: docname,
       },
       initialData: { permissions: {} },
     })
+    if (docname) permissionsCache[doctype][docname].fetch().catch(() => {})
   }
 
   async function setupFormScript() {

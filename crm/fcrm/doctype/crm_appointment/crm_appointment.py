@@ -342,11 +342,14 @@ class CRMAppointment(Document):
 			if email:
 				rows.append({"reference_doctype": "User", "reference_docname": row.user, "email": email})
 		for row in self.participants:
-			if row.email and row.status != "Cancelled":
-				entry = {"email": row.email}
-				if row.party_type == "Contact" and row.party:
-					entry.update({"reference_doctype": "Contact", "reference_docname": row.party})
-				rows.append(entry)
+			# the framework's Event Participants wants what the row refers to: a
+			# person, a contact or a deal; a name typed with no record stays off
+			# the event (booked from /prenota a person came without one, and the
+			# whole mirror failed: «Valore mancante per: Tipo di documento di riferimento»)
+			if row.email and row.status != "Cancelled" and row.party_type and row.party:
+				rows.append(
+					{"email": row.email, "reference_doctype": row.party_type, "reference_docname": row.party}
+				)
 		return rows
 
 	def remove_event(self):

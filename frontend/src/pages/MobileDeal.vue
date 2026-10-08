@@ -647,7 +647,6 @@ const dealContacts = createResource({
   url: 'crm.fcrm.doctype.crm_deal.api.get_deal_contacts',
   params: { name: props.dealId },
   cache: ['deal_contacts', props.dealId],
-  auto: true,
   onSuccess: (data) => {
     let contactSection = sections.data?.find(
       (section) => section.name == 'contacts_section',
@@ -666,6 +665,8 @@ const dealContacts = createResource({
     })
   },
 })
+// a deal one may not open refuses it too: its page says why, no uncaught error
+dealContacts.fetch().catch(() => {})
 
 function updateField(name, value) {
   value = Array.isArray(name) ? '' : value

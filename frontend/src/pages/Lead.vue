@@ -258,8 +258,10 @@ const showConvertToDealModal = ref(false)
 const deals = createResource({
   url: 'crm.api.lead.get_deals',
   params: { lead: props.leadId },
-  auto: true,
 })
+// beside the person, not after: a person one does not follow refuses it too,
+// and the page says why without an uncaught error over it
+deals.fetch().catch(() => {})
 
 const dealOptions = computed(() => [
   ...(deals.data || []).map((deal) => ({

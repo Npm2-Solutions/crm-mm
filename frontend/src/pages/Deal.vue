@@ -773,7 +773,7 @@ const dealContacts = createResource({
   },
 })
 
-if (!dealContacts.data) dealContacts.fetch()
+if (!dealContacts.data) dealContacts.fetch().catch(() => {})
 
 async function triggerStatusChange(value) {
   await triggerOnChange('status', value)

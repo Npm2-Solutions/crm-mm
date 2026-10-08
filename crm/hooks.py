@@ -157,6 +157,7 @@ setup_wizard_complete = [
 # time): DottorCloud's own words follow it, in the background (`crm.lingue`) - the
 # same as after the setup wizard, the demo aside
 crm_lingua_del_centro = [
+	"crm.lingue.euro_come_si_scrive",
 	"crm.moduli.consensi.dopo_la_configurazione",
 	"crm.piani.librerie.dopo_la_configurazione",
 	"crm.invoicing.install.qualifiche_nella_lingua",
@@ -178,6 +179,7 @@ after_install = [
 	# Italian reads the public pages in Italian (the framework ships it off), one
 	# set in German reads English or the centre's, never half in German
 	"crm.lingue.solo_italiano_e_inglese",
+	"crm.lingue.euro_come_si_scrive",
 	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
 	"crm.clinica.librerie.carica_libreria",
 	# nothing about the centre's use leaves for Frappe's servers
@@ -830,6 +832,8 @@ after_migrate = [
 	# Italian and English on, the framework's other languages off, the centre's
 	# read by whoever has not chosen their own
 	"crm.lingue.solo_italiano_e_inglese",
+	# the euro after the amount in Italian («60,00 €»), before it in English
+	"crm.lingue.euro_come_si_scrive",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)
