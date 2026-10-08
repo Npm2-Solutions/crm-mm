@@ -47592,3 +47592,13 @@ msgstr "Sparisce per tutto il centro"
 
 msgid "Removed for you"
 msgstr "Sparisce solo per te"
+
+msgid "Question {0} needs its words"
+msgstr "La domanda {0} va scritta"
+
+msgctxt "Survey"
+msgid "Answered"
+msgstr "Risposto"
+
+msgid "no mailbox sends the centre's emails yet: Settings > Email > Accounts"
+msgstr "nessuna casella invia ancora le email del centro: Impostazioni > Email > Account"

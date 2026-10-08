@@ -53,7 +53,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 ### Scripting engine
 | File | Role |
 |---|---|
-| `frontend/src/data/document.js` | `useDocument` — loads doc, wires script, patches `save.submit`, exposes triggers |
+| `frontend/src/data/document.js` | `useDocument` — loads doc, wires script, patches `save.submit`, exposes triggers; asks the document itself (`pronto`: true once it came): what a page asks about a record waits for it, so a refused one asks nothing more and leaves no uncaught error |
 | `frontend/src/data/script.js` | `getScript` — fetches Form Script records, evaluates class via `new Function`, injects helpers, `setupHelperMethods` |
 | `frontend/src/utils/scriptHelpers.js` | `createDocProxy`, `getClassNames` — extracted pure helpers |
 
@@ -108,7 +108,10 @@ never a colour alone. A view draws its columns from `cosePerColonna`; what a col
 does not work is greyed from the server's hours, never guessed in the browser.
 A column offers a new appointment only where the reader may book it: a
 colleague's column takes no tap and no drop from a practitioner, as the server
-would refuse it.
+would refuse it. An appointment's calendar copy (`Event`, `sync_event`) is its first
+professional's, every professional of it a participant by their user; the people who
+come are linked by their record, never by their email (it would read the copy to
+the area's user and get the framework's reminders).
 
 ### The reminders of the appointments (docs/crm/59)
 | File | Role |
@@ -632,7 +635,7 @@ Monday in System Settings too (`per_l_italia`, whatever country), and a
 measure is metric.
 A currency is chosen and read by its name, the code stored («Euro», never «EUR»:
 `components/Controls/CampoValuta.vue`, `utils/valute.js`), a price as the reader
-writes it («65,00 €», `prezzo()`), never «65 EUR»; a time zone by its city in the
+writes it («65,00 €», `prezzo()`; a currency field's `formatCurrency` places the symbol by the reader's language too, `conIlSimbolo`), never «65 EUR»; a time zone by its city in the
 reader's language («Roma · Ora dell'Europa centrale», `utils/fusiOrari.js`),
 never «Europe/Rome». A sentence names the agency for what is the agency's (System
 Manager, `tecnico.*`) and the centre's manager for what is theirs, never «an
@@ -820,7 +823,9 @@ did not agree (an enrollment `Skipped`, once, never counted as having been throu
 it) and a message step re-checks before sending. Recalls pick people by
 `CRM Lead.last_visit`/`last_service`, which the agenda keeps. A step that ran and did not do its
 work (an SMS Twilio refused) raises `engine.PassoNonRiuscito`: logged Failed, never
-Success; `{{ booking_link }}`'s line is left out where the centre takes no booking online. A module adds its own
+Success; one with nothing to do it on `engine.PassoSaltato`: logged Skipped. A message
+step writes to the record's number, else the event's (`numero_del_passo`: a missed
+call's caller found through a contact); `{{ booking_link }}`'s line is left out where the centre takes no booking online. A module adds its own
 dashboard template with `crm.dashboard.templates.registra` (`requires` features).
 
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
@@ -865,7 +870,9 @@ row, the bar's words beside their icons).
   record's column beside its panel is a phone's width (368px) at `md:`: what
   sits side by side there wraps by its own width, never by the screen's - a
   tab's words keep `min-w-[15rem]` in a `flex-wrap` row with their buttons, a
-  section's columns wrap at 11rem (`FieldLayout/Column.vue`), cards are a grid
+  section's columns wrap at 11rem (`FieldLayout/Column.vue`; one under the
+  other on a phone they never wrap: a column-wise flex that wraps is as wide as
+  its widest content, `Section.vue`), cards are a grid
   of `repeat(auto-fit,minmax(12rem,1fr))`, a card that lays out by its own
   width asks a container query (`ClinicSummary.vue`).
 - A settings page follows its pane, not the screen: `impostazioni-strette:`
