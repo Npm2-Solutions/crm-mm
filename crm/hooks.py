@@ -90,6 +90,10 @@ fixtures = [
 	{"dt": "Web Page", "filters": [["name", "in", ["privacy", "terms"]]]},
 ]
 
+# the SPA's shells before the framework's web forms and dynamic Web Pages, whose
+# cached lists answer None now and then while they are filled again (pagine_dell_app)
+page_renderer = ["crm.pagine_dell_app.PaginaDellApp"]
+
 website_route_rules = [
 	{"from_route": "/crm/<path:app_path>", "to_route": "crm"},
 	{"from_route": "/crm-form/<route>", "to_route": "crm_form"},
