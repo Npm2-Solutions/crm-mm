@@ -129,6 +129,19 @@
             :label="__('Location')"
           />
         </div>
+        <!-- where it is, where the centre has more than one location (docs/crm/62) -->
+        <FormControl
+          v-if="piuSedi"
+          v-model="form.centre_location"
+          type="select"
+          :label="__('Centre location')"
+          :options="opzioniSede"
+          :description="
+            __(
+              'Empty: in any of them, as equipment that moves from one to another.',
+            )
+          "
+        />
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl
             v-model.number="form.hourly_rate"
@@ -178,6 +191,8 @@ import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import CampoValuta from '@/components/Controls/CampoValuta.vue'
 import { appLocale } from '@/utils/locale'
 import { prezzo } from '@/utils/valute'
+import { useSedi } from '@/composables/sedi'
+import { nomeDellaSede, opzioniDelleSedi } from '@/utils/sedi'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
@@ -199,8 +214,19 @@ const grouped = computed(() => {
   })).filter((group) => group.rows.length)
 })
 
+// the locations a room may be in (docs/crm/62): nothing where there is one
+const { sedi, piuSedi } = useSedi()
+const opzioniSede = computed(() =>
+  opzioniDelleSedi(sedi.value, __('Any location')).map(({ value, label }) => ({
+    value,
+    label,
+  })),
+)
+
 function describe(resource) {
   const parts = []
+  if (piuSedi.value && resource.centre_location)
+    parts.push(nomeDellaSede(sedi.value, resource.centre_location))
   if (resource.capacity > 1) {
     parts.push(__('{0} at a time', [resource.capacity]))
   }
@@ -227,6 +253,7 @@ const emptyForm = () => ({
   capacity: 1,
   seats: 0,
   location: '',
+  centre_location: '',
   hourly_rate: 0,
   currency: 'EUR',
   color: '',
@@ -254,6 +281,7 @@ function openEditor(name = null) {
       Object.assign(form, data, {
         enabled: Boolean(data.enabled),
         availability: data.availability || [],
+        centre_location: data.centre_location || '',
       })
       showEditor.value = true
     },

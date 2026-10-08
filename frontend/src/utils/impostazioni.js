@@ -121,6 +121,15 @@ export const MENU = [
         ],
       },
       {
+        // more than one location in one centre (docs/crm/62): its rooms, the
+        // shifts worked there, its address on what the people booked receive
+        key: 'Locations',
+        label: 'Locations',
+        description:
+          'Where the centre is: each location with its address, its rooms and who works there.',
+        condition: generali,
+      },
+      {
         // the plan as the centre reads it: what the product comprises, the
         // extras; "Features", not "Plan", which are the patients' (doc 36)
         key: 'Plan',

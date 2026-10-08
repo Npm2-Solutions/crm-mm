@@ -41,6 +41,7 @@ from frappe.query_builder.functions import Count
 from frappe.utils import cint, now_datetime
 
 from crm.scheduling import intervals as iv
+from crm.scheduling import sedi_regole
 from crm.scheduling.timeutils import (
 	UTC,
 	as_time,
@@ -110,24 +111,42 @@ def holiday_dates(holiday_list: str | None) -> set[datetime.date]:
 
 @dataclass
 class WorkingHours:
-	"""Weekly hours + holidays + one-off date overrides for a single actor."""
+	"""Weekly hours + holidays + one-off date overrides for a single actor.
+
+	With `sede`, only the lines of that location and the ones that name none
+	(docs/crm/62): a professional working in Monza on Tuesdays is not free in
+	Milan on Tuesdays."""
 
 	rows: list = field(default_factory=list)
 	holidays: set = field(default_factory=set)
 	exceptions: list = field(default_factory=list)
 	always: bool = False
+	sede: str | None = None
+
+	def nella_sede(self, sede: str | None) -> WorkingHours:
+		"""The same hours, read at one location."""
+		return WorkingHours(
+			rows=self.rows, holidays=self.holidays, exceptions=self.exceptions, always=self.always, sede=sede
+		)
 
 	def for_day(self, day: datetime.date, tz: ZoneInfo) -> list[iv.Interval]:
+		return iv.merge([(start, end) for start, end, _sede in self._windows(day, tz)])
+
+	def _windows(self, day: datetime.date, tz: ZoneInfo) -> list[tuple]:
+		"""The day's windows, each with the location its line names."""
 		overrides = [e for e in self.exceptions if parse_date(e.date) == day]
 		if overrides:
 			# a date override replaces the weekly pattern for that day entirely
 			if any(cint(e.unavailable) for e in overrides):
 				return []
+			# at a location: the day's overrides of another location close it here
+			overrides = sedi_regole.della_sede(overrides, self.sede)
 			start, end = day_bounds(day, tz)
 			out = []
 			for override in overrides:
+				sede = override.get("centre_location")
 				if not override.start_time or not override.end_time:
-					out.append((start, end))
+					out.append((start, end, sede))
 					continue
 				out.append(
 					(
@@ -135,14 +154,39 @@ class WorkingHours:
 							UTC
 						),
 						datetime.datetime.combine(day, as_time(override.end_time), tzinfo=tz).astimezone(UTC),
+						sede,
 					)
 				)
-			return iv.merge(out)
+			return out
 		if day in self.holidays:
 			return []
 		if self.always and not self.rows:
-			return [day_bounds(day, tz)]
-		return rows_to_intervals(self.rows, day, tz)
+			start, end = day_bounds(day, tz)
+			return [(start, end, None)]
+		weekday = WEEKDAYS[day.weekday()]
+		out = []
+		for row in sedi_regole.della_sede(self.rows, self.sede):
+			if row.workday != weekday:
+				continue
+			start = datetime.datetime.combine(day, as_time(row.start_time), tzinfo=tz).astimezone(UTC)
+			end = datetime.datetime.combine(day, as_time(row.end_time), tzinfo=tz).astimezone(UTC)
+			if start < end:
+				out.append((start, end, row.get("centre_location")))
+		return out
+
+	def sede_at(self, moment: datetime.datetime, tz: ZoneInfo) -> str | None:
+		"""The location of the line that covers `moment`; None where it names none
+		or nothing covers it."""
+		day = moment.astimezone(tz).date()
+		for offset in (0, -1):
+			for start, end, sede in self._windows(day + datetime.timedelta(days=offset), tz):
+				if start <= moment < end and sede:
+					return sede
+		return None
+
+	def sedi_del_giorno(self, day: datetime.date, tz: ZoneInfo) -> list[str]:
+		"""The locations the day's lines name, '' for a line good anywhere."""
+		return sorted({sede or "" for _start, _end, sede in self._windows(day, tz)})
 
 	def for_span(self, day: datetime.date, days: int, tz: ZoneInfo) -> list[iv.Interval]:
 		"""Windows across consecutive days, merged.
@@ -587,6 +631,8 @@ class Slot:
 	resources: list[dict]
 	seats_left: int = 1
 	join_appointment: str | None = None
+	#: where it is held, where the centre has more than one location
+	location: str | None = None
 
 	def as_dict(self) -> dict:
 		return {
@@ -596,6 +642,7 @@ class Slot:
 			"resources": self.resources,
 			"seats_left": self.seats_left,
 			"join_appointment": self.join_appointment,
+			"location": self.location,
 		}
 
 
@@ -618,9 +665,12 @@ class SlotFinder:
 		exclude_appointment: str | None = None,
 		online: bool = False,
 		window: tuple | None = None,
+		location: str | None = None,
 	):
 		self.service = frappe.get_cached_doc("CRM Service", service)
 		self.online = online
+		# at one location (docs/crm/62): its rooms, and the shifts worked there
+		self.location = location
 		self.window_override = window
 		self.from_date = parse_date(from_date)
 		self.to_date = parse_date(to_date)
@@ -692,12 +742,18 @@ class SlotFinder:
 			# an online visit is held in no room of the centre
 			if not serve_la_stanza(self.service, row):
 				continue
-			filters = {"enabled": 1}
-			if row.resource:
-				filters["name"] = row.resource
-			elif row.resource_type:
-				filters["resource_type"] = row.resource_type
-			names = frappe.get_all("CRM Resource", filters=filters, pluck="name")
+			if self.location:
+				# at a location: its rooms; a room of another one gives way to its kind here
+				names = sedi_regole.stanze_al_posto(
+					row.resource, row.resource_type, self._enabled_rooms(), self.location
+				)
+			else:
+				filters = {"enabled": 1}
+				if row.resource:
+					filters["name"] = row.resource
+				elif row.resource_type:
+					filters["resource_type"] = row.resource_type
+				names = frappe.get_all("CRM Resource", filters=filters, pluck="name")
 			if self.resource_filter:
 				# a caller's resource picks narrow a requirement only where they can:
 				# asking for "Room A" must not starve the requirement for a treadmill
@@ -713,6 +769,16 @@ class SlotFinder:
 			)
 		return requirements
 
+	def _enabled_rooms(self) -> list[dict]:
+		if not hasattr(self, "_rooms"):
+			self._rooms = frappe.get_all(
+				"CRM Resource",
+				filters={"enabled": 1},
+				fields=["name", "resource_type", "centre_location"],
+				order_by="name asc",
+			)
+		return self._rooms
+
 	# -- main --------------------------------------------------------------
 
 	def run(self) -> list[Slot]:
@@ -722,7 +788,7 @@ class SlotFinder:
 		start, end = self.window()
 		earliest, latest = self.bookable_window()
 
-		staff_hours = {u: staff_working_hours(u) for u in self.eligible}
+		staff_hours = {u: staff_working_hours(u).nella_sede(self.location) for u in self.eligible}
 		caps = {u: self.profiles[u]["daily"] for u in self.eligible}
 		weekly_caps = {u: self.profiles[u]["weekly"] for u in self.eligible}
 		# a week cap needs the whole ISO week around the range, not just the range
@@ -799,6 +865,7 @@ class SlotFinder:
 						staff=assigned,
 						resources=booked,
 						seats_left=self.seats_for(booked),
+						location=self.location,
 					)
 				)
 			day += datetime.timedelta(days=1)
@@ -938,8 +1005,10 @@ class SlotFinder:
 				"starts_on": ["<", to_system_naive(end)],
 				"ends_on": [">", to_system_naive(start)],
 			},
-			fields=["name", "starts_on", "ends_on"],
+			fields=["name", "starts_on", "ends_on", "centre_location"],
 		)
+		# at a location: its classes (one with no location is anywhere's)
+		rows = [row for row in rows if sedi_regole.serve(row.centre_location, self.location)]
 		if not rows:
 			return out
 		names = [r.name for r in rows]
@@ -985,6 +1054,7 @@ class SlotFinder:
 				resources=assigned_resources,
 				seats_left=left,
 				join_appointment=row.name,
+				location=row.centre_location or self.location,
 			)
 		return out
 
@@ -999,18 +1069,42 @@ def get_slots(
 	exclude_appointment: str | None = None,
 	online: bool = False,
 	window: tuple | None = None,
+	location: str | None = None,
 ) -> list[Slot]:
-	return SlotFinder(
-		service,
-		from_date,
-		to_date,
-		staff=staff,
-		resources=resources,
-		participants=participants,
-		exclude_appointment=exclude_appointment,
-		online=online,
-		window=window,
-	).run()
+	"""Free slots of a service. Where the centre has more than one location
+	(docs/crm/62), each slot is at one of them: asked for one, only its rooms and
+	the shifts worked there; asked for none, every location's, each slot saying
+	where - never a professional in Monza with a room in Milan."""
+	from crm.scheduling import sedi
+
+	def at(sede):
+		return SlotFinder(
+			service,
+			from_date,
+			to_date,
+			staff=staff,
+			resources=resources,
+			participants=participants,
+			exclude_appointment=exclude_appointment,
+			online=online,
+			window=window,
+			location=sede,
+		).run()
+
+	if location or not sedi.piu_sedi():
+		return at(sedi.valida(location) if location else None)
+	slots: list[Slot] = []
+	seen = set()
+	for sede in sedi.nomi():
+		for slot in at(sede):
+			# a slot that needs no room and a professional good anywhere comes once
+			key = (slot.start, tuple(slot.staff), slot.join_appointment)
+			if key in seen:
+				continue
+			seen.add(key)
+			slots.append(slot)
+	slots.sort(key=lambda s: (s.start, s.join_appointment or ""))
+	return slots
 
 
 # --------------------------------------------------------------------------
@@ -1051,6 +1145,13 @@ def find_conflicts(doc) -> list[str]:
 		for user in users:
 			if not iv.covers(staff_working_hours(user).for_span(day, 2, tz), start, end):
 				conflicts.append(_("{0} does not work in this time slot").format(_user_label(user)))
+
+	if users:
+		# more than one location: never a professional's shift in one and the room in
+		# another, whatever the working hours' rule (docs/crm/62)
+		from crm.scheduling import sedi
+
+		conflicts.extend(sedi.conflitti(doc))
 
 	if cint(config.enforce_resource_conflicts):
 		wanted: dict[str, int] = {}

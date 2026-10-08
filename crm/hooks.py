@@ -340,6 +340,7 @@ has_permission = {
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
 	"CRM Resource": "crm.permissions.documenti.has_permission",
+	"CRM Location": "crm.permissions.documenti.has_permission",
 	"CRM Booking Calendar": "crm.permissions.documenti.has_permission",
 	"CRM Lead Status": "crm.permissions.documenti.has_permission",
 	"CRM Deal Status": "crm.permissions.documenti.has_permission",
@@ -575,9 +576,21 @@ doc_events = {
 		"after_delete": ["crm.scheduling.attese.appuntamento_eliminato"],
 	},
 	# a new shift, a service or a room changed: the waiting lists are looked at again
-	"CRM Staff Schedule": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Staff Schedule": {
+		"on_update": [
+			"crm.scheduling.attese.orari_cambiati",
+			# shifts given a location: the appointments ahead that named none are there (doc 62)
+			"crm.scheduling.sedi.turni_aggiornati",
+		]
+	},
 	"CRM Service": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
-	"CRM Resource": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Resource": {
+		"on_update": [
+			"crm.scheduling.attese.orari_cambiati",
+			# a room given a location: its appointments that named none are there (doc 62)
+			"crm.scheduling.sedi.stanza_aggiornata",
+		]
+	},
 	"CRM Scheduling Settings": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
 	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {

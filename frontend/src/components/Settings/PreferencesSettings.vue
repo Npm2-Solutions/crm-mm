@@ -107,6 +107,34 @@
             />
           </div>
         </div>
+        <!-- where one usually works, where the centre has more than one
+             location (docs/crm/62): the reception desk opens on it -->
+        <div
+          v-if="piuSedi"
+          class="mt-6 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2"
+        >
+          <div class="flex min-w-0 flex-col gap-1">
+            <span class="text-base-medium text-ink-gray-8">
+              {{ __('Usual location') }}
+            </span>
+            <span class="text-p-sm text-ink-gray-6">
+              {{
+                __(
+                  'Where you usually work: the reception desk opens on it, and what you invoice there counts in its cash closing.',
+                )
+              }}
+            </span>
+          </div>
+          <div class="w-48 shrink-0 max-md:w-full">
+            <FormControl
+              :modelValue="sedeAbituale"
+              type="select"
+              :options="opzioniSede"
+              :aria-label="__('Usual location')"
+              @update:modelValue="cambiaSedeAbituale"
+            />
+          </div>
+        </div>
       </div>
     </template>
   </SettingsLayoutBase>
@@ -121,9 +149,12 @@ import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { europei, fusiOrari } from '@/utils/fusiOrari'
 import { appLocale } from '@/utils/locale'
+import { impostaSedeAbituale, useSedi } from '@/composables/sedi'
+import { opzioniDelleSedi } from '@/utils/sedi'
 import {
   FormControl,
   Badge,
+  call,
   toast,
   createResource,
   createDocumentResource,
@@ -131,6 +162,26 @@ import {
 import { ref, computed, inject } from 'vue'
 
 const refreshRequired = ref(false)
+
+// where one usually works (docs/crm/62), saved as soon as it is chosen
+const { sedi, piuSedi, sedeAbituale } = useSedi()
+const opzioniSede = computed(() =>
+  opzioniDelleSedi(sedi.value, __('All locations')).map(({ value, label }) => ({
+    value,
+    label,
+  })),
+)
+async function cambiaSedeAbituale(valore) {
+  try {
+    const risposta = await call('crm.api.sedi.set_my_location', {
+      location: valore || null,
+    })
+    impostaSedeAbituale(risposta.location)
+    toast.success(__('Preferences updated successfully'))
+  } catch (e) {
+    toast.error(e.messages?.[0] || __('Failed to save'))
+  }
+}
 
 const { user: sessionUser } = inject('session')
 

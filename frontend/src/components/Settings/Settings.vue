@@ -309,6 +309,9 @@ const PAGINE = {
   'Your data': aRichiesta(
     () => import('@/components/Settings/YourDataSettings.vue'),
   ),
+  Locations: aRichiesta(
+    () => import('@/components/Settings/LocationsSettings.vue'),
+  ),
   'Demo data': aRichiesta(
     () => import('@/components/Settings/DemoDataSettings.vue'),
   ),

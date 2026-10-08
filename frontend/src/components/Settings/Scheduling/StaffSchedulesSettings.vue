@@ -212,7 +212,11 @@
               }}
             </div>
           </div>
-          <WeeklyHours v-else v-model="form.availability" />
+          <WeeklyHours
+            v-else
+            v-model="form.availability"
+            :sedi="piuSedi ? opzioniSede : []"
+          />
           <Link
             doctype="CRM Holiday List"
             :modelValue="form.holiday_list"
@@ -282,6 +286,15 @@
               type="text"
               class="max-md:col-span-3 max-md:col-start-1 max-md:row-start-3"
               :placeholder="__('Reason (optional)')"
+            />
+            <!-- extra hours somewhere: which location (docs/crm/62) -->
+            <FormControl
+              v-if="piuSedi && !row.unavailable"
+              v-model="row.centre_location"
+              type="select"
+              class="col-span-full max-md:row-start-4"
+              :aria-label="__('Centre location')"
+              :options="opzioniSede"
             />
             <Button
               variant="ghost"
@@ -385,6 +398,17 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 import { hhmm, oggiDelCentro } from '@/utils/scheduler'
+import { useSedi } from '@/composables/sedi'
+import { opzioniDelleSedi } from '@/utils/sedi'
+
+// where a shift is worked, where the centre has more than one location (docs/crm/62)
+const { sedi, piuSedi } = useSedi()
+const opzioniSede = computed(() =>
+  opzioniDelleSedi(sedi.value, __('Any location')).map(({ value, label }) => ({
+    value,
+    label,
+  })),
+)
 import { appLocale } from '@/utils/locale'
 import { tastiera } from '@/utils/tastiera'
 import { sessionStore } from '@/stores/session'
@@ -525,6 +549,7 @@ async function openEditor(user = '') {
         unavailable: Boolean(row.unavailable),
         start_time: hhmm(row.start_time),
         end_time: hhmm(row.end_time),
+        centre_location: row.centre_location || '',
         reason: row.reason || '',
       })),
     })

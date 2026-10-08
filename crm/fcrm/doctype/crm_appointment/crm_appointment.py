@@ -8,7 +8,7 @@ from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
 from crm.convenzioni import convenzioni
 from crm.permissions.livelli import puo
-from crm.scheduling import abbonamenti, cicli, pricing, visite_online
+from crm.scheduling import abbonamenti, cicli, pricing, sedi, visite_online
 from crm.scheduling.availability import find_conflicts, settings
 
 
@@ -32,6 +32,7 @@ class CRMAppointment(Document):
 		booking: DF.Link | None
 		booking_connection: DF.Link | None
 		cancellation_reason: DF.SmallText | None
+		centre_location: DF.Link | None
 		color: DF.Color | None
 		conflict_note: DF.SmallText | None
 		currency: DF.Link | None
@@ -75,6 +76,8 @@ class CRMAppointment(Document):
 		self.stamp_arrivals()
 		self.close_from_attendance()
 		self.set_title()
+		# where it is, where the centre has more than one location (docs/crm/62)
+		sedi.assegna(self)
 		self.check_conflicts()
 		# an online visit's room, made once (or the link the desk pasted, checked)
 		visite_online.assicura(self)

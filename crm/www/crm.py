@@ -121,11 +121,29 @@ def get_boot():
 			# page (router.js)
 			"benvenuto": per_il_boot(),
 			"vertical": get_vertical(),
+			# the centre's locations, where it has more than one (docs/crm/62): empty
+			# otherwise, and no screen names one; where the session usually works
+			"sedi": get_sedi(),
+			"sede_abituale": get_sede_abituale(),
 			# the product's brand - the vertical's - and the centre's mark, which leads
 			# at the top of the sidebar
 			"brand": get_brand(),
 		}
 	)
+
+
+def get_sedi() -> list:
+	from crm.scheduling import sedi
+
+	return sedi.per_il_boot()
+
+
+def get_sede_abituale() -> str | None:
+	from crm.scheduling import sedi
+
+	if frappe.session.user == "Guest":
+		return None
+	return sedi.sede_abituale()
 
 
 def session_opens_the_crm() -> bool:

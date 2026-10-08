@@ -19,6 +19,7 @@
   "resources_section",
   "resources",
   "location",
+  "centre_location",
   "video_link",
   "pricing_section",
   "price_list",
@@ -146,6 +147,14 @@
    "fieldname": "location",
    "fieldtype": "Data",
    "label": "Location / Meeting Link"
+  },
+  {
+   "fieldname": "centre_location",
+   "fieldtype": "Link",
+   "label": "Centre location",
+   "options": "CRM Location",
+   "in_standard_filter": 1,
+   "description": "Where the appointment is, from its room or its professional's shift."
   },
   {
    "fieldname": "video_link",
@@ -401,7 +410,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-08 21:00:00.000000",
+ "modified": "2026-10-08 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",

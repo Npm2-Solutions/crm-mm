@@ -37,6 +37,8 @@ SCRITTURA = {
 	# shifts, holidays and rooms: the front desk's too; a practitioner their own shifts
 	"CRM Staff Schedule": "agenda.turni",
 	"CRM Resource": "agenda.turni",
+	# the centre's locations (docs/crm/62): its manager's
+	"CRM Location": "impostazioni.generali",
 	"CRM Booking Calendar": "prenotazione_online.configura",
 	# the pipeline
 	"CRM Lead Status": "pipeline.configura",
