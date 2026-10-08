@@ -3,6 +3,8 @@
 # See license.txt
 
 
+import json
+
 import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.tests.utils import make_test_records
@@ -33,6 +35,14 @@ from crm.api.dashboard import (
 	get_won_deals,
 )
 
+#: The names test records get when theirs is not given (frappe's "_T-" naming series).
+FIXTURE_SERIES = {"CRM Lead": "_T-CRM Lead-", "CRM Deal": "_T-CRM Deal-"}
+
+
+def _fixtures(doctype: str) -> list[dict]:
+	with open(frappe.get_app_path("crm", "fcrm", "doctype", frappe.scrub(doctype), "test_records.json")) as f:
+		return json.load(f)
+
 
 class TestDashboard(IntegrationTestCase):
 	@classmethod
@@ -48,6 +58,16 @@ class TestDashboard(IntegrationTestCase):
 		cls.user = "crm.manager@example.com"  # CRM manager from test_records.json
 		cls.user2_email = "crm.user1@example.com"  # Test user from test_records.json
 
+		# The deal and owner numbers below are those of the fixtures alone, one copy of
+		# each. They are CRM Lead's and CRM Deal's own test records too, which
+		# IntegrationTestCase commits for those doctypes' tests, and `bench run-tests`
+		# empties the journal that would find them again: every run of those modules on
+		# a site leaves another copy, named afresh by the "_T-" series (a test site that
+		# had run them three times read 32 won deals for 8). The copies earlier runs left
+		# are taken away inside this class's transaction, and its rollback gives them back.
+		for doctype in ("CRM Deal", "CRM Lead"):
+			frappe.db.delete(doctype, {"name": ("like", f"{FIXTURE_SERIES[doctype]}%")})
+
 		# Load test records from test_records.json files in dependency order
 		make_test_records("CRM Lead Status")
 		make_test_records("CRM Deal Status")
@@ -56,6 +76,11 @@ class TestDashboard(IntegrationTestCase):
 		make_test_records("CRM Organization")  # Load organizations before deals
 		make_test_records("CRM Lead")
 		make_test_records("CRM Deal")
+		for doctype in ("CRM Deal", "CRM Lead"):
+			# made here, not only found in a journal a run did not empty
+			assert frappe.db.count(doctype, {"name": ("like", f"{FIXTURE_SERIES[doctype]}%")}) == len(
+				_fixtures(doctype)
+			), f"the {doctype} fixtures were not made afresh"
 
 		# Leads this class creates itself, which is what the lead assertions are
 		# written against.
