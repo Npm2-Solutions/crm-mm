@@ -50,6 +50,7 @@ class CRMAutomationTrigger(Document):
 			"Inbound Webhook",
 			"Became Client",
 			"Became Patient",
+			"Started by Hand",
 		]
 	# end: auto-generated types
 

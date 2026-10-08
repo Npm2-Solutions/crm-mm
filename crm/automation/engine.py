@@ -107,7 +107,13 @@ EVENT_TO_TRIGGER = {
 	"inbound_webhook": "Inbound Webhook",
 	# the first time a person comes, or their first invoice (`crm.clienti`)
 	"client_created": "Became Client",
+	# a campaign: nothing raises it, the manager sends it to a list of people
+	# (`crm.automation.campagne`)
+	"started_by_hand": "Started by Hand",
 }
+
+#: The trigger of a campaign: the automations the People list sends to a list.
+A_MANO = EVENT_TO_TRIGGER["started_by_hand"]
 
 TRIGGER_EVENTS = list(EVENT_TO_TRIGGER.values())
 

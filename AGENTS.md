@@ -801,6 +801,12 @@ keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.
 
+### A campaign to a list of people (`crm/automation/campagne.py`)
+| File | Role |
+|---|---|
+| `crm/automation/campagne_regole.py` + `frontend/src/utils/campagne.js` | Pure: the ways an automation writes by (`canali`, through branches and paths, the same on both sides), why a person of a list is left out (`motivo`: already in it, no marketing consent where it asks, the start's conditions, STOP where only the SMS would reach them, nowhere to write to), the counts; at most `MASSIMO` (5,000) a campaign; the reasons and the list in words — tested |
+| `crm/automation/campagne.py` + `CRM Automation Campaign`, `Automations/SendToListDialog.vue`, `EnrollmentsPanel.vue` | A campaign is an automation whose trigger is «Started by Hand» (`engine.A_MANO`, nothing raises it), switched on. «Send to a list» on the People list's header (the view's filters) or its rows chosen (`ListBulkActions`), for `automazioni.gestisci`, on the desk only (the phone's list has no views nor rows to choose): the dialog counts the list as the reader sees it (`frappe.get_list`) and who is left out and why (`preview_campaign`), then a job enrols under the sender (`esegui`, through `engine.enroll` with the trigger row: consent asked again, a «Skipped» once; STOP, the promotional hours and the time window kept at each step by the engine); the demo's people enrolled like anybody, the guards keep what is written to them; the report (`CRM Automation Campaign`: the list, enrolled, left out by reason) on the automation's Enrolments (`get_campaigns`), told by the socket (`crm_campaign_done`) |
+
 ### Asking how a visit went (`crm/recensioni`)
 | File | Role |
 |---|---|

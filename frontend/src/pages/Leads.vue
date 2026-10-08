@@ -25,6 +25,14 @@
         iconLeft="lucide-lock-open"
         @click="showOutOfCare = true"
       />
+      <!-- a campaign to the people on screen (crm/automation/campagne.py); on a
+           phone the list has no view to send, nor rows to choose -->
+      <Button
+        v-if="!isMobileView && puo('automazioni.gestisci')"
+        :label="__('Send to a list')"
+        iconLeft="send"
+        @click="showSendToList = true"
+      />
       <Button
         v-if="!isMobileView && puo('persone.scrivi')"
         variant="solid"
@@ -44,6 +52,16 @@
     />
   </template>
   <OutOfCareDialog v-if="apreFuoriEquipe" v-model="showOutOfCare" />
+  <SendToListDialog
+    v-if="showSendToList"
+    v-model="showSendToList"
+    :filters="leads.params?.filters || {}"
+    :vista="
+      viewControls?.currentView?.is_standard
+        ? ''
+        : viewControls?.currentView?.label
+    "
+  />
   <ViewControls
     v-if="!isMobileView"
     ref="viewControls"
@@ -101,6 +119,7 @@ import LeadsListView from '@/components/ListViews/LeadsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
 import OutOfCareDialog from '@/components/Clinic/OutOfCareDialog.vue'
+import SendToListDialog from '@/components/Automations/SendToListDialog.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoPersone from '@/components/Mobile/ElencoPersone.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
@@ -127,6 +146,7 @@ const { on } = useBroadcast()
 const leadsListView = ref(null)
 const showLeadModal = ref(false)
 const showOutOfCare = ref(false)
+const showSendToList = ref(false)
 
 on('trigger_lead_create', (data) => {
   showLeadModal.value = Boolean(data)

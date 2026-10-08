@@ -4,6 +4,65 @@
 -->
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-6">
+    <!-- the campaigns sent from People (crm/automation/campagne.py): to which
+         list, how many got in, who was left out and why -->
+    <section v-if="campagne.data?.length" class="mb-3 flex flex-col gap-2">
+      <h3 class="text-base font-medium text-ink-gray-8">
+        {{ __('Campaigns sent') }}
+      </h3>
+      <div
+        class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+      >
+        <div
+          v-for="campagna in campagne.data"
+          :key="campagna.name"
+          class="flex flex-col gap-1.5 px-3 py-2.5"
+        >
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="min-w-0 flex-1 text-base text-ink-gray-8">
+              {{ campagna.source || __('The list on screen') }}
+            </span>
+            <Badge
+              size="sm"
+              :theme="TEMI_CAMPAGNA[campagna.status]"
+              :label="STATI_CAMPAGNA[campagna.status] || __(campagna.status)"
+            />
+          </div>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __('{0} · by {1}', [
+                formatDate(campagna.creation, 'D MMM YYYY, HH:mm'),
+                campagna.sent_by,
+              ])
+            }}
+          </span>
+          <span class="text-p-sm text-ink-gray-8">
+            {{
+              __('{0} in the list · {1} enrolled · {2} left out', [
+                campagna.total,
+                campagna.enrolled,
+                quantiSaltati(campagna.skipped),
+              ])
+            }}
+          </span>
+          <ul
+            v-if="quantiSaltati(campagna.skipped)"
+            class="flex flex-col gap-0.5 text-p-sm text-ink-gray-6"
+          >
+            <li
+              v-for="riga in righeDeiSalti(
+                campagna.skipped,
+                canaliDellaCampagna,
+                __,
+              )"
+              :key="riga.chiave"
+            >
+              {{ __('{0}: {1}', [riga.testo, riga.quanti]) }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
     <div class="flex items-center justify-between">
       <div class="flex flex-wrap gap-1.5">
         <Button
@@ -19,7 +78,7 @@
         variant="ghost"
         icon="lucide-refresh-cw"
         :label="__('Refresh')"
-        @click="enrollments.reload()"
+        @click="(enrollments.reload(), campagne.reload())"
       />
     </div>
 
@@ -97,13 +156,48 @@
 
 <script setup>
 import { Badge, Button, FeatherIcon, createResource, dayjs } from 'frappe-ui'
-import { ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { stepLabel } from '@/utils/automation'
+import { formatDate } from '@/utils'
+import { canali, quantiSaltati, righeDeiSalti } from '@/utils/campagne'
+import { globalStore } from '@/stores/global'
 import { adessoDelCentro } from '@/utils/scheduler'
 
 const props = defineProps({
   automation: { type: String, required: true },
+  // the builder's steps: the ways it writes by name a reason in words
+  steps: { type: Array, default: () => [] },
 })
+
+const STATI_CAMPAGNA = {
+  Queued: __('Queued', null, 'Campaign state'),
+  Running: __('Being sent', null, 'Campaign state'),
+  Done: __('Sent', null, 'Campaign state'),
+  Failed: __('Failed', null, 'Campaign state'),
+}
+const TEMI_CAMPAGNA = {
+  Queued: 'gray',
+  Running: 'orange',
+  Done: 'green',
+  Failed: 'red',
+}
+
+const campagne = createResource({
+  url: 'crm.automation.campagne.get_campaigns',
+  makeParams: () => ({ automation: props.automation }),
+  auto: true,
+})
+const canaliDellaCampagna = computed(() => canali(props.steps))
+
+// the job tells whoever sent it when it is done
+const { $socket } = globalStore()
+function campagnaFatta(dati) {
+  if (dati?.automation !== props.automation) return
+  campagne.reload()
+  enrollments.reload()
+}
+onMounted(() => $socket?.on('crm_campaign_done', campagnaFatta))
+onBeforeUnmount(() => $socket?.off('crm_campaign_done', campagnaFatta))
 
 const STATUSES = [
   'All',

@@ -47794,3 +47794,165 @@ msgstr "Scritto nell'area"
 
 msgid "From the desk: a reminder, a document to bring. The person reads it in their area, and writes back here."
 msgstr "Dalla segreteria: un promemoria, un documento da portare. La persona lo legge nella sua area, e risponde qui."
+
+msgid "Started by Hand"
+msgstr "Avviata a mano"
+
+msgid "A campaign: nothing starts it by itself. From People, «Send to a list» enrols the people of a view or the ones chosen."
+msgstr "Una campagna: niente la avvia da sola. Da Persone, «Invia a un elenco» iscrive le persone di una vista o quelle scelte."
+
+msgid "Only who manages automations sends a campaign"
+msgstr "Solo chi gestisce le automazioni invia una campagna"
+
+msgid "This automation is not a campaign: it does not start by hand, or it is off"
+msgstr "Questa automazione non è una campagna: non si avvia a mano, oppure è spenta"
+
+msgid "This list has more than {0} people: narrow it with a filter first"
+msgstr "Questo elenco ha più di {0} persone: restringilo prima con un filtro"
+
+msgid "Nobody in this list"
+msgstr "Nessuno in questo elenco"
+
+msgid "CRM Automation Campaign"
+msgstr "Campagna"
+
+msgid "A campaign sent to a list of people from the People list: who was enrolled and who was left out, and why."
+msgstr "Una campagna inviata a un elenco di persone dalla lista Persone: chi è stato iscritto e chi è rimasto fuori, e perché."
+
+msgid "The list it was sent to: a view's name, or how many people were chosen."
+msgstr "L'elenco a cui è stata inviata: il nome di una vista, o quante persone erano state scelte."
+
+msgid "Result"
+msgstr "Esito"
+
+msgid "People in the list"
+msgstr "Persone nell'elenco"
+
+msgid "People left out"
+msgstr "Persone escluse"
+
+msgid "How many were left out, by reason."
+msgstr "Quante sono rimaste fuori, per motivo."
+
+msgid "People chosen"
+msgstr "Persone scelte"
+
+msgid "No email nor mobile number"
+msgstr "Né email né cellulare"
+
+msgid "No email address"
+msgstr "Nessun indirizzo email"
+
+msgid "No mobile number"
+msgstr "Nessun numero di cellulare"
+
+msgid "Already in this campaign"
+msgstr "Già in questa campagna"
+
+msgid "Do not meet the campaign's conditions"
+msgstr "Non rispettano le condizioni della campagna"
+
+msgid "Wrote STOP to the centre's SMS"
+msgstr "Hanno scritto STOP agli SMS del centro"
+
+msgid "email"
+msgstr "email"
+
+msgid "It writes to nobody: tasks, tags, notes"
+msgstr "Non scrive a nessuno: attività, tag, note"
+
+msgid "{0} and {1}"
+msgstr "{0} e {1}"
+
+msgid "By {0}"
+msgstr "Per {0}"
+
+msgid "1 person chosen"
+msgstr "1 persona scelta"
+
+msgid "{0} people chosen"
+msgstr "{0} persone scelte"
+
+msgid "The view «{0}»"
+msgstr "La vista «{0}»"
+
+msgid "The list on screen"
+msgstr "La lista a schermo"
+
+msgid "Send to a list"
+msgstr "Invia a un elenco"
+
+msgid "No campaign to send yet"
+msgstr "Ancora nessuna campagna da inviare"
+
+msgid "A campaign is an automation that starts «Started by Hand», switched on: make one in Automations, with the messages it sends."
+msgstr "Una campagna è un'automazione che parte «Avviata a mano», accesa: creane una in Automazioni, con i messaggi che invia."
+
+msgid "Go to Automations"
+msgstr "Vai alle automazioni"
+
+msgid "Which campaign"
+msgstr "Quale campagna"
+
+msgid "In the list"
+msgstr "Nell'elenco"
+
+msgid "To enrol"
+msgstr "Da iscrivere"
+
+msgctxt "Campaign"
+msgid "Left out"
+msgstr "Esclusi"
+
+msgid "Every message waits for the consent, a STOP, the promotional hours and the time window of the automation, as an automation started by an event does."
+msgstr "Ogni messaggio rispetta il consenso, uno STOP, gli orari promozionali e la fascia oraria dell'automazione, come un'automazione avviata da un evento."
+
+msgid "1 person of the list is of the demo data: what the campaign writes to them stays in {brand}."
+msgstr "1 persona dell'elenco è dei dati di prova: quello che la campagna le scrive resta in {brand}."
+
+msgid "{0} people of the list are of the demo data: what the campaign writes to them stays in {brand}."
+msgstr "{0} persone dell'elenco sono dei dati di prova: quello che la campagna scrive loro resta in {brand}."
+
+msgid "Enrol 1 person"
+msgstr "Iscrivi 1 persona"
+
+msgid "Enrol {0} people"
+msgstr "Iscrivi {0} persone"
+
+msgctxt "Campaign"
+msgid "Enrol"
+msgstr "Iscrivi"
+
+msgid "{0} · only to who agreed to marketing"
+msgstr "{0} · solo a chi ha dato il consenso al marketing"
+
+msgid "The campaign is being sent: the report will be on the automation's Enrolments."
+msgstr "La campagna è in invio: il resoconto sarà nelle Iscrizioni dell'automazione."
+
+msgid "Campaigns sent"
+msgstr "Campagne inviate"
+
+msgid "{0} · by {1}"
+msgstr "{0} · da {1}"
+
+msgid "{0} in the list · {1} enrolled · {2} left out"
+msgstr "{0} nell'elenco · {1} iscritte · {2} escluse"
+
+msgid "{0}: {1}"
+msgstr "{0}: {1}"
+
+msgctxt "Campaign state"
+msgid "Queued"
+msgstr "In coda"
+
+msgctxt "Campaign state"
+msgid "Being sent"
+msgstr "In invio"
+
+msgctxt "Campaign state"
+msgid "Sent"
+msgstr "Inviata"
+
+msgctxt "Campaign state"
+msgid "Failed"
+msgstr "Non riuscita"

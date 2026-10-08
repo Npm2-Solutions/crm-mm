@@ -413,6 +413,13 @@ export const TRIGGER_CATALOG = {
     config: 'date',
     hint: 'A date field comes up — birthdays, renewals, anything.',
   },
+  // a campaign: nothing starts it by itself (crm/automation/campagne.py)
+  'Started by Hand': {
+    category: 'other',
+    icon: 'send',
+    doctype: 'CRM Lead',
+    hint: 'A campaign: nothing starts it by itself. From People, «Send to a list» enrols the people of a view or the ones chosen.',
+  },
   'Inbound Webhook': {
     category: 'other',
     icon: 'globe',

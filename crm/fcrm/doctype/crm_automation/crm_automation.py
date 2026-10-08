@@ -66,6 +66,7 @@ class CRMAutomation(Document):
 			"Inbound Webhook",
 			"Became Client",
 			"Became Patient",
+			"Started by Hand",
 		]
 		webhook_key: DF.Password | None
 		window_days: DF.JSON | None
@@ -114,3 +115,4 @@ class CRMAutomation(Document):
 
 	def on_trash(self):
 		frappe.db.delete("CRM Automation Enrollment", {"automation": self.name})
+		frappe.db.delete("CRM Automation Campaign", {"automation": self.name})

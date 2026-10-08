@@ -271,7 +271,11 @@
 
     <!-- enrollments -->
     <div v-else class="flex-1 overflow-y-auto">
-      <EnrollmentsPanel v-if="draft.name" :automation="draft.name" />
+      <EnrollmentsPanel
+        v-if="draft.name"
+        :automation="draft.name"
+        :steps="draft.steps"
+      />
     </div>
 
     <!-- side panel -->

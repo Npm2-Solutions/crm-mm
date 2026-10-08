@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "autoname": "format:ACMP-{#####}",
+ "creation": "2026-10-08 18:00:00.000000",
+ "description": "A campaign sent to a list of people from the People list: who was enrolled and who was left out, and why.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "automation",
+  "status",
+  "source",
+  "column_break_head",
+  "started_on",
+  "finished_on",
+  "counts_section",
+  "total",
+  "enrolled",
+  "column_break_counts",
+  "skipped",
+  "error",
+  "list_section",
+  "filters",
+  "names"
+ ],
+ "fields": [
+  {
+   "fieldname": "automation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Automation",
+   "options": "CRM Automation",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Queued\nRunning\nDone\nFailed",
+   "reqd": 1
+  },
+  {
+   "description": "The list it was sent to: a view's name, or how many people were chosen.",
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "List"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On"
+  },
+  {
+   "fieldname": "finished_on",
+   "fieldtype": "Datetime",
+   "label": "Finished On"
+  },
+  {
+   "fieldname": "counts_section",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "default": "0",
+   "fieldname": "total",
+   "fieldtype": "Int",
+   "label": "People in the list"
+  },
+  {
+   "default": "0",
+   "fieldname": "enrolled",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Enrolled"
+  },
+  {
+   "fieldname": "column_break_counts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "How many were left out, by reason.",
+   "fieldname": "skipped",
+   "fieldtype": "JSON",
+   "label": "People left out"
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "list_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "List"
+  },
+  {
+   "fieldname": "filters",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "Filters"
+  },
+  {
+   "fieldname": "names",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "People chosen"
+  }
+ ],
+ "in_create": 1,
+ "links": [],
+ "modified": "2026-10-08 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Automation Campaign",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager"
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
