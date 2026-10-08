@@ -325,9 +325,13 @@ class CRMAppointment(Document):
 				event.update(payload)
 			else:
 				event = frappe.get_doc({"doctype": "Event", **payload})
-				event.owner = owner
 			event.set("event_participants", self._event_participants())
 			event.save(ignore_permissions=True)
+			# the first professional's, whoever booked it: the framework makes a new
+			# document its session's (a guest's from /prenota, the desk's), and a
+			# private Event reads only to its owner and its participants
+			if owner and event.owner != owner:
+				event.db_set("owner", owner, update_modified=False)
 			if event.name != self.event:
 				self.db_set("event", event.name, update_modified=False)
 		except Exception:
@@ -336,20 +340,28 @@ class CRMAppointment(Document):
 			frappe.flags.in_appointment_sync = False
 
 	def _event_participants(self) -> list[dict]:
+		"""Who the calendar copy is for. Every professional of the appointment, by their
+		user (the framework lets a private Event be read by a participant whose email
+		is the user: the owner alone left the others out). The people who come are
+		linked by their record and never by their email: an address on a participant
+		row reads the Event to the client area's user of that address, gets the
+		framework's event reminders and Google's invitations - the centre writes to
+		its clients itself (doc 59)."""
 		rows = []
-		for row in self.staff[1:]:
-			email = frappe.db.get_value("User", row.user, "email")
-			if email:
+		for row in self.staff:
+			if not row.user:
+				continue
+			# the participant's email is the user it reads to: a user's name is its email
+			email = row.user if "@" in row.user else frappe.db.get_value("User", row.user, "email")
+			if email and not any(r.get("email") == email for r in rows):
 				rows.append({"reference_doctype": "User", "reference_docname": row.user, "email": email})
 		for row in self.participants:
 			# the framework's Event Participants wants what the row refers to: a
 			# person, a contact or a deal; a name typed with no record stays off
 			# the event (booked from /prenota a person came without one, and the
 			# whole mirror failed: «Valore mancante per: Tipo di documento di riferimento»)
-			if row.email and row.status != "Cancelled" and row.party_type and row.party:
-				rows.append(
-					{"email": row.email, "reference_doctype": row.party_type, "reference_docname": row.party}
-				)
+			if row.status != "Cancelled" and row.party_type and row.party:
+				rows.append({"reference_doctype": row.party_type, "reference_docname": row.party})
 		return rows
 
 	def remove_event(self):

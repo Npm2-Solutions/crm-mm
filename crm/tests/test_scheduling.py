@@ -916,6 +916,50 @@ class TestAppointmentApi(SchedulingCase):
 		finally:
 			frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 0)
 
+	def test_the_calendar_copy_reads_to_every_professional_never_the_client(self):
+		# booked by somebody else (the desk, a guest on /prenota): the copy is the first
+		# professional's, every professional of it reads it, the client's address is on
+		# no participant row (it would read it in the area, get the framework's reminders)
+		anna = self.make_user("anna_sched@example.com")
+		bruno = self.make_user("bruno_sched@example.com")
+		self.make_service("Visita copia", [anna, bruno], staff_selection="All required")
+		lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Copia", "email": "copia.cliente@example.com"}
+		).insert(ignore_permissions=True)
+		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		try:
+			appointment = self.make_appointment(
+				"Visita copia",
+				self.tomorrow(11),
+				[anna, bruno],
+				participants=[
+					{
+						"party_type": "CRM Lead",
+						"party": lead.name,
+						"participant_name": "Copia",
+						"email": "copia.cliente@example.com",
+					},
+				],
+			)
+			appointment.reload()
+			event = frappe.get_doc("Event", appointment.event)
+			self.assertEqual(event.owner, anna)
+			emails = {riga.email for riga in event.event_participants}
+			self.assertEqual(emails - {None, ""}, {anna, bruno})
+			self.assertIn(lead.name, {riga.reference_docname for riga in event.event_participants})
+			for user in (anna, bruno):
+				self.assertTrue(frappe.has_permission("Event", "read", doc=event, user=user))
+				frappe.set_user(user)
+				try:
+					self.assertIn(event.name, frappe.get_list("Event", pluck="name"))
+				finally:
+					frappe.set_user("Administrator")
+			self.assertFalse(
+				frappe.has_permission("Event", "read", doc=event, user="copia.cliente@example.com")
+			)
+		finally:
+			frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 0)
+
 	def test_calendar_feed_filters_by_professional(self):
 		anna = self.make_user("anna_sched@example.com")
 		bruno = self.make_user("bruno_sched@example.com")
