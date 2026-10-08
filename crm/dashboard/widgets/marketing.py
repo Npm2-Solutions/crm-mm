@@ -22,6 +22,7 @@ and Accounting).
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from urllib.parse import urlparse
 
@@ -45,6 +46,8 @@ Insight = DocType("Facebook Ad Insight")
 FailedSync = DocType("Failed Lead Sync Log")
 ConversionEvent = DocType("Meta Conversion Event")
 ReviewRequest = DocType("CRM Review Request")
+Form = DocType("CRM Form")
+FormTemplate = DocType("CRM Form Template")
 
 TRACKING = ("tracking",)
 ROWS = Option("limit", _lt("Rows"), type="int", default=6, min=3, max=20)
@@ -304,6 +307,64 @@ def review_requests_sent(ctx: Context):
 	return charts.number(
 		*two_periods(ctx, ReviewRequest, ReviewRequest.sent_on),
 		hint=_("Link opened: {0}").format(int(aperti)) if aperti else None,
+	)
+
+
+def _voti(ctx: Context, previous: bool = False) -> list:
+	"""The 0 to 10 answers of the surveys sent in the period: each survey's first
+	0 to 10 scale (`crm.recensioni.regole.domanda_nps`)."""
+	from crm.moduli import modelli
+	from crm.recensioni import regole
+
+	righe = (
+		frappe.qb.from_(Form)
+		.join(FormTemplate)
+		.on(Form.template == FormTemplate.name)
+		.select(Form.answers, Form.template_version)
+		.where((Form.docstatus == 1) & (FormTemplate.use == "Survey") & ctx.within(Form.signed_on, previous))
+	).run(as_dict=True)
+	domande: dict = {}
+	voti = []
+	for riga in righe:
+		if riga.template_version not in domande:
+			schema = frappe.db.get_value(modelli.VERSIONE, riga.template_version, "schema")
+			domande[riga.template_version] = regole.domanda_nps(modelli.carica_schema(schema))
+		domanda = domande[riga.template_version]
+		try:
+			risposte = json.loads(riga.answers or "{}")
+		except ValueError:
+			continue
+		if domanda and isinstance(risposte, dict):
+			voti.append(risposte.get(domanda))
+	return voti
+
+
+@widget(
+	"satisfaction_nps",
+	category="marketing",
+	kind="number",
+	title=_lt("Satisfaction (NPS)"),
+	description=_lt(
+		"Net Promoter Score of the surveys answered: who gives 9 or 10 less who gives 0 to 6, from -100 to 100"
+	),
+	requires=("surveys",),
+	scope="site",
+	keywords=("nps", "net promoter score", "survey", "questionario", "soddisfazione"),
+)
+def satisfaction_nps(ctx: Context):
+	from crm.recensioni import regole
+
+	ora = regole.nps(_voti(ctx))
+	prima = regole.nps(_voti(ctx, previous=True))
+	if ora["score"] is None:
+		return charts.number(0, hint=_("No survey answered in this period"))
+	return charts.number(
+		ora["score"],
+		prima["score"],
+		compare="points",
+		hint=_("Answers: {0} · promoters {1}, detractors {2}").format(
+			ora["answers"], ora["promoters"], ora["detractors"]
+		),
 	)
 
 

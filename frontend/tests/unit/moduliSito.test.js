@@ -49,6 +49,25 @@ describe('what a use allows', () => {
     expect(wrong[0].field).toBe('firma')
   })
 
+  it('a survey opens with its link alone: no consent, signature or file', () => {
+    const survey = { withoutCode: true }
+    const wrong = useProblems(
+      form([
+        { id: 'voto', type: 'scale', label: 'Voto', min: 0, max: 10 },
+        { id: 'ok', type: 'consent', label: 'Privacy' },
+        { id: 'firma', type: 'signature', label: 'Firma' },
+        { id: 'foto', type: 'attachment', label: 'Foto' },
+      ]),
+      survey,
+    )
+    expect(wrong.map((p) => p.field)).toEqual(['ok', 'firma', 'foto'])
+    expect(new Set(codes(wrong))).toEqual(
+      new Set([
+        '{0}: a survey opens with its link alone, so it asks no consent, signature or file',
+      ]),
+    )
+  })
+
   it('a sheet records no consent; a form of the desk says nothing of the person', () => {
     const consent = { id: 'ok', type: 'consent', label: 'Privacy' }
     expect(

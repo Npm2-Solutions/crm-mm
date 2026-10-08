@@ -140,6 +140,7 @@
         "Save and finish later": "Salva e finisci dopo",
         "Sign": "Firma",
         "Finish": "Ho finito",
+        "Send": "Invia",
         "Back to the forms": "Torna ai moduli",
         "Saved: you can finish it later from the same link.": "Salvato: puoi finirlo dopo, dallo stesso link.",
         "Still to answer: {0}": "Da rispondere ancora: {0}",
@@ -337,7 +338,7 @@
           note,
           h("div", { class: "actions" },
             view.channel === "Link" ? h("button", { class: "secondary", onclick: save }, t("Save and finish later")) : null,
-            h("button", { class: "primary", onclick: (e) => submit(e.currentTarget) }, data.sign_at_desk ? t("Finish") : t("Sign"))));
+            h("button", { class: "primary", onclick: (e) => submit(e.currentTarget) }, data.sign_at_desk ? t("Finish") : data.has_signature === false ? t("Send") : t("Sign"))));
       }
 
       async function save(event) {

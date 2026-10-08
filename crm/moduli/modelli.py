@@ -61,6 +61,9 @@ class Uso:
 	si_manda: bool = True
 	#: published on the centre's website, filled in by anybody (`crm.moduli.sito`)
 	sul_sito: bool = False
+	#: opened by its link alone, no code: it asks nothing that is the person's to
+	#: protect - no consent, no signature, no file, no health data (a survey)
+	senza_codice: bool = False
 
 
 _usi: dict[str, Uso] = {
@@ -111,6 +114,11 @@ def uso(chiave: str | None) -> Uso:
 	return _usi.get(chiave or FORMA) or _usi[FORMA]
 
 
+def usi_da_mandare() -> list[str]:
+	"""The uses sent by a link or asked of the person: a form, a survey."""
+	return [chiave for chiave, voce in _usi.items() if voce.si_manda]
+
+
 def usi_della_persona() -> list[str]:
 	"""The uses the person fills: what gives consents."""
 	return [chiave for chiave, voce in _usi.items() if voce.della_persona]
@@ -144,6 +152,16 @@ def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
 
 	for campo in S.campi(schema):
 		etichetta = campo.get("label") or campo.get("id")
+		if voce.senza_codice and campo.get("type") in ("consent", "signature", "attachment"):
+			# opened by the link alone: nobody checked who holds it
+			problema(
+				"not_without_a_code",
+				campo,
+				_("{0}: a survey opens with its link alone, so it asks no consent, signature or file").format(
+					etichetta
+				),
+			)
+			continue
 		if campo.get("type") == "consent" and not voce.della_persona:
 			problema(
 				"consent_on_a_sheet",
@@ -409,6 +427,8 @@ def _usi_da_costruire() -> list[dict]:
 			# asked and sent: a form, not a sheet nor a form on the website
 			"sent": voce.si_manda,
 			"on_the_site": voce.sul_sito,
+			# a survey: opened by its link alone, so it asks nothing to protect
+			"without_code": voce.senza_codice,
 		}
 		for voce in usi()
 		if puo_costruire(voce.chiave)

@@ -294,6 +294,26 @@ def _builder_fields(doctype: str) -> list[dict]:
 	return [{**f, "label": _(f["label"]), "options": f.get("options", "")} for f in STANDARD_FIELDS] + fields
 
 
+def _moduli_da_mandare() -> list[dict]:
+	from crm.moduli import modelli
+
+	return [
+		{
+			"name": riga.name,
+			"title": riga.title,
+			"use": riga.use,
+			"survey": modelli.uso(riga.use).senza_codice,
+		}
+		for riga in frappe.get_all(
+			modelli.MODELLO,
+			filters={"enabled": 1, "current_version": ("is", "set"), "use": ("in", modelli.usi_da_mandare())},
+			fields=["name", "title", "use"],
+			order_by="title asc",
+			limit=200,
+		)
+	]
+
+
 @frappe.whitelist()
 def get_builder_meta() -> dict:
 	"""Everything the visual builder needs: palette, triggers, fields, templates, people."""
@@ -329,6 +349,8 @@ def get_builder_meta() -> dict:
 		"email_templates": email_templates,
 		"whatsapp_templates": whatsapp_templates,
 		"tracked_links": frappe.get_all("CRM Tracked Link", pluck="name", limit=100),
+		# what «Send a form» sends: the published forms and surveys
+		"forms": _moduli_da_mandare(),
 		"automations": frappe.get_all(
 			"CRM Automation", fields=["name", "title"], limit=200, order_by="title asc"
 		),

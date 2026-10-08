@@ -100,6 +100,83 @@
           </div>
         </template>
 
+        <!-- a form's link: a survey after a visit, or any published form -->
+        <template v-else-if="step.type === 'send_form'">
+          <FormControl
+            :modelValue="step.template"
+            type="select"
+            :label="__('Form')"
+            :options="formOptions"
+            @update:modelValue="chooseForm"
+          />
+          <span
+            v-if="!(editor.meta.data?.forms || []).length"
+            class="text-p-sm text-ink-gray-5"
+          >
+            {{
+              __(
+                'No published form yet: start a survey in Settings > Clients > Forms, and publish it.',
+              )
+            }}
+          </span>
+          <FormControl
+            v-model="step.via"
+            type="select"
+            :label="__('Send it by')"
+            :options="viaOptions"
+          />
+          <MergeFieldInput
+            v-if="step.via === 'sms'"
+            v-model="step.message"
+            type="textarea"
+            :rows="5"
+            :label="__('Message')"
+            :placeholder="formLinkSms"
+          />
+          <template v-else-if="step.via === 'whatsapp'">
+            <FormControl
+              v-model="step.whatsapp_template"
+              type="select"
+              :label="__('Template')"
+              :options="whatsappOptions"
+            />
+            <div>
+              <div class="mb-1 flex items-center justify-between">
+                <span class="text-xs text-ink-gray-5">
+                  {{ __('Template variables') }}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  iconLeft="plus"
+                  :label="__('Add')"
+                  @click="addTemplateParameter"
+                />
+              </div>
+              <div class="flex flex-col gap-2">
+                <MergeFieldInput
+                  v-for="(value, index) in step.template_parameters || []"
+                  :key="index"
+                  :modelValue="value"
+                  :label="__('{{{0}}}', [index + 1])"
+                  @update:modelValue="
+                    (updated) => (step.template_parameters[index] = updated)
+                  "
+                />
+              </div>
+            </div>
+          </template>
+          <span class="text-p-sm text-ink-gray-5">
+            {{
+              step.via === 'email'
+                ? __(
+                    'The email says in the centre’s words what it is, with the link.',
+                  )
+                : __('{0} is the link to the form.', [FORM_LINK])
+            }}
+          </span>
+        </template>
+
         <!-- task -->
         <template v-else-if="step.type === 'create_task'">
           <MergeFieldInput v-model="step.title" :label="__('Task title')" />
@@ -570,6 +647,39 @@ const whatsappOptions = computed(() =>
     })),
   ),
 )
+
+const formOptions = computed(() =>
+  withEmpty(
+    (editor.meta.data?.forms || []).map((form) => ({
+      label: form.survey
+        ? __('{0} (survey)', [form.title || form.name])
+        : form.title || form.name,
+      value: form.name,
+    })),
+  ),
+)
+
+const viaOptions = computed(() => [
+  { label: __('Email'), value: 'email' },
+  { label: __('SMS'), value: 'sms' },
+  { label: __('WhatsApp'), value: 'whatsapp' },
+])
+
+// written here: inside the template's {{ }} it would close the interpolation
+const FORM_LINK = '{{ form_link }}'
+
+const formLinkSms = computed(() =>
+  __(
+    'Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}',
+  ),
+)
+
+function chooseForm(name) {
+  step.value.template = name
+  step.value.template_title =
+    (editor.meta.data?.forms || []).find((form) => form.name === name)?.title ||
+    ''
+}
 
 const userOptions = computed(() =>
   withEmpty(

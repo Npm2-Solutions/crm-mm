@@ -115,6 +115,11 @@ def _review_requests() -> bool:
 	)
 
 
+def _surveys() -> bool:
+	# a survey published: its 0 to 10 question makes the score (`crm.recensioni`)
+	return bool(frappe.db.exists("CRM Form Template", {"use": "Survey", "current_version": ("is", "set")}))
+
+
 def _web_forms() -> bool:
 	return bool(frappe.db.exists("Web Form", {"module": "FCRM", "published": 1}))
 
@@ -212,6 +217,13 @@ FEATURES: dict[str, Feature] = {
 			_lt("Set the Google review link, then switch on the recipe that asks after a visit"),
 			"Review requests",
 			_review_requests,
+		),
+		Feature(
+			"surveys",
+			_lt("Satisfaction surveys"),
+			_lt("Publish a survey with a question from 0 to 10, and send it after a visit"),
+			"Forms",
+			_surveys,
 		),
 		Feature(
 			"web_forms",

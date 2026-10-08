@@ -154,6 +154,41 @@ def destinatario(lead: str) -> dict:
 	return {"lead": lead, "email": email, "given_by": None}
 
 
+def destinatario_del_messaggio(lead: str) -> dict:
+	"""Where a link sent by SMS or WhatsApp goes: as `destinatario`, to the mobile
+	of whoever answers for the person, else to their own."""
+	rappresentanti = _rappresentanti(lead)
+	for chi in rappresentanti:
+		numero = frappe.db.get_value("CRM Lead", chi, "mobile_no")
+		if numero:
+			return {"lead": chi, "mobile_no": numero, "given_by": chi}
+	if rappresentanti or _minorenne(lead):
+		return {"reason": _("Nobody who answers for them has a mobile")}
+	numero = frappe.db.get_value("CRM Lead", lead, "mobile_no")
+	if not numero:
+		return {"reason": _("This person has no mobile")}
+	return {"lead": lead, "mobile_no": numero, "given_by": None}
+
+
+def _numero_nascosto(numero: str) -> str:
+	cifre = (numero or "").strip()
+	return "•" * max(len(cifre) - 3, 2) + cifre[-3:]
+
+
+def senza_codice(templates) -> bool:
+	"""Whether these forms open by their link alone: surveys, which ask nothing the
+	person has to protect (`modelli.Uso.senza_codice`). The link is the credential,
+	as the tablet's is."""
+	nomi = _elenco(templates)
+	return bool(nomi) and all(
+		modelli.uso(frappe.db.get_value(modelli.MODELLO, nome, "use")).senza_codice for nome in nomi
+	)
+
+
+def _senza_codice(capo) -> bool:
+	return capo.channel == "Link" and senza_codice([r.template for r in _gruppo(capo)])
+
+
 def _posta_in_uscita() -> bool:
 	from frappe.email.doctype.email_account.email_account import EmailAccount
 
@@ -166,7 +201,7 @@ def _modelli_pubblicati() -> list[dict]:
 	righe = []
 	for riga in frappe.get_all(
 		modelli.MODELLO,
-		filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.FORMA},
+		filters={"enabled": 1, "current_version": ("is", "set"), "use": ("in", modelli.usi_da_mandare())},
 		fields=["name", "title", "clinical", "current_version"],
 		order_by="title asc",
 	):
@@ -247,9 +282,15 @@ def _crea(
 		modello = frappe.get_doc(modelli.MODELLO, nome)
 		if not modello.enabled or not modello.current_version:
 			frappe.throw(_("{0} is not published").format(frappe.bold(modello.title)))
-		if (modello.use or modelli.FORMA) != modelli.FORMA:
+		uso = modelli.uso(modello.use)
+		if not uso.si_manda:
 			frappe.throw(_("{0} is not a form to fill").format(frappe.bold(modello.title)))
 		versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
+		if versione.clinical and uso.senza_codice:
+			# opened by the link alone: never health data
+			frappe.throw(
+				_("{0} records health data: it is not sent as a survey").format(frappe.bold(modello.title))
+			)
 		if versione.clinical and not dal_centro and not compilazioni.legge_dati_clinici():
 			frappe.throw(_("This form records health data: it is for the care team"), frappe.PermissionError)
 		richiesta = frappe.get_doc(
@@ -324,22 +365,36 @@ def manda_il_link(
 		dal_centro=dal_centro,
 	)
 	centro = escape_html(nome_del_centro() or _("The centre"))
-	if dove["given_by"]:
-		persona = escape_html(frappe.db.get_value("CRM Lead", lead, "first_name") or "")
-		invito = _("{0} asks you to fill in some forms for {1} before the visit.").format(centro, persona)
+	persona = escape_html(frappe.db.get_value("CRM Lead", lead, "first_name") or "")
+	if senza_codice(templates):
+		# a survey after the visit: opened by the link alone
+		titolo = _("How did your visit go?")
+		if dove["given_by"]:
+			invito = _("{0} would like to know how the visit of {1} went: it takes a minute.").format(
+				centro, persona
+			)
+		else:
+			invito = _("{0} would like to know how your visit went: it takes a minute.").format(centro)
+		avviso = _("The link is valid until {0}.")
+		bottone = _("Answer the survey")
 	else:
-		invito = _("{0} asks you to fill in some forms before your visit.").format(centro)
-	avviso = _("To open them you will receive a code at this address. The link is valid until {0}.")
+		titolo = _("Forms to fill before your visit")
+		if dove["given_by"]:
+			invito = _("{0} asks you to fill in some forms for {1} before the visit.").format(centro, persona)
+		else:
+			invito = _("{0} asks you to fill in some forms before your visit.").format(centro)
+		avviso = _("To open them you will receive a code at this address. The link is valid until {0}.")
+		bottone = _("Open the forms")
 	frappe.sendmail(
 		recipients=[dove["email"]],
-		subject=_("Forms to fill before your visit"),
-		header=_("Forms to fill before your visit"),
+		subject=titolo,
+		header=titolo,
 		with_container=True,
 		message="".join(
 			[
 				f"<p>{_('Hello,')}</p>",
 				f"<p>{invito}</p>",
-				pulsante(_indirizzo(token), _("Open the forms")),
+				pulsante(_indirizzo(token), bottone),
 				# «valido fino all'11 ottobre»: the date is known once it is filled
 				f'<p class="text-muted text-small">{con_l_apostrofo(avviso.format(format_datetime(scadenza, "d MMMM, HH:mm")))}</p>',
 			]
@@ -355,6 +410,37 @@ def manda_il_link(
 		{"channel": "Link", "forms": [r.name for r in richieste], "by_the_centre": dal_centro},
 	)
 	return richieste
+
+
+def link_per_un_messaggio(
+	lead: str, templates, dove: dict, *, scadenza, appointment: str | None = None
+) -> str:
+	"""The requests for forms the centre sends by itself in an SMS or a WhatsApp
+	message (an automation's «Send a form»), to ``dove`` (see
+	`destinatario_del_messaggio`), and their one link: the message is the
+	caller's to write. A form that is not a survey still opens with a code sent to
+	the email of whoever answers for the person, so it needs one."""
+	if not senza_codice(templates) and not frappe.db.get_value("CRM Lead", dove["lead"], "email"):
+		frappe.throw(_("Only a survey opens without a code: this form needs an email to send the code to"))
+	richieste, token = _crea(
+		lead,
+		templates,
+		"Link",
+		scadenza=scadenza,
+		appointment=appointment,
+		given_by=dove["given_by"],
+		recipient=dove["lead"],
+		sent_to=_numero_nascosto(dove["mobile_no"]),
+		dal_centro=True,
+	)
+	traccia.traccia(
+		RICHIESTA,
+		richieste[0].name,
+		"sent",
+		_numero_nascosto(dove["mobile_no"]),
+		{"channel": "Link", "forms": [r.name for r in richieste], "by_the_centre": True},
+	)
+	return _indirizzo(token)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -491,12 +577,13 @@ def _in_sessione(token: str, sessione: str | None):
 		not _uguali(_impronta(sessione or ""), capo.session_hash)
 		or get_datetime(capo.session_expires_on) < now_datetime()
 	):
-		frappe.throw(
-			_("Open the forms again with a new code")
-			if capo.channel == "Link"
-			else _("Ask the desk to hand the tablet over again"),
-			frappe.PermissionError,
-		)
+		if capo.channel != "Link":
+			messaggio = _("Ask the desk to hand the tablet over again")
+		elif _senza_codice(capo):
+			messaggio = _("Open the link again")
+		else:
+			messaggio = _("Open the forms again with a new code")
+		frappe.throw(messaggio, frappe.PermissionError)
 	# the session lasts while it is used
 	capo.db_set("session_expires_on", add_to_date(now_datetime(), minutes=MINUTI_SESSIONE))
 	return capo
@@ -528,7 +615,7 @@ def _vista(capo) -> dict:
 	return {
 		"centre": nome_del_centro(),
 		"channel": capo.channel,
-		"needs_code": capo.channel == "Link",
+		"needs_code": capo.channel == "Link" and not _senza_codice(capo),
 		"sent_to": capo.sent_to,
 		"done": all(_stato(r) not in APERTE for r in _gruppo(capo)),
 		"lang": (frappe.local.lang or "it")[:2],
@@ -554,6 +641,9 @@ def open_request(token: str) -> dict:
 		traccia.traccia(RICHIESTA, capo.name, "opened")
 		if capo.channel == "Tablet":
 			vista["session"] = _apri_sessione(capo)
+	if capo.channel == "Link" and not vista["needs_code"] and not vista["done"]:
+		# a survey: the link is the credential while something is left to answer
+		vista["session"] = _apri_sessione(capo)
 	return vista
 
 
@@ -719,6 +809,8 @@ def get_request_form(token: str, request: str, session: str | None = None) -> di
 		"answers": compilazioni._risposte(doc),
 		"signed": doc.docstatus == 1,
 		"pdf": bool(doc.docstatus == 1 and doc.pdf_file),
+		# a survey has no signature: it is sent, not signed
+		"has_signature": bool(compilazioni._campi_firma(modelli.carica_schema(versione.schema))),
 	}
 
 

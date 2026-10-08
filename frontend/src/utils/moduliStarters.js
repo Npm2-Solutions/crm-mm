@@ -293,6 +293,43 @@ export const STARTERS = [
     },
   },
   {
+    // a survey after a visit (crm/recensioni): its first 0 to 10 scale makes
+    // the dashboard's Net Promoter Score; opened by its link alone, it asks no
+    // consent, signature or file
+    key: 'nps',
+    use: 'Survey',
+    title: 'How likely are you to recommend us?',
+    description: 'A score from 0 to 10 and a comment',
+    schema: () => ({
+      sections: [
+        {
+          id: 'visit',
+          title: __('Your visit'),
+          fields: [
+            {
+              id: 'recommend',
+              type: 'scale',
+              label: __(
+                'How likely are you to recommend us to a friend or family member?',
+              ),
+              min: 0,
+              max: 10,
+              min_label: __('Not at all likely'),
+              max_label: __('Extremely likely'),
+              required: true,
+            },
+            {
+              id: 'comment',
+              type: 'text',
+              label: __('What is the main reason for your score?'),
+              multiline: true,
+            },
+          ],
+        },
+      ],
+    }),
+  },
+  {
     key: 'contact',
     use: 'Website',
     title: 'Contact request',

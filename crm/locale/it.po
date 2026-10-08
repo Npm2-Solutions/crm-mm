@@ -47256,3 +47256,141 @@ msgstr "Com'è andata, {{ first_name }}?"
 
 msgid "Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went with a review on Google: {{ review_link }}"
 msgstr "Ciao {{ first_name }}, grazie per la visita. Se hai un minuto, racconta agli altri com'è andata con una recensione su Google: {{ review_link }}"
+
+msgid "Survey"
+msgstr "Questionario"
+
+msgid "Surveys"
+msgstr "Questionari"
+
+msgid "Filled in by the person after a visit, from its link alone: how it went, a score from 0 to 10"
+msgstr "Compilato dalla persona dopo una visita, col solo link: com'è andata, un voto da 0 a 10"
+
+msgid "{0}: a survey opens with its link alone, so it asks no consent, signature or file"
+msgstr "{0}: un questionario si apre col solo link, quindi non chiede consensi, firme o file"
+
+msgid "{0} records health data: it is not sent as a survey"
+msgstr "{0} raccoglie dati sanitari: non si manda come questionario"
+
+msgid "Nobody who answers for them has a mobile"
+msgstr "Nessuno di quelli che rispondono per lei ha un cellulare"
+
+msgid "This person has no mobile"
+msgstr "Questa persona non ha un cellulare"
+
+msgid "How did your visit go?"
+msgstr "Com'è andata la visita?"
+
+msgid "{0} would like to know how the visit of {1} went: it takes a minute."
+msgstr "{0} vorrebbe sapere com'è andata la visita di {1}: basta un minuto."
+
+msgid "{0} would like to know how your visit went: it takes a minute."
+msgstr "{0} vorrebbe sapere com'è andata la tua visita: basta un minuto."
+
+msgid "The link is valid until {0}."
+msgstr "Il link è valido fino al {0}."
+
+msgid "Answer the survey"
+msgstr "Rispondi al questionario"
+
+msgid "Only a survey opens without a code: this form needs an email to send the code to"
+msgstr "Solo un questionario si apre senza codice: questo modulo ha bisogno di un'email a cui mandare il codice"
+
+msgid "Open the link again"
+msgstr "Apri di nuovo il link"
+
+msgid "Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}"
+msgstr "Ciao {{ first_name }}, com'è andata la visita? Basta un minuto: {{ form_link }}"
+
+msgid "Skipped: no person"
+msgstr "Saltato: nessuna persona"
+
+msgid "Skipped: the form is not published"
+msgstr "Saltato: il modulo non è pubblicato"
+
+msgid "Skipped: {0}"
+msgstr "Saltato: {0}"
+
+msgid "Form link emailed to {0}"
+msgstr "Link del modulo inviato via email a {0}"
+
+msgid "form «{0}» by email"
+msgstr "modulo «{0}» via email"
+
+msgid "form «{0}» by SMS"
+msgstr "modulo «{0}» via SMS"
+
+msgid "form «{0}» on WhatsApp"
+msgstr "modulo «{0}» su WhatsApp"
+
+msgid "Satisfaction surveys"
+msgstr "Questionari di soddisfazione"
+
+msgid "Publish a survey with a question from 0 to 10, and send it after a visit"
+msgstr "Pubblica un questionario con una domanda da 0 a 10, e mandalo dopo una visita"
+
+msgid "Satisfaction (NPS)"
+msgstr "Soddisfazione (NPS)"
+
+msgid "Net Promoter Score of the surveys answered: who gives 9 or 10 less who gives 0 to 6, from -100 to 100"
+msgstr "Net Promoter Score dei questionari compilati: chi dà 9 o 10 meno chi dà da 0 a 6, da -100 a 100"
+
+msgid "No survey answered in this period"
+msgstr "Nessun questionario compilato in questo periodo"
+
+msgid "Answers: {0} · promoters {1}, detractors {2}"
+msgstr "Risposte: {0} · promotori {1}, detrattori {2}"
+
+msgid "Send a Form"
+msgstr "Manda un modulo"
+
+msgid "Sends the link to fill a published form: a survey after a visit opens with the link alone."
+msgstr "Manda il link per compilare un modulo pubblicato: un questionario dopo una visita si apre col solo link."
+
+msgid "No form selected"
+msgstr "Nessun modulo scelto"
+
+msgid "no form selected"
+msgstr "nessun modulo scelto"
+
+msgid "Send it by"
+msgstr "Mandalo via"
+
+msgid "No published form yet: start a survey in Settings > Clients > Forms, and publish it."
+msgstr "Ancora nessun modulo pubblicato: inizia un questionario in Impostazioni > Clienti > Moduli, e pubblicalo."
+
+msgid "The email says in the centre’s words what it is, with the link."
+msgstr "L'email dice con le parole del centro di cosa si tratta, con il link."
+
+msgid "{0} is the link to the form."
+msgstr "{0} è il link al modulo."
+
+msgid "{0} (survey)"
+msgstr "{0} (questionario)"
+
+msgid "Satisfaction survey after the visit"
+msgstr "Questionario di soddisfazione dopo la visita"
+
+msgid "The day after a visit, the link to a short survey: how likely they are to recommend the centre, from 0 to 10."
+msgstr "Il giorno dopo una visita, il link a un breve questionario: quanto consiglierebbe il centro, da 0 a 10."
+
+msgid "How likely are you to recommend us?"
+msgstr "Quanto ci consiglieresti?"
+
+msgid "A score from 0 to 10 and a comment"
+msgstr "Un voto da 0 a 10 e un commento"
+
+msgid "Your visit"
+msgstr "La tua visita"
+
+msgid "How likely are you to recommend us to a friend or family member?"
+msgstr "Quanto è probabile che ci consigli a un amico o a un familiare?"
+
+msgid "Not at all likely"
+msgstr "Per niente probabile"
+
+msgid "Extremely likely"
+msgstr "Estremamente probabile"
+
+msgid "What is the main reason for your score?"
+msgstr "Qual è il motivo principale del tuo voto?"

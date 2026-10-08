@@ -277,6 +277,7 @@ const USE_FILTERS = {
   Form: () => __('To fill and sign'),
   Sheet: () => __('Sheets'),
   Website: () => __('On the website'),
+  Survey: () => __('Surveys'),
 }
 const filter = ref('all')
 const filters = computed(() => {

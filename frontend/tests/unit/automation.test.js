@@ -23,6 +23,7 @@ import {
   validateAutomation,
   waitSummary,
   PALETTE,
+  RECIPES,
 } from '@/utils/automation'
 
 const flowWithBranch = () => {
@@ -176,6 +177,12 @@ describe('summaries', () => {
     ).toBe('status → Won')
     expect(stepSummary(newStep('split'))).toBe('A 50% · B 50%')
     expect(stepSummary(newStep('send_sms'))).toBe('No message')
+    expect(stepSummary(newStep('send_form'))).toBe('No form selected')
+    expect(
+      stepSummary(
+        newStep('send_form', { template: 'x1', template_title: 'NPS' }),
+      ),
+    ).toBe('NPS')
   })
 
   it("names a field's placeholder on the canvas, never shows its code", () => {
@@ -248,6 +255,17 @@ describe('validateAutomation', () => {
     expect(hasErrors(issues)).toBe(false)
     expect(issues[0].level).toBe('warning')
     expect(issues[0].node).toBe(sms.id)
+  })
+
+  it('asks «Send a form» which form, and which template on WhatsApp', () => {
+    const issues = validateAutomation(
+      draft([newStep('send_form', { via: 'whatsapp' })]),
+    )
+    expect(hasErrors(issues)).toBe(false)
+    expect(issues.map((i) => i.message)).toEqual([
+      'Send a Form: no form selected',
+      'Send a Form: no template selected',
+    ])
   })
 
   it('requires a title, a step and a trigger', () => {
@@ -360,5 +378,43 @@ describe('triggers', () => {
       [{ field: 'status', operator: 'equals', value: 'New' }],
     ]
     expect(triggerSummary(trigger)).toBe('tag «vip» · status is New')
+  })
+})
+
+describe('the recipes that ask how a visit went', () => {
+  const recipe = (key) => RECIPES.find((r) => r.key === key)
+  const texts = (steps) =>
+    JSON.stringify(steps.map((step) => [step.message, step.subject]))
+
+  it('asks for a review two hours after a visit, by SMS or else by email', () => {
+    const steps = recipe('review_after_visit').build()
+    expect(recipe('review_after_visit').trigger_event).toBe(
+      'Appointment Completed',
+    )
+    expect(steps[0]).toMatchObject({ type: 'wait', hours: 2 })
+    const [branch] = steps[1].branches
+    expect(branch.steps[0].type).toBe('send_sms')
+    expect(steps[1].else_steps[0].type).toBe('send_email')
+    // the same words to everybody, with the link the server signs
+    expect(texts(branch.steps)).toContain('{{ review_link }}')
+    expect(texts(steps[1].else_steps)).toContain('{{ review_link }}')
+  })
+
+  it('sends the survey the day after, its link in the message', () => {
+    const steps = recipe('satisfaction_survey').build()
+    expect(steps[0]).toMatchObject({ type: 'wait', days: 1 })
+    expect(steps[1]).toMatchObject({ type: 'send_form', via: 'sms' })
+    expect(steps[1].message).toContain('{{ form_link }}')
+  })
+
+  it('save without errors, off as every recipe', () => {
+    for (const key of ['review_after_visit', 'satisfaction_survey']) {
+      const issues = validateAutomation({
+        title: recipe(key).title,
+        triggers: [newTrigger(recipe(key).trigger_event)],
+        steps: recipe(key).build(),
+      })
+      expect(hasErrors(issues)).toBe(false)
+    }
   })
 })

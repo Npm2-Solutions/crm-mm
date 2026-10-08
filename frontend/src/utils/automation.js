@@ -53,6 +53,25 @@ export const STEP_CATALOG = {
     defaults: { template: '', template_parameters: [] },
     gateable: true,
   },
+  // a form's link: a survey after a visit, or any published form
+  // (crm/moduli/richieste.py); {{ form_link }} is the link in an SMS or WhatsApp
+  send_form: {
+    label: 'Send a Form',
+    icon: 'clipboard',
+    theme: 'blue',
+    category: 'communication',
+    description:
+      'Sends the link to fill a published form: a survey after a visit opens with the link alone.',
+    defaults: {
+      template: '',
+      template_title: '',
+      via: 'email',
+      message: '',
+      whatsapp_template: '',
+      template_parameters: [],
+    },
+    gateable: true,
+  },
   notify: {
     label: 'Internal Notification',
     icon: 'bell',
@@ -905,6 +924,8 @@ export function stepSummary(step) {
       return segnapostiInParole(step.message) || __('No message')
     case 'send_whatsapp_template':
       return step.template || __('No template selected')
+    case 'send_form':
+      return step.template_title || step.template || __('No form selected')
     case 'create_task':
       return segnapostiInParole(step.title) || __('Follow up')
     case 'assign':
@@ -1017,6 +1038,12 @@ export function validateAutomation(draft) {
         break
       case 'send_whatsapp_template':
         if (!step.template) problem('warning', __('no template selected'))
+        break
+      case 'send_form':
+        if (!step.template) problem('warning', __('no form selected'))
+        if (step.via === 'whatsapp' && !step.whatsapp_template) {
+          problem('warning', __('no template selected'))
+        }
         break
       case 'create_task':
         if (!step.title) problem('warning', __('no task title'))
@@ -1247,6 +1274,26 @@ export const RECIPES = [
         domanda,
       ]
     },
+  },
+  {
+    // off until the centre switches it on: the day after a visit, the link to
+    // a survey of the centre's (a starter in Settings > Clients > Forms), whose
+    // 0 to 10 question makes the dashboard's «Satisfaction (NPS)»
+    key: 'satisfaction_survey',
+    title: 'Satisfaction survey after the visit',
+    description:
+      'The day after a visit, the link to a short survey: how likely they are to recommend the centre, from 0 to 10.',
+    icon: 'smile',
+    trigger_event: 'Appointment Completed',
+    build: () => [
+      newStep('wait', { mode: 'duration', days: 1, hours: 0, minutes: 0 }),
+      newStep('send_form', {
+        via: 'sms',
+        message: __(
+          'Hi {{ first_name }}, how did your visit go? It takes a minute: {{ form_link }}',
+        ),
+      }),
+    ],
   },
   {
     key: 'deal_won',

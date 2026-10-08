@@ -133,7 +133,8 @@ class LaScheda(SchedeCase):
 		usi = {uso.chiave: uso for uso in modelli.usi()}
 		self.assertTrue(usi[modelli.FORMA].della_persona)
 		self.assertFalse(usi[modelli.SCHEDA].della_persona)
-		# the person fills a form, at the desk or on the website; the operator a sheet
-		self.assertEqual(modelli.usi_della_persona(), [modelli.FORMA, modelli.SITO])
+		# the person fills a form, at the desk or on the website, and a survey after a
+		# visit (`crm.recensioni`); the operator a sheet
+		self.assertEqual(modelli.usi_della_persona(), [modelli.FORMA, modelli.SITO, "Survey"])
 		# an old template without a use is a form
 		self.assertEqual(modelli.uso(None).chiave, modelli.FORMA)
