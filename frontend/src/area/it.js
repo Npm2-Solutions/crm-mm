@@ -377,4 +377,20 @@ export default {
     'Il pagamento non è stato fatto: puoi riprovare quando vuoi.',
   'The payment could not start: try again.':
     'Il pagamento non è partito: riprova.',
+  // a quote paid in instalments (crm.preventivi.area)
+  'Payment plan': 'Piano dei pagamenti',
+  Paid: 'Pagata',
+  Deposit: 'Acconto',
+  'On acceptance': 'All’accettazione',
+  'Instalment {0} of {1}': 'Rata {0} di {1}',
+  'Was due on {0}': 'Scadeva il {0}',
+  'Due on {0}': 'Scade il {0}',
+  'Show fewer': 'Mostra meno',
+  'Show all {0}': 'Mostra tutte e {0}',
+  'Instalments: all {0} paid': 'Rate: tutte e {0} pagate',
+  'Instalments: {0} of {1} paid': 'Rate: {0} di {1} pagate',
+  'next the deposit, {0}': 'prossimo l’acconto, {0}',
+  'next {0}, {1}': 'prossima {0}, {1}',
+  '1 late, {0}': '1 in ritardo, {0}',
+  '{0} late, {1}': '{0} in ritardo, {1}',
 }

@@ -54,6 +54,11 @@
             ·
             {{ quote.practitioner_name }}
           </span>
+          <!-- paid in instalments: how they go -->
+          <InstalmentsLine
+            :summary="quote.instalments"
+            :currency="quote.currency"
+          />
         </span>
         <!-- on a phone, and in a record's column on a tablet, the marks go
              under the words, which beside them wrapped the amount and who is
@@ -87,6 +92,7 @@
 </template>
 
 <script setup>
+import InstalmentsLine from './InstalmentsLine.vue'
 import QuoteDialog from '@/components/Quotes/QuoteDialog.vue'
 import CategoryTag from '@/components/Espresso/CategoryTag.vue'
 import { appLocale } from '@/utils/locale'

@@ -43,6 +43,36 @@
         :min="1"
       />
     </div>
+    <!-- a quote paid in instalments (crm.preventivi.rate): who invoices them -->
+    <div class="flex flex-col gap-3">
+      <FormControl
+        v-model="form.instalment_invoicing"
+        type="select"
+        :label="__('Quotes paid in instalments')"
+        :options="instalmentOptions"
+      />
+      <p class="text-p-sm text-ink-gray-6">
+        {{
+          form.instalment_invoicing === 'Track only'
+            ? __(
+                'The centre invoices the work by itself as it is done; the instalments are only followed, and marked paid by whoever records payments.',
+              )
+            : __(
+                'On the day each payment falls due {brand} makes its invoice, and the appointments of the quote are not invoiced again. Money received before a service is done is invoiced when it is received.',
+              )
+        }}
+      </p>
+      <FormControl
+        v-if="form.instalment_invoicing !== 'Track only'"
+        v-model="form.issue_instalment_invoices"
+        type="checkbox"
+        :label="
+          __(
+            'Issue them at once, rather than leaving drafts to check and issue',
+          )
+        "
+      />
+    </div>
     <ErrorMessage :message="error" />
     <div class="flex justify-end">
       <Button
@@ -77,7 +107,12 @@ const settings = createResource({
   auto: puo('pipeline.configura'),
 })
 
-const form = reactive({ quotes_pipeline: '', valid_days: '' })
+const form = reactive({
+  quotes_pipeline: '',
+  valid_days: '',
+  instalment_invoicing: 'Each instalment when due',
+  issue_instalment_invoices: false,
+})
 const busy = ref(false)
 const error = ref('')
 
@@ -86,6 +121,9 @@ watch(
   (data) => {
     form.quotes_pipeline = data?.quotes_pipeline || ''
     form.valid_days = data?.valid_days || ''
+    form.instalment_invoicing =
+      data?.instalment_invoicing || 'Each instalment when due'
+    form.issue_instalment_invoices = Boolean(data?.issue_instalment_invoices)
   },
   { immediate: true },
 )
@@ -93,8 +131,23 @@ watch(
 const changed = computed(
   () =>
     (settings.data?.quotes_pipeline || '') !== form.quotes_pipeline ||
-    String(settings.data?.valid_days || '') !== String(form.valid_days || ''),
+    String(settings.data?.valid_days || '') !== String(form.valid_days || '') ||
+    (settings.data?.instalment_invoicing || 'Each instalment when due') !==
+      form.instalment_invoicing ||
+    Boolean(settings.data?.issue_instalment_invoices) !==
+      Boolean(form.issue_instalment_invoices),
 )
+
+const instalmentOptions = computed(() => [
+  {
+    label: __('{brand} invoices each instalment'),
+    value: 'Each instalment when due',
+  },
+  {
+    label: __('The centre invoices by itself'),
+    value: 'Track only',
+  },
+])
 
 const pipelineOptions = computed(() => [
   { label: '', value: '' },
@@ -121,5 +174,7 @@ const save = () =>
   run('crm.preventivi.pipeline.save_settings', {
     quotes_pipeline: form.quotes_pipeline || null,
     valid_days: Number(form.valid_days) || null,
+    instalment_invoicing: form.instalment_invoicing,
+    issue_instalment_invoices: form.issue_instalment_invoices ? 1 : 0,
   })
 </script>

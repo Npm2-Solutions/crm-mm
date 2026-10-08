@@ -389,6 +389,10 @@
                 ])
               }}
             </span>
+            <InstalmentsLine
+              :summary="preventivo.instalments"
+              :currency="preventivo.currency"
+            />
           </span>
           <Badge
             class="shrink-0"
@@ -435,6 +439,7 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import InstalmentsLine from '@/components/Quotes/InstalmentsLine.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'

@@ -221,6 +221,92 @@
           @click="addItem"
         />
         <Totals :totals="liveTotals" :money="money" />
+
+        <!-- how it is paid: at once, or a deposit and instalments - the centre's
+             own plan, no interest nor fees (crm.preventivi.rate) -->
+        <section
+          class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-3"
+        >
+          <h4 class="text-p-base font-medium text-ink-gray-8">
+            {{ __('Payment') }}
+          </h4>
+          <div
+            role="radiogroup"
+            :aria-label="__('Payment')"
+            class="grid grid-cols-2 gap-2"
+          >
+            <button
+              v-for="via in paymentOptions"
+              :key="via.value"
+              type="button"
+              role="radio"
+              :aria-checked="plan.payment === via.value"
+              class="flex min-h-10 items-center justify-center rounded-md border px-3 py-2 text-center text-p-base"
+              :class="
+                plan.payment === via.value
+                  ? 'dc-scelto border-outline-gray-4 bg-surface-gray-2 text-ink-gray-9'
+                  : 'border-outline-gray-2 text-ink-gray-7'
+              "
+              @click="choosePayment(via.value)"
+            >
+              {{ via.label }}
+            </button>
+          </div>
+          <template v-if="plan.payment === A_RATE">
+            <div class="grid grid-cols-3 gap-3 max-md:grid-cols-2">
+              <FormControl
+                v-model="plan.deposit_type"
+                type="select"
+                :label="__('Deposit as')"
+                :options="depositTypeOptions"
+              />
+              <FormControl
+                v-model="plan.deposit_value"
+                type="number"
+                :label="
+                  plan.deposit_type === 'Percent'
+                    ? __('Deposit, %')
+                    : __('Deposit, {0}', [currencySymbol])
+                "
+                :min="0"
+                placeholder="0"
+              />
+              <FormControl
+                v-model="plan.instalments_count"
+                type="number"
+                inputmode="numeric"
+                :label="__('Instalments')"
+                :min="MIN_RATE"
+                :max="MAX_RATE"
+                :placeholder="__('2 to 36')"
+              />
+              <FormControl
+                v-model="plan.every_months"
+                type="select"
+                :label="__('How often', null, 'Instalments')"
+                :options="everyOptions"
+              />
+              <FormControl
+                v-model="plan.first_due_on"
+                class="max-md:col-span-2"
+                type="date"
+                :format="dateFormat()"
+                :label="__('First instalment on')"
+              />
+            </div>
+            <p
+              v-if="planProblems.length"
+              class="text-p-sm text-ink-amber-7"
+              role="status"
+            >
+              {{ planProblems.join(' · ') }}
+            </p>
+            <p v-else-if="planWords" class="text-p-sm text-ink-gray-7">
+              {{ planWords }}
+            </p>
+          </template>
+        </section>
+
         <FormControl
           v-model="plan.patient_notes"
           type="textarea"
@@ -303,6 +389,108 @@
           </div>
         </section>
         <Totals :totals="plan.totals" :money="money" :done="isGoing" />
+
+        <!-- paid in instalments: the plan, and how it goes -->
+        <section
+          v-if="plan.payment === A_RATE && plan.instalments?.length"
+          class="flex flex-col gap-2"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h4 class="text-p-sm font-medium text-ink-gray-7">
+              {{ __('Payment plan') }}
+            </h4>
+            <Button
+              v-if="plan.can_settle"
+              size="sm"
+              :label="__('Pay off the rest, {0}', [money(plan.rest)])"
+              :loading="busy === 'settle'"
+              @click="settle"
+            />
+          </div>
+          <InstalmentsLine
+            v-if="plan.instalments_summary"
+            :summary="plan.instalments_summary"
+            :currency="plan.currency || 'EUR'"
+          />
+          <div
+            class="flex flex-col divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2 px-3"
+          >
+            <div
+              v-for="row in plan.instalments"
+              :key="row.name"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2"
+            >
+              <span class="flex min-w-[10rem] flex-1 flex-col">
+                <span
+                  class="text-p-base"
+                  :class="
+                    row.status === 'Cancelled'
+                      ? 'text-ink-gray-5 line-through'
+                      : 'text-ink-gray-8'
+                  "
+                >
+                  {{ rowLabel(row) }}
+                </span>
+                <span
+                  class="text-p-xs"
+                  :class="row.late ? 'text-ink-amber-7' : 'text-ink-gray-5'"
+                >
+                  {{ rowWhen(row) }}
+                </span>
+                <span v-if="row.problem" class="text-p-xs text-ink-amber-7">
+                  {{ row.problem }}
+                </span>
+              </span>
+              <Button
+                v-if="row.invoice"
+                size="sm"
+                variant="ghost"
+                class="shrink-0"
+                icon-left="file-text"
+                :label="
+                  row.invoice_draft
+                    ? __('Draft invoice')
+                    : row.invoice_number || __('Invoice')
+                "
+                @click="openInvoice(row.invoice)"
+              />
+              <span class="shrink-0 text-p-base tabular-nums text-ink-gray-8">
+                {{ money(row.amount) }}
+              </span>
+              <Dropdown
+                v-if="rowOptions(row).length"
+                :options="rowOptions(row)"
+              >
+                <Button
+                  size="sm"
+                  variant="subtle"
+                  :theme="STATO_RATA[row.status] || 'gray'"
+                  :label="__(row.status, null, 'Instalment')"
+                  icon-right="chevron-down"
+                  class="shrink-0"
+                />
+              </Dropdown>
+              <Badge
+                v-else
+                class="shrink-0"
+                variant="subtle"
+                :theme="STATO_RATA[row.status] || 'gray'"
+                :label="__(row.status, null, 'Instalment')"
+              />
+            </div>
+          </div>
+          <p v-if="isGoing" class="text-p-sm text-ink-gray-6">
+            {{
+              plan.instalments_invoiced
+                ? __(
+                    'Each payment is invoiced by itself when it falls due; the appointments of these services are not invoiced again.',
+                  )
+                : __(
+                    'The centre invoices these payments by itself: mark each one paid here.',
+                  )
+            }}
+          </p>
+        </section>
         <p
           v-if="plan.patient_notes"
           class="whitespace-pre-line rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-8"
@@ -482,12 +670,24 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { dateFormat, formatDate } from '@/utils'
 import {
+  A_RATE,
+  MAX_RATE,
+  MIN_RATE,
   STATO,
+  STATO_RATA,
   STATO_VOCE,
+  UNICA,
+  acconto,
   importo,
   perIlServer,
+  pianoDelleRate,
+  problemiDelleRate,
   totali,
 } from '@/utils/preventivi'
+import { useFattura } from '@/composables/fattura'
+import { oggiDelCentro } from '@/utils/scheduler'
+import { simboloDellaValuta } from '@/utils/valute'
+import InstalmentsLine from './InstalmentsLine.vue'
 import { appLocale } from '@/utils/locale'
 import {
   Badge,
@@ -554,6 +754,12 @@ function fill(data) {
   for (const k of Object.keys(plan)) delete plan[k]
   Object.assign(plan, data, {
     price_list: data.price_list || '',
+    payment: data.payment || UNICA,
+    deposit_type: data.deposit_type || 'Amount',
+    deposit_value: data.deposit_value || '',
+    instalments_count: data.instalments_count || '',
+    every_months: String(data.every_months || 1),
+    first_due_on: data.first_due_on || '',
     items: (data.items || []).map((item) => ({
       ...item,
       key: item.name || key(),
@@ -962,11 +1168,231 @@ const moreOptions = computed(() => {
     options.push({
       label: __('Close the quote'),
       icon: 'lock',
-      onClick: () =>
-        act('close', 'crm.preventivi.api.close_quote', {}, __('Quote closed')),
+      onClick: closeQuote,
     })
   return options
 })
+
+async function closeQuote() {
+  busy.value = 'close'
+  error.value = ''
+  try {
+    const data = await call('crm.preventivi.api.close_quote', {
+      name: plan.name,
+    })
+    fill(data)
+    const n = data.cancelled_instalments || 0
+    toast.success(
+      n === 1
+        ? __('Quote closed: the 1 instalment not invoiced yet is cancelled')
+        : n
+          ? __(
+              'Quote closed: the {0} instalments not invoiced yet are cancelled',
+              [n],
+            )
+          : __('Quote closed'),
+    )
+    emit('changed')
+  } catch (e) {
+    error.value = e.messages?.[0] || __('Could not change it')
+  } finally {
+    busy.value = ''
+  }
+}
+
+// --- the payment -------------------------------------------------------------------
+
+const paymentOptions = computed(() => [
+  { label: __('At once'), value: UNICA },
+  { label: __('In instalments'), value: A_RATE },
+])
+const depositTypeOptions = computed(() => [
+  { label: __('An amount'), value: 'Amount' },
+  { label: __('A share of the total'), value: 'Percent' },
+])
+const everyOptions = computed(() => [
+  { label: __('Every month'), value: '1' },
+  { label: __('Every two months'), value: '2' },
+])
+const currencySymbol = computed(() =>
+  simboloDellaValuta(plan.currency || 'EUR', appLocale()),
+)
+
+function choosePayment(value) {
+  plan.payment = value
+  if (value !== A_RATE) return
+  // a start a desk would choose: ten a month, from the first of next month
+  if (!plan.instalments_count) plan.instalments_count = 10
+  if (!plan.first_due_on) {
+    const [anno, mese] = oggiDelCentro().split('-').map(Number)
+    const dopo = mese === 12 ? [anno + 1, 1] : [anno, mese + 1]
+    plan.first_due_on = `${dopo[0]}-${String(dopo[1]).padStart(2, '0')}-01`
+  }
+}
+
+const planProblems = computed(() =>
+  plan.payment === A_RATE
+    ? problemiDelleRate(
+        liveTotals.value.net,
+        plan.deposit_type,
+        plan.deposit_value,
+        plan.instalments_count,
+        plan.every_months,
+        plan.first_due_on || null,
+      ).map((problema) => __(problema, [MIN_RATE, MAX_RATE]))
+    : [],
+)
+
+// the plan in a sentence: «Acconto 400,00 € alla firma · 10 rate da 360,00 €
+// ogni mese, dal 1 novembre 2026 al 1 agosto 2027»
+const planWords = computed(() => {
+  if (plan.payment !== A_RATE || planProblems.value.length) return ''
+  const totale = liveTotals.value.net
+  const anticipo = acconto(totale, plan.deposit_type, plan.deposit_value)
+  const righe = pianoDelleRate(
+    totale,
+    anticipo,
+    plan.instalments_count,
+    plan.every_months,
+    plan.first_due_on,
+  ).filter((riga) => riga.kind !== 'Deposit')
+  if (!righe.length) return ''
+  const giorno = (d) => formatDate(d, 'D MMMM YYYY')
+  const parti = []
+  if (anticipo > 0)
+    parti.push(__('Deposit of {0} on acceptance', [money(anticipo)]))
+  const prima = righe[0]
+  const ultima = righe.at(-1)
+  parti.push(
+    prima.amount === ultima.amount
+      ? __('{0} instalments of {1}', [righe.length, money(prima.amount)])
+      : __('{0} instalments of {1}, the last {2}', [
+          righe.length,
+          money(prima.amount),
+          money(ultima.amount),
+        ]),
+  )
+  parti.push(
+    __('from {0} to {1}', [giorno(prima.due_on), giorno(ultima.due_on)]),
+  )
+  return parti.join(' · ')
+})
+
+const { apriFattura } = useFattura()
+
+function openInvoice(name) {
+  apriFattura(name, { alCambio: reload })
+}
+
+async function reload() {
+  if (!plan.name) return
+  try {
+    fill(await call('crm.preventivi.api.get_quote', { name: plan.name }))
+    emit('changed')
+  } catch {
+    // the quote stays as it was read
+  }
+}
+
+function rowLabel(row) {
+  if (row.kind === 'Deposit') return __('Deposit')
+  const quante = plan.instalments.filter(
+    (riga) => riga.kind !== 'Deposit' && riga.status !== 'Cancelled',
+  ).length
+  return __('Instalment {0} of {1}', [row.number, quante || row.number])
+}
+
+function rowWhen(row) {
+  if (!row.due_on) return __('On acceptance')
+  const giorno = formatDate(row.due_on, 'D MMMM YYYY')
+  if (row.status === 'Paid' && row.paid_on)
+    return __('due {0} · paid {1}', [
+      giorno,
+      formatDate(row.paid_on, 'D MMMM YYYY'),
+    ])
+  return row.late ? __('due {0} · late', [giorno]) : __('due {0}', [giorno])
+}
+
+function rowOptions(row) {
+  const options = []
+  if (plan.can_invoice_instalment && row.status === 'To pay')
+    options.push({
+      label: __('Invoice it now'),
+      onClick: () => invoiceRow(row),
+    })
+  if (plan.can_mark_instalment && row.status === 'To pay')
+    options.push({
+      label: __('Mark it paid'),
+      onClick: () =>
+        act('mark', 'crm.preventivi.rate.mark_instalment', {
+          row: row.name,
+          paid: 1,
+        }),
+    })
+  if (plan.can_mark_instalment && row.status === 'Paid' && !row.invoice)
+    options.push({
+      label: __('Back to pay'),
+      onClick: () =>
+        act('mark', 'crm.preventivi.rate.mark_instalment', {
+          row: row.name,
+          paid: 0,
+        }),
+    })
+  return options
+}
+
+async function invoiceRow(row) {
+  busy.value = 'invoice'
+  error.value = ''
+  try {
+    const data = await call('crm.preventivi.rate.invoice_instalment', {
+      name: plan.name,
+      row: row.name,
+    })
+    fill(data)
+    emit('changed')
+    openInvoice(data.invoice)
+  } catch (e) {
+    error.value = e.messages?.[0] || __('Could not invoice it')
+  } finally {
+    busy.value = ''
+  }
+}
+
+function settle() {
+  $dialog({
+    title: __('Pay off the rest?'),
+    message: plan.instalments_invoiced
+      ? __(
+          'One invoice of {0} takes the place of the instalments still to invoice: it opens as a draft.',
+          [money(plan.rest)],
+        )
+      : __('The instalments still to pay are marked paid today.'),
+    actions: [
+      {
+        label: __('Pay off the rest'),
+        variant: 'solid',
+        onClick: async (closeDialog) => {
+          closeDialog()
+          busy.value = 'settle'
+          error.value = ''
+          try {
+            const data = await call('crm.preventivi.rate.settle_quote', {
+              name: plan.name,
+            })
+            fill(data)
+            emit('changed')
+            if (data.invoice) openInvoice(data.invoice)
+          } catch (e) {
+            error.value = e.messages?.[0] || __('Could not change it')
+          } finally {
+            busy.value = ''
+          }
+        },
+      },
+    ],
+  })
+}
 
 async function copy() {
   try {
