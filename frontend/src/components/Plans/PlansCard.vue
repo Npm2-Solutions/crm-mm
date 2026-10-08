@@ -233,6 +233,19 @@
           >
             {{ __('{0} done this week', [plan.summary.Done]) }}
           </span>
+          <!-- how hard or painful it felt, as the person said it in their area -->
+          <span
+            v-if="plan.status === 'Published' && plan.effort"
+            class="flex items-center gap-1 text-p-xs text-ink-gray-6 max-md:hidden"
+          >
+            <span class="lucide-activity size-3.5" aria-hidden="true" />
+            {{
+              __('Effort or pain {0}/10, last {1}', [
+                numero(plan.effort.average),
+                plan.effort.last,
+              ])
+            }}
+          </span>
           <Badge
             variant="subtle"
             :theme="statusTheme[plan.status] || 'gray'"
@@ -267,6 +280,13 @@ import { appLocale } from '@/utils/locale'
 import { chiLoScrive } from '@/utils/piani'
 import { Badge, Button, Dropdown, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
+
+// an average as the reader writes it: «4,5»
+function numero(n) {
+  return new Intl.NumberFormat(appLocale(), {
+    maximumFractionDigits: 1,
+  }).format(n)
+}
 
 const props = defineProps({ lead: { type: String, required: true } })
 

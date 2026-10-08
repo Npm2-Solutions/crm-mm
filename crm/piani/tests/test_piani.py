@@ -190,6 +190,34 @@ class NellArea(PianiCase):
 		self.come(OPERATORE)
 		self.assertEqual(piani.get_plans(self.anna.name)["plans"][0]["summary"][r.FATTO], 1)
 
+	def test_anna_dice_quanto_e_stato_faticoso(self):
+		fatto = self.pubblica()
+		self.invita()
+		self.entra()
+		area_piani.log_item(self.anna.name, fatto["name"], "squat", r.FATTO, effort=6)
+		# the answer changes, what she said of the effort stays
+		area_piani.log_item(self.anna.name, fatto["name"], "squat", r.IN_PARTE)
+		giorno = area_piani.area_plan(self.anna.name, fatto["name"])
+		squat = next(v for v in giorno["moments"][0]["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual((squat["outcome"], squat["effort"]), (r.IN_PARTE, 6))
+		with self.assertRaises(frappe.ValidationError):
+			area_piani.log_item(self.anna.name, fatto["name"], "squat", r.FATTO, effort=11)
+		# the author reads it beside the plan
+		self.come(OPERATORE)
+		self.assertEqual(
+			piani.get_plans(self.anna.name)["plans"][0]["effort"], {"average": 6, "last": 6, "said": 1}
+		)
+
+	def test_il_lato_arriva_alla_persona(self):
+		dati = self.allenamento()
+		dati["items"][0]["side"] = "Each side"
+		fatto = self.pubblica(dati)
+		self.invita()
+		self.entra()
+		giorno = area_piani.area_plan(self.anna.name, fatto["name"])
+		squat = next(v for v in giorno["moments"][0]["items"] if v["kind"] == r.ESERCIZIO)
+		self.assertEqual(squat["side"], "Each side")
+
 	def test_la_sezione_piani_c_e_solo_con_un_piano(self):
 		self.assertEqual(area_piani.piani_in_corso(self.anna.name), 0)
 		self.pubblica()
