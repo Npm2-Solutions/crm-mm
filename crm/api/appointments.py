@@ -20,7 +20,7 @@ from frappe.query_builder.functions import Min
 from frappe.utils import cint, flt, sbool
 
 from crm.permissions.livelli import CENTRO, ambito, puo, verifica
-from crm.scheduling import abbonamenti, cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing, visite_online, visite_online_regole
 from crm.scheduling import intervals as iv
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
@@ -171,6 +171,8 @@ def get_calendar(
 			"external_platform",
 			"external_url",
 			"customer_notes",
+			# an online visit's room: whoever reads the appointment starts it
+			"video_link",
 		],
 		order_by="starts_on asc",
 		limit_page_length=0,
@@ -537,6 +539,8 @@ def get_appointment(name: str) -> dict:
 	# server would refuse
 	data["can_write"] = bool(doc.has_permission("write"))
 	data["can_delete"] = bool(doc.has_permission("delete"))
+	# held by video: the panel starts it, or says it has no link yet
+	data["online_visit"] = visite_online.del_servizio(doc.service)
 	return data
 
 
@@ -643,6 +647,7 @@ def get_scheduler_meta() -> dict:
 			"currency",
 			"price_per_participant",
 			"description",
+			"online_visit",
 		],
 		order_by="service_name asc",
 	)
@@ -716,6 +721,8 @@ def get_scheduler_meta() -> dict:
 			"default_duration": cint(config.default_duration) or 30,
 			"allow_override": cint(config.allow_override),
 			"can_override": puo("agenda.sovrapponi"),
+			# an online visit's room is made by itself on the agency's server
+			"video_server": bool(visite_online.server()),
 		},
 	}
 
@@ -1144,6 +1151,7 @@ def list_services() -> list[dict]:
 			"currency",
 			"color",
 			"bookable_online",
+			"online_visit",
 		],
 		order_by="service_name asc",
 	)
@@ -1174,6 +1182,8 @@ def get_service(name: str) -> dict:
 		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.availability
 	]
+	# whether an online visit gets its room by itself, for the editor to say so
+	data["video_server"] = bool(visite_online.server())
 	return data
 
 
@@ -1257,6 +1267,7 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 		"allow_online_cancel",
 		"allow_online_reschedule",
 		"hide_from_menu",
+		"online_visit",
 	):
 		if key in payload:
 			values[key] = cint(payload.get(key))
@@ -1576,6 +1587,7 @@ def get_schedule(user: str = "") -> dict:
 			"bookable_online": 1,
 			"public_title": "",
 			"public_bio": "",
+			"video_link": "",
 			"holiday_list": None,
 			"availability": [],
 			"exceptions": [],
@@ -1591,6 +1603,7 @@ def get_schedule(user: str = "") -> dict:
 		"bookable_online": 1 if doc.get("bookable_online") is None else cint(doc.bookable_online),
 		"public_title": doc.get("public_title") or "",
 		"public_bio": doc.get("public_bio") or "",
+		"video_link": doc.get("video_link") or "",
 		"holiday_list": doc.holiday_list,
 		"availability": [
 			{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
@@ -1651,6 +1664,12 @@ def save_schedule(schedule: str | dict) -> dict:
 		# a practitioner's own hours, not how the booking page shows them
 		if key in payload and not proprio:
 			values[key] = payload.get(key) or None
+	# their own online visit room: a practitioner sets theirs too
+	if "video_link" in payload:
+		link = (payload.get("video_link") or "").strip()
+		if link and not visite_online_regole.link_valido(link):
+			frappe.throw(_("The online visit's link must be an address starting with https://"))
+		values["video_link"] = link or None
 	if values["enabled"] and not values["availability"]:
 		frappe.throw(_("Add at least one time slot, or use the studio hours"))
 	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})

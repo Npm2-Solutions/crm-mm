@@ -12,6 +12,7 @@
   "max_daily_appointments",
   "max_weekly_appointments",
   "bookable_online",
+  "video_link",
   "public_section",
   "public_title",
   "column_break_public",
@@ -65,6 +66,13 @@
    "description": "Off: never offered on the booking page"
   },
   {
+   "fieldname": "video_link",
+   "fieldtype": "Data",
+   "options": "URL",
+   "label": "Own online visit room",
+   "description": "The professional's own fixed room (Meet, Zoom, Teams), for their online visits where the agency names no video server."
+  },
+  {
    "fieldname": "public_section",
    "fieldtype": "Section Break",
    "label": "Booking Page Profile",
@@ -116,7 +124,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-24 10:00:00.000000",
+ "modified": "2026-10-08 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Staff Schedule",

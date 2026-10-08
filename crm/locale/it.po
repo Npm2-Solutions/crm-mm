@@ -48177,3 +48177,81 @@ msgstr "Un modulo si chiede di nuovo ogni {0}-{1} settimane"
 
 msgid "{0} compared with {1}"
 msgstr "{0} rispetto al {1}"
+
+msgid "Online visit"
+msgstr "Visita online"
+
+msgid "Online visits"
+msgstr "Visite online"
+
+msgid "Held by video: each appointment gets the link of its own room, and needs no room of the centre."
+msgstr "Si fa in video: ogni appuntamento ha il link della sua stanza, e non occupa un ambulatorio del centro."
+
+msgid "Online visit link"
+msgstr "Link della visita online"
+
+msgid "Where the person and the professional meet by video. Made by itself for an online visit where the agency names a video server; else the professional's own room, or a link pasted here (Meet, Zoom, Teams)."
+msgstr "Dove la persona e il professionista si incontrano in video. Si crea da solo per una visita online dove l'agenzia indica un server video; altrimenti è la stanza del professionista, o un link incollato qui (Meet, Zoom, Teams)."
+
+msgid "Own online visit room"
+msgstr "Stanza propria per le visite online"
+
+msgid "The professional's own fixed room (Meet, Zoom, Teams), for their online visits where the agency names no video server."
+msgstr "La stanza fissa del professionista (Meet, Zoom, Teams), per le sue visite online dove l'agenzia non indica un server video."
+
+msgid "Video server"
+msgstr "Server video"
+
+msgid "The address of the Jitsi Meet server online visits are held on (https://…): each appointment gets a room of its own there, with a random name and nothing about the person. It must be a server the centre's data processing agreement covers, in the European Union. Empty: the server in the site's configuration (dottorcloud_video), else the professionals' own rooms."
+msgstr "L'indirizzo del server Jitsi Meet su cui si tengono le visite online (https://…): ogni appuntamento vi ha una stanza sua, con un nome casuale e nulla della persona. Deve essere un server coperto dall'accordo sul trattamento dei dati del centro, nell'Unione europea. Vuoto: il server nella configurazione del sito (dottorcloud_video), altrimenti le stanze proprie dei professionisti."
+
+msgid "The online visit's link must be an address starting with https://"
+msgstr "Il link della visita online deve essere un indirizzo che inizia con https://"
+
+msgid "It is an online visit: you enter it from your area, from {0} minutes before it starts: {1}"
+msgstr "È una visita online: entri dalla tua area, da {0} minuti prima dell'inizio: {1}"
+
+msgid "It is an online visit: the centre tells you how to enter it."
+msgstr "È una visita online: il centro ti dice come entrarci."
+
+msgid "{0}, online visit"
+msgstr "{0}, visita online"
+
+msgid "This appointment is not an online visit."
+msgstr "Questo appuntamento non è una visita online."
+
+msgid "It is a little early: you can enter from {0} minutes before."
+msgstr "È un po' presto: puoi entrare da {0} minuti prima."
+
+msgid "The centre has not given the link of this visit yet: ask the centre."
+msgstr "Il centro non ha ancora dato il link di questa visita: chiedilo al centro."
+
+msgid "Start the online visit"
+msgstr "Avvia la visita online"
+
+msgid "No link to enter it yet: paste one in the appointment, or the professional's own room in their hours."
+msgstr "Ancora nessun link per entrarci: incollane uno nell'appuntamento, o la stanza propria del professionista nei suoi orari."
+
+msgid "Online visit link (Meet, Zoom, Teams…)"
+msgstr "Link della visita online (Meet, Zoom, Teams…)"
+
+msgid "Left empty, its room is made when you save."
+msgstr "Se lo lasci vuoto, la stanza si crea quando salvi."
+
+msgid "Left empty, it takes the professional's own room, if they have one."
+msgstr "Se lo lasci vuoto, prende la stanza propria del professionista, se ne ha una."
+
+msgid "Held by video: each appointment gets the link of its own room, on the agency's video server or the professional's own, and needs no room of the centre. The person enters it from their area."
+msgstr "Si fa in video: ogni appuntamento ha il link della sua stanza, sul server video dell'agenzia o quella del professionista, e non occupa un ambulatorio del centro. La persona entra dalla sua area."
+
+msgid "Their fixed room (Meet, Zoom, Teams), for their online visits where the agency gives no video server. Use a service the centre's data processing agreement covers, in the European Union."
+msgstr "La sua stanza fissa (Meet, Zoom, Teams), per le sue visite online dove l'agenzia non dà un server video. Usa un servizio coperto dall'accordo sul trattamento dei dati del centro, nell'Unione europea."
+
+msgid "Enter the visit"
+msgstr "Entra nella visita"
+
+msgid "You enter the visit from here from {0}, 15 minutes before it starts."
+msgstr "Da qui entri nella visita dalle {0}, 15 minuti prima dell'inizio."
+
+msgid "The link to enter the visit will be here: the centre adds it."
+msgstr "Il link per entrare nella visita sarà qui: lo aggiunge il centro."

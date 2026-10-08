@@ -362,6 +362,8 @@ def _service_card(service) -> dict:
 		"bookable": bool(online_staff),
 		"listed": not cint(service.get("hide_from_menu")),
 		"location": service.get("location") or "",
+		# held by video: the page says so, and asks for no room
+		"online_visit": bool(cint(service.get("online_visit"))),
 	}
 
 
@@ -942,6 +944,8 @@ def public_view(appointment, token: str) -> dict:
 		"duration": int((end - start).total_seconds() // 60),
 		"staff": [_staff_card(row.user)["name"] for row in appointment.staff],
 		"location": appointment.location or "",
+		# held by video: one enters it from the area, never from this page
+		"online_visit": bool(cint(service.get("online_visit"))),
 		"seats": len([r for r in mine if r.status != "Cancelled"]) or len(mine),
 		"client_name": mine[0].participant_name if mine else "",
 		# booked by somebody else: the page and the email say whose appointment it is
@@ -1211,6 +1215,12 @@ def send_client_email(appointment, token: str, kind: str) -> bool:
 			lines.append(f"<p>{_('With')}: {esc(', '.join(view['staff']))}</p>")
 		if view["location"]:
 			lines.append(f"<p>{esc(view['location'])}</p>")
+		if view["online_visit"] and kind != "cancelled":
+			# how to enter it: from the area, never the room's link by email
+			from crm.scheduling import visite_online
+
+			persona = mine[0].party if mine[0].party_type == "CRM Lead" else None
+			lines.append(f"<p>{esc(visite_online.frase(visite_online.area_per(persona)))}</p>")
 		if view["formatted_price"]:
 			lines.append(f"<p>{_('Price')}: <b>{view['formatted_price']}</b></p>")
 		if view["pending_approval"] and kind == "booked":

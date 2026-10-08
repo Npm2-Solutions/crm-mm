@@ -50,6 +50,7 @@ from crm.scheduling.timeutils import (
 	scheduling_tz,
 	to_system_naive,
 )
+from crm.scheduling.visite_online import serve_la_stanza
 from crm.utils import count_field
 
 ACTIVE_STATUSES = ("Scheduled", "Confirmed", "Completed", "No Show")
@@ -688,6 +689,9 @@ class SlotFinder:
 		"""One entry per requirement: the resources that could satisfy it."""
 		requirements = []
 		for row in self.service.resources:
+			# an online visit is held in no room of the centre
+			if not serve_la_stanza(self.service, row):
+				continue
 			filters = {"enabled": 1}
 			if row.resource:
 				filters["name"] = row.resource

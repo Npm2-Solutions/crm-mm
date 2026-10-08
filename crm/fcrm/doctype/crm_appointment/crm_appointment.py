@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
 from crm.permissions.livelli import puo
-from crm.scheduling import abbonamenti, cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing, visite_online
 from crm.scheduling.availability import find_conflicts, settings
 
 
@@ -60,6 +60,7 @@ class CRMAppointment(Document):
 		title: DF.Data | None
 		total_amount: DF.Currency | None
 		unit_price: DF.Currency | None
+		video_link: DF.Data | None
 	# end: auto-generated types
 
 	def before_validate(self):
@@ -74,6 +75,8 @@ class CRMAppointment(Document):
 		self.close_from_attendance()
 		self.set_title()
 		self.check_conflicts()
+		# an online visit's room, made once (or the link the desk pasted, checked)
+		visite_online.assicura(self)
 		# a session of a cycle joins it before the price, and costs its share after;
 		# what no cycle takes uses an entry of each person's subscription, and costs
 		# them nothing
@@ -112,8 +115,9 @@ class CRMAppointment(Document):
 			self.color = service.color
 		if not self.location and service.get("location"):
 			self.location = service.location
-		if not self.location:
-			# the room the appointment runs in is the most useful default location
+		if not self.location and not cint(service.get("online_visit")):
+			# the room the appointment runs in is the most useful default location;
+			# an online visit is held in none
 			for row in self.resources:
 				location = frappe.db.get_value("CRM Resource", row.resource, "location")
 				if location:

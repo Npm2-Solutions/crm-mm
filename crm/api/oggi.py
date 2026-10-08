@@ -28,7 +28,7 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 		"CRM Appointment",
 		# from `dal` up to `al` excluded: the next day's midnight is the next day's
 		filters=[["starts_on", ">=", dal], ["starts_on", "<", al], ["status", "!=", "Cancelled"]],
-		fields=["name", "title", "service", "starts_on", "ends_on", "status", "color"],
+		fields=["name", "title", "service", "starts_on", "ends_on", "status", "color", "video_link"],
 		order_by="starts_on asc",
 		limit_page_length=500,
 	)

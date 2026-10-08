@@ -19,6 +19,7 @@
   "resources_section",
   "resources",
   "location",
+  "video_link",
   "pricing_section",
   "price_list",
   "unit_price",
@@ -136,6 +137,13 @@
    "fieldname": "location",
    "fieldtype": "Data",
    "label": "Location / Meeting Link"
+  },
+  {
+   "fieldname": "video_link",
+   "fieldtype": "Data",
+   "options": "URL",
+   "label": "Online visit link",
+   "description": "Where the person and the professional meet by video. Made by itself for an online visit where the agency names a video server; else the professional's own room, or a link pasted here (Meet, Zoom, Teams)."
   },
   {
    "fieldname": "pricing_section",
@@ -323,7 +331,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-08 19:00:00.000000",
+ "modified": "2026-10-08 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",

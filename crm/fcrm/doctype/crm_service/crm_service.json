@@ -12,6 +12,7 @@
   "column_break_head",
   "color",
   "bookable_online",
+  "online_visit",
   "description",
   "location",
   "scheduling_section",
@@ -130,6 +131,12 @@
    "fieldname": "bookable_online",
    "fieldtype": "Check",
    "label": "Bookable online"
+  },
+  {
+   "fieldname": "online_visit",
+   "fieldtype": "Check",
+   "label": "Online visit",
+   "description": "Held by video: each appointment gets the link of its own room, and needs no room of the centre."
   },
   {
    "fieldname": "description",
@@ -623,7 +630,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-24 10:00:00.000000",
+ "modified": "2026-10-08 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Service",

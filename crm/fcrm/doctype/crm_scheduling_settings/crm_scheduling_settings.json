@@ -50,7 +50,9 @@
   "default_max_per_customer_per_day",
   "hours_section",
   "default_availability",
-  "default_holiday_list"
+  "default_holiday_list",
+  "video_section",
+  "video_server"
  ],
  "fields": [
   {
@@ -334,11 +336,25 @@
    "fieldtype": "Link",
    "label": "Holiday List",
    "options": "CRM Holiday List"
+  },
+  {
+   "fieldname": "video_section",
+   "fieldtype": "Section Break",
+   "label": "Online visits",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "video_server",
+   "fieldtype": "Data",
+   "options": "URL",
+   "label": "Video server",
+   "permlevel": 1,
+   "description": "The address of the Jitsi Meet server online visits are held on (https://…): each appointment gets a room of its own there, with a random name and nothing about the person. It must be a server the centre's data processing agreement covers, in the European Union. Empty: the server in the site's configuration (dottorcloud_video), else the professionals' own rooms."
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-08 10:00:00.000000",
+ "modified": "2026-10-08 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

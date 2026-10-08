@@ -94,6 +94,7 @@ class DaQuiNonSiCambiaNiente(AnteprimaCase):
 			"invoice": lambda: api.download_invoice(self.anna.name, "nessuna"),
 			"waiting": lambda: api.leave_waiting_list(self.anna.name, "nessuna"),
 			"arrived": lambda: api.check_in(self.anna.name, "nessuno"),
+			"online visit": lambda: api.enter_online_visit(self.anna.name, "nessuno"),
 		}
 		for nome, chiamata in chiamate.items():
 			with self.subTest(nome), self.assertRaises(frappe.PermissionError):

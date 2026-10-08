@@ -34,9 +34,10 @@ from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.area import accesso, anteprima, sezioni
 from crm.area import prenota_regole as P
-from crm.scheduling import abbonamenti, attese, cicli
+from crm.scheduling import abbonamenti, attese, cicli, visite_online
 from crm.scheduling import arrivi_regole as A
 from crm.scheduling import attese_regole as R
+from crm.scheduling import visite_online_regole as V
 
 
 def _utente(anche_in_anteprima: bool = False) -> str:
@@ -150,7 +151,7 @@ def get_appointments(person: str) -> dict:
 		appuntamento = frappe.db.get_value(
 			"CRM Appointment",
 			riga.parent,
-			["name", "title", "service", "starts_on", "ends_on", "status", "location"],
+			["name", "title", "service", "starts_on", "ends_on", "status", "location", "video_link"],
 			as_dict=True,
 		)
 		if not appuntamento:
@@ -171,6 +172,7 @@ def get_appointments(person: str) -> dict:
 		in_corso = (
 			not annullato and inizio < adesso < (fine or inizio) and riga.status in ("Booked", "Arrived")
 		)
+		online = visite_online.del_servizio(appuntamento.service)
 		voce = {
 			"name": appuntamento.name,
 			"service": frappe.db.get_value("CRM Service", appuntamento.service, "service_name")
@@ -178,7 +180,9 @@ def get_appointments(person: str) -> dict:
 			else appuntamento.title,
 			"starts_on": appuntamento.starts_on,
 			"ends_on": appuntamento.ends_on,
-			"location": appuntamento.location,
+			# held by video: no place to come to, the room's door instead
+			"location": None if online else appuntamento.location,
+			"online": online,
 			"status": "Cancelled" if annullato else appuntamento.status,
 			"session": {
 				k: v for k, v in (sedute.get(appuntamento.name) or {}).items() if k in ("number", "total")
@@ -199,8 +203,13 @@ def get_appointments(person: str) -> dict:
 			if appuntamento.service and not vista and inizio >= adesso:
 				voce["manage_url"] = _link_di_gestione(riga)
 			voce["arrived"] = riga.status == "Arrived"
-			# «I'm here», until the appointment ends: when it opens, by the server's clock
-			if not vista and arrivo and riga.status == A.IN_ATTESA:
+			# «I'm here», until the appointment ends: when it opens, by the server's clock;
+			# an online visit is entered instead, from a quarter of an hour before. The
+			# room's link is given only by `enter_online_visit`, never in the list
+			if online:
+				if not vista and appuntamento.video_link:
+					voce["online_visit"] = V.tra_quanto(inizio, fine, adesso)
+			elif not vista and arrivo and riga.status == A.IN_ATTESA:
 				voce["check_in"] = A.tra_quanto(inizio, fine, adesso)
 			prossimi.append(voce)
 		else:
@@ -335,6 +344,44 @@ def check_in(person: str, appointment: str) -> dict:
 			oggetto=("CRM Appointment", doc.name),
 		)
 	return {"arrived": True}
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=60, seconds=60 * 60)
+def enter_online_visit(person: str, appointment: str) -> dict:
+	"""«Enter the visit»: the room's link of the person's online visit, from a
+	quarter of an hour before it starts until it ends. Only to the person whose
+	place it is, never in the centre's preview, which enters nothing."""
+	_mia(person)
+	if not frappe.db.exists("CRM Appointment", appointment):
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	doc = frappe.get_doc("CRM Appointment", appointment)
+	righe = [r for r in doc.participants if r.party_type == "CRM Lead" and r.party == person]
+	if not righe:
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	riga = next((r for r in righe if r.status != "Cancelled"), righe[0])
+	if not visite_online.del_servizio(doc.service):
+		frappe.throw(_("This appointment is not an online visit."))
+	perche = V.perche_no(
+		get_datetime(doc.starts_on),
+		get_datetime(doc.ends_on) if doc.ends_on else None,
+		now_datetime(),
+		doc.status,
+		riga.status,
+		doc.video_link,
+	)
+	if perche:
+		frappe.throw(
+			{
+				V.PRESTO: _("It is a little early: you can enter from {0} minutes before.").format(
+					visite_online.MINUTI
+				),
+				V.FINITO: _("This appointment is over."),
+				V.ANNULLATO: _("This appointment was cancelled."),
+				V.SENZA_STANZA: _("The centre has not given the link of this visit yet: ask the centre."),
+			}[perche]
+		)
+	return {"url": doc.video_link}
 
 
 # ------------------------------------------------------------------ waiting lists

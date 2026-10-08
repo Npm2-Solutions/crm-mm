@@ -39,6 +39,7 @@ from frappe.utils import cint, escape_html, format_datetime, get_datetime, get_f
 from crm.notifiche import regole as N
 from crm.permissions import livelli
 from crm.scheduling import promemoria_regole as R
+from crm.scheduling import visite_online
 from crm.scheduling.timeutils import from_system_naive, scheduling_tz, to_system_naive
 from crm.telephony import sms as sms_del_centro
 
@@ -179,6 +180,12 @@ def _testo(appuntamento, riga, persona: str | None) -> dict:
 	)
 	# a child booked by a parent: whose appointment it is
 	per_altri = riga.booked_by and not (riga.party_type == "CRM Lead" and riga.party == riga.booked_by)
+	# held by video: every way says so, in what it is (a WhatsApp template's words
+	# are fixed); the email and the SMS say how to enter it - from the area, never
+	# the room's link
+	online = visite_online.del_servizio(appuntamento.service)
+	if online:
+		servizio = _("{0}, online visit").format(servizio)
 	return {
 		"nome": nome,
 		"cosa": _("{0} for {1}").format(servizio, riga.participant_name)
@@ -187,6 +194,12 @@ def _testo(appuntamento, riga, persona: str | None) -> dict:
 		"quando": quando(appuntamento.starts_on),
 		"centro": _nome_del_centro(),
 		"con": ", ".join(get_fullname(s.user) for s in appuntamento.staff if s.user),
+		# whose area: the person who comes (a child's, entered by the parent)
+		"online": visite_online.frase(
+			visite_online.area_per(riga.party if riga.party_type == "CRM Lead" else persona)
+		)
+		if online
+		else "",
 	}
 
 
@@ -417,12 +430,14 @@ def testo_sms(testo: dict, mittente: str | None) -> str:
 	"""The SMS of a reminder: answered «SI» or «NO» where the person can answer
 	the sender, the booking page's link in any case."""
 	if sms_del_centro.si_risponde(mittente):
-		return _(
+		corpo = _(
 			"{0}: a reminder of your appointment: {1}, {2}. Reply YES to confirm, NO if you cannot come. To move it: {3}"
 		).format(testo["centro"], testo["cosa"], testo["quando"], testo["link"])
-	return _("{0}: a reminder of your appointment: {1}, {2}. To confirm, move or cancel it: {3}").format(
-		testo["centro"], testo["cosa"], testo["quando"], testo["link"]
-	)
+	else:
+		corpo = _("{0}: a reminder of your appointment: {1}, {2}. To confirm, move or cancel it: {3}").format(
+			testo["centro"], testo["cosa"], testo["quando"], testo["link"]
+		)
+	return f"{corpo} {testo['online']}" if testo.get("online") else corpo
 
 
 def _per_email(appuntamento, email: str, testo: dict) -> None:
@@ -435,6 +450,7 @@ def _per_email(appuntamento, email: str, testo: dict) -> None:
 		f"<p><b>{esc(testo['cosa'])}</b><br>{esc(testo['quando'])}"
 		+ (f"<br>{esc(_('With {0}').format(testo['con']))}" if testo["con"] else "")
 		+ "</p>",
+		f"<p>{esc(testo['online'])}</p>" if testo.get("online") else "",
 		pulsante(testo["link"], _("Confirm, move or cancel")),
 		f'<p class="text-muted text-small">{esc(_("If you cannot come, let us know: the time goes to whoever is waiting for one."))}</p>',
 	]
