@@ -56,6 +56,13 @@ def segna(appuntamento: str, riga: str, esito: str) -> None:
 	doc = frappe.get_doc("CRM Appointment", appuntamento)
 	if not puo_segnare(doc):
 		frappe.throw(_("You cannot say how this appointment went"), frappe.PermissionError)
+	scrivi(doc, riga, esito)
+
+
+def scrivi(doc, riga: str, esito: str) -> None:
+	"""The outcome of one participant written, whoever said it: the desk (`segna`,
+	which checks who may), or the person from their area («I'm here»,
+	`crm.area.api.check_in`, which checks it is theirs)."""
 	if doc.status == "Cancelled":
 		frappe.throw(_("The appointment was cancelled"))
 	for row in doc.participants:

@@ -87,6 +87,9 @@ PROMEMORIA_NON_VIENE = "{0} cannot come on {1}: cancel the appointment"
 PROMEMORIA_SPOSTA = "{0} would like to move the appointment on {1}"
 PROMEMORIA = frozenset({PROMEMORIA_DISDETTO, PROMEMORIA_NON_VIENE, PROMEMORIA_SPOSTA})
 
+#: «I'm here» from the client area (`crm.area.api.check_in`).
+ARRIVATO_DALL_AREA = "{0} is in the waiting room: they checked in from their phone"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -128,6 +131,7 @@ FRASI = (
 	PROMEMORIA_DISDETTO,
 	PROMEMORIA_NON_VIENE,
 	PROMEMORIA_SPOSTA,
+	ARRIVATO_DALL_AREA,
 )
 
 #: The sentences that take something away: the panel draws them apart.

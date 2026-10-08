@@ -10,7 +10,8 @@ gives the person only what is theirs to see:
 
 - **appointments**, upcoming and past, each with the booking page's own link to
   move or cancel it by the centre's rules, the cycles of sessions and the
-  subscriptions going on (`crm.scheduling.abbonamenti`);
+  subscriptions going on (`crm.scheduling.abbonamenti`); «I'm here» around the
+  time of one (`check_in`), which fills the desk's waiting room;
 - **the waiting lists**: what the person waits for, the place offered to answer,
   joining one and leaving it (`crm.scheduling.attese`);
 - **the forms** to fill before the next one, opened without another code;
@@ -29,10 +30,11 @@ import secrets
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import get_datetime, now_datetime
+from frappe.utils import cint, get_datetime, now_datetime
 
 from crm.area import accesso, anteprima, sezioni
 from crm.scheduling import abbonamenti, attese, cicli
+from crm.scheduling import arrivi_regole as A
 from crm.scheduling import attese_regole as R
 
 
@@ -138,6 +140,7 @@ def get_appointments(person: str) -> dict:
 	)
 	adesso = now_datetime()
 	prossimi, passati = [], []
+	arrivo = arrivo_dal_telefono()
 	# "session 4 of 10": which session of a cycle each one is
 	sedute = cicli.numero_della_seduta([riga.parent for riga in righe])
 	for riga in righe:
@@ -157,6 +160,14 @@ def get_appointments(person: str) -> dict:
 			)
 			continue
 		annullato = "Cancelled" in (appuntamento.status, riga.status)
+		inizio, fine = (
+			get_datetime(appuntamento.starts_on),
+			(get_datetime(appuntamento.ends_on) if appuntamento.ends_on else None),
+		)
+		# going on now, the place still open: it is still the next one
+		in_corso = (
+			not annullato and inizio < adesso < (fine or inizio) and riga.status in ("Booked", "Arrived")
+		)
 		voce = {
 			"name": appuntamento.name,
 			"service": frappe.db.get_value("CRM Service", appuntamento.service, "service_name")
@@ -179,11 +190,15 @@ def get_appointments(person: str) -> dict:
 				)
 			],
 		}
-		if get_datetime(appuntamento.starts_on) >= adesso and not annullato:
+		if (inizio >= adesso and not annullato) or in_corso:
 			# moved or cancelled on the booking page, by the service's own rules; not
 			# from the centre's preview, which changes nothing
-			if appuntamento.service and not vista:
+			if appuntamento.service and not vista and inizio >= adesso:
 				voce["manage_url"] = _link_di_gestione(riga)
+			voce["arrived"] = riga.status == "Arrived"
+			# «I'm here», until the appointment ends: when it opens, by the server's clock
+			if not vista and arrivo and riga.status == A.IN_ATTESA:
+				voce["check_in"] = A.tra_quanto(inizio, fine, adesso)
 			prossimi.append(voce)
 		else:
 			passati.append(voce)
@@ -197,6 +212,76 @@ def get_appointments(person: str) -> dict:
 		"waiting": attese.della_persona(person),
 		"can_wait": attese.impostazioni().area,
 	}
+
+
+# ------------------------------------------------------------------ «I'm here»
+
+
+def arrivo_dal_telefono() -> bool:
+	"""Whether the area offers «I'm here» (`CRM Area Settings.self_check_in`): on
+	unless the centre switched it off."""
+	valore = frappe.db.get_singles_dict("CRM Area Settings").get("self_check_in")
+	return valore is None or bool(cint(valore))
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=20, seconds=60 * 60)
+def check_in(person: str, appointment: str) -> dict:
+	"""«I'm here»: the person says from their phone they are at the centre, from
+	half an hour before their appointment until it ends. Marked arrived as the desk
+	marks them - the waiting room counts from now -, and the desk and whoever the
+	appointment is with are told."""
+	from crm.notifiche import regole as N
+	from crm.notifiche.avvisi import avvisa
+	from crm.scheduling import esiti
+
+	_mia(person)
+	if not arrivo_dal_telefono():
+		frappe.throw(_("The centre does not take arrivals from the phone: tell the desk."))
+	if not frappe.db.exists("CRM Appointment", appointment):
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	doc = frappe.get_doc("CRM Appointment", appointment)
+	riga = next(
+		(
+			r
+			for r in doc.participants
+			if r.party_type == "CRM Lead" and r.party == person and r.status != "Cancelled"
+		),
+		None,
+	) or next((r for r in doc.participants if r.party_type == "CRM Lead" and r.party == person), None)
+	if not riga:
+		frappe.throw(_("This is not your appointment"), frappe.PermissionError)
+	perche = A.perche_no(
+		get_datetime(doc.starts_on),
+		get_datetime(doc.ends_on) if doc.ends_on else None,
+		now_datetime(),
+		doc.status,
+		riga.status,
+	)
+	if perche == A.GIA_DETTO and riga.status == "Arrived":
+		return {"arrived": True}
+	if perche:
+		frappe.throw(
+			{
+				A.PRESTO: _("It is a little early: you can say you are here from half an hour before."),
+				A.FINITO: _("This appointment is over."),
+				A.ANNULLATO: _("This appointment was cancelled."),
+				A.GIA_DETTO: _("The centre already knows how this appointment went."),
+			}[perche]
+		)
+	esiti.scrivi(doc, riga.name, "Arrived")
+	nome = frappe.db.get_value("CRM Lead", person, "lead_name") or riga.participant_name or ""
+	utenti = dict.fromkeys([*esiti.chi_avvisare(), *(s.user for s in doc.staff if s.user)])
+	for utente in utenti:
+		avvisa(
+			utente,
+			"Agenda",
+			N.ARRIVATO_DALL_AREA,
+			[nome],
+			riguarda=("CRM Lead", person),
+			oggetto=("CRM Appointment", doc.name),
+		)
+	return {"arrived": True}
 
 
 # ------------------------------------------------------------------ waiting lists

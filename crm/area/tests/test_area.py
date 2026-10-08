@@ -278,6 +278,116 @@ class Dentro(AreaCase):
 				chiamata(altro.name)
 
 
+class SonoArrivato(AreaCase):
+	"""«I'm here» from Anna's phone: from half an hour before her appointment until
+	it ends, her own, and the desk is told."""
+
+	def setUp(self):
+		super().setUp()
+		frappe.set_user("Administrator")
+		self.estetista = self.make_user("area.arrivo@example.com")
+		self.servizio = self.make_service("Arrivo area", [self.estetista])
+		self.invita()
+
+	def appuntamento(self, fra_minuti, persona=None):
+		frappe.set_user("Administrator")
+		persona = persona or self.anna
+		inizio = datetime.datetime.now(datetime.UTC).replace(second=0, microsecond=0) + datetime.timedelta(
+			minutes=fra_minuti
+		)
+		return self.make_appointment(
+			self.servizio.name,
+			inizio,
+			[self.estetista],
+			status="Confirmed",
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": persona.name,
+					"participant_name": persona.lead_name,
+					"status": "Booked",
+				}
+			],
+		)
+
+	def posto(self, appuntamento):
+		return frappe.db.get_value(
+			"CRM Appointment Participant",
+			{"parent": appuntamento.name},
+			["status", "arrived_at"],
+			as_dict=True,
+		)
+
+	def test_poco_prima_entra_in_sala_d_attesa_e_l_accoglienza_lo_sa(self):
+		from crm.notifiche import regole as N
+
+		appuntamento = self.appuntamento(10)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertEqual(prossimo["check_in"]["opens_in"], 0)
+		self.assertFalse(prossimo["arrived"])
+		self.assertEqual(api.check_in(self.anna.name, appuntamento.name), {"arrived": True})
+		posto = self.posto(appuntamento)
+		self.assertEqual(posto.status, "Arrived")
+		self.assertTrue(posto.arrived_at)
+		self.assertTrue(
+			frappe.db.exists(
+				"CRM Notification",
+				{
+					"to_user": DESK,
+					"sentence": N.ARRIVATO_DALL_AREA,
+					"notification_type_doc": appuntamento.name,
+				},
+			)
+		)
+		# said again, nothing changes
+		self.assertEqual(api.check_in(self.anna.name, appuntamento.name), {"arrived": True})
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertTrue(prossimo["arrived"])
+		self.assertNotIn("check_in", prossimo)
+
+	def test_iniziato_si_puo_ancora_dire(self):
+		appuntamento = self.appuntamento(-5)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertEqual(prossimo["name"], appuntamento.name)
+		api.check_in(self.anna.name, appuntamento.name)
+		self.assertEqual(self.posto(appuntamento).status, "Arrived")
+
+	def test_troppo_presto_no(self):
+		appuntamento = self.appuntamento(120)
+		self.entra()
+		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
+		self.assertGreater(prossimo["check_in"]["opens_in"], 80 * 60)
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+		self.assertEqual(self.posto(appuntamento).status, "Booked")
+
+	def test_l_appuntamento_di_un_altro_no(self):
+		bruno = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Bruno", "last_name": "Arrivo"}).insert(
+			ignore_permissions=True
+		)
+		suo = self.appuntamento(10, bruno)
+		self.entra()
+		with self.assertRaises(frappe.PermissionError):
+			api.check_in(self.anna.name, suo.name)
+		with self.assertRaises(frappe.PermissionError):
+			api.check_in(bruno.name, suo.name)
+		self.assertEqual(self.posto(suo).status, "Booked")
+
+	def test_annullato_o_spento_no(self):
+		appuntamento = self.appuntamento(10)
+		frappe.db.set_single_value("CRM Area Settings", "self_check_in", 0)
+		self.entra()
+		self.assertNotIn("check_in", api.get_appointments(self.anna.name)["upcoming"][0])
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+		frappe.db.set_single_value("CRM Area Settings", "self_check_in", 1)
+		frappe.db.set_value("CRM Appointment", appuntamento.name, "status", "Cancelled")
+		with self.assertRaises(frappe.ValidationError):
+			api.check_in(self.anna.name, appuntamento.name)
+
+
 class SenzaLaClinica(AreaCase):
 	def test_niente_della_clinica_e_le_parole_del_crm(self):
 		self.invita()

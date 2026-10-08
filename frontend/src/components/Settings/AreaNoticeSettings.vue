@@ -40,6 +40,16 @@
         >
           <Switch v-model="form.email_new_documents" />
         </SettingsRow>
+        <SettingsRow
+          :label="__('«I’m here» from the phone')"
+          :description="
+            __(
+              'From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told.',
+            )
+          "
+        >
+          <Switch v-model="form.self_check_in" />
+        </SettingsRow>
         <div class="flex flex-col gap-1.5 px-2">
           <FormControl
             v-model="form.whatsapp_template"
@@ -88,8 +98,13 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
-const form = reactive({ whatsapp_template: '', email_new_documents: false })
-const saved = reactive({ whatsapp_template: '', email_new_documents: false })
+const VUOTO = {
+  whatsapp_template: '',
+  email_new_documents: false,
+  self_check_in: true,
+}
+const form = reactive({ ...VUOTO })
+const saved = reactive({ ...VUOTO })
 const saving = ref(false)
 const error = ref('')
 
@@ -97,6 +112,7 @@ function fill(data) {
   for (const target of [form, saved]) {
     target.whatsapp_template = data.whatsapp_template || ''
     target.email_new_documents = Boolean(data.email_new_documents)
+    target.self_check_in = Boolean(data.self_check_in)
   }
 }
 
@@ -117,7 +133,8 @@ const templateOptions = computed(() => [
 const dirty = computed(
   () =>
     form.whatsapp_template !== saved.whatsapp_template ||
-    form.email_new_documents !== saved.email_new_documents,
+    form.email_new_documents !== saved.email_new_documents ||
+    form.self_check_in !== saved.self_check_in,
 )
 
 async function save() {
@@ -127,6 +144,7 @@ async function save() {
     const data = await call('crm.area.avvisi.save_notice_settings', {
       whatsapp_template: form.whatsapp_template || null,
       email_new_documents: form.email_new_documents ? 1 : 0,
+      self_check_in: form.self_check_in ? 1 : 0,
     })
     settings.data = data
     fill(data)

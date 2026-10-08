@@ -320,4 +320,7 @@ export default {
   '{0} out of 10': '{0} su 10',
   '1 hardly': '1 per niente',
   '10 very much': '10 moltissimo',
+  'I’m here': 'Sono arrivato',
+  'You are in the waiting room: the centre knows you are here.':
+    'Sei in sala d’attesa: il centro sa che sei arrivato.',
 }

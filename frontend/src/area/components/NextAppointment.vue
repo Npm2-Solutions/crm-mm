@@ -4,7 +4,8 @@
 
   The next appointment, the first screen's one deep block (area.css), as the
   brand's phone has it: when, in the mint of the logo; what - which session of a
-  cycle; with whom and where; the way to move or cancel it. In the centre's
+  cycle; with whom and where; the way to move or cancel it, and «I'm here»
+  around its time (CheckIn). In the centre's
   preview, one whoever previews does not read shows only when.
 -->
 <template>
@@ -35,6 +36,10 @@
       {{ __('Move or cancel') }}
       <LucideChevronRight class="size-4" aria-hidden="true" />
     </a>
+    <CheckIn
+      v-if="appointment.status !== 'Cancelled'"
+      :appointment="appointment"
+    />
   </div>
 </template>
 
@@ -45,6 +50,7 @@ import LucideChevronRight from '~icons/lucide/chevron-right'
 import { intestazione } from '../aspetto'
 import { when } from '../dates'
 import { locale } from '../translation'
+import CheckIn from './CheckIn.vue'
 import HiddenCard from './HiddenCard.vue'
 
 const props = defineProps({ appointment: { type: Object, required: true } })

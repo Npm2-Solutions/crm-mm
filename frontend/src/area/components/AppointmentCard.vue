@@ -46,6 +46,7 @@
       {{ __('Move or cancel') }}
       <LucideChevronRight class="size-4" aria-hidden="true" />
     </a>
+    <CheckIn v-if="!past" :appointment="appointment" />
   </div>
 </template>
 
@@ -56,6 +57,7 @@ import LucideChevronRight from '~icons/lucide/chevron-right'
 import { intestazione } from '../aspetto'
 import { when } from '../dates'
 import { locale } from '../translation'
+import CheckIn from './CheckIn.vue'
 import HiddenCard from './HiddenCard.vue'
 
 defineProps({

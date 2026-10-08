@@ -47031,3 +47031,36 @@ msgstr "Questo appuntamento non si può prenotare online: contattaci per prenota
 
 msgid "New online booking to approve: missed appointments"
 msgstr "Nuova prenotazione online da approvare: appuntamenti mancati"
+
+msgid "{0} is in the waiting room: they checked in from their phone"
+msgstr "{0} è in sala d'attesa: ha segnalato l'arrivo dal telefono"
+
+msgid "The centre does not take arrivals from the phone: tell the desk."
+msgstr "Il centro non accetta l'arrivo segnalato dal telefono: avvisa l'accoglienza."
+
+msgid "This is not your appointment"
+msgstr "Questo non è un tuo appuntamento"
+
+msgid "It is a little early: you can say you are here from half an hour before."
+msgstr "È un po' presto: puoi segnalare che sei arrivato da mezz'ora prima."
+
+msgid "This appointment is over."
+msgstr "Questo appuntamento è finito."
+
+msgid "This appointment was cancelled."
+msgstr "Questo appuntamento è stato annullato."
+
+msgid "The centre already knows how this appointment went."
+msgstr "Il centro sa già com'è andato questo appuntamento."
+
+msgid "The person says «I'm here» from their area"
+msgstr "La persona segnala «Sono arrivato» dalla sua area"
+
+msgid "From half an hour before their appointment until it ends: the desk's waiting room counts from then"
+msgstr "Da mezz'ora prima dell'appuntamento fino alla fine: la sala d'attesa dell'accoglienza conta da allora"
+
+msgid "«I’m here» from the phone"
+msgstr "«Sono arrivato» dal telefono"
+
+msgid "From half an hour before their appointment until it ends, the person says from their area that they are at the centre: they enter the waiting room at the reception desk, and the desk is told."
+msgstr "Da mezz'ora prima dell'appuntamento fino alla fine, la persona segnala dalla sua area che è al centro: entra in sala d'attesa all'accoglienza, e l'accoglienza viene avvisata."
