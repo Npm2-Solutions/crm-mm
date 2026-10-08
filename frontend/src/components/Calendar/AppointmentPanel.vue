@@ -372,6 +372,41 @@
           <div class="min-w-0 break-words">{{ doc.location }}</div>
         </div>
 
+        <!-- an online visit: its room, started from here; the person enters
+             from their area -->
+        <div
+          v-if="visitaOnline"
+          class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
+        >
+          <span
+            class="lucide-video mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div>{{ __('Online visit') }}</div>
+            <template v-if="visitaOnline === 'avvia'">
+              <Button
+                variant="solid"
+                icon-left="lucide-video"
+                :label="__('Start the online visit')"
+                :size="isMobileView ? 'lg' : 'sm'"
+                class="touch-target self-start max-md:w-full"
+                @click="avviaLaVisita(doc.video_link)"
+              />
+              <div class="text-p-sm text-ink-gray-5 [overflow-wrap:anywhere]">
+                {{ doc.video_link }}
+              </div>
+            </template>
+            <div v-else class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  "No link to enter it yet: paste one in the appointment, or the professional's own room in their hours.",
+                )
+              }}
+            </div>
+          </div>
+        </div>
+
         <div
           v-if="doc.notes"
           class="flex items-start gap-3 px-4.5 py-2 text-ink-gray-7"
@@ -813,6 +848,37 @@
           :placeholder="__('Add a place or a meeting link')"
         />
       </div>
+      <!-- an online visit's room: made by itself on the agency's server, or the
+           professional's own; here the desk pastes another -->
+      <div
+        v-if="service?.online_visit || form.video_link"
+        class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7"
+      >
+        <span class="lucide-video mt-2 size-4 shrink-0" aria-hidden="true" />
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+          <TextInput
+            v-model="form.video_link"
+            class="w-full"
+            variant="outline"
+            type="url"
+            v-bind="tastiera('url')"
+            :aria-label="__('Online visit link')"
+            :placeholder="__('Online visit link (Meet, Zoom, Teams…)')"
+          />
+          <span
+            v-if="service?.online_visit && !form.video_link"
+            class="text-p-sm text-ink-gray-5"
+          >
+            {{
+              meta?.settings?.video_server
+                ? __('Left empty, its room is made when you save.')
+                : __(
+                    "Left empty, it takes the professional's own room, if they have one.",
+                  )
+            }}
+          </span>
+        </div>
+      </div>
       <div class="flex items-start gap-3 px-4.5 py-[7px] text-ink-gray-7">
         <DescriptionIcon class="mt-2 size-4 shrink-0" />
         <Textarea
@@ -973,6 +1039,8 @@ import {
 import { partiDellIndirizzo } from '@/utils/sulTelefono'
 import { tastiera } from '@/utils/tastiera'
 import { leggibile } from '@/utils/telefono'
+import { avviaLaVisita, statoDellaVisitaOnline } from '@/utils/visiteOnline'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
   Button,
@@ -1054,6 +1122,9 @@ function load(name) {
 }
 
 const services = computed(() => props.meta?.services || [])
+
+// an online visit: its room to start, or the line that it has none yet
+const visitaOnline = computed(() => statoDellaVisitaOnline(doc.value))
 
 function serviceOf(name) {
   return services.value.find((one) => one.name === name)
@@ -1377,6 +1448,7 @@ const emptyForm = () => ({
   resources: [],
   price_list: '',
   location: '',
+  video_link: '',
   notes: '',
   override_conflicts: false,
 })
@@ -1550,6 +1622,7 @@ function payload() {
     resources: form.resources.filter((row) => row.resource),
     price_list: form.price_list || null,
     location: form.location,
+    video_link: (form.video_link || '').trim(),
     notes: form.notes,
     override_conflicts: form.override_conflicts ? 1 : 0,
   }
@@ -1766,6 +1839,7 @@ function loadInto(data) {
     })),
     price_list: data.price_list || '',
     location: data.location || '',
+    video_link: data.video_link || '',
     notes: data.notes || '',
     override_conflicts: Boolean(data.override_conflicts),
   })

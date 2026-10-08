@@ -131,6 +131,30 @@
               {{ __('Price is per participant') }}
             </label>
           </div>
+          <!-- held by video: its appointments get a room's link, and need no
+               room of the centre (crm.scheduling.visite_online) -->
+          <div
+            class="flex items-start justify-between gap-3 rounded-lg border border-outline-gray-2 px-3 py-2.5"
+          >
+            <div class="flex min-w-0 flex-col">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ __('Online visit') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-5">
+                {{
+                  __(
+                    "Held by video: each appointment gets the link of its own room, on the agency's video server or the professional's own, and needs no room of the centre. The person enters it from their area.",
+                  )
+                }}
+              </span>
+            </div>
+            <Switch
+              v-model="form.online_visit"
+              class="shrink-0"
+              size="sm"
+              :aria-label="__('Online visit')"
+            />
+          </div>
           <!-- The website face of this service. The card itself (image, descriptions,
              button) is edited in Site → Showcase, so there is one place to get it
              right; the switch lives here because this is where you are when you
@@ -577,6 +601,7 @@ const emptyForm = () => ({
   default_price: 0,
   currency: 'EUR',
   price_per_participant: false,
+  online_visit: false,
   bookable_online: false,
   location: '',
   ...ONLINE_DEFAULTS,
@@ -650,6 +675,7 @@ function openEditor(name = null) {
       Object.assign(form, data, onlineFieldsFrom(data), {
         enabled: Boolean(data.enabled),
         price_per_participant: Boolean(data.price_per_participant),
+        online_visit: Boolean(data.online_visit),
         bookable_online: Boolean(data.bookable_online),
         staff: (data.staff || []).map((row) => ({
           user: row.user,
@@ -695,6 +721,7 @@ function save() {
           bookable_online: row.bookable_online ? 1 : 0,
         })),
         hide_from_menu: form.hide_from_menu ? 1 : 0,
+        online_visit: form.online_visit ? 1 : 0,
       },
     },
     auto: true,

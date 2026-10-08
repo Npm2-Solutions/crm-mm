@@ -208,6 +208,7 @@
       .msg.error { background: var(--danger-bg); color: var(--danger); }
       .msg.success { background: var(--success-bg); color: var(--success-ink); }
       .msg.warn { background: var(--warn-bg); color: var(--warn-ink); }
+      .msg.info { background: var(--accent-soft); color: var(--ink); }
       .done-hero { text-align: center; padding: 1rem 0 .5rem; }
       .done-hero .badge { width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto .75rem; background: var(--success-bg); color: var(--success-ink); font-size: 1.5rem; }
       .done-hero.pending .badge { background: var(--warn-bg); color: var(--warn-ink); }
@@ -299,6 +300,7 @@
           waitUntil: "Fino al", waitChannel: "Scrivimi su", full: "Piena", fullWait: "in lista", joinWait: "Mettimi in lista",
           waitedTitle: "Sei in lista d'attesa", waitedSub: "Ti abbiamo mandato un'email: dal suo link puoi vedere la lista o uscirne.",
           waitedLink: "Vedi o esci dalla lista d'attesa", waitClass: "Lezione", partmorning: "Mattina", partafternoon: "Pomeriggio", partevening: "Sera",
+          online: "Visita online", onlineHow: "È una visita online: entri dalla tua area, da 15 minuti prima dell'inizio. Ti scriviamo come entrarci.",
         },
         en: {
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
@@ -335,6 +337,7 @@
           waitUntil: "Until", waitChannel: "Write to me by", full: "Full", fullWait: "waiting list", joinWait: "Put me on the list",
           waitedTitle: "You are on the waiting list", waitedSub: "We've emailed you: from its link you can see the list or leave it.",
           waitedLink: "See or leave the waiting list", waitClass: "Class", partmorning: "Morning", partafternoon: "Afternoon", partevening: "Evening",
+          online: "Online visit", onlineHow: "It is an online visit: you enter it from your area, from 15 minutes before it starts. We write to you how to enter it.",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -472,12 +475,14 @@
         if (S.manage) {
           if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));
           box.append(row("◷", T("when"), fmtFull.format(new Date(S.manage.start))));
-          if (S.manage.location) box.append(row("⌖", T("where"), S.manage.location));
+          if (S.manage.online_visit) box.append(row("▶", T("where"), T("online")));
+          else if (S.manage.location) box.append(row("⌖", T("where"), S.manage.location));
           if (S.manage.formatted_price) box.append(h("div", { class: "price" }, S.manage.formatted_price));
           return;
         }
         box.append(row("⏱", T("duration"), durationLabel(S.service)));
-        if (S.service.location) box.append(row("⌖", T("where"), S.service.location));
+        if (S.service.online_visit) box.append(row("▶", T("where"), T("online")));
+        else if (S.service.location) box.append(row("⌖", T("where"), S.service.location));
         if (S.staffName || S.service.can_pick_staff) box.append(row("☺", T("with"), S.staffName || T("anyone")));
         if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
         if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
@@ -530,7 +535,8 @@
             }
             const tags = [h("span", { class: "tag" }, durationLabel(s))];
             if (s.group) tags.push(h("span", { class: "tag" }, T("group")));
-            if (s.location) tags.push(h("span", { class: "tag" }, s.location));
+            if (s.online_visit) tags.push(h("span", { class: "tag" }, T("online")));
+            else if (s.location) tags.push(h("span", { class: "tag" }, s.location));
             list.append(h("button", { class: "service", onclick: () => pickService(s) },
               s.image ? h("img", { class: "thumb", src: s.image, alt: "" }) : h("span", { class: "dot", style: s.color ? `background:${s.color}` : null }),
               h("div", {}, h("div", { class: "name" }, s.name), s.description ? h("div", { class: "desc" }, s.description) : null, h("div", { class: "tags" }, tags)),
@@ -891,7 +897,7 @@
         add(T("when"), fmtFull.format(new Date(b.start)));
         add(T("duration"), duration(b.duration));
         add(T("with"), b.staff.join(", "));
-        add(T("where"), b.location);
+        add(T("where"), b.online_visit ? T("online") : b.location);
         if (b.seats > 1) add(T("people"), String(b.seats));
         add(T("price"), b.formatted_price);
         // what the desk booked is booked: only an online request waits for the centre's yes
@@ -902,6 +908,7 @@
       function viewDone() {
         const b = S.result;
         const wrap = h("section", {}, outcome(b), details(b));
+        if (b.online_visit && b.status !== "Cancelled") wrap.append(h("div", { class: "msg info" }, T("onlineHow")));
         if (b.instructions) wrap.append(h("div", { class: "msg warn" }, b.instructions));
         if (b.status !== "Cancelled") {
           wrap.append(h("div", { class: "actions" },
@@ -924,6 +931,7 @@
       function viewManage() {
         const b = S.manage;
         const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b, true), details(b));
+        if (b.online_visit && b.status !== "Cancelled") wrap.append(h("div", { class: "msg info" }, T("onlineHow")));
         if (b.instructions && b.status !== "Cancelled") wrap.append(h("div", { class: "msg warn" }, b.instructions));
         if (b.confirmed && b.status !== "Cancelled") wrap.append(h("div", { class: "msg success", role: "status" }, T("confirmedNote")));
         if (b.status !== "Cancelled") {

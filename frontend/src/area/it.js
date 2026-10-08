@@ -361,4 +361,11 @@ export default {
   'The file is larger than {0} MB': 'Il file è più grande di {0} MB',
   'seen by the centre': 'visto dal centro',
   'not seen by the centre yet': 'non ancora visto dal centro',
+  // online visits (crm.area.api.enter_online_visit)
+  'Online visit': 'Visita online',
+  'Enter the visit': 'Entra nella visita',
+  'You enter the visit from here from {0}, 15 minutes before it starts.':
+    'Da qui entri nella visita dalle {0}, 15 minuti prima dell’inizio.',
+  'The link to enter the visit will be here: the centre adds it.':
+    'Il link per entrare nella visita sarà qui: lo aggiunge il centro.',
 }

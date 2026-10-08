@@ -153,6 +153,17 @@
                 :now="now"
                 @changed="ricarica"
               />
+              <!-- an online visit: its room from here, on the day (the person
+                   enters from their area) -->
+              <Button
+                v-if="!giornoPassato && linkDellaVisita(appointment)"
+                variant="subtle"
+                :label="__('Start the online visit')"
+                icon-left="lucide-video"
+                :size="isMobileView ? 'lg' : 'sm'"
+                class="touch-target mt-1 self-start max-md:w-full"
+                @click="avviaLaVisita(appointment.video_link)"
+              />
               <!-- they came and it is not invoiced yet: the invoice from here,
                    not from the list of the last two weeks in Invoices -->
               <Button
@@ -281,6 +292,7 @@ import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
+import { avviaLaVisita, linkDellaVisita } from '@/utils/visiteOnline'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
 import { isMobileView } from '@/composables/breakpoints'
