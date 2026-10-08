@@ -137,6 +137,45 @@ class DaChiConosciamo(ChiamataPersaCase):
 		log.append("links", {"link_doctype": "Contact", "link_name": contatto.name})
 		self.assertEqual(persa.chi_ha_chiamato(log, None), ("CRM Lead", self.persona.name))
 
+	def test_senza_un_numero_sulla_scheda_l_sms_va_al_numero_che_ha_chiamato(self):
+		# found through a contact, the person has no number of their own on the record
+		frappe.db.set_value("CRM Lead", self.persona.name, {"mobile_no": None, "phone": None})
+		contatto = frappe.get_doc({"doctype": "Contact", "first_name": "Piera"}).insert(
+			ignore_permissions=True
+		)
+		frappe.db.set_value("CRM Lead", self.persona.name, "contact", contatto.name)
+		log = frappe.get_doc(
+			{"doctype": "CRM Call Log", "id": "CA" + frappe.generate_hash(length=32), "type": "Incoming"}
+		)
+		log.append("links", {"link_doctype": "Contact", "link_name": contatto.name})
+		log.insert(ignore_permissions=True)
+		with patch(
+			"crm.api.sms.deliver_via_twilio", side_effect=lambda doc: setattr(doc, "status", "Sent")
+		) as consegna:
+			persa.chiamata_persa(log, CHI_CHIAMA)
+			with patch(
+				"crm.automation.engine.now_datetime",
+				return_value=now_datetime() + datetime.timedelta(minutes=2),
+			):
+				engine.advance_enrollment(self.iscrizione().name)
+		[doc] = consegna.call_args.args
+		self.assertEqual(doc.to, CHI_CHIAMA)
+		riga = frappe.get_doc("CRM Automation Enrollment", self.iscrizione().name).logs[-1]
+		self.assertEqual((riga.action, riga.status), ("send_sms", "Success"))
+
+	def test_nessun_numero_da_nessuna_parte_e_saltato_non_riuscito(self):
+		frappe.db.set_value("CRM Lead", self.persona.name, {"mobile_no": None, "phone": None})
+		with patch("crm.api.sms.deliver_via_twilio") as consegna:
+			iscrizione = engine.enroll(self.automazione.name, "CRM Lead", self.persona.name, {})
+			with patch(
+				"crm.automation.engine.now_datetime",
+				return_value=now_datetime() + datetime.timedelta(minutes=2),
+			):
+				engine.advance_enrollment(iscrizione)
+		consegna.assert_not_called()
+		riga = frappe.get_doc("CRM Automation Enrollment", iscrizione).logs[-1]
+		self.assertEqual((riga.action, riga.status), ("send_sms", "Skipped"))
+
 	def test_conosciuto_niente_sms_da_sconosciuto(self):
 		self.risposte(sms_to_missed_callers=1)
 		with patch("frappe.enqueue") as coda:

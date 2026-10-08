@@ -12,7 +12,7 @@
           size="sm"
           :variant="filter === status ? 'solid' : 'outline'"
           :label="FILTRI[status]"
-          @click="(filter = status), enrollments.reload()"
+          @click="((filter = status), enrollments.reload())"
         />
       </div>
       <Button
@@ -40,7 +40,9 @@
             {{ row.title || row.reference_name }}
           </span>
           <span class="shrink-0 text-xs text-ink-gray-5">
-            {{ dayjs(row.modified).fromNow() }}
+            <!-- the server's time is the centre's clock: read against the
+                 centre's now, never the phone's («in 2 hours» from Lisbon) -->
+            {{ dayjs(row.modified).from(adessoDelCentro()) }}
           </span>
           <Badge
             size="sm"
@@ -97,6 +99,7 @@
 import { Badge, Button, FeatherIcon, createResource, dayjs } from 'frappe-ui'
 import { ref } from 'vue'
 import { stepLabel } from '@/utils/automation'
+import { adessoDelCentro } from '@/utils/scheduler'
 
 const props = defineProps({
   automation: { type: String, required: true },

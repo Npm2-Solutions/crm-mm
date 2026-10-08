@@ -104,8 +104,10 @@
     </template>
   </LayoutHeader>
 
+  <!-- the switch goes to a row of its own, on the right, where the tabs leave
+       it no room (320px cut «Attiva» to «Attiv») -->
   <div
-    class="flex items-center gap-1 border-b border-outline-gray-2 px-4 py-1.5"
+    class="flex flex-wrap items-center gap-1 border-b border-outline-gray-2 px-4 py-1.5"
   >
     <Button
       v-for="entry in TABS"
@@ -116,8 +118,9 @@
       :disabled="entry.name === 'enrollments' && !draft.name"
       @click="tab = entry.name"
     />
-    <div class="flex-1" />
-    <label class="flex items-center gap-2 text-sm text-ink-gray-7">
+    <label
+      class="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-ink-gray-7"
+    >
       <Switch
         :modelValue="Boolean(draft.enabled)"
         size="sm"

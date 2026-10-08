@@ -489,7 +489,7 @@ export const MERGE_FIELDS = [
   { token: '{{ lead_name }}', label: 'Full name' },
   { token: '{{ organization }}', label: 'Organization' },
   { token: '{{ email }}', label: 'Email' },
-  { token: '{{ mobile_no }}', label: 'Mobile number' },
+  { token: '{{ mobile_no }}', label: 'Mobile No' },
   { token: '{{ status }}', label: 'Status' },
   { token: '{{ tracked_link("slug") }}', label: 'Tracked link' },
   { token: '{{ booking_link }}', label: 'Booking page link' },

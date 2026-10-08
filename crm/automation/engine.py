@@ -746,6 +746,8 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 					frappe.flags.crm_review_link = recensioni.prepara(step, enrollment, ref_doc, payload)
 				detail = execute_step(step, ref_doc, enrollment)
 				log_step(enrollment, enrollment.current_step, step_type, "Success", detail)
+			except PassoSaltato as saltato:
+				log_step(enrollment, enrollment.current_step, step_type, "Skipped", str(saltato))
 			except PassoNonRiuscito as non_riuscito:
 				log_step(enrollment, enrollment.current_step, step_type, "Failed", str(non_riuscito))
 			except Exception:
@@ -977,6 +979,10 @@ def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 	if step_type == "send_form":
 		# the appointment the run is about, for the form's request
 		return step_send_form(step, ref_doc, enrollment)
+	if step_type in ("send_sms", "send_whatsapp_template"):
+		# the number the event came from, for a person who has none on the record
+		invia = step_send_sms if step_type == "send_sms" else step_send_whatsapp_template
+		return invia(step, ref_doc, enrollment)
 	handler = {
 		"send_email": step_send_email,
 		"send_sms": step_send_sms,
@@ -1085,10 +1091,15 @@ class PassoNonRiuscito(Exception):
 	with its words, never Success."""
 
 
+class PassoSaltato(Exception):
+	"""A step with nothing to do it on (a person without a number, a form not
+	published): logged Skipped with its reason, never Success."""
+
+
 def step_send_email(step, ref_doc) -> str:
 	recipient = ref_doc.get("email")
 	if not recipient:
-		return _("Skipped: record has no email")
+		raise PassoSaltato(_("Skipped: record has no email"))
 	subject = step.get("subject") or ""
 	message = step.get("message") or ""
 	if step.get("email_template") and frappe.db.exists("Email Template", step["email_template"]):
@@ -1105,12 +1116,22 @@ def step_send_email(step, ref_doc) -> str:
 	return _("Email queued to {0}").format(recipient)
 
 
-def step_send_sms(step, ref_doc) -> str:
+def numero_del_passo(ref_doc, enrollment=None) -> str | None:
+	"""Where a message step writes: the record's mobile or phone, else the number the
+	event came from (a missed call's caller, `crm.telephony.persa`): a person found
+	through a contact may have no number of their own on the record."""
+	numero = ref_doc.get("mobile_no") or ref_doc.get("phone")
+	if numero or not enrollment:
+		return numero
+	return (get_state(enrollment).get("payload") or {}).get("number") or None
+
+
+def step_send_sms(step, ref_doc, enrollment=None) -> str:
 	from crm.api.sms import send_automation_sms
 
-	number = ref_doc.get("mobile_no") or ref_doc.get("phone")
+	number = numero_del_passo(ref_doc, enrollment)
 	if not number:
-		return _("Skipped: record has no phone number")
+		raise PassoSaltato(_("Skipped: record has no phone number"))
 	ok = send_automation_sms(
 		to=number,
 		message=render(step.get("message") or "", ref_doc),
@@ -1122,12 +1143,12 @@ def step_send_sms(step, ref_doc) -> str:
 	return _("SMS sent to {0}").format(number)
 
 
-def step_send_whatsapp_template(step, ref_doc) -> str:
+def step_send_whatsapp_template(step, ref_doc, enrollment=None) -> str:
 	if not frappe.db.exists("DocType", "WhatsApp Message"):
-		return _("Skipped: WhatsApp app is not installed")
-	number = ref_doc.get("mobile_no") or ref_doc.get("phone")
+		raise PassoSaltato(_("Skipped: WhatsApp app is not installed"))
+	number = numero_del_passo(ref_doc, enrollment)
 	if not number:
-		return _("Skipped: record has no phone number")
+		raise PassoSaltato(_("Skipped: record has no phone number"))
 	from crm.api.whatsapp import send_whatsapp_template
 
 	# each value goes through render(), so a step can pass {{ first_name }}
@@ -1154,11 +1175,11 @@ def step_send_form(step, ref_doc, enrollment=None) -> str:
 	lead = ref_doc.name if ref_doc.doctype == "CRM Lead" else ref_doc.get("lead")
 	template = step.get("template")
 	if not lead:
-		return _("Skipped: no person")
+		raise PassoSaltato(_("Skipped: no person"))
 	if not template or not frappe.db.exists(
 		modelli.MODELLO, {"name": template, "enabled": 1, "current_version": ("is", "set")}
 	):
-		return _("Skipped: the form is not published")
+		raise PassoSaltato(_("Skipped: the form is not published"))
 	payload = (get_state(enrollment).get("payload") or {}) if enrollment else {}
 	appuntamento = payload.get("appointment")
 	if appuntamento and not frappe.db.exists("CRM Appointment", appuntamento):
@@ -1169,7 +1190,7 @@ def step_send_form(step, ref_doc, enrollment=None) -> str:
 	if via == "email":
 		dove = richieste.destinatario(lead)
 		if not dove.get("email"):
-			return _("Skipped: {0}").format(dove.get("reason"))
+			raise PassoSaltato(_("Skipped: {0}").format(dove.get("reason")))
 		richieste.manda_il_link(
 			lead, [template], dove, scadenza=scadenza, appointment=appuntamento, dal_centro=True
 		)
@@ -1177,14 +1198,14 @@ def step_send_form(step, ref_doc, enrollment=None) -> str:
 
 	dove = richieste.destinatario_del_messaggio(lead)
 	if not dove.get("mobile_no"):
-		return _("Skipped: {0}").format(dove.get("reason"))
+		raise PassoSaltato(_("Skipped: {0}").format(dove.get("reason")))
 	link = richieste.link_per_un_messaggio(
 		lead, [template], dove, scadenza=scadenza, appointment=appuntamento
 	)
 	extra = {"form_link": link}
 	if via == "whatsapp":
 		if not frappe.db.exists("DocType", "WhatsApp Message"):
-			return _("Skipped: WhatsApp app is not installed")
+			raise PassoSaltato(_("Skipped: WhatsApp app is not installed"))
 		from crm.api.whatsapp import send_whatsapp_template
 
 		parametri = [render(v, ref_doc, extra=extra) for v in (step.get("template_parameters") or [])]
@@ -1235,13 +1256,13 @@ def step_assign(step, ref_doc) -> str:
 	users = step.get("users") or ([step["user"]] if step.get("user") else [])
 	users = [u for u in users if u and frappe.db.exists("User", u)]
 	if not users:
-		return _("Skipped: no valid user to assign")
+		raise PassoSaltato(_("Skipped: no valid user to assign"))
 
 	if step.get("only_if_unassigned"):
 		from crm.api.doc import assigned_users_of
 
 		if assigned_users_of(ref_doc.doctype, ref_doc.name):
-			return _("Skipped: already assigned")
+			raise PassoSaltato(_("Skipped: already assigned"))
 
 	user = users[0]
 	if len(users) > 1:  # equal round robin: least open assignments among the pool
@@ -1267,7 +1288,7 @@ def step_assign(step, ref_doc) -> str:
 			ignore_permissions=True,
 		)
 	except assign_to.DuplicateToDoError:
-		return _("Skipped: already assigned to {0}").format(user)
+		raise PassoSaltato(_("Skipped: already assigned to {0}").format(user))
 	return _("Assigned to {0}").format(user)
 
 
@@ -1279,7 +1300,7 @@ def step_add_note(step, ref_doc) -> str:
 def step_add_tag(step, ref_doc) -> str:
 	tag = (step.get("tag") or "").strip()
 	if not tag:
-		return _("Skipped: no tag")
+		raise PassoSaltato(_("Skipped: no tag"))
 	from frappe.desk.doctype.tag.tag import add_tag
 
 	add_tag(tag, ref_doc.doctype, ref_doc.name)
@@ -1289,7 +1310,7 @@ def step_add_tag(step, ref_doc) -> str:
 def step_remove_tag(step, ref_doc) -> str:
 	tag = (step.get("tag") or "").strip()
 	if not tag:
-		return _("Skipped: no tag")
+		raise PassoSaltato(_("Skipped: no tag"))
 	from frappe.desk.doctype.tag.tag import remove_tag
 
 	remove_tag(tag, ref_doc.doctype, ref_doc.name)
@@ -1307,9 +1328,9 @@ def step_set_field(step, ref_doc) -> str:
 
 def step_convert_to_deal(step, ref_doc) -> str:
 	if ref_doc.doctype != "CRM Lead":
-		return _("Skipped: only leads can be converted")
+		raise PassoSaltato(_("Skipped: only leads can be converted"))
 	if ref_doc.get("converted"):
-		return _("Skipped: lead already converted")
+		raise PassoSaltato(_("Skipped: lead already converted"))
 	from crm.fcrm.doctype.crm_lead.crm_lead import convert_to_deal
 
 	ref_doc.flags.ignore_permissions = True
@@ -1348,9 +1369,11 @@ def step_webhook(step, ref_doc) -> str:
 def step_add_to_workflow(step, ref_doc) -> str:
 	target = step.get("automation")
 	if not target or not frappe.db.exists("CRM Automation", target):
-		return _("Skipped: automation not found")
+		raise PassoSaltato(_("Skipped: automation not found"))
 	result = enroll(target, ref_doc.doctype, ref_doc.name)
-	return _("Enrolled in {0}").format(target) if result else _("Skipped: not enrolled (filters/re-entry)")
+	if not result:
+		raise PassoSaltato(_("Skipped: not enrolled (filters/re-entry)"))
+	return _("Enrolled in {0}").format(target)
 
 
 def step_remove_from_workflow(step, ref_doc) -> str:
