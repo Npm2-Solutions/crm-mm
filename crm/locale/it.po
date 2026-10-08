@@ -46668,3 +46668,129 @@ msgstr "«{0}» ora è uno per ogni giorno: cambia i giorni diversi"
 
 msgid "The days chosen take its moments in place of their own."
 msgstr "I giorni scelti prendono i suoi momenti al posto dei loro."
+
+msgid "{0} rusk"
+msgstr "{0} fetta biscottata"
+
+msgid "{0} rusks"
+msgstr "{0} fette biscottate"
+
+msgid "{0} biscuit"
+msgstr "{0} biscotto"
+
+msgid "{0} biscuits"
+msgstr "{0} biscotti"
+
+msgid "{0} slice"
+msgstr "{0} fetta"
+
+msgid "{0} slices"
+msgstr "{0} fette"
+
+msgid "{0} egg"
+msgstr "{0} uovo"
+
+msgid "{0} eggs"
+msgstr "{0} uova"
+
+msgid "{0} jar"
+msgstr "{0} vasetto"
+
+msgid "{0} jars"
+msgstr "{0} vasetti"
+
+msgid "{0} teaspoon"
+msgstr "{0} cucchiaino"
+
+msgid "{0} teaspoons"
+msgstr "{0} cucchiaini"
+
+msgid "{0} tablespoon"
+msgstr "{0} cucchiaio"
+
+msgid "{0} tablespoons"
+msgstr "{0} cucchiai"
+
+msgid "{0} glass"
+msgstr "{0} bicchiere"
+
+msgid "{0} glasses"
+msgstr "{0} bicchieri"
+
+msgid "{0} handful"
+msgstr "{0} manciata"
+
+msgid "{0} handfuls"
+msgstr "{0} manciate"
+
+msgid "{0} medium fruit"
+msgstr "{0} frutto medio"
+
+msgid "{0} medium fruits"
+msgstr "{0} frutti medi"
+
+msgid "each side"
+msgstr "per lato"
+
+msgid "left side"
+msgstr "lato sinistro"
+
+msgid "right side"
+msgstr "lato destro"
+
+msgid "About {0}"
+msgstr "Circa {0}"
+
+msgid "Frequent doses"
+msgstr "Dosi frequenti"
+
+msgid "Side"
+msgstr "Lato"
+
+msgid "Both sides"
+msgstr "Entrambi i lati"
+
+msgid "Each side"
+msgstr "Per lato"
+
+msgid "Same energy, another food"
+msgstr "Stessa energia, un altro alimento"
+
+msgid "No other food of this group with its values"
+msgstr "Nessun altro alimento di questo gruppo con i suoi valori"
+
+msgid "Add as an alternative: {0}"
+msgstr "Aggiungi come alternativa: {0}"
+
+msgid "Energy from"
+msgstr "Energia da"
+
+msgid "proteins {0}%"
+msgstr "proteine {0}%"
+
+msgid "carbohydrates {0}%"
+msgstr "carboidrati {0}%"
+
+msgid "fats {0}%"
+msgstr "grassi {0}%"
+
+msgid "(LARN {0}–{1}%)"
+msgstr "(LARN {0}–{1}%)"
+
+msgid "Effort or pain {0}/10, last {1}"
+msgstr "Fatica o dolore {0}/10, l'ultima {1}"
+
+msgid "Empty: both sides, or the exercise has none"
+msgstr "Vuoto: entrambi i lati, o l'esercizio non ne ha"
+
+msgid "How hard or painful was it?"
+msgstr "Quanto è stato faticoso o doloroso?"
+
+msgid "{0} out of 10"
+msgstr "{0} su 10"
+
+msgid "1 hardly"
+msgstr "1 per niente"
+
+msgid "10 very much"
+msgstr "10 moltissimo"
