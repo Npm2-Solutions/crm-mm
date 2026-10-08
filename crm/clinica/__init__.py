@@ -367,6 +367,11 @@ def registra() -> None:
 
 	modelli.registra_dato_clinico(clinica_accesa)
 	compilazioni.registra_lettore_clinico(legge_i_moduli_clinici)
+	# a score on a clinical sheet is followed over time beside the forms' ones
+	from crm.clinica import cartella
+	from crm.moduli import andamenti
+
+	andamenti.registra_fonte(cartella.punteggi)
 	# the lines of the patient's summary a field of a template may answer
 	from crm.clinica import sintesi
 

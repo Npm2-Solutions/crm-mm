@@ -5,7 +5,8 @@
 
 A template says when it is asked (``ask_on``: by hand, at the first appointment,
 for some services) and how long a signed one counts (``validity``: for ever, a
-year, one appointment); a new version may ask again whoever signed an earlier
+year, every few weeks - a questionnaire whose score is followed over time -, one
+appointment); a new version may ask again whoever signed an earlier
 one, from a date (``asked_from``). `dovuto` answers for one template and one
 person, pure; the rest reads the person's signed forms and appointments.
 
@@ -18,7 +19,7 @@ from __future__ import annotations
 import datetime
 
 import frappe
-from frappe.utils import add_years, get_datetime, getdate, now_datetime
+from frappe.utils import add_days, add_years, get_datetime, getdate, now_datetime
 
 from crm.demo import guardie
 
@@ -30,7 +31,18 @@ RICHIESTA = "CRM Form Request"
 FORMA = "Form"
 
 #: Why a form is owed, most telling first.
-MOTIVI = ("never_signed", "new_version", "expired", "every_appointment")
+MOTIVI = ("never_signed", "new_version", "expired", "due_again", "every_appointment")
+#: Every few weeks: from one week to two years.
+SETTIMANE = (1, 104)
+
+
+def settimane(modello: dict) -> int:
+	"""After how many weeks a template asked "every few weeks" is owed again."""
+	try:
+		n = int(modello.get("validity_weeks") or 0)
+	except (TypeError, ValueError):
+		n = 0
+	return min(max(n, SETTIMANE[0]), SETTIMANE[1]) if n else 4
 
 
 def _non_conta(firmato: dict, modello: dict, appuntamento: dict | None, oggi: datetime.date) -> str | None:
@@ -45,6 +57,11 @@ def _non_conta(firmato: dict, modello: dict, appuntamento: dict | None, oggi: da
 	validita = modello.get("validity") or "Forever"
 	if validita == "One year" and add_years(getdate(firmato.get("signed_on")), 1) <= oggi:
 		return "expired"
+	if (
+		validita == "Every few weeks"
+		and add_days(getdate(firmato.get("signed_on")), 7 * settimane(modello)) <= oggi
+	):
+		return "due_again"
 	if validita == "Every appointment" and (
 		not appuntamento or firmato.get("appointment") != appuntamento.get("name")
 	):
@@ -57,8 +74,8 @@ def dovuto(
 ) -> str | None:
 	"""Why ``modello`` is owed now, or None. Pure.
 
-	``modello``: ``ask_on``, ``validity``, ``services``, ``version`` (the current
-	one), ``asked_from``. ``firmati``: the person's signed forms of it, each with
+	``modello``: ``ask_on``, ``validity`` (and ``validity_weeks`` for "Every few
+	weeks"), ``services``, ``version`` (the current one), ``asked_from``. ``firmati``: the person's signed forms of it, each with
 	``version``, ``signed_on``, ``appointment``. ``appuntamento``: the one it is
 	asked for (``name``, ``service``), or None for the person in general.
 	"""
@@ -95,7 +112,16 @@ def modelli_che_si_chiedono() -> list[dict]:
 			"ask_on": ("!=", "By hand"),
 			"use": FORMA,
 		},
-		fields=["name", "title", "clinical", "ask_on", "validity", "current_version", "send_before"],
+		fields=[
+			"name",
+			"title",
+			"clinical",
+			"ask_on",
+			"validity",
+			"validity_weeks",
+			"current_version",
+			"send_before",
+		],
 		order_by="title asc",
 	)
 	servizi: dict[str, list] = {}
@@ -120,6 +146,7 @@ def modelli_che_si_chiedono() -> list[dict]:
 			"clinical": riga.clinical,
 			"ask_on": riga.ask_on,
 			"validity": riga.validity,
+			"validity_weeks": riga.validity_weeks,
 			"services": servizi.get(riga.name, []),
 			"version": versioni[riga.current_version].version if riga.current_version in versioni else 0,
 			"asked_from": versioni[riga.current_version].asked_from

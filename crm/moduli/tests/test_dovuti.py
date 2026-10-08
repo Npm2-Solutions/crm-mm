@@ -47,6 +47,28 @@ class IlDovuto(UnitTestCase):
 		self.assertIsNone(dovuti.dovuto(modello, [firmato(giorni_fa=400), firmato(giorni_fa=20)], None, OGGI))
 		self.assertEqual(dovuti.dovuto(modello, [firmato(giorni_fa=365)], None, OGGI), "expired")
 
+	def test_ogni_qualche_settimana(self):
+		# a questionnaire followed over time: asked again once its weeks have passed
+		modello = self.modello(validity="Every few weeks", validity_weeks=4)
+		self.assertIsNone(dovuti.dovuto(modello, [firmato(giorni_fa=27)], None, OGGI))
+		self.assertEqual(dovuti.dovuto(modello, [firmato(giorni_fa=28)], None, OGGI), "due_again")
+		# the latest one counts
+		self.assertIsNone(dovuti.dovuto(modello, [firmato(giorni_fa=60), firmato(giorni_fa=3)], None, OGGI))
+		# for an appointment too, as the link sent with a booking asks it
+		self.assertEqual(dovuti.dovuto(modello, [firmato(giorni_fa=40)], {"name": "A"}, OGGI), "due_again")
+		self.assertEqual(dovuti.dovuto(modello, [], None, OGGI), "never_signed")
+		# without its weeks, four; never more than two years nor less than one
+		self.assertEqual(dovuti.settimane({"validity_weeks": None}), 4)
+		self.assertEqual(dovuti.settimane({"validity_weeks": 500}), 104)
+		self.assertEqual(dovuti.settimane({"validity_weeks": "2"}), 2)
+		self.assertEqual(
+			dovuti.dovuto(self.modello(validity="Every few weeks"), [firmato(giorni_fa=28)], None, OGGI),
+			"due_again",
+		)
+		# a new version still says so first
+		nuova = self.modello(validity="Every few weeks", validity_weeks=2, version=2, asked_from=OGGI)
+		self.assertEqual(dovuti.dovuto(nuova, [firmato(giorni_fa=20)], None, OGGI), "new_version")
+
 	def test_a_ogni_appuntamento(self):
 		modello = self.modello(validity="Every appointment")
 		# without an appointment there is nothing to ask yet

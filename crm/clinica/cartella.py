@@ -277,6 +277,49 @@ def save_record(
 	return _riga(doc)
 
 
+def punteggi(lead: str) -> list[dict]:
+	"""The visits on clinical sheets with a score the session reads, for the
+	questionnaires followed over time (`crm.moduli.andamenti`): each read is in the
+	access log, as the record's."""
+	if not _legge():
+		return []
+	from crm.moduli import andamenti, modelli
+
+	visite = []
+	for nome in frappe.get_list(
+		DOCTYPE,
+		filters={
+			"lead": lead,
+			"docstatus": 1,
+			"template_version": ("is", "set"),
+			"addendum_to": ("is", "not set"),
+		},
+		pluck="name",
+		order_by="record_date asc",
+	):
+		doc = frappe.get_doc(DOCTYPE, nome)
+		if not puo_leggere(doc):
+			continue
+		schema = modelli.carica_schema(
+			frappe.get_cached_value(modelli.VERSIONE, doc.template_version, "schema")
+		)
+		if not andamenti.ha_punteggi(schema):
+			continue
+		doc.add_viewed()
+		visite.append(
+			{
+				"name": doc.name,
+				"template": doc.template,
+				"title": doc.title,
+				"date": doc.record_date,
+				"schema": schema,
+				"answers": frappe.parse_json(doc.answers or "{}") or {},
+				"kind": "visit",
+			}
+		)
+	return visite
+
+
 def ultima_visita(lead: str, template: str):
 	"""The person's last signed visit on ``template`` the session reads, or None:
 	an obscured episode, an "only me" of somebody else's, a record out of the

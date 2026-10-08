@@ -43,7 +43,7 @@ FORMA = "Form"
 SCHEDA = "Sheet"
 SITO = "Website"
 CHIEDE = ("By hand", "First appointment", "Services")
-VALIDITA = ("Forever", "One year", "Every appointment")
+VALIDITA = ("Forever", "One year", "Every few weeks", "Every appointment")
 
 
 @dataclass(frozen=True)
@@ -414,6 +414,7 @@ def get_template(name: str) -> dict:
 		"ask_on": modello.ask_on,
 		"services": [riga.service for riga in modello.services],
 		"validity": modello.validity,
+		"validity_weeks": modello.validity_weeks,
 		"send_before": modello.send_before,
 		**{campo: modello.get(campo) for campo in CAMPI_SITO},
 		"schema": schema,
@@ -526,6 +527,7 @@ _CAMPI_MODELLO = (
 	"specialty",
 	"ask_on",
 	"validity",
+	"validity_weeks",
 	"send_before",
 	"enabled",
 	*CAMPI_SITO,

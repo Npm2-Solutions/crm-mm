@@ -359,6 +359,20 @@
             :label="__('A signed one counts')"
             :options="validityOptions"
           />
+          <FormControl
+            v-if="tpl.validity === 'Every few weeks'"
+            v-model="tpl.validity_weeks"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            max="104"
+            :label="__('Asked again every how many weeks')"
+            :description="
+              __(
+                'A questionnaire with a score is asked again, and its totals are followed over time on the person\'s page.',
+              )
+            "
+          />
         </div>
         <label
           v-if="sent && !withoutCode && tpl.ask_on !== 'By hand'"
@@ -765,6 +779,7 @@ const askOptions = [
 const validityOptions = [
   { label: __('For ever'), value: 'Forever' },
   { label: __('For a year'), value: 'One year' },
+  { label: __('For a few weeks'), value: 'Every few weeks' },
   { label: __('For one appointment'), value: 'Every appointment' },
 ]
 
@@ -803,6 +818,7 @@ const SETTINGS = [
   'specialty',
   'ask_on',
   'validity',
+  'validity_weeks',
   'send_before',
   'enabled',
   'services',

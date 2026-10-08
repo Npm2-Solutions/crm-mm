@@ -92,6 +92,9 @@
     <!-- allergies, medications, parameters: what a practitioner confirmed -->
     <ClinicSummary v-if="record.data?.can_read" ref="summaryRef" :lead="lead" />
 
+    <!-- the questionnaires' totals over time: the forms and the visits' sheets -->
+    <ScoreTrends v-if="record.data?.can_read" :lead="lead" />
+
     <!-- the teeth, and the care plans proposed as quotes -->
     <DentalCard :lead="lead" />
 
@@ -476,6 +479,7 @@ import DictationDialog from '@/components/Clinic/DictationDialog.vue'
 import SummaryDialog from '@/components/Clinic/SummaryDialog.vue'
 import DentalCard from '@/components/Clinic/DentalCard.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
+import ScoreTrends from '@/components/Moduli/ScoreTrends.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'

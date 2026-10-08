@@ -48141,3 +48141,39 @@ msgstr "Anche il disegno a mano"
 
 msgid "{0}: where it hurts is asked at the centre, not on the website"
 msgstr "{0}: dove fa male si chiede al centro, non sul sito"
+
+msgid "Questionnaires over time"
+msgstr "Questionari nel tempo"
+
+msgid "1 time"
+msgstr "1 volta"
+
+msgid "The same as on {0}"
+msgstr "Come il {0}"
+
+msgid "For a few weeks"
+msgstr "Per qualche settimana"
+
+msgid "Asked again every how many weeks"
+msgstr "Si chiede di nuovo ogni quante settimane"
+
+msgid "A questionnaire with a score is asked again, and its totals are followed over time on the person's page."
+msgstr "Un questionario con un punteggio si chiede di nuovo, e i suoi totali si seguono nel tempo sulla pagina della persona."
+
+msgid "Its weeks have passed: to fill again"
+msgstr "Sono passate le sue settimane: da compilare di nuovo"
+
+msgid "Every few weeks"
+msgstr "Ogni qualche settimana"
+
+msgid "Every how many weeks"
+msgstr "Ogni quante settimane"
+
+msgid "After how many weeks a signed one is asked again: a questionnaire followed over time."
+msgstr "Dopo quante settimane se ne chiede uno nuovo: un questionario seguito nel tempo."
+
+msgid "A form is asked again every {0} to {1} weeks"
+msgstr "Un modulo si chiede di nuovo ogni {0}-{1} settimane"
+
+msgid "{0} compared with {1}"
+msgstr "{0} rispetto al {1}"
