@@ -75,7 +75,7 @@ MODULI = (
 		descrizione="Automations, campaigns, Meta leads and spend, social, tracking, "
 		"cost per new client, the website",
 		ordine=3,
-		impostazioni=("Meta connection", "Tracking", "Social profiles", "Website"),
+		impostazioni=("Meta connection", "Tracking", "Review requests", "Social profiles", "Website"),
 	),
 	ModuloPiano(
 		TELEFONO,

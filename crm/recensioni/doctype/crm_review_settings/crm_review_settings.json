@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "creation": "2026-10-08 12:00:00.000000",
+ "description": "Review requests after a visit: where the review is written, how often a person is asked",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "google_review_link",
+  "google_place_id",
+  "column_break_link",
+  "months_between",
+  "excluded_services"
+ ],
+ "fields": [
+  {
+   "description": "The page where people write a review of the centre on Google: in the Google Business Profile, «Ask for reviews»",
+   "fieldname": "google_review_link",
+   "fieldtype": "Data",
+   "label": "Google review link",
+   "options": "URL"
+  },
+  {
+   "description": "Without the link, the centre's Place ID makes it",
+   "fieldname": "google_place_id",
+   "fieldtype": "Data",
+   "label": "Google Place ID"
+  },
+  {
+   "fieldname": "column_break_link",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "12",
+   "description": "The same person is not asked again before then, whatever automation asks",
+   "fieldname": "months_between",
+   "fieldtype": "Int",
+   "label": "Months before asking again"
+  },
+  {
+   "description": "Services after which nobody is asked, one per line",
+   "fieldname": "excluded_services",
+   "fieldtype": "Small Text",
+   "label": "Services excluded"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-08 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Recensioni",
+ "name": "CRM Review Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

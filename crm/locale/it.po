@@ -47136,3 +47136,123 @@ msgstr "Copiata dalla visita del {0}"
 
 msgid "{0}: start from the last visit"
 msgstr "{0}: parti dall'ultima visita"
+
+msgid "Review requests"
+msgstr "Richieste di recensione"
+
+msgid "Asked after a visit how it went: a review on Google, a satisfaction questionnaire. A no here wins over a yes to marketing."
+msgstr "Chiedere dopo una visita com'è andata: una recensione su Google, un questionario di soddisfazione. Un no qui vale più di un sì al marketing."
+
+msgid "The review link is a web address starting with https://"
+msgstr "Il link per la recensione è un indirizzo web che inizia con https://"
+
+msgid "A Google Place ID is made of letters, digits, dashes and underscores"
+msgstr "Un Place ID di Google è fatto di lettere, cifre, trattini e trattini bassi"
+
+msgid "Did not agree to be asked how a visit went: not sent"
+msgstr "Non ha acconsentito a sentirsi chiedere com'è andata una visita: non inviato"
+
+msgid "Did not come to the appointment: not sent"
+msgstr "Non è venuto all'appuntamento: non inviato"
+
+msgid "No Google review link in Settings > Marketing > Review requests: not sent"
+msgstr "Nessun link per le recensioni su Google in Impostazioni > Marketing > Richieste di recensione: non inviato"
+
+msgid "No review is asked after this service: not sent"
+msgstr "Dopo questo servizio non si chiede una recensione: non inviato"
+
+msgid "Asked for a review less than {0} months ago: not sent"
+msgstr "Ha già ricevuto una richiesta di recensione meno di {0} mesi fa: non inviato"
+
+msgid "Set the Google review link, then switch on the recipe that asks after a visit"
+msgstr "Imposta il link per le recensioni su Google, poi accendi la ricetta che le chiede dopo una visita"
+
+msgid "Review requests sent"
+msgstr "Richieste di recensione inviate"
+
+msgid "People asked after a visit for a review on Google, and how many opened the link"
+msgstr "Persone a cui dopo una visita è stata chiesta una recensione su Google, e quante hanno aperto il link"
+
+msgid "Link opened: {0}"
+msgstr "Link aperto: {0}"
+
+msgid "Review requests after a visit: where the review is written, how often a person is asked"
+msgstr "Richieste di recensione dopo una visita: dove si scrive la recensione, ogni quanto si chiede alla stessa persona"
+
+msgid "Google review link"
+msgstr "Link per le recensioni su Google"
+
+msgid "The page where people write a review of the centre on Google: in the Google Business Profile, «Ask for reviews»"
+msgstr "La pagina in cui si scrive una recensione del centro su Google: nel Profilo dell'attività su Google, «Chiedi recensioni»"
+
+msgid "Google Place ID"
+msgstr "Place ID di Google"
+
+msgid "Without the link, the centre's Place ID makes it"
+msgstr "Senza il link, lo crea il Place ID del centro"
+
+msgid "Without the link, the centre’s Place ID makes it."
+msgstr "Senza il link, lo crea il Place ID del centro."
+
+msgid "Months before asking again"
+msgstr "Mesi prima di chiedere di nuovo"
+
+msgid "The same person is not asked again before then, whatever automation asks"
+msgstr "Prima di allora alla stessa persona non si chiede di nuovo, qualunque automazione lo chieda"
+
+msgid "The same person is not asked again before then, whatever automation asks."
+msgstr "Prima di allora alla stessa persona non si chiede di nuovo, qualunque automazione lo chieda."
+
+msgid "Services excluded"
+msgstr "Servizi esclusi"
+
+msgid "Services after which nobody is asked, one per line"
+msgstr "Servizi dopo i quali non si chiede a nessuno, uno per riga"
+
+msgid "A review request sent after a visit: who, after what, and whether the link was opened"
+msgstr "Una richiesta di recensione inviata dopo una visita: a chi, dopo cosa, e se il link è stato aperto"
+
+msgid "Enrollment"
+msgstr "Iscrizione"
+
+msgid "Link opened on"
+msgstr "Link aperto il"
+
+msgid "CRM Review Settings"
+msgstr "Impostazioni delle richieste di recensione"
+
+msgid "CRM Review Request"
+msgstr "Richiesta di recensione"
+
+msgid "Everybody is asked the same way, with nothing in return: Google forbids choosing who is asked and offering anything for a review. Only who agreed to these requests, or to marketing, is asked; the automation «Ask for a review after the visit» sends the link, off until you switch it on."
+msgstr "Si chiede a tutti allo stesso modo, senza niente in cambio: Google vieta di scegliere a chi chiedere e di offrire qualcosa per una recensione. Si chiede solo a chi ha acconsentito a queste richieste, o al marketing; il link lo manda l'automazione «Chiedi una recensione dopo la visita», spenta finché non la accendi."
+
+msgid "In your Google Business Profile, «Ask for reviews» gives the link to copy here."
+msgstr "Nel Profilo dell'attività su Google, «Chiedi recensioni» dà il link da copiare qui."
+
+msgid "After these services nobody is asked: a certificate, a blood test."
+msgstr "Dopo questi servizi non si chiede a nessuno: un certificato, un prelievo."
+
+msgid "No service yet."
+msgstr "Ancora nessun servizio."
+
+msgid "The Google review link and how often a person is asked. Everybody the same way, nothing in return."
+msgstr "Il link per le recensioni su Google e ogni quanto chiedere alla stessa persona. A tutti allo stesso modo, senza niente in cambio."
+
+msgid "Ask for a review after the visit"
+msgstr "Chiedi una recensione dopo la visita"
+
+msgid "Two hours after a visit, the link to review the centre on Google: by SMS, or by email to who has no mobile."
+msgstr "Due ore dopo una visita, il link per recensire il centro su Google: via SMS, o via email a chi non ha un cellulare."
+
+msgid "Has a mobile"
+msgstr "Ha un cellulare"
+
+msgid "Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went: {{ review_link }}"
+msgstr "Ciao {{ first_name }}, grazie per la visita. Se hai un minuto, racconta agli altri com'è andata: {{ review_link }}"
+
+msgid "How did it go, {{ first_name }}?"
+msgstr "Com'è andata, {{ first_name }}?"
+
+msgid "Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went with a review on Google: {{ review_link }}"
+msgstr "Ciao {{ first_name }}, grazie per la visita. Se hai un minuto, racconta agli altri com'è andata con una recensione su Google: {{ review_link }}"

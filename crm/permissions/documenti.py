@@ -43,6 +43,8 @@ SCRITTURA = {
 	# which pipelines new clients and quotes move
 	"CRM Client Settings": "pipeline.configura",
 	"CRM Quote Settings": "pipeline.configura",
+	# where the reviews are written, how often a person is asked: marketing's
+	"CRM Review Settings": "automazioni.gestisci",
 	# public views: everybody keeps their own
 	"CRM View Settings": "viste.configura",
 	# the channels: everybody uses the templates, the manager writes them

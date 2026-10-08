@@ -474,6 +474,9 @@ export const MERGE_FIELDS = [
   { token: '{{ status }}', label: 'Status' },
   { token: '{{ tracked_link("slug") }}', label: 'Tracked link' },
   { token: '{{ booking_link }}', label: 'Booking page link' },
+  // asks for a review on Google: the server sends it only to who agreed, once
+  // in a while (crm/recensioni), and writes the request first
+  { token: '{{ review_link }}', label: 'Google review link' },
 ]
 
 /** Full class strings per theme — Tailwind only sees literals, not templates. */
@@ -1206,6 +1209,44 @@ export const RECIPES = [
         ),
       }),
     ],
+  },
+  {
+    // off until the centre switches it on, as every recipe: two hours after a
+    // visit, the same words to everybody (Google forbids choosing who is asked);
+    // the server lets it leave only to who agreed, once in so many months, and
+    // never after a service the settings exclude
+    key: 'review_after_visit',
+    title: 'Ask for a review after the visit',
+    description:
+      'Two hours after a visit, the link to review the centre on Google: by SMS, or by email to who has no mobile.',
+    icon: 'star',
+    trigger_event: 'Appointment Completed',
+    build: () => {
+      const domanda = newStep('if_else')
+      domanda.branches[0].label = __('Has a mobile')
+      domanda.branches[0].condition_groups = [
+        [{ field: 'mobile_no', operator: 'is_set', value: '' }],
+      ]
+      domanda.branches[0].steps = [
+        newStep('send_sms', {
+          message: __(
+            'Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went: {{ review_link }}',
+          ),
+        }),
+      ]
+      domanda.else_steps = [
+        newStep('send_email', {
+          subject: __('How did it go, {{ first_name }}?'),
+          message: __(
+            'Hi {{ first_name }}, thank you for coming. If you have a minute, tell others how it went with a review on Google: {{ review_link }}',
+          ),
+        }),
+      ]
+      return [
+        newStep('wait', { mode: 'duration', days: 0, hours: 2, minutes: 0 }),
+        domanda,
+      ]
+    },
   },
   {
     key: 'deal_won',

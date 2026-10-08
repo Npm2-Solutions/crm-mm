@@ -49,6 +49,7 @@ def carica(*args, **kwargs) -> None:
 		from crm.piani import registra as registra_piani
 		from crm.preventivi import registra as registra_preventivi
 		from crm.primi_passi import registra as registra_primi_passi
+		from crm.recensioni import registra as registra_recensioni
 		from crm.tessera_sanitaria import registra as registra_tessera_sanitaria
 
 		catalogo.registra()
@@ -71,6 +72,8 @@ def carica(*args, **kwargs) -> None:
 		registra_documenti()
 		# quotes, and following them to the end: every centre's
 		registra_preventivi()
+		# asking how a visit went: every centre's, with marketing's automations
+		registra_recensioni()
 		# the clinic, a vertical: on every site, switched on by the plan; it adds to
 		# the area, so after it
 		registra_clinica()

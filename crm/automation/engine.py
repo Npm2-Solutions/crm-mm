@@ -47,7 +47,10 @@ Conditions: a group is a list of {field, operator, value} ANDed together;
 contains, is_set, is_not_set, greater_than, less_than.
 
 Text fields render Jinja against the record: "Ciao {{ first_name }}"; tracked
-links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }}.
+links via {{ tracked_link("slug") }}, the booking page via {{ booking_link }}, a
+review on Google via {{ review_link }}: a message that carries it asks how a visit
+went, and leaves only past `crm.recensioni.chiedi.perche_no` (who agreed, how
+long since the last request, which service).
 """
 
 import json
@@ -59,6 +62,7 @@ from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetim
 from jinja2 import DebugUndefined
 from jinja2.sandbox import SandboxedEnvironment
 
+from crm.recensioni import chiedi as recensioni
 from crm.scheduling.timeutils import hhmm
 from crm.telephony import sms, sms_regole
 from crm.utils import count_field
@@ -722,12 +726,26 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 				enrollment.wait_until = sms_regole.prossimo_momento(adesso)
 				break
 
+			payload = state.get("payload") or {}
+			if step_type in COMMUNICATION_TYPES:
+				# asking how a visit went: only who agreed, once in a while (crm.recensioni)
+				motivo = recensioni.perche_no(step, enrollment, ref_doc, payload)
+				if motivo:
+					log_step(enrollment, enrollment.current_step, step_type, "Skipped", motivo)
+					enrollment.current_step += 1
+					continue
+
 			try:
+				if step_type in COMMUNICATION_TYPES:
+					# the review request is written before the message carrying its link leaves
+					frappe.flags.crm_review_link = recensioni.prepara(step, enrollment, ref_doc, payload)
 				detail = execute_step(step, ref_doc, enrollment)
 				log_step(enrollment, enrollment.current_step, step_type, "Success", detail)
 			except Exception:
 				frappe.log_error(frappe.get_traceback(), f"CRM Automation: step failed ({automation.name})")
 				log_step(enrollment, enrollment.current_step, step_type, "Failed", _("See error log"))
+			finally:
+				frappe.flags.crm_review_link = None
 			enrollment.current_step += 1
 			ref_doc.reload()
 	finally:
@@ -1019,6 +1037,9 @@ def render(text: str, ref_doc, preview: bool = False) -> str:
 	context["tracked_link"] = tracked_link
 	# the booking page, where the centre takes bookings online (the missed call's recipe)
 	context["booking_link"] = frappe.utils.get_url("/prenota")
+	# the review request's own link, written before the message leaves; a preview
+	# shows Google's page itself
+	context["review_link"] = (recensioni.link_di_google() if preview else frappe.flags.crm_review_link) or ""
 	if preview:
 		try:
 			return _automation_jenv().from_string(text).render(context)
@@ -1749,7 +1770,7 @@ def on_appointment_updated(doc, method=None):
 		"Completed": "appointment_completed",
 	}.get(doc.status)
 	if event:
-		process_event(event, doc, {"status": doc.status, "service": doc.service})
+		process_event(event, doc, {"status": doc.status, "service": doc.service, "appointment": doc.name})
 		if doc.get("source") == "Online":
 			process_event(event.replace("appointment_", "booking_"), doc, {"status": doc.status})
 

@@ -796,6 +796,15 @@ keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.
 
+### Asking how a visit went (`crm/recensioni`)
+| File | Role |
+|---|---|
+| `crm/recensioni/regole.py` | Pure: who may be asked (a yes to «Review requests», `review_requests`, or to marketing; a no to these requests wins), once every so many months (12 to start with), a service excluded, the Google link (pasted, else from the Place ID) — tested with plain `unittest` |
+| `crm/recensioni/chiedi.py` + `CRM Review Settings`, `CRM Review Request`, `Settings/ReviewSettings.vue` | An automation asks for a review by writing `{{ review_link }}` in a message: before it leaves the engine asks `perche_no` (the consent, the person came, the link set, the service, the months, whatever automation asked) and logs a skip in words; the request is written before it leaves (`prepara`, one per enrollment), its link signed with its name (`vai`: the first opening counted, then Google, nothing of the person carried there); Settings > Marketing > Review requests (`automazioni.gestisci`); the recipe «Ask for a review after the visit» (`automation.js`, off as every recipe); the dashboard's «Review requests sent» |
+
+Google forbids choosing who is asked (review gating) and offering anything for a
+review: the settings choose only a service nobody is asked after, never a person.
+
 ### The desk's day
 | File | Role |
 |---|---|

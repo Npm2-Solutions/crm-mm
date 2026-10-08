@@ -44,6 +44,7 @@ Import = DocType("Facebook Lead Import")
 Insight = DocType("Facebook Ad Insight")
 FailedSync = DocType("Failed Lead Sync Log")
 ConversionEvent = DocType("Meta Conversion Event")
+ReviewRequest = DocType("CRM Review Request")
 
 TRACKING = ("tracking",)
 ROWS = Option("limit", _lt("Rows"), type="int", default=6, min=3, max=20)
@@ -285,6 +286,24 @@ def web_form_requests(ctx: Context):
 	return charts.number(
 		*two_periods(ctx, Deal, Deal.creation, Deal.source == "Web Form", ctx.owned(Deal.deal_owner)),
 		route={"name": "Deals"},
+	)
+
+
+@widget(
+	"review_requests_sent",
+	category="marketing",
+	kind="number",
+	title=_lt("Review requests sent"),
+	description=_lt("People asked after a visit for a review on Google, and how many opened the link"),
+	requires=("review_requests",),
+	scope="site",
+	keywords=("google", "reviews", "recensioni"),
+)
+def review_requests_sent(ctx: Context):
+	aperti = total(ReviewRequest, ctx.within(ReviewRequest.sent_on), ReviewRequest.clicked_on.isnotnull())
+	return charts.number(
+		*two_periods(ctx, ReviewRequest, ReviewRequest.sent_on),
+		hint=_("Link opened: {0}").format(int(aperti)) if aperti else None,
 	)
 
 

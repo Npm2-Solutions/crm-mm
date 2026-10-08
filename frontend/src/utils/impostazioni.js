@@ -415,6 +415,15 @@ export const MENU = [
         condition: puo('social.pubblica'),
       },
       {
+        // asking after a visit for a review on Google (crm/recensioni): the
+        // automations ask, this page says where and how often
+        key: 'Review requests',
+        label: 'Review requests',
+        description:
+          'The Google review link and how often a person is asked. Everybody the same way, nothing in return.',
+        condition: puo('automazioni.gestisci'),
+      },
+      {
         key: 'Tracking',
         label: 'Tracking',
         description:

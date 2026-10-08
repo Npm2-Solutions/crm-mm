@@ -330,8 +330,9 @@ describe('the pages there are', () => {
     expect(new Set(tutte).size).toBe(tutte.length)
     // the 51 pages there were, none lost, the notifications and one's email;
     // ERPNext gone (02/10/2026); the demo data (doc 53); the centre's language;
-    // Fatture in Cloud (06/10/2026); the centre's data in and out (07/10/2026)
-    expect(tutte).toHaveLength(58)
+    // Fatture in Cloud (06/10/2026); the centre's data in and out (07/10/2026);
+    // the review requests after a visit (08/10/2026)
+    expect(tutte).toHaveLength(59)
   })
 
   it('gives every group, entry and tab a label', () => {

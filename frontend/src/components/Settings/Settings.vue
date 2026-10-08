@@ -396,6 +396,9 @@ const PAGINE = {
   'Social profiles': aRichiesta(
     () => import('@/components/Settings/Social/SocialSettings.vue'),
   ),
+  'Review requests': aRichiesta(
+    () => import('@/components/Settings/ReviewSettings.vue'),
+  ),
   'Lead Tracking': aRichiesta(
     () => import('@/components/Settings/TrackingSettings.vue'),
   ),

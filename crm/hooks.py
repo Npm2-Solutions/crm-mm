@@ -328,6 +328,7 @@ has_permission = {
 	"CRM Communication Status": "crm.permissions.documenti.has_permission",
 	"CRM Client Settings": "crm.permissions.documenti.has_permission",
 	"CRM Quote Settings": "crm.permissions.documenti.has_permission",
+	"CRM Review Settings": "crm.permissions.documenti.has_permission",
 	"CRM View Settings": "crm.permissions.documenti.has_permission",
 	"WhatsApp Templates": "crm.permissions.documenti.has_permission",
 	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
@@ -489,6 +490,8 @@ doc_events = {
 			"crm.scheduling.attese.cancella_con_la_persona",
 			# and their way through the automations
 			"crm.automation.engine.cancella_con_il_riferimento",
+			# and the review requests they were sent
+			"crm.recensioni.chiedi.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
@@ -753,7 +756,7 @@ override_whitelisted_methods = {
 # -----------------------------------------------------------
 
 # the audit log outlives what it records: a document taken away keeps its events
-ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log"]
+ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log", "CRM Review Request"]
 
 # Request Events
 # ----------------
