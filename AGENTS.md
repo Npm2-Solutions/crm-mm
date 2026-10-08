@@ -850,6 +850,14 @@ guards know: never a real domain, never a real person's number.
 Google forbids choosing who is asked (review gating) and offering anything for a
 review: the settings choose only a service nobody is asked after, never a person.
 
+### More than one location (`crm/scheduling/sedi.py`, docs/crm/62)
+| File | Role |
+|---|---|
+| `crm/scheduling/sedi_regole.py` + `utils/sedi.js` | Pure: one location is none (`piu_sedi`), a room or a shift line without one serves all, a room of another location gives way to its kind (`stanze_al_posto`), an appointment's location (rooms', else the shift's, else chosen, else the only one), where a service is held, the address as an envelope writes it — tested |
+| `crm/scheduling/sedi.py` + `CRM Location`, `crm/api/sedi.py`, `Settings/LocationsSettings.vue`, `composables/sedi.js` | Settings > The centre > Locations (`impostazioni.generali`): address, phone, map, opening hours, an issuing company of its own; `centre_location` on rooms, shift lines and overrides, the appointment (`assegna` in its `validate`; a shift in one and the room in another is a conflict), the invoice and the cash closing (one a day per location, none the whole centre); a room or shifts given one bring the appointments that named none (`stanza_aggiornata`, `turni_aggiornati`); `indirizzo_di` for the confirmation, .ics, area and reminders; the usual location a user default (Preferences), the reception desk opens on it; boot `sedi`, empty with fewer than two, and then no screen names one |
+
+The engine books at one location (`get_slots(location=)`): with more than one and none asked, each location on its own, every slot saying where. A screen shows a location chooser only on `piuSedi`; the agenda keeps it in `crmAgenda`, a phone has it in the Filters sheet.
+
 ### The desk's day
 | File | Role |
 |---|---|
@@ -1139,7 +1147,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1410 tests · ~20s** — all must pass before committing
+- **1528 tests · ~25s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
