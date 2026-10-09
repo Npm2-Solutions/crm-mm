@@ -507,7 +507,7 @@ export const MENU = [
         key: 'Online payments',
         label: 'Online payments',
         description:
-          "Invoices and deposits paid online by card, on the centre's own Stripe account.",
+          "Invoices, deposits and subscriptions paid online by card, on the centre's own Stripe account.",
         condition: puo('pagamenti.gestisci'),
       },
       // the funds, insurers and companies the centre has a convention with: their

@@ -136,7 +136,60 @@ export function erroreDelTipo(tipo, t = (s, a) => format(s, a)) {
     return t('Choose the services it comprises')
   if (tipo.entries !== ILLIMITATI && !(Number(tipo.entries_count) >= 1))
     return t('Say how many entries')
+  if (tipo.sold_online && !tipo.billable_service)
+    return t(
+      'A subscription sold online needs a fiscal card: its invoice is made at the payment.',
+    )
+  if (tipo.sold_online && !(Number(tipo.price) > 0))
+    return t('A subscription sold online needs a price.')
   return ''
+}
+
+// what selling a type from the client area means, under its switch; `vendita`
+// is the centre's (`crm.pagamenti.collegamento.online_sales_on`)
+export function rigaDellaVendita(tipo, vendita, t = (s, a) => format(s, a)) {
+  if (!tipo?.billable_service)
+    return t(
+      'A subscription sold online needs a fiscal card: its invoice is made at the payment.',
+    )
+  const alMese = tipo.payment === MENSILE && Number(tipo.months) > 1
+  if (alMese && !vendita?.card_charges)
+    return t(
+      'Paid by the month, it is sold online only with the monthly charge on the saved card: Settings > Invoicing > Online payments.',
+    )
+  return alMese
+    ? t(
+        'The person buys it from their area: the first instalment by card, the next ones charged on the same card on their day.',
+      )
+    : t(
+        'The person buys it from their area and pays by card: its invoice is issued once paid.',
+      )
+}
+
+// what one pays for a subscription bought from the client area (`crm.pagamenti.
+// addebiti.in_vendita`): «186,66 € at once», «49,78 € a month, 3 instalments»
+export function prezzoDellAcquisto(voce, t = (s, a) => format(s, a)) {
+  if (!voce) return ''
+  return voce.monthly
+    ? t('{0} a month, {1} instalments', [
+        voce.formatted_first,
+        voce.instalments,
+      ])
+    : t('{0} at once', [voce.formatted_total])
+}
+
+// the words the person agrees to before the card is kept for the next
+// instalments: the server's own (`addebiti.mandato`), on Stripe's page too
+export function mandatoInParole(
+  voce,
+  t = (s, a) => format(s, a),
+  giorno = (g) => g,
+) {
+  if (!voce?.monthly) return ''
+  return t(
+    'You authorise the centre to charge {0} every month on the card until {1}; you can stop it from your area.',
+    [voce.formatted_first, giorno(voce.until)],
+  )
 }
 
 function format(testo, argomenti = []) {

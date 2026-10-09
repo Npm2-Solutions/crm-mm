@@ -2,6 +2,8 @@
 // Online payments' words and checks: the same rules as crm/pagamenti/regole.py.
 import { expect, test } from 'vitest'
 import {
+  addebitoInParole,
+  cartaInParole,
   modalita,
   modoInParole,
   oreValide,
@@ -92,6 +94,15 @@ test('what was paid online of an invoice, and its deposit', () => {
           },
         ],
         deposit: { formatted_amount: '30,00 €' },
+        advances: [
+          {
+            number: '2026/S/12',
+            date: '9 ott',
+            formatted_amount: '30,00 €',
+            issued: true,
+          },
+          { formatted_amount: '20,00 €', issued: false },
+        ],
       },
       t,
       (g) => g,
@@ -99,6 +110,71 @@ test('what was paid online of an invoice, and its deposit', () => {
   ).toEqual([
     'Paid online on 8 ott: 44,00 €',
     'Paid online on 9 ott: 10,00 €, 5,00 € given back on Stripe',
-    'Deposit already paid online: 30,00 €',
+    'Advance invoice no. 2026/S/12 of 9 ott: 30,00 €',
+    'Advance invoice still a draft: 20,00 €',
+    'Deposit paid online without an invoice: 30,00 €',
   ])
+})
+
+test('a card in words', () => {
+  expect(cartaInParole({ brand: 'Visa', last4: '4242' })).toBe('Visa •••• 4242')
+  expect(cartaInParole({ last4: '0005' })).toBe('•••• 0005')
+  expect(cartaInParole(null)).toBe('')
+})
+
+test('the monthly charge in the area and at the desk', () => {
+  const g = (giorno) => `il ${giorno}`
+  const carta = {
+    active: true,
+    brand: 'Visa',
+    last4: '4242',
+    next_on: '1 nov',
+    next_amount: '40,00 €',
+    fixed_term: true,
+  }
+  expect(addebitoInParole(null, t, g)).toEqual({ riga: '', problema: '' })
+  expect(addebitoInParole(carta, t, g)).toEqual({
+    riga: 'Monthly charge on the card Visa •••• 4242 · next il 1 nov, 40,00 €',
+    problema: '',
+  })
+  expect(addebitoInParole({ ...carta, next_amount: null }, t, g).riga).toBe(
+    'Monthly charge on the card Visa •••• 4242 · next il 1 nov',
+  )
+  const fallita = {
+    ...carta,
+    next_on: '4 nov',
+    failed: { on: '1 nov', reason: 'The card has expired.', retries: true },
+  }
+  expect(addebitoInParole(fallita, t, g)).toEqual({
+    riga: 'Monthly charge on the card Visa •••• 4242',
+    problema:
+      'The charge of il 1 nov did not go through: The card has expired. The card is tried again on il 4 nov.',
+  })
+  expect(
+    addebitoInParole(
+      { ...fallita, failed: { ...fallita.failed, retries: false } },
+      t,
+      g,
+    ).problema,
+  ).toBe('The charge of il 1 nov did not go through: The card has expired.')
+  expect(addebitoInParole(fallita, t, g, { reception: true })).toEqual({
+    riga: 'Automatic charge on · card Visa •••• 4242',
+    problema: 'Not charged on il 1 nov: the person has the link to pay',
+  })
+  const ferma = {
+    ...carta,
+    active: false,
+    stopped_on: '2 nov',
+    stopped_by: 'Chiara',
+  }
+  expect(addebitoInParole(ferma, t, g)).toEqual({
+    riga: 'Card charges stopped on il 2 nov. The instalments stay to pay as your subscription says.',
+    problema: '',
+  })
+  expect(addebitoInParole(ferma, t, g, { reception: true }).riga).toBe(
+    'Card charges stopped on il 2 nov · Chiara',
+  )
+  expect(
+    addebitoInParole({ ...carta, active: false, stopped_on: null }, t, g),
+  ).toEqual({ riga: '', problema: '' })
 })

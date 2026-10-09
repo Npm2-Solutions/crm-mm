@@ -10,6 +10,7 @@ import {
   erroreDelTipo,
   fine,
   percentuale,
+  rigaDellaVendita,
   piuMesi,
   quantiIngressi,
   questoPeriodo,
@@ -121,6 +122,36 @@ describe('what a form says before the server', () => {
     )
     expect(erroreDelTipo({ ...tipo, entries: AL_MESE, entries_count: 8 })).toBe(
       '',
+    )
+    // sold online: invoiced at the payment, so a card and a price
+    expect(erroreDelTipo({ ...tipo, sold_online: true })).toMatch(/fiscal card/)
+    expect(
+      erroreDelTipo({ ...tipo, sold_online: true, billable_service: 'C' }),
+    ).toBe('A subscription sold online needs a price.')
+    expect(
+      erroreDelTipo({
+        ...tipo,
+        sold_online: true,
+        billable_service: 'C',
+        price: 60,
+      }),
+    ).toBe('')
+  })
+
+  it('says what selling a type online means', () => {
+    const tipo = { billable_service: 'C', payment: SUBITO, months: 3 }
+    expect(rigaDellaVendita({}, {})).toMatch(/fiscal card/)
+    expect(rigaDellaVendita(tipo, {})).toMatch(/pays by card/)
+    const alMese = { ...tipo, payment: MENSILE }
+    expect(rigaDellaVendita(alMese, { card_charges: false })).toMatch(
+      /only with the monthly charge/,
+    )
+    expect(rigaDellaVendita(alMese, { card_charges: true })).toMatch(
+      /charged on the same card/,
+    )
+    // by the month over one month is paid at once
+    expect(rigaDellaVendita({ ...alMese, months: 1 }, {})).toMatch(
+      /pays by card/,
     )
   })
 })

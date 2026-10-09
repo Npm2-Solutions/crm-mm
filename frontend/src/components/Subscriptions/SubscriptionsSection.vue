@@ -102,6 +102,7 @@ import {
   percentuale,
   questoPeriodo,
 } from '@/utils/abbonamenti'
+import { cartaInParole } from '@/utils/pagamentiOnline'
 import { Badge, Button, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
 
@@ -161,6 +162,13 @@ function line(sub) {
     )
   }
   if (sub.renewed_by) parts.push(__('renewed'))
+  // charged month by month on the card saved when it was bought online
+  if (sub.card?.active)
+    parts.push(
+      sub.card.failed
+        ? __('card not charged')
+        : __('card {0}', [cartaInParole(sub.card)]),
+    )
   return parts.join(' · ')
 }
 

@@ -7,7 +7,9 @@
   The centre connects its own Stripe account with its secret key, once: the money
   of a payment goes there and stays there, DottorCloud never holds it. What it
   makes on the account (the webhook endpoint) is said; the key never comes back
-  to the page. Below, the deposits' rule: a cancellation in time gives it back.
+  to the page. Below, the deposits' rule (a cancellation in time gives it back),
+  and what the client area sells: subscriptions, maybe charged month by month
+  on the card saved at the first payment.
 -->
 <template>
   <SettingsLayoutBase>
@@ -34,7 +36,7 @@
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
-            "Invoices and deposits paid online by card, on the centre's own Stripe account.",
+            "Invoices, deposits and subscriptions paid online by card, on the centre's own Stripe account.",
           )
         }}
       </p>
@@ -214,6 +216,54 @@
               :aria-label="__('Hours before the appointment')"
             />
           </SettingsRow>
+          <!-- the law: a payment before the service is invoiced the day it is paid -->
+          <p class="px-2 pt-2 text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'A deposit paid online is invoiced the same day by itself, as an advance invoice: the invoice of the appointment is then its balance. A deposit given back gets its credit note.',
+              )
+            }}
+          </p>
+        </section>
+
+        <section class="flex flex-col">
+          <h3 class="px-2 text-base-semibold text-ink-gray-8">
+            {{ __('Subscriptions from the client area') }}
+          </h3>
+          <p class="px-2 pb-1 text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Which subscriptions are sold online is chosen on each type: Agenda > Services > Subscriptions. Each is invoiced when it is paid.',
+              )
+            }}
+          </p>
+          <SettingsRow
+            :label="__('Sell subscriptions from the client area')"
+            :description="
+              __(
+                'The person buys from their area and pays by card: the subscription starts once the payment arrives.',
+              )
+            "
+          >
+            <Switch
+              v-model="regola.sell_in_area"
+              :aria-label="__('Sell subscriptions from the client area')"
+            />
+          </SettingsRow>
+          <SettingsRow
+            v-if="regola.sell_in_area"
+            :label="__('Monthly charge on the saved card')"
+            :description="
+              __(
+                'A subscription paid by the month: the card of the first payment is charged on each instalment day, and the instalment is invoiced once paid. The person can stop it from their area.',
+              )
+            "
+          >
+            <Switch
+              v-model="regola.card_charges"
+              :aria-label="__('Monthly charge on the saved card')"
+            />
+          </SettingsRow>
         </section>
       </div>
 
@@ -223,7 +273,7 @@
       >
         {{
           __(
-            "Payment data are handled by Stripe as the centre's own processor: {brand} never sees the card. The key is kept encrypted and used only to make the payment links, read their outcome and give a deposit back.",
+            "Payment data are handled by Stripe as the centre's own processor: {brand} never sees the card. The key is kept encrypted and used only to make the payment links, read their outcome, give a deposit back and charge the cards the people saved for their subscriptions.",
           )
         }}
       </p>
@@ -287,13 +337,20 @@ const stato = ref(null)
 const chiave = ref('')
 const errore = ref('')
 const controllo = ref(null)
-const regola = reactive({ refund_on_cancel: true, refund_hours: 24 })
+const regola = reactive({
+  refund_on_cancel: true,
+  refund_hours: 24,
+  sell_in_area: false,
+  card_charges: false,
+})
 const salvata = ref('')
 
 function prendi(dati) {
   stato.value = dati
   regola.refund_on_cancel = Boolean(dati.refund_on_cancel)
   regola.refund_hours = dati.refund_hours
+  regola.sell_in_area = Boolean(dati.sell_in_area)
+  regola.card_charges = Boolean(dati.card_charges)
   salvata.value = JSON.stringify(regola)
 }
 
@@ -386,6 +443,8 @@ function salva() {
     .submit({
       refund_on_cancel: regola.refund_on_cancel ? 1 : 0,
       refund_hours: oreValide(regola.refund_hours),
+      sell_in_area: regola.sell_in_area ? 1 : 0,
+      card_charges: regola.sell_in_area && regola.card_charges ? 1 : 0,
     })
     .catch(() => {})
 }
