@@ -32,8 +32,12 @@ EVENTI = (
 	"checkout.session.completed",
 	"checkout.session.expired",
 	"charge.refunded",
+	"payment_intent.succeeded",
 	"payment_intent.payment_failed",
 )
+#: The metadata a charge on a saved card carries, which its ``payment_intent``
+#: events are read by: a Checkout's are read from its session instead.
+ADDEBITO = "off_session"
 #: Currencies without decimals in Stripe's API (a few the centre could count in).
 SENZA_DECIMALI = frozenset(
 	{
@@ -235,6 +239,8 @@ class Significato:
 	pagamento: str | None = None
 	sito: str | None = None
 	errore: str | None = None
+	#: Stripe's reason of a charge that did not go through (`decline_code`, else `code`)
+	codice: str | None = None
 
 
 PAGATO, SCADUTO, RIMBORSATO, NON_RIUSCITO = "pagato", "scaduto", "rimborsato", "non_riuscito"
@@ -275,14 +281,27 @@ def significato(evento: dict) -> Significato | None:
 			pagamento=metadati.get("payment"),
 			sito=metadati.get("site"),
 		)
+	if tipo == "payment_intent.succeeded":
+		# a Checkout's payment is told by its session: only a charge on a saved card here
+		if metadati.get("charge") != ADDEBITO:
+			return None
+		return Significato(
+			PAGATO,
+			intento=oggetto.get("id"),
+			importo=da_centesimi(oggetto.get("amount_received") or oggetto.get("amount"), valuta),
+			valuta=valuta,
+			pagamento=metadati.get("payment"),
+			sito=metadati.get("site"),
+		)
 	if tipo == "payment_intent.payment_failed":
-		errore = (oggetto.get("last_payment_error") or {}).get("message")
+		problema = oggetto.get("last_payment_error") or {}
 		return Significato(
 			NON_RIUSCITO,
 			intento=oggetto.get("id"),
 			pagamento=metadati.get("payment"),
 			sito=metadati.get("site"),
-			errore=errore,
+			errore=problema.get("message"),
+			codice=problema.get("decline_code") or problema.get("code"),
 		)
 	return None
 

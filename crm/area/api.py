@@ -769,6 +769,59 @@ def pay_invoice(person: str, invoice: str) -> dict:
 	return pagamenti.link_della_fattura(invoice, frappe.utils.get_url("/area/documents"))
 
 
+# ------------------------------------------------------------------ bought online
+
+
+@frappe.whitelist()
+def get_shop(person: str) -> dict:
+	"""What the area sells the person (`crm.pagamenti.addebiti`): the subscriptions
+	the centre sells online, with what they pay. Nothing in the centre's preview."""
+	from crm.pagamenti import addebiti
+
+	_mia(person, anche_in_anteprima=True)
+	if anteprima.in_anteprima():
+		return {"items": []}
+	return {"items": addebiti.in_vendita(person)}
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60 * 60)
+def buy_subscription(person: str, subscription_type: str) -> dict:
+	"""«Buy»: Stripe's page for a subscription, for one of the session's people (a
+	parent for their child). Never in the centre's preview."""
+	from crm.pagamenti import addebiti
+
+	_mia(person)
+	return addebiti.compra(person, subscription_type, frappe.utils.get_url("/area/appointments"))
+
+
+def _abbonamento_di(person: str, subscription: str):
+	"""One of the person's subscriptions, or a refusal that cannot be probed."""
+	_mia(person)
+	if not subscription or frappe.db.get_value("CRM Subscription", subscription, "lead") != person:
+		frappe.throw(_("This is not your area"), frappe.PermissionError)
+	return frappe.get_doc("CRM Subscription", subscription)
+
+
+@frappe.whitelist(methods=["POST"])
+def pay_instalment(person: str, subscription: str, instalment: str) -> dict:
+	"""«Pay now» on a subscription whose card was not charged."""
+	from crm.pagamenti import addebiti
+
+	doc = _abbonamento_di(person, subscription)
+	return addebiti.link_della_rata(doc, instalment, frappe.utils.get_url("/area/appointments"))
+
+
+@frappe.whitelist(methods=["POST"])
+def stop_card_charges(person: str, subscription: str) -> dict:
+	"""«Stop the charges»: the card is charged no more; the subscription stays."""
+	from crm.pagamenti import addebiti
+
+	doc = _abbonamento_di(person, subscription)
+	addebiti.interrompi(doc, dalla_persona=True)
+	return {"card": addebiti.della_carta(frappe.get_doc("CRM Subscription", subscription), con_importi=True)}
+
+
 @frappe.whitelist(methods=["GET"])
 def download_invoice(person: str, invoice: str) -> None:
 	_mia(person)

@@ -22,7 +22,11 @@
   "connected_by",
   "rules_section",
   "refund_on_cancel",
-  "refund_hours"
+  "refund_hours",
+  "area_section",
+  "sell_in_area",
+  "column_break_area",
+  "card_charges"
  ],
  "fields": [
   {
@@ -132,11 +136,32 @@
    "default": "24",
    "non_negative": 1,
    "description": "A cancellation later than this keeps the deposit"
+  },
+  {
+   "fieldname": "area_section",
+   "fieldtype": "Section Break",
+   "label": "Subscriptions"
+  },
+  {
+   "fieldname": "sell_in_area",
+   "fieldtype": "Check",
+   "label": "Sell subscriptions from the client area",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_area",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "card_charges",
+   "fieldtype": "Check",
+   "label": "Monthly charge on the saved card",
+   "default": "0"
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-08 18:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Pagamenti",
  "name": "CRM Stripe Settings",

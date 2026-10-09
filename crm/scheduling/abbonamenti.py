@@ -36,6 +36,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, cint, escape_html, flt, formatdate, get_fullname, getdate, now_datetime
 
+from crm.pagamenti import addebiti
 from crm.permissions import livelli
 from crm.scheduling import abbonamenti_regole as R
 from crm.scheduling import pricing
@@ -441,8 +442,10 @@ def fattura(doc, riga, emetti: bool = False) -> str:
 def ogni_giorno() -> None:
 	"""Daily: how each subscription stands today; the instalments due; the reminders
 	of the end; the renewals. One that fails leaves the others alone, and the
-	scheduler commits what was done."""
+	scheduler commits what was done. First the instalments charged on a saved card
+	(`crm.pagamenti.addebiti`): those are invoiced when their money arrives."""
 	oggi = getdate()
+	addebiti.ogni_giorno(oggi)
 	nomi = frappe.get_all(ABBONAMENTO, filters={"status": ("in", [R.ATTIVO, R.SOSPESO])}, pluck="name")
 	# the ones just ended: their renewal, their last instalments
 	nomi += frappe.get_all(
@@ -469,8 +472,14 @@ def _il_giorno(doc, oggi: datetime.date) -> None:
 	if nuovo != doc.status:
 		doc.db_set("status", nuovo, update_modified=False)
 	if doc.billable_service:
+		# charged on the card, or to be tried again: invoiced when the money arrives
+		sulla_carta = addebiti.tenute(doc, oggi)
 		for riga in doc.instalments:
-			if getdate(riga.due_on) <= oggi and not _fattura_viva(riga.invoice):
+			if (
+				getdate(riga.due_on) <= oggi
+				and not _fattura_viva(riga.invoice)
+				and riga.name not in sulla_carta
+			):
 				# an invoice that cannot open leaves nothing behind, and says why
 				frappe.db.savepoint("crm_rata_del_giorno")
 				try:
@@ -612,6 +621,8 @@ def riga(doc, oggi: datetime.date | None = None) -> dict:
 		"practitioner": doc.practitioner,
 		"practitioner_name": get_fullname(doc.practitioner) if doc.practitioner else None,
 		"notes": doc.notes,
+		# charged month by month on the card saved when it was bought online
+		"card": addebiti.della_carta(doc),
 	}
 
 
@@ -697,6 +708,8 @@ def get_subscription(name: str) -> dict:
 				"issued": bool(fatture.get(r.invoice) and fatture[r.invoice].docstatus == 1),
 				"number": fatture[r.invoice].document_number if fatture.get(r.invoice) else None,
 				"problem": r.problem,
+				# charged on the saved card, and why it did not go through (`pagamenti.addebiti`)
+				"charge_problem": _(r.charge_problem) if r.get("charge_problem") else None,
 			}
 			for r in doc.instalments
 		],
@@ -730,6 +743,8 @@ def della_persona(persona: str) -> list[dict]:
 				"used": dati["used"],
 				"suspended_until": dati["suspended_until"],
 				"auto_renew": dati["auto_renew"],
+				# the monthly charge on the card: the next one and how much, or what failed
+				"card": addebiti.della_carta(frappe.get_doc(ABBONAMENTO, nome), con_importi=True),
 			}
 		)
 	return fatto
@@ -1006,17 +1021,23 @@ def _tipo_da(data: dict, doc) -> None:
 		R.entro(data.get("remind_days"), R.PROMEMORIA) if data.get("remind_days") not in (0, "0") else 0
 	)
 	doc.auto_renew = 1 if cint(data.get("auto_renew")) else 0
+	doc.sold_online = 1 if cint(data.get("sold_online")) else 0
 	doc.set("services", [{"service": s} for s in dict.fromkeys(data.get("services") or []) if s])
 	if not doc.type_name:
 		frappe.throw(_("Give the type a name"))
 	if not doc.services:
 		frappe.throw(_("Choose the services it comprises"))
+	if doc.sold_online and not doc.billable_service:
+		frappe.throw(_("A subscription sold online needs a fiscal card: its invoice is made at the payment."))
+	if doc.sold_online and not flt(doc.price) > 0:
+		frappe.throw(_("A subscription sold online needs a price."))
 
 
 def _tipo(doc) -> dict:
 	return {
 		**{campo: doc.get(campo) for campo in ("name", "type_name", "description", *CONDIZIONI)},
 		"enabled": cint(doc.enabled),
+		"sold_online": cint(doc.sold_online),
 		"services": [r.service for r in doc.services],
 		"sold": frappe.db.count(ABBONAMENTO, {"subscription_type": doc.name}),
 	}

@@ -260,6 +260,7 @@ permission_query_conditions = {
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# and what they paid online
 	"CRM Online Payment": "crm.pagamenti.pagamenti.get_permission_query_conditions",
+	"CRM Stripe Customer": "crm.pagamenti.pagamenti.get_customer_permission_query_conditions",
 	# and the funds and conventions that cover them
 	"CRM Convention Cover": "crm.convenzioni.api.get_cover_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
@@ -307,6 +308,7 @@ has_permission = {
 	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"CRM Online Payment": "crm.pagamenti.pagamenti.has_permission",
+	"CRM Stripe Customer": "crm.pagamenti.pagamenti.has_permission",
 	"CRM Convention Cover": "crm.convenzioni.api.has_cover_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",

@@ -63,7 +63,7 @@ class TestCollegamento(InvoicingBase):
 			# its endpoint on the account, with the four events, and the secret kept
 			(endpoint,) = finto.endpoint.values()
 			self.assertTrue(endpoint["url"].endswith("/api/method/crm.pagamenti.webhook.stripe"))
-			self.assertEqual(len(endpoint["events"]), 4)
+			self.assertEqual(len(endpoint["enabled_events"]), 5)
 			self.assertEqual(collegamento.segreto_del_webhook(), SEGRETO)
 			self.assertEqual(collegamento.chiave(), CHIAVE)
 
@@ -258,7 +258,7 @@ class TestAcconto(SchedulingCase):
 		)
 
 	def test_il_catalogo_dice_l_acconto(self):
-		servizio, _risultato = self.prenota()
+		_servizio, _risultato = self.prenota()
 		scheda = next(s for s in SB.get_catalog()["services"] if s["name"] == "Deposit Physio")
 		self.assertEqual(scheda["deposit"]["amount"], 30)
 

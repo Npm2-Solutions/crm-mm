@@ -14,6 +14,10 @@ links and hears what happened.
 - **The connection** (`collegamento`): Settings > Invoicing > Online payments.
 - **The payments** (`pagamenti`): an invoice paid from the area or a link the desk
   sends, a deposit at online booking; `webhook` applies what Stripe says, once.
+- **The invoices of what was paid** (`fatture`): born the day the money arrives, a
+  deposit's advance invoice, its balance at the desk, its credit note at a refund.
+- **Subscriptions bought from the area** (`addebiti`), and their instalments
+  charged on the card saved for them.
 """
 
 from __future__ import annotations

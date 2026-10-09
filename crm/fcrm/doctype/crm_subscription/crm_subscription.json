@@ -33,6 +33,17 @@
   "suspensions",
   "instalments_section",
   "instalments",
+  "card_section",
+  "card_charges",
+  "card_brand",
+  "card_last4",
+  "card_expiry",
+  "column_break_card",
+  "stripe_customer",
+  "stripe_payment_method",
+  "card_charges_from",
+  "card_charges_stopped_on",
+  "card_charges_stopped_by",
   "details_section",
   "renewal_of",
   "renewed_by",
@@ -220,6 +231,69 @@
    "options": "CRM Subscription Instalment"
   },
   {
+   "fieldname": "card_section",
+   "fieldtype": "Section Break",
+   "label": "Monthly charge on the card"
+  },
+  {
+   "fieldname": "card_charges",
+   "fieldtype": "Check",
+   "label": "Charged on the saved card",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_brand",
+   "fieldtype": "Data",
+   "label": "Card",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_last4",
+   "fieldtype": "Data",
+   "label": "Last four digits",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_expiry",
+   "fieldtype": "Data",
+   "label": "Expiry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_card",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "stripe_customer",
+   "fieldtype": "Data",
+   "label": "Stripe customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stripe_payment_method",
+   "fieldtype": "Data",
+   "label": "Stripe payment method",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_charges_from",
+   "fieldtype": "Datetime",
+   "label": "Authorised on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_charges_stopped_on",
+   "fieldtype": "Datetime",
+   "label": "Charges stopped on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_charges_stopped_by",
+   "fieldtype": "Data",
+   "label": "Charges stopped by",
+   "read_only": 1
+  },
+  {
    "fieldname": "details_section",
    "fieldtype": "Section Break"
   },
@@ -261,7 +335,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 09:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Subscription",
