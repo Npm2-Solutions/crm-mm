@@ -35,12 +35,14 @@
         v-if="connections.data?.length"
         class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
       >
+        <!-- the row opens from its name, a button stretched over the row
+             (.riga-stesa); «Sync now» and the bin come after it and are
+             drawn over it: a row that is a button holding them is three
+             controls in one for a screen reader -->
         <div
           v-for="conn in connections.data"
           :key="conn.name"
-          v-riga-cliccabile
-          class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
-          @click="openEditor(conn.name)"
+          class="relative flex items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
         >
           <span
             class="flex size-8 shrink-0 items-center justify-center rounded-md bg-surface-gray-2 text-p-sm-medium text-ink-gray-7"
@@ -48,9 +50,13 @@
             {{ initials(conn.platform) }}
           </span>
           <div class="min-w-0 flex-1">
-            <div class="truncate text-p-base-medium text-ink-gray-8">
+            <button
+              type="button"
+              class="riga-stesa block max-w-full truncate text-left text-p-base-medium text-ink-gray-8"
+              @click="openEditor(conn.name)"
+            >
               {{ conn.connection_name }}
-            </div>
+            </button>
             <div class="truncate text-p-sm text-ink-gray-5">
               {{ __(conn.platform) }}
               <span v-if="conn.last_sync || conn.last_webhook">
@@ -104,6 +110,7 @@
           />
           <Button
             v-if="conn.platform_info?.capabilities?.includes('pull')"
+            class="relative"
             :aria-label="__('Sync now')"
             variant="ghost"
             icon="lucide-refresh-cw"
@@ -112,7 +119,8 @@
             @click.stop="syncNow(conn.name)"
           />
           <Button
-            :aria-label="__('Delete')"
+            class="relative"
+            :aria-label="__('Delete {0}', [conn.connection_name])"
             variant="ghost"
             icon="lucide-trash-2"
             @click.stop="remove(conn)"

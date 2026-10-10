@@ -331,3 +331,22 @@ input:is(
   outline: var(--focus-outline-default, 2px solid #0e8a7c);
   outline-offset: -2px;
 }
+
+/* A row that holds controls of its own opens from its words, a button
+   stretched over the whole row (`.riga-stesa`, the row `relative`): never a
+   button holding other buttons. The same brand ring, around the row: a gray
+   one was 2.8:1 on white. The row's own controls come after the button, so
+   they are drawn over it by their order alone (`relative`, no z-index: one
+   drew them over a phone's sticky settings header too) */
+.riga-stesa::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.riga-stesa:focus-visible {
+  outline: none;
+}
+.riga-stesa:focus-visible::after {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
+}

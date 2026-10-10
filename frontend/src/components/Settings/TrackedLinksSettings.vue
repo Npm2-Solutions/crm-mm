@@ -42,7 +42,7 @@
         >
           <button
             type="button"
-            class="flex min-w-0 flex-1 items-center gap-3 text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+            class="riga-stesa flex min-w-0 flex-1 items-center gap-3 text-left"
             @click="openEditor(link)"
           >
             <Badge :label="link.slug" theme="blue" size="sm" />
@@ -54,7 +54,7 @@
             </span>
           </button>
           <Button
-            class="relative z-10"
+            class="relative"
             :aria-label="__('Delete {0}', [link.slug])"
             variant="ghost"
             icon="lucide-trash-2"
@@ -203,10 +203,19 @@ function saveLink() {
 function removeLink(link) {
   $dialog({
     title: __('Delete the link {0}?', [link.slug]),
-    message: __(
-      'Its {0} clicks are lost, and whoever opens it from a message already sent or an automation finds nothing.',
-      [link.click_count || 0],
-    ),
+    // a sentence for each case: «its 1 clicks», «its 0 clicks» were none
+    message: !link.click_count
+      ? __(
+          'Whoever opens it from a message already sent or an automation finds nothing.',
+        )
+      : link.click_count === 1
+        ? __(
+            'Its one click is lost, and whoever opens it from a message already sent or an automation finds nothing.',
+          )
+        : __(
+            'Its {0} clicks are lost, and whoever opens it from a message already sent or an automation finds nothing.',
+            [link.click_count],
+          ),
     actions: [
       {
         label: __('Delete the link'),

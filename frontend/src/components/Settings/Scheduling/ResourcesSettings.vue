@@ -55,7 +55,7 @@
             />
             <button
               type="button"
-              class="min-w-0 flex-1 text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+              class="riga-stesa min-w-0 flex-1 text-left"
               @click="openEditor(resource.name)"
             >
               <span class="block truncate text-p-base-medium text-ink-gray-8">
@@ -75,7 +75,7 @@
               size="sm"
             />
             <Button
-              class="relative z-10"
+              class="relative"
               :aria-label="__('Delete {0}', [resource.resource_name])"
               variant="ghost"
               icon="lucide-trash-2"
@@ -322,12 +322,13 @@ function save() {
 function remove(resource) {
   $dialog({
     title: __('Delete {0}?', [resource.resource_name]),
+    // words for a room, a machine, a vehicle alike: the title names it
     message: __(
-      'The appointments that use it keep their day and time, without the room. To stop booking it and keep it, switch it off instead.',
+      'The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead.',
     ),
     actions: [
       {
-        label: __('Delete the room'),
+        label: __('Delete'),
         variant: 'solid',
         theme: 'red',
         onClick: (chiudi) => {

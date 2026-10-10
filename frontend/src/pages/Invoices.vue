@@ -238,7 +238,7 @@
                   tsMode !== 'export' &&
                   puo('fatture.invia')
                 "
-                class="relative z-10"
+                class="relative"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
@@ -246,7 +246,7 @@
               />
               <!-- the whole row opens it; on a phone the button would only take room -->
               <Button
-                class="relative z-10 max-md:hidden"
+                class="relative max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -320,14 +320,14 @@
                   row.docstatus === 1 &&
                   row.sdi_status === 'da_inviare'
                 "
-                class="relative z-10"
+                class="relative"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Transmit')"
                 @click.stop="transmit(row)"
               />
               <Button
-                class="relative z-10 max-md:hidden"
+                class="relative max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -529,7 +529,7 @@ const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 // a row's words as the button that opens it, stretched over the whole row
 // (its own buttons sit above it), with the row's ring when the keyboard is on it
 const RIGA_CHE_APRE =
-  "flex min-w-0 flex-col text-left after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-outline-gray-4"
+  'riga-stesa flex min-w-0 flex-col text-left after:rounded-xl'
 
 // a notification about a supplier's invoice opens it, in its tab (`?ricevuta=`)
 const route = useRoute()

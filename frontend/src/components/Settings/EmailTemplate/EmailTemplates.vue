@@ -105,7 +105,7 @@
           >
             <button
               type="button"
-              class="flex flex-col w-4/6 pr-5 text-left after:absolute after:inset-0 after:rounded after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+              class="riga-stesa flex flex-col w-4/6 pr-5 text-left after:rounded"
               @click="
                 () => emit('updateStep', 'edit-template', { ...template })
               "
@@ -122,7 +122,7 @@
             <div class="text-base text-ink-gray-6 w-1/6">
               {{ template.reference_doctype.replace('CRM ', '') }}
             </div>
-            <div class="relative z-10 flex items-center justify-between w-1/6">
+            <div class="relative flex items-center justify-between w-1/6">
               <Switch
                 v-model="template.enabled"
                 :aria-label="template.name"
