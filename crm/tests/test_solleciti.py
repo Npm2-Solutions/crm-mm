@@ -117,6 +117,17 @@ class SollecitiTest(InvoicingBase):
 		frappe.db.set_single_value(IMPOSTAZIONI, "minimum_amount", 100000)
 		self.assertNotIn(nome, self.dovute())
 
+	def test_la_fattura_all_azienda_non_si_sollecita_alla_persona(self):
+		# Federica's visit, made out to the company that pays for it: the company's
+		# to pay, never reminded to her
+		nome = self.emessa(
+			recipient_type="soggetto_iva",
+			billing_name="Tecnoservizi S.r.l.",
+			tax_id="IT12345678903",
+			recipient_code="0000000",
+		)
+		self.assertNotIn(nome, self.dovute())
+
 	def test_spento_non_parte_nulla(self):
 		nome = self.emessa()
 		frappe.db.set_single_value(IMPOSTAZIONI, "enabled", 0)
@@ -134,6 +145,29 @@ class SollecitiTest(InvoicingBase):
 		self.assertEqual(solleciti.di_fatture([nome])[nome]["count"], 0)
 		# but it waits for the next turn, as any other
 		self.assertNotIn(nome, self.dovute())
+
+	def test_il_figlio_prenotato_dalla_mamma_lo_sa_la_mamma(self):
+		# a child booked online by his mother, with no email of his own: the
+		# appointment's reminders reached her, the payment's said «call them»
+		from crm.persone import collegate, legami
+
+		mamma = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Elena",
+				"last_name": "Solleciti",
+				"email": "elena.solleciti@example.com",
+			}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value("CRM Lead", self.persona.name, "email", None)
+		collegate.assicura_legame(self.persona.name, mamma.name, legami.GENITORE, books=1)
+		nome = self.emessa()
+		fattura = next(riga for riga in solleciti.dovute() if riga.name == nome)
+		prima = frappe.db.count("Email Queue")
+		self.assertEqual(solleciti.manda(fattura), R.INVIATO)
+		self.assertEqual(frappe.db.count("Email Queue"), prima + 1)
+		posta = frappe.get_last_doc("Email Queue")
+		self.assertEqual([r.recipient for r in posta.recipients], ["elena.solleciti@example.com"])
 
 	def test_la_data_si_legge_come_in_una_frase(self):
 		from types import SimpleNamespace
