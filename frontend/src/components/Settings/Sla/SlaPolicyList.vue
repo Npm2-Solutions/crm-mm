@@ -34,8 +34,8 @@
           @input="slaSearchQuery = $event"
         />
         <Button
-          :aria-label="__('Clear search')"
           v-if="slaSearchQuery"
+          :aria-label="__('Clear search')"
           icon="lucide-x"
           variant="ghost"
           class="absolute right-1 top-1/2 -translate-y-1/2"
@@ -81,6 +81,7 @@
               class="grid grid-cols-7 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded"
             >
               <div
+                v-riga-cliccabile
                 class="w-full pl-2 col-span-5 flex items-center h-14 gap-2"
                 @click="updateStep('view', sla, true)"
               >

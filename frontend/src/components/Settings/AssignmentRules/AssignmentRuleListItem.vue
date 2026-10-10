@@ -5,7 +5,7 @@
   <div
     class="flex p-3 items-center justify-between cursor-pointer hover:bg-surface-gray-1 rounded"
   >
-    <div class="w-7/12" @click="updateStep('view', data)">
+    <div v-riga-cliccabile class="w-7/12" @click="updateStep('view', data)">
       <div class="text-base-medium text-ink-gray-7">{{ data.name }}</div>
       <div
         v-if="data.description && data.description.length > 0"

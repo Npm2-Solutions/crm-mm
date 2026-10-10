@@ -95,27 +95,37 @@
         <div class="w-1/6">{{ __('Enabled') }}</div>
       </div>
       <div class="h-px border-t mx-4 border-outline-elevation-2" />
-      <ul class="overflow-y-auto px-2">
+      <div class="overflow-y-auto px-2">
         <template v-for="(template, i) in templatesList" :key="template.name">
-          <li
-            class="flex items-center justify-between p-3 cursor-pointer hover:bg-surface-gray-1 rounded"
-            @click="() => emit('updateStep', 'edit-template', { ...template })"
+          <!-- the row opens from its name, a button stretched over the row;
+               the switch and the menu sit above it: a row that is a button
+               holding them is three controls in one for a screen reader -->
+          <div
+            class="relative flex items-center justify-between p-3 hover:bg-surface-gray-1 rounded"
           >
-            <div class="flex flex-col w-4/6 pr-5">
-              <div class="text-p-base-medium text-ink-gray-7 truncate">
+            <button
+              type="button"
+              class="flex flex-col w-4/6 pr-5 text-left after:absolute after:inset-0 after:rounded after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+              @click="
+                () => emit('updateStep', 'edit-template', { ...template })
+              "
+            >
+              <span
+                class="block max-w-full text-p-base-medium text-ink-gray-7 truncate"
+              >
                 {{ template.name }}
-              </div>
-              <div class="text-p-sm text-ink-gray-5 truncate">
+              </span>
+              <span class="block max-w-full text-p-sm text-ink-gray-5 truncate">
                 {{ template.subject }}
-              </div>
-            </div>
+              </span>
+            </button>
             <div class="text-base text-ink-gray-6 w-1/6">
               {{ template.reference_doctype.replace('CRM ', '') }}
             </div>
-            <div class="flex items-center justify-between w-1/6">
+            <div class="relative z-10 flex items-center justify-between w-1/6">
               <Switch
-                :aria-label="template.name"
                 v-model="template.enabled"
+                :aria-label="template.name"
                 size="sm"
                 @update:model-value="
                   (val) => toggleEmailTemplate(template, val)
@@ -138,7 +148,7 @@
                 @click.stop
               />
             </div>
-          </li>
+          </div>
           <div
             v-if="templatesList.length !== i + 1"
             class="h-px border-t mx-2 border-outline-elevation-2"
@@ -157,7 +167,7 @@
             @click="() => templates.next()"
           />
         </div>
-      </ul>
+      </div>
     </div>
   </div>
 </template>

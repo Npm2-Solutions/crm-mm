@@ -47,6 +47,7 @@
         <div
           v-for="row in visibili"
           :key="row.name"
+          v-riga-cliccabile
           class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1 max-md:flex-col max-md:items-start max-md:gap-1.5 max-md:active:bg-surface-gray-2"
           @click="apri(row.name)"
         >

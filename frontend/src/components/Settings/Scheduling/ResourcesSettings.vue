@@ -41,38 +41,45 @@
         <div
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
+          <!-- the row opens from its name, a button stretched over the row;
+               the bin sits above it: a row that is a button holding another
+               button is two controls in one for a screen reader -->
           <div
             v-for="resource in group.rows"
             :key="resource.name"
-            class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
-            @click="openEditor(resource.name)"
+            class="relative flex items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
           >
             <span
               class="size-2.5 shrink-0 rounded-full"
               :style="{ backgroundColor: resource.color || '#8B8B8B' }"
             />
-            <div class="min-w-0 flex-1">
-              <div class="truncate text-p-base-medium text-ink-gray-8">
+            <button
+              type="button"
+              class="min-w-0 flex-1 text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+              @click="openEditor(resource.name)"
+            >
+              <span class="block truncate text-p-base-medium text-ink-gray-8">
                 {{ resource.resource_name }}
-              </div>
+              </span>
               <!-- on a phone what limits it goes on under itself: «Nessun
                    limite impos…» at 320 -->
-              <div
-                class="truncate text-p-sm text-ink-gray-5 max-md:whitespace-normal"
+              <span
+                class="block truncate text-p-sm text-ink-gray-5 max-md:whitespace-normal"
               >
                 {{ describe(resource) }}
-              </div>
-            </div>
+              </span>
+            </button>
             <Badge
               :label="resource.enabled ? __('Active') : __('Off')"
               :theme="resource.enabled ? 'green' : 'gray'"
               size="sm"
             />
             <Button
-              :aria-label="__('Delete')"
+              class="relative z-10"
+              :aria-label="__('Delete {0}', [resource.resource_name])"
               variant="ghost"
               icon="lucide-trash-2"
-              @click.stop="remove(resource)"
+              @click="remove(resource)"
             />
           </div>
         </div>
@@ -185,6 +192,7 @@
 
 <script setup>
 import { chiedi } from '@/utils/chiedi'
+import { globalStore } from '@/stores/global'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
@@ -195,6 +203,8 @@ import { useSedi } from '@/composables/sedi'
 import { nomeDellaSede, opzioniDelleSedi } from '@/utils/sedi'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+
+const { $dialog } = globalStore()
 
 const TYPES = ['Room', 'Equipment', 'Vehicle', 'Other']
 
@@ -307,12 +317,34 @@ function save() {
   })
 }
 
+// a room goes after a yes that names it: one tap on the bin, a finger's width
+// from the row that opens it, took it away with nothing to undo
 function remove(resource) {
-  chiedi({
-    url: 'crm.api.appointments.delete_resource',
-    params: { name: resource.name },
-    onSuccess: () => resources.reload(),
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+  $dialog({
+    title: __('Delete {0}?', [resource.resource_name]),
+    message: __(
+      'The appointments that use it keep their day and time, without the room. To stop booking it and keep it, switch it off instead.',
+    ),
+    actions: [
+      {
+        label: __('Delete the room'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          chiedi({
+            url: 'crm.api.appointments.delete_resource',
+            params: { name: resource.name },
+            onSuccess: () => {
+              toast.success(__('Deleted'))
+              resources.reload()
+            },
+            onError: (e) =>
+              toast.error(e.messages?.[0] || __('Failed to delete')),
+          })
+        },
+      },
+    ],
   })
 }
 </script>
