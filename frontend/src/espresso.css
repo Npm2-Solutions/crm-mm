@@ -147,6 +147,14 @@
   --ink-green-7: #4cd38a;
   --ink-blue-6: #5aa8ff;
   --ink-violet-6: #a78bfa;
+  /* the blues, the cyan and the teal the light theme darkens above: on the
+     dark, frappe-ui's own lit steps again (4.5:1 or more on every dark surface
+     and on their soft backgrounds); the light ones read at 2:1 here, a blue
+     badge's words included */
+  --ink-blue-7: #349bef;
+  --ink-blue-8: #76bef9;
+  --ink-cyan-8: #62cae9;
+  --ink-teal-7: #28bcac;
 }
 
 /* 4. The cloud's tail: the corner at the bottom left nearly straight, like the
