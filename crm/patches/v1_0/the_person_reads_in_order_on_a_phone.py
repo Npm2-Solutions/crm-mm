@@ -23,14 +23,40 @@ import json
 
 import frappe
 
-from crm.install import DEAL_QUICK_ENTRY, LEAD_DATA_FIELDS, LEAD_QUICK_ENTRY
+from crm.install import DEAL_QUICK_ENTRY, LEAD_DATA_FIELDS
 
 # the quick entries' section as it was shipped, column by column
 PRIMA = [["salutation", "email"], ["first_name", "mobile_no"], ["last_name", "gender"]]
 
+# «Aggiungi una persona»'s two rows as this patch shipped them: the install's
+# moved on (`a_person_is_added_without_a_company`, which takes these further),
+# and reading them from there split a site's person into rows without gender
+# and title
+PERSONA_DEL_04_10 = json.dumps(
+	[
+		{
+			"name": "person_section",
+			"columns": [
+				{"name": "column_5jrk", "fields": ["salutation"]},
+				{"name": "column_5CPV", "fields": ["first_name"]},
+				{"name": "column_gXOy", "fields": ["last_name"]},
+			],
+		},
+		{
+			"name": "person_contacts_section",
+			"hideBorder": True,
+			"columns": [
+				{"name": "column_Mb7q", "fields": ["mobile_no"]},
+				{"name": "column_Em2w", "fields": ["email"]},
+				{"name": "column_Gn4z", "fields": ["gender"]},
+			],
+		},
+	]
+)
+
 # each quick entry: the section to split and the two rows that take its place
 RIGHE = {
-	"CRM Lead-Quick Entry": (LEAD_QUICK_ENTRY, "person_section", "person_contacts_section"),
+	"CRM Lead-Quick Entry": (PERSONA_DEL_04_10, "person_section", "person_contacts_section"),
 	"CRM Deal-Quick Entry": (DEAL_QUICK_ENTRY, "contact_details_section", "contact_details_more_section"),
 }
 
