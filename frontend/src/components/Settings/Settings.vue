@@ -2,8 +2,11 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
+  <!-- named for a screen reader: its body draws no title of its own, and
+       VoiceOver read «dialog» and nothing else (the title is not drawn) -->
   <Dialog
     v-model:open="showSettings"
+    :title="__('Settings')"
     :size="'5xl'"
     :disableOutsideClickToClose="disableSettingModalOutsideClick"
     @close="activeSettingsPage = ''"
@@ -18,11 +21,21 @@
            48px above, and was 32px taller than the screen. -->
       <div
         ref="radice"
-        class="settings-modal flex bg-surface-gray-1"
+        class="settings-modal relative flex bg-surface-gray-1"
         :class="
           isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100vh_-_8rem)]'
         "
       >
+        <!-- on a desk too, a way out one can see: only Escape and a click
+             outside closed it, and nothing said so (the phone has its own) -->
+        <Button
+          v-if="!isMobileView"
+          variant="ghost"
+          icon="x"
+          class="absolute right-3 top-3 z-20"
+          :aria-label="__('Close')"
+          @click="showSettings = false"
+        />
         <div
           class="flex shrink-0 flex-col overflow-y-auto bg-surface-gray-1"
           :class="
@@ -601,6 +614,30 @@ function openSettingsPage(id) {
   setActiveTab(id)
   showingDetail.value = true
 }
+
+// the browser's tab says where one is, «Promemoria degli appuntamenti ·
+// Impostazioni», and goes back to the page's own name when they close: it
+// stayed «Accoglienza» over every page of the settings, for a screen reader
+// and in the history too
+const titoloDelleImpostazioni = computed(() => {
+  if (!showSettings.value) return ''
+  const pagina = activeTab.value?.label || gruppoAperto.value?.label
+  return pagina ? `${__(pagina)} · ${__('Settings')}` : __('Settings')
+})
+let titoloDiPrima = null
+watch(
+  titoloDelleImpostazioni,
+  (titolo) => {
+    if (titolo) {
+      if (titoloDiPrima === null) titoloDiPrima = document.title
+      document.title = titolo
+    } else if (titoloDiPrima !== null) {
+      document.title = titoloDiPrima
+      titoloDiPrima = null
+    }
+  },
+  { immediate: true },
+)
 
 // deep link: /crm?settings=<page> opens the modal on that page (an OAuth
 // callback, an email's preferences, a notification touched): the router reads

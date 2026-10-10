@@ -12,12 +12,18 @@
   <!-- the room left under the phone's own bar, not a screen's height: the
        tabs stay put and the page scrolls under them -->
   <div class="flex min-h-0 flex-1 flex-col">
+    <!-- a row wider than the pane scrolls sideways: the edge it goes on
+         behind fades, and the tab open is always in sight. On a phone
+         Meta's fourth tab was past the edge with nothing to say so -->
     <div
       v-if="voce.tabs.length > 1"
+      ref="barra"
       role="tablist"
       data-settings-tabs
+      :style="sfumatura"
       :aria-label="__(voce.label)"
       class="flex h-[45px] shrink-0 items-stretch gap-6 overflow-x-auto border-b border-outline-elevation-2 px-8 [scrollbar-width:none] max-md:gap-5 max-md:px-5 [&::-webkit-scrollbar]:hidden"
+      @scroll.passive="misura"
     >
       <button
         v-for="tab in voce.tabs"
@@ -58,7 +64,8 @@
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
 import { schedaDi } from '@/utils/impostazioni'
-import { computed, nextTick } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   // the entry, with the tabs this person may open, each with its component
@@ -81,6 +88,42 @@ function sposta(passo) {
     document.getElementById(`settings-tab-${slug(tabs[dopo].key)}`)?.focus(),
   )
 }
+
+// which edges the row goes on behind, and the open tab brought into sight
+const barra = ref(null)
+const oltre = ref({ sinistra: false, destra: false })
+function misura() {
+  const el = barra.value
+  if (!el) return
+  oltre.value = {
+    sinistra: el.scrollLeft > 1,
+    destra: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+  }
+}
+const sfumatura = computed(() => {
+  const { sinistra, destra } = oltre.value
+  if (!sinistra && !destra) return {}
+  const maschera = `linear-gradient(to right, ${sinistra ? 'transparent, black 32px' : 'black'}, ${destra ? 'black calc(100% - 32px), transparent' : 'black'})`
+  return { maskImage: maschera, WebkitMaskImage: maschera }
+})
+function mostraLaScelta() {
+  const el = barra.value
+  const tab = el?.querySelector('[aria-selected="true"]')
+  if (!el || !tab) return
+  // the row scrolled by hand, never the page (scrollIntoView slid an iPhone's)
+  const inizio = tab.offsetLeft - 32
+  const fine = tab.offsetLeft + tab.offsetWidth + 32
+  if (inizio < el.scrollLeft) el.scrollLeft = Math.max(0, inizio)
+  else if (fine > el.scrollLeft + el.clientWidth)
+    el.scrollLeft = fine - el.clientWidth
+  misura()
+}
+watch(
+  () => scheda.value?.key,
+  () => nextTick(mostraLaScelta),
+)
+onMounted(() => nextTick(mostraLaScelta))
+useResizeObserver(barra, misura)
 
 function slug(testo) {
   return String(testo)

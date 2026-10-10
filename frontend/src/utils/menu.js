@@ -178,6 +178,8 @@ export const ALTRE_PAGINE = {
   NewDataImport: 'Data Import',
   DataImport: 'Data Import',
   'Not Permitted': 'Not permitted',
+  // an address that leads nowhere says so in the tab and to a screen reader
+  'Invalid Page': 'Page not found',
 }
 
 /**
