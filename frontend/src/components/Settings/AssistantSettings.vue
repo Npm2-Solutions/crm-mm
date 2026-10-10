@@ -59,6 +59,14 @@
           >
             <Switch v-model="settings.doc.enabled" size="sm" />
           </SettingRow>
+          <!-- what it does waits greyed while it is off: on, it looked as if
+               five functions ran with the assistant switched off -->
+          <p
+            v-if="!settings.doc.enabled"
+            class="px-2 pb-2 text-p-sm text-ink-gray-6"
+          >
+            {{ __('These are used once you switch the assistant on.') }}
+          </p>
           <SettingRow
             :label="__('Forms from paper')"
             :description="
@@ -67,7 +75,11 @@
               )
             "
           >
-            <Switch v-model="settings.doc.paper_forms" size="sm" />
+            <Switch
+              v-model="settings.doc.paper_forms"
+              size="sm"
+              :disabled="!settings.doc.enabled"
+            />
           </SettingRow>
           <SettingRow
             v-if="status.data?.switches?.includes('note_drafts')"
@@ -78,7 +90,11 @@
               )
             "
           >
-            <Switch v-model="settings.doc.note_drafts" size="sm" />
+            <Switch
+              v-model="settings.doc.note_drafts"
+              size="sm"
+              :disabled="!settings.doc.enabled"
+            />
           </SettingRow>
           <SettingRow
             v-if="status.data?.switches?.includes('dictation')"
@@ -89,7 +105,11 @@
               )
             "
           >
-            <Switch v-model="settings.doc.dictation" size="sm" />
+            <Switch
+              v-model="settings.doc.dictation"
+              size="sm"
+              :disabled="!settings.doc.enabled"
+            />
           </SettingRow>
           <SettingRow
             v-if="status.data?.switches?.includes('summaries')"
@@ -100,7 +120,11 @@
               )
             "
           >
-            <Switch v-model="settings.doc.summaries" size="sm" />
+            <Switch
+              v-model="settings.doc.summaries"
+              size="sm"
+              :disabled="!settings.doc.enabled"
+            />
           </SettingRow>
           <SettingRow
             v-if="status.data?.switches?.includes('menus')"
@@ -111,7 +135,11 @@
               )
             "
           >
-            <Switch v-model="settings.doc.menus" size="sm" />
+            <Switch
+              v-model="settings.doc.menus"
+              size="sm"
+              :disabled="!settings.doc.enabled"
+            />
           </SettingRow>
 
           <template v-if="status.data?.switches?.includes('patient_chat')">
@@ -126,7 +154,11 @@
                 )
               "
             >
-              <Switch v-model="settings.doc.patient_chat" size="sm" />
+              <Switch
+                v-model="settings.doc.patient_chat"
+                size="sm"
+                :disabled="!settings.doc.enabled"
+              />
             </SettingRow>
             <div class="flex flex-col gap-3 px-2 py-3">
               <FormControl
@@ -198,8 +230,8 @@
                 autocomplete="off"
               />
               <FormControl
-                type="url"
                 v-model="settings.doc.base_url"
+                type="url"
                 :label="__('Endpoint')"
                 placeholder="https://"
                 autocomplete="off"

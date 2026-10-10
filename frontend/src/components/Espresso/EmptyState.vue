@@ -9,8 +9,12 @@
 <template>
   <div class="dc-empty">
     <EmptyArt />
-    <h3 class="dc-empty__title">{{ title }}</h3>
-    <p v-if="text" class="dc-empty__text">{{ text }}</p>
+    <!-- the words handed as they are written in the code read in the
+         user's language: translated where they are drawn -->
+    <h3 class="dc-empty__title">{{ __(title) }}</h3>
+    <p v-if="text || description" class="dc-empty__text">
+      {{ __(text || description) }}
+    </p>
     <div v-if="$slots.default" class="dc-empty__actions">
       <slot />
     </div>
@@ -24,5 +28,7 @@ defineProps({
   // the state: «No visits today»
   title: { type: String, required: true },
   text: { type: String, default: '' },
+  // the name the lists' EmptyState gives the same sentence
+  description: { type: String, default: '' },
 })
 </script>

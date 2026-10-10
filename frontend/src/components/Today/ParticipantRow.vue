@@ -93,15 +93,25 @@
       v-if="canMark"
       class="flex shrink-0 items-center gap-1.5 max-md:w-full max-md:gap-2"
     >
+      <!-- going back on an outcome is the rare correction, not the next
+           step: a quiet button at the end of the row. As wide as the screen
+           on a phone, it was most of every card of the day and sat right over
+           «Emetti la fattura», a thumb away from taking the outcome back -->
       <Button
         v-for="(outcome, i) in prossimiEsiti(participant.status, past)"
         :key="outcome"
         :label="etichetta(outcome)"
-        :variant="i === 0 && outcome !== 'Booked' ? 'solid' : 'subtle'"
+        :variant="outcome === 'Booked' ? 'ghost' : i === 0 ? 'solid' : 'subtle'"
         :theme="outcome === 'No Show' ? 'red' : 'gray'"
-        :size="isMobileView ? 'lg' : 'sm'"
+        :size="isMobileView && outcome !== 'Booked' ? 'lg' : 'sm'"
         :loading="busy === outcome"
-        :class="isMobileView ? 'flex-1' : 'touch-target'"
+        :class="
+          !isMobileView
+            ? 'touch-target'
+            : outcome === 'Booked'
+              ? 'touch-target ml-auto text-ink-gray-6'
+              : 'flex-1'
+        "
         @click="mark(outcome)"
       />
     </div>

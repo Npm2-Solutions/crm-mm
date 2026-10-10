@@ -19,7 +19,11 @@
         <!-- on a phone the «Live» switch right underneath already says it -->
         <Badge
           v-if="!isMobileView"
-          :label="draft.enabled ? __('Active') : __('Draft')"
+          :label="
+            draft.enabled
+              ? __('Active', null, 'Automation state')
+              : __('Off', null, 'Automation state')
+          "
           :theme="draft.enabled ? 'green' : 'gray'"
           size="sm"
         />

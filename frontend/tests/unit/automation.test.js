@@ -385,6 +385,21 @@ describe('triggers', () => {
     ]
     expect(triggerSummary(trigger)).toBe('tag «vip» · status is New')
   })
+
+  it('says a date trigger in a whole sentence, the field by its label', () => {
+    const trigger = newTrigger('Date Based')
+    trigger.config = {
+      date_field: 'last_visit',
+      offset_days: 60,
+      direction: 'after',
+    }
+    const campi = [{ fieldname: 'last_visit', label: 'Last visit' }]
+    expect(triggerSummary(trigger, campi)).toBe('60 days after «Last visit»')
+    trigger.config.direction = 'before'
+    expect(triggerSummary(trigger, campi)).toBe('60 days before «Last visit»')
+    trigger.config.offset_days = 0
+    expect(triggerSummary(trigger, campi)).toBe('on the day of «Last visit»')
+  })
 })
 
 describe('the recipes that ask how a visit went', () => {

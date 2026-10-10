@@ -35,7 +35,7 @@
           v-if="!isMobileView && gestisce"
           variant="solid"
           iconLeft="plus"
-          :label="__('Create')"
+          :label="__('New automation')"
           @click="create()"
         />
       </div>
@@ -242,13 +242,15 @@ const FILTERS = [
   { name: 'draft', label: __('Off', null, 'Automations filter') },
 ]
 
-/** On, off after it worked (paused), or never switched on (a draft). */
+/** On, off after it worked, or never switched on (a draft). Off reads as the
+ * filter that finds it and the editor's badge say it: «In pausa» under
+ * «Spente» were two words for one switch. */
 function statoDi(row) {
   if (row.enabled) {
     return { label: __('Active', null, 'Automation state'), theme: 'green' }
   }
   if (row.enrolled_count) {
-    return { label: __('Paused', null, 'Automation state'), theme: 'orange' }
+    return { label: __('Off', null, 'Automation state'), theme: 'orange' }
   }
   return { label: __('Draft', null, 'Automation state'), theme: 'gray' }
 }

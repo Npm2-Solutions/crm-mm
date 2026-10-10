@@ -61,9 +61,23 @@
             )
           "
         >
-          <div class="flex items-center gap-2 truncate text-base">
-            <div><CalendarIcon /></div>
+          <!-- past its hour and still open: an alarm in place of the
+               calendar and the warning's colour - never the colour alone -
+               and «Late» for a screen reader, as the phone groups it -->
+          <div
+            class="flex items-center gap-2 truncate text-base"
+            :class="{ 'font-medium text-ink-red-7': inRitardo(item, row) }"
+          >
+            <span
+              v-if="inRitardo(item, row)"
+              class="lucide-alarm-clock size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <div v-else><CalendarIcon /></div>
             <div class="truncate">
+              <span v-if="inRitardo(item, row)" class="sr-only"
+                >{{ __('Late') }}:</span
+              >
               {{
                 formatDate(
                   item,
@@ -229,6 +243,8 @@ import {
   sanitizeHTML,
 } from '@/utils'
 import { formatoDellaScadenza } from '@/utils/quando'
+import { gruppoDi } from '@/utils/sulTelefono'
+import { adessoDelCentro } from '@/utils/scheduler'
 import {
   Avatar,
   ListView,
@@ -304,6 +320,13 @@ watch(pageLengthCount, (val, old_value) => {
 })
 
 const listBulkActionsRef = ref(null)
+
+// a task still open past its due hour (the phone's «Late», utils/sulTelefono.js)
+function inRitardo(scadenza, riga) {
+  if (!scadenza || !riga?.status) return false
+  if (['Done', 'Canceled'].includes(riga.status)) return false
+  return gruppoDi({ due_date: scadenza }, adessoDelCentro()) === 'late'
+}
 
 defineExpose({
   customListActions: computed(

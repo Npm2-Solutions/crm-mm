@@ -57,162 +57,182 @@
                 size="sm"
                 class="shrink-0"
                 :aria-label="tick.label"
+                :disabled="tick.field !== 'enabled' && !form.enabled"
               />
             </label>
           </div>
-          <div class="flex max-w-sm flex-col gap-1.5">
-            <FormControl
-              v-model.number="form.hours_before"
-              type="number"
-              inputmode="numeric"
-              min="2"
-              max="72"
-              :label="__('Hours before')"
-            />
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                __(
-                  'At night, from 21 to 8, it leaves in the morning, or the evening before; never in the last hour, nor for what was just booked.',
-                )
-              }}
-            </span>
-          </div>
-          <div class="flex max-w-sm flex-col gap-1.5">
-            <FormControl
-              v-model.number="form.second_hours_before"
-              type="number"
-              inputmode="numeric"
-              min="1"
-              max="12"
-              :placeholder="__('None')"
-              :label="__('Second reminder: hours before')"
-            />
-            <ErrorMessage v-if="problemaSecondo" :message="problemaSecondo" />
-            <span v-else class="text-p-sm text-ink-gray-5">
-              {{
-                __(
-                  'Optional: a second reminder the same day, 1 to 12 hours before. Never at night, nor to whoever already said they are coming or cannot come.',
-                )
-              }}
-            </span>
-          </div>
-        </section>
-
-        <section class="flex flex-col gap-3 px-2">
-          <h3 class="text-p-base-medium text-ink-gray-8">
-            {{ __('Channels') }}
-          </h3>
-          <p class="text-p-sm text-ink-gray-5">
+          <!-- what only matters while reminders leave: switched off, it waits
+               greyed with a line that says why, instead of looking in use -->
+          <p v-if="!form.enabled" class="text-p-sm text-ink-gray-6">
             {{
               __(
-                'The first one the person can receive: WhatsApp, then SMS, then email.',
+                'Switch on «Remind of the appointments» to choose when and how they leave.',
               )
             }}
           </p>
-
-          <!-- WhatsApp: a template with the buttons, or ours to make -->
-          <div v-if="settings.data.whatsapp" class="flex flex-col gap-1.5">
-            <FormControl
-              v-model="form.whatsapp_template"
-              type="select"
-              :label="__('WhatsApp template')"
-              :options="templateOptions"
-            />
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                adatti.length
-                  ? __(
-                      'An approved template with the buttons to confirm and to cancel. Its variables, in order: the name, what, when, where.',
-                    )
-                  : __(
-                      'No approved template has the buttons to confirm and to cancel yet.',
-                    )
-              }}
-            </span>
-            <div
-              v-if="nostro === 'da_fare' && settings.data.can_make_template"
-              class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2"
-            >
-              <Button
-                :label="__('Create the reminder template')"
-                icon-left="lucide-message-square-plus"
-                :loading="creating"
-                @click="createTemplate"
+          <fieldset
+            :disabled="!form.enabled"
+            class="m-0 flex min-w-0 flex-col gap-3 border-0 p-0 disabled:opacity-60"
+          >
+            <div class="flex max-w-sm flex-col gap-1.5">
+              <FormControl
+                v-model.number="form.hours_before"
+                type="number"
+                inputmode="numeric"
+                min="2"
+                max="72"
+                :label="__('Hours before')"
               />
-              <span class="min-w-[15rem] flex-1 text-p-sm text-ink-gray-5">
+              <span class="text-p-sm text-ink-gray-5">
                 {{
                   __(
-                    'Ready, with the three buttons, on the number that sends: Meta reviews it, usually within a day, then choose it here.',
+                    'At night, from 21 to 8, it leaves in the morning, or the evening before; never in the last hour, nor for what was just booked.',
                   )
                 }}
               </span>
             </div>
-            <p
-              v-else-if="nostro === 'in_attesa'"
-              class="mt-1 flex items-start gap-1.5 text-p-sm text-ink-gray-6"
-            >
-              <span
-                class="lucide-hourglass mt-0.5 size-3.5 shrink-0"
-                aria-hidden="true"
+            <div class="flex max-w-sm flex-col gap-1.5">
+              <FormControl
+                v-model.number="form.second_hours_before"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="12"
+                :placeholder="__('None')"
+                :label="__('Second reminder: hours before')"
               />
-              {{
-                __(
-                  'The reminder template is waiting for Meta’s review: once approved, choose it here.',
-                )
-              }}
-            </p>
-            <p
-              v-else-if="nostro === 'rifiutato'"
-              class="mt-1 flex items-start gap-1.5 text-p-sm text-ink-red-7"
-            >
-              <span
-                class="lucide-circle-alert mt-0.5 size-3.5 shrink-0"
-                aria-hidden="true"
-              />
-              {{
-                __(
-                  'Meta refused the reminder template: see why in Settings > WhatsApp > Templates.',
-                )
-              }}
-            </p>
-          </div>
-          <p v-else class="text-p-sm text-ink-gray-5">
-            {{
-              __(
-                'WhatsApp is not connected: the reminders go by SMS or email. Connect it in Settings > WhatsApp.',
-              )
-            }}
-          </p>
-
-          <div
-            class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
-          >
-            <label
-              v-for="way in ways"
-              :key="way.field"
-              class="flex items-center justify-between gap-4 px-3 py-2.5"
-              :class="
-                way.disabled
-                  ? 'cursor-not-allowed'
-                  : 'cursor-pointer hover:bg-surface-gray-1'
-              "
-            >
-              <span class="flex min-w-0 flex-col">
-                <span class="text-p-sm-medium text-ink-gray-8">
-                  {{ way.label }}
-                </span>
-                <span class="text-p-xs text-ink-gray-5">{{ way.hint }}</span>
+              <ErrorMessage v-if="problemaSecondo" :message="problemaSecondo" />
+              <span v-else class="text-p-sm text-ink-gray-5">
+                {{
+                  __(
+                    'Optional: a second reminder the same day, 1 to 12 hours before. Never at night, nor to whoever already said they are coming or cannot come.',
+                  )
+                }}
               </span>
-              <Switch
-                v-model="form[way.field]"
-                size="sm"
-                class="shrink-0"
-                :disabled="way.disabled"
-                :aria-label="way.label"
-              />
-            </label>
-          </div>
+            </div>
+          </fieldset>
         </section>
+
+        <fieldset
+          :disabled="!form.enabled"
+          class="m-0 min-w-0 border-0 p-0 disabled:opacity-60"
+        >
+          <section class="flex flex-col gap-3 px-2">
+            <h3 class="text-p-base-medium text-ink-gray-8">
+              {{ __('Channels') }}
+            </h3>
+            <p class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'The first one the person can receive: WhatsApp, then SMS, then email.',
+                )
+              }}
+            </p>
+
+            <!-- WhatsApp: a template with the buttons, or ours to make -->
+            <div v-if="settings.data.whatsapp" class="flex flex-col gap-1.5">
+              <FormControl
+                v-model="form.whatsapp_template"
+                type="select"
+                :label="__('WhatsApp template')"
+                :options="templateOptions"
+              />
+              <span class="text-p-sm text-ink-gray-5">
+                {{
+                  adatti.length
+                    ? __(
+                        'An approved template with the buttons to confirm and to cancel. Its variables, in order: the name, what, when, where.',
+                      )
+                    : __(
+                        'No approved template has the buttons to confirm and to cancel yet.',
+                      )
+                }}
+              </span>
+              <div
+                v-if="nostro === 'da_fare' && settings.data.can_make_template"
+                class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2"
+              >
+                <Button
+                  :label="__('Create the reminder template')"
+                  icon-left="lucide-message-square-plus"
+                  :loading="creating"
+                  @click="createTemplate"
+                />
+                <span class="min-w-[15rem] flex-1 text-p-sm text-ink-gray-5">
+                  {{
+                    __(
+                      'Ready, with the three buttons, on the number that sends: Meta reviews it, usually within a day, then choose it here.',
+                    )
+                  }}
+                </span>
+              </div>
+              <p
+                v-else-if="nostro === 'in_attesa'"
+                class="mt-1 flex items-start gap-1.5 text-p-sm text-ink-gray-6"
+              >
+                <span
+                  class="lucide-hourglass mt-0.5 size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                {{
+                  __(
+                    'The reminder template is waiting for Meta’s review: once approved, choose it here.',
+                  )
+                }}
+              </p>
+              <p
+                v-else-if="nostro === 'rifiutato'"
+                class="mt-1 flex items-start gap-1.5 text-p-sm text-ink-red-7"
+              >
+                <span
+                  class="lucide-circle-alert mt-0.5 size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                {{
+                  __(
+                    'Meta refused the reminder template: see why in Settings > WhatsApp > Templates.',
+                  )
+                }}
+              </p>
+            </div>
+            <p v-else class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'WhatsApp is not connected: the reminders go by SMS or email. Connect it in Settings > WhatsApp.',
+                )
+              }}
+            </p>
+
+            <div
+              class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
+            >
+              <label
+                v-for="way in ways"
+                :key="way.field"
+                class="flex items-center justify-between gap-4 px-3 py-2.5"
+                :class="
+                  way.disabled
+                    ? 'cursor-not-allowed'
+                    : 'cursor-pointer hover:bg-surface-gray-1'
+                "
+              >
+                <span class="flex min-w-0 flex-col">
+                  <span class="text-p-sm-medium text-ink-gray-8">
+                    {{ way.label }}
+                  </span>
+                  <span class="text-p-xs text-ink-gray-5">{{ way.hint }}</span>
+                </span>
+                <Switch
+                  v-model="form[way.field]"
+                  size="sm"
+                  class="shrink-0"
+                  :disabled="way.disabled"
+                  :aria-label="way.label"
+                />
+              </label>
+            </div>
+          </section>
+        </fieldset>
 
         <section
           v-if="settings.data.recent?.length"
@@ -309,7 +329,7 @@ function fill(data) {
     for (const field of CAMPI) {
       target[field] = TICKS.includes(field)
         ? Boolean(data[field])
-        : (data[field] ?? '')
+        : data[field] ?? ''
     }
   }
 }

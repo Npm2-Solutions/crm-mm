@@ -55,15 +55,14 @@
             >
               {{ numero(data) }}
             </span>
-            <!-- how many: beside the day on a desk, a small tag under it on
-                 a phone, where a grey number read as another date -->
+            <!-- how many: a small tag beside the day on a desk, under it on a
+                 phone. A bare grey number beside the day's read as another
+                 date («28  21») on the desk too -->
             <span
               v-if="giorni[data].totale"
-              class="tabular-nums text-ink-gray-6"
+              class="rounded-full bg-surface-gray-2 px-1.5 tabular-nums text-ink-gray-6"
               :class="
-                compatto
-                  ? 'rounded-full bg-surface-gray-2 px-1.5 text-[11px] leading-4'
-                  : 'text-p-xs'
+                compatto ? 'text-[11px] leading-4' : 'text-p-xs leading-5'
               "
               aria-hidden="true"
             >
@@ -75,7 +74,7 @@
               v-for="cosa in giorni[data].primi"
               :key="cosa.id"
               type="button"
-              class="relative flex min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-[18px] hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+              class="relative flex min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-5 hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
               :class="scelto === cosa.id ? 'bg-surface-gray-2' : ''"
               @click.stop="$emit('apri', cosa)"
             >
