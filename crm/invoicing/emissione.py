@@ -390,10 +390,7 @@ def issue(data: str | dict, invoice: str | None = None) -> dict:
 		doc.insert()
 	# issued at the desk to a person: paid there, on the day the desk wrote. Said
 	# before the issue, for an invoice made in Fatture in Cloud to be made paid
-	doc.flags.pagata_alla_cassa = (
-		doc.recipient_type == "persona_fisica"
-		and (doc.document_type or "TD01") not in incassi.NOTE_DI_CREDITO
-	)
+	doc.flags.pagata_alla_cassa = incassi.pagata_alla_cassa(doc)
 	doc.submit()
 	incassi.alla_cassa(doc)
 	doc.reload()

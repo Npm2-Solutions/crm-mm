@@ -8,10 +8,11 @@ Sistema TS needs, but `payment_date` starts as the issue date whatever happened:
 it cannot tell a paid invoice from one waiting. So collecting is a fact of its own:
 a day, or nothing for an invoice still to collect.
 
-An invoice to a person issued at the desk was paid there: it takes the payment
-date the desk wrote in it (`alla_cassa`). One to a company or a public body, and
-one issued by itself (a subscription's instalment), waits for somebody with
-`fatture.incassi` to mark it. A credit note gives money back: it is never
+An invoice to a person issued at the desk and paid there - cash, a card, a
+cheque - takes the payment date the desk wrote in it (`alla_cassa`). One paid by
+bank transfer, or another way that arrives later, one to a company or a public
+body, and one issued by itself (a subscription's instalment), waits for somebody
+with `fatture.incassi` to mark it. A credit note gives money back: it is never
 collected.
 """
 
@@ -25,6 +26,9 @@ from crm.permissions import livelli
 
 FATTURA = "CRM Invoice"
 NOTE_DI_CREDITO = ("TD04", "TD08")
+#: The ways of paying that put the money in the centre's hands at the desk: cash,
+#: a cheque or a banker's draft, a card on the POS. A bank transfer arrives later.
+ALLA_CASSA = ("MP01", "MP02", "MP03", "MP08")
 
 
 def da_incassare(doc) -> bool:
@@ -37,9 +41,20 @@ def da_pagare(riga) -> float:
 	return flt(riga.get("net_payable")) or flt(riga.get("grand_total"))
 
 
+def pagata_alla_cassa(doc) -> bool:
+	"""Whether an invoice issued at the desk was paid there: to a person, not a
+	credit note, by a way that pays on the spot (none said is cash)."""
+	return (
+		doc.recipient_type == "persona_fisica"
+		and (doc.document_type or "TD01") not in NOTE_DI_CREDITO
+		and (doc.payment_method or "MP01") in ALLA_CASSA
+	)
+
+
 def alla_cassa(doc) -> None:
-	"""An invoice to a person, issued at the desk, was paid at the desk."""
-	if da_incassare(doc) and doc.recipient_type == "persona_fisica" and not doc.collected_on:
+	"""An invoice to a person, issued at the desk, paid there: a bank transfer the
+	person makes at home is collected when it arrives, and reminded until then."""
+	if da_incassare(doc) and pagata_alla_cassa(doc) and not doc.collected_on:
 		doc.db_set("collected_on", doc.payment_date or doc.posting_date, update_modified=False)
 		if doc.get("quote"):
 			from crm.preventivi import rate
