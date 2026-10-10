@@ -149,6 +149,25 @@ export class Persona {
 	}
 
 	private ascolta(page: Page) {
+		// a page left while its calls are on their way aborts them, and frappe-ui
+		// says «Failed to fetch»: as a person reads a page before going elsewhere,
+		// a new address waits (three seconds at most) for the calls of the last one
+		let inVolo = 0
+		const finita = (r: { url(): string }) => {
+			if (r.url().includes('/api/')) inVolo = Math.max(0, inVolo - 1)
+		}
+		page.on('request', (r) => {
+			if (r.url().includes('/api/')) inVolo += 1
+		})
+		page.on('requestfinished', finita)
+		page.on('requestfailed', finita)
+		const vai = page.goto.bind(page)
+		page.goto = async (...argomenti: Parameters<Page['goto']>) => {
+			const fine = Date.now() + 3000
+			while (inVolo > 0 && Date.now() < fine) await new Promise((fatto) => setTimeout(fatto, 100))
+			inVolo = 0
+			return vai(...argomenti)
+		}
 		page.on('pageerror', (e) => this.accaduto.errori.push(e.message.slice(0, 300)))
 		page.on('console', (m) => {
 			if (m.type() === 'error') this.accaduto.console.push(m.text().slice(0, 300))
