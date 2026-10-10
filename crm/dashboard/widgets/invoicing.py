@@ -252,14 +252,16 @@ def sdi_rejected(ctx: Context):
 
 
 def not_invoiced(ctx: Context):
-	"""Appointments that happened lately and have no document (``api.appointments_to_invoice``);
-	a session of a cycle paid as a whole is invoiced with its cycle, an appointment
-	where everybody uses an entry of their subscription with the instalments."""
+	"""Appointments that happened lately and have no issued document
+	(``api.appointments_to_invoice``: a draft is not an invoice yet, the desk finishes
+	it); a session of a cycle paid as a whole is invoiced with its cycle, an
+	appointment where everybody uses an entry of their subscription with the
+	instalments."""
 	since = add_days(ctx.now, -int(ctx.option("days", 30)))
 	invoiced = (
 		frappe.qb.from_(Invoice)
 		.select(Invoice.appointment)
-		.where(Invoice.appointment.isnotnull() & (Invoice.docstatus < 2))
+		.where(Invoice.appointment.isnotnull() & (Invoice.docstatus == 1))
 	)
 	whole = frappe.qb.from_(Cycle).select(Cycle.name).where(Cycle.billing == "The whole cycle")
 	# somebody in it uses an entry of their subscription; somebody else pays

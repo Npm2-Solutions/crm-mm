@@ -294,6 +294,10 @@ class TestInvoicingNumbers(IntegrationTestCase):
 		cls.appointment("tomorrow", now + datetime.timedelta(days=1), "Scheduled")
 		invoice("K", "TD01", "2024-12-01", 90, 90, "consegnata", "Viola", [(visit, bianchi, 90)])
 		frappe.db.set_value("CRM Invoice", "TEST-DASH-K", "appointment", "TEST-DASH-APPT-invoiced")
+		# a draft is not an invoice yet: its appointment is still to invoice, as the
+		# reception desk and the Invoices page say
+		cls.appointment("drafted", now - datetime.timedelta(days=4), "Completed")
+		frappe.db.set_value("CRM Invoice", "TEST-DASH-F", "appointment", "TEST-DASH-APPT-drafted")
 
 	@classmethod
 	def tearDownClass(cls):
@@ -397,9 +401,9 @@ class TestInvoicingNumbers(IntegrationTestCase):
 		self.assertEqual(bars("invoiced_by_client"), {"Rossi": 800, "Verdi": 650, "Blu": 250})
 
 	def test_appointments_that_happened_and_were_not_invoiced(self):
-		self.assertEqual(self.answer("appointments_to_invoice")["value"], 1)
+		self.assertEqual(self.answer("appointments_to_invoice")["value"], 2)
 		listed = self.answer("appointments_to_invoice_list")
-		self.assertEqual([item["title"] for item in listed["items"]], ["done"])
+		self.assertEqual(sorted(item["title"] for item in listed["items"]), ["done", "drafted"])
 
 
 class TestRebooking(IntegrationTestCase):
@@ -418,7 +422,9 @@ class TestRebooking(IntegrationTestCase):
 		now = frappe.utils.now_datetime()
 		day = datetime.timedelta(days=1)
 		for key in "ABCDE":
-			frappe.get_doc({"doctype": "CRM Lead", "name": f"RIP-{key}", "lead_name": f"Persona {key}"}).db_insert()
+			frappe.get_doc(
+				{"doctype": "CRM Lead", "name": f"RIP-{key}", "lead_name": f"Persona {key}"}
+			).db_insert()
 		frappe.get_doc({"doctype": "CRM Deal", "name": "RIP-DEAL-D", "lead": "RIP-D"}).db_insert()
 		admin = "Administrator"
 		# A came and is booked for tomorrow
