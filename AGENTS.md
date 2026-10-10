@@ -573,8 +573,8 @@ the clinic is on. DottorCloud connects to no ERP: the ERPNext integration went o
 ### New clients (`crm/clienti`)
 | File | Role |
 |---|---|
-| `crm/clienti/regole.py` | Who came, without a site: checked in, an appointment attended, an invoice that sold something (not a credit note), the first fact in time — tested with plain `unittest`; the clinic's rules are built on it |
-| `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future, and `relationship` from "Contact" to "Client" (never down from a step above it); the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing. Its rules decide in every centre, the clinic's too |
+| `crm/clienti/regole.py` | Who came, without a site: checked in, an appointment attended, an invoice that sold something (not a credit note, nor a deposit's advance invoice: `advance_for`, money before they came), the first fact in time — tested with plain `unittest`; the clinic's rules are built on it |
+| `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future, and `relationship` from "Contact" to "Client" (never down from a step above it); the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing; `ricalcola_dagli_acconti()` (the patch `an_advance_makes_nobody_a_client`) gives whoever an advance made a client their first real fact, or makes them a contact again. Its rules decide in every centre, the clinic's too |
 | `crm/clienti/eventi.py` | `CRM Appointment` and `CRM Invoice` doc_events: a booking moves the deal, a check-in, an attended appointment or an invoice makes a client |
 | `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Deals > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
 | `crm/dashboard/widgets/people.py`, `marketing.py` | "New clients" counts `client_since`, "Cost per new client" divides the ads' spend by the clients they brought; the dashboard's titles in the vertical's words (`verticali.traduttore()`) |
@@ -610,7 +610,7 @@ the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 |---|---|
 | `crm/clinica/__init__.py` | `registra()`: plan module, Medical Director level, capabilities, clinic consents |
 | `crm/clinica/regole.py` | How a person becomes a patient — pure, tested |
-| `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls |
+| `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls; a deposit's advance invoice makes no patient (`regole.vendita`), and the cards one wrote go to the first real fact - health data included - or away (`ricalcola_dagli_acconti`, patch `an_advance_makes_nobody_a_patient`) |
 | `crm/clinica/cartella.py` + `cartella_regole.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock; «Start from the last visit» (`start_sheet(from_last=1)`, `utils/cartella.js` offers it after a sheet with one): the answers of the last signed visit on the same sheet the session reads (`ultima_visita`: the dossier, obscured and «only me» left out, the reading logged) through the version published now (`pulisci`), never a signature, an attachment or a consent; the draft keeps `copied_from` and says «Copied from the visit of …» |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |

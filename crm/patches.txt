@@ -115,3 +115,5 @@ crm.patches.v1_0.the_desk_opens_dottorcloud_in_its_shell
 crm.patches.v1_0.the_desk_opens_on_the_apps
 crm.patches.v1_0.a_call_nobody_answered_is_still_missed
 crm.patches.v1_0.the_calendar_copy_reads_to_its_professionals
+crm.patches.v1_0.an_advance_makes_nobody_a_client
+crm.clinica.patches.an_advance_makes_nobody_a_patient

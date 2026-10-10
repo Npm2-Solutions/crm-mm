@@ -47,6 +47,12 @@ class LaFattura(UnitTestCase):
 		self.assertFalse(r.vendita("TD04"))
 		self.assertFalse(r.vendita("TD08"))
 
+	def test_l_acconto_di_un_deposito_no(self):
+		"""Paid at /prenota before coming: a client when they come, or by the balance."""
+		self.assertFalse(r.vendita("TD01", "APP-0001"))
+		self.assertTrue(r.vendita("TD01", None))
+		self.assertTrue(r.vendita("TD01", ""))
+
 
 class IlPrimoFatto(UnitTestCase):
 	def test_niente_fatti_niente_cliente(self):

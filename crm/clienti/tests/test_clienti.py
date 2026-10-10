@@ -256,6 +256,93 @@ class LaFattura(ClientiCase):
 		eventi.fattura_confermata(self.fattura("TD04"))
 		self.assertIsNone(self.da(self.giulia))
 
+	def test_l_acconto_di_un_deposito_no(self):
+		"""A deposit paid at /prenota is invoiced the day it arrives: she has not come yet."""
+		acconto = self.fattura()
+		acconto.advance_for = "APPUNTAMENTO-DI-PROVA"
+		eventi.fattura_confermata(acconto)
+		self.assertIsNone(self.da(self.giulia))
+
+
+class LAccontoNonFaClienti(ClientiCase):
+	"""The people an advance made clients before the rule left it out: recounted."""
+
+	def setUp(self):
+		super().setUp()
+		from crm.tests import test_invoicing as fatturazione
+
+		self.azienda = fatturazione.InvoicingBase.crea_azienda()
+		self.erogatore = fatturazione.InvoicingBase.crea_erogatore("Clienti Erogatore", "psicologo")
+		self.scheda = fatturazione.InvoicingBase.crea_servizio(
+			"Trattamento viso", healthcare=False, exempt=False
+		)
+
+	def acconto(self, persona, giorno, incontro):
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Invoice",
+				"company": self.azienda.name,
+				"recipient_type": "persona_fisica",
+				"party_type": "CRM Lead",
+				"party": persona.name,
+				"first_name": persona.first_name,
+				"last_name": persona.last_name,
+				"billing_name": persona.lead_name,
+				"fiscal_code": "RSSMRA80A01H501U",
+				"address_line": "Via Verdi 3",
+				"postal_code": "00100",
+				"city": "Roma",
+				"province": "RM",
+				"payment_method": "MP08",
+				"posting_date": giorno,
+				"advance_for": incontro.name,
+				"items": [
+					{
+						"billable_service": self.scheda.name,
+						"service_provider": self.erogatore.name,
+						"qty": 1,
+						"rate": 30,
+					}
+				],
+			}
+		).insert()
+		doc.submit()
+		# as the rules were before: the advance wrote the client
+		cliente.diventa_cliente(persona.name, regole.FATTURA, quando=get_datetime(giorno), annuncia=False)
+		return doc
+
+	def test_chi_aveva_solo_l_acconto_torna_un_contatto(self):
+		incontro = self.appuntamento(self.giulia, self.tomorrow(10))
+		self.acconto(self.giulia, add_days(nowdate(), -2), incontro)
+		self.assertIsNotNone(self.da(self.giulia))
+		self.assertGreaterEqual(cliente.ricalcola_dagli_acconti(), 1)
+		self.assertIsNone(self.da(self.giulia))
+		self.assertEqual(
+			frappe.db.get_value("CRM Lead", self.giulia.name, cliente.RAPPORTO), cliente.CONTATTO
+		)
+
+	def test_chi_poi_e_venuto_e_cliente_da_quando_e_venuto(self):
+		prenotato = self.appuntamento(self.giulia, self.tomorrow(10))
+		self.acconto(self.giulia, add_days(nowdate(), -3), prenotato)
+		venuto = self.appuntamento(self.giulia, self.ieri())
+		venuto.status = "Completed"
+		venuto.save()
+		cliente.ricalcola_dagli_acconti()
+		self.assertEqual(self.da(self.giulia), get_datetime(venuto.starts_on))
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.giulia.name, cliente.RAPPORTO), cliente.CLIENTE)
+		# twice is once
+		self.assertEqual(cliente.ricalcola_dagli_acconti(), 0)
+
+	def test_un_cliente_di_prima_resta(self):
+		"""A client since a visit before the advance: nothing moves."""
+		venuto = self.appuntamento(self.giulia, self.ieri() - datetime.timedelta(days=5))
+		venuto.status = "Completed"
+		venuto.save()
+		prima = self.da(self.giulia)
+		self.acconto(self.giulia, add_days(nowdate(), -1), self.appuntamento(self.giulia, self.tomorrow(11)))
+		cliente.ricalcola_dagli_acconti()
+		self.assertEqual(self.da(self.giulia), prima)
+
 
 class IClientiDiPrima(ClientiCase):
 	def test_si_trovano_e_non_si_annunciano(self):

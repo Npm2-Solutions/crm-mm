@@ -35,7 +35,9 @@ from crm.clienti.regole import (
 INFORMAZIONE_MEDICA = Regola(1, "Medical information", "The first clinical record saved about the person")
 ACCETTAZIONE = Regola(2, "Check-in", "Their arrival registered at the desk")
 APPUNTAMENTO_SVOLTO = Regola(3, "Appointment attended", "An appointment marked as completed or attended")
-FATTURA_SANITARIA = Regola(4, "Healthcare invoice", "The first confirmed invoice with a healthcare line")
+FATTURA_SANITARIA = Regola(
+	4, "Healthcare invoice", "The first confirmed invoice with a healthcare line, not a deposit's advance"
+)
 IMPORTAZIONE = Regola(5, "Import", "Brought over from the previous software")
 A_MANO = Regola(6, "By hand", "Somebody marked them as a patient")
 

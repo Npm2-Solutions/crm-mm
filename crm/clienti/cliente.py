@@ -132,7 +132,7 @@ def presenze() -> list[dict]:
 
 def _vendite() -> list[dict]:
 	"""Every confirmed invoice that sold something, with whom it was made out to. A
-	test invoice sold nothing."""
+	test invoice sold nothing, nor did a deposit's advance (`regole.vendita`)."""
 	Invoice = frappe.qb.DocType("CRM Invoice")
 	return (
 		frappe.qb.from_(Invoice)
@@ -141,6 +141,7 @@ def _vendite() -> list[dict]:
 			(Invoice.docstatus == 1)
 			& (Invoice.test_document == 0)
 			& IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO)
+			& (IfNull(Invoice.advance_for, "") == "")
 		)
 		.run(as_dict=True)
 	)
@@ -173,3 +174,46 @@ def recupera() -> int:
 		diventa_cliente(lead, regola, quando=quando, annuncia=False)
 		for lead, (quando, regola) in primi_fatti().items()
 	)
+
+
+# ------------------------------------------------------------ an advance is no sale
+
+
+def ricalcola_dagli_acconti() -> int:
+	"""The people a deposit's advance invoice made clients, before the rules left it
+	out (`regole.vendita`): their first real fact is when, and with none they are a
+	contact again. Quietly, as `recupera`: no deal moves, no automation hears. A step
+	a module put above the client (the clinic's patient) is the module's to recount.
+	How many people changed."""
+	Invoice = frappe.qb.DocType("CRM Invoice")
+	giorni: dict[str, set[datetime.date]] = {}
+	for acconto in (
+		frappe.qb.from_(Invoice)
+		.select(Invoice.party_type, Invoice.party, Invoice.posting_date)
+		.where(
+			(Invoice.docstatus == 1) & (Invoice.test_document == 0) & (IfNull(Invoice.advance_for, "") != "")
+		)
+		.run(as_dict=True)
+	):
+		persona = person_of(acconto.party_type, acconto.party)
+		if persona and acconto.posting_date:
+			giorni.setdefault(persona, set()).add(get_datetime(acconto.posting_date).date())
+	if not giorni:
+		return 0
+	fatti = primi_fatti()
+	cambiati = 0
+	for lead, quali in giorni.items():
+		dal, rapporto = frappe.db.get_value("CRM Lead", lead, [CAMPO, RAPPORTO]) or (None, None)
+		# an advance wrote the midnight of its day: any other moment is a real fact's
+		dal = get_datetime(dal) if dal else None
+		if not dal or dal.time() != datetime.time.min or dal.date() not in quali:
+			continue
+		primo = fatti.get(lead)
+		if primo and primo[0] <= dal:
+			continue
+		valori = {CAMPO: primo[0] if primo else None}
+		if not primo and rapporto == CLIENTE:
+			valori[RAPPORTO] = CONTATTO
+		frappe.db.set_value("CRM Lead", lead, valori, update_modified=False)
+		cambiati += 1
+	return cambiati

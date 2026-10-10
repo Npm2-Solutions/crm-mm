@@ -28,7 +28,7 @@ class Regola:
 
 ACCETTAZIONE = Regola(1, "Check-in", "Their arrival registered at the desk")
 APPUNTAMENTO_SVOLTO = Regola(2, "Appointment attended", "An appointment marked as completed or attended")
-FATTURA = Regola(3, "Invoice", "The first confirmed invoice made out to them")
+FATTURA = Regola(3, "Invoice", "The first confirmed invoice made out to them, not the advance of a deposit")
 
 REGOLE = (ACCETTAZIONE, APPUNTAMENTO_SVOLTO, FATTURA)
 
@@ -57,9 +57,14 @@ def accolto(arrivato: datetime | str | None, stato_partecipante: str | None) -> 
 	return bool(arrivato) and stato_partecipante not in PARTECIPANTE_ASSENTE
 
 
-def vendita(tipo_documento: str | None) -> bool:
-	"""Whether an invoice of this document type sold something: not a credit note."""
-	return tipo_documento not in NOTE_DI_CREDITO
+def vendita(tipo_documento: str | None, acconto_di: str | None = None) -> bool:
+	"""Whether an invoice of this document type sold something: not a credit note,
+	nor the advance invoice of a deposit paid online (``acconto_di``, the appointment
+	it is for: `CRM Invoice.advance_for`). That is money before the service, from
+	somebody who has not come yet: they are a client when they come, or by the
+	invoice of the balance - a deposit kept after a late cancellation makes nobody one.
+	"""
+	return tipo_documento not in NOTE_DI_CREDITO and not acconto_di
 
 
 def primo(fatti: list[tuple[datetime | None, Regola]]) -> tuple[datetime, Regola] | None:
