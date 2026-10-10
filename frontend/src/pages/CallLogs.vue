@@ -33,7 +33,7 @@
       <Button
         v-if="!isMobileView && puo('telefono.chiama')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('Log a call')"
         iconLeft="plus"
         @click="createCallLog"
       />
