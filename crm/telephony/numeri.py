@@ -49,6 +49,8 @@ from crm.telephony import collegamento
 from crm.telephony import numeri_regole as R
 
 RICHIESTA = "CRM Phone Number Request"
+#: Twilio's requests: Telnyx's are `crm.telephony.telnyx.numeri`'s.
+DI_TWILIO = {"provider": ["!=", "telnyx"]}
 CENTRO = collegamento.CENTRO
 #: Where Twilio takes a document's file: the SDK has no upload of its own.
 CARICAMENTO = "https://numbers-upload.twilio.com/v2/RegulatoryCompliance/SupportingDocuments"
@@ -176,6 +178,7 @@ def richieste() -> list[dict]:
 	"""The requests, newest first, as the page shows them."""
 	righe = frappe.get_all(
 		RICHIESTA,
+		filters=DI_TWILIO,
 		fields=[
 			"name",
 			"number_type",
@@ -256,13 +259,25 @@ def get_number_requirements(
 	}
 
 
+def _richiesta(nome: str):
+	"""A request of Twilio's: one asked of Telnyx is Telnyx's page's."""
+	richiesta = frappe.get_doc(RICHIESTA, nome)
+	if (richiesta.get("provider") or "twilio") != "twilio":
+		frappe.throw(_("This request was made to another carrier."))
+	return richiesta
+
+
 def _di_prima(request: str | None) -> dict | None:
 	"""What was written for a draft or for refused documents, to send them again
 	without writing it twice: the values, the address, the documents chosen and
 	their files, still the request's."""
 	if not request:
 		return None
-	richiesta = frappe.get_doc(RICHIESTA, request)
+	return _di_prima_di(_richiesta(request))
+
+
+def _di_prima_di(richiesta) -> dict | None:
+	"""What was written for a request of either carrier, to send it again."""
 	if not R.si_rimanda(richiesta.status):
 		return None
 	dettagli = frappe.parse_json(richiesta.details or "{}") or {}
@@ -332,10 +347,11 @@ def search_numbers(number_type: str, area_code: str | None = None, contains: str
 # sending
 
 
-def _file_del_centro(nome: str, richiesta: str | None = None):
-	"""A document's file, if it may go to Twilio: uploaded by this person for this,
-	private and attached to nothing yet, or a request's own. Nothing else of the
-	site's files - a person's records - leaves from here."""
+def _file_del_centro(nome: str, richiesta: str | None = None, controlla: bool = True):
+	"""A document's file, if it may go to the carrier: uploaded by this person for
+	this, private and attached to nothing yet, or a request's own. Nothing else of
+	the site's files - a person's records - leaves from here. ``controlla``: the
+	kinds and size Twilio takes, checked too (Telnyx checks its own)."""
 	riga = frappe.db.get_value(
 		"File",
 		nome,
@@ -348,7 +364,7 @@ def _file_del_centro(nome: str, richiesta: str | None = None):
 	)
 	if not (suo and riga.is_private):
 		frappe.throw(_("A document's file is not among those uploaded here: upload it again."))
-	problema = R.file_accettato(riga.file_name, riga.file_size)
+	problema = R.file_accettato(riga.file_name, riga.file_size) if controlla else ""
 	if problema:
 		frappe.throw(_(problema))
 	return riga
@@ -396,7 +412,7 @@ def send_number_request(
 	):
 		frappe.throw(_("Write the office's address: street, city and postal code."))
 
-	richiesta = frappe.get_doc(RICHIESTA, request) if request else frappe.new_doc(RICHIESTA)
+	richiesta = _richiesta(request) if request else frappe.new_doc(RICHIESTA)
 	if request and not R.si_rimanda(richiesta.status):
 		frappe.throw(_("These documents are already with Twilio."))
 	# every file is checked before anything goes to Twilio
@@ -416,6 +432,7 @@ def send_number_request(
 	richiesta.update(
 		{
 			"number_type": tipo.chiave,
+			"provider": "twilio",
 			"end_user_type": utente,
 			"area_code": zona,
 			"status": R.BOZZA,
@@ -561,7 +578,7 @@ def _togli_da_twilio(cliente, bundle: str, oggetti: list):
 def delete_number_request(request: str) -> dict:
 	"""A draft, or documents Twilio refused, taken away: here and in Twilio."""
 	livelli.verifica(CENTRO)
-	richiesta = frappe.get_doc(RICHIESTA, request)
+	richiesta = _richiesta(request)
 	if not R.si_rimanda(richiesta.status):
 		frappe.throw(_("These documents are already with Twilio."))
 	if richiesta.bundle_sid and collegamento.collegato():
@@ -584,7 +601,7 @@ def aggiorna_le_richieste() -> list[str]:
 	asked. Approved, the documents' files and what was written go: Twilio has its
 	copy. Returns the requests that moved."""
 	in_attesa = frappe.get_all(
-		RICHIESTA, filters={"status": R.IN_VERIFICA, "bundle_sid": ["is", "set"]}, pluck="name"
+		RICHIESTA, filters={"status": R.IN_VERIFICA, "bundle_sid": ["is", "set"], **DI_TWILIO}, pluck="name"
 	)
 	if not in_attesa or not collegamento.collegato():
 		return []
@@ -651,7 +668,7 @@ def refresh_number_requests() -> dict:
 def buy_number(request: str, phone_number: str) -> dict:
 	"""Buy a number with approved documents, already pointed at DottorCloud."""
 	livelli.verifica(CENTRO)
-	richiesta = frappe.get_doc(RICHIESTA, request)
+	richiesta = _richiesta(request)
 	if not R.si_compra(richiesta.status):
 		frappe.throw(_("The documents have to be approved by Twilio first."))
 	tipo = R.TIPI[richiesta.number_type]

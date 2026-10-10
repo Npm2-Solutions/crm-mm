@@ -1,0 +1,331 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 10:00:00.000000",
+ "description": "The centre's Telnyx account, connected from Settings > Phone > Telephony > Telnyx (doc 64).",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_section",
+  "enabled",
+  "column_break_general",
+  "record_calls",
+  "recording_notice",
+  "allowed_countries",
+  "sms_section",
+  "sms_from",
+  "column_break_sms",
+  "sms_sender_name",
+  "sms_sender_number",
+  "spend_section",
+  "spend_alert",
+  "balance_alert",
+  "column_break_spend",
+  "spend_alert_told",
+  "balance_alert_told",
+  "connection_section",
+  "account_owner",
+  "api_key",
+  "public_key",
+  "managed_account_id",
+  "column_break_conn",
+  "connected_on",
+  "connected_by",
+  "resources_section",
+  "texml_application_id",
+  "credential_connection_id",
+  "column_break_resources",
+  "outbound_voice_profile_id",
+  "messaging_profile_id",
+  "advanced_section",
+  "verify_webhook_signature",
+  "column_break_advanced",
+  "webhook_base_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "column_break_general",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "enabled",
+   "fieldname": "record_calls",
+   "fieldtype": "Check",
+   "label": "Record Calls"
+  },
+  {
+   "depends_on": "record_calls",
+   "description": "Spoken to the other party before they are connected, so recording is disclosed on the leg being recorded. Leave empty for no announcement. The voice and language are the answering service's.",
+   "fieldname": "recording_notice",
+   "fieldtype": "Small Text",
+   "label": "Recording Notice"
+  },
+  {
+   "default": "IT",
+   "description": "Where calls may go: country codes separated by commas, IT for Italy. Premium-rate numbers are never called, whatever the country. Telnyx's outbound voice profile is told the same.",
+   "fieldname": "allowed_countries",
+   "fieldtype": "Small Text",
+   "label": "Countries That Can Be Called"
+  },
+  {
+   "fieldname": "sms_section",
+   "fieldtype": "Section Break",
+   "label": "SMS"
+  },
+  {
+   "description": "What people see as the sender of every SMS the centre sends: its name, or one of its numbers when the answers must come back.",
+   "fieldname": "sms_from",
+   "fieldtype": "Select",
+   "label": "SMS Sender",
+   "options": "\nName\nNumber"
+  },
+  {
+   "fieldname": "column_break_sms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.sms_from=='Name'",
+   "description": "Up to 11 letters without accents, digits and spaces: nobody can answer a name.",
+   "fieldname": "sms_sender_name",
+   "fieldtype": "Data",
+   "label": "Sender's Name",
+   "length": 11
+  },
+  {
+   "depends_on": "eval:doc.sms_from=='Number'",
+   "description": "One of the account's numbers that can send SMS: the answers come back to the person's conversation.",
+   "fieldname": "sms_sender_number",
+   "fieldtype": "Data",
+   "label": "Sender's Number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "spend_section",
+   "fieldtype": "Section Break",
+   "label": "Spend"
+  },
+  {
+   "description": "When this month's spend reaches this amount, in the Telnyx account's currency, whoever pays for the account is told. Empty: no alert.",
+   "fieldname": "spend_alert",
+   "fieldtype": "Float",
+   "label": "Spend Alert",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "description": "When the Telnyx balance goes down to this amount, whoever pays for the account is told, before calls and SMS stop. Empty: no alert.",
+   "fieldname": "balance_alert",
+   "fieldtype": "Float",
+   "label": "Low Balance Alert",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_spend",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The month whose spend alert was told: once a month.",
+   "fieldname": "spend_alert_told",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Spend Alert Told",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Whether the low balance was told: once until it is topped up.",
+   "fieldname": "balance_alert_told",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Low Balance Told",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection",
+   "permlevel": 1
+  },
+  {
+   "description": "Whose account it is: the centre's own, or the agency's for a centre with the agency's front desk.",
+   "fieldname": "account_owner",
+   "fieldtype": "Select",
+   "label": "Whose Account",
+   "options": "\nCentre\nAgency",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "description": "The account's API key, kept encrypted: Telnyx has no key limited to a part of an account.",
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "description": "The account's public key, which Telnyx signs every webhook with (Mission Control > Keys & Credentials > Public Key).",
+   "fieldname": "public_key",
+   "fieldtype": "Data",
+   "label": "Webhook Public Key",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "description": "A managed account made in the agency's account for this site, with its own key.",
+   "fieldname": "managed_account_id",
+   "fieldtype": "Data",
+   "label": "Managed Account",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_conn",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "connected_on",
+   "fieldtype": "Datetime",
+   "label": "Connected On",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connected_by",
+   "fieldtype": "Link",
+   "label": "Connected By",
+   "options": "User",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "resources_section",
+   "fieldtype": "Section Break",
+   "label": "In Telnyx",
+   "permlevel": 1
+  },
+  {
+   "description": "Where Telnyx asks what a call to one of the centre's numbers does.",
+   "fieldname": "texml_application_id",
+   "fieldtype": "Data",
+   "label": "TeXML Application",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Where the browser's calls register: each person has a credential of their own on it.",
+   "fieldname": "credential_connection_id",
+   "fieldtype": "Data",
+   "label": "Credential Connection",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_resources",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
+   "description": "The countries calls may go to, and nothing else.",
+   "fieldname": "outbound_voice_profile_id",
+   "fieldtype": "Data",
+   "label": "Outbound Voice Profile",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Where the numbers' SMS come and go.",
+   "fieldname": "messaging_profile_id",
+   "fieldtype": "Data",
+   "label": "Messaging Profile",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "advanced_section",
+   "fieldtype": "Section Break",
+   "label": "Advanced",
+   "permlevel": 1,
+   "collapsible": 1
+  },
+  {
+   "default": "1",
+   "description": "Reject webhooks that are not signed by Telnyx. Only turn this off to debug a proxy that rewrites the requests.",
+   "fieldname": "verify_webhook_signature",
+   "fieldtype": "Check",
+   "label": "Verify Webhook Signature",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_advanced",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
+   "description": "Public address Telnyx calls back on, e.g. https://crm.studio.it or a tunnel in development. Leave empty to use the site URL.",
+   "fieldname": "webhook_base_url",
+   "fieldtype": "Data",
+   "label": "Callback Base URL",
+   "permlevel": 1
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-10 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Telnyx Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

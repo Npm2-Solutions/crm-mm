@@ -48,6 +48,7 @@ from crm.posta.aspetto import pulsante
 from crm.scheduling import attese_regole as R
 from crm.scheduling.availability import get_slots, party_busy
 from crm.scheduling.timeutils import UTC, day_bounds, from_system_naive, scheduling_tz, to_system_naive
+from crm.telephony import operatore
 from crm.telephony import sms as sms_del_centro
 
 VOCE = "CRM Waiting List Entry"
@@ -649,7 +650,7 @@ def _testo_breve(testo: dict) -> str:
 
 
 def _per_sms(chi: str, numero: str, mittente: str, testo: dict) -> None:
-	from crm.api.sms import create_sms, deliver_via_twilio
+	from crm.api.sms import create_sms, deliver_sms
 
 	doc = create_sms(
 		type="Outgoing",
@@ -659,7 +660,7 @@ def _per_sms(chi: str, numero: str, mittente: str, testo: dict) -> None:
 		reference_doctype="CRM Lead",
 		reference_name=chi,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 	if doc.status == "Failed":
 		raise frappe.ValidationError(doc.error_message or _("The SMS did not leave"))
 
@@ -1328,7 +1329,8 @@ def get_settings() -> dict:
 		"whatsapp_template": doc.get("whatsapp_template"),
 		"sms_sender": conf.sms,
 		"templates": modelli,
-		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
+		# the centre's carrier, whose page sets the SMS sender
+		"carrier": operatore.attivo() or "",
 	}
 
 

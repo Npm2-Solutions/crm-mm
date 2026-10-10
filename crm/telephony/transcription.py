@@ -273,13 +273,18 @@ def expire_transcripts() -> dict:
 
 	if days := cint(config.recording_retention_days):
 		cutoff = add_to_date(now_datetime(), days=-days)
-		names = frappe.get_all(
+		rows = frappe.get_all(
 			"CRM Call Log",
 			filters={"recording_url": ["is", "set"], "creation": ["<", cutoff]},
-			pluck="name",
+			fields=["name", "recording_url"],
 		)
-		for name in names:
-			frappe.db.set_value("CRM Call Log", name, "recording_url", None, update_modified=False)
+		names = [row.name for row in rows]
+		from crm.telephony.telnyx import registrazioni
+
+		for row in rows:
+			# a recording DottorCloud keeps itself goes with its link
+			registrazioni.togli(row.name, row.recording_url)
+			frappe.db.set_value("CRM Call Log", row.name, "recording_url", None, update_modified=False)
 		cleared["recordings"] = len(names)
 
 	_commit()

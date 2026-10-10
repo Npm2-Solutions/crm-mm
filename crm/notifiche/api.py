@@ -53,7 +53,8 @@ CON_ANTEPRIMA = frozenset({"mention", "whatsapp", "sms", "email", "invoicing"})
 MESSAGGI = ("whatsapp", "sms", "email")
 #: The record pages a notification opens, and the name of their parameter.
 PAGINE = {"CRM Lead": ("Lead", "leadId"), "CRM Deal": ("Deal", "dealId")}
-#: The kinds that open a page of the settings instead: the page, and the step of it.
+#: The kinds that open a page of the settings instead: the page, and the step of it
+#: (the carrier's page, `_del_telefono`).
 IMPOSTAZIONI = {"phone": {"page": "Telephony", "step": "twilio-settings"}}
 #: What a notification is about, when it opens another step of that page.
 IMPOSTAZIONI_DI = {"CRM Caller ID": {"page": "Telephony", "step": "caller-id-settings"}}
@@ -103,10 +104,33 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 				"creation": riga.creation,
 				"route": percorso(riga, genere, esistenti, compiti_aperti, chiamate),
 				"settings": IMPOSTAZIONI.get(genere)
-				and IMPOSTAZIONI_DI.get(riga.notification_type_doctype, IMPOSTAZIONI[genere]),
+				and IMPOSTAZIONI_DI.get(riga.notification_type_doctype, _del_telefono(riga, genere)),
 			}
 		)
 	return pannello
+
+
+def _del_telefono(riga, genere: str) -> dict:
+	"""The carrier's page a notification about the phone opens (doc 64): Telnyx's
+	for a sentence about Telnyx or a number asked of it, Twilio's for Twilio's,
+	else the centre's carrier's."""
+	from crm.telephony import operatore
+
+	impostazioni = IMPOSTAZIONI[genere]
+	if genere != "phone":
+		return impostazioni
+	if riga.sentence in R.DI_TELNYX:
+		via = operatore.TELNYX
+	elif riga.notification_type_doctype == "CRM Phone Number Request" and riga.notification_type_doc:
+		via = (
+			frappe.db.get_value("CRM Phone Number Request", riga.notification_type_doc, "provider")
+			or operatore.TWILIO
+		)
+	elif riga.sentence in (R.SPESA_TWILIO, R.NUMERO_APPROVATO, R.NUMERO_RIFIUTATO):
+		via = operatore.TWILIO
+	else:
+		via = operatore.attivo() or operatore.TWILIO
+	return {**impostazioni, "step": operatore.pagina(via)}
 
 
 def testo(riga) -> str:

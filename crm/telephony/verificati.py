@@ -127,11 +127,11 @@ def verify_number(
 	return {**stato(numero), "validation_code": richiesta.get("validation_code")}
 
 
-def _in_attesa(numero: str, etichetta: str | None, chiamata: str | None) -> None:
-	"""The row of the number, waiting for the code and switched off until Twilio
-	says it is verified."""
+def _in_attesa(numero: str, etichetta: str | None, chiamata: str | None, provider: str = "twilio") -> None:
+	"""The row of the number, waiting for the code and switched off until the
+	carrier says it is verified."""
 	valori = {
-		"provider": "twilio",
+		"provider": provider,
 		"source": caller_ids.SOURCE_VERIFIED,
 		"enabled": 0,
 		"voice_capable": 1,

@@ -1,7 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's SMS through its Twilio space (doc 52, fourth part).
+"""The centre's SMS through its carrier, Twilio or Telnyx (doc 52, fourth part;
+doc 64).
 
 Every SMS DottorCloud sends - the one written by hand from a person's page, an
 automation's, a waiting list's offer, the news of the client area - leaves from
@@ -17,9 +18,12 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
 
+from crm.telephony import operatore
 from crm.telephony import sms_regole as R
 
-IMPOSTAZIONI = "CRM Twilio Settings"
+#: Twilio's settings, as the callers of before name them: the centre's carrier's
+#: are `operatore.impostazioni()`.
+IMPOSTAZIONI = operatore.IMPOSTAZIONI[operatore.TWILIO]
 NOME, NUMERO = "Name", "Number"
 #: The consent a STOP withdraws: news, offers and recalls, the centre's marketing.
 CONSENSO = "marketing"
@@ -27,11 +31,14 @@ CONSENSO = "marketing"
 CANALE = "By SMS"
 
 
-def numeri_sms() -> list[str]:
-	"""The space's numbers that can send SMS."""
+def numeri_sms(nome: str | None = None) -> list[str]:
+	"""The numbers of the centre's carrier (or of ``nome``) that can send SMS."""
+	nome = nome or operatore.attivo()
+	if not nome:
+		return []
 	return frappe.get_all(
 		"CRM Caller ID",
-		filters={"enabled": 1, "provider": "twilio", "sms_capable": 1},
+		filters={"enabled": 1, "provider": nome, "sms_capable": 1},
 		pluck="phone_number",
 		order_by="phone_number asc",
 	)
@@ -47,11 +54,15 @@ def nome_proposto() -> str:
 def mittente() -> str | None:
 	"""Who every SMS of the centre comes from: what the manager chose - its name, or
 	one of its numbers that can send SMS - else its first such number, else a name
-	made from the centre's. None while Twilio is off, or with nothing to send from."""
-	scelta = frappe.db.get_singles_dict(IMPOSTAZIONI)
+	made from the centre's. None while no carrier is connected, or with nothing to
+	send from."""
+	nome = operatore.attivo()
+	if not nome:
+		return None
+	scelta = frappe.db.get_singles_dict(operatore.impostazioni(nome))
 	if not cint(scelta.get("enabled")):
 		return None
-	numeri = numeri_sms()
+	numeri = numeri_sms(nome)
 	nome = (scelta.get("sms_sender_name") or "").strip()
 	if scelta.get("sms_from") == NOME and not R.problema_del_nome(nome):
 		return nome
@@ -143,23 +154,43 @@ def riprendi(persona: str) -> None:
 	frappe.db.set_value("CRM Lead", persona, {"sms_opt_out": 0, "sms_opt_out_on": None})
 
 
+def valida_il_mittente(impostazioni) -> None:
+	"""The SMS sender as the carrier takes it: a name it accepts, or one of its
+	numbers that can send SMS. Asked only when the choice changes: a number taken
+	away later is the sender's fallback's business, not every save's."""
+	if not any(
+		impostazioni.has_value_changed(campo)
+		for campo in ("sms_from", "sms_sender_name", "sms_sender_number")
+	):
+		return
+	if impostazioni.sms_from == NOME:
+		impostazioni.sms_sender_name = (impostazioni.sms_sender_name or "").strip()
+		if motivo := R.problema_del_nome(impostazioni.sms_sender_name):
+			frappe.throw(_(motivo), title=_("SMS Sender"))
+	elif impostazioni.sms_from == NUMERO:
+		nome = next((n for n, d in operatore.IMPOSTAZIONI.items() if d == impostazioni.doctype), None)
+		if impostazioni.sms_sender_number not in numeri_sms(nome):
+			frappe.throw(_("Choose one of the numbers that can send SMS."), title=_("SMS Sender"))
+
+
 @frappe.whitelist()
 def get_sms_sender_options() -> dict:
-	"""For Twilio's page: the space's numbers that can send SMS, the name made
-	from the centre's, and who the SMS come from now."""
+	"""For the carrier's page: its numbers that can send SMS, the name made from
+	the centre's, and who the SMS come from now."""
 	from crm.permissions import livelli
 
 	livelli.verifica_nel_crm("telefono.configura")
+	nome = operatore.attivo()
 	etichette = dict(
 		frappe.get_all(
 			"CRM Caller ID",
-			filters={"enabled": 1, "provider": "twilio", "sms_capable": 1},
+			filters={"enabled": 1, "provider": nome or "", "sms_capable": 1},
 			fields=["phone_number", "label"],
 			as_list=True,
 		)
 	)
 	return {
-		"numbers": [{"number": n, "label": etichette.get(n) or ""} for n in numeri_sms()],
+		"numbers": [{"number": n, "label": etichette.get(n) or ""} for n in numeri_sms(nome)],
 		"name": nome_proposto(),
 		"sender": mittente(),
 	}

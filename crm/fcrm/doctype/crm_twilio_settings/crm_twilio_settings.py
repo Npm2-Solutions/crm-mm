@@ -69,6 +69,10 @@ class CRMTwilioSettings(Document):
 		self.valida_l_avviso_della_spesa()
 		if self.has_value_changed("enabled"):
 			livelli.verifica_nel_crm(TECNICO, messaggio=_("The agency connects and disconnects Twilio."))
+			if self.enabled:
+				from crm.telephony import operatore
+
+				operatore.libero_per(operatore.TWILIO)
 		if self.account_owner:
 			return
 		old_account_sid = frappe.db.get_single_value("CRM Twilio Settings", "account_sid")
@@ -79,22 +83,10 @@ class CRMTwilioSettings(Document):
 		self.validate_twilio_account()
 
 	def valida_il_mittente_degli_sms(self):
-		"""The SMS sender as Twilio takes it: a name it accepts, or one of the space's
-		numbers that can send SMS. Asked only when the choice changes: a number taken
-		away later is the sender's fallback's business, not every save's."""
-		if not any(
-			self.has_value_changed(campo) for campo in ("sms_from", "sms_sender_name", "sms_sender_number")
-		):
-			return
+		"""The SMS sender as Twilio takes it (`crm.telephony.sms.valida_il_mittente`)."""
 		from crm.telephony import sms
-		from crm.telephony import sms_regole as R
 
-		if self.sms_from == "Name":
-			self.sms_sender_name = (self.sms_sender_name or "").strip()
-			if motivo := R.problema_del_nome(self.sms_sender_name):
-				frappe.throw(_(motivo), title=_("SMS Sender"))
-		elif self.sms_from == "Number" and self.sms_sender_number not in sms.numeri_sms():
-			frappe.throw(_("Choose one of the numbers that can send SMS."), title=_("SMS Sender"))
+		sms.valida_il_mittente(self)
 
 	def valida_l_avviso_della_spesa(self):
 		"""The monthly alert is an amount, set by whoever pays for the space: on the

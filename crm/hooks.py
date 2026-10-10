@@ -705,6 +705,10 @@ scheduler_events = {
 		"crm.telephony.collegamento.assicura",
 		# what Twilio decided of the documents of a new number
 		"crm.telephony.numeri.aggiorna_le_richieste",
+		# DottorCloud's resources in the centre's Telnyx account, its numbers, its
+		# alerts (doc 64); what Telnyx decided of the numbers ordered
+		"crm.telephony.telnyx.collegamento.assicura",
+		"crm.telephony.telnyx.numeri.aggiorna_le_richieste",
 		# the exercises' pictures on this server, the missing ones fetched by themselves
 		"crm.piani.immagini.assicura",
 		# a centre that invoices with Fatture in Cloud: its access renewed before it ends

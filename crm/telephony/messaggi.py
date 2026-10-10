@@ -25,14 +25,15 @@ REGISTRO = "CRM Call Log"
 PERSONE = ("CRM Lead", "CRM Deal")
 
 
-def chi_avvisare(numero: str | None, chiamato: str | None) -> list[str]:
+def chi_avvisare(numero: str | None, chiamato: str | None, operatore: str = "twilio") -> list[str]:
 	"""Who hears of a message: whoever follows the caller, else whoever answers
-	the number called, else whoever reads every call of the centre."""
+	the number called (on the carrier the call came through), else whoever reads
+	every call of the centre."""
 	if numero and (proprietario := routing.record_owner(numero)):
 		return [proprietario]
 	from crm.telephony.providers import get as provider
 
-	if chiamato and (di_turno := list(routing.number_owners(provider("twilio"), chiamato))):
+	if chiamato and (di_turno := list(routing.number_owners(provider(operatore), chiamato))):
 		return di_turno
 	return [
 		utente
@@ -58,9 +59,13 @@ def avvisa_del_messaggio(nome: str) -> list[str]:
 	The person or deal it opens is the call's; the caller is named by their name,
 	else by their number. Returns who was told."""
 	from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
+	from crm.telephony import operatore
 
 	chiamata = frappe.db.get_value(
-		REGISTRO, nome, ["from", "to", "reference_doctype", "reference_docname"], as_dict=True
+		REGISTRO,
+		nome,
+		["from", "to", "reference_doctype", "reference_docname", "telephony_medium"],
+		as_dict=True,
 	)
 	if not chiamata:
 		return []
@@ -70,7 +75,8 @@ def avvisa_del_messaggio(nome: str) -> list[str]:
 		riguarda = (chiamata.reference_doctype, chiamata.reference_docname)
 		chi = nome_di(*riguarda)
 	avvisati = []
-	for utente in chi_avvisare(chiamata["from"], chiamata["to"]):
+	via = operatore.da_medium(chiamata.telephony_medium) or operatore.TWILIO
+	for utente in chi_avvisare(chiamata["from"], chiamata["to"], via):
 		if avvisa(
 			utente, "Call", N.MESSAGGIO_IN_SEGRETERIA, [chi], riguarda=riguarda, oggetto=(REGISTRO, nome)
 		):

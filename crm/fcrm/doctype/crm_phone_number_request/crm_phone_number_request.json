@@ -2,16 +2,18 @@
  "actions": [],
  "autoname": "hash",
  "creation": "2026-10-02 10:00:00.000000",
- "description": "A new Italian number asked of Twilio: the documents sent, where Twilio's check is, the numbers bought.",
+ "description": "A new Italian number asked of the centre's carrier, Twilio or Telnyx: the documents sent, where the carrier's check is, the numbers bought.",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "number_type",
   "end_user_type",
   "area_code",
+  "provider",
   "column_break_head",
   "status",
   "numbers",
+  "pending_orders",
   "section_who",
   "requested_by",
   "requested_on",
@@ -51,6 +53,16 @@
    "label": "Area code"
   },
   {
+   "default": "twilio",
+   "fieldname": "provider",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Carrier",
+   "options": "twilio\ntelnyx",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_break_head",
    "fieldtype": "Column Break"
   },
@@ -69,6 +81,13 @@
    "fieldname": "numbers",
    "fieldtype": "Small Text",
    "label": "Numbers bought",
+   "read_only": 1
+  },
+  {
+   "description": "Telnyx: the numbers ordered with these documents, still in the carrier's check, and their orders.",
+   "fieldname": "pending_orders",
+   "fieldtype": "Small Text",
+   "label": "Numbers ordered",
    "read_only": 1
   },
   {
@@ -104,14 +123,14 @@
   {
    "fieldname": "failure",
    "fieldtype": "Small Text",
-   "label": "What Twilio found",
+   "label": "What the carrier found",
    "read_only": 1
   },
   {
    "collapsible": 1,
    "fieldname": "section_twilio",
    "fieldtype": "Section Break",
-   "label": "In Twilio"
+   "label": "At the carrier"
   },
   {
    "fieldname": "regulation_sid",
@@ -163,7 +182,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-02 10:00:00.000000",
+ "modified": "2026-10-10 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Phone Number Request",

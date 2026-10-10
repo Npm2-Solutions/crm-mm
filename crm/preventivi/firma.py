@@ -336,7 +336,7 @@ def _email(utente: str, doc, centro: str) -> None:
 
 
 def _sms(utente: str, numero: str, lead: str, centro: str) -> None:
-	from crm.api.sms import create_sms, deliver_via_twilio
+	from crm.api.sms import create_sms, deliver_sms
 	from crm.area import avvisi, collegamento
 
 	indirizzo = collegamento.crea(utente, lead, "quote", "plans")
@@ -348,7 +348,7 @@ def _sms(utente: str, numero: str, lead: str, centro: str) -> None:
 		reference_doctype="CRM Lead",
 		reference_name=avvisi._persona_di(utente) or lead,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 
 
 @frappe.whitelist(methods=["POST"])

@@ -13,6 +13,9 @@
   "default_medium",
   "section_break_ozjn",
   "twilio_number",
+  "telnyx_number",
+  "telnyx_credential_id",
+  "telnyx_sip_username",
   "call_receiving_device",
   "section_break_phlq",
   "phone_nos"
@@ -64,6 +67,29 @@
    "options": "Phone"
   },
   {
+   "fieldname": "telnyx_number",
+   "fieldtype": "Data",
+   "label": "Telnyx Number",
+   "options": "Phone"
+  },
+  {
+   "description": "The person's own credential on the Telnyx credential connection, with which their browser takes and makes calls. Kept by DottorCloud.",
+   "fieldname": "telnyx_credential_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Telnyx Credential",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "telnyx_sip_username",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Telnyx SIP Username",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "phone_nos",
    "fieldtype": "Table",
    "label": "Phone Numbers",
@@ -73,7 +99,7 @@
    "fieldname": "default_medium",
    "fieldtype": "Select",
    "label": "Default Medium",
-   "options": "\nTwilio"
+   "options": "\nTwilio\nTelnyx"
   },
   {
    "default": "Computer",
@@ -85,7 +111,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-03 09:00:00.000000",
+ "modified": "2026-10-10 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Telephony Agent",

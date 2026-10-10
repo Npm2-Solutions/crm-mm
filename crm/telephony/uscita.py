@@ -1,14 +1,15 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Calls going out from DottorCloud through the centre's Twilio space (doc 52,
-third part).
+"""Calls going out from DottorCloud through the centre's carrier (doc 52, third
+part; doc 64).
 
 Before a call leaves, DottorCloud says where it may go - the countries the
 manager chose, never a premium-rate number - and which number it shows: one of
 the centre's, chosen for the call, else the person's own. The same countries are
-set in Twilio's permissions of the space, so a key that leaked could not call
-elsewhere either. The rules without a site are in ``uscita_regole``.
+set at the carrier - Twilio's permissions of the space, Telnyx's outbound voice
+profile - so a key that leaked could not call elsewhere either. The rules without
+a site are in ``uscita_regole``.
 """
 
 from __future__ import annotations
@@ -19,47 +20,54 @@ import frappe
 from frappe import _
 
 from crm.permissions import livelli
-from crm.telephony import caller_ids, collegamento
+from crm.telephony import caller_ids, collegamento, operatore
 from crm.telephony import uscita_regole as R
 
+#: Twilio's settings: the dialing permissions below are Twilio's.
 IMPOSTAZIONI = "CRM Twilio Settings"
 CHIAMA = "telefono.chiama"
 
 
-def consentiti() -> list[str]:
-	"""The countries the centre may call, Italy to start with."""
-	return R.paesi(frappe.db.get_single_value(IMPOSTAZIONI, "allowed_countries"))
+def consentiti(nome: str | None = None) -> list[str]:
+	"""The countries the centre may call through its carrier (or ``nome``), Italy to
+	start with."""
+	impostazioni = operatore.impostazioni(nome) or IMPOSTAZIONI
+	return R.paesi(frappe.db.get_single_value(impostazioni, "allowed_countries"))
 
 
-def perche_no(numero: str | None) -> str:
-	"""Why a call to ``numero`` does not leave, in the reader's words; '' when it does."""
+def perche_no(numero: str | None, nome: str | None = None) -> str:
+	"""Why a call to ``numero`` does not leave through the carrier (the centre's, or
+	``nome``), in the reader's words; '' when it does."""
 	from crm.demo import guardie
 
-	motivo = R.si_chiama(numero, consentiti())
+	motivo = R.si_chiama(numero, consentiti(nome))
 	if motivo:
 		return _(motivo)
 	# a person of the demo data is never called
 	return guardie.perche_non_chiamare(numero)
 
 
-def numero_da_mostrare(utente: str | None, richiesto: str | None = None) -> str | None:
-	"""The number a call shows: the one asked for, when it is one of the centre's
-	numbers that may be shown; else the person's own line."""
-	if richiesto and richiesto in caller_ids.usable_for_outbound("twilio"):
+def numero_da_mostrare(
+	utente: str | None, richiesto: str | None = None, nome: str = operatore.TWILIO
+) -> str | None:
+	"""The number a call through ``nome`` shows: the one asked for, when it is one of
+	the centre's numbers there that may be shown; else the person's own line."""
+	if richiesto and richiesto in caller_ids.usable_for_outbound(nome):
 		return richiesto
-	return frappe.db.get_value("CRM Telephony Agent", utente, "twilio_number") if utente else None
+	return frappe.db.get_value("CRM Telephony Agent", utente, operatore.linea(nome)) if utente else None
 
 
 @frappe.whitelist()
-def get_outbound_numbers() -> dict:
-	"""The numbers the session may show on a call, its own line marked, and the
-	countries it may call."""
+def get_outbound_numbers(provider: str | None = None) -> dict:
+	"""The numbers the session may show on a call through the carrier (the centre's,
+	or ``provider``), its own line marked, and the countries it may call."""
 	# who sees the call buttons (`is_call_integration_enabled`): not Marketing
 	livelli.verifica_nel_crm(CHIAMA)
-	proprio = frappe.db.get_value("CRM Telephony Agent", frappe.session.user, "twilio_number")
+	nome = provider if provider in operatore.IMPOSTAZIONI else operatore.attivo() or operatore.TWILIO
+	proprio = frappe.db.get_value("CRM Telephony Agent", frappe.session.user, operatore.linea(nome))
 	righe = frappe.get_all(
 		"CRM Caller ID",
-		filters=caller_ids.outbound_filters("twilio"),
+		filters=caller_ids.outbound_filters(nome),
 		fields=["phone_number", "label", "source"],
 		order_by="phone_number asc",
 	)
@@ -68,7 +76,7 @@ def get_outbound_numbers() -> dict:
 			"number": riga.phone_number,
 			"label": riga.label or "",
 			"mobile": R.cellulare_italiano(riga.phone_number),
-			# verified, not Twilio's: shown in Italy as far as the operators let it
+			# verified, not the carrier's: shown in Italy as far as the operators let it
 			"verified": riga.source == caller_ids.SOURCE_VERIFIED,
 			"own": riga.phone_number == proprio,
 		}
@@ -85,22 +93,22 @@ def get_outbound_numbers() -> dict:
 				"own": True,
 			},
 		)
-	return {"numbers": numeri, "countries": consentiti()}
+	return {"numbers": numeri, "countries": consentiti(nome)}
 
 
 def _verificato(numero: str | None) -> bool:
-	"""Whether a number is only verified in Twilio, not one of the space's."""
+	"""Whether a number is only verified at the carrier, not one of its own."""
 	return bool(numero) and (
 		frappe.db.get_value("CRM Caller ID", numero, "source") == caller_ids.SOURCE_VERIFIED
 	)
 
 
 @frappe.whitelist()
-def check_number(number: str, show: str | None = None) -> dict:
+def check_number(number: str, show: str | None = None, provider: str | None = None) -> dict:
 	"""Before a call leaves: whether it may, and whether the number shown would get
 	it blocked in Italy."""
 	livelli.verifica_nel_crm(CHIAMA)
-	motivo = perche_no(number)
+	motivo = perche_no(number, provider if provider in operatore.IMPOSTAZIONI else None)
 	return {
 		"ok": not motivo,
 		"reason": motivo,

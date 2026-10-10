@@ -8,7 +8,7 @@ from twilio.base.exceptions import TwilioRestException
 from crm.api.whatsapp import may_converse, validate_access
 from crm.integrations.twilio.twilio_handler import Twilio
 from crm.integrations.twilio.utils import get_public_url
-from crm.telephony import errori, sms
+from crm.telephony import errori, operatore, sms
 
 SMS_FIELDS = [
 	"name",
@@ -27,7 +27,7 @@ SMS_FIELDS = [
 
 @frappe.whitelist()
 def is_sms_enabled() -> bool:
-	return may_converse() and bool(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))
+	return may_converse() and bool(operatore.attivo())
 
 
 @frappe.whitelist()
@@ -79,7 +79,7 @@ def send_sms(reference_doctype: str, reference_name: str, to: str, message: str)
 	if not da:
 		frappe.throw(
 			_(
-				"The SMS cannot leave: the centre has no sender yet. The manager sets it in Settings → Phone → Telephony → Twilio."
+				"The SMS cannot leave: the centre has no sender yet. The manager sets it on the carrier's page, in Settings → Phone → Telephony."
 			)
 		)
 
@@ -91,7 +91,7 @@ def send_sms(reference_doctype: str, reference_name: str, to: str, message: str)
 		reference_doctype=reference_doctype,
 		reference_name=reference_name,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 	return {"name": doc.name, "status": doc.status}
 
 
@@ -103,6 +103,7 @@ def create_sms(
 	reference_doctype: str | None = None,
 	reference_name: str | None = None,
 	status: str | None = None,
+	telephony_medium: str | None = None,
 ):
 	doc = frappe.get_doc(
 		{
@@ -112,13 +113,24 @@ def create_sms(
 			"to": to,
 			"message": message,
 			"status": status or ("Received" if type == "Incoming" else "Queued"),
-			"telephony_medium": "Twilio",
+			# the carrier it goes or came through: the centre's, Twilio before any
+			"telephony_medium": telephony_medium or operatore.etichetta() or "Twilio",
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
 		}
 	)
 	doc.insert(ignore_permissions=True)
 	return doc
+
+
+def deliver_sms(doc):
+	"""Hand a queued outgoing message to the carrier it was written for (doc 64):
+	Twilio or Telnyx. Failures land on the doc, not the caller."""
+	if operatore.da_medium(doc.get("telephony_medium")) == operatore.TELNYX:
+		from crm.telephony.telnyx import sms as telnyx_sms
+
+		return telnyx_sms.consegna(doc)
+	return deliver_via_twilio(doc)
 
 
 def deliver_via_twilio(doc):
@@ -173,7 +185,7 @@ def send_automation_sms(to: str, message: str, reference_doctype=None, reference
 			reference_doctype=reference_doctype,
 			reference_name=reference_name,
 		)
-		deliver_via_twilio(doc)
+		deliver_sms(doc)
 		return doc.status == "Sent"
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "CRM SMS: automation send failed")

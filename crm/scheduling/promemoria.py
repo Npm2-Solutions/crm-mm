@@ -416,7 +416,7 @@ def _manda_per(via, appuntamento, persona, email, numero, testo, conf) -> tuple[
 		)
 		return "WhatsApp Message", manda_modello("CRM Lead", persona, numero, conf.whatsapp, valori)
 	if via == R.SMS:
-		from crm.api.sms import create_sms, deliver_via_twilio
+		from crm.api.sms import create_sms, deliver_sms
 
 		doc = create_sms(
 			type="Outgoing",
@@ -426,7 +426,7 @@ def _manda_per(via, appuntamento, persona, email, numero, testo, conf) -> tuple[
 			reference_doctype="CRM Lead",
 			reference_name=persona,
 		)
-		deliver_via_twilio(doc)
+		deliver_sms(doc)
 		if doc.status == "Failed":
 			raise frappe.ValidationError(doc.error_message or _("The SMS did not leave"))
 		return "CRM SMS Message", doc.name

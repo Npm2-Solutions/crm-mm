@@ -73,6 +73,13 @@ DOMANDA_AREA = "{0} asked the centre a question in their area"
 NUMERO_APPROVATO = "Twilio approved the documents of the new number: choose it now"
 NUMERO_RIFIUTATO = "Twilio refused the documents of the new number: see why"
 SPESA_TWILIO = "This month's Twilio spend has reached {0}, past the alert at {1}"
+#: The same of a number asked of Telnyx, and of what Telnyx is spent (doc 64).
+NUMERO_APPROVATO_TELNYX = "Telnyx approved the new number {0}: it answers now"
+NUMERO_RIFIUTATO_TELNYX = "Telnyx refused the documents of the new number: see why"
+SPESA_TELNYX = "This month's Telnyx spend has reached {0}, past the alert at {1}"
+CREDITO_TELNYX = "The Telnyx balance is down to {0}: top it up on Telnyx before calls and SMS stop"
+#: The sentences about Telnyx: their notification opens Telnyx's page.
+DI_TELNYX = frozenset({NUMERO_APPROVATO_TELNYX, NUMERO_RIFIUTATO_TELNYX, SPESA_TELNYX, CREDITO_TELNYX})
 NUMERO_VERIFICATO = "{0} is verified: it can be shown on calls"
 NUMERO_NON_VERIFICATO = "{0} was not verified: the call was not answered or the code was not typed"
 
@@ -151,6 +158,10 @@ FRASI = (
 	NUMERO_APPROVATO,
 	NUMERO_RIFIUTATO,
 	SPESA_TWILIO,
+	NUMERO_APPROVATO_TELNYX,
+	NUMERO_RIFIUTATO_TELNYX,
+	SPESA_TELNYX,
+	CREDITO_TELNYX,
 	NUMERO_VERIFICATO,
 	NUMERO_NON_VERIFICATO,
 	MESSAGGIO_IN_SEGRETERIA,
