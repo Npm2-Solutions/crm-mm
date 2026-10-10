@@ -139,6 +139,28 @@ class TestAssegnare(LevelsCase):
 		with patch("frappe.utils.modules.get_modules_from_app", return_value=None):
 			self.assertTrue(check_app_permission())
 
+	def test_entrato_arriva_in_dottorcloud(self):
+		"""Signed in, the framework answered the desk: its apps' screen and one
+		icon to tap, every time."""
+		from crm.api import dopo_l_accesso
+
+		self.as_user(DESK)
+		frappe.local.flags.home_page = None
+		try:
+			dopo_l_accesso()
+			self.assertEqual(frappe.local.flags.home_page, "/crm")
+		finally:
+			frappe.local.flags.home_page = None
+
+	def test_chi_non_entra_nel_crm_resta_dove_lo_manda_il_framework(self):
+		from crm.api import dopo_l_accesso
+
+		self.as_user(DESK)
+		frappe.local.flags.home_page = None
+		with patch("frappe.core.doctype.user.user.User.get_blocked_modules", return_value=["FCRM"]):
+			dopo_l_accesso()
+		self.assertIsNone(frappe.local.flags.home_page)
+
 	def test_chi_ha_il_crm_bloccato_non_entra(self):
 		self.as_user(DESK)
 		with patch("frappe.core.doctype.user.user.User.get_blocked_modules", return_value=["FCRM"]):

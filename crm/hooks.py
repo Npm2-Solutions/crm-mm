@@ -976,6 +976,9 @@ before_request = [
 ]
 before_job = ["crm.registrazione.carica"]
 
+# signed in, the staff land in DottorCloud, not on the framework's apps screen
+on_session_creation = ["crm.api.dopo_l_accesso"]
+
 from crm.registrazione import carica as _carica_moduli
 
 _carica_moduli()
