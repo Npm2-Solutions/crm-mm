@@ -10,8 +10,10 @@ a medical centre adds patients. Two to a row now (name and surname, mobile and
 email, gender and title), and the company only by its name, for whoever works for
 one the centre has an agreement with.
 
-As a new site has them (`crm.install.LEAD_QUICK_ENTRY`). Only a section still as
-it was shipped changes: one the centre changed is the centre's.
+As a new site has them (`crm.install.LEAD_QUICK_ENTRY`). Only a section whose
+fields are still as they were shipped changes: one the centre changed is the
+centre's, and what the centre set around the fields (a title, folding, hidden)
+stays.
 """
 
 import json
@@ -36,8 +38,15 @@ def _colonne(sezione) -> list:
 	return [colonna.get("fields") for colonna in sezione.get("columns", [])]
 
 
-def _nuove(*nomi) -> list:
-	return [s for s in json.loads(LEAD_QUICK_ENTRY) if s["name"] in nomi]
+def _nuova(nome) -> dict:
+	return next(s for s in json.loads(LEAD_QUICK_ENTRY) if s["name"] == nome)
+
+
+def _come_il_centro(nuova, vecchia, senza=()) -> dict:
+	"""The shipped section in its new shape, with what the centre set on the old
+	one around its fields: its title, whether it folds, hides or is fixed."""
+	tenute = {k: v for k, v in vecchia.items() if k not in ("name", "columns", *senza)}
+	return {**nuova, **tenute}
 
 
 def _rifai(sezioni) -> bool:
@@ -49,11 +58,18 @@ def _rifai(sezioni) -> bool:
 		i = nomi.index("person_section")
 		j = nomi.index("person_contacts_section")
 		if j == i + 1 and _colonne(sezioni[i]) == PERSONA_PRIMA and _colonne(sezioni[j]) == RECAPITI_PRIMA:
-			sezioni[i : j + 1] = _nuove("person_section", "person_contacts_section", "person_more_section")
+			persona, recapiti = sezioni[i], sezioni[j]
+			sezioni[i : j + 1] = [
+				_come_il_centro(_nuova("person_section"), persona),
+				_come_il_centro(_nuova("person_contacts_section"), recapiti),
+				# the new row of the two: hidden or fixed as the row it comes out
+				# of, never a second time under its title
+				_come_il_centro(_nuova("person_more_section"), recapiti, senza=("label",)),
+			]
 			cambiato = True
 	for k, sezione in enumerate(sezioni):
 		if sezione.get("name") == "organization_section" and _colonne(sezione) == AZIENDA_PRIMA:
-			sezioni[k] = _nuove("organization_section")[0]
+			sezioni[k] = _come_il_centro(_nuova("organization_section"), sezione)
 			cambiato = True
 	return cambiato
 

@@ -198,3 +198,27 @@ class TestInserimentoRapido(IntegrationTestCase):
 		self.assertEqual(
 			self.leggi(PERSONA), [{"name": "first_tab", "sections": json.loads(LEAD_QUICK_ENTRY)}]
 		)
+
+	def test_what_the_centre_set_around_the_fields_stays(self):
+		sezioni = del_04_10()
+		sezioni[0].update({"label": "Chi è", "collapsible": True})
+		sezioni[1]["hidden"] = True
+		sezioni[2].update({"label": "Azienda convenzionata", "opened": False})
+		self.metti(PERSONA, sezioni)
+		senza_azienda.execute()
+		dopo = {s["name"]: s for s in self.leggi(PERSONA)}
+		spedite = {s["name"]: s for s in json.loads(LEAD_QUICK_ENTRY)}
+		# the new fields, with the centre's title and folding around them
+		self.assertEqual(dopo["person_section"]["columns"], spedite["person_section"]["columns"])
+		self.assertEqual(
+			(dopo["person_section"]["label"], dopo["person_section"]["collapsible"]), ("Chi è", True)
+		)
+		# a hidden row stays hidden, and the row that comes out of it too, without its title
+		self.assertTrue(dopo["person_contacts_section"]["hidden"])
+		self.assertTrue(dopo["person_more_section"]["hidden"])
+		self.assertNotIn("label", dopo["person_more_section"])
+		self.assertEqual(dopo["organization_section"]["columns"], spedite["organization_section"]["columns"])
+		self.assertEqual(
+			(dopo["organization_section"]["label"], dopo["organization_section"]["opened"]),
+			("Azienda convenzionata", False),
+		)
