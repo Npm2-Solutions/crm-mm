@@ -31,6 +31,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, flt, get_url
 
 from crm.demo import guardie
+from crm.lingue import fuso_in_parole
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 from crm.scheduling import booking_rules as rules_mod
@@ -1342,7 +1343,11 @@ def send_client_email(appointment, token: str, kind: str) -> bool:
 		)
 		lines = [
 			f"<p>{_('Hi {0},').format(esc(hello))}</p>",
-			f"<p><b>{esc(view['service'])}</b><br>{when} ({esc(str(tz))})</p>",
+			# the hour is the centre's, as the person reads it: their zone named, in
+			# words, only when they booked from another one
+			f"<p><b>{esc(view['service'])}</b><br>{when}"
+			+ (f" ({esc(fuso_in_parole(str(tz)))})" if str(tz) != str(scheduling_tz()) else "")
+			+ "</p>",
 		]
 		if view["booked_for"]:
 			lines.append(f"<p>{_('The appointment is for {0}.').format(esc(view['booked_for']))}</p>")

@@ -59,6 +59,19 @@ def con_l_apostrofo(testo, lingua: str | None = None):
 	return _DAVANTI_A_UNA_DATA.sub(eliso, testo)
 
 
+def fuso_in_parole(zona: str, lingua: str | None = None) -> str:
+	"""A time zone as a reader names it: its city and its name in their language
+	(«Londra · Ora Regno Unito»), never «Europe/London»."""
+	from babel.dates import get_timezone_location, get_timezone_name
+
+	lingua = (lingua or getattr(frappe.local, "lang", None) or "it").split("-")[0]
+	locale = "en_GB" if lingua == "en" else lingua
+	try:
+		return f"{get_timezone_location(zona, locale=locale, return_city=True)} · {get_timezone_name(zona, locale=locale)}"
+	except Exception:
+		return zona
+
+
 def scegli(lingua: str | None, paese: str | None) -> str:
 	"""The rule, without a site: ``lingua`` and ``paese`` as System Settings keep
 	them. One of the two DottorCloud speaks: English for a centre out of Italy
