@@ -6,6 +6,7 @@ import { lunedi } from './giorni/lunedi'
 import { martedi } from './giorni/martedi'
 import { mercoledi } from './giorni/mercoledi'
 import { giovedi } from './giorni/giovedi'
+import { venerdi } from './giorni/venerdi'
 import { Settimana } from './lib/settimana'
 
 const GIORNI: Array<[string, (s: Settimana) => Promise<void>]> = [
@@ -13,6 +14,7 @@ const GIORNI: Array<[string, (s: Settimana) => Promise<void>]> = [
 	['martedi', martedi],
 	['mercoledi', mercoledi],
 	['giovedi', giovedi],
+	['venerdi', venerdi],
 ]
 
 test('una settimana del centro', async ({ browser }) => {
