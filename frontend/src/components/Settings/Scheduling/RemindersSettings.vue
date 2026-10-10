@@ -131,11 +131,14 @@
 
             <!-- WhatsApp: a template with the buttons, or ours to make -->
             <div v-if="settings.data.whatsapp" class="flex flex-col gap-1.5">
+              <!-- greyed with the reminders by its own switch too: reka's
+                   select opens on a pointer whatever the fieldset says -->
               <FormControl
                 v-model="form.whatsapp_template"
                 type="select"
                 :label="__('WhatsApp template')"
                 :options="templateOptions"
+                :disabled="!form.enabled"
               />
               <span class="text-p-sm text-ink-gray-5">
                 {{

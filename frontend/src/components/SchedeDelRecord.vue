@@ -60,9 +60,12 @@
             :aria-label="
               apertaTraLeAltre
                 ? __('{0}, other sections', [aperta.label])
-                : __('Other sections')
+                : undefined
             "
           >
+            <!-- named by the word it shows («Altro»), as voice control says
+                 it: «Altre sezioni» was a name nobody could see (WCAG 2.5.3);
+                 with a tab of its own open, the name starts with that tab's -->
             <Icona v-if="apertaTraLeAltre" :icona="aperta.icon" />
             {{ apertaTraLeAltre ? aperta.label : __('More') }}
             <span
@@ -86,10 +89,13 @@
         </template>
       </Dropdown>
     </div>
+    <!-- a panel whose tab is under «More» has no tab drawn to name it
+         (reka points it at a trigger that is not there): it says its own -->
     <TabsContent
       v-for="(scheda, i) in props.tabs"
       :key="scheda.name || scheda.label"
       :value="i"
+      :aria-label="altre.includes(scheda) ? scheda.label : undefined"
       class="flex flex-col overflow-auto data-[state=active]:flex data-[state=active]:grow"
     >
       <slot name="tab-panel" v-bind="{ tab: scheda }" />

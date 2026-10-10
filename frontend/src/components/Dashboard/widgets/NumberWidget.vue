@@ -40,7 +40,7 @@
       v-if="answer.progress != null"
       class="h-1.5 w-full overflow-hidden rounded-full bg-surface-gray-2"
       role="meter"
-      :aria-label="__('Progress')"
+      :aria-label="__('Progress', null, 'Dashboard meter')"
       :aria-valuenow="answer.progress"
       aria-valuemin="0"
       aria-valuemax="100"

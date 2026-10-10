@@ -1,5 +1,11 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <!-- A list's quick filters: each named by its label for a screen reader, a
-     placeholder alone is no name for a select's button (WCAG 4.1.2) -->
+     placeholder alone is no name for a select's button (WCAG 4.1.2). A link
+     and a date picker hand the name to their outer box, not to the control
+     inside: there it names a group (`role="group"`), which a screen reader
+     announces on the way in; on a box with no role it was ignored -->
 <template>
   <FormControl
     v-if="filter.fieldtype == 'Check'"
@@ -23,6 +29,7 @@
     :value="filter.value"
     :doctype="filter.options"
     :placeholder="filter.label"
+    role="group"
     :aria-label="filter.label"
     @change="(data) => updateFilter(filter, data)"
   />
@@ -32,6 +39,7 @@
     class="border-none"
     :value="filter.value"
     :placeholder="filter.label"
+    role="group"
     :aria-label="filter.label"
     @change="(v) => updateFilter(filter, v)"
   />
