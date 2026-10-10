@@ -1406,10 +1406,16 @@ function chiediDiRestituire(row) {
     title: __('Give the deposit back to {0}?', [
       row.participant_name || row.party,
     ]),
-    message: __(
-      'After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe, and a credit note cancels its advance invoice. It cannot be undone.',
-      [acconto.formatted_amount],
-    ),
+    // a credit note only where its advance invoice was issued
+    message: acconto.invoiced
+      ? __(
+          'After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe, and a credit note cancels its advance invoice. It cannot be undone.',
+          [acconto.formatted_amount],
+        )
+      : __(
+          'After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe. It cannot be undone.',
+          [acconto.formatted_amount],
+        ),
     actions: [
       {
         label: __('Give the deposit back'),

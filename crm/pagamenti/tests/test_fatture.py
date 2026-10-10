@@ -295,6 +295,7 @@ class TestAccontoSullAppuntamento(AccontoCase):
 			("paid", 30, numero, False),
 		)
 		self.assertFalse(acconto["can_give_back"])
+		self.assertTrue(acconto["invoiced"])
 		giorno = frappe.db.get_value("CRM Appointment", self.appuntamento(risultato), "starts_on")
 		[riga] = [
 			a

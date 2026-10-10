@@ -49945,3 +49945,7 @@ msgstr "{0}, dove il dispositivo ce l'ha"
 #: crm/fcrm/doctype/crm_web_site/crm_web_site.json
 msgid "Inter, served by the site itself, or the device's own face (System, Serif, Rounded). No font is ever loaded from another site; another family's name is used only where the device has it. Empty uses the theme default."
 msgstr "Inter, servito dal sito stesso, o il carattere del dispositivo (System, Serif, Rounded). Nessun carattere arriva mai da un altro sito; il nome di un'altra famiglia vale solo dove il dispositivo ce l'ha. Se lo lasci vuoto, resta quello del tema."
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe. It cannot be undone."
+msgstr "Dopo questa disdetta l'acconto resta al centro. Per cortesia, {0} tornano sulla carta con cui è stato pagato, su Stripe. Non si può annullare."

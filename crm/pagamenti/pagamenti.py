@@ -790,6 +790,8 @@ def acconti_di(appuntamenti: list[str]) -> dict[tuple[str, str], dict]:
 			else "",
 			"invoice": fattura.document_number if legge and fattura and fattura.docstatus == 1 else None,
 			"invoice_draft": bool(legge and fattura and fattura.docstatus == 0),
+			# given back, an issued advance invoice gets its credit note (said before asking)
+			"invoiced": bool(fattura and fattura.docstatus == 1),
 			"credit_note": nota.document_number if legge and nota and nota.docstatus == 1 else None,
 			"refunded_by": frappe.utils.get_fullname(riga.refunded_by) if riga.refunded_by else "",
 			# a test invoice and the demo's are never given back by hand
