@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's Telnyx account (doc 64).
+"""The centre's Telnyx account (doc 65).
 
 Connected from Settings > Phone > Telephony > Telnyx (`crm.telephony.telnyx.
 collegamento`): the account's key and public key, and what DottorCloud made in it -

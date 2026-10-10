@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's Telnyx account, connected from DottorCloud, on a real site (doc 64).
+"""The centre's Telnyx account, connected from DottorCloud, on a real site (doc 65).
 
 The manager of Centro Aurora pastes the account's API key and public key once.
 DottorCloud makes its outbound voice profile, TeXML application, messaging profile

@@ -2,7 +2,7 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
   Settings > Phone > Telephony and the pages it opens: the carrier's - Twilio
-  or Telnyx (doc 64) -, the answering service, transcription, the numbers
+  or Telnyx (doc 65) -, the answering service, transcription, the numbers
   shown on calls.
 -->
 <template>

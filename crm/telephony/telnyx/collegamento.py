@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's Telnyx account, connected from DottorCloud (doc 64).
+"""The centre's Telnyx account, connected from DottorCloud (doc 65).
 
 The centre pastes two codes once, on Settings > Phone > Telephony > Telnyx: its
 API key and its public key (Mission Control > Keys & Credentials). DottorCloud

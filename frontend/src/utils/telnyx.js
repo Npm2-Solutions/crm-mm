@@ -3,7 +3,7 @@
 
 /**
  * The centre's Telnyx account on Settings > Phone > Telephony > Telnyx and in the
- * browser's phone (doc 64), without a page.
+ * browser's phone (doc 65), without a page.
  *
  * The two codes checked before Telnyx is asked, as the server checks them
  * (`crm/telephony/telnyx/regole.py`); whose account it is, in words; what «Check»

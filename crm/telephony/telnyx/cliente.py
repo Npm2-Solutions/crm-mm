@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Telnyx's REST API (v2) through `requests`: JSON in, JSON out (doc 64).
+"""Telnyx's REST API (v2) through `requests`: JSON in, JSON out (doc 65).
 
 No SDK: a few dozen calls, and one dependency less on the bench. The key travels
 in variables named ``*_secret``, which a traceback hides, and an error is logged

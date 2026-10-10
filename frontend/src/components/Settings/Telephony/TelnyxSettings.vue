@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  Settings > Phone > Telephony > Telnyx (doc 64).
+  Settings > Phone > Telephony > Telnyx (doc 65).
 
   The centre connects its own Telnyx account with two codes of the portal, once:
   an API key and the account's public key. Telnyx has no space inside an account,
@@ -298,7 +298,7 @@
         </div>
 
         <!--
-          What the account spends, its balance and what went wrong (doc 64), for
+          What the account spends, its balance and what went wrong (doc 65), for
           whoever pays for it: this month by kind, the two alerts, the last
           days' problems in words.
         -->
@@ -1015,7 +1015,7 @@ const numeriInParole = computed(() => {
     : __('{0} numbers, and they all reach {brand}.', [s.numbers])
 })
 
-// the numbers asked of Telnyx, and what Telnyx sells in Italy now (doc 64)
+// the numbers asked of Telnyx, and what Telnyx sells in Italy now (doc 65)
 const offerta = createResource({
   url: 'crm.telephony.telnyx.numeri.get_number_offer',
   onError: (e) => toast.error(e.messages?.[0] || e.message),

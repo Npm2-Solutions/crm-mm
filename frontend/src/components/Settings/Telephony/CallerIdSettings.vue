@@ -5,7 +5,7 @@
   Every number the account can present, what kind it is, whether a call to it
   reaches DottorCloud; a number of the space released from here, one of another
   operator's verified to be shown on calls, or removed from the carrier: Twilio
-  (doc 52) or Telnyx (doc 64), whichever the centre's phone goes through.
+  (doc 52) or Telnyx (doc 65), whichever the centre's phone goes through.
 -->
 <template>
   <SettingsLayoutBase>

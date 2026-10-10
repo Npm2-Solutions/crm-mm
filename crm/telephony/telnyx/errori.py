@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Telnyx's errors in DottorCloud's words, in the reader's language (doc 64). The
+"""Telnyx's errors in DottorCloud's words, in the reader's language (doc 65). The
 sentences and the codes they answer are in ``errori_regole``."""
 
 from __future__ import annotations

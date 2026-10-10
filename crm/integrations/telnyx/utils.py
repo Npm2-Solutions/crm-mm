@@ -6,7 +6,7 @@ from frappe.utils import get_url
 
 
 def get_public_url(path: str | None = None) -> str:
-	"""The absolute address Telnyx calls back on (doc 64).
+	"""The absolute address Telnyx calls back on (doc 65).
 
 	A site can sit behind a proxy or a development tunnel whose public name is not
 	the one the app knows itself by, so the base is configurable, as Twilio's is.

@@ -50078,8 +50078,8 @@ msgid "The account's public key, which Telnyx signs every webhook with (Mission 
 msgstr "La chiave pubblica dell'account, con cui Telnyx firma ogni webhook (Mission Control > Keys & Credentials > Public Key)."
 
 #: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
-msgid "The centre's Telnyx account, connected from Settings > Phone > Telephony > Telnyx (doc 64)."
-msgstr "L'account Telnyx del centro, collegato da Impostazioni > Telefono > Telefonia > Telnyx (doc 64)."
+msgid "The centre's Telnyx account, connected from Settings > Phone > Telephony > Telnyx (doc 65)."
+msgstr "L'account Telnyx del centro, collegato da Impostazioni > Telefono > Telefonia > Telnyx (doc 65)."
 
 #: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
 msgid "The countries calls may go to, and nothing else."

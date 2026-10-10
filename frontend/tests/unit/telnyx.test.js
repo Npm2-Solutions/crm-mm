@@ -23,7 +23,7 @@ import {
   scadeIlGettone,
 } from '@/utils/telnyx'
 
-// The centre's Telnyx account (doc 64): the page checks here what the server
+// The centre's Telnyx account (doc 65): the page checks here what the server
 // checks in crm/telephony/telnyx/regole.py, before Telnyx is asked.
 
 const CHIAVE = 'KEY0123456789ABCDEF0123_abcdEFGH-12'

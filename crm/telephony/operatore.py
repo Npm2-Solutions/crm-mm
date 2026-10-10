@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's carrier: Twilio or Telnyx, one at a time (doc 64).
+"""The centre's carrier: Twilio or Telnyx, one at a time (doc 65).
 
 The centre's phone goes through one carrier, the one it connected on Settings >
 Phone > Telephony: its calls, its numbers, its SMS and what it spends. Connecting

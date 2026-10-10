@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A new Italian number asked of the centre's carrier (doc 52, doc 64): written
+"""A new Italian number asked of the centre's carrier (doc 52, doc 65): written
 only by `crm.telephony.numeri` for Twilio and `crm.telephony.telnyx.numeri` for
 Telnyx, which send the documents and follow the carrier's check. For Telnyx the
 bundle is its requirement group, the documents its documents, the address its

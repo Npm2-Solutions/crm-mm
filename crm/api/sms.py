@@ -124,7 +124,7 @@ def create_sms(
 
 
 def deliver_sms(doc):
-	"""Hand a queued outgoing message to the carrier it was written for (doc 64):
+	"""Hand a queued outgoing message to the carrier it was written for (doc 65):
 	Twilio or Telnyx. Failures land on the doc, not the caller."""
 	if operatore.da_medium(doc.get("telephony_medium")) == operatore.TELNYX:
 		from crm.telephony.telnyx import sms as telnyx_sms

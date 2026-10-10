@@ -8,7 +8,7 @@
   asked. The page asks how it went while Twilio's call goes on; Twilio says it too,
   and whoever asked hears of it if the page was closed.
 
-  With Telnyx (doc 64) the code goes the other way: Telnyx calls the number - or
+  With Telnyx (doc 65) the code goes the other way: Telnyx calls the number - or
   texts it - and says a code, which whoever answered types here.
 -->
 <template>

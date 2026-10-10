@@ -3,7 +3,7 @@
 
 /**
  * A new Italian number from the centre's carrier - Twilio (doc 52) or Telnyx
- * (doc 64) - without a page: a month's price in the reader's money words, where
+ * (doc 65) - without a page: a month's price in the reader's money words, where
  * a request is and what can be done with it, an area's prefix as the server
  * reads it (`crm/telephony/numeri_regole.py`), the files the carrier takes, what
  * is still missing before sending, and what the page sends. The words are

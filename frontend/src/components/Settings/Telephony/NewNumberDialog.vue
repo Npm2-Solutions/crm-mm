@@ -3,7 +3,7 @@
   For license information, please see license.txt
 
   A new Italian number from the centre's carrier - Twilio (doc 52) or Telnyx
-  (doc 64) - without leaving DottorCloud. The kind with its price a month and
+  (doc 65) - without leaving DottorCloud. The kind with its price a month and
   whose the number is; the fields the carrier asks, with what invoicing knows
   already in them; the documents, uploaded here; sent to the carrier, which
   checks them in a few days. Documents approved - now or for a number before, of

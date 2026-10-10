@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A number of the centre's, verified in Telnyx to be shown on calls (doc 64).
+"""A number of the centre's, verified in Telnyx to be shown on calls (doc 65).
 
 The same need as with Twilio (doc 52): the centre keeps its landline with its
 operator and wants it on the calls DottorCloud makes. Telnyx refuses a number that

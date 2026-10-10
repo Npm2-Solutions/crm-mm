@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's SMS through Telnyx (doc 64): the same as through Twilio (doc 52,
+"""The centre's SMS through Telnyx (doc 65): the same as through Twilio (doc 52,
 fourth part), from the same one sender (`crm.telephony.sms.mittente`).
 
 - **Going out**: ``POST /v2/messages`` from the centre's number or its name, with

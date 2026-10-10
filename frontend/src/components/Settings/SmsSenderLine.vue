@@ -3,7 +3,7 @@
   For license information, please see license.txt
 
   Where a page that sends SMS says who they come from: the centre's one sender
-  (doc 52), set on its carrier's page - Twilio's or Telnyx's (doc 64) - and the
+  (doc 52), set on its carrier's page - Twilio's or Telnyx's (doc 65) - and the
   same for every SMS: the waiting list's offers, the client area's news, the
   automations, the ones written by hand.
 -->

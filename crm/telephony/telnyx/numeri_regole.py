@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Italian numbers from the centre's Telnyx account, without a site (doc 64).
+"""Italian numbers from the centre's Telnyx account, without a site (doc 65).
 
 - **The kinds Telnyx sells in Italy**: geographic numbers (02, 06…) and toll-free
   ones (800). Telnyx sells no Italian mobile: SMS to Italy leave with the centre's

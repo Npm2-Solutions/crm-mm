@@ -2,7 +2,7 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
   The call from DottorCloud: the carriers on come from the server's registry
-  (Twilio, Telnyx: doc 64), and a default naming one that is not on calls with
+  (Twilio, Telnyx: doc 65), and a default naming one that is not on calls with
   one that is.
 -->
 <template>

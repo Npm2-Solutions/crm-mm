@@ -73,7 +73,7 @@ DOMANDA_AREA = "{0} asked the centre a question in their area"
 NUMERO_APPROVATO = "Twilio approved the documents of the new number: choose it now"
 NUMERO_RIFIUTATO = "Twilio refused the documents of the new number: see why"
 SPESA_TWILIO = "This month's Twilio spend has reached {0}, past the alert at {1}"
-#: The same of a number asked of Telnyx, and of what Telnyx is spent (doc 64).
+#: The same of a number asked of Telnyx, and of what Telnyx is spent (doc 65).
 NUMERO_APPROVATO_TELNYX = "Telnyx approved the new number {0}: it answers now"
 NUMERO_RIFIUTATO_TELNYX = "Telnyx refused the documents of the new number: see why"
 SPESA_TELNYX = "This month's Telnyx spend has reached {0}, past the alert at {1}"

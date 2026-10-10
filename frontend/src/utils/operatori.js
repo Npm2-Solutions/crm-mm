@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 /**
- * The carriers the centre's phone may go through, one at a time (doc 64):
+ * The carriers the centre's phone may go through, one at a time (doc 65):
  * Twilio or Telnyx. Each has its page in Settings > Phone > Telephony
  * (`<name>-settings`). The words are English, translated where they are drawn.
  */

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Telnyx's errors in DottorCloud's words, without a site (doc 64).
+"""Telnyx's errors in DottorCloud's words, without a site (doc 65).
 
 Telnyx names a problem with a code - 40300, 10009 - a title and a detail, in
 English. The ones a medical centre meets get a sentence of DottorCloud's that says

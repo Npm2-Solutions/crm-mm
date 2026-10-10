@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The carrier's errors in DottorCloud's words, in the reader's language (doc 52,
-fifth part; doc 64). The sentences and the codes they answer are in
+fifth part; doc 65). The sentences and the codes they answer are in
 ``errori_regole`` for Twilio, in ``telnyx.errori_regole`` for Telnyx."""
 
 from __future__ import annotations

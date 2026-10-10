@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Connecting the centre's Telnyx account, without a site (doc 64).
+"""Connecting the centre's Telnyx account, without a site (doc 65).
 
 - **Two codes, checked before Telnyx is asked**: the API key (``KEY`` and its
   hexadecimal digits, an underscore, its secret) and the account's public key

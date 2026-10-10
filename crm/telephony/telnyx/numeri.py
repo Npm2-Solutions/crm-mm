@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Italian numbers from the centre's Telnyx account, from DottorCloud (doc 64).
+"""Italian numbers from the centre's Telnyx account, from DottorCloud (doc 65).
 
 The same window as Twilio's (`crm.telephony.numeri`), with Telnyx's way:
 

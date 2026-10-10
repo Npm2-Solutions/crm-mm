@@ -2,7 +2,7 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  The call in the browser, through the centre's Telnyx account (doc 64): the
+  The call in the browser, through the centre's Telnyx account (doc 65): the
   same popup as Twilio's (doc 52) on Telnyx's WebRTC SDK. The browser registers
   with the person's own credential; before a call goes out the server says
   whether it may and which numbers it may show, and Telnyx asks the server again

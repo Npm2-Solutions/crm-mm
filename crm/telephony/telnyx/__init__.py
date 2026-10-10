@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The centre's Telnyx account, from DottorCloud (doc 64).
+"""The centre's Telnyx account, from DottorCloud (doc 65).
 
 The same phone as with Twilio (doc 52), through Telnyx: the account connected
 once with its API key and its public key; DottorCloud's own TeXML application,

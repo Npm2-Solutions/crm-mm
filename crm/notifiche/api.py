@@ -111,7 +111,7 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 
 
 def _del_telefono(riga, genere: str) -> dict:
-	"""The carrier's page a notification about the phone opens (doc 64): Telnyx's
+	"""The carrier's page a notification about the phone opens (doc 65): Telnyx's
 	for a sentence about Telnyx or a number asked of it, Twilio's for Twilio's,
 	else the centre's carrier's."""
 	from crm.telephony import operatore

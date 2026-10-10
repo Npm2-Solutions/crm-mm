@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """The centre's SMS through its carrier, Twilio or Telnyx (doc 52, fourth part;
-doc 64).
+doc 65).
 
 Every SMS DottorCloud sends - the one written by hand from a person's page, an
 automation's, a waiting list's offer, the news of the client area - leaves from

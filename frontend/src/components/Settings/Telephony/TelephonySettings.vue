@@ -276,7 +276,7 @@ import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()
 
-// the carriers the centre may connect, one at a time (doc 64): each with its page
+// the carriers the centre may connect, one at a time (doc 65): each with its page
 const operatori = OPERATORI
 function accesoAltro(nome) {
   return operatori.find((o) => o.name !== nome && isEnabled(o.name))?.label

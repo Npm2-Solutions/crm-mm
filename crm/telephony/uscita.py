@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """Calls going out from DottorCloud through the centre's carrier (doc 52, third
-part; doc 64).
+part; doc 65).
 
 Before a call leaves, DottorCloud says where it may go - the countries the
 manager chose, never a premium-rate number - and which number it shows: one of

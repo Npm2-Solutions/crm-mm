@@ -706,7 +706,7 @@ scheduler_events = {
 		# what Twilio decided of the documents of a new number
 		"crm.telephony.numeri.aggiorna_le_richieste",
 		# DottorCloud's resources in the centre's Telnyx account, its numbers, its
-		# alerts (doc 64); what Telnyx decided of the numbers ordered
+		# alerts (doc 65); what Telnyx decided of the numbers ordered
 		"crm.telephony.telnyx.collegamento.assicura",
 		"crm.telephony.telnyx.numeri.aggiorna_le_richieste",
 		# the exercises' pictures on this server, the missing ones fetched by themselves

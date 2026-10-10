@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Telnyx as a test wants it (doc 64): the account's resources, its numbers, the
+"""Telnyx as a test wants it (doc 65): the account's resources, its numbers, the
 browsers' credentials, the messages, Italy's requirements and orders, the usage,
 the verified numbers - in memory, answering the calls DottorCloud makes as
 Telnyx's API v2 answers them.

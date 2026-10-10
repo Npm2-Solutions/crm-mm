@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 """A number the centre already has in its own Telnyx account, taken into
-DottorCloud (doc 64).
+DottorCloud (doc 65).
 
 With Twilio a number moves from the account into DottorCloud's space, with the
 account's codes pasted again. Telnyx has no space: DottorCloud already works in the

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What the centre's Telnyx account spends, and what went wrong in it (doc 64).
+"""What the centre's Telnyx account spends, and what went wrong in it (doc 65).
 
 - **This month** by kind and **the balance**, from Telnyx's usage reports, monthly
   charges and balance; **the last days' problems** from its messaging detail
