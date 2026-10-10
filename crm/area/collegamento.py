@@ -84,7 +84,7 @@ def enter(link: str) -> dict:
 	if not accesso.entra_nell_area(riga.user):
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	if frappe.session.user != riga.user:
-		frappe.local.login_manager.login_as(riga.user)
+		accesso.entra_come(riga.user)
 	accesso.segna_verificato()
 	return {"page": riga.page or ""}
 

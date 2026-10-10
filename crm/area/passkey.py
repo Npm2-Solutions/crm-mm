@@ -252,7 +252,7 @@ def authenticate(credential: str | dict, state: str) -> dict:
 		update_modified=False,
 	)
 	if frappe.session.user != riga.user:
-		frappe.local.login_manager.login_as(riga.user)
+		accesso.entra_come(riga.user)
 	# as a code does: entering again clears a report's download
 	accesso.segna_verificato()
 	return {"ok": True}

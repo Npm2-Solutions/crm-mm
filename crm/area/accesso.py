@@ -348,9 +348,23 @@ def verify_code(code: str, email: str | None = None) -> dict:
 	if not entra_nell_area(indirizzo):
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	if frappe.session.user == "Guest":
-		frappe.local.login_manager.login_as(indirizzo)
+		entra_come(indirizzo)
 	segna_verificato()
 	return {"ok": True}
+
+
+def entra_come(utente: str) -> None:
+	"""The area's session for ``utente``, by a code, a link or a passkey.
+
+	A browser that kept the cookie of a session the server ended (expired, closed by
+	the centre) reaches this request as a guest, and the framework, resuming it,
+	asked to delete its cookies: at the end of the request it deletes after it
+	sets, so the new session's cookie went too. The person typed the right code and
+	found the door again; the second try worked."""
+	frappe.local.login_manager.login_as(utente)
+	gestore = getattr(frappe.local, "cookie_manager", None)
+	if gestore is not None:
+		gestore.to_delete = [nome for nome in gestore.to_delete if nome not in gestore.cookies]
 
 
 def segna_verificato() -> None:
