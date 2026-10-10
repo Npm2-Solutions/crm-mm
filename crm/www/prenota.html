@@ -76,8 +76,10 @@
       ol.steps { list-style: none; display: flex; gap: .25rem; padding: 0; margin: 0 0 1.25rem; flex-wrap: wrap; }
       ol.steps li { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--faint); padding: .3rem .6rem .3rem .35rem; border-radius: 999px; }
       ol.steps li .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); font-size: .72rem; font-weight: 600; }
-      ol.steps li.done { color: var(--muted); cursor: pointer; }
-      ol.steps li button { all: unset; display: flex; align-items: center; gap: .45rem; cursor: pointer; border-radius: 999px; }
+      ol.steps li.done { color: var(--muted); cursor: pointer; padding: 0; }
+      /* a step done is its button, the whole pill: the li's padding moves in,
+         or only the words took a tap (on a phone, a 21px circle) */
+      ol.steps li button { all: unset; display: flex; align-items: center; gap: .45rem; cursor: pointer; border-radius: 999px; padding: .3rem .6rem .3rem .35rem; }
       ol.steps li button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
       ol.steps li.done:hover { background: var(--hover); }
       ol.steps li.done .n { background: var(--accent-soft); border-color: transparent; }
@@ -89,6 +91,8 @@
         ol.steps { flex-wrap: nowrap; }
         ol.steps li:not(.current) .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         ol.steps li:not(.current) { padding-right: .35rem; }
+        ol.steps li.done { padding: 0; }
+        ol.steps li.done button { padding-right: .35rem; }
       }
 
       /* minmax(0, …): a column never grows to its widest row (the categories' chips scroll in their own box) */
@@ -491,8 +495,11 @@
       function renderSteps() {
         const ol = $("steps");
         ol.replaceChildren();
-        if (S.step === "manage" || S.step === "wait" || S.step === "waited" || (S.step === "time" && S.moving)) { ol.classList.add("hidden"); return; }
-        ol.classList.remove("hidden");
+        // hidden whole, the named nav with its list: an empty «Passi della
+        // prenotazione» stayed among the landmarks
+        const nav = $("steps-nav");
+        if (S.step === "manage" || S.step === "wait" || S.step === "waited" || (S.step === "time" && S.moving)) { nav.hidden = true; return; }
+        nav.hidden = false;
         const list = STEPS();
         const at = list.findIndex(([k]) => k === S.step);
         list.forEach(([key, label], i) => {
