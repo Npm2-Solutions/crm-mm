@@ -12987,6 +12987,10 @@ msgstr "Fattura"
 msgid "Invoice it"
 msgstr "Emetti la fattura"
 
+#: frontend/src/pages/Today.vue
+msgid "Invoice it to {0}"
+msgstr "Emetti la fattura a {0}"
+
 #: frontend/src/components/CycleDialog.vue
 msgid "Invoice the cycle"
 msgstr "Fattura il ciclo"

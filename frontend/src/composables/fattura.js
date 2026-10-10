@@ -53,19 +53,22 @@ function nuovaFattura(cliente = null, { alCambio, bozza } = {}) {
  * else the draft the agenda filled in opens, to check and issue. The invoices'
  * page and the reception desk invoice an appointment this one way.
  */
-async function fatturaDellIncontro(appuntamento, { alCambio } = {}) {
+async function fatturaDellIncontro(
+  appuntamento,
+  { alCambio, partecipante } = {},
+) {
+  // a class is invoiced a place at a time: whose, or the server's next one
+  const chi = { appointment: appuntamento, participant: partecipante || '' }
   try {
     const proposta = await call(
       'crm.invoicing.api.appointment_invoice_proposal',
-      { appointment: appuntamento },
+      chi,
     )
     if (!proposta.items.every((riga) => riga.service_provider)) {
       nuovaFattura(null, { alCambio, bozza: proposta })
       return
     }
-    const nome = await call('crm.invoicing.api.issue_from_appointment', {
-      appointment: appuntamento,
-    })
+    const nome = await call('crm.invoicing.api.issue_from_appointment', chi)
     alCambio?.()
     apriFattura(nome, { alCambio })
   } catch (errore) {

@@ -284,7 +284,9 @@ def issue_from_deal(deal: str, billable_service: str, service_provider: str, rat
 
 
 @frappe.whitelist(methods=["POST"])
-def issue_from_appointment(appointment: str, billable_service: str = "", service_provider: str = "") -> str:
+def issue_from_appointment(
+	appointment: str, billable_service: str = "", service_provider: str = "", participant: str = ""
+) -> str:
 	"""Open a draft invoice from an appointment.
 
 	The agenda proposes: the service from the appointment's service, the provider
@@ -300,7 +302,9 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	and a documented impact assessment. Here there is nothing to declare, because
 	nothing crosses a border.
 	"""
-	fattura = _fattura_da_appuntamento(appointment, billable_service, service_provider)
+	fattura = _fattura_da_appuntamento(
+		appointment, billable_service, service_provider, participant=participant
+	)
 	if not fattura.items[0].service_provider:
 		frappe.throw(
 			_(
@@ -312,13 +316,13 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 
 
 @frappe.whitelist()
-def appointment_invoice_proposal(appointment: str) -> dict:
+def appointment_invoice_proposal(appointment: str, participant: str = "") -> dict:
 	"""The invoice an appointment proposes, saved nowhere, for the invoice dialog to
 	open with: who it is for, the service, its price, the appointment it closes. When
 	the agenda cannot tell who performed it, the line has no professional and the
 	dialog asks for one - before, the desk got an error and nowhere to go."""
 	frappe.has_permission("CRM Invoice", "create", throw=True)
-	fattura = _fattura_da_appuntamento(appointment)
+	fattura = _fattura_da_appuntamento(appointment, participant=participant)
 	return {
 		"appointment": fattura.appointment,
 		"recipient_type": fattura.recipient_type,
@@ -339,13 +343,56 @@ def appointment_invoice_proposal(appointment: str) -> dict:
 	}
 
 
+def _paganti(incontro) -> list:
+	"""Who pays for their own place: not cancelled, not absent, not on an entry of
+	their subscription (its instalments pay for it)."""
+	return [
+		r
+		for r in incontro.participants or []
+		if r.status not in ("Cancelled", "No Show") and not r.get("subscription")
+	]
+
+
+def _gia_fatturati(appuntamenti: list[str]) -> dict[str, list[str]]:
+	"""For each appointment, whom its invoices are for (one entry an invoice)."""
+	if not appuntamenti:
+		return {}
+	fatti: dict[str, list[str]] = {}
+	for riga in frappe.get_all(
+		"CRM Invoice",
+		filters={"appointment": ["in", appuntamenti], "docstatus": ["<", 2]},
+		fields=["appointment", "party"],
+	):
+		fatti.setdefault(riga.appointment, []).append(riga.party or "")
+	return fatti
+
+
+def _ancora_da_fatturare(paganti: list, fatture: list[str]) -> list:
+	"""The paying participants still without their invoice. A class has one invoice a
+	place, each to whoever took it; an invoice made out to somebody else (a company
+	paying for the visit) stands for one place: as many invoices as places, and
+	nobody is left."""
+	if len(fatture) >= len(paganti):
+		return []
+	restano = [r for r in paganti if r.party not in fatture]
+	altre = len([f for f in fatture if f not in {r.party for r in paganti}])
+	return restano[altre:] if altre else restano
+
+
 def _fattura_da_appuntamento(
-	appointment: str, billable_service: str = "", service_provider: str = "", saldo: bool = True
+	appointment: str,
+	billable_service: str = "",
+	service_provider: str = "",
+	saldo: bool = True,
+	participant: str = "",
 ):
 	"""The draft an appointment proposes, in memory: the service's fiscal card, the
-	professional of whoever is on its staff (or the card's), the first participant
-	who pays as the client - or whoever pays for them. The professional may be
-	missing. Paid in advance online, its balance (`crm.pagamenti.fatture.saldo`)."""
+	professional of whoever is on its staff (or the card's), the participant who
+	pays as the client - or whoever pays for them. The professional may be
+	missing. Paid in advance online, its balance (`crm.pagamenti.fatture.saldo`).
+
+	A class is invoiced a place at a time: `participant` (the row) says whose, else
+	the first who pays and has no invoice of it yet."""
 	incontro = frappe.get_doc("CRM Appointment", appointment)
 	incontro.check_permission("read")
 	if (
@@ -357,9 +404,7 @@ def _fattura_da_appuntamento(
 
 	if rate_dei_preventivi.pagati_a_rate([incontro.name]):
 		frappe.throw(_("This appointment is paid with the instalments of its quote"))
-	paganti = [
-		r for r in incontro.participants or [] if r.status != "Cancelled" and not r.get("subscription")
-	]
+	paganti = _paganti(incontro)
 	if not paganti and any(r.get("subscription") for r in incontro.participants or []):
 		frappe.throw(_("This appointment is comprised in a subscription: its instalments are invoiced"))
 
@@ -391,8 +436,15 @@ def _fattura_da_appuntamento(
 	fattura = frappe.new_doc("CRM Invoice")
 	fattura.appointment = appointment
 	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
-	# the first who pays: a place of a subscription is paid with its instalments
-	partecipante = (paganti or incontro.participants or [None])[0]
+	# whose place: the one asked, else the first who pays and has no invoice of it
+	# yet (a place of a subscription is paid with its instalments)
+	if participant:
+		partecipante = next((r for r in incontro.participants or [] if r.name == participant), None)
+		if not partecipante:
+			frappe.throw(_("Participant not found"))
+	else:
+		restano = _ancora_da_fatturare(paganti, _gia_fatturati([incontro.name]).get(incontro.name, []))
+		partecipante = (restano or paganti or incontro.participants or [None])[0]
 	if partecipante and partecipante.party_type and partecipante.party:
 		fattura.party_type = partecipante.party_type
 		fattura.party = partecipante.party
@@ -940,14 +992,6 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	"""
 	frappe.has_permission("CRM Invoice", "create", throw=True)
 	da = frappe.utils.add_days(frappe.utils.nowdate(), -int(days))
-	fatturati = {
-		riga.appointment
-		for riga in frappe.get_all(
-			"CRM Invoice",
-			filters={"appointment": ["is", "set"], "docstatus": ["<", 2]},
-			fields=["appointment"],
-		)
-	}
 	# a session of a cycle paid as a whole is invoiced with its cycle
 	interi = set(frappe.get_all("CRM Session Cycle", filters={"billing": CICLO_INTERO}, pluck="name"))
 	incontri = frappe.get_all(
@@ -982,12 +1026,37 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	from crm.pagamenti import fatture as pagate_online
 
 	coperti |= pagate_online.coperti(incontri)
-	return [
-		dict(i)
-		for i in incontri
-		if i.name not in fatturati
-		and not (i.session_cycle and i.session_cycle in interi)
-		and i.name not in coperti
-		# the fund pays it all: nothing to invoice to the person
-		and not (i.convention_form == "Direct" and not flt(i.patient_share))
-	]
+	# a class is invoiced a place at a time: it stays here while somebody who paid
+	# for their own place has no invoice of it
+	nomi = [i.name for i in incontri]
+	fatturati = _gia_fatturati(nomi)
+	paganti: dict[str, list] = {}
+	for riga in frappe.get_all(
+		"CRM Appointment Participant",
+		filters={"parenttype": "CRM Appointment", "parent": ["in", nomi or [""]]},
+		fields=["name", "parent", "party", "participant_name", "status", "subscription"],
+		order_by="idx asc",
+	):
+		paganti.setdefault(riga.parent, []).append(riga)
+	fuori = []
+	for i in incontri:
+		if (
+			(i.session_cycle and i.session_cycle in interi)
+			or i.name in coperti
+			# the fund pays it all: nothing to invoice to the person
+			or (i.convention_form == "Direct" and not flt(i.patient_share))
+		):
+			continue
+		chi = _paganti(frappe._dict(participants=paganti.get(i.name, [])))
+		fatture = fatturati.get(i.name, [])
+		if not chi:
+			# nobody pays a place of their own (nobody is listed): one invoice closes it
+			if fatture:
+				continue
+			restano = []
+		else:
+			restano = _ancora_da_fatturare(chi, fatture)
+			if not restano:
+				continue
+		fuori.append({**i, "participants_left": [r.name for r in restano]})
+	return fuori
