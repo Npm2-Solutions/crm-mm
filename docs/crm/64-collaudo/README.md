@@ -1,7 +1,9 @@
 # 64 · Collaudo prima della produzione
 
-**Stato:** in corso (10/10/2026). Il livello 1 si sta costruendo (`crm/collaudo`,
-`e2e/simulazione/`); i livelli 2 e 3 sono scritti qui e si fanno a mano.
+**Stato:** il livello 1 è fatto (10/10/2026: `crm/collaudo`, `e2e/simulazione/`,
+124 passi verdi su un sito nuovo, i 19 difetti trovati corretti e scritti in
+[`e2e/simulazione/DIFETTI.md`](../../../e2e/simulazione/DIFETTI.md)); i livelli 2 e 3
+sono scritti qui e si fanno a mano.
 
 ## A cosa serve
 
@@ -94,7 +96,7 @@ operatore assegna.
    con `SIM_FINO=mercoledi` si ferma lì; `SIM_CHROMIUM` usa un Chromium già
    installato.
 
-**Come si fa girare da GitHub.** Actions › **Simulazione** › Run workflow, si
+**Come si fa girare da GitHub.** Actions › **Simulazione di una settimana** › Run workflow, si
 sceglie il ramo da provare, Run. Come gli altri controlli (05/10/2026), non parte da
 solo: si lancia a mano quando serve. Il rapporto è tra gli artefatti della corsa.
 
@@ -264,9 +266,6 @@ Si rilegge alla riunione che decide, con il centro. Ogni riga ha chi la verifica
 
 ## Da verificare
 
-- Il comando, le variabili e i file del rapporto della simulazione, e il workflow
-  «Simulazione»: scritti da quello che c'era il 10/10/2026, da ricontrollare quando
-  `e2e/simulazione/` e il workflow sono nel ramo.
 - I numeri delle carte di prova di Stripe si ricontrollano sulla loro tabella
   ufficiale prima di ogni giro (sono in
   [server-di-collaudo.md](./server-di-collaudo.md#stripe-in-modalità-di-prova)).
