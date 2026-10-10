@@ -77,6 +77,8 @@
       ol.steps li { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--faint); padding: .3rem .6rem .3rem .35rem; border-radius: 999px; }
       ol.steps li .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); font-size: .72rem; font-weight: 600; }
       ol.steps li.done { color: var(--muted); cursor: pointer; }
+      ol.steps li button { all: unset; display: flex; align-items: center; gap: .45rem; cursor: pointer; border-radius: 999px; }
+      ol.steps li button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
       ol.steps li.done:hover { background: var(--hover); }
       ol.steps li.done .n { background: var(--accent-soft); border-color: transparent; }
       ol.steps li.current { color: var(--ink-strong); font-weight: 600; }
@@ -253,7 +255,7 @@
         <p id="page-intro"></p>
       </header>
 
-      <ol class="steps" id="steps" aria-label="progress"></ol>
+      <nav id="steps-nav"><ol class="steps" id="steps"></ol></nav>
 
       <div class="layout">
         <main class="panel" id="main" aria-live="polite">
@@ -273,6 +275,7 @@
       // --- i18n -----------------------------------------------------------
       const DICT = {
         it: {
+          stepsLabel: "Passi della prenotazione",
           stepLocation: "Sede", pickLocation: "In quale sede?", anyLocation: "Qualsiasi sede", anyLocationSub: "Il primo orario libero in tutte le sedi", openMap: "Apri la mappa", map: "Mappa",
           stepService: "Servizio", stepStaff: "Professionista", stepTime: "Data e ora", stepDetails: "I tuoi dati", stepDone: "Conferma",
           search: "Cerca un servizio…", all: "Tutti", noServices: "Nessun servizio prenotabile online al momento.",
@@ -320,6 +323,7 @@
           prevMonth: "Il mese prima", nextMonth: "Il mese dopo", fewer: "Una persona in meno", more: "Una persona in più",
         },
         en: {
+          stepsLabel: "Booking steps",
           stepLocation: "Location", pickLocation: "Which location?", anyLocation: "Any location", anyLocationSub: "The earliest free time in every location", openMap: "Open the map", map: "Map",
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
           search: "Search a service…", all: "All", noServices: "No service can be booked online right now.",
@@ -387,6 +391,7 @@
       }
       const $ = (id) => document.getElementById(id);
       if (BOOT.embed) document.body.classList.add("embed");
+      $("steps-nav").setAttribute("aria-label", T("stepsLabel"));
 
       // --- API ------------------------------------------------------------------
       async function api(method, params = {}, post = false, base = API) {
@@ -492,8 +497,11 @@
         const at = list.findIndex(([k]) => k === S.step);
         list.forEach(([key, label], i) => {
           const done = i < at && S.step !== "done";
-          ol.append(h("li", { class: done ? "done" : i === at ? "current" : "", onclick: done ? () => go(key) : null, "aria-current": i === at ? "step" : null },
-            h("span", { class: "n" }, done ? "✓" : String(i + 1)), h("span", { class: "t" }, label)));
+          // a step done goes back to it from the keyboard too: a button, not a
+          // list item that only a mouse could open
+          const parts = [h("span", { class: "n", "aria-hidden": "true" }, done ? "✓" : String(i + 1)), h("span", { class: "t" }, label)];
+          ol.append(h("li", { class: done ? "done" : i === at ? "current" : "", "aria-current": i === at ? "step" : null },
+            ...(done ? [h("button", { type: "button", onclick: () => go(key) }, ...parts)] : parts)));
         });
       }
 
@@ -687,7 +695,9 @@
           h("button", { class: "icon-btn", "aria-label": T("prevMonth"), disabled: S.month <= today.slice(0, 7) + "-01" || S.loadingSlots, onclick: () => loadMonth(prevMonth) }, "‹"),
           h("b", {}, fmtMonth.format(m)),
           h("button", { class: "icon-btn", "aria-label": T("nextMonth"), disabled: (S.maxDate && nextMonth > S.maxDate) || S.loadingSlots, onclick: () => loadMonth(nextMonth) }, "›")));
-        const grid = h("div", { class: "month", role: "grid" });
+        // a group of the month's days, each read as its date («lunedì 12 ottobre»),
+        // never «2026-10-12»: a grid role wanted rows and cells it never had
+        const grid = h("div", { class: "month", role: "group", "aria-label": fmtMonth.format(m) });
         const dows = [];
         for (let i = 0; i < 7; i++) dows.push(new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i))));
         dows.forEach((x) => grid.append(h("div", { class: "dow" }, x)));
@@ -701,7 +711,7 @@
           const full = !free && waitOn() && (S.full[key] || []).length > 0;
           const avail = !S.loadingSlots && (free || full);
           const cls = ["day", avail ? "avail" : "", full ? "full" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
-          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": fmtDay.format(new Date(key + "T12:00:00Z")), "data-day": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
+          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": fmtDay.format(new Date(key + "T12:00:00Z")), "aria-pressed": key === S.date ? "true" : "false", "data-day": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
         }
         wrap.append(grid);
 
