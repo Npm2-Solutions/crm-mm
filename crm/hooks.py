@@ -973,8 +973,11 @@ before_request = [
 	"crm.registrazione.carica",
 	"crm.invoicing.sdi.webhook.prima_della_richiesta",
 	"crm.archivio.archivio.prima_della_richiesta",
+	# a test bench's clock, moved by the simulation of a week (only where the site's
+	# config says dottorcloud_collaudo)
+	"crm.collaudo.tempo.allinea",
 ]
-before_job = ["crm.registrazione.carica"]
+before_job = ["crm.registrazione.carica", "crm.collaudo.tempo.allinea"]
 
 # signed in, the staff land in DottorCloud, not on the framework's apps screen
 on_session_creation = ["crm.api.dopo_l_accesso"]

@@ -49798,5 +49798,32 @@ msgstr "Una persona come cliente sull'account Stripe del centro: solo l'id di St
 msgid "Card not charged: {0}"
 msgstr "Carta non addebitata: {0}"
 
+msgid "This site is not a test bench: set dottorcloud_collaudo to 1 in its site_config.json to prepare or move it"
+msgstr "Questo sito non è un banco di prova: metti dottorcloud_collaudo a 1 nel suo site_config.json per prepararlo o spostarne l'orologio"
+
+msgid "The team's file is not JSON: role, then email, first_name, last_name"
+msgstr "Il file della squadra non è JSON: il ruolo, poi email, first_name, last_name"
+
+msgid "This site has the demo data: take it away first, or use an empty site"
+msgstr "Questo sito ha i dati di prova: toglili prima, oppure usa un sito vuoto"
+
+msgid "This site already has people who are not the simulation's ({0}): it is not an empty test site. Use an empty one, or pass forza=1"
+msgstr "Questo sito ha già persone che non sono della simulazione ({0}): non è un sito di prova vuoto. Usane uno vuoto, oppure passa forza=1"
+
+msgid "The simulation's company is not in test: it issues nothing real"
+msgstr "L'azienda della simulazione non è in prova: non emette nulla di vero"
+
+msgid "The clock of a test bench moves with freezegun: install the framework's development requirements (bench setup requirements --dev)"
+msgstr "L'orologio di un banco di prova si sposta con freezegun: installa i requisiti di sviluppo del framework (bench setup requirements --dev)"
+
+msgid "The clock of a test bench only moves forward"
+msgstr "L'orologio di un banco di prova va solo avanti"
+
+msgid "{0} is not a scheduled job"
+msgstr "{0} non è un lavoro programmato"
+
+msgid "Say whose mail, or since when"
+msgstr "Di' di chi è la posta, o da quando"
+
 msgid "paid online, still a draft"
 msgstr "pagata online, ancora in bozza"
