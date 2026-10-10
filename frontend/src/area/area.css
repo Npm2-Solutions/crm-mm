@@ -458,6 +458,11 @@
     background-color: var(--surface-elevation-1);
     padding-bottom: 1rem;
   }
+  /* its buttons as big as a finger, as the CRM's sheets' (telefono.css «4»):
+     «Go to payment» was 31px */
+  .dialog-content > div.px-4.pb-7.pt-4 button {
+    min-height: 2.75rem;
+  }
 }
 
 /* Writing on a phone: Android makes the page shorter under the keyboard, on

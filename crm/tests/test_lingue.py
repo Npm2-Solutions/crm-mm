@@ -250,6 +250,14 @@ class LaLinguaDelCentroInImpostazioni(IntegrationTestCase):
 		self.assertEqual(frappe.db.get_value("User", inglese, "language"), "en")
 
 
+class UnFusoInParole(UnitTestCase):
+	def test_la_citta_e_il_nome(self):
+		self.assertEqual(lingue.fuso_in_parole("Europe/London", "it"), "Londra · Ora Regno Unito")
+		self.assertEqual(lingue.fuso_in_parole("Europe/London", "en"), "London · United Kingdom Time")
+		# a zone Babel does not know stays as it was given
+		self.assertEqual(lingue.fuso_in_parole("Nowhere/Atlantis", "it"), "Nowhere/Atlantis")
+
+
 class LApostrofoDavantiAUnaData(UnitTestCase):
 	"""«fino all'11 ottobre»: the server's filled sentences elide as the SPA's do
 	(`conLApostrofo`, utils/locale.js)."""

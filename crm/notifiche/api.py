@@ -144,6 +144,9 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set, chiamate: 
 		# a supplier's invoice opens on itself, in the «Received» tab
 		if riga.notification_type_doctype == "CRM Supplier Invoice" and riga.notification_type_doc:
 			return {"name": "Invoices", "query": {"ricevuta": riga.notification_type_doc}}
+		# one of the centre's invoices (paid online, or stayed a draft): open on it
+		if riga.notification_type_doctype == "CRM Invoice" and riga.notification_type_doc:
+			return {"name": "Invoices", "query": {"open": riga.notification_type_doc}}
 		return {"name": "Invoices"}
 	pagina = PAGINE.get(riga.reference_doctype)
 	if not pagina and genere == "task" and riga.notification_type_doc in compiti_aperti:

@@ -95,6 +95,9 @@ def dovute(conf=None, oggi=None) -> list[frappe._dict]:
 		filters={
 			"party_type": "CRM Lead",
 			"party": ["is", "set"],
+			# made out to the person: one made out to the company that pays for their
+			# visit is the company's to pay, and its employee is not reminded of it
+			"recipient_type": "persona_fisica",
 			"docstatus": 1,
 			"collected_on": ["is", "not set"],
 			"document_type": ["not in", incassi.NOTE_DI_CREDITO],
@@ -212,6 +215,16 @@ def _dove(lead: str) -> frappe._dict:
 	dove = richieste.destinatario(lead)
 	chi = dove.get("lead") or lead
 	email = (dove.get("email") or "").strip() or None
+	if not email:
+		# a child booked by a parent: the reminder goes where the bookings' went -
+		# to who pays for them, else who books for them
+		from crm.persone import collegate, legami
+
+		for altro in [collegate.pagante_di(lead), *collegate.chi_fa(lead, legami.PRENOTA)]:
+			indirizzo = (stored_value("CRM Lead", altro, "email") or "").strip() if altro else ""
+			if indirizzo:
+				chi, email = altro, indirizzo
+				break
 	mobile = stored_value("CRM Lead", chi, "mobile_no")
 	return frappe._dict(
 		lead=chi,

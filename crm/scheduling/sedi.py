@@ -250,9 +250,11 @@ def imposta_sede_abituale(nome: str | None, utente: str | None = None) -> None:
 
 def della_fattura(fattura) -> str | None:
 	"""Where an invoice belongs, for the cash closing and the dashboard: its
-	appointment's location, else the location where whoever makes it works."""
-	if fattura.get("appointment"):
-		dell_appuntamento = frappe.db.get_value("CRM Appointment", fattura.appointment, "centre_location")
+	appointment's location - the one it closes, or the one whose deposit it is -,
+	else the location where whoever makes it works."""
+	appuntamento = fattura.get("appointment") or fattura.get("advance_for")
+	if appuntamento:
+		dell_appuntamento = frappe.db.get_value("CRM Appointment", appuntamento, "centre_location")
 		if dell_appuntamento:
 			return dell_appuntamento
 	if fattura.get("centre_location"):

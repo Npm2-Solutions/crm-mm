@@ -283,6 +283,21 @@ class TestAcconto(SchedulingCase):
 		bozza.appointment = appuntamento.name
 		self.assertEqual(pagamenti.per_la_fattura(bozza)["deposit"]["amount"], 30)
 
+	def test_pagato_la_conferma_arriva_una_volta(self):
+		"""The status the payment gives the booking is no centre's yes to a request:
+		one «booking confirmed», not two (the simulation of a week found two)."""
+		_servizio, risultato = self.prenota()
+		frappe.sendmail.reset_mock()
+		# Stripe's event comes in a request of its own: the booking's flags are gone
+		frappe.flags.in_service_booking_api = False
+		manda(*firmato(self.finto.paga(risultato["checkout_url"].rsplit("/", 1)[1])))
+		al_cliente = [
+			chiamata
+			for chiamata in frappe.sendmail.call_args_list
+			if chiamata.kwargs.get("recipients") == ["cliente@example.com"]
+		]
+		self.assertEqual(len(al_cliente), 1)
+
 	def test_scaduto_libera_il_posto(self):
 		servizio, risultato = self.prenota()
 		sessione = risultato["checkout_url"].rsplit("/", 1)[1]

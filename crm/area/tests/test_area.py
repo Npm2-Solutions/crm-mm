@@ -194,6 +194,34 @@ class LaPorta(AreaCase):
 			accesso.verify_code(CODICE, ANNA)
 		self.assertEqual(frappe.session.user, "Guest")
 
+	def test_il_cookie_di_una_sessione_finita_non_porta_via_la_nuova(self):
+		# the browser kept the cookie of a session the server ended: resuming it as a
+		# guest, the framework asks its cookies away, and at the end of the request it
+		# deletes after it sets - the right code led back to the door
+		from frappe.auth import CookieManager
+
+		self.invita()
+		self.manda()
+		gestore = CookieManager()
+		gestore.delete_cookie(["sid", "user_id", "full_name"])
+
+		def entra(utente):
+			frappe.set_user(utente)
+			gestore.set_cookie("sid", "la-nuova")
+			gestore.set_cookie("user_id", utente)
+
+		with (
+			mock.patch.object(frappe.local, "cookie_manager", gestore, create=True),
+			mock.patch.object(frappe.local.login_manager, "login_as", entra),
+		):
+			frappe.set_user("Guest")
+			accesso.verify_code(CODICE, ANNA)
+		self.assertEqual(gestore.cookies["sid"]["value"], "la-nuova")
+		self.assertNotIn("sid", gestore.to_delete)
+		self.assertNotIn("user_id", gestore.to_delete)
+		# what the new session did not set goes, as the framework asked
+		self.assertIn("full_name", gestore.to_delete)
+
 	def test_lo_staff_non_entra_dall_area(self):
 		frappe.set_user("Guest")
 		prima = frappe.db.count("Email Queue")

@@ -203,15 +203,21 @@
               />
               <!-- they came and it is not invoiced yet: the invoice from here,
                    not from the list of the last two weeks in Invoices -->
+              <!-- a class a place at a time: each one who came, by name -->
               <Button
-                v-if="daFatturare(appointment)"
+                v-for="participant in daFatturare(appointment)"
+                :key="participant.name"
                 variant="solid"
-                :label="__('Invoice it')"
+                :label="
+                  appointment.participants.length > 1
+                    ? __('Invoice it to {0}', [participant.participant_name])
+                    : __('Invoice it')
+                "
                 icon-left="file-text"
                 :size="isMobileView ? 'lg' : 'sm'"
                 class="mt-1 self-start max-md:w-full"
-                :loading="emettendo === appointment.name"
-                @click="fattura(appointment)"
+                :loading="emettendo === participant.name"
+                @click="fattura(appointment, participant)"
               />
             </div>
           </div>
@@ -415,22 +421,34 @@ watch(
   () => day.data?.can_invoice,
   (can) => can && !toInvoice.data && !toInvoice.loading && toInvoice.fetch(),
 )
+// for each appointment, the places nobody invoiced yet
 const nonFatturati = computed(
-  () => new Set((toInvoice.data || []).map((incontro) => incontro.name)),
+  () =>
+    new Map(
+      (toInvoice.data || []).map((incontro) => [
+        incontro.name,
+        incontro.participants_left || [],
+      ]),
+    ),
 )
-// somebody came, and no invoice was made for it
+// who came and has no invoice of their place: a class has one a place
 function daFatturare(appointment) {
-  return (
-    nonFatturati.value.has(appointment.name) &&
-    appointment.participants.some((p) => p.status === 'Attended')
+  const restano = nonFatturati.value.get(appointment.name)
+  if (!restano) return []
+  return appointment.participants.filter(
+    (p) =>
+      p.status === 'Attended' && (!restano.length || restano.includes(p.name)),
   )
 }
 const { fatturaDellIncontro } = useFattura()
 const emettendo = ref('')
-async function fattura(appointment) {
-  emettendo.value = appointment.name
+async function fattura(appointment, participant) {
+  emettendo.value = participant.name
   try {
-    await fatturaDellIncontro(appointment.name, { alCambio: ricarica })
+    await fatturaDellIncontro(appointment.name, {
+      alCambio: ricarica,
+      partecipante: participant.name,
+    })
   } finally {
     emettendo.value = ''
   }

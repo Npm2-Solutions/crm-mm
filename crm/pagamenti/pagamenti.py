@@ -499,7 +499,14 @@ def _acconto_pagato(pagamento) -> None:
 	):
 		appuntamento.status = pagamento.status_when_paid
 		appuntamento.flags.ignore_permissions = True
-		appuntamento.save(ignore_permissions=True)
+		# told once, below, as /prenota tells it: never a second time as the
+		# centre's yes to a request (`service_booking.on_appointment_status_change`)
+		prima = frappe.flags.in_service_booking_api
+		frappe.flags.in_service_booking_api = True
+		try:
+			appuntamento.save(ignore_permissions=True)
+		finally:
+			frappe.flags.in_service_booking_api = prima
 	# now the booking is one: told as /prenota tells it
 	service_booking.send_client_email(appuntamento, pagamento.access_token, "booked")
 	service_booking.notify_staff(appuntamento, _("New online booking, deposit paid"))

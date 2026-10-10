@@ -31,12 +31,16 @@ from urllib.parse import urlencode
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import add_days, cint, escape_html, get_datetime, get_url, now_datetime
+from frappe.utils import add_days, add_to_date, cint, escape_html, get_datetime, get_url, now_datetime
 
 from crm.area import accesso
 
 LINK = "CRM Area Link"
 GIORNI = 7
+#: A new document while the email of the one before is still unread: that email's
+#: link is there to use, and a second «news in your area» says nothing more - two
+#: arrived four seconds apart, a visit's balance and the next visit's deposit.
+ANCORA_DA_LEGGERE = 24
 #: Where a link may land in the area: the router's pages.
 PAGINE = ("", "documents", "messages", "appointments", "plans")
 
@@ -80,7 +84,7 @@ def enter(link: str) -> dict:
 	if not accesso.entra_nell_area(riga.user):
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	if frappe.session.user != riga.user:
-		frappe.local.login_manager.login_as(riga.user)
+		accesso.entra_come(riga.user)
 	accesso.segna_verificato()
 	return {"page": riga.page or ""}
 
@@ -172,7 +176,27 @@ def documento_nuovo(lead: str, motivo: str) -> list[str]:
 		frappe.clear_last_message()
 		frappe.log_error(title=f"Area not opened for {lead}")
 		return []
-	return [utente for utente in utenti if manda(utente, lead, motivo, "documents")]
+	return [
+		utente
+		for utente in utenti
+		if not _ancora_da_leggere(utente, motivo) and manda(utente, lead, motivo, "documents")
+	]
+
+
+def _ancora_da_leggere(utente: str, motivo: str) -> bool:
+	"""Whether ``utente`` has the email of a new document still unread: its link
+	not used, sent in the last `ANCORA_DA_LEGGERE` hours."""
+	return bool(
+		frappe.db.exists(
+			LINK,
+			{
+				"user": utente,
+				"reason": motivo,
+				"used_on": ["is", "not set"],
+				"creation": [">", add_to_date(now_datetime(), hours=-ANCORA_DA_LEGGERE)],
+			},
+		)
+	)
 
 
 def fattura_emessa(doc, method=None) -> None:

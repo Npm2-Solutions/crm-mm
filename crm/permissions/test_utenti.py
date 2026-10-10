@@ -139,6 +139,45 @@ class TestAssegnare(LevelsCase):
 		with patch("frappe.utils.modules.get_modules_from_app", return_value=None):
 			self.assertTrue(check_app_permission())
 
+	def test_entrato_arriva_in_dottorcloud(self):
+		"""Signed in, the framework answered the desk: its apps' screen and one
+		icon to tap, every time."""
+		from crm.api import dopo_l_accesso
+
+		self.as_user(DESK)
+		frappe.local.flags.home_page = None
+		try:
+			dopo_l_accesso()
+			self.assertEqual(frappe.local.flags.home_page, "/crm")
+		finally:
+			frappe.local.flags.home_page = None
+
+	def test_chi_non_entra_nel_crm_resta_dove_lo_manda_il_framework(self):
+		from crm.api import dopo_l_accesso
+
+		self.as_user(DESK)
+		frappe.local.flags.home_page = None
+		with patch("frappe.core.doctype.user.user.User.get_blocked_modules", return_value=["FCRM"]):
+			dopo_l_accesso()
+		self.assertIsNone(frappe.local.flags.home_page)
+
+	def test_un_paziente_alla_pagina_dello_staff_va_nella_sua_area(self):
+		from crm.area.accesso import RUOLO
+		from crm.www import crm as pagina
+
+		paziente = "levels.paziente@example.com"
+		if not frappe.db.exists("User", paziente):
+			frappe.get_doc(
+				{"doctype": "User", "email": paziente, "first_name": "Paziente", "user_type": "Website User"}
+			).insert(ignore_permissions=True)
+		frappe.get_doc("User", paziente).add_roles(RUOLO)
+		self.as_user(paziente)
+		frappe.local.flags.redirect_location = None
+		with self.assertRaises(frappe.Redirect):
+			pagina.get_context()
+		self.assertEqual(frappe.local.flags.redirect_location, "/area")
+		frappe.local.flags.redirect_location = None
+
 	def test_chi_ha_il_crm_bloccato_non_entra(self):
 		self.as_user(DESK)
 		with patch("frappe.core.doctype.user.user.User.get_blocked_modules", return_value=["FCRM"]):

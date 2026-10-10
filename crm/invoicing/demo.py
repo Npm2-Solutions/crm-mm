@@ -241,16 +241,25 @@ def _visite(ctx: Contesto, desk: str) -> list[tuple]:
 		giorno = getdate(riga["starts_on"])
 		if riga.get("status") != "Completed" or giorno > ultimo:
 			continue
-		voci.append(
-			(giorno, lambda giorno, appuntamento=riga["name"]: _visita(ctx, appuntamento, persone, giorno))
-		)
+		# a class a place at a time, each to whoever took it
+		for partecipante in riga.get("participants_left") or [""]:
+			voci.append(
+				(
+					giorno,
+					lambda giorno, appuntamento=riga["name"], partecipante=partecipante: _visita(
+						ctx, appuntamento, persone, giorno, partecipante
+					),
+				)
+			)
 	return voci
 
 
-def _visita(ctx: Contesto, appuntamento: str, persone: set, giorno: datetime.date) -> str | None:
+def _visita(
+	ctx: Contesto, appuntamento: str, persone: set, giorno: datetime.date, partecipante: str = ""
+) -> str | None:
 	from crm.invoicing import api
 
-	proposta = api.appointment_invoice_proposal(appuntamento)
+	proposta = api.appointment_invoice_proposal(appuntamento, participant=partecipante)
 	if proposta.get("party") not in persone or not all(
 		voce["service_provider"] for voce in proposta["items"]
 	):

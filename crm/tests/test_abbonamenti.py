@@ -674,6 +674,51 @@ class UnaLezione(AbbonamentiCase):
 			str(rifiuto.exception),
 		)
 
+	def test_una_classe_si_fattura_un_posto_alla_volta(self):
+		ieri = datetime.datetime.combine(add_days(getdate(), -1), datetime.time(10), tzinfo=UTC)
+		lezione = self.classe(ieri, self.marta, self.paolo, self.giulia)
+		doc = frappe.get_doc("CRM Appointment", lezione.name)
+		# Giulia did not come: she is not invoiced
+		next(r for r in doc.participants if r.party == self.giulia.name).status = "No Show"
+		doc.save()
+		righe = {r.party: r.name for r in doc.participants}
+
+		def restano():
+			voce = next((r for r in fatture.appointments_to_invoice() if r["name"] == lezione.name), None)
+			return voce and voce["participants_left"]
+
+		self.assertEqual(restano(), [righe[self.marta.name], righe[self.paolo.name]])
+		# each place its invoice, to whoever took it: the first one is Marta's
+		bozza = fatture._fattura_da_appuntamento(lezione.name, "una scheda", "un erogatore")
+		self.assertEqual(bozza.party, self.marta.name)
+		self.fatturata(lezione, self.marta)
+		# the class stays to invoice for Paolo, and his place is the next one
+		self.assertEqual(restano(), [righe[self.paolo.name]])
+		bozza = fatture._fattura_da_appuntamento(lezione.name, "una scheda", "un erogatore")
+		self.assertEqual(bozza.party, self.paolo.name)
+		# or the desk names whose place it is
+		bozza = fatture._fattura_da_appuntamento(
+			lezione.name, "una scheda", "un erogatore", participant=righe[self.marta.name]
+		)
+		self.assertEqual(bozza.party, self.marta.name)
+		self.fatturata(lezione, self.paolo)
+		self.assertIsNone(restano())
+
+	def test_una_visita_fatturata_a_un_altro_e_fatturata(self):
+		ieri = datetime.datetime.combine(add_days(getdate(), -1), datetime.time(10), tzinfo=UTC)
+		lezione = self.classe(ieri, self.paolo)
+		# the desk made it out to somebody else (a company that pays): one invoice, one place
+		self.fatturata(lezione, self.marta)
+		self.assertNotIn(lezione.name, [r["name"] for r in fatture.appointments_to_invoice()])
+
+	def fatturata(self, appuntamento, persona):
+		fattura = frappe.new_doc("CRM Invoice")
+		fattura.name = frappe.generate_hash(length=10)
+		fattura.appointment = appuntamento.name
+		fattura.party_type = "CRM Lead"
+		fattura.party = persona.name
+		fattura.db_insert()
+
 
 class ITipi(AbbonamentiCase):
 	def test_un_tipo_vuole_nome_e_servizi_e_venduto_non_si_cancella(self):

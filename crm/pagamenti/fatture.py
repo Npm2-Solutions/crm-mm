@@ -276,7 +276,17 @@ def saldo(fattura, appuntamento) -> None:
 	in advance online is its balance - its price less the advances invoiced to the
 	same person - and its causale says which advance it settles. Nothing is left:
 	the appointment is invoiced already."""
-	fatte = [f for f in acconti(appuntamento.name, fattura.party) if f.docstatus == 1]
+	tutte = acconti(appuntamento.name, fattura.party)
+	in_bozza = [f for f in tutte if f.docstatus == 0]
+	if in_bozza:
+		# the deposit arrived, its invoice waits for what the desk has to ask (a
+		# codice fiscale): a balance made now would invoice the whole price again
+		frappe.throw(
+			_(
+				"The deposit paid online has its invoice still in draft: issue it first, then the balance (Invoices, things to do)"
+			)
+		)
+	fatte = [f for f in tutte if f.docstatus == 1]
 	if not fatte:
 		return
 	riga = fattura.items[0]

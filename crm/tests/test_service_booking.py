@@ -130,6 +130,27 @@ class TestServiceBooking(SchedulingCase):
 		self.assertTrue(row.party)
 		self.assertEqual(len(appointment.staff), 1)
 
+	def test_the_email_names_a_zone_only_from_another_and_in_words(self):
+		"""The hour is the centre's: «(Europe/Rome)» told nothing to a patient in Rome
+		(the simulation of a week found it in every confirmation)."""
+
+		def al_cliente(email):
+			return next(
+				c.kwargs["message"]
+				for c in reversed(frappe.sendmail.call_args_list)
+				if c.kwargs.get("recipients") == [email]
+			)
+
+		service = self.online_service()
+		self.book(service, self.tomorrow(10), timezone="UTC")
+		messaggio = al_cliente("cliente@example.com")
+		self.assertNotIn("(UTC)", messaggio)
+		self.assertNotIn("Europe/", messaggio)
+		self.book(service, self.tomorrow(11), email="londra@example.com", timezone="Europe/London")
+		messaggio = al_cliente("londra@example.com")
+		self.assertNotIn("Europe/London", messaggio)
+		self.assertRegex(messaggio, r"\((Londra|London) · ")
+
 	def test_manual_approval_books_as_scheduled(self):
 		service = self.online_service(online_confirmation="Manual approval")
 		result = self.book(service, self.tomorrow(10))

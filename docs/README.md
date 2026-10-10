@@ -8,7 +8,7 @@ verticale, un verticale si appoggia al CRM, mai il contrario.
 
 | Strato | Cartella | Nel codice | Cosa c'è |
 |---|---|---|---|
-| Il CRM | [`crm/`](./crm/) | `crm/` (tutto quello che non è un verticale) | I documenti numerati (00-59): persone, trattative, agenda, conversazioni, telefono, fatturazione, moduli, area cliente, impostazioni, permessi e piano; le [prenotazioni](./crm/prenotazioni/); la [gerarchia degli utenti](./crm/gerarchia-utenti.md) |
+| Il CRM | [`crm/`](./crm/) | `crm/` (tutto quello che non è un verticale) | I documenti numerati (00-59): persone, trattative, agenda, conversazioni, telefono, fatturazione, moduli, area cliente, impostazioni, permessi e piano; le [prenotazioni](./crm/prenotazioni/); la [gerarchia degli utenti](./crm/gerarchia-utenti.md); il [collaudo prima della produzione](./crm/64-collaudo/) |
 | I verticali | [`verticali/`](./verticali/) | un modulo del piano che registra un `Verticale` (`crm/verticali.py`) | [`clinica/`](./verticali/clinica/): il gestionale per i centri medici (`crm/clinica`), il suo design a tre strati, i requisiti, le ricerche |
 | I marchi | [`marchi/`](./marchi/) | `crm/marchio.py`, `brand/<marchio>/`, `siti/<marchio>/` | [`dottorcloud/`](./marchi/dottorcloud/): il listino e i documenti legali |
 

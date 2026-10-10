@@ -7,9 +7,6 @@
     <title>{{ title }} · {{ marchio.name }}</title>
     {% include "crm/templates/includes/marchio_testa.html" %}
     <meta name="robots" content="noindex" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
         --ink-strong: oklch(0.168 0 0);
@@ -63,7 +60,7 @@
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
       body {
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
         background: var(--bg); color: var(--ink); min-height: 100vh;
         -webkit-font-smoothing: antialiased;
       }
@@ -225,6 +222,12 @@
       .stepper-seats { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
       .stepper-seats button { border: 0; background: var(--card); width: 2.1rem; height: 2.1rem; font-size: 1rem; cursor: pointer; color: var(--ink); }
       .stepper-seats span { min-width: 2.2rem; text-align: center; font-weight: 600; }
+      /* a finger's size where a finger taps (docs/crm/29) */
+      @media (pointer: coarse) {
+        button.time { min-height: 44px; justify-content: center; }
+        .icon-btn, .stepper-seats button { width: 44px; height: 44px; }
+        button.chip { min-height: 40px; }
+      }
       footer.foot { margin-top: 2rem; }
       footer.foot .marchio-piede { margin: 0; }
       .profile { display: flex; gap: 1rem; align-items: flex-start; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
@@ -310,6 +313,7 @@
           toPay: "Vai al pagamento", payTitle: "Manca il pagamento", paySub: "Il posto è tenuto per 30 minuti: paga {0} per confermare la prenotazione.",
           payWaiting: "Pagamento ricevuto: stiamo aspettando la conferma di Stripe…", payCancelled: "Il pagamento non è stato fatto: puoi riprovare finché il posto è tenuto.",
           payExpired: "Il pagamento non è arrivato in tempo: il posto è stato liberato.", depositPaid: "Acconto pagato online", depositRefunded: "Acconto restituito",
+          prevMonth: "Il mese prima", nextMonth: "Il mese dopo", fewer: "Una persona in meno", more: "Una persona in più",
         },
         en: {
           stepLocation: "Location", pickLocation: "Which location?", anyLocation: "Any location", anyLocationSub: "The earliest free time in every location", openMap: "Open the map", map: "Map",
@@ -354,6 +358,7 @@
           toPay: "Go to payment", payTitle: "Payment missing", paySub: "Your place is held for 30 minutes: pay {0} to confirm the booking.",
           payWaiting: "Payment received: waiting for Stripe's confirmation…", payCancelled: "The payment was not made: you can try again while the place is held.",
           payExpired: "The payment did not arrive in time: the place was freed.", depositPaid: "Deposit paid online", depositRefunded: "Deposit given back",
+          prevMonth: "Previous month", nextMonth: "Next month", fewer: "One person fewer", more: "One more person",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -410,6 +415,7 @@
       const fmtLong = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long", timeZone: CLIENT_TZ });
       const fmtFull = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: CLIENT_TZ });
       const fmtMonth = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" });
+      const fmtDay = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
       const iso = (d) => d.toISOString().slice(0, 10);
       const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
       const todayLocal = () => new Intl.DateTimeFormat("en-CA", { timeZone: CLIENT_TZ }).format(new Date());
@@ -653,9 +659,9 @@
         const wrap = h("section", {}, h("h2", {}, S.moving ? T("moveBtn") : T("pickDate")));
         if (S.service.group && S.service.max_seats > 1 && !S.moving) {
           const seats = h("div", { class: "stepper-seats" },
-            h("button", { "aria-label": "-", onclick: () => { if (S.seats > 1) { S.seats--; loadMonth(); } } }, "−"),
+            h("button", { "aria-label": T("fewer"), onclick: () => { if (S.seats > 1) { S.seats--; loadMonth(); } } }, "−"),
             h("span", {}, String(S.seats)),
-            h("button", { "aria-label": "+", onclick: () => { if (S.seats < S.service.max_seats) { S.seats++; loadMonth(); } } }, "+"));
+            h("button", { "aria-label": T("more"), onclick: () => { if (S.seats < S.service.max_seats) { S.seats++; loadMonth(); } } }, "+"));
           wrap.append(h("div", { style: "display:flex;align-items:center;gap:.6rem;margin-bottom:1rem" }, h("span", { class: "hint" }, T("people")), seats));
         }
         S.month = S.month || todayLocal().slice(0, 7) + "-01";
@@ -670,9 +676,9 @@
         const nextMonth = iso(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)));
         const today = todayLocal();
         wrap.append(h("div", { class: "cal-head" },
-          h("button", { class: "icon-btn", "aria-label": "prev", disabled: S.month <= today.slice(0, 7) + "-01" || S.loadingSlots, onclick: () => loadMonth(prevMonth) }, "‹"),
+          h("button", { class: "icon-btn", "aria-label": T("prevMonth"), disabled: S.month <= today.slice(0, 7) + "-01" || S.loadingSlots, onclick: () => loadMonth(prevMonth) }, "‹"),
           h("b", {}, fmtMonth.format(m)),
-          h("button", { class: "icon-btn", "aria-label": "next", disabled: (S.maxDate && nextMonth > S.maxDate) || S.loadingSlots, onclick: () => loadMonth(nextMonth) }, "›")));
+          h("button", { class: "icon-btn", "aria-label": T("nextMonth"), disabled: (S.maxDate && nextMonth > S.maxDate) || S.loadingSlots, onclick: () => loadMonth(nextMonth) }, "›")));
         const grid = h("div", { class: "month", role: "grid" });
         const dows = [];
         for (let i = 0; i < 7; i++) dows.push(new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i))));
@@ -687,7 +693,7 @@
           const full = !free && waitOn() && (S.full[key] || []).length > 0;
           const avail = !S.loadingSlots && (free || full);
           const cls = ["day", avail ? "avail" : "", full ? "full" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
-          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
+          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": fmtDay.format(new Date(key + "T12:00:00Z")), "data-day": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
         }
         wrap.append(grid);
 

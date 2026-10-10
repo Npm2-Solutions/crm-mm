@@ -119,6 +119,22 @@ class IlDocumentoNuovo(AreaCase):
 		frappe.set_user("Guest")
 		self.assertEqual(collegamento.enter(link), {"page": "documents"})
 
+	def test_due_documenti_di_fila_una_email(self):
+		# the balance of a visit and the next visit's deposit, a few seconds apart:
+		# the first email's link is still there to use
+		self.accendi()
+		prima = frappe.db.count("Email Queue")
+		collegamento.fattura_emessa(self.fattura(self.anna.name))
+		link = _link_della_posta()
+		collegamento.fattura_emessa(self.fattura(self.anna.name))
+		self.assertEqual(frappe.db.count("Email Queue"), prima + 1)
+		# once she entered by it, the next document is news again
+		frappe.set_user("Guest")
+		collegamento.enter(link)
+		frappe.set_user("Administrator")
+		collegamento.fattura_emessa(self.fattura(self.anna.name))
+		self.assertEqual(frappe.db.count("Email Queue"), prima + 2)
+
 	def test_una_fattura_di_prova_mai(self):
 		self.accendi()
 		prima = frappe.db.count("Email Queue")

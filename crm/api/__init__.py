@@ -74,6 +74,19 @@ def check_app_permission():
 	return bool(livelli.ruoli_di_accesso() & set(frappe.get_roles()))
 
 
+def dopo_l_accesso(login_manager=None) -> None:
+	"""`on_session_creation`: whoever works in DottorCloud lands in it after signing
+	in. The framework answers the sign-in with `get_home_page()`, the desk, and the
+	desk is the apps' screen: one icon to tap, every time, «DottorC…» on a phone.
+	That answer reads this request's `flags.home_page` first."""
+	if frappe.session.user in ("Guest", None):
+		return
+	if frappe.get_cached_value("User", frappe.session.user, "user_type") != "System User":
+		return
+	if check_app_permission():
+		frappe.local.flags.home_page = "/crm"
+
+
 def _moduli_bloccati(user: str) -> list[str]:
 	"""The modules closed to ``user``: their own and everybody's (Administrator's),
 	as Frappe reads them."""

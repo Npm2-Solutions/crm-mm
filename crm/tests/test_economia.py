@@ -55,6 +55,20 @@ class EconomiaTest(InvoicingBase):
 		azienda.reload()
 		self.assertIsNone(azienda.collected_on)
 
+	def test_un_bonifico_si_incassa_quando_arriva(self):
+		# paid by bank transfer from home: not in the centre's hands at the desk, and
+		# the payment reminders follow it until somebody marks it
+		bonifico = self.fattura(self.seduta.name, self.psicologo.name, payment_method="MP05")
+		bonifico.submit()
+		incassi.alla_cassa(bonifico)
+		bonifico.reload()
+		self.assertIsNone(bonifico.collected_on)
+		carta = self.fattura(self.seduta.name, self.psicologo.name, payment_method="MP08")
+		carta.submit()
+		incassi.alla_cassa(carta)
+		carta.reload()
+		self.assertEqual(getdate(carta.collected_on), getdate(carta.payment_date))
+
 	def test_si_segna_e_si_toglie(self):
 		azienda = self.a_un_azienda()
 		self.assertEqual(incassi.set_collected(azienda.name, nowdate())["collected_on"], nowdate())
