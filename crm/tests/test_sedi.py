@@ -255,6 +255,15 @@ class CassaPerSede(InvoicingBase):
 		self.assertEqual(frappe.db.count("CRM Cash Closing", {"date": nowdate()}), 3)
 		self.assertEqual(oggi.get_cash_summary(nowdate(), location=self.monza)["closing"]["counted_cash"], 1)
 
+	def test_l_acconto_e_della_sede_della_visita(self):
+		# a deposit paid online for a visit at Monza: its invoice is Monza's, as the
+		# visit's balance will be
+		visita = frappe.get_doc({"doctype": "CRM Appointment", "centre_location": self.monza})
+		visita.name = frappe.generate_hash(length=10)
+		visita.db_insert()
+		acconto = self.fattura(self.consulenza.name, self.consulente.name, advance_for=visita.name)
+		self.assertEqual(acconto.centre_location, self.monza)
+
 	def test_la_sede_con_la_sua_societa(self):
 		frappe.db.set_value("CRM Location", self.monza, "company", self.azienda.name)
 		sedi.dimentica()
