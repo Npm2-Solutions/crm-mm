@@ -415,6 +415,10 @@ INFORMATIVA = {
 }
 
 
+#: The centre's Google Place ID, made up: the review link leads to Google's page
+#: for it, which the simulation never opens.
+PLACE_ID = "ChIJCollaudoSanLuca0000000"
+
 #: What marketing set up before the week: a campaign sent by hand to a list (only
 #: to who agreed to marketing) and the review request after a visit, by email - a
 #: centre without its Twilio writes no SMS.
@@ -441,7 +445,7 @@ AUTOMAZIONI = (
 			{
 				"type": "send_email",
 				"subject": "Com'è andata, {{ first_name }}?",
-				"message": "Ciao {{ first_name }}, grazie di essere venuto. Se hai un minuto, "
+				"message": "Ciao {{ first_name }}, grazie della visita. Se hai un minuto, "
 				"racconta agli altri com'è andata: {{ review_link }}",
 			},
 		],

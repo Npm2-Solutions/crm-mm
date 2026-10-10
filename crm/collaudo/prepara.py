@@ -563,7 +563,9 @@ def _impostazioni(finti: int) -> None:
 	_singolo(
 		"CRM Review Settings",
 		{
-			"google_review_link": f"https://www.{R.DOMINIO}/recensioni/poliambulatorio-san-luca",
+			# a Place ID as the centre copies it from Google: the link is made from it
+			"google_review_link": "",
+			"google_place_id": R.PLACE_ID,
 			"months_between": 12,
 		},
 	)
