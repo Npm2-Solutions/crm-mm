@@ -158,6 +158,35 @@ class IlNegozio(AddebitiCase):
 			A.save_type(json.dumps({**dati, "billable_service": None}), name=self.subito)
 
 
+class IlCodiceFiscale(AddebitiCase):
+	"""«Buy» asks the codice fiscale where the billing details lack it: the
+	instalment's invoice is issued the day it is paid."""
+
+	def voce(self):
+		return {v["name"]: v for v in area_api.get_shop(self.anna.name)["items"]}[self.subito]
+
+	def test_per_una_fattura_sanitaria_si_chiede_e_si_scrive(self):
+		frappe.db.set_value("CRM Billable Service", self.scheda.name, "is_healthcare", 1)
+		frappe.db.set_value("CRM Billing Profile", {"party": self.anna.name}, "fiscal_code", None)
+		self.assertEqual(self.voce()["fiscal_code"], "required")
+		with self.assertRaises(frappe.ValidationError):
+			area_api.buy_subscription(self.anna.name, self.subito)
+		with self.assertRaises(frappe.ValidationError):
+			area_api.buy_subscription(self.anna.name, self.subito, fiscal_code="RSSMRA80A01H501X")
+		link = area_api.buy_subscription(self.anna.name, self.subito, fiscal_code=fatturazione.CF_PAZIENTE)
+		self.assertTrue(link["url"])
+		self.assertEqual(
+			frappe.db.get_value("CRM Billing Profile", {"party": self.anna.name}, "fiscal_code"),
+			fatturazione.CF_PAZIENTE,
+		)
+		self.assertEqual(self.voce()["fiscal_code"], "")
+
+	def test_altrimenti_facoltativo(self):
+		frappe.db.set_value("CRM Billing Profile", {"party": self.anna.name}, "fiscal_code", None)
+		self.assertEqual(self.voce()["fiscal_code"], "optional")
+		self.assertTrue(area_api.buy_subscription(self.anna.name, self.subito)["url"])
+
+
 class SubitoECarta(AddebitiCase):
 	def test_pagato_subito_venduto_e_fatturato_una_volta(self):
 		sessione, _link = self.compra(self.subito)

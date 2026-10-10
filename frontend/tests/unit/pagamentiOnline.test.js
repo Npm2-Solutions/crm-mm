@@ -5,6 +5,7 @@ import {
   accontoInParole,
   addebitoInParole,
   cartaInParole,
+  codiceFiscaleScritto,
   modalita,
   modoInParole,
   oreValide,
@@ -221,4 +222,13 @@ test('a booking’s deposit on its appointment, in a line', () => {
       t,
     ),
   ).toBe('Deposit given back in part: 10,00 € of 30,00 €')
+})
+
+test('a codice fiscale as the billing details keep it', () => {
+  expect(codiceFiscaleScritto(' rss mra 80a01 h501u ')).toEqual({
+    codice: 'RSSMRA80A01H501U',
+    giusto: true,
+  })
+  expect(codiceFiscaleScritto('RSSMRA80A01H501').giusto).toBe(false)
+  expect(codiceFiscaleScritto(null)).toEqual({ codice: '', giusto: false })
 })

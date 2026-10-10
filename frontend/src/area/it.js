@@ -401,6 +401,14 @@ export default {
   'From today until {0}': 'Da oggi al {0}',
   'You pay': 'Paghi',
   'Go to payment': 'Vai al pagamento',
+  'Codice fiscale': 'Codice fiscale',
+  'Codice fiscale (optional)': 'Codice fiscale (facoltativo)',
+  'Of whom the subscription is for: their invoice and the health expense in the tax return need it.':
+    'Di chi usa l’abbonamento: serve alla sua fattura e alla spesa sanitaria nella dichiarazione dei redditi.',
+  'A codice fiscale has 16 letters and digits: check it.':
+    'Il codice fiscale ha 16 lettere e cifre: controllalo.',
+  'Write the codice fiscale: the invoice needs it.':
+    'Scrivi il codice fiscale: serve alla fattura.',
   'You pay by card on Stripe, the centre’s payment service: the centre never sees the card. The invoice comes in your Documents once paid.':
     'Paghi con carta su Stripe, il servizio di pagamento del centro: il centro non vede mai la carta. La fattura arriva nei tuoi Documenti a pagamento fatto.',
   'You authorise the centre to charge {0} every month on the card until {1}; you can stop it from your area.':

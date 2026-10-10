@@ -49907,3 +49907,15 @@ msgstr "Restituito da"
 
 msgid "Whoever gave it back from the appointment, as a courtesy: empty when DottorCloud did it at a cancellation in time"
 msgstr "Chi lo ha restituito dall'appuntamento, per cortesia: vuoto quando lo ha fatto DottorCloud a una disdetta in tempo"
+
+#: crm/invoicing/anagrafica.py
+msgid "The codice fiscale {0} is not right: check its 16 letters and digits"
+msgstr "Il codice fiscale {0} non è giusto: controlla le sue 16 lettere e cifre"
+
+#: crm/api/service_booking.py
+msgid "Write the codice fiscale of whom the appointment is for: the invoice of the payment needs it"
+msgstr "Scrivi il codice fiscale di chi viene all'appuntamento: serve alla fattura del pagamento"
+
+#: crm/pagamenti/addebiti.py
+msgid "Write the codice fiscale of whom the subscription is for: its invoice needs it"
+msgstr "Scrivi il codice fiscale di chi usa l'abbonamento: serve alla sua fattura"

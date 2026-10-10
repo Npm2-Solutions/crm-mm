@@ -35,6 +35,27 @@
             </dd>
           </div>
         </dl>
+        <!-- its invoice is issued the day it is paid: a healthcare one needs
+             the codice fiscale, asked where the billing details lack it -->
+        <FormControl
+          v-if="item.fiscal_code"
+          v-model="codiceFiscale"
+          type="text"
+          :label="
+            item.fiscal_code === 'required'
+              ? __('Codice fiscale')
+              : __('Codice fiscale (optional)')
+          "
+          :description="
+            __(
+              'Of whom the subscription is for: their invoice and the health expense in the tax return need it.',
+            )
+          "
+          :required="item.fiscal_code === 'required'"
+          maxlength="16"
+          autocomplete="off"
+          v-bind="tastiera('codice')"
+        />
         <p
           v-if="item.monthly"
           class="rounded-[12px_12px_12px_2px] bg-[var(--brand-subtle)] px-3 py-2 text-p-sm text-[var(--on-brand-subtle)]"
@@ -72,7 +93,9 @@ import {
   mandatoInParole,
   prezzoDellAcquisto,
 } from '@/utils/abbonamenti'
-import { Button, Dialog, ErrorMessage, call } from 'frappe-ui'
+import { codiceFiscaleScritto } from '@/utils/pagamentiOnline'
+import { tastiera } from '@/utils/tastiera'
+import { Button, Dialog, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import { day } from '../dates'
 import { area } from '../store'
@@ -83,18 +106,31 @@ const t = (text, args) => __(text, args)
 
 const busy = ref(false)
 const error = ref('')
+const codiceFiscale = ref('')
 
 watch(show, (open) => {
   if (open) error.value = ''
 })
 
 async function buy() {
+  const { codice, giusto } = codiceFiscaleScritto(codiceFiscale.value)
+  if (
+    props.item.fiscal_code &&
+    (codice || props.item.fiscal_code === 'required') &&
+    !giusto
+  ) {
+    error.value = codice
+      ? __('A codice fiscale has 16 letters and digits: check it.')
+      : __('Write the codice fiscale: the invoice needs it.')
+    return
+  }
   busy.value = true
   error.value = ''
   try {
     const link = await call('crm.area.api.buy_subscription', {
       person: area.person,
       subscription_type: props.item.name,
+      fiscal_code: codice || null,
     })
     window.location.href = link.url
   } catch (e) {

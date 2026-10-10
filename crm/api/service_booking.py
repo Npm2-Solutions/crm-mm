@@ -436,7 +436,24 @@ def _acconto_della_scheda(service, prezzo) -> dict | None:
 		"full": service.get("online_payment") == pagamenti_regole.TUTTO,
 		"amount": importo,
 		"formatted": _money(importo, service.currency),
+		# its invoice is issued the day it is paid: a healthcare one needs the codice fiscale
+		"fiscal_code": _codice_fiscale_da_chiedere(service),
 	}
+
+
+def _codice_fiscale_da_chiedere(service) -> str:
+	"""Whether a booking of ``service`` paid online asks the codice fiscale of whom
+	it is for: "required", "optional" (`crm.pagamenti.regole`)."""
+	from crm.invoicing import scelte
+	from crm.invoicing.engine import voci
+	from crm.pagamenti import regole as pagamenti_regole
+
+	sanitaria = frappe.db.get_value(
+		"CRM Billable Service", {"crm_service": service.name, "enabled": 1}, "is_healthcare"
+	)
+	return pagamenti_regole.codice_fiscale_da_chiedere(
+		True, None if sanitaria is None else bool(sanitaria), scelte.profilo() == voci.SANITARIO
+	)
 
 
 def _price_and_duration_range(service, users: list[str]) -> tuple[tuple[float, float], tuple[int, int]]:
@@ -726,13 +743,15 @@ def book(
 	convention: str | None = None,
 	card_number: str | None = None,
 	location: str | None = None,
+	fiscal_code: str | None = None,
 ) -> dict:
 	"""Book a service on a free slot; returns what the confirmation page shows.
 
 	``for_name`` is who the appointment is for, when it is not whoever books: a
 	child, a parent. They get a record of their own, linked to the one booking
 	and without their contact, which stays theirs (`crm.persone`); ``for_relation``
-	is what the one booking is to them.
+	is what the one booking is to them. ``fiscal_code`` is theirs too, asked where
+	what is paid online is invoiced as healthcare (`_codice_fiscale_da_chiedere`).
 	"""
 	config = _config()
 	frappe.flags.in_service_booking_api = True
@@ -754,6 +773,9 @@ def book(
 		frappe.throw(_("Please answer the question: {0}").format(doc.get("online_question") or _("Notes")))
 	if cint(config.get("require_privacy_consent")) and not cint(consent):
 		frappe.throw(_("Please accept the privacy policy to book"))
+	from crm.invoicing import anagrafica
+
+	codice_fiscale = anagrafica.codice_scritto(fiscal_code)
 
 	start_utc = parse_utc(start)
 	seats = _seats(doc, participants)
@@ -834,6 +856,11 @@ def book(
 
 	# whether it asks anything (the amount, once the appointment has its price)
 	chiede_acconto = not convenzione and bool(pagamenti.acconto_da_chiedere(doc, 1, lead, booker))
+	if chiede_acconto and not codice_fiscale and _codice_fiscale_da_chiedere(doc) == "required":
+		# its invoice, issued the day it is paid, goes to the Sistema TS
+		frappe.throw(
+			_("Write the codice fiscale of whom the appointment is for: the invoice of the payment needs it")
+		)
 	if assenze == rules_mod.NO_SHOW_APPROVAL:
 		# a seat in a class is no booking of its own to approve: the desk books it
 		if slot.join_appointment:
@@ -874,6 +901,8 @@ def book(
 
 	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
 	if chiede_acconto:
+		# in their billing details, as the desk writes it: the advance invoice is issued with it
+		anagrafica.scrivi_se_manca(lead, codice_fiscale)
 		importo = pagamenti.acconto_da_chiedere(
 			doc, _il_mio_prezzo(appointment, _my_rows(appointment, token)), lead
 		)

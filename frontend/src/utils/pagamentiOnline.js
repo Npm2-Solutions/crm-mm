@@ -235,3 +235,16 @@ export function accontoInParole(acconto, t) {
     return t('Deposit paid online: {0} · invoice still a draft', [importo])
   return t('Deposit paid online: {0}', [importo])
 }
+
+/**
+ * A codice fiscale as the person types it where a payment online asks it (the
+ * area's «Buy»), written as the billing details keep it: capitals, no spaces.
+ * `giusto` when it has the shape of one; its check character is the server's
+ * (`crm.invoicing.anagrafica.codice_scritto`).
+ */
+export function codiceFiscaleScritto(valore) {
+  const codice = String(valore || '')
+    .replace(/[\s.-]/g, '')
+    .toUpperCase()
+  return { codice, giusto: /^[A-Z0-9]{16}$/.test(codice) }
+}

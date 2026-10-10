@@ -243,3 +243,19 @@ class TestDisdetta(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestCodiceFiscale(unittest.TestCase):
+	def test_niente_online_niente_codice(self):
+		self.assertEqual(R.codice_fiscale_da_chiedere(False, True, True), R.CF_NO)
+
+	def test_una_visita_pagata_online_lo_chiede(self):
+		"""Its advance invoice goes to the Sistema TS: without it, a draft."""
+		self.assertEqual(R.codice_fiscale_da_chiedere(True, True, False), R.CF_OBBLIGATORIO)
+		# no fiscal card: a medical centre's service is a health service
+		self.assertEqual(R.codice_fiscale_da_chiedere(True, None, True), R.CF_OBBLIGATORIO)
+
+	def test_dove_non_segue_una_fattura_sanitaria_e_facoltativo(self):
+		# a course in a polyclinic, a facial in a beauty centre
+		self.assertEqual(R.codice_fiscale_da_chiedere(True, False, True), R.CF_FACOLTATIVO)
+		self.assertEqual(R.codice_fiscale_da_chiedere(True, None, False), R.CF_FACOLTATIVO)

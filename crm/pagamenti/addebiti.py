@@ -130,6 +130,21 @@ def _tipi() -> list[dict]:
 	)
 
 
+def codice_fiscale_da_chiedere(persona: str, scheda: str | None) -> str:
+	"""Whether «Buy» asks the person's codice fiscale, where their billing details
+	lack it: the instalment's invoice is issued the day it is paid, and a healthcare
+	one needs it (`regole.codice_fiscale_da_chiedere`)."""
+	from crm.invoicing import anagrafica, scelte
+	from crm.invoicing.engine import voci
+
+	if anagrafica.ha_il_codice(persona):
+		return RP.CF_NO
+	sanitaria = frappe.db.get_value("CRM Billable Service", scheda, "is_healthcare") if scheda else None
+	return RP.codice_fiscale_da_chiedere(
+		True, None if sanitaria is None else bool(sanitaria), scelte.profilo() == voci.SANITARIO
+	)
+
+
 def in_vendita(persona: str) -> list[dict]:
 	"""The subscriptions the area offers ``persona``, each with what they pay: at once,
 	or the first instalment and how many; nothing for the demo, nor where the centre
@@ -162,6 +177,8 @@ def in_vendita(persona: str) -> list[dict]:
 				"formatted_first": pagamenti._soldi(prima, tipo.currency),
 				"formatted_total": pagamenti._soldi(totale, tipo.currency),
 				"until": str(AR.fine(getdate(), mesi)),
+				# asked in the sheet where their billing details lack it
+				"fiscal_code": codice_fiscale_da_chiedere(persona, tipo.billable_service),
 				"entries": tipo.entries,
 				"entries_count": cint(tipo.entries_count),
 				"services": [
@@ -218,11 +235,16 @@ def _cliente_di(persona: str) -> str:
 	return risposta.get("id")
 
 
-def compra(persona: str, tipo: str, ritorno: str) -> dict:
+def compra(persona: str, tipo: str, ritorno: str, codice_fiscale: str | None = None) -> dict:
 	"""«Buy» in the area: the payment written, Stripe's page for the whole price or
-	the first instalment. Nothing is sold until Stripe says paid."""
+	the first instalment. Nothing is sold until Stripe says paid. ``codice_fiscale``,
+	asked where the billing details lack it, goes in them first: the instalment's
+	invoice is issued with it."""
+	from crm.invoicing import anagrafica
 	from crm.scheduling import abbonamenti_regole as AR
 	from crm.utils import stored_value
+
+	codice = anagrafica.codice_scritto(codice_fiscale)
 
 	vende, addebita = collegamento.vendite()
 	riga = frappe.db.get_value(TIPO, tipo, ["*"], as_dict=True)
@@ -231,6 +253,9 @@ def compra(persona: str, tipo: str, ritorno: str) -> dict:
 		frappe.throw(_(motivo))
 	if _demo(("CRM Lead", persona), (TIPO, tipo)):
 		frappe.throw(_("The demo's people never pay online."))
+	if not codice and codice_fiscale_da_chiedere(persona, riga.billable_service) == RP.CF_OBBLIGATORIO:
+		frappe.throw(_("Write the codice fiscale of whom the subscription is for: its invoice needs it"))
+	anagrafica.scrivi_se_manca(persona, codice)
 	mesi = AR.entro(riga.months, AR.MESI)
 	rate = AR.rate(getdate(), mesi, flt(riga.price), riga.payment)
 	importo = lordo(persona, riga.billable_service, rate[0][1])

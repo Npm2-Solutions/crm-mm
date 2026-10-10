@@ -313,6 +313,8 @@
           toPay: "Vai al pagamento", payTitle: "Manca il pagamento", paySub: "Il posto è tenuto per 30 minuti: paga {0} per confermare la prenotazione.",
           payWaiting: "Pagamento ricevuto: stiamo aspettando la conferma di Stripe…", payCancelled: "Il pagamento non è stato fatto: puoi riprovare finché il posto è tenuto.",
           payExpired: "Il pagamento non è arrivato in tempo: il posto è stato liberato.", depositPaid: "Acconto pagato online", depositRefunded: "Acconto restituito",
+          cf: "Codice fiscale", cfOther: "Codice fiscale di chi viene", cfHint: "Serve alla fattura di quello che paghi online e per detrarre la spesa sanitaria.",
+          cfHintOther: "Quello di chi viene, non il tuo: la fattura è sua.", cfInvalid: "Il codice fiscale ha 16 lettere e cifre: controllalo.",
           prevMonth: "Il mese prima", nextMonth: "Il mese dopo", fewer: "Una persona in meno", more: "Una persona in più",
         },
         en: {
@@ -358,6 +360,8 @@
           toPay: "Go to payment", payTitle: "Payment missing", paySub: "Your place is held for 30 minutes: pay {0} to confirm the booking.",
           payWaiting: "Payment received: waiting for Stripe's confirmation…", payCancelled: "The payment was not made: you can try again while the place is held.",
           payExpired: "The payment did not arrive in time: the place was freed.", depositPaid: "Deposit paid online", depositRefunded: "Deposit given back",
+          cf: "Tax code (codice fiscale)", cfOther: "Tax code (codice fiscale) of who is coming", cfHint: "For the invoice of what you pay online, and to deduct the health expense.",
+          cfHintOther: "Theirs, not yours: the invoice is theirs.", cfInvalid: "A codice fiscale has 16 letters and digits: check it.",
           prevMonth: "Previous month", nextMonth: "Next month", fewer: "One person fewer", more: "One more person",
         },
       };
@@ -445,7 +449,7 @@
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
         wait: null, waited: null,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", convention: "", card_number: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", convention: "", card_number: "", fiscal_code: "", consent: false, marketing: false, for_other: !!BOOT.prefill?.for_name, for_name: BOOT.prefill?.for_name || "", for_relation: BOOT.prefill?.for_relation || "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
@@ -778,6 +782,15 @@
             put(h("p", { class: "hint" }, T("convHint")));
           }
         }
+        // what is paid online is invoiced the day it arrives: a healthcare invoice
+        // needs the codice fiscale of who is coming, the child's for a child
+        const cf = cfMode();
+        if (cf) {
+          const before = form.querySelector("label.check");
+          const put = (node) => (before ? form.insertBefore(node, before) : form.append(node));
+          put(field("fiscal_code", other ? T("cfOther") : T("cf"), { autocomplete: "off", autocapitalize: "characters", autocorrect: "off", spellcheck: "false", maxlength: "19", "aria-describedby": "f-fiscal_code-hint" }, cf === "required"));
+          put(h("p", { class: "hint", id: "f-fiscal_code-hint" }, other ? T("cfHintOther") : T("cfHint")));
+        }
         // paid online first: said before the button, not discovered after it
         if (svc.deposit && !S.form.convention) form.append(h("div", { class: "msg info" }, T("depositNote").replace("{0}", svc.deposit.formatted)));
         form.append(h("div", { class: "actions" },
@@ -786,6 +799,10 @@
         setTimeout(() => $(other && !S.form.for_name ? "f-for_name" : "f-full_name")?.focus(), 0);
         return form;
       }
+
+      // whether the booking asks the codice fiscale: "required", "optional", "" (a convention pays: nothing online)
+      const cfMode = () => (S.service?.deposit && !S.form.convention ? S.service.deposit.fiscal_code || "" : "");
+      const cfWritten = () => (S.form.fiscal_code || "").replace(/[\s.-]/g, "").toUpperCase();
 
       // who it is for, who they are, the ticks: the same for a booking and the waiting list
       function personFields(form, svc, withNotes) {
@@ -926,10 +943,11 @@
 
       async function submit() {
         const f = S.form, svc = S.service;
-        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (svc.require_notes && !f.notes.trim()) || (S.catalog.require_consent && !f.consent) || (f.for_other && !f.for_name.trim())) {
+        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (svc.require_notes && !f.notes.trim()) || (S.catalog.require_consent && !f.consent) || (f.for_other && !f.for_name.trim()) || (cfMode() === "required" && !cfWritten())) {
           S.error = T("required"); render(); return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
+        if (cfMode() && cfWritten() && !/^[A-Z0-9]{16}$/.test(cfWritten())) { S.error = T("cfInvalid"); render(); $("f-fiscal_code")?.focus(); return; }
         // the words the person ticked, as they read them, before the form redraws:
         // they go in the consent register
         const consentText = f.consent ? ($("f-consent-label")?.innerText || "").replace(/\s*\*\s*$/, "") : "";
@@ -939,6 +957,7 @@
           S.result = await api("book", {
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
             convention: f.convention || "", card_number: f.convention ? (f.card_number || "").trim() : "",
+            fiscal_code: cfMode() ? cfWritten() : "",
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
             location: (S.slot && S.slot.location_id) || S.location,
             consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
@@ -1030,7 +1049,7 @@
       function restart() {
         history.replaceState(null, "", location.pathname);
         Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null, location: "" });
-        S.form.notes = ""; S.form.convention = ""; S.form.card_number = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
+        S.form.notes = ""; S.form.convention = ""; S.form.card_number = ""; S.form.fiscal_code = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
         go(hasLocations() ? "location" : "service");
       }
 
