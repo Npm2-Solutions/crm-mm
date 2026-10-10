@@ -49949,3 +49949,951 @@ msgstr "Inter, servito dal sito stesso, o il carattere del dispositivo (System, 
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe. It cannot be undone."
 msgstr "Dopo questa disdetta l'acconto resta al centro. Per cortesia, {0} tornano sulla carta con cui è stato pagato, su Stripe. Non si può annullare."
+
+#: crm/api/sms.py
+msgid "The SMS cannot leave: the centre has no sender yet. The manager sets it on the carrier's page, in Settings → Phone → Telephony."
+msgstr "L'SMS non può partire: il centro non ha ancora un mittente. Lo sceglie il responsabile nella pagina del gestore, in Impostazioni → Telefono → Telefonia."
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
+#: crm/fcrm/doctype/crm_sms_message/crm_sms_message.json
+#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
+#: crm/telephony/telnyx/collegamento.py
+#: crm/telephony/telnyx/numeri.py
+#: crm/telephony/telnyx/trasloco.py
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx"
+msgstr "Telnyx"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "A new Italian number asked of the centre's carrier, Twilio or Telnyx: the documents sent, where the carrier's check is, the numbers bought."
+msgstr "Un nuovo numero italiano chiesto al gestore del centro, Twilio o Telnyx: i documenti mandati, a che punto è il controllo del gestore, i numeri comprati."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "At the carrier"
+msgstr "Presso il gestore"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Carrier"
+msgstr "Gestore"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Numbers ordered"
+msgstr "Numeri ordinati"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Telnyx: the numbers ordered with these documents, still in the carrier's check, and their orders."
+msgstr "Telnyx: i numeri ordinati con questi documenti, ancora nel controllo del gestore, e i loro ordini."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "What the carrier found"
+msgstr "Cosa ha trovato il gestore"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "telnyx"
+msgstr "Telnyx"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "twilio"
+msgstr "Twilio"
+
+#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
+msgid "Telnyx Credential"
+msgstr "Credenziale Telnyx"
+
+#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
+msgid "Telnyx Number"
+msgstr "Numero Telnyx"
+
+#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
+msgid "Telnyx SIP Username"
+msgstr "Nome utente SIP Telnyx"
+
+#: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
+msgid "The person's own credential on the Telnyx credential connection, with which their browser takes and makes calls. Kept by DottorCloud."
+msgstr "La credenziale personale sulla connessione a credenziali di Telnyx, con cui il suo browser riceve e fa le chiamate. La tiene DottorCloud."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "A managed account made in the agency's account for this site, with its own key."
+msgstr "Un account gestito creato nell'account dell'agenzia per questo sito, con la sua chiave."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "CRM Telnyx Settings"
+msgstr "Impostazioni Telnyx"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Credential Connection"
+msgstr "Connessione a credenziali"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "In Telnyx"
+msgstr "In Telnyx"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.py
+msgid "Low Balance Alert"
+msgstr "Avviso di credito basso"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Low Balance Told"
+msgstr "Credito basso già avvisato"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Managed Account"
+msgstr "Account gestito"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Messaging Profile"
+msgstr "Profilo di messaggistica"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "One of the account's numbers that can send SMS: the answers come back to the person's conversation."
+msgstr "Uno dei numeri dell'account che possono mandare SMS: le risposte tornano nella conversazione della persona."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Outbound Voice Profile"
+msgstr "Profilo voce in uscita"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Public address Telnyx calls back on, e.g. https://crm.studio.it or a tunnel in development. Leave empty to use the site URL."
+msgstr "L'indirizzo pubblico su cui Telnyx richiama, per esempio https://crm.studio.it o un tunnel in sviluppo. Vuoto: l'indirizzo del sito."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Reject webhooks that are not signed by Telnyx. Only turn this off to debug a proxy that rewrites the requests."
+msgstr "Rifiuta i webhook non firmati da Telnyx. Spegnilo solo per capire cosa non va con un proxy che riscrive le richieste."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Spend Alert Told"
+msgstr "Avviso di spesa già dato"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "TeXML Application"
+msgstr "Applicazione TeXML"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "The account's API key, kept encrypted: Telnyx has no key limited to a part of an account."
+msgstr "La chiave API dell'account, conservata cifrata: Telnyx non ha chiavi limitate a una parte dell'account."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "The account's public key, which Telnyx signs every webhook with (Mission Control > Keys & Credentials > Public Key)."
+msgstr "La chiave pubblica dell'account, con cui Telnyx firma ogni webhook (Mission Control > Keys & Credentials > Public Key)."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "The centre's Telnyx account, connected from Settings > Phone > Telephony > Telnyx (doc 64)."
+msgstr "L'account Telnyx del centro, collegato da Impostazioni > Telefono > Telefonia > Telnyx (doc 64)."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "The countries calls may go to, and nothing else."
+msgstr "I paesi dove le chiamate possono andare, e nessun altro."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "The month whose spend alert was told: once a month."
+msgstr "Il mese in cui è stato dato l'avviso di spesa: una volta al mese."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Webhook Public Key"
+msgstr "Chiave pubblica dei webhook"
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "When the Telnyx balance goes down to this amount, whoever pays for the account is told, before calls and SMS stop. Empty: no alert."
+msgstr "Quando il credito Telnyx scende a questa cifra, chi paga l'account viene avvisato, prima che chiamate e SMS si fermino. Vuoto: nessun avviso."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "When this month's spend reaches this amount, in the Telnyx account's currency, whoever pays for the account is told. Empty: no alert."
+msgstr "Quando la spesa del mese arriva a questa cifra, nella valuta dell'account Telnyx, chi paga l'account viene avvisato. Vuoto: nessun avviso."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Where Telnyx asks what a call to one of the centre's numbers does."
+msgstr "Dove Telnyx chiede cosa fare di una chiamata a uno dei numeri del centro."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Where calls may go: country codes separated by commas, IT for Italy. Premium-rate numbers are never called, whatever the country. Telnyx's outbound voice profile is told the same."
+msgstr "Dove possono andare le chiamate: i codici dei paesi separati da virgole, IT per l'Italia. I numeri a tariffa maggiorata non si chiamano mai, in nessun paese. Lo stesso viene detto al profilo voce in uscita di Telnyx."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Where the browser's calls register: each person has a credential of their own on it."
+msgstr "Dove si registrano le chiamate dal browser: ogni persona vi ha una credenziale sua."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Where the numbers' SMS come and go."
+msgstr "Da dove partono e dove arrivano gli SMS dei numeri."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Whether the low balance was told: once until it is topped up."
+msgstr "Se il credito basso è stato avvisato: una volta, fino alla ricarica."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.json
+msgid "Whose account it is: the centre's own, or the agency's for a centre with the agency's front desk."
+msgstr "Di chi è l'account: del centro, o dell'agenzia per un centro con la segreteria dell'agenzia."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.py
+msgid "The agency connects and disconnects Telnyx."
+msgstr "Telnyx lo collega e lo scollega l'agenzia."
+
+#: crm/fcrm/doctype/crm_telnyx_settings/crm_telnyx_settings.py
+msgid "The agency pays for this account: it sets the alerts."
+msgstr "Questo account lo paga l'agenzia: gli avvisi li imposta lei."
+
+#: crm/integrations/telnyx/api.py
+msgid "Invalid Telnyx connection"
+msgstr "Connessione Telnyx non valida"
+
+#: crm/integrations/telnyx/api.py
+msgid "Invalid Telnyx messaging profile"
+msgstr "Profilo di messaggistica Telnyx non valido"
+
+#: crm/integrations/telnyx/api.py
+msgid "Invalid Telnyx signature"
+msgstr "Firma Telnyx non valida"
+
+#: crm/integrations/telnyx/api.py
+msgid "Telnyx configuration is missing"
+msgstr "Manca la configurazione di Telnyx"
+
+#: crm/telephony/caller_ids.py
+msgid "Assigned to no connection in Telnyx, so incoming calls go nowhere."
+msgstr "Non è assegnato a nessuna connessione in Telnyx: le chiamate in arrivo non vanno da nessuna parte."
+
+#: crm/telephony/caller_ids.py
+msgid "Assigned to the Telnyx connection {0}: its calls go to that connection's own equipment, not to {brand}, so the answering service cannot run on it."
+msgstr "Assegnato alla connessione Telnyx {0}: le sue chiamate vanno agli apparati di quella connessione, non a {brand}, e la segreteria non può lavorarci."
+
+#: crm/telephony/caller_ids.py
+msgid "Assigned to {0} in Telnyx, not to {brand}: incoming calls are handled there."
+msgstr "Assegnato a {0} in Telnyx, non a {brand}: le chiamate in arrivo le gestisce lì."
+
+#: crm/telephony/numeri.py
+#: crm/telephony/telnyx/numeri.py
+msgid "This request was made to another carrier."
+msgstr "Questa richiesta è stata fatta a un altro gestore."
+
+#: crm/telephony/operatore.py
+msgid "{0} is connected: the centre's phone goes through one carrier. Disconnect {0} first, then connect {1}."
+msgstr "{0} è collegato: il telefono del centro passa da un solo gestore. Scollega prima {0}, poi collega {1}."
+
+#: crm/telephony/providers/__init__.py
+msgid "Unknown telephony provider: {0}"
+msgstr "Gestore telefonico sconosciuto: {0}"
+
+#: crm/telephony/telnyx/collegamento.py
+msgid "Telnyx did not take the countries now: {0} They are tried again within the hour."
+msgstr "Telnyx ora non ha preso i paesi: {0} Si riprova entro un'ora."
+
+#: crm/telephony/telnyx/collegamento.py
+msgid "Telnyx does not answer: try again in a few minutes."
+msgstr "Telnyx non risponde: riprova tra qualche minuto."
+
+#: crm/telephony/telnyx/collegamento.py
+#: crm/telephony/telnyx/numeri.py
+#: crm/telephony/telnyx/verificati.py
+msgid "Telnyx is not connected."
+msgstr "Telnyx non è collegato."
+
+#: crm/telephony/telnyx/collegamento.py
+msgid "The agency connected this Telnyx account: only the agency changes it."
+msgstr "Questo account Telnyx l'ha collegato l'agenzia: lo cambia solo l'agenzia."
+
+#: crm/telephony/telnyx/collegamento.py
+msgid "The agency's Telnyx account is not set up on this server."
+msgstr "L'account Telnyx dell'agenzia non è configurato su questo server."
+
+#: crm/telephony/telnyx/errori.py
+msgid "Telnyx refused it (error {0})."
+msgstr "Telnyx l'ha rifiutato (errore {0})."
+
+#: crm/telephony/telnyx/errori.py
+msgid "Telnyx refused it."
+msgstr "Telnyx l'ha rifiutato."
+
+#: crm/telephony/telnyx/errori.py
+msgid "Telnyx says: {0} (error {1})"
+msgstr "Telnyx dice: {0} (errore {1})"
+
+#: crm/telephony/telnyx/numeri.py
+msgid "Telnyx asks for: {0}"
+msgstr "Telnyx chiede: {0}"
+
+#: crm/telephony/telnyx/numeri.py
+msgid "Telnyx did not say why: write to Telnyx's support, or send the documents again."
+msgstr "Telnyx non ha detto perché: scrivi all'assistenza di Telnyx, o manda di nuovo i documenti."
+
+#: crm/telephony/telnyx/numeri.py
+msgid "Telnyx does not sell this kind of number in Italy now."
+msgstr "Telnyx ora non vende questo tipo di numero in Italia."
+
+#: crm/telephony/telnyx/numeri.py
+msgid "The documents have to be approved by Telnyx first."
+msgstr "Prima Telnyx deve approvare i documenti."
+
+#: crm/telephony/telnyx/numeri.py
+msgid "These documents are already with Telnyx."
+msgstr "Questi documenti sono già da Telnyx."
+
+#: crm/telephony/telnyx/numeri.py
+msgid "This number is not among {brand}'s numbers in Telnyx."
+msgstr "Questo numero non è tra i numeri di {brand} in Telnyx."
+
+#: crm/telephony/telnyx/sms.py
+msgid "Telnyx is not enabled"
+msgstr "Telnyx non è attivo"
+
+#: crm/telephony/telnyx/trasloco.py
+msgid "It answers on the switchboard of the connection {0}: it stays there."
+msgstr "Risponde sul centralino della connessione {0}: resta lì."
+
+#: crm/telephony/telnyx/trasloco.py
+msgid "Only a number of the centre's own Telnyx account is taken into its phone."
+msgstr "Nel telefono del centro entra solo un numero dell'account Telnyx del centro."
+
+#: crm/telephony/telnyx/trasloco.py
+msgid "This number answers on the centre's switchboard: it stays there."
+msgstr "Questo numero risponde sul centralino del centro: resta lì."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "Only a verified number is removed here: a number of Telnyx's is released."
+msgstr "Qui si toglie solo un numero verificato: un numero di Telnyx si rilascia."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "Removed from Telnyx: it is not shown on calls any more."
+msgstr "Tolto da Telnyx: non compare più nelle chiamate."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "Telnyx has no verification waiting for this number: ask for a new code."
+msgstr "Telnyx non ha nessuna verifica in attesa per questo numero: chiedi un nuovo codice."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "Telnyx says: {0}"
+msgstr "Telnyx dice: {0}"
+
+#: crm/telephony/telnyx/verificati.py
+msgid "The code is not right: check it and write it again, or ask for a new one."
+msgstr "Il codice non è giusto: controllalo e scrivilo di nuovo, o chiedine uno nuovo."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "This number is already one of the centre's numbers on Telnyx: it can be shown on calls already."
+msgstr "Questo numero è già uno dei numeri del centro su Telnyx: si può già mostrare nelle chiamate."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "Write the code Telnyx said."
+msgstr "Scrivi il codice che ha detto Telnyx."
+
+#: frontend/src/components/Settings/SmsSenderLine.vue
+msgid "No carrier is connected: SMS are not offered."
+msgstr "Nessun gestore è collegato: gli SMS non sono offerti."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, move the number to {0}."
+msgstr "In Italia compare finché gli operatori lo lasciano passare (AGCOM, agosto 2025): per esserne sicuri, porta il numero su {0}."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Read them from {0}"
+msgstr "Leggili da {0}"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Remove {0} from {1}?"
+msgstr "Togliere {0} da {1}?"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "The number goes back to {0}: it stops costing, and whoever calls it hears it does not exist. It cannot be undone: {0} may give it to somebody else."
+msgstr "Il numero torna a {0}: smette di costare, e chi lo chiama sente che non esiste. Non si può annullare: {0} può darlo a qualcun altro."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "{0} is removed from {1}"
+msgstr "{0} è stato tolto da {1}"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "A PDF, a JPEG or a PNG of each one, of 5 MB at most. Once {0} approves them, {brand} does not keep them: {0} has its copy."
+msgstr "Un PDF, un JPEG o un PNG di ciascuno, di 5 MB al massimo. Quando {0} li approva, {brand} non li tiene: {0} ha la sua copia."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Choose the number first: {0} checks it together with the documents, and it answers on {brand} once approved."
+msgstr "Prima scegli il numero: {0} lo controlla insieme ai documenti, e risponde su {brand} appena approvato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Email for {0}"
+msgstr "Email per {0}"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Order {0}"
+msgstr "Ordina {0}"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Send to {0}"
+msgstr "Manda a {0}"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The documents are approved. Choose the number: {0} checks it with them, and it answers on {brand} once approved."
+msgstr "I documenti sono approvati. Scegli il numero: {0} lo controlla con loro, e risponde su {brand} appena approvato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The documents are with {0}."
+msgstr "I documenti sono da {0}."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} asks every Italian number for who it is for. What {brand} knows of the centre is already written: check it."
+msgstr "{0} chiede per ogni numero italiano a chi è intestato. Quello che {brand} sa del centro è già scritto: controllalo."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} charges {1} a month to the centre's account, from today, until the number is released."
+msgstr "{0} addebita {1} al mese sull'account del centro, da oggi, finché il numero non viene rilasciato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} checks them with the number {1}, usually within a few working days. {brand} tells you among the notifications when it answers: the number answers on {brand} as soon as it is approved."
+msgstr "{0} li controlla con il numero {1}, di solito in pochi giorni lavorativi. Quando risponde, {brand} te lo dice tra le notifiche: il numero risponde su {brand} appena è approvato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} checks them, usually within a few working days, and writes to {1}. {brand} tells you among the notifications when it answers: then you choose the number."
+msgstr "{0} li controlla, di solito in pochi giorni lavorativi, e scrive a {1}. Quando risponde, {brand} te lo dice tra le notifiche: allora scegli il numero."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} has none of these ready now. Try other digits, or come back in a few days."
+msgstr "{0} ora non ne ha di pronti. Prova altre cifre, o torna tra qualche giorno."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} has none of these ready now: the documents can be approved all the same, and the number is bought when {0} has one."
+msgstr "{0} ora non ne ha di pronti: i documenti si possono approvare lo stesso, e il numero si compra quando {0} ne ha uno."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} has numbers like {1} ready now."
+msgstr "{0} ha ora pronti numeri come {1}."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} is ordered: {1} checks it, and it answers on {brand} once approved."
+msgstr "{0} è ordinato: {1} lo controlla, e risponde su {brand} appena approvato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} says something is missing:"
+msgstr "{0} dice che manca qualcosa:"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} writes here about the documents. Not a PEC mailbox."
+msgstr "{0} scrive qui per i documenti. Non una casella PEC."
+
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
+msgid "Enter the number"
+msgstr "Scrivi il numero"
+
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
+msgid "The {0} number your calls show, and the one that rings you."
+msgstr "Il numero {0} che mostrano le tue chiamate, e quello che ti fa squillare."
+
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
+msgid "Your {0} number"
+msgstr "Il tuo numero {0}"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Answer it on {brand}"
+msgstr "Rispondi su {brand}"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Every number of the account reaches {brand} already."
+msgstr "Ogni numero dell'account arriva già a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "In the centre’s Telnyx account"
+msgstr "Nell'account Telnyx del centro"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "It answers on {brand} from now on."
+msgstr "Da adesso risponde su {brand}."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Port it to Telnyx"
+msgstr "Portarlo su Telnyx"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Porting to Telnyx, for Italy"
+msgstr "La portabilità su Telnyx, per l'Italia"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "TIM, Vodafone, Fastweb…: forwarded, or ported to Telnyx."
+msgstr "TIM, Vodafone, Fastweb…: inoltrato, o portato su Telnyx."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Telnyx takes it with its own port-in request, a geographic number in a few weeks. Once it is in the centre’s Telnyx account, take it in here with «In the centre’s Telnyx account»."
+msgstr "Telnyx lo prende con la sua richiesta di portabilità, un numero geografico in qualche settimana. Quando è nell'account Telnyx del centro, fallo entrare qui con «Nell'account Telnyx del centro»."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "Telnyx verifies it with a call or an SMS and a code, with no document: calls to it keep ringing where they ring now. In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, port it."
+msgstr "Telnyx lo verifica con una chiamata o un SMS e un codice, senza documenti: le chiamate verso il numero continuano a squillare dove squillano adesso. In Italia compare finché gli operatori lo lasciano passare (AGCOM, agosto 2025): per esserne sicuri, portalo."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "The numbers of the account that do not reach {brand} yet. One that answers on another application of yours leaves it; one on your switchboard stays there."
+msgstr "I numeri dell'account che non arrivano ancora a {brand}. Uno che risponde su un'altra tua applicazione la lascia; uno sul tuo centralino resta lì."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "The phone goes through the agency’s Telnyx account: a number of the centre’s cannot be taken into it. Forward its calls instead."
+msgstr "Il telefono passa dall'account Telnyx dell'agenzia: un numero del centro non può entrarci. Inoltra piuttosto le sue chiamate."
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "now on {0}"
+msgstr "ora su {0}"
+
+#: frontend/src/components/Settings/Telephony/TelnyxMoveDialog.vue
+msgid "{0} answers on {brand} now."
+msgstr "{0} ora risponde su {brand}."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgctxt "Telnyx portal"
+msgid "API key"
+msgstr "Chiave API"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "API keys"
+msgstr "Chiavi API"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Ask Telnyx now"
+msgstr "Chiedi a Telnyx adesso"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Calls and messages from {brand} stop and the key is forgotten. What {brand} made in your Telnyx account and the numbers stay there, and the numbers keep costing until you release them."
+msgstr "Le chiamate e i messaggi di {brand} si fermano e la chiave viene dimenticata. Quello che {brand} ha creato nel tuo account Telnyx e i numeri restano lì, e i numeri continuano a costare finché non li rilasci."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Calls and messages go through your own Telnyx account: you pay Telnyx, at Telnyx's prices, from the account's balance. Everything else you do here in {brand}."
+msgstr "Chiamate e messaggi passano dal tuo account Telnyx: paghi Telnyx, ai prezzi di Telnyx, dal credito dell'account. Tutto il resto lo fai qui in {brand}."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Calls from {brand} go only to these countries, never to premium-rate numbers. Telnyx is told the same, so a stolen key could not call anywhere else either."
+msgstr "Le chiamate da {brand} vanno solo in questi paesi, mai a numeri a tariffa maggiorata. Lo stesso viene detto a Telnyx, così nemmeno una chiave rubata potrebbe chiamare altrove."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Create your account on Telnyx, if you have none, verify it and top up its balance: Italian numbers are sold only to a verified account."
+msgstr "Crea il tuo account su Telnyx, se non ne hai uno, verificalo e ricarica il credito: i numeri italiani si vendono solo a un account verificato."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Disconnect Telnyx?"
+msgstr "Scollegare Telnyx?"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "For a centre with the agency's front desk: the numbers live in the agency's Telnyx account, and the agency pays."
+msgstr "Per un centro con la segreteria dell'agenzia: i numeri stanno nell'account Telnyx dell'agenzia, e paga l'agenzia."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "In the Telnyx portal, create an API key and copy it; then copy the account’s public key, which tells {brand} that a message comes from Telnyx."
+msgstr "Nel portale di Telnyx crea una chiave API e copiala; poi copia la chiave pubblica dell'account, che dice a {brand} che un messaggio viene da Telnyx."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "No number of the centre’s on Telnyx yet."
+msgstr "Ancora nessun numero del centro su Telnyx."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "None: the SMS went through."
+msgstr "Nessuno: gli SMS sono passati."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Open Telnyx"
+msgstr "Apri Telnyx"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Ordered: {0}"
+msgstr "Ordinati: {0}"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgctxt "Telnyx portal"
+msgid "Public key"
+msgstr "Chiave pubblica"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Tell me when the balance goes down to"
+msgstr "Avvisami quando il credito scende a"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx balance: {0}"
+msgstr "Credito Telnyx: {0}"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx is connected"
+msgstr "Telnyx è collegato"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx is disconnected"
+msgstr "Telnyx è scollegato"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx is paid in advance: calls and SMS stop when the balance runs out."
+msgstr "Telnyx si paga in anticipo: chiamate e SMS si fermano quando il credito finisce."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx sells no Italian mobile number: an Italian landline sends no SMS. The centre’s name is the sender, and nobody can reply to it."
+msgstr "Telnyx non vende numeri mobili italiani: un fisso italiano non manda SMS. Il mittente è il nome del centro, e nessuno può rispondergli."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Telnyx’s log"
+msgstr "Il registro di Telnyx"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "The centre’s calls, numbers and SMS go through one carrier at a time, so that a call and its answer never go two ways."
+msgstr "Chiamate, numeri e SMS del centro passano da un gestore alla volta, perché una chiamata e la sua risposta non prendano mai due strade."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "The documents written for it go, here and in Telnyx. Nothing has been bought with them."
+msgstr "I documenti scritti per lei se ne vanno, qui e in Telnyx. Con loro non è stato comprato niente."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "The phone goes through {0} now: disconnect it to use {1} instead."
+msgstr "Ora il telefono passa da {0}: scollegalo per usare {1} al suo posto."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "Top up"
+msgstr "Ricarica"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "What the account spent since {0}, as Telnyx counts it."
+msgstr "Quello che l'account ha speso dal {0}, come lo conta Telnyx."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "What {brand} made in the account"
+msgstr "Cosa ha creato {brand} nell'account"
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "{brand} keeps the key on its server, never shows it again, and works only on what it makes in your account - an application, a connection and two profiles named after this site - and on the numbers you give it. Disconnecting forgets the key."
+msgstr "{brand} tiene la chiave sul suo server, non la mostra più, e lavora solo su quello che crea nel tuo account - un'applicazione, una connessione e due profili con il nome di questo sito - e sui numeri che gli dai. Scollegando, la chiave viene dimenticata."
+
+#: frontend/src/components/Settings/Telephony/TelnyxSettings.vue
+msgid "{brand} looks every hour: the spend once a month, the balance once until it is topped up. Whoever pays for the account reads it among the notifications. Empty: no alert."
+msgstr "{brand} guarda ogni ora: la spesa una volta al mese, il credito una volta finché non viene ricaricato. Chi paga l'account lo legge tra le notifiche. Vuoto: nessun avviso."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "A call"
+msgstr "Una chiamata"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "A voice says the code: for a landline."
+msgstr "Una voce dice il codice: per un fisso."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "An SMS"
+msgstr "Un SMS"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Ask for a new code"
+msgstr "Chiedi un nuovo codice"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "In Italy it is shown as far as the operators let it: since August 2025 an Italian operator may block a call from abroad that shows an Italian landline of another network (AGCOM). To be sure it is shown, move the number to {0}."
+msgstr "In Italia compare finché gli operatori lo lasciano passare: da agosto 2025 un operatore italiano può bloccare una chiamata dall'estero che mostra un fisso italiano di un'altra rete (AGCOM). Per essere sicuri che compaia, porta il numero su {0}."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Send the SMS"
+msgstr "Manda l'SMS"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Telnyx calls the number, or sends it an SMS, with a code to type here. No document is needed: answering proves the line is the centre’s. Calls to the number keep ringing where they ring now."
+msgstr "Telnyx chiama il numero, o gli manda un SMS, con un codice da scrivere qui. Non serve nessun documento: rispondere prova che la linea è del centro. Le chiamate verso il numero continuano a squillare dove squillano adesso."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Telnyx dials an extension once the call is answered."
+msgstr "Telnyx compone un interno quando la chiamata ha risposta."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Telnyx is calling {0}. Answer, and write here the code the voice says:"
+msgstr "Telnyx sta chiamando {0}. Rispondi, e scrivi qui il codice che dice la voce:"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Telnyx is sending an SMS to {0}. Write here the code it carries:"
+msgstr "Telnyx sta mandando un SMS a {0}. Scrivi qui il codice che contiene:"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "The code comes written: for a mobile."
+msgstr "Il codice arriva scritto: per un cellulare."
+
+#: frontend/src/components/Telephony/TelnyxCallUI.vue
+msgid "This number is only verified in Telnyx: in Italy the call may arrive without it, as the operators allow since August 2025."
+msgstr "Questo numero è solo verificato in Telnyx: in Italia la chiamata può arrivare senza, come permettono gli operatori da agosto 2025."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "02, 06, 011…: calls in and out. Telnyx asks for an address in Italy and checks the documents by hand."
+msgstr "02, 06, 011…: chiamate in entrata e in uscita. Telnyx chiede un indirizzo in Italia e controlla i documenti a mano."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "800: only takes calls, from Italy, free for whoever calls; the centre pays each minute."
+msgstr "800: riceve solo chiamate, dall'Italia, gratuite per chi chiama; il centro paga ogni minuto."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "A utility bill at the office's address, of the last three months"
+msgstr "Una bolletta all'indirizzo della sede, degli ultimi tre mesi"
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Calls to this country are not allowed in the Telnyx account's outbound voice profile."
+msgstr "Le chiamate verso questo paese non sono permesse nel profilo voce in uscita dell'account Telnyx."
+
+#: frontend/src/utils/operatori.js
+msgid "Connect your {0} account: calls and messages from {brand}."
+msgstr "Collega il tuo account {0}: chiamate e messaggi da {brand}."
+
+#: frontend/src/utils/operatori.js
+msgid "Connected: calls and messages go through {0}."
+msgstr "Collegato: chiamate e messaggi passano da {0}."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "Identity document of the legal representative, both sides"
+msgstr "Documento d'identità del legale rappresentante, fronte e retro"
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "Kind of identity document"
+msgstr "Tipo di documento d'identità"
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "Kind of owner"
+msgstr "Tipo di intestatario"
+
+#: frontend/src/utils/numeri.js
+msgid "Not sent: {0} found something missing."
+msgstr "Non mandata: {0} ha trovato che manca qualcosa."
+
+#: frontend/src/utils/telnyx.js
+msgid "One call"
+msgstr "Una chiamata"
+
+#: frontend/src/utils/telnyx.js
+msgid "One number changed in the portal is pointed at {brand} again."
+msgstr "Un numero cambiato nel portale punta di nuovo a {brand}."
+
+#: frontend/src/utils/telnyx.js
+msgid "One number of the account answers elsewhere - a switchboard, another application - and stays as it is."
+msgstr "Un numero dell'account risponde altrove - un centralino, un'altra applicazione - e resta com'è."
+
+#: crm/telephony/telnyx/regole.py
+#: frontend/src/utils/telnyx.js
+msgid "Paste the API key."
+msgstr "Incolla la chiave API."
+
+#: crm/telephony/telnyx/regole.py
+#: frontend/src/utils/telnyx.js
+msgid "Paste the public key."
+msgstr "Incolla la chiave pubblica."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "SMS are not switched on in the Telnyx account."
+msgstr "Gli SMS non sono attivi nell'account Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "SMS are switched off in the Telnyx account."
+msgstr "Gli SMS sono spenti nell'account Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "SMS to this country are not allowed in the Telnyx account's messaging profile."
+msgstr "Gli SMS verso questo paese non sono permessi nel profilo di messaggistica dell'account Telnyx."
+
+#: crm/telephony/telnyx/regole.py
+msgid "Telnyx answered with an error ({0}): try again in a few minutes."
+msgstr "Telnyx ha risposto con un errore ({0}): riprova tra qualche minuto."
+
+#: crm/notifiche/regole.py
+msgid "Telnyx approved the new number {0}: it answers now"
+msgstr "Telnyx ha approvato il nuovo numero {0}: ora risponde"
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx blocked the account: write to Telnyx's support."
+msgstr "Telnyx ha bloccato l'account: scrivi all'assistenza di Telnyx."
+
+#: crm/telephony/telnyx/regole.py
+msgid "Telnyx does not find what was asked: it may have been removed from the portal."
+msgstr "Telnyx non trova quello che è stato chiesto: forse è stato tolto dal portale."
+
+#: crm/telephony/telnyx/regole.py
+msgid "Telnyx does not recognise this API key: copy it again from the portal."
+msgstr "Telnyx non riconosce questa chiave API: copiala di nuovo dal portale."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx does not take the centre's name as the sender: choose another on Telnyx's page."
+msgstr "Telnyx non accetta il nome del centro come mittente: scegline un altro nella pagina di Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx does not take the number or the name shown: choose another sender on Telnyx's page."
+msgstr "Telnyx non accetta il numero o il nome mostrato: scegli un altro mittente nella pagina di Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx holds the number shown on the call at risk: choose another."
+msgstr "Telnyx considera a rischio il numero mostrato nella chiamata: scegline un altro."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx holds this number of the centre unhealthy for SMS: too many messages were not delivered."
+msgstr "Telnyx considera questo numero del centro poco affidabile per gli SMS: troppi messaggi non sono stati consegnati."
+
+#: crm/telephony/telnyx/regole.py
+msgid "Telnyx is asked too often: try again in a minute."
+msgstr "Telnyx riceve troppe richieste: riprova tra un minuto."
+
+#: crm/notifiche/regole.py
+msgid "Telnyx refused the documents of the new number: see why"
+msgstr "Telnyx ha rifiutato i documenti del nuovo numero: guarda perché"
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx refused {brand}'s key: check the connection on Telnyx's page."
+msgstr "Telnyx ha rifiutato la chiave di {brand}: controlla il collegamento nella pagina di Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx sends with the centre's name only from an account verified to level 2: verify it on Telnyx, or choose a number as the sender."
+msgstr "Telnyx manda con il nome del centro solo da un account verificato al livello 2: verificalo su Telnyx, o scegli un numero come mittente."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx stopped the message as unwanted."
+msgstr "Telnyx ha fermato il messaggio come indesiderato."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Telnyx stopped the message for its words."
+msgstr "Telnyx ha fermato il messaggio per le sue parole."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "Telnyx takes the documents for Italy as PDF only."
+msgstr "Per l'Italia Telnyx prende i documenti solo in PDF."
+
+#: crm/telephony/telnyx/regole.py
+msgid "The API key may not do this in Telnyx: use a key of the account's owner."
+msgstr "La chiave API non può farlo in Telnyx: usa una chiave del titolare dell'account."
+
+#: crm/telephony/telnyx/regole.py
+#: frontend/src/utils/telnyx.js
+msgid "The API key starts with KEY and holds an underscore: copy it again from the portal."
+msgstr "La chiave API comincia con KEY e contiene un trattino basso: copiala di nuovo dal portale."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The Telnyx account is not active: usually its balance ran out. Top it up on Telnyx."
+msgstr "L'account Telnyx non è attivo: di solito è finito il credito. Ricaricalo su Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The Telnyx account reached its daily spending limit for calls abroad."
+msgstr "L'account Telnyx ha raggiunto il limite di spesa giornaliero per le chiamate all'estero."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The Telnyx account reached its spending limit for today."
+msgstr "L'account Telnyx ha raggiunto il limite di spesa per oggi."
+
+#: crm/notifiche/regole.py
+msgid "The Telnyx balance is down to {0}: top it up on Telnyx before calls and SMS stop"
+msgstr "Il credito Telnyx è sceso a {0}: ricaricalo su Telnyx prima che chiamate e SMS si fermino"
+
+#: crm/telephony/telnyx/consumi_regole.py
+msgid "The Telnyx balance is used up: calls and SMS stop until it is topped up on Telnyx."
+msgstr "Il credito Telnyx è finito: chiamate e SMS restano fermi finché non viene ricaricato su Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The Telnyx balance ran out: top it up on Telnyx."
+msgstr "Il credito Telnyx è finito: ricaricalo su Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The Telnyx key was revoked: connect Telnyx again with a new one."
+msgstr "La chiave Telnyx è stata revocata: collega di nuovo Telnyx con una nuova."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The centre has no number that can send SMS in Telnyx."
+msgstr "Il centro non ha in Telnyx nessun numero che possa mandare SMS."
+
+#: frontend/src/utils/telnyx.js
+msgid "The centre, to Telnyx"
+msgstr "Il centro, a Telnyx"
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "The codice fiscale card of the legal representative"
+msgstr "La tessera del codice fiscale del legale rappresentante"
+
+#: frontend/src/utils/numeri.js
+msgid "The document has to be a PDF."
+msgstr "Il documento deve essere un PDF."
+
+#: crm/telephony/telnyx/numeri_regole.py
+msgid "The document is larger than 20 MB: Telnyx does not take it."
+msgstr "Il documento supera i 20 MB: Telnyx non lo prende."
+
+#: frontend/src/utils/numeri.js
+msgid "The document is larger than {0} MB: the carrier does not take it."
+msgstr "Il documento supera i {0} MB: il gestore non lo prende."
+
+#: crm/telephony/telnyx/verificati.py
+msgid "The extension takes digits, * and #, and w for half a second's wait: at most 50."
+msgstr "L'interno prende cifre, * e #, e w per mezzo secondo d'attesa: al massimo 50."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The messaging profile is switched off in Telnyx: check the connection on Telnyx's page."
+msgstr "Il profilo di messaggistica è spento in Telnyx: controlla il collegamento nella pagina di Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The number shown on the call is another Telnyx customer's: choose another."
+msgstr "Il numero mostrato nella chiamata è di un altro cliente Telnyx: scegline un altro."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The number shown on the call is not one Telnyx lets the account show: choose another."
+msgstr "Il numero mostrato nella chiamata non è tra quelli che Telnyx lascia mostrare all'account: scegline un altro."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The number shown on the call is not verified in Telnyx: verify it on Telnyx's page, under Numbers."
+msgstr "Il numero mostrato nella chiamata non è verificato in Telnyx: verificalo nella pagina di Telnyx, sotto Numeri."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The operator did not deliver the message in time."
+msgstr "L'operatore non ha consegnato il messaggio in tempo."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The operator did not take the message's words."
+msgstr "L'operatore non ha accettato le parole del messaggio."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The person had asked to stop the SMS from this number, with STOP."
+msgstr "La persona aveva chiesto di fermare gli SMS da questo numero, con STOP."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The person's number does not exist any more, or cannot receive SMS."
+msgstr "Il numero della persona non esiste più, o non può ricevere SMS."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The person's operator could not be reached: the message did not arrive."
+msgstr "L'operatore della persona non era raggiungibile: il messaggio non è arrivato."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "The person's operator refused the message."
+msgstr "L'operatore della persona ha rifiutato il messaggio."
+
+#: crm/telephony/telnyx/regole.py
+#: frontend/src/utils/telnyx.js
+msgid "The public key is 44 letters, digits and signs ending with =: copy it again from the portal."
+msgstr "La chiave pubblica è fatta di 44 lettere, cifre e segni e finisce con =: copiala di nuovo dal portale."
+
+#: crm/notifiche/regole.py
+msgid "This month's Telnyx spend has reached {0}, past the alert at {1}"
+msgstr "La spesa Telnyx del mese è arrivata a {0}, oltre l'avviso a {1}"
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "This number of the centre cannot send SMS: it has no messaging profile in Telnyx. Check the connection on Telnyx's page."
+msgstr "Questo numero del centro non può mandare SMS: non ha un profilo di messaggistica in Telnyx. Controlla il collegamento nella pagina di Telnyx."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "This number of the centre is still being bought: try again in a few minutes."
+msgstr "Questo numero del centro è ancora in acquisto: riprova tra qualche minuto."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Too many messages at once: the operator stopped them."
+msgstr "Troppi messaggi insieme: l'operatore li ha fermati."
+
+#: crm/telephony/telnyx/errori_regole.py
+msgid "Too many messages at once: this one waited too long and did not leave."
+msgstr "Troppi messaggi insieme: questo ha aspettato troppo e non è partito."
+
+#: frontend/src/utils/numeri.js
+msgid "Write the email the carrier writes to about the documents."
+msgstr "Scrivi l'email a cui il gestore scrive per i documenti."
+
+#: frontend/src/utils/telnyx.js
+msgid "{0} calls"
+msgstr "{0} chiamate"
+
+#: frontend/src/utils/numeri.js
+msgid "{0} checks the documents, usually within a few working days, and writes to {1}. You will find its answer among the notifications."
+msgstr "{0} controlla i documenti, di solito in pochi giorni lavorativi, e scrive a {1}. Trovi la sua risposta tra le notifiche."
+
+#: frontend/src/utils/numeri.js
+msgid "{0} checks the documents, usually within a few working days. You will find its answer among the notifications."
+msgstr "{0} controlla i documenti, di solito in pochi giorni lavorativi. Trovi la sua risposta tra le notifiche."
+
+#: frontend/src/utils/telnyx.js
+msgid "{0} numbers changed in the portal are pointed at {brand} again."
+msgstr "{0} numeri cambiati nel portale puntano di nuovo a {brand}."
+
+#: frontend/src/utils/telnyx.js
+msgid "{0} numbers of the account answer elsewhere - a switchboard, another application - and stay as they are."
+msgstr "{0} numeri dell'account rispondono altrove - un centralino, un'altra applicazione - e restano come sono."
+
+#: frontend/src/utils/numeri.js
+msgid "{0} refused the documents. Put them right and send them again."
+msgstr "{0} ha rifiutato i documenti. Correggili e mandali di nuovo."
