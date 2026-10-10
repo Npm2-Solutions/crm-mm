@@ -255,6 +255,19 @@ class DoveSiApre(NotificheCase):
 		self.assertEqual(righe["invoicing"]["excerpt"], "It counts as not issued.")
 		self.assertIsNone(righe["agenda"]["from"])
 
+	def test_una_fattura_del_centro_si_apre_su_di_se(self):
+		"""What a person paid online stayed a draft: the notification opens on that
+		invoice, not on a list where drafts are not (the simulation of a week)."""
+		avvisa(
+			BRUNO,
+			"Invoicing",
+			testo="The invoice of what Laura paid online stayed a draft",
+			oggetto=("CRM Invoice", "FAT-1"),
+		)
+		self.come(BRUNO)
+		(riga,) = [r for r in self.pannello()["rows"] if r["kind"] == "invoicing"]
+		self.assertEqual(riga["route"], {"name": "Invoices", "query": {"open": "FAT-1"}})
+
 	def test_un_messaggio_in_segreteria_di_un_numero_nuovo(self):
 		# nobody knows the caller: the call itself, in the register, to whoever reads it
 		avvisa(

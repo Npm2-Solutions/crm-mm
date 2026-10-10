@@ -49793,3 +49793,6 @@ msgstr "Una persona come cliente sull'account Stripe del centro: solo l'id di St
 
 msgid "Card not charged: {0}"
 msgstr "Carta non addebitata: {0}"
+
+msgid "paid online, still a draft"
+msgstr "pagata online, ancora in bozza"

@@ -686,6 +686,25 @@ def pending_actions(company: str = "") -> list[dict]:
 		):
 			da_fare.append({**riga, "action": "sdi", "state": stato, "label": etichetta})
 
+	# money received online whose invoice stayed a draft (a codice fiscale missing):
+	# owed the day the money arrived (art. 6 DPR 633/72), so it waits here
+	pagate = frappe.get_all(
+		"CRM Online Payment",
+		filters={"invoice": ["is", "set"], "status": ["in", ["Paid", "Partly refunded"]]},
+		pluck="invoice",
+	)
+	if pagate:
+		for riga in frappe.get_all(
+			"CRM Invoice",
+			filters={**filtri, "docstatus": 0, "name": ["in", pagate]},
+			fields=["name", "document_number", "posting_date", "billing_name", "grand_total"],
+			order_by="posting_date asc",
+			limit=200,
+		):
+			da_fare.append(
+				{**riga, "action": "draft", "state": "bozza", "label": _("paid online, still a draft")}
+			)
+
 	for stato, etichetta in (
 		("da_inviare", _("waiting to be reported to the Sistema TS")),
 		("scartato", _("rejected by the Sistema TS")),

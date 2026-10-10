@@ -203,6 +203,9 @@ class TestFatturaDAcconto(AccontoCase):
 				},
 			)
 		)
+		# and it waits among the things to do, where the notification opens on it
+		da_fare = [r for r in fatture_api.pending_actions() if r["name"] == pagamento.invoice]
+		self.assertEqual([(r["action"], r["state"]) for r in da_fare], [("draft", "bozza")])
 
 	def test_rimborsato_alla_disdetta_la_nota_di_credito(self):
 		frappe.db.set_single_value("CRM Stripe Settings", "refund_on_cancel", 1)

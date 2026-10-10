@@ -208,7 +208,8 @@
           >
             <div class="flex min-w-0 flex-col">
               <span class="truncate text-p-base-medium text-ink-gray-8">
-                {{ row.document_number }} · {{ row.billing_name }}
+                {{ row.document_number || __('Draft') }} ·
+                {{ row.billing_name }}
               </span>
               <span class="text-p-sm text-ink-gray-5">
                 {{ row.label }} ·
@@ -499,7 +500,7 @@ import {
   dayjs,
   toast,
 } from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFattura } from '@/composables/fattura'
 import {
@@ -518,6 +519,17 @@ const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 // a notification about a supplier's invoice opens it, in its tab (`?ricevuta=`)
 const route = useRoute()
 const tab = ref(route.query.ricevuta ? 'received' : 'todo')
+
+// a notification about one of the centre's own (paid online, stayed a draft)
+// opens it over the things to do (`?open=`), and the address forgets it
+onMounted(() => {
+  const aperta = route.query.open
+  if (!aperta) return
+  apriFattura(String(aperta), { alCambio: ricarica })
+  const indirizzo = new URL(window.location.href)
+  indirizzo.searchParams.delete('open')
+  history.replaceState(history.state, '', indirizzo.toString())
+})
 const company = ref('')
 const year = ref(new Date().getFullYear())
 const sending = ref('')
