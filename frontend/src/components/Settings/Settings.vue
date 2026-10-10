@@ -19,6 +19,10 @@
            and comes back, and it takes the whole screen (`.settings-modal` in
            telefono.css): as a card it kept frappe-ui's margins, 16px a side and
            48px above, and was 32px taller than the screen. -->
+      <!-- what a screen reader hears of the notice above: a region there
+           from the start, its words put in once it is in place (one inserted
+           already filled is not announced reliably) -->
+      <p role="status" class="sr-only">{{ avvisoMancante }}</p>
       <div
         ref="radice"
         class="settings-modal relative flex bg-surface-gray-1"
@@ -200,7 +204,6 @@
                  were what was asked, and nothing said otherwise -->
             <div
               v-if="paginaMancante"
-              role="status"
               class="flex items-start gap-3 rounded-lg bg-surface-amber-1 px-4 py-3 text-ink-amber-7"
             >
               <span
@@ -598,7 +601,13 @@ watch(
 onBeforeUnmount(() => togliDaIndietro?.())
 
 watch(showSettings, (open) => {
-  if (!open) return
+  // closed however (its X sets this, and the dialog's own close is not heard
+  // then): the page asked for goes with it, or a later plain opening said it
+  // was not there
+  if (!open) {
+    activeSettingsPage.value = ''
+    return
+  }
   showingDetail.value = !!activeSettingsPage.value
   // opened without a page: the first category's entries
   if (!activeSettingsPage.value) {
@@ -639,6 +648,15 @@ const paginaMancante = computed(
   () =>
     Boolean(activeSettingsPage.value) && !activeTab.value && whatsappNoto.value,
 )
+const avvisoMancante = ref('')
+watch(paginaMancante, (manca) => {
+  avvisoMancante.value = ''
+  if (manca)
+    setTimeout(() => {
+      if (paginaMancante.value)
+        avvisoMancante.value = __('The page you asked for is not here')
+    }, 150)
+})
 
 // Tapping a row has to push to the detail even when it is the row you were last
 // on: `activeSettingsPage` does not change then, so the watch above never fires.
