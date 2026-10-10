@@ -694,18 +694,21 @@ const MODI_RAPIDI = [
   { value: 'MP08', label: 'Card' },
   { value: 'MP05', label: 'Bank transfer' },
 ]
-// whether somebody chose it in this invoice: a draft opens on the default
-// (MP05), and says so until a way is tapped or picked from the list
+// whether somebody chose it in this invoice: a new one opens on the default
+// (MP05, the DocType's), and says so until a way is tapped or picked from the
+// list. Set when an invoice opens (apri): a save or a correction hands the
+// invoice back as a new object, and it said «not yet confirmed» again under
+// the way just chosen and saved
+const METODO_PREDEFINITO = 'MP05'
 const metodoToccato = ref(false)
 function scegliMetodo(valore) {
   vista.value.payment.payment_method = valore
   metodoToccato.value = true
 }
 watch(
-  () => [vista.value, vista.value?.payment?.payment_method],
-  ([fattura, metodo], [primaFattura, primoMetodo] = []) => {
-    if (fattura !== primaFattura) metodoToccato.value = false
-    else if (metodo !== primoMetodo) metodoToccato.value = true
+  () => vista.value?.payment?.payment_method,
+  (metodo, primo) => {
+    if (primo && metodo && metodo !== primo) metodoToccato.value = true
   },
 )
 const errore = ref('')
@@ -899,6 +902,7 @@ async function apri() {
   vista.value = null
   errore.value = ''
   datiAperti.value = false
+  metodoToccato.value = false
   try {
     if (stato.nome) {
       applica(
@@ -907,6 +911,10 @@ async function apri() {
         }),
         { tutta: true },
       )
+      // a draft saved with another way than the default had it chosen
+      metodoToccato.value =
+        (vista.value?.payment?.payment_method || METODO_PREDEFINITO) !==
+        METODO_PREDEFINITO
     } else {
       // what proposed it (an appointment) fills in what it knows; the rest is asked
       const bozza = stato.bozza || {}
