@@ -61,8 +61,23 @@
     0px 44px 52px -10px rgba(11, 46, 42, 0.12);
   /* 3. states that read at 4.5:1 on their own soft backgrounds */
   --ink-amber-8: #8a5300;
-  --ink-red-8: #c8323c;
+  --ink-red-8: #b3202b;
   --ink-green-8: #177a42;
+  /* 3b. the steps below that the screens write words in, on the same hues: a
+         warning takes the 7th step («Lo fa una sola persona»), an error the
+         6th or 7th, a badge the 8th on its own soft background. frappe-ui's
+         stop at 3.2:1 (amber 7), 4.2:1 (red 6, green 7, blue 8 on its badge);
+         these read at 4.6:1 or more on white, the sidebar's gray, a field's
+         gray and their own soft backgrounds (WCAG 1.4.3) */
+  --ink-red-6: #cc2229;
+  --ink-red-7: #bf2530;
+  --ink-amber-7: #9c5700;
+  --ink-green-7: #0b7a4b;
+  --ink-blue-6: #0067c8;
+  --ink-blue-7: #0062bf;
+  --ink-blue-8: #005cb3;
+  --ink-cyan-8: #0b7290;
+  --ink-teal-7: #00786e;
   /* the block: the toast, the bar of the rows chosen */
   --block-deep: #0b2e2a;
   --on-block-deep: #e1f5f1;
@@ -121,6 +136,17 @@
   --ink-amber-8: #f5b544;
   --ink-red-8: #ff7a80;
   --ink-green-8: #4cd38a;
+  /* and the steps the screens write words in, lit enough to read on the dark
+     surfaces (frappe-ui's red 6 stops at 2.7:1 on a field, amber 7 and green 7
+     at 4:1) */
+  --ink-red-6: #ff6b72;
+  --ink-red-7: #ff8a90;
+  --ink-amber-6: #f0a83a;
+  --ink-amber-7: #f5b544;
+  --ink-green-6: #3cc47c;
+  --ink-green-7: #4cd38a;
+  --ink-blue-6: #5aa8ff;
+  --ink-violet-6: #a78bfa;
 }
 
 /* 4. The cloud's tail: the corner at the bottom left nearly straight, like the
@@ -182,6 +208,27 @@
   [data-marchio='dottorcloud'] button[role='switch'] > span {
     transition: none;
   }
+}
+/* 6b. A switch that is off is still there to be seen: frappe-ui's track is
+       surface-gray-4, 1.29:1 on white, and on a bright screen «Ricorda gli
+       appuntamenti» off looked like no control at all. The track a gray that
+       reads at 3:1 or more on white and the panels' grays (WCAG 1.4.11), the
+       knob white on it (markup: frappe-ui's Switch) */
+[data-marchio='dottorcloud']
+  button[role='switch'][data-state='unchecked']:not(:disabled) {
+  background-color: #858c8a;
+}
+[data-marchio='dottorcloud']
+  button[role='switch'][data-state='unchecked']:not(:disabled):hover {
+  background-color: #6a716f;
+}
+[data-marchio='dottorcloud'][data-theme='dark']
+  button[role='switch'][data-state='unchecked']:not(:disabled) {
+  background-color: #757c7a;
+}
+[data-marchio='dottorcloud'][data-theme='dark']
+  button[role='switch'][data-state='unchecked']:not(:disabled):hover {
+  background-color: #858c8a;
 }
 
 /* 7. A field one must fill: a small red cross after its label instead of the

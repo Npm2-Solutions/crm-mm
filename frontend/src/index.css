@@ -44,6 +44,20 @@
   }
 }
 
+/* A value longer than its field says so: «silvia.fontana@example.c» in a
+   person's panel read as an address cut short, not as one that goes on. The
+   three dots while the field is at rest; written in, the field scrolls as it
+   always did */
+input:is(
+    [type='text'],
+    [type='email'],
+    [type='tel'],
+    [type='url'],
+    :not([type])
+  ):not(:focus) {
+  text-overflow: ellipsis;
+}
+
 @layer components {
   /* A speech bubble's tail, drawn as part of the bubble.
 
@@ -308,4 +322,12 @@
   > header
   h3 {
   overflow-wrap: anywhere;
+}
+
+/* A row a click opens, reached with the keyboard (utils/rigaCliccabile.js):
+   the brand's focus ring inside its edge, where a list's border would cut one
+   drawn outside */
+[data-riga-cliccabile]:focus-visible {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
 }
