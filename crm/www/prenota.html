@@ -948,7 +948,7 @@
           S.error = T("required"); render(); return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
-        if (cfMode() && cfWritten() && !/^[A-Z0-9]{16}$/.test(cfWritten())) { S.error = T("cfInvalid"); render(); $("f-fiscal_code")?.focus(); return; }
+        if (cfMode() && cfWritten() && !/^[A-Z0-9]{16}$/.test(cfWritten())) { S.error = T("cfInvalid"); render(); setTimeout(() => $("f-fiscal_code")?.focus(), 0); return; }
         // the words the person ticked, as they read them, before the form redraws:
         // they go in the consent register
         const consentText = f.consent ? ($("f-consent-label")?.innerText || "").replace(/\s*\*\s*$/, "") : "";
