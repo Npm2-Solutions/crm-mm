@@ -143,6 +143,24 @@ class LInvito(AreaCase):
 		[riga] = fatto["accesses"]
 		self.assertEqual((riga.user, riga.relation, riga.enabled), (ANNA, "Self", 1))
 
+	def test_un_figlio_senza_email_entra_dal_genitore(self):
+		"""The page names whoever answers for a child: «A parent or guardian» goes to them."""
+		frappe.set_user("Administrator")
+		figlio = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Leo", "last_name": "Area"}).insert(
+			ignore_permissions=True
+		)
+		padre = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Marco", "last_name": "Genitore", "email": PADRE}
+		).insert(ignore_permissions=True)
+		collegate.assicura_legame(figlio.name, padre.name, legami.GENITORE, represents=1)
+		self.segue(figlio.name)
+		self.come(DESK)
+		vista = accesso.get_accesses(figlio.name)
+		self.assertEqual((vista["email"], vista["guardian_email"]), (None, PADRE))
+		self.assertEqual(accesso.invite(figlio.name, relation=accesso.TUTORE)["email"], PADRE)
+		# Anna has an email and nobody answering for her
+		self.assertIsNone(accesso.get_accesses(self.anna.name)["guardian_email"])
+
 	def test_un_collega_non_entra_dall_area(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.invita(email=OPERATORE)
