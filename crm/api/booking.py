@@ -423,9 +423,18 @@ def find_or_create_person(
 
 
 def _format_when(booking, cal) -> str:
+	"""The hour as the email's reader reads it: the day in their language («lunedì
+	12 ottobre 2026, 10:00», never the server's English months), the 24-hour clock,
+	and the zone named in words only when they booked from another one than the
+	calendar's (`lingue.fuso_in_parole`), never «Europe/Rome»."""
+	from frappe.utils import formatdate
+
+	from crm.lingue import fuso_in_parole
+
 	tz = booking.invitee_timezone or cal.timezone
 	local = from_system_naive(booking.starts_on).astimezone(ZoneInfo(tz))
-	return f"{local.strftime('%A %d %B %Y, %H:%M')} ({tz})"
+	quando = f"{formatdate(local.date(), 'EEEE d MMMM yyyy')}, {local.strftime('%H:%M')}"
+	return quando if tz == cal.timezone else f"{quando} ({fuso_in_parole(tz)})"
 
 
 def manage_url(cal, booking) -> str:
