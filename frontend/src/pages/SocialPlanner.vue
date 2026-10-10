@@ -191,7 +191,7 @@
                 class="flex size-6 items-center justify-center rounded-full text-xs"
                 :class="
                   cell.isToday
-                    ? 'bg-surface-gray-7 font-semibold text-ink-base'
+                    ? 'bg-[var(--brand-action)] font-semibold text-[var(--on-brand-solid)]'
                     : cell.inMonth
                       ? 'text-ink-gray-7'
                       : 'text-ink-gray-5'

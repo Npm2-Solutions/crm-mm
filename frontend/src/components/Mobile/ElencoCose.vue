@@ -17,12 +17,13 @@
       <!-- pulled down from the top, the list reloads -->
       <TiraPerAggiornare v-bind="tira" />
       <section v-for="gruppo in gruppi" :key="gruppo.key" class="pb-2">
-        <h3
+        <!-- the second level, under the page's own name -->
+        <h2
           class="sticky top-0 z-[1] bg-surface-base px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wide"
           :class="gruppo.key === 'late' ? 'text-ink-red-6' : 'text-ink-gray-5'"
         >
           {{ __(gruppo.label) }} · {{ gruppo.rows.length }}
-        </h3>
+        </h2>
         <div
           v-for="cosa in gruppo.rows"
           :key="cosa.name"

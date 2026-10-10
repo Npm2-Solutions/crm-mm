@@ -9,6 +9,7 @@
   <div class="grid h-full place-items-center px-4 py-12">
     <EmptyState
       class="max-w-md"
+      :livello="2"
       :title="__('This page is not here')"
       :text="
         __('The address may be wrong, or the page is not one your level opens.')

@@ -34,7 +34,7 @@
       />
     </div>
     <EventNotificationsArea v-if="scheda === 'events'" />
-    <NotificationsList v-else />
+    <NotificationsList v-else :livello="2" />
   </div>
 </template>
 
