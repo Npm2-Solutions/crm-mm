@@ -50897,20 +50897,12 @@ msgstr "{0} ha rifiutato i documenti. Correggili e mandali di nuovo."
 msgid "Finish the draft invoice of {0}"
 msgstr "Completa la bozza di fattura di {0}"
 #: frontend/src/components/SchedeDelRecord.vue
-msgid "Other sections"
-msgstr "Altre sezioni"
-
-#: frontend/src/components/SchedeDelRecord.vue
 msgid "{0}, other sections"
 msgstr "{0}, altre sezioni"
 
 #: frontend/vite/frappeUi.js
 msgid "Select row"
 msgstr "Seleziona la riga"
-
-#: frontend/src/components/Dashboard/widgets/NumberWidget.vue
-msgid "Progress"
-msgstr "Avanzamento"
 
 #: frontend/src/components/Settings/Scheduling/TeamMatrix.vue
 msgid "Services and who does them"
@@ -50923,14 +50915,6 @@ msgstr "{0} anni · {1}"
 #: frontend/src/components/PersonHeader.vue
 msgid "Under a year · {0}"
 msgstr "Meno di un anno · {0}"
-
-#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
-msgid "The appointments that use it keep their day and time, without the room. To stop booking it and keep it, switch it off instead."
-msgstr "Gli appuntamenti che lo usano tengono giorno e ora, senza ambulatorio. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
-
-#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
-msgid "Delete the room"
-msgstr "Elimina l'ambulatorio"
 
 #: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
 msgid "Deleted"
@@ -51018,3 +51002,36 @@ msgstr "Non è tra le impostazioni che puoi vedere: il tuo livello non la apre, 
 #: frontend/src/components/Calendar/AppointmentPanel.vue
 msgid "Choose the service first: the free times depend on how long it lasts and who does it."
 msgstr "Prima scegli il servizio: gli orari liberi dipendono da quanto dura e da chi lo fa."
+
+#: frontend/src/components/Dashboard/widgets/NumberWidget.vue
+msgctxt "Dashboard meter"
+msgid "Progress"
+msgstr "Avanzamento"
+
+#: crm/fcrm/doctype/crm_automation_enrollment/crm_automation_enrollment.json
+msgid "Progress"
+msgstr "Avanzamento"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "1 year · {0}"
+msgstr "1 anno · {0}"
+
+#: frontend/src/utils/automation.js
+msgid "the day after «{0}»"
+msgstr "il giorno dopo «{0}»"
+
+#: frontend/src/utils/automation.js
+msgid "the day before «{0}»"
+msgstr "il giorno prima di «{0}»"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Whoever opens it from a message already sent or an automation finds nothing."
+msgstr "Chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Its one click is lost, and whoever opens it from a message already sent or an automation finds nothing."
+msgstr "Il suo unico clic si perde, e chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead."
+msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
