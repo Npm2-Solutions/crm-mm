@@ -274,8 +274,11 @@ const tabs = createResource({
   },
 })
 
-// the layout comes after the switches: they are applied to it when it does
-watch(() => tabs.data, applicaLeScelte)
+// the layout comes after the switches: they are applied to it when it does,
+// and at once to a layout already cached, which a dialog opened before left
+// with its own switches (a new person's fields drawn under «existing person»
+// until the reload answered)
+watch(() => tabs.data, applicaLeScelte, { immediate: true })
 
 // only the stages of the pipeline the deal is being created in
 const dealStatuses = computed(() =>
