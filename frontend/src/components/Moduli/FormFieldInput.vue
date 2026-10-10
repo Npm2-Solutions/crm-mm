@@ -98,6 +98,9 @@
           class="flex flex-col gap-1.5"
           :role="field.multiple ? 'group' : 'radiogroup'"
           :aria-labelledby="idDomanda"
+          :aria-required="
+            !field.multiple && required && !readonly ? 'true' : undefined
+          "
         >
           <button
             v-for="option in options"
@@ -454,6 +457,7 @@ const unControllo = computed(() => {
 useEtichettaDelCampo(
   scatola,
   computed(() => (unControllo.value ? etichetta.value : null)),
+  computed(() => Boolean(props.required && !props.readonly)),
 )
 
 // the kinds a signed form shows as words; the others show themselves

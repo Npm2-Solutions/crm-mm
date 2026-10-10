@@ -1065,7 +1065,11 @@ row, the bar's words beside their icons).
   the server is drawn on. A field's words name its control: a form's `Field` and a
   record's side panel tie them (`useEtichettaDelCampo`, `useEtichetteDeiCampi`
   in `composables/nomeAlControllo.js`), a button or a select read with what it
-  shows; a new list of fields does the same. What a tooltip tells on a mouse
+  shows; a new list of fields does the same. A required field's mark («*», the
+  red cross) is for the eye only (`aria-hidden`, on the public pages too): the
+  control says `aria-required` (`useEtichettaDelCampo(…, obbligatorio)`,
+  `moduli_campi.js`), and a check of a name reads the accessible name
+  (`getByRole(…, { name })`), never a label's text. What a tooltip tells on a mouse
   (a message's ticks) a screen reader reads too: `role="img"` and the same
   words as `aria-label`. A page's name is its heading for a screen reader:
   `App.vue` draws it, unseen, from the menu's words (`titoloDellaPagina`); a

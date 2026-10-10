@@ -105,7 +105,7 @@
       :required="
         Boolean(
           field.reqd ||
-            (field.mandatory_depends_on && field.mandatory_via_depends_on),
+          (field.mandatory_depends_on && field.mandatory_via_depends_on),
         )
       "
       :disabled="Boolean(field.read_only)"
@@ -446,7 +446,18 @@ const formDocument = ref(null)
 // the field's words name its control, for VoiceOver and TalkBack
 const scatola = ref(null)
 const etichetta = ref(null)
-useEtichettaDelCampo(scatola, etichetta)
+// required as the mark beside the words says, which is for the eye only
+useEtichettaDelCampo(
+  scatola,
+  etichetta,
+  computed(() =>
+    Boolean(
+      field.value.reqd ||
+      (field.value.mandatory_depends_on &&
+        field.value.mandatory_via_depends_on),
+    ),
+  ),
+)
 
 // Standalone mode: context injected from FieldLayout when context prop is set
 const standaloneContext = inject('fieldLayoutContext', null)

@@ -759,7 +759,8 @@
         const input = h(attrs.tag || "input", { id: "f-" + key, name: key, ...attrs, tag: null, required: required || null });
         input.value = S.form[key] || "";
         input.addEventListener("input", (e) => (S.form[key] = e.target.value));
-        return h("div", {}, h("label", { for: "f-" + key }, label, required ? h("span", { class: "req" }, " *") : ` (${T("optional")})`), input);
+        // the mark is for the eye: the control says it is required (`required`) to a screen reader
+        return h("div", {}, h("label", { for: "f-" + key }, label, required ? h("span", { class: "req", "aria-hidden": "true" }, " *") : ` (${T("optional")})`), input);
       }
 
       function viewDetails() {
@@ -830,12 +831,12 @@
           field("phone", T("phone"), { type: "tel", autocomplete: "tel", inputmode: "tel" }, !!svc.require_phone)));
         if (withNotes) form.append(field("notes", svc.question || T("notes"), { tag: "textarea", rows: 3 }, !!svc.require_notes));
         if (S.catalog.require_consent) {
-          const cb = h("input", { type: "checkbox", id: "f-consent" });
+          const cb = h("input", { type: "checkbox", id: "f-consent", required: true });
           cb.checked = S.form.consent;
           cb.addEventListener("change", (e) => (S.form.consent = e.target.checked));
           const text = S.catalog.privacy_policy_url
-            ? h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req" }, " *"))
-            : h("span", {}, T("consentPlain"), h("span", { class: "req" }, " *"));
+            ? h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req", "aria-hidden": "true" }, " *"))
+            : h("span", {}, T("consentPlain"), h("span", { class: "req", "aria-hidden": "true" }, " *"));
           form.append(h("label", { class: "check", for: "f-consent", id: "f-consent-label" }, cb, text));
         }
         // optional and never ticked for them: a consent has to be given, not left in place
