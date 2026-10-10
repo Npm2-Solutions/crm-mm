@@ -21,16 +21,22 @@ dossier, 4/6/2015).
 
 from __future__ import annotations
 
+import datetime
 import json
 
 import frappe
 from frappe import _
-from frappe.utils import cint, get_fullname
+from frappe.utils import cint, get_datetime, get_fullname, now_datetime
 
 from crm.clinica import dossier, paziente
 from crm.permissions import livelli
 
 DOCTYPE = "Clinic Record"
+#: A visit written this long before its appointment starts, or this long after,
+#: is written at it: the practitioner opens the sheet a little early, signs it at
+#: the end of the morning.
+PRIMA_DELL_APPUNTAMENTO = datetime.timedelta(hours=1)
+DOPO_L_APPUNTAMENTO = datetime.timedelta(hours=4)
 SOLO_IO = "Only me"
 DOSSIER = "health_dossier"
 #: Two years: the least the Garante asks the access logs to be kept.
@@ -232,6 +238,48 @@ def get_record(lead: str) -> dict:
 	}
 
 
+def appuntamento_in_corso(lead: str, utente: str | None = None) -> str | None:
+	"""The appointment a visit written now is written at: the person's, with the
+	practitioner on its staff, not cancelled, started a little before or about to -
+	the nearest to now. The Clinic tab never named one, so a visit never said the
+	person came (`DocumentoClinico.after_insert`), and the agenda left them «Booked»."""
+	from crm.fcrm.doctype.crm_appointment.crm_appointment import person_of
+
+	utente = utente or frappe.session.user
+	adesso = now_datetime()
+	vicini = frappe.get_all(
+		"CRM Appointment",
+		filters={
+			"starts_on": ["between", [adesso - DOPO_L_APPUNTAMENTO, adesso + PRIMA_DELL_APPUNTAMENTO]],
+			"status": ["!=", "Cancelled"],
+		},
+		fields=["name", "starts_on"],
+	)
+	if not vicini:
+		return None
+	nomi = [v.name for v in vicini]
+	del_professionista = set(
+		frappe.get_all(
+			"CRM Appointment Staff",
+			filters={"parenttype": "CRM Appointment", "parent": ["in", nomi], "user": utente},
+			pluck="parent",
+		)
+	)
+	della_persona = {
+		riga.parent
+		for riga in frappe.get_all(
+			"CRM Appointment Participant",
+			filters={"parenttype": "CRM Appointment", "parent": ["in", nomi], "status": ["!=", "Cancelled"]},
+			fields=["parent", "party_type", "party"],
+		)
+		if person_of(riga.party_type, riga.party) == lead
+	}
+	scelti = [v for v in vicini if v.name in del_professionista and v.name in della_persona]
+	if not scelti:
+		return None
+	return min(scelti, key=lambda v: abs(get_datetime(v.starts_on) - adesso)).name
+
+
 @frappe.whitelist(methods=["POST"])
 def save_record(
 	lead: str,
@@ -258,6 +306,9 @@ def save_record(
 		doc.lead = lead
 		doc.practitioner = frappe.session.user
 		doc.addendum_to = addendum_to
+		# a visit, written at the person's appointment: it says they came
+		if kind == "Visit" and not addendum_to:
+			doc.appointment = appuntamento_in_corso(lead)
 	if visibility not in dossier.VISIBILITA:
 		frappe.throw(_("{0} is not who reads a record").format(visibility))
 	doc.update({"kind": kind, "visibility": visibility, "content": content})
@@ -358,7 +409,7 @@ def start_sheet(lead: str, template: str, appointment: str | None = None, from_l
 			"kind": "Visit",
 			"practitioner": frappe.session.user,
 			"record_date": frappe.utils.now_datetime(),
-			"appointment": appointment,
+			"appointment": appointment or appuntamento_in_corso(lead),
 			"template": modello.name,
 			"template_version": versione.name,
 			"title": versione.title,

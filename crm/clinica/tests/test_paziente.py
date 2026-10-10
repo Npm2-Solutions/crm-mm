@@ -359,3 +359,53 @@ class ChiLoVede(ClinicCase):
 		tipi = [t["key"] for t in consensi.get_consents(self.mario.name)["types"]]
 		self.assertNotIn("health_dossier", tipi)
 		self.assertIn("marketing", tipi)
+
+
+class LaVisitaAllAppuntamento(ClinicCase):
+	"""A visit written from the Clinic tab at the person's appointment says they
+	came: the tab never named the appointment, and the agenda left them «Booked»
+	(the simulation of a week found it)."""
+
+	def setUp(self):
+		super().setUp()
+		from crm.scheduling.timeutils import UTC
+
+		utenti.sincronizza()
+		utenti.assegna_livelli(self.doctor, ["operatore"])
+		adesso = datetime.datetime.now(UTC).replace(second=0, microsecond=0)
+		self.incontro = self.appuntamento(self.mario, adesso - datetime.timedelta(minutes=10))
+		livelli.dimentica_cache()
+
+	def scrive(self, **valori):
+		from crm.clinica import cartella
+
+		frappe.set_user(self.doctor)
+		livelli.dimentica_cache()
+		try:
+			return cartella.save_record(self.mario.name, content="<p>Visita.</p>", **valori)
+		finally:
+			frappe.set_user("Administrator")
+
+	def presenza(self):
+		return frappe.db.get_value(
+			"CRM Appointment Participant", {"parent": self.incontro.name, "party": self.mario.name}, "status"
+		)
+
+	def test_la_visita_all_appuntamento_dice_che_e_venuto(self):
+		visita = self.scrive()
+		self.assertEqual(frappe.db.get_value("Clinic Record", visita["name"], "appointment"), self.incontro.name)
+		self.assertEqual(self.presenza(), "Attended")
+
+	def test_una_nota_non_dice_niente(self):
+		nota = self.scrive(kind="Note")
+		self.assertFalse(frappe.db.get_value("Clinic Record", nota["name"], "appointment"))
+		self.assertEqual(self.presenza(), "Booked")
+
+	def test_l_appuntamento_di_un_collega_non_e_il_suo(self):
+		from crm.clinica import cartella
+
+		collega = self.make_user("clinic.colleague@example.com")
+		self.assertIsNone(cartella.appuntamento_in_corso(self.mario.name, collega))
+		# nor tomorrow's
+		self.incontro.db_set("starts_on", self.incontro.starts_on + datetime.timedelta(days=1))
+		self.assertIsNone(cartella.appuntamento_in_corso(self.mario.name, self.doctor))
