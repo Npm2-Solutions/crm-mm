@@ -304,16 +304,21 @@ const prossimo = computed(() =>
 // how old they are and when they were born: after the name, what tells one
 // patient from another with the same name (NISTIR 7804), on every tab. From
 // the billing details the page reads anyway (the codice fiscale's date), for
-// whoever may read them: the others see what they saw before
+// whoever may read them: the others see what they saw before. Never kept in
+// the browser (no `cache`): a cached resource lands in IndexedDB, which no
+// logout clears, and a colleague without the fiscal details at the same
+// reception PC was shown the last reader's copy
+const fiscali = puo('persone.dati_fiscali')
 const anagrafica = createResource({
   url: 'crm.invoicing.anagrafica.get_billing_profile',
   params: { party_type: 'CRM Lead', party: props.doc.name },
-  cache: ['person-birth', props.doc.name],
-  auto: puo('persone.dati_fiscali'),
+  auto: fiscali,
   onError: () => anagrafica.setData(null),
 })
 const eta = computed(() =>
-  etaENascita(anagrafica.data?.birth_date, adessoDelCentro(), lingua),
+  fiscali
+    ? etaENascita(anagrafica.data?.birth_date, adessoDelCentro(), lingua)
+    : null,
 )
 
 // who they are to the centre, in a few words: a contact, a client since, a
