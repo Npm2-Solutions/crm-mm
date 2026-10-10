@@ -35340,11 +35340,6 @@ msgstr "Attiva"
 
 #: frontend/src/pages/Automations.vue
 msgctxt "Automation state"
-msgid "Paused"
-msgstr "In pausa"
-
-#: frontend/src/pages/Automations.vue
-msgctxt "Automation state"
 msgid "Draft"
 msgstr "Bozza"
 
@@ -49793,3 +49788,114 @@ msgstr "Una persona come cliente sull'account Stripe del centro: solo l'id di St
 
 msgid "Card not charged: {0}"
 msgstr "Carta non addebitata: {0}"
+
+#: frontend/src/components/SchedeDelRecord.vue
+msgid "Other sections"
+msgstr "Altre sezioni"
+
+#: frontend/src/components/SchedeDelRecord.vue
+msgid "{0}, other sections"
+msgstr "{0}, altre sezioni"
+
+#: frontend/vite/frappeUi.js
+msgid "Select row"
+msgstr "Seleziona la riga"
+
+#: frontend/src/components/Dashboard/widgets/NumberWidget.vue
+msgid "Progress"
+msgstr "Avanzamento"
+
+#: frontend/src/components/Settings/Scheduling/TeamMatrix.vue
+msgid "Services and who does them"
+msgstr "I servizi e chi li esegue"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "{0} years · {1}"
+msgstr "{0} anni · {1}"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "Under a year · {0}"
+msgstr "Meno di un anno · {0}"
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "The appointments that use it keep their day and time, without the room. To stop booking it and keep it, switch it off instead."
+msgstr "Gli appuntamenti che lo usano tengono giorno e ora, senza ambulatorio. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "Delete the room"
+msgstr "Elimina l'ambulatorio"
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "Deleted"
+msgstr "Eliminato"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Delete the link {0}?"
+msgstr "Vuoi eliminare il link {0}?"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Its {0} clicks are lost, and whoever opens it from a message already sent or an automation finds nothing."
+msgstr "I suoi {0} clic si perdono, e chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Delete the link"
+msgstr "Elimina il link"
+
+#: frontend/src/components/Modals/DealModal.vue
+msgid "Choose the person, or switch off «Choose Existing Person» to write a new one."
+msgstr "Scegli la persona, oppure spegni «Scegli una persona esistente» per scriverne una nuova."
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a professional in two places at once"
+msgstr "Impedisci che un professionista sia in due posti alla volta"
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a room or machine over its capacity"
+msgstr "Impedisci di superare la capienza di un ambulatorio o di un macchinario"
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a client in two places at once"
+msgstr "Impedisci che un cliente sia in due posti alla volta"
+
+#: crm/clinica/parole.py
+msgid "Block a patient in two places at once"
+msgstr "Impedisci che un paziente sia in due posti alla volta"
+
+#: frontend/src/utils/automation.js
+msgid "on the day of «{0}»"
+msgstr "il giorno di «{0}»"
+
+#: frontend/src/utils/automation.js
+msgid "{0} days after «{1}»"
+msgstr "{0} giorni dopo «{1}»"
+
+#: frontend/src/utils/automation.js
+msgid "{0} days before «{1}»"
+msgstr "{0} giorni prima di «{1}»"
+
+#: frontend/src/pages/AutomationEditor.vue
+#: frontend/src/pages/Automations.vue
+msgctxt "Automation state"
+msgid "Off"
+msgstr "Spenta"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Switch on «Remind of the appointments» to choose when and how they leave."
+msgstr "Accendi «Ricorda gli appuntamenti» per scegliere quando e come partono."
+
+#: frontend/src/components/Settings/AssistantSettings.vue
+msgid "These are used once you switch the assistant on."
+msgstr "Si usano quando accendi l'assistente."
+
+#: frontend/src/utils/menu.js
+msgid "Page not found"
+msgstr "Pagina non trovata"
+
+#: frontend/src/pages/Today.vue
+#: frontend/src/pages/Invoices.vue
+msgid "Finish the draft invoice"
+msgstr "Completa la bozza di fattura"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "This is the usual way, not yet confirmed: tap how the person really paid, the cash closing counts on it."
+msgstr "È il modo predefinito, non ancora confermato: tocca come ha pagato davvero, la chiusura di cassa conta su questo."
