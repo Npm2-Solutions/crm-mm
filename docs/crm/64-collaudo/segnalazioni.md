@@ -35,13 +35,14 @@ con il centro, mai per chat o email personale.
 |---|---|---|
 | **Bloccante** | ferma il lavoro e non c'è un'altra strada; o fa un danno: un messaggio alla persona sbagliata, dati sanitari letti da chi non deve, soldi presi o restituiti male, una fattura sbagliata che partirebbe, dati persi | si guarda subito; ferma il livello finché non è corretta. Nel pilota: si corregge in giornata, o si valuta il ritorno indietro |
 | **Grave** | una cosa non funziona ma c'è un'altra strada; o fa credere una cosa sbagliata (un esito, un importo, uno stato) | si corregge prima di passare al livello dopo |
-| **Media** | funziona ma è scomoda, lenta, confusa; parole sbagliate o in inglese; sul telefono esce dallo schermo o si tocca a fatica | si decide: si corregge prima del pilota, o si accetta e si dice al centro |
-| **Lieve** | estetica, un refuso, un allineamento | si corregge quando si passa di lì |
+| **Minore** | funziona ma è scomoda, lenta, confusa; parole sbagliate o in inglese; sul telefono esce dallo schermo o si tocca a fatica | si decide: si corregge prima del pilota, o si accetta e si dice al centro |
+| **Estetico** | l'aspetto, un refuso, un allineamento | si corregge quando si passa di lì |
 | **Idea** | non è un errore: una cosa che servirebbe | va tra le proposte, non blocca niente |
 
 Tutto quello che riguarda **chi vede cosa** (la cartella, i dati sanitari, le
 conversazioni, i dati di un'altra persona) è almeno **Grave**, anche se sembra
-piccolo. Nel dubbio tra due gravità, si sceglie la più alta: si abbassa dopo.
+piccolo. Nel dubbio tra due gravità, si sceglie la più alta: si abbassa dopo. Sono le stesse
+gravità che usa la simulazione del livello 1 (bloccante, grave, minore, estetico).
 
 ## Dove si raccolgono
 

@@ -13,7 +13,7 @@ schermata con i suoi dati. Una persona si indica con il codice della sua scheda
 (/crm/persone/<codice>).
 -->
 
-**Gravità:** Bloccante / Grave / Media / Lieve / Idea
+**Gravità:** Bloccante / Grave / Minore / Estetico / Idea
 
 **Livello:** 1 simulazione / 2 server di collaudo / 3 centro pilota
 

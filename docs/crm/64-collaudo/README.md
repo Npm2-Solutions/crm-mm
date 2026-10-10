@@ -64,41 +64,62 @@ operatore assegna.
 
 **Come si fa girare sul proprio computer.**
 
-> La suite si sta scrivendo (10/10/2026). Il comando che lancia la suite e i nomi
-> dei file del rapporto si completano qui quando `e2e/simulazione/` entra nel ramo.
+> La suite si sta scrivendo (10/10/2026): i nomi qui sotto sono quelli di
+> `e2e/simulazione/playwright.config.ts` e dei suoi file di oggi; si ricontrollano
+> quando la suite entra nel ramo.
 
 1. Un bench con un sito **vuoto** e l'app installata, come dice il README del
-   repository («Sviluppo»).
+   repository («Sviluppo»). La suite cerca il banco a
+   `http://collaudo.localhost:8000`: un sito che si chiama `collaudo.localhost`, o un
+   altro indirizzo in `SIM_BASE`.
 2. Il sito diventa un banco di prova:
-   `bench --site <sito> set-config -p dottorcloud_collaudo 1`
+   `bench --site collaudo.localhost set-config -p dottorcloud_collaudo 1`
 3. Il centro, con i servizi finti:
-   `bench --site <sito> execute crm.collaudo.prepara.centro --kwargs '{"servizi_finti": 1}'`.
+   `bench --site collaudo.localhost execute crm.collaudo.prepara.centro --kwargs '{"servizi_finti": 1}'`.
    Con `servizi_finti: 1` Stripe è quello finto (`stripe_api` nel `site_config.json`
    del sito, collegato come il centro collega il suo), la posta resta in coda, le
    stanze delle visite online sono su un indirizzo di example.com. Il comando
    risponde con la squadra, la sua password e i problemi: **una lista vuota vuol dire
    che il centro sta in piedi**.
-4. `bench start`, poi la suite di `e2e/simulazione/` con Playwright (come i test UI:
-   `npx playwright install chromium`, l'indirizzo del sito in `BASE_URL`). Il
-   comando esatto: *da completare*.
+4. `bench start`, poi dalla cartella del repository:
+
+   ```bash
+   npx playwright install chromium
+   npx playwright test --config e2e/simulazione/playwright.config.ts
+   ```
+
+   I servizi finti (`e2e/simulazione/finti/server.py`, su `http://127.0.0.1:8791` o
+   l'indirizzo in `SIM_FINTI`) partono da soli se non rispondono. Con `SIM_DA=martedi`
+   la settimana riprende da un giorno, con quello che i giorni prima hanno lasciato;
+   con `SIM_FINO=mercoledi` si ferma lì; `SIM_CHROMIUM` usa un Chromium già
+   installato.
 
 **Come si fa girare da GitHub.** Actions › **Simulazione** › Run workflow, si
 sceglie il ramo da provare, Run. Come gli altri controlli (05/10/2026), non parte da
-solo: si lancia a mano quando serve.
+solo: si lancia a mano quando serve. Il rapporto è tra gli artefatti della corsa.
 
-**Cosa dice il rapporto.** Si scarica dagli artefatti della corsa:
+**Cosa dice il rapporto.** Sta in `e2e/simulazione/rapporto/` (non va nel
+repository):
 
-- la settimana passo per passo, per giorno e per ruolo: riuscito o no;
-- di un passo non riuscito, la schermata, il video e la traccia di Playwright (come
-  fanno già i test UI);
-- gli errori che il server ha scritto nel registro durante la corsa;
-- le email e gli SMS che ogni persona ha ricevuto, con i loro link;
-- la fotografia del centro preparato e i suoi problemi.
+- `RIEPILOGO.md`: il centro, il banco, la settimana giocata; per ogni giorno quanti
+  passi, quanti riusciti, con difetti, falliti, saltati; i difetti trovati, dal più
+  grave; i passi falliti con il loro errore;
+- per ogni giorno, `lunedi.md` e `lunedi.html` (e così gli altri): i passi con l'ora,
+  chi li fa, quanto sono durati, le schermate e le note;
+- `passi.json`: gli stessi dati, per una macchina; `finti.json`: quello che i servizi
+  finti hanno ricevuto;
+- `playwright/` e `risultati/`: il rapporto di Playwright, con la traccia di un passo
+  fallito.
+
+I difetti hanno quattro gravità: bloccante, grave, minore, estetico, le stesse delle
+[segnalazioni](./segnalazioni.md). La corsa è rossa se un passo fallisce o se c'è un
+difetto bloccante o grave.
 
 **Criteri d'uscita del livello 1.**
 
 - [ ] La simulazione è verde sul ramo del rilascio, due corse di fila (una sola
-      verde può essere fortuna).
+      verde può essere fortuna): nessun passo fallito, nessun difetto bloccante o
+      grave.
 - [ ] Nessun errore nuovo nel registro del server durante la corsa.
 - [ ] Quello che il CI direbbe è verde sul ramo (AGENTS.md, «Tests»): `yarn test:run`,
       la build, i test del server dei moduli toccati.
@@ -136,7 +157,7 @@ Ogni giorno, dieci minuti alla stessa ora: cosa non è andato ieri, cosa blocca 
       spuntata, o una segnalazione per quella che non è andata.
 - [ ] Ogni ruolo ha fatto almeno metà della sua lista **sul telefono**, con almeno un
       iPhone e un Android nella squadra.
-- [ ] Zero segnalazioni «Bloccante» o «Grave» aperte; ognuna delle «Media» ha una
+- [ ] Zero segnalazioni «Bloccante» o «Grave» aperte; ognuna delle «Minore» ha una
       decisione (si corregge prima del pilota, o si accetta e si dice al centro).
 - [ ] Ogni servizio esterno ha fatto i suoi casi:
   - Stripe: un acconto pagato, una carta rifiutata, una che chiede 3-D Secure, un
@@ -243,8 +264,9 @@ Si rilegge alla riunione che decide, con il centro. Ogni riga ha chi la verifica
 
 ## Da verificare
 
-- Il comando che lancia la suite e i nomi degli artefatti del workflow
-  «Simulazione»: si scrivono qui quando `e2e/simulazione/` è nel ramo.
+- Il comando, le variabili e i file del rapporto della simulazione, e il workflow
+  «Simulazione»: scritti da quello che c'era il 10/10/2026, da ricontrollare quando
+  `e2e/simulazione/` e il workflow sono nel ramo.
 - I numeri delle carte di prova di Stripe si ricontrollano sulla loro tabella
   ufficiale prima di ogni giro (sono in
   [server-di-collaudo.md](./server-di-collaudo.md#stripe-in-modalità-di-prova)).
