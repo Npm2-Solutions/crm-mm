@@ -7,6 +7,9 @@
   shown here, and whoever answers types it on the phone's keypad. No document is
   asked. The page asks how it went while Twilio's call goes on; Twilio says it too,
   and whoever asked hears of it if the page was closed.
+
+  With Telnyx (doc 64) the code goes the other way: Telnyx calls the number - or
+  texts it - and says a code, which whoever answered types here.
 -->
 <template>
   <Dialog
@@ -16,7 +19,14 @@
     <template #body-content>
       <!-- the number -->
       <div v-if="fase === 'numero'" class="flex flex-col gap-4">
-        <p class="text-p-sm text-ink-gray-6">
+        <p v-if="diTelnyx" class="text-p-sm text-ink-gray-6">
+          {{
+            __(
+              'Telnyx calls the number, or sends it an SMS, with a code to type here. No document is needed: answering proves the line is the centre’s. Calls to the number keep ringing where they ring now.',
+            )
+          }}
+        </p>
+        <p v-else class="text-p-sm text-ink-gray-6">
           {{
             __(
               'Twilio calls the number from {0}: a recorded voice, in English, asks for a code that appears here, to type on the phone’s keypad. No document is needed: answering proves the line is the centre’s. Calls to the number keep ringing where they ring now.',
@@ -50,14 +60,41 @@
           <span>{{ avvisoItalia }}</span>
         </p>
 
-        <div class="flex flex-col gap-3">
+        <div
+          v-if="diTelnyx"
+          class="grid grid-cols-2 gap-2 max-md:grid-cols-1"
+          role="radiogroup"
+        >
+          <SceltaRadio
+            v-model="modo"
+            nome="modo-della-verifica"
+            :scelta="{
+              value: 'call',
+              label: __('A call'),
+              description: __('A voice says the code: for a landline.'),
+            }"
+          />
+          <SceltaRadio
+            v-model="modo"
+            nome="modo-della-verifica"
+            :scelta="{
+              value: 'sms',
+              label: __('An SMS'),
+              description: __('The code comes written: for a mobile.'),
+            }"
+          />
+        </div>
+
+        <div v-if="!diTelnyx || modo === 'call'" class="flex flex-col gap-3">
           <Switch
             v-model="centralino"
             :label="__('The line has a switchboard')"
             :description="
-              __(
-                'Twilio dials an extension once the call is answered, or waits before calling.',
-              )
+              diTelnyx
+                ? __('Telnyx dials an extension once the call is answered.')
+                : __(
+                    'Twilio dials an extension once the call is answered, or waits before calling.',
+                  )
             "
           />
           <div
@@ -73,6 +110,7 @@
               autocomplete="off"
             />
             <FormControl
+              v-if="!diTelnyx"
               v-model="modulo.call_delay"
               type="number"
               inputmode="numeric"
@@ -81,6 +119,36 @@
             />
           </div>
         </div>
+        <ErrorMessage :message="errore" />
+      </div>
+
+      <!-- Telnyx's code, typed here -->
+      <div
+        v-else-if="fase === 'codice'"
+        class="flex flex-col items-center gap-4 py-2 text-center"
+      >
+        <p class="text-p-base text-ink-gray-7">
+          {{
+            modo === 'sms'
+              ? __(
+                  'Telnyx is sending an SMS to {0}. Write here the code it carries:',
+                  [numero],
+                )
+              : __(
+                  'Telnyx is calling {0}. Answer, and write here the code the voice says:',
+                  [numero],
+                )
+          }}
+        </p>
+        <FormControl
+          v-model="codice"
+          class="w-40"
+          :aria-label="__('Code')"
+          v-bind="tastiera('cifre')"
+          autocomplete="one-time-code"
+          placeholder="123456"
+          @keydown.enter="conferma"
+        />
         <ErrorMessage :message="errore" />
       </div>
 
@@ -158,10 +226,24 @@
           <Button :label="__('Cancel')" @click="show = false" />
           <Button
             variant="solid"
-            :label="__('Call the number')"
+            :label="
+              diTelnyx && modo === 'sms'
+                ? __('Send the SMS')
+                : __('Call the number')
+            "
             :loading="avvio"
             :disabled="!modulo.phone_number.trim()"
             @click="verifica"
+          />
+        </template>
+        <template v-else-if="fase === 'codice'">
+          <Button :label="__('Ask for a new code')" @click="fase = 'numero'" />
+          <Button
+            variant="solid"
+            :label="__('Confirm')"
+            :loading="avvio"
+            :disabled="!codice.trim()"
+            @click="conferma"
           />
         </template>
         <Button
@@ -189,6 +271,9 @@
 </template>
 
 <script setup>
+import SceltaRadio from '@/components/Settings/Invoicing/SceltaRadio.vue'
+import { moduloDi } from '@/utils/operatori'
+import { tastiera } from '@/utils/tastiera'
 import {
   DA_TWILIO,
   IN_ATTESA,
@@ -213,6 +298,8 @@ const props = defineProps({
   // a number to verify again, with its name
   numeroIniziale: { type: String, default: '' },
   nomeIniziale: { type: String, default: '' },
+  // the carrier the centre's phone goes through: twilio or telnyx
+  carrier: { type: String, default: 'twilio' },
 })
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })
@@ -225,6 +312,10 @@ const modulo = reactive({
   call_delay: '',
 })
 const centralino = ref(false)
+// with Telnyx: how the code comes, and the code typed
+const diTelnyx = computed(() => props.carrier === 'telnyx')
+const modo = ref('call')
+const codice = ref('')
 const errore = ref('')
 const avvio = ref(false)
 const numero = ref('')
@@ -240,8 +331,19 @@ const avvisoItalia = computed(() =>
         'An Italian mobile is not shown on calls to Italy since November 2025 (AGCOM): verify it only to call abroad.',
       )
     : __(
-        'In Italy it is shown as far as the operators let it: since August 2025 an Italian operator may block a call from abroad that shows an Italian landline of another network (AGCOM). To be sure it is shown, move the number to Twilio.',
+        'In Italy it is shown as far as the operators let it: since August 2025 an Italian operator may block a call from abroad that shows an Italian landline of another network (AGCOM). To be sure it is shown, move the number to {0}.',
+        [diTelnyx.value ? 'Telnyx' : 'Twilio'],
       ),
+)
+
+// a mobile gets its code by SMS, a landline by a call: chosen as it is written
+watch(
+  () => tipo.value,
+  (tipo_) => {
+    if (fase.value === 'numero' && tipo_) {
+      modo.value = tipo_ === 'mobile' ? 'sms' : 'call'
+    }
+  },
 )
 
 async function verifica() {
@@ -253,6 +355,31 @@ async function verifica() {
     return
   }
   avvio.value = true
+  if (diTelnyx.value) {
+    try {
+      const esito = await call(
+        `${moduloDi('telnyx', 'verificati')}.verify_number`,
+        {
+          phone_number: modulo.phone_number,
+          label: modulo.label || null,
+          extension:
+            modo.value === 'call' && centralino.value
+              ? internoPulito(modulo.extension)
+              : null,
+          method: modo.value,
+        },
+      )
+      numero.value = esito.phone_number
+      codice.value = ''
+      emit('changed')
+      fase.value = esito.status === VERIFICATO ? 'verificato' : 'codice'
+    } catch (e) {
+      errore.value = e.messages?.[0] || __('Could not start the verification')
+    } finally {
+      avvio.value = false
+    }
+    return
+  }
   try {
     const esito = await call('crm.telephony.verificati.verify_number', {
       phone_number: modulo.phone_number,
@@ -272,6 +399,25 @@ async function verifica() {
     chiediPiuTardi()
   } catch (e) {
     errore.value = e.messages?.[0] || __('Could not start the verification')
+  } finally {
+    avvio.value = false
+  }
+}
+
+// the code Telnyx said, typed here
+async function conferma() {
+  if (!codice.value.trim() || avvio.value) return
+  errore.value = ''
+  avvio.value = true
+  try {
+    const esito = await call(
+      `${moduloDi('telnyx', 'verificati')}.confirm_code`,
+      { phone_number: numero.value, code: codice.value },
+    )
+    emit('changed')
+    if (esito.status === VERIFICATO) fase.value = 'verificato'
+  } catch (e) {
+    errore.value = e.messages?.[0] || __('The code is not right')
   } finally {
     avvio.value = false
   }
@@ -308,6 +454,9 @@ watch(
     fase.value = 'numero'
     errore.value = ''
     centralino.value = false
+    codice.value = ''
+    modo.value =
+      numeroItaliano(props.numeroIniziale) === 'mobile' ? 'sms' : 'call'
     Object.assign(modulo, {
       phone_number: props.numeroIniziale,
       label: props.nomeIniziale,

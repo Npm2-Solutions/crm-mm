@@ -4,7 +4,8 @@
 
   Every number the account can present, what kind it is, whether a call to it
   reaches DottorCloud; a number of the space released from here, one of another
-  operator's verified to be shown on calls, or removed from Twilio (doc 52).
+  operator's verified to be shown on calls, or removed from the carrier: Twilio
+  (doc 52) or Telnyx (doc 64), whichever the centre's phone goes through.
 -->
 <template>
   <SettingsLayoutBase>
@@ -62,7 +63,7 @@
         <Button
           class="mt-3"
           variant="solid"
-          :label="__('Read them from Twilio')"
+          :label="__('Read them from {0}', [etichetta])"
           :loading="syncing"
           @click="refresh"
         />
@@ -162,7 +163,7 @@
                 <Button
                   v-if="
                     row.enabled &&
-                    row.provider === 'twilio' &&
+                    row.provider === operatore &&
                     row.source === 'Account Number'
                   "
                   :label="__('Release')"
@@ -173,7 +174,7 @@
                 />
                 <Button
                   v-if="
-                    row.provider === 'twilio' &&
+                    row.provider === operatore &&
                     row.source === 'Verified Caller ID' &&
                     row.verification_status === 'Verified'
                   "
@@ -195,7 +196,8 @@
             >
               {{
                 __(
-                  'In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, move the number to Twilio.',
+                  'In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, move the number to {0}.',
+                  [etichetta],
                 )
               }}
             </p>
@@ -213,6 +215,7 @@
   <!-- a number of another operator's, verified to be shown on calls -->
   <VerifyNumberDialog
     v-model="showVerify"
+    :carrier="operatore"
     :numero-iniziale="daRiverificare.phone_number"
     :nome-iniziale="daRiverificare.label"
     @changed="callerIds.reload()"
@@ -222,7 +225,9 @@
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import VerifyNumberDialog from '@/components/Settings/Telephony/VerifyNumberDialog.vue'
+import { providers } from '@/composables/telephony'
 import { globalStore } from '@/stores/global'
+import { moduloDi, nomeDellOperatore } from '@/utils/operatori'
 import {
   NON_VERIFICATO,
   IN_ATTESA,
@@ -250,6 +255,12 @@ const daRiverificare = reactive({ phone_number: '', label: '' })
 
 const VERIFICATO = 'Verified Caller ID'
 
+// the centre's carrier: its numbers, its calls, its name in the sentences
+const operatore = computed(
+  () => providers.value.find((p) => p.enabled)?.name || 'twilio',
+)
+const etichetta = computed(() => nomeDellOperatore(operatore.value))
+
 // a verified number's state; one of before the states, verified and on
 function verifica(row) {
   if (row.source !== VERIFICATO) return null
@@ -275,7 +286,7 @@ function incertoInItalia(row) {
 
 const callerIds = createResource({
   url: 'crm.telephony.caller_ids.get_caller_ids',
-  params: { only_enabled: false },
+  makeParams: () => ({ only_enabled: false, provider: operatore.value }),
   auto: true,
 })
 
@@ -292,7 +303,7 @@ async function refresh() {
   error.value = ''
   try {
     const result = await call('crm.telephony.caller_ids.sync_caller_ids', {
-      provider: 'twilio',
+      provider: operatore.value,
     })
     callerIds.reload()
     toast.success(
@@ -330,12 +341,13 @@ async function toggle(row) {
   }
 }
 
-// a number of the space, given back to Twilio: it stops costing, for good
+// a number of the carrier's, given back to it: it stops costing, for good
 function chiediDiRilasciare(row) {
   $dialog({
     title: __('Release {0}?', [row.phone_number]),
     message: __(
-      'The number goes back to Twilio: it stops costing, and whoever calls it hears it does not exist. It cannot be undone: Twilio may give it to somebody else.',
+      'The number goes back to {0}: it stops costing, and whoever calls it hears it does not exist. It cannot be undone: {0} may give it to somebody else.',
+      [etichetta.value],
     ),
     actions: [
       {
@@ -353,7 +365,7 @@ function chiediDiRilasciare(row) {
 
 async function rilascia(row) {
   try {
-    await call('crm.telephony.numeri.release_number', {
+    await call(`${moduloDi(operatore.value, 'numeri')}.release_number`, {
       phone_number: row.phone_number,
     })
     toast.success(__('{0} is released', [row.phone_number]))
@@ -369,10 +381,10 @@ function openVerify(row = null) {
   showVerify.value = true
 }
 
-// a verified number out of Twilio: not shown on calls any more
+// a verified number out of the carrier: not shown on calls any more
 function chiediDiTogliere(row) {
   $dialog({
-    title: __('Remove {0} from Twilio?', [row.phone_number]),
+    title: __('Remove {0} from {1}?', [row.phone_number, etichetta.value]),
     message: __(
       'It is not shown on calls any more. Calls to it keep ringing where they ring now; to show it again, verify it again.',
     ),
@@ -392,10 +404,13 @@ function chiediDiTogliere(row) {
 
 async function togli(row) {
   try {
-    const esito = await call('crm.telephony.verificati.remove_verified', {
-      phone_number: row.phone_number,
-    })
-    toast.success(__('{0} is removed from Twilio', [row.phone_number]))
+    const esito = await call(
+      `${moduloDi(operatore.value, 'verificati')}.remove_verified`,
+      { phone_number: row.phone_number },
+    )
+    toast.success(
+      __('{0} is removed from {1}', [row.phone_number, etichetta.value]),
+    )
     if (esito.lines) {
       toast.warning(
         __(

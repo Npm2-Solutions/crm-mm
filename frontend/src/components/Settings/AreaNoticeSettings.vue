@@ -8,7 +8,7 @@
   whether a new document is told so, off to start with; WhatsApp and SMS may say the same, to the person's own number
   that wrote to the centre, if they ask for it in their area. Here the centre
   chooses what it offers: the approved template; the SMS leave from the centre's
-  one sender, set on Twilio's page.
+  one sender, set on the carrier's page.
 -->
 <template>
   <SettingsLayoutBase>
@@ -76,7 +76,7 @@
         </div>
         <SmsSenderLine
           :sender="settings.data.sms_sender || ''"
-          :twilio="settings.data.twilio"
+          :carrier="settings.data.carrier || ''"
         />
         <ErrorMessage :message="error" />
       </div>

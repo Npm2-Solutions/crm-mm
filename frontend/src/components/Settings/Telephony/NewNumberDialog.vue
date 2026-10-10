@@ -2,12 +2,14 @@
   Copyright (c) 2026, NPM2 Solutions Srl and contributors
   For license information, please see license.txt
 
-  A new Italian number in the centre's Twilio space (doc 52), without leaving
-  DottorCloud. The kind with its price a month and whose the number is; the
-  fields Twilio asks, with what invoicing knows already in them; the documents,
-  uploaded here; sent to Twilio, which checks them in a few days. Documents
-  approved - now or for a number before, of the same kind - and the number is
-  chosen among those Twilio has and bought, already answering on DottorCloud.
+  A new Italian number from the centre's carrier - Twilio (doc 52) or Telnyx
+  (doc 64) - without leaving DottorCloud. The kind with its price a month and
+  whose the number is; the fields the carrier asks, with what invoicing knows
+  already in them; the documents, uploaded here; sent to the carrier, which
+  checks them in a few days. Documents approved - now or for a number before, of
+  the same kind - and the number is chosen among those the carrier has and
+  bought, already answering on DottorCloud. The carrier's calls are its module's
+  (`modulo`), its name in the sentences (`operatore`).
 -->
 <template>
   <Dialog v-model="show" :options="{ title: titolo, size: 'xl' }">
@@ -59,14 +61,16 @@
         >
           {{
             disponibili.data.numbers.length
-              ? __('Twilio has numbers like {0} ready now.', [
+              ? __('{0} has numbers like {1} ready now.', [
+                  operatore,
                   disponibili.data.numbers
                     .slice(0, 2)
                     .map((n) => n.label)
                     .join(', '),
                 ])
               : __(
-                  'Twilio has none of these ready now: the documents can be approved all the same, and the number is bought when Twilio has one.',
+                  '{0} has none of these ready now: the documents can be approved all the same, and the number is bought when {0} has one.',
+                  [operatore],
                 )
           }}
         </p>
@@ -77,7 +81,8 @@
         <p class="text-p-base text-ink-gray-7">
           {{
             __(
-              'Twilio asks every Italian number for who it is for. What {brand} knows of the centre is already written: check it.',
+              '{0} asks every Italian number for who it is for. What {brand} knows of the centre is already written: check it.',
+              [operatore],
             )
           }}
         </p>
@@ -86,17 +91,21 @@
             v-for="campo in requisiti.fields"
             :key="campo.name"
             v-model="valori[campo.name]"
-            type="text"
+            :type="campo.options ? 'select' : 'text'"
+            :options="campo.options || undefined"
             :label="campo.label"
             :description="campo.description"
           />
         </div>
         <FormControl
+          v-if="chiedeEmail"
           v-model="email"
           type="email"
-          :label="__('Email for Twilio')"
+          :label="__('Email for {0}', [operatore])"
           :description="
-            __('Twilio writes here about the documents. Not a PEC mailbox.')
+            __('{0} writes here about the documents. Not a PEC mailbox.', [
+              operatore,
+            ])
           "
         />
       </div>
@@ -106,7 +115,8 @@
         <p class="text-p-base text-ink-gray-7">
           {{
             __(
-              'A PDF, a JPEG or a PNG of each one, of 5 MB at most. Once Twilio approves them, {brand} does not keep them: Twilio has its copy.',
+              'A PDF, a JPEG or a PNG of each one, of 5 MB at most. Once {0} approves them, {brand} does not keep them: {0} has its copy.',
+              [operatore],
             )
           }}
         </p>
@@ -223,7 +233,7 @@
           class="flex flex-col gap-1 rounded-lg bg-surface-red-1 px-4 py-3"
         >
           <span class="text-p-sm-medium text-ink-red-8">
-            {{ __('Twilio says something is missing:') }}
+            {{ __('{0} says something is missing:', [operatore]) }}
           </span>
           <span
             v-for="riga in mancanti"
@@ -234,24 +244,48 @@
         </div>
       </div>
 
-      <!-- sent: Twilio checks them -->
+      <!-- sent: the carrier checks them -->
       <div v-else-if="passo === 'inviato'" class="flex flex-col gap-3">
         <p class="text-p-base text-ink-gray-8">
-          {{ __('The documents are with Twilio.') }}
+          {{ __('The documents are with {0}.', [operatore]) }}
         </p>
-        <p class="text-p-base text-ink-gray-7">
+        <p v-if="numeroPrima" class="text-p-base text-ink-gray-7">
           {{
             __(
-              'Twilio checks them, usually within a few working days, and writes to {0}. {brand} tells you among the notifications when it answers: then you choose the number.',
-              [email],
+              '{0} checks them with the number {1}, usually within a few working days. {brand} tells you among the notifications when it answers: the number answers on {brand} as soon as it is approved.',
+              [operatore, etichettaDelNumero],
+            )
+          }}
+        </p>
+        <p v-else class="text-p-base text-ink-gray-7">
+          {{
+            __(
+              '{0} checks them, usually within a few working days, and writes to {1}. {brand} tells you among the notifications when it answers: then you choose the number.',
+              [operatore, email],
             )
           }}
         </p>
       </div>
 
-      <!-- the number: chosen among those Twilio has, and bought -->
+      <!-- the number: chosen among those the carrier has, and bought -->
       <div v-else-if="passo === 'numero'" class="flex flex-col gap-4">
-        <p class="text-p-base text-ink-gray-7">
+        <p v-if="!richiestaApprovata" class="text-p-base text-ink-gray-7">
+          {{
+            __(
+              'Choose the number first: {0} checks it together with the documents, and it answers on {brand} once approved.',
+              [operatore],
+            )
+          }}
+        </p>
+        <p v-else-if="numeroPrima" class="text-p-base text-ink-gray-7">
+          {{
+            __(
+              'The documents are approved. Choose the number: {0} checks it with them, and it answers on {brand} once approved.',
+              [operatore],
+            )
+          }}
+        </p>
+        <p v-else class="text-p-base text-ink-gray-7">
           {{
             __(
               'The documents are approved. Choose the number: it answers on {brand} from the moment it is bought.',
@@ -296,15 +330,16 @@
         <p v-else-if="trovati.data" class="text-p-sm text-ink-amber-8">
           {{
             __(
-              'Twilio has none of these ready now. Try other digits, or come back in a few days.',
+              '{0} has none of these ready now. Try other digits, or come back in a few days.',
+              [operatore],
             )
           }}
         </p>
         <p v-if="prezzoDelNumero" class="text-p-sm text-ink-gray-6">
           {{
             __(
-              "Twilio charges {0} a month to the centre's account, from today, until the number is released.",
-              [prezzoDelNumero],
+              "{0} charges {1} a month to the centre's account, from today, until the number is released.",
+              [operatore, prezzoDelNumero],
             )
           }}
         </p>
@@ -316,7 +351,10 @@
     <template #actions>
       <div class="dialog-footer flex justify-between gap-2">
         <Button
-          v-if="['dati', 'documenti'].includes(passo)"
+          v-if="
+            ['dati', 'documenti'].includes(passo) ||
+            (passo === 'numero' && !richiestaApprovata)
+          "
           :label="__('Back')"
           @click="indietro"
         />
@@ -344,16 +382,25 @@
           <Button
             v-else-if="passo === 'documenti'"
             variant="solid"
-            :label="__('Send to Twilio')"
+            :label="__('Send to {0}', [operatore])"
             :loading="manda.loading"
             @click="invia"
+          />
+          <Button
+            v-else-if="passo === 'numero' && !richiestaApprovata"
+            variant="solid"
+            :label="__('Next')"
+            :disabled="!numeroScelto"
+            @click="passo = 'dati'"
           />
           <Button
             v-else-if="passo === 'numero'"
             variant="solid"
             :label="
               numeroScelto
-                ? __('Buy {0}', [etichettaDelNumero])
+                ? numeroPrima
+                  ? __('Order {0}', [etichettaDelNumero])
+                  : __('Buy {0}', [etichettaDelNumero])
                 : __('Choose a number')
             "
             :disabled="!numeroScelto"
@@ -383,6 +430,7 @@ import {
   fileAccettato,
   prefisso,
   prezzoAlMese,
+  problemaDelFile,
 } from '@/utils/numeri'
 import {
   Button,
@@ -400,7 +448,16 @@ const props = defineProps({
   offerta: { type: Object, required: true },
   // a request to go on with: approved, to buy; a draft or refused, to send again
   richiesta: { type: Object, default: null },
+  // the carrier's module with the calls below, and its name in the sentences
+  modulo: { type: String, default: 'crm.telephony.numeri' },
+  operatore: { type: String, default: 'Twilio' },
 })
+
+// Telnyx's way in Italy: the number chosen before the documents, checked with
+// them; no email of its own, PDF only
+const numeroPrima = computed(() => Boolean(props.offerta.number_first))
+const chiedeEmail = computed(() => props.offerta.asks_email !== false)
+const regoleDeiFile = computed(() => props.offerta.files || null)
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })
 
@@ -481,9 +538,9 @@ function messaggio(e) {
   return e?.messages?.[0] || e?.message || __('Something went wrong')
 }
 
-// what Twilio has now, of the kind chosen: before the documents too
+// what the carrier has now, of the kind chosen: before the documents too
 const disponibili = createResource({
-  url: 'crm.telephony.numeri.search_numbers',
+  url: `${props.modulo}.search_numbers`,
   onError: () => (disponibili.data = null),
 })
 function guardaIDisponibili() {
@@ -505,7 +562,7 @@ watch(
 )
 
 const requisitiRisorsa = createResource({
-  url: 'crm.telephony.numeri.get_number_requirements',
+  url: `${props.modulo}.get_number_requirements`,
   onSuccess: (dati) => {
     if (dati.approved) {
       // documents approved for this kind already: straight to the number
@@ -516,6 +573,7 @@ const requisitiRisorsa = createResource({
     }
     requisiti.value = dati
     const prima = dati.previous || {}
+    if (prima.phone_number) numeroScelto.value = prima.phone_number
     for (const campo of dati.fields) {
       valori[campo.name] = prima.values?.[campo.name] ?? campo.value ?? ''
     }
@@ -538,6 +596,11 @@ const requisitiRisorsa = createResource({
     }
     Object.assign(indirizzo, dati.address, prima.address || {})
     email.value = prima.email || dati.email || email.value
+    if (numeroPrima.value) {
+      passo.value = 'numero'
+      cerca()
+      return
+    }
     passo.value = 'dati'
   },
   onError: (e) => (errore.value = messaggio(e)),
@@ -559,7 +622,9 @@ function avanti() {
 
 function indietro() {
   errore.value = ''
-  passo.value = passo.value === 'documenti' ? 'dati' : 'tipo'
+  if (passo.value === 'documenti') passo.value = 'dati'
+  else if (passo.value === 'dati' && numeroPrima.value) passo.value = 'numero'
+  else passo.value = 'tipo'
 }
 
 function fileCaricato(requisito, caricato) {
@@ -568,12 +633,15 @@ function fileCaricato(requisito, caricato) {
 }
 
 function valida(caricato) {
-  const problema = fileAccettato(caricato.name, caricato.size)
+  const problema = regoleDeiFile.value
+    ? problemaDelFile(caricato.name, caricato.size, regoleDeiFile.value)
+    : fileAccettato(caricato.name, caricato.size)
+  if (Array.isArray(problema)) return __(...problema)
   if (problema) return __(problema)
 }
 
 const manda = createResource({
-  url: 'crm.telephony.numeri.send_number_request',
+  url: `${props.modulo}.send_number_request`,
   method: 'POST',
   onSuccess: (esito) => {
     richiestaInCorso.value = esito.request
@@ -593,6 +661,7 @@ function invia() {
     file,
     indirizzo,
     email: email.value,
+    chiedeEmail: chiedeEmail.value,
   })
   if (manca) {
     errore.value = __(manca)
@@ -615,12 +684,19 @@ function invia() {
     address: JSON.stringify(indirizzo),
     email: email.value,
     request: richiestaInCorso.value,
+    phone_number: numeroPrima.value ? numeroScelto.value : undefined,
   })
 }
 
 const trovati = createResource({
-  url: 'crm.telephony.numeri.search_numbers',
-  onSuccess: () => (numeroScelto.value = ''),
+  url: `${props.modulo}.search_numbers`,
+  // a number chosen before stays chosen while the carrier still has it
+  onSuccess: (dati) => {
+    const ancora = (dati?.numbers || []).some(
+      (n) => n.phone_number === numeroScelto.value,
+    )
+    if (!ancora) numeroScelto.value = ''
+  },
   onError: (e) => (errore.value = messaggio(e)),
 })
 
@@ -634,11 +710,16 @@ function cerca() {
 }
 
 const compra = createResource({
-  url: 'crm.telephony.numeri.buy_number',
+  url: `${props.modulo}.buy_number`,
   method: 'POST',
   onSuccess: (esito) => {
     toast.success(
-      __("{0} is the centre's, and answers on {brand}.", [esito.label]),
+      esito.pending
+        ? __(
+            '{0} is ordered: {1} checks it, and it answers on {brand} once approved.',
+            [esito.label, props.operatore],
+          )
+        : __("{0} is the centre's, and answers on {brand}.", [esito.label]),
     )
     emit('changed', esito.requests)
     show.value = false

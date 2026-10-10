@@ -2,19 +2,19 @@
 // For license information, please see license.txt
 
 /**
- * A new Italian number from the centre's Twilio space (doc 52), without a page:
- * a month's price in the reader's money words, where a request is and what can
- * be done with it, an area's prefix as the server reads it
- * (`crm/telephony/numeri_regole.py`), the files Twilio takes, what is still
- * missing before sending, and what the page sends. The words are English,
- * translated where they are drawn.
+ * A new Italian number from the centre's carrier - Twilio (doc 52) or Telnyx
+ * (doc 64) - without a page: a month's price in the reader's money words, where
+ * a request is and what can be done with it, an area's prefix as the server
+ * reads it (`crm/telephony/numeri_regole.py`), the files the carrier takes, what
+ * is still missing before sending, and what the page sends. The words are
+ * English, translated where they are drawn; the carrier's name is an argument.
  */
 
-/** What Twilio takes as a document's file: as `numeri_regole.ESTENSIONI`. */
+/** What the carrier takes as a document's file: as `numeri_regole.ESTENSIONI`. */
 export const ESTENSIONI = ['pdf', 'jpg', 'jpeg', 'png']
 export const MASSIMO = 5 * 1024 * 1024
 
-/** A month of a number, in the reader's language: '' when Twilio gave none. */
+/** A month of a number, in the reader's language: '' when the carrier gave none. */
 export function prezzoAlMese(prezzo, valuta = 'USD', lingua = 'it') {
   if (prezzo === null || prezzo === undefined || prezzo === '') return ''
   try {
@@ -36,15 +36,40 @@ export function prefisso(valore) {
 }
 
 /** What is wrong with a file before it is uploaded; '' when nothing. */
-export function fileAccettato(nome, dimensione) {
+export function fileAccettato(nome, dimensione, massimo = MASSIMO) {
   const estensione = String(nome || '').includes('.')
     ? String(nome).split('.').pop().toLowerCase()
     : ''
   if (!ESTENSIONI.includes(estensione)) {
     return 'The document has to be a PDF, a JPEG or a PNG.'
   }
-  if ((dimensione || 0) > MASSIMO) {
-    return 'The document is larger than 5 MB: Twilio does not take it.'
+  if ((dimensione || 0) > massimo) {
+    return 'The document is larger than 5 MB: the carrier does not take it.'
+  }
+  return ''
+}
+
+/**
+ * What is wrong with a file before it is uploaded, by the carrier's own rules
+ * (`{extensions, max_mb}` from the server): [sentence, args], or '' when
+ * nothing is.
+ */
+export function problemaDelFile(nome, dimensione, regole = {}) {
+  const estensioni = regole.extensions?.length ? regole.extensions : ESTENSIONI
+  const massimo = Number(regole.max_mb) || MASSIMO / (1024 * 1024)
+  const estensione = String(nome || '').includes('.')
+    ? String(nome).split('.').pop().toLowerCase()
+    : ''
+  if (!estensioni.includes(estensione)) {
+    return estensioni.length === 1 && estensioni[0] === 'pdf'
+      ? ['The document has to be a PDF.', []]
+      : ['The document has to be a PDF, a JPEG or a PNG.', []]
+  }
+  if ((dimensione || 0) > massimo * 1024 * 1024) {
+    return [
+      'The document is larger than {0} MB: the carrier does not take it.',
+      [massimo],
+    ]
   }
   return ''
 }
@@ -53,16 +78,22 @@ export function fileAccettato(nome, dimensione) {
  * Where a request is, as its row says it: the badge's word and colour, and the
  * line under it. `[sentence, args]` pairs, translated where drawn.
  */
-export function statoDellaRichiesta(riga) {
+export function statoDellaRichiesta(riga, operatore = 'Twilio') {
   const stato = riga?.status
   if (stato === 'In review') {
     return {
       label: 'In review',
       theme: 'orange',
-      riga: [
-        'Twilio checks the documents, usually within a few working days, and writes to {0}. You will find its answer among the notifications.',
-        [riga.email || ''],
-      ],
+      // Telnyx writes to nobody but the account: the notifications say it
+      riga: riga.email
+        ? [
+            '{0} checks the documents, usually within a few working days, and writes to {1}. You will find its answer among the notifications.',
+            [operatore, riga.email],
+          ]
+        : [
+            '{0} checks the documents, usually within a few working days. You will find its answer among the notifications.',
+            [operatore],
+          ],
     }
   }
   if (stato === 'Approved') {
@@ -79,15 +110,15 @@ export function statoDellaRichiesta(riga) {
       label: 'Refused',
       theme: 'red',
       riga: [
-        'Twilio refused the documents. Put them right and send them again.',
-        [],
+        '{0} refused the documents. Put them right and send them again.',
+        [operatore],
       ],
     }
   }
   return {
     label: 'Draft',
     theme: 'gray',
-    riga: ['Not sent: Twilio found something missing.', []],
+    riga: ['Not sent: {0} found something missing.', [operatore]],
   }
 }
 
@@ -123,7 +154,7 @@ export function chiedeIndirizzo(documenti = [], scelte = {}) {
 }
 
 /**
- * What stops sending, before Twilio is asked: a document without its file, the
+ * What stops sending, before the carrier is asked: a document without its file, the
  * address when it is needed, the email. '' when nothing does.
  */
 export function cosaMancaPerMandare({
@@ -132,6 +163,7 @@ export function cosaMancaPerMandare({
   file = {},
   indirizzo = {},
   email = '',
+  chiedeEmail = true,
 }) {
   for (const requisito of documenti) {
     const documento = documentoScelto(requisito, scelte)
@@ -147,8 +179,11 @@ export function cosaMancaPerMandare({
   ) {
     return "Write the office's address: street, city and postal code."
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim())) {
-    return 'Write the email Twilio writes to about the documents.'
+  if (
+    chiedeEmail &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim())
+  ) {
+    return 'Write the email the carrier writes to about the documents.'
   }
   return ''
 }

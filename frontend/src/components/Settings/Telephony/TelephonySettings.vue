@@ -73,55 +73,59 @@
           />
         </div>
       </div>
-      <div
-        v-if="piuMezzi && isEnabled('twilio')"
-        class="h-px border-t mx-2 border-outline-elevation-2"
-      />
-      <div
-        v-if="isEnabled('twilio')"
-        class="flex items-center justify-between gap-8 py-3 pl-2 pr-1"
-      >
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
-            {{ __('Twilio Number') }}
+      <template v-for="(operatore, i) in operatoriAccesi" :key="operatore.name">
+        <div
+          v-if="piuMezzi || i"
+          class="h-px border-t mx-2 border-outline-elevation-2"
+        />
+        <div class="flex items-center justify-between gap-8 py-3 pl-2 pr-1">
+          <div class="flex flex-col">
+            <div class="text-p-base-medium text-ink-gray-7 truncate">
+              {{ __('Your {0} number', [operatore.label]) }}
+            </div>
+            <div class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'The {0} number your calls show, and the one that rings you.',
+                  [operatore.label],
+                )
+              }}
+            </div>
           </div>
-          <div class="text-p-sm text-ink-gray-5">
-            {{ __('Set the Twilio number to be used for outgoing calls.') }}
-          </div>
-        </div>
-        <div>
-          <div
-            v-if="callerIds.data?.length"
-            class="flex flex-col items-end gap-1"
-          >
-            <Combobox
-              v-model="telephonyAgent.doc.twilio_number"
-              class="w-44"
-              :options="callerIdOptions"
-            />
-            <span
-              v-if="chosenCallerId && !chosenCallerId.routes_to_crm"
-              class="w-56 text-right text-p-sm text-ink-red-8"
+          <div>
+            <div
+              v-if="numeriDi(operatore.name).length"
+              class="flex flex-col items-end gap-1"
             >
-              {{ __('Incoming calls to this number do not reach {brand}.') }}
-            </span>
+              <Combobox
+                v-model="telephonyAgent.doc[operatore.agent_number_field]"
+                class="w-44"
+                :options="opzioniDi(operatore.name)"
+              />
+              <span
+                v-if="nonArriva(operatore)"
+                class="w-56 text-right text-p-sm text-ink-red-8"
+              >
+                {{ __('Incoming calls to this number do not reach {brand}.') }}
+              </span>
+            </div>
+            <FormControl
+              v-else
+              v-model="telephonyAgent.doc[operatore.agent_number_field]"
+              v-bind="tastiera('telefono')"
+              class="flex-1 truncate w-44 p-1"
+              :placeholder="__('Enter the number')"
+              :error="
+                Boolean(telephonyAgent.doc[operatore.agent_number_field]) &&
+                !validatePhone(telephonyAgent.doc[operatore.agent_number_field])
+                  ? __('Enter a valid phone number')
+                  : undefined
+              "
+              placement="bottom-end"
+            />
           </div>
-          <FormControl
-            v-else
-            v-model="telephonyAgent.doc.twilio_number"
-            v-bind="tastiera('telefono')"
-            class="flex-1 truncate w-44 p-1"
-            :placeholder="__('Enter Twilio Number')"
-            :error="
-              Boolean(telephonyAgent.doc.twilio_number) &&
-              !validatePhone(telephonyAgent.doc.twilio_number)
-                ? __('Enter a valid phone number')
-                : undefined
-            "
-            placement="bottom-end"
-          />
         </div>
-      </div>
+      </template>
       <div
         v-if="puo('telefono.configura')"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
@@ -201,32 +205,46 @@
         {{ __('Integrations') }}
       </div>
 
-      <div
-        v-if="puo('telefono.configura')"
-        class="flex items-center justify-between py-3 px-2"
-      >
-        <div class="flex flex-col gap-1">
-          <span class="text-base-medium text-ink-gray-8">
-            {{ __('Twilio') }}
-          </span>
-          <span class="text-p-sm text-ink-gray-6">
-            {{
-              isEnabled('twilio')
-                ? __('Connected: calls and messages go through Twilio.')
-                : __(
-                    'Connect your Twilio account: calls and messages from {brand}.',
+      <template v-if="puo('telefono.configura')">
+        <template v-for="(riga, i) in operatori" :key="riga.name">
+          <div v-if="i" class="h-px border-t mx-2 border-outline-elevation-2" />
+          <div class="flex items-center justify-between py-3 px-2">
+            <div class="flex flex-col gap-1">
+              <span
+                class="flex items-center gap-2 text-base-medium text-ink-gray-8"
+              >
+                {{ riga.label }}
+                <Badge
+                  v-if="isEnabled(riga.name)"
+                  :label="__('On')"
+                  variant="subtle"
+                  theme="green"
+                />
+              </span>
+              <span class="text-p-sm text-ink-gray-6">
+                {{
+                  __(
+                    ...rigaDellOperatore(
+                      riga.name,
+                      accesoAltro(riga.name),
+                      isEnabled(riga.name),
+                    ),
                   )
-            }}
-          </span>
-        </div>
-        <Button
-          class="shrink-0"
-          :label="
-            isEnabled('twilio') ? __('Open', null, 'Action') : __('Connect')
-          "
-          @click="emit('updateStep', 'twilio-settings')"
-        />
-      </div>
+                }}
+              </span>
+            </div>
+            <Button
+              class="shrink-0"
+              :label="
+                isEnabled(riga.name)
+                  ? __('Open', null, 'Action')
+                  : __('Connect')
+              "
+              @click="emit('updateStep', `${riga.name}-settings`)"
+            />
+          </div>
+        </template>
+      </template>
     </div>
     <ErrorMessage
       :message="isNewDoc ? insertResource.error : telephonyAgent.save?.error"
@@ -252,34 +270,49 @@ import {
 } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'
+import { OPERATORI, rigaDellOperatore } from '@/utils/operatori'
 import { tastiera } from '@/utils/tastiera'
 import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()
 
-// what the account can actually present; typing a number Twilio has never heard
-// of is the quiet way calls stop working
+// the carriers the centre may connect, one at a time (doc 64): each with its page
+const operatori = OPERATORI
+function accesoAltro(nome) {
+  return operatori.find((o) => o.name !== nome && isEnabled(o.name))?.label
+}
+
+// the carriers on, each with one's own line on it
+const operatoriAccesi = computed(() =>
+  providers.value.filter((p) => p.enabled && p.agent_number_field),
+)
+
+// what the account can actually present; typing a number the carrier has never
+// heard of is the quiet way calls stop working
 const callerIds = createResource({
   url: 'crm.telephony.caller_ids.get_caller_ids',
-  params: { provider: 'twilio' },
-  cache: 'twilio-caller-ids',
+  cache: 'caller-ids',
   auto: true,
 })
 
-const callerIdOptions = computed(() =>
-  (callerIds.data || []).map((row) => ({
+function numeriDi(operatore) {
+  return (callerIds.data || []).filter((row) => row.provider === operatore)
+}
+
+function opzioniDi(operatore) {
+  return numeriDi(operatore).map((row) => ({
     label: row.label ? `${row.label} · ${row.phone_number}` : row.phone_number,
     value: row.phone_number,
-  })),
-)
+  }))
+}
 
 // the number an agent presents can be perfectly valid outbound and still never
 // receive anything — say so here rather than leaving it to be discovered
-const chosenCallerId = computed(() =>
-  (callerIds.data || []).find(
-    (row) => row.phone_number === telephonyAgent.doc?.twilio_number,
-  ),
-)
+function nonArriva(operatore) {
+  const scelto = telephonyAgent.doc?.[operatore.agent_number_field]
+  const riga = numeriDi(operatore.name).find((r) => r.phone_number === scelto)
+  return Boolean(riga && !riga.routes_to_crm)
+}
 
 // the options follow the provider registry, so a new carrier shows up here
 // without this file having to learn its name

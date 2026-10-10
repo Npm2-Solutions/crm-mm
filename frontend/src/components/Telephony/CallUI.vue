@@ -2,10 +2,12 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
   The call from DottorCloud: the carriers on come from the server's registry
-  (Twilio), and a default naming one that is not on calls with one that is.
+  (Twilio, Telnyx: doc 64), and a default naming one that is not on calls with
+  one that is.
 -->
 <template>
   <TwilioCallUI ref="twilio" />
+  <TelnyxCallUI ref="telnyx" />
   <Dialog
     v-model:open="show"
     :title="__('Make Call')"
@@ -50,6 +52,7 @@
 </template>
 <script setup>
 import TwilioCallUI from '@/components/Telephony/TwilioCallUI.vue'
+import TelnyxCallUI from '@/components/Telephony/TelnyxCallUI.vue'
 import {
   defaultCallingMedium,
   providers,
@@ -64,6 +67,7 @@ const { setMakeCall } = globalStore()
 const { isEnabled, isAnyEnabled } = useTelephony()
 
 const twilio = ref(null)
+const telnyx = ref(null)
 
 const callMedium = ref('')
 const isDefaultMedium = ref(false)
@@ -74,7 +78,7 @@ const mobileNumber = ref('')
 // which carriers exist comes from the backend registry; only the in-browser
 // calling component stays mapped by name here, because each SDK is genuinely
 // its own thing and there is nothing to share between them
-const uiComponents = { twilio }
+const uiComponents = { twilio, telnyx }
 
 const enabledIntegrations = computed(() =>
   providers.value
