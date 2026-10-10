@@ -110,9 +110,14 @@ function mostraLaScelta() {
   const el = barra.value
   const tab = el?.querySelector('[aria-selected="true"]')
   if (!el || !tab) return
-  // the row scrolled by hand, never the page (scrollIntoView slid an iPhone's)
-  const inizio = tab.offsetLeft - 32
-  const fine = tab.offsetLeft + tab.offsetWidth + 32
+  // the row scrolled by hand, never the page (scrollIntoView slid an iPhone's).
+  // Where the tab is in the row's own content, from the two boxes: its
+  // offsetLeft counts from an ancestor (the menu beside it on a desk), and
+  // after a scroll by hand it put the row back at the start
+  const riga = el.getBoundingClientRect()
+  const box = tab.getBoundingClientRect()
+  const inizio = box.left - riga.left + el.scrollLeft - 32
+  const fine = box.right - riga.left + el.scrollLeft + 32
   if (inizio < el.scrollLeft) el.scrollLeft = Math.max(0, inizio)
   else if (fine > el.scrollLeft + el.clientWidth)
     el.scrollLeft = fine - el.clientWidth

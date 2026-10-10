@@ -195,6 +195,31 @@
             v-else-if="gruppoAperto"
             class="flex flex-col gap-6 px-6 py-8 max-md:px-3 max-md:py-5"
           >
+            <!-- a link to a page this person does not see, or that is not on
+                 here: it opened the first group, «Il tuo account», as if that
+                 were what was asked, and nothing said otherwise -->
+            <div
+              v-if="paginaMancante"
+              role="status"
+              class="flex items-start gap-3 rounded-lg bg-surface-amber-1 px-4 py-3 text-ink-amber-7"
+            >
+              <span
+                class="lucide-circle-alert mt-0.5 size-4 shrink-0"
+                aria-hidden="true"
+              />
+              <div class="flex min-w-0 flex-col gap-0.5">
+                <span class="text-base-medium">
+                  {{ __('The page you asked for is not here') }}
+                </span>
+                <span class="text-p-sm">
+                  {{
+                    __(
+                      'It is not among the settings you can see: your level does not open it, or it is not on for this centre. Whoever manages the centre can tell you more.',
+                    )
+                  }}
+                </span>
+              </div>
+            </div>
             <div class="flex items-start gap-3 px-2">
               <span
                 class="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-gray-2"
@@ -265,7 +290,7 @@ import {
   isMobileView,
   disableSettingModalOutsideClick,
 } from '@/composables/settings'
-import { isWhatsappInstalled } from '@/composables/whatsapp'
+import { isWhatsappInstalled, whatsappNoto } from '@/composables/whatsapp'
 import { menuDi, trova } from '@/utils/impostazioni'
 import { chiudeConIndietro } from '@/utils/indietro'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
@@ -606,6 +631,14 @@ watch(tabs, () => {
   if (!tabs.value.some((gruppo) => gruppo.key === categoria.value))
     categoria.value = tabs.value[0]?.key
 })
+
+// A page asked for by name that the menu has not: once the menu is whole (the
+// WhatsApp group waits for the server), the group shown says it is not the one
+// asked for. Choosing a group clears the page asked for, and the notice with it.
+const paginaMancante = computed(
+  () =>
+    Boolean(activeSettingsPage.value) && !activeTab.value && whatsappNoto.value,
+)
 
 // Tapping a row has to push to the detail even when it is the row you were last
 // on: `activeSettingsPage` does not change then, so the watch above never fires.
