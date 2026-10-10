@@ -63,6 +63,7 @@
       >
         <ErrorMessage v-if="linkError" :message="linkError" />
         <FormControl
+          ref="campoEmail"
           v-model="email"
           type="email"
           size="lg"
@@ -70,13 +71,15 @@
           autocomplete="email"
         />
         <ErrorMessage :message="error" />
+        <!-- always the action's colour: disabled until something was typed,
+             the page's only button looked switched off. Pressed without an
+             address it says what it needs -->
         <Button
           variant="solid"
           size="lg"
           type="submit"
           :label="__('Send me the code')"
           :loading="busy === true"
-          :disabled="!email.trim()"
         />
         <template v-if="passkeys">
           <div class="flex items-center gap-2 text-p-sm text-ink-gray-5">
@@ -183,7 +186,14 @@ const minutes = ref(10)
 const busy = ref(false)
 const error = ref('')
 
+const campoEmail = ref(null)
+
 async function send() {
+  if (!email.value.trim()) {
+    error.value = __('Write the email you gave the centre.')
+    campoEmail.value?.$el?.querySelector('input')?.focus()
+    return
+  }
   busy.value = true
   error.value = ''
   try {
