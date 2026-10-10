@@ -38,6 +38,7 @@
         <div
           v-for="conn in connections.data"
           :key="conn.name"
+          v-riga-cliccabile
           class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
           @click="openEditor(conn.name)"
         >
@@ -102,8 +103,8 @@
             size="sm"
           />
           <Button
-            :aria-label="__('Sync now')"
             v-if="conn.platform_info?.capabilities?.includes('pull')"
+            :aria-label="__('Sync now')"
             variant="ghost"
             icon="lucide-refresh-cw"
             :tooltip="__('Sync now')"
@@ -425,8 +426,8 @@
                 "
               />
               <Button
-                :aria-label="__('Copy this professional\'s busy feed')"
                 v-if="row.busy_feed_url"
+                :aria-label="__('Copy this professional\'s busy feed')"
                 variant="ghost"
                 icon="lucide-calendar-x"
                 :tooltip="__('Copy this professional\'s busy feed')"

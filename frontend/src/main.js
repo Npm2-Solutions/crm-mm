@@ -3,6 +3,7 @@
 import './index.css'
 
 import { createApp } from 'vue'
+import { vRigaCliccabile } from '@/utils/rigaCliccabile'
 import { createPinia } from 'pinia'
 import { createDialog } from './utils/dialogs'
 import { initSocket } from './socket'
@@ -89,6 +90,8 @@ app.use(FrappeUI)
 app.use(pinia)
 app.use(router)
 app.use(translationPlugin)
+// a row a click opens, opened from the keyboard too (utils/rigaCliccabile.js)
+app.directive('riga-cliccabile', vRigaCliccabile)
 for (let key in globalComponents) {
   app.component(key, globalComponents[key])
 }

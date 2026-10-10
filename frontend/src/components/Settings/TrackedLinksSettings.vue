@@ -32,24 +32,33 @@
         v-if="links.data?.length"
         class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
       >
+        <!-- the row opens from a button stretched over it, the bin above
+             it: a row that is a button holding another button is two
+             controls in one for a screen reader -->
         <div
           v-for="link in links.data"
           :key="link.name"
-          class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
-          @click="openEditor(link)"
+          class="relative flex items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
         >
-          <Badge :label="link.slug" theme="blue" size="sm" />
-          <span class="min-w-0 flex-1 truncate text-p-base text-ink-gray-6">
-            {{ link.target_url }}
-          </span>
-          <span class="shrink-0 text-p-sm text-ink-gray-5">
-            {{ __('{0} clicks', [link.click_count || 0]) }}
-          </span>
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 items-center gap-3 text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-outline-gray-4"
+            @click="openEditor(link)"
+          >
+            <Badge :label="link.slug" theme="blue" size="sm" />
+            <span class="min-w-0 flex-1 truncate text-p-base text-ink-gray-6">
+              {{ link.target_url }}
+            </span>
+            <span class="shrink-0 text-p-sm text-ink-gray-5">
+              {{ __('{0} clicks', [link.click_count || 0]) }}
+            </span>
+          </button>
           <Button
-            :aria-label="__('Delete')"
+            class="relative z-10"
+            :aria-label="__('Delete {0}', [link.slug])"
             variant="ghost"
             icon="lucide-trash-2"
-            @click.stop="removeLink(link)"
+            @click="removeLink(link)"
           />
         </div>
       </div>
@@ -122,6 +131,9 @@ import {
   toast,
 } from 'frappe-ui'
 import { ref, reactive } from 'vue'
+import { globalStore } from '@/stores/global'
+
+const { $dialog } = globalStore()
 
 const subtitle =
   __('Short links that log clicks on leads and fire automations.') +
@@ -186,10 +198,30 @@ function saveLink() {
   }
 }
 
+// a link goes after a yes that names it and says what is lost: its clicks, and
+// the messages and automations that send it
 function removeLink(link) {
-  links.delete.submit(link.name, {
-    onSuccess: () => links.reload(),
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+  $dialog({
+    title: __('Delete the link {0}?', [link.slug]),
+    message: __(
+      'Its {0} clicks are lost, and whoever opens it from a message already sent or an automation finds nothing.',
+      [link.click_count || 0],
+    ),
+    actions: [
+      {
+        label: __('Delete the link'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          links.delete.submit(link.name, {
+            onSuccess: () => links.reload(),
+            onError: (e) =>
+              toast.error(e.messages?.[0] || __('Failed to delete')),
+          })
+        },
+      },
+    ],
   })
 }
 </script>

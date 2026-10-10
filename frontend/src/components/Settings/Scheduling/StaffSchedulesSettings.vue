@@ -72,7 +72,14 @@
       </span>
     </div>
 
-    <div class="flex-1 overflow-auto px-2">
+    <!-- scrolled sideways by the keyboard too: a box that scrolls takes the
+         focus (WCAG 2.1.1) -->
+    <div
+      class="flex-1 overflow-auto px-2"
+      tabindex="0"
+      role="region"
+      :aria-label="__('Team rota')"
+    >
       <div
         v-if="rota.data?.team?.length"
         class="min-w-[680px] rounded-lg border border-outline-gray-2"
@@ -93,6 +100,7 @@
         <div
           v-for="person in rota.data.team"
           :key="person.user"
+          v-riga-cliccabile
           class="grid cursor-pointer grid-cols-[160px_repeat(7,minmax(0,1fr))] border-b border-outline-elevation-2 last:border-b-0 hover:bg-surface-gray-1"
           @click="openEditor(person.user)"
         >
