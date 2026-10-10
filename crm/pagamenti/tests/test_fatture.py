@@ -207,6 +207,19 @@ class TestFatturaDAcconto(AccontoCase):
 		da_fare = [r for r in fatture_api.pending_actions() if r["name"] == pagamento.invoice]
 		self.assertEqual([(r["action"], r["state"]) for r in da_fare], [("draft", "bozza")])
 
+	def test_il_saldo_aspetta_la_fattura_d_acconto_in_bozza(self):
+		# 30 € arrived online, its invoice waits for a codice fiscale: a balance now
+		# would invoice the whole price again
+		risultato = self.prenota()
+		persona = frappe.db.get_value(
+			"CRM Appointment Participant", {"access_token": risultato["token"]}, "party"
+		)
+		frappe.db.set_value("CRM Billing Profile", {"party": persona}, "fiscal_code", None)
+		self.paga(risultato)
+		with self.assertRaises(frappe.ValidationError) as aspetta:
+			fatture_api.appointment_invoice_proposal(self.appuntamento(risultato))
+		self.assertIn("still in draft", str(aspetta.exception))
+
 	def test_rimborsato_alla_disdetta_la_nota_di_credito(self):
 		frappe.db.set_single_value("CRM Stripe Settings", "refund_on_cancel", 1)
 		frappe.db.set_single_value("CRM Stripe Settings", "refund_hours", 2)

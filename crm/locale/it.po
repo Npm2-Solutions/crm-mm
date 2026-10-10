@@ -49827,3 +49827,7 @@ msgstr "Di' di chi è la posta, o da quando"
 
 msgid "paid online, still a draft"
 msgstr "pagata online, ancora in bozza"
+
+#: crm/pagamenti/fatture.py
+msgid "The deposit paid online has its invoice still in draft: issue it first, then the balance (Invoices, things to do)"
+msgstr "L'acconto pagato online ha la fattura ancora in bozza: emetti prima quella, poi il saldo (Fatture, da fare)"
