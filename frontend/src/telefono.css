@@ -24,10 +24,12 @@
    that grows them to 40px, less on the sides where buttons sit in a row. A
    button that opens a page (`:route`, `:link`) is drawn as a link with the
    same classes, and gets the same ring: «Call round» on the calls page took a
-   tap on 24px. */
+   tap on 24px. A record's field drawn as a button (a select, a link: `min-h-7`)
+   is one of them: on a tablet the side panel's «Italia» took a tap on 28px. */
 @media (pointer: coarse) {
   .touch-target:not(.absolute, .fixed, .sticky),
   button.h-7:not(.absolute, .fixed, .sticky),
+  button.min-h-7:not(.absolute, .fixed, .sticky),
   button.h-8:not(.absolute, .fixed, .sticky),
   a.h-7.inline-flex.justify-center:not(.absolute, .fixed, .sticky),
   a.h-8.inline-flex.justify-center:not(.absolute, .fixed, .sticky) {
@@ -40,6 +42,7 @@
     inset: -10px -8px;
   }
   button.h-7:not([role='switch'])::after,
+  button.min-h-7:not([role='switch'])::after,
   a.h-7.inline-flex.justify-center::after {
     content: '';
     position: absolute;
