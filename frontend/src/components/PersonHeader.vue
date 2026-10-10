@@ -192,6 +192,7 @@ import {
   giornoInBreve,
   indirizzoTel,
   mascherato,
+  etaENascita,
   modiDiChiamare,
   nomeDellAppuntamento,
   numeriDi,
@@ -300,14 +301,35 @@ const prossimo = computed(() =>
   prossimoAppuntamento(appuntamenti.data, adessoDelCentro()),
 )
 
+// how old they are and when they were born: after the name, what tells one
+// patient from another with the same name (NISTIR 7804), on every tab. From
+// the billing details the page reads anyway (the codice fiscale's date), for
+// whoever may read them: the others see what they saw before
+const anagrafica = createResource({
+  url: 'crm.invoicing.anagrafica.get_billing_profile',
+  params: { party_type: 'CRM Lead', party: props.doc.name },
+  cache: ['person-birth', props.doc.name],
+  auto: puo('persone.dati_fiscali'),
+  onError: () => anagrafica.setData(null),
+})
+const eta = computed(() =>
+  etaENascita(anagrafica.data?.birth_date, adessoDelCentro(), lingua),
+)
+
 // who they are to the centre, in a few words: a contact, a client since, a
-// patient since (utils/rapporto.js); the last visit
+// patient since (utils/rapporto.js); their age; the last visit
 const fatti = computed(() => {
   const fatti = []
   const { frase, data } = fattoDel(props.doc)
   fatti.push(
     data ? __(frase, [giornoInBreve(data, lingua)]) : __(frase, null, CONTESTO),
   )
+  if (eta.value)
+    fatti.push(
+      eta.value.anni < 1
+        ? __('Under a year · {0}', [eta.value.nascita])
+        : __('{0} years · {1}', [eta.value.anni, eta.value.nascita]),
+    )
   if (props.doc.last_visit)
     fatti.push(
       __('Last visit {0}', [giornoInBreve(props.doc.last_visit, lingua)]),

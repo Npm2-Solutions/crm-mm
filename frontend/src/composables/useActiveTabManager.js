@@ -4,6 +4,30 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDebounceFn, useStorage } from '@vueuse/core'
 
+// the tabs a record's page may have, by the name its address gives them
+const SCHEDE_DEI_RECORD = new Set([
+  'summary',
+  'activity',
+  'data',
+  'details',
+  'events',
+  'subscriptions',
+  'tasks',
+  'notes',
+  'attachments',
+  'forms',
+  'documents',
+  'quotes',
+  'plans',
+  'area',
+  'clinic',
+  'tracking',
+  'emails',
+  'calls',
+  'deals',
+  'contacts',
+])
+
 export function useActiveTabManager(tabs, storageKey) {
   const activeTab = useStorage(storageKey, 'activity')
   const route = useRoute()
@@ -44,12 +68,19 @@ export function useActiveTabManager(tabs, storageKey) {
   // instead, is Details on a phone, where the message was nowhere.
   function nominaUnMessaggio(hash) {
     const nome = (hash || '').replace('#', '')
-    return Boolean(nome) && findTabIndex(nome) === -1
+    return (
+      Boolean(nome) && findTabIndex(nome) === -1 && !SCHEDE_DEI_RECORD.has(nome)
+    )
   }
 
+  // An address naming a tab this page does not have for this reader - the
+  // Clinic for whoever does not care for the person, Data on a computer, where
+  // the data sit beside the tabs - opens the first tab: it opened the Chat,
+  // still under «#clinic», as if the record were its messages
   function tabOrConversation(tabName) {
     let index = findTabIndex(tabName)
     if (index !== -1) return index
+    if (SCHEDE_DEI_RECORD.has(tabName)) return 0
     index = findTabIndex('activity')
     return index !== -1 ? index : 0
   }

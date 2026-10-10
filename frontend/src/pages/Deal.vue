@@ -75,12 +75,7 @@
   <!-- the deal's name is in the crumbs: its heading, for a screen reader -->
   <h1 v-if="doc.name" class="sr-only">{{ title }}</h1>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
-    <Tabs
-      v-model="tabIndex"
-      as="div"
-      :tabs="tabs"
-      class="flex flex-1 overflow-hidden flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-5 [&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
-    >
+    <SchedeDelRecord v-model="tabIndex" :tabs="tabs">
       <template #tab-panel>
         <Activities
           ref="activities"
@@ -93,7 +88,7 @@
           @afterSave="reloadResources"
         />
       </template>
-    </Tabs>
+    </SchedeDelRecord>
     <Resizer side="right" class="flex flex-col justify-between border-l">
       <!-- The record's id, for copying: it was styled as the panel's title,
            in bigger type than the name right under it. -->
@@ -409,6 +404,7 @@ import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
+import SchedeDelRecord from '@/components/SchedeDelRecord.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
@@ -442,7 +438,6 @@ import {
   Dropdown,
   Tooltip,
   Avatar,
-  Tabs,
   Breadcrumbs,
   call,
   usePageMeta,
