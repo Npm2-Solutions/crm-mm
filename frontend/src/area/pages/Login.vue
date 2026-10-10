@@ -4,7 +4,9 @@
   the answer is the same whether the address has an area or not.
 -->
 <template>
-  <div class="flex min-h-full items-center justify-center px-5 py-10">
+  <!-- the page's main region: drawn outside the area's shell, it had none and
+       a screen reader found nothing to jump to -->
+  <main class="flex min-h-full items-center justify-center px-5 py-10">
     <div class="flex w-full max-w-sm flex-col gap-6">
       <div class="flex flex-col items-center gap-3 text-center">
         <img
@@ -153,7 +155,7 @@
         {{ __('Powered by {brand}') }}
       </p>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
