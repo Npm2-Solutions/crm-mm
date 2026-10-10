@@ -12,7 +12,7 @@ export class DealsPage {
 	}
 
 	async openCreateModal() {
-		await this.page.getByRole('button', { name: 'Create', exact: true }).click()
+		await this.page.getByRole('button', { name: 'New deal', exact: true }).click()
 		await expect(
 			this.page.getByRole('heading', { name: 'Create Deal' }),
 		).toBeVisible()

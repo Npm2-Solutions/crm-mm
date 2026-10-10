@@ -17,7 +17,7 @@ export class LeadsPage {
 	}
 
 	async openCreateModal() {
-		await this.page.getByRole('button', { name: 'Create', exact: true }).click()
+		await this.page.getByRole('button', { name: 'New person', exact: true }).click()
 		await expect(
 			this.page.getByRole('heading', { name: 'Create Lead' }),
 		).toBeVisible()

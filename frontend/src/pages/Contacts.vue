@@ -17,7 +17,7 @@
       <Button
         v-if="!isMobileView"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New contact')"
         iconLeft="plus"
         @click="showContactModal = true"
       />

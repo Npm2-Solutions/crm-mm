@@ -17,7 +17,7 @@
       <Button
         v-if="!isMobileView && !solaLettura()"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New task')"
         iconLeft="plus"
         @click="createTask"
       />

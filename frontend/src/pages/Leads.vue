@@ -36,7 +36,7 @@
       <Button
         v-if="!isMobileView && puo('persone.scrivi')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New person')"
         iconLeft="plus"
         @click="showLeadModal = true"
       />
