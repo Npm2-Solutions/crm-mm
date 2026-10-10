@@ -500,10 +500,12 @@ class CRMDeal(Document):
 				"key": "status",
 				"width": "12rem",
 			},
+			# what its quotes make it worth: a proposed quote writes the expected
+			# value, `deal_value` only once it is won (crm/preventivi/pipeline.py)
 			{
-				"label": "Deal Value",
+				"label": "Expected Deal Value",
 				"type": "Currency",
-				"key": "deal_value",
+				"key": "expected_deal_value",
 				"align": "right",
 				"width": "9rem",
 			},
@@ -531,6 +533,7 @@ class CRMDeal(Document):
 			"organization",
 			"annual_revenue",
 			"deal_value",
+			"expected_deal_value",
 			"status",
 			"pipeline",
 			"email",
@@ -553,7 +556,7 @@ class CRMDeal(Document):
 			"column_field": "status",
 			# the person on each card, and what the deal is worth
 			"title_field": "lead_name",
-			"kanban_fields": '["deal_value", "mobile_no", "_assign", "modified"]',
+			"kanban_fields": '["expected_deal_value", "mobile_no", "_assign", "modified"]',
 		}
 
 

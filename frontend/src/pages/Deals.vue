@@ -518,8 +518,10 @@ function parseRows(rows, columns = []) {
         _rows[row] = formatDate(deal[row], '', true, fieldType == 'Datetime')
       }
 
+      // an amount nobody has set yet (no quote proposed) is empty, not
+      // «0,00 €» on every card and row as if the deal were worth nothing
       if (fieldType && fieldType == 'Currency') {
-        _rows[row] = getFormattedCurrency(row, deal)
+        _rows[row] = deal[row] ? getFormattedCurrency(row, deal) : ''
       }
 
       if (fieldType && fieldType == 'Float') {
