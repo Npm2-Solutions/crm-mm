@@ -209,9 +209,15 @@
                 :key="participant.name"
                 variant="solid"
                 :label="
-                  appointment.participants.length > 1
-                    ? __('Invoice it to {0}', [participant.participant_name])
-                    : __('Invoice it')
+                  bozzaDi(appointment, participant)
+                    ? appointment.participants.length > 1
+                      ? __('Finish the draft invoice of {0}', [
+                          participant.participant_name,
+                        ])
+                      : __('Finish the draft invoice')
+                    : appointment.participants.length > 1
+                      ? __('Invoice it to {0}', [participant.participant_name])
+                      : __('Invoice it')
                 "
                 icon-left="file-text"
                 :size="isMobileView ? 'lg' : 'sm'"
@@ -431,6 +437,17 @@ const nonFatturati = computed(
       ]),
     ),
 )
+// the draft invoice already made for a place and never issued, if any
+const conBozze = computed(
+  () =>
+    new Map(
+      (toInvoice.data || []).map((incontro) => [incontro.name, incontro]),
+    ),
+)
+function bozzaDi(appointment, participant) {
+  const incontro = conBozze.value.get(appointment.name)
+  return incontro?.drafts?.[participant?.name] || incontro?.draft || ''
+}
 // who came and has no invoice of their place: a class has one a place
 function daFatturare(appointment) {
   const restano = nonFatturati.value.get(appointment.name)
@@ -448,6 +465,7 @@ async function fattura(appointment, participant) {
     await fatturaDellIncontro(appointment.name, {
       alCambio: ricarica,
       partecipante: participant.name,
+      bozzaSalvata: bozzaDi(appointment, participant),
     })
   } finally {
     emettendo.value = ''

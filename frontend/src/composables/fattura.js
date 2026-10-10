@@ -55,8 +55,14 @@ function nuovaFattura(cliente = null, { alCambio, bozza } = {}) {
  */
 async function fatturaDellIncontro(
   appuntamento,
-  { alCambio, partecipante } = {},
+  { alCambio, partecipante, bozzaSalvata } = {},
 ) {
+  // a draft already made for it, left without issuing: that one, taken up
+  // again - a second would invoice the visit twice
+  if (bozzaSalvata) {
+    apriFattura(bozzaSalvata, { alCambio })
+    return
+  }
   // a class is invoiced a place at a time: whose, or the server's next one
   const chi = { appointment: appuntamento, participant: partecipante || '' }
   try {

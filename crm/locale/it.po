@@ -50897,3 +50897,7 @@ msgstr "{0} numeri dell'account rispondono altrove - un centralino, un'altra app
 #: frontend/src/utils/numeri.js
 msgid "{0} refused the documents. Put them right and send them again."
 msgstr "{0} ha rifiutato i documenti. Correggili e mandali di nuovo."
+
+#: frontend/src/pages/Today.vue
+msgid "Finish the draft invoice of {0}"
+msgstr "Completa la bozza di fattura di {0}"
