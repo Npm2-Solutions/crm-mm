@@ -13,6 +13,7 @@
 -->
 <template>
   <Button
+    ref="bottone"
     variant="solid"
     icon="lucide-plus"
     class="!fixed !bottom-[calc(env(safe-area-inset-bottom)+5rem)] !right-4 z-20 !size-14 !rounded-2xl shadow-lg transition-[transform,opacity] duration-200 motion-reduce:transition-none [&_svg]:!size-6 [&_span]:!size-6"
@@ -34,7 +35,11 @@ const emit = defineEmits(['click'])
 
 // Down hides it, up shows it again; a few pixels either way are a finger
 // resting, not a direction. Each list scrolls in a box of its own, so the
-// scroll is heard on the way down the page (capture), box by box.
+// scroll is heard on the way down the page (capture), box by box: only the
+// boxes of its own page. A sheet it opens (drawn elsewhere) scrolled it away
+// too, and over a list too short to scroll it then never came back. Never
+// while it holds the focus: a tab to it shows it, and it stays.
+const bottone = ref(null)
 const nascosto = ref(false)
 const dove = new WeakMap()
 
@@ -42,11 +47,16 @@ function alloScorrere(evento) {
   const box =
     evento.target === document ? document.scrollingElement : evento.target
   if (!(box instanceof Element)) return
+  const el = bottone.value?.$el
+  const pagina = el?.parentElement
+  if (pagina && box !== document.scrollingElement && !pagina.contains(box))
+    return
   const ora = box.scrollTop
   if (!dove.has(box)) return dove.set(box, ora)
   const prima = dove.get(box)
   if (Math.abs(ora - prima) < 6) return
   dove.set(box, ora)
+  if (el && document.activeElement === el) return
   nascosto.value = ora > prima && ora > 24
 }
 
