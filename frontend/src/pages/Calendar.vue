@@ -257,6 +257,7 @@
       </CalendarEventPanel>
       <AppointmentPanel
         v-else-if="appointmentPanel.mode"
+        ref="pannelloAppuntamento"
         :mode="appointmentPanel.mode"
         :name="appointmentPanel.name"
         :seed="appointmentPanel.seed"
@@ -914,7 +915,7 @@ const comeData = (data) => {
 // its windows - none when it does not work
 function apertoDi(orari, data) {
   if (orari === null) return null
-  return orari ? (orari[data]?.open ?? []) : undefined
+  return orari ? orari[data]?.open ?? [] : undefined
 }
 
 const colonne = computed(() => {
@@ -1454,13 +1455,20 @@ watch(panelOpen, async (aperto) => {
 // on a phone the panel covers the agenda: a back closes it, not the page.
 // After `showEventPanel`: the watch reads it at once
 let togliDaIndietro = null
+const pannelloAppuntamento = ref(null)
 watch(
   () => panelOpen.value && isMobileView.value,
   (sopra) => {
     togliDaIndietro?.()
+    // an appointment's panel through its own close, which asks first over
+    // what was written: a back dropped a half-written appointment silently
     togliDaIndietro = sopra
       ? chiudeConIndietro(() =>
-          showEventPanel.value ? close() : closeAppointment(),
+          showEventPanel.value
+            ? close()
+            : pannelloAppuntamento.value
+              ? pannelloAppuntamento.value.close()
+              : closeAppointment(),
         )
       : null
   },

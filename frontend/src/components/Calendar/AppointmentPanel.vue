@@ -1246,6 +1246,7 @@ import { tastiera } from '@/utils/tastiera'
 import { leggibile } from '@/utils/telefono'
 import { avviaLaVisita, statoDellaVisitaOnline } from '@/utils/visiteOnline'
 import { isMobileView } from '@/composables/breakpoints'
+import { dallaCronologia, qualcosaSopra } from '@/utils/indietro'
 import {
   Badge,
   Button,
@@ -2146,11 +2147,16 @@ function pickParty(row, value) {
       { lead: value },
       {
         onSuccess: (data) => {
+          // the person's details arrive after the panel opened on them (from
+          // their page): filled in by the panel, not written by anybody, so
+          // an untouched form stays untouched and leaving it asks nothing
+          const intatto = snapshot() === opened.value
           row.participant_name = data?.lead_name || value
           row.email = data?.email || ''
           row.phone = data?.phone || ''
           row.booked_by = data?.booked_by || ''
           row.booked_by_name = data?.booked_by_name || ''
+          if (intatto) opened.value = snapshot()
         },
         onError: () => (row.participant_name = value),
       },
@@ -2328,12 +2334,15 @@ watch(
 )
 
 // whether what was written may go: yes at once when nothing changed, else the
-// answer to the question (closed any other way, a no)
+// answer to the question (closed any other way, a no). One question at a time:
+// a second back, or the X while it is asked, waits for the same answer
+let domanda = null
 function siPuoLasciare() {
   const ora = snapshot()
   if (props.mode === 'details' || ora === opened.value || ora === scartato)
     return Promise.resolve(true)
-  return new Promise((resolve) => {
+  if (domanda) return domanda
+  domanda = new Promise((resolve) => {
     let lascia = false
     $dialog({
       title: __('Discard unsaved changes?'),
@@ -2351,10 +2360,12 @@ function siPuoLasciare() {
       ],
       onClose: () => {
         if (lascia) scartato = ora
+        domanda = null
         resolve(lascia)
       },
     })
   })
+  return domanda
 }
 
 function discardFirst(then) {
@@ -2363,8 +2374,18 @@ function discardFirst(then) {
 
 // Leaving the page asks too: on a phone the bar at the bottom stays live under
 // the panel, and a tap on «Persone» lost a half-written appointment that the X
-// would have asked about
-onBeforeRouteLeave(() => siPuoLasciare())
+// would have asked about. A phone's back, while something lies on top (the
+// question, the panel), is the layout's to handle (utils/indietro.js): it
+// closes what is on top, the panel through its own close, which asks
+onBeforeRouteLeave((to) => {
+  if (
+    isMobileView.value &&
+    dallaCronologia(to, window.history.state) &&
+    qualcosaSopra()
+  )
+    return true
+  return siPuoLasciare()
+})
 
 function close() {
   discardFirst(() => emit('close'))
