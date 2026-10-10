@@ -316,8 +316,11 @@ An SMS DottorCloud sends leaves from `sms.mittente()`, never from somebody's own
 line; one it sends by itself skips a person who wrote STOP (`sms.ha_fermato`), and a
 promotional one (an automation asking `marketing_consent`) waits for its hours.
 
-Twilio is the only carrier (`crm/telephony/providers`): Exotel went on
-03/10/2026 (`dottorcloud_does_not_use_exotel`).
+Twilio and Telnyx are the carriers, one at a time (`crm/telephony/operatore.py`:
+`attivo()`, `libero_per()`; doc 65): code that sends or calls asks the carrier that
+is on, never names Twilio (`crm.api.sms.deliver_sms`, `uscita.perche_no(numero,
+nome)`, `sms.numeri_sms()`). Exotel went on 03/10/2026
+(`dottorcloud_does_not_use_exotel`).
 
 The account's own token is never stored and never in a log: the codes travel in
 variables named `*_token` and `*_secret`, which a traceback hides, and an error of
@@ -330,6 +333,23 @@ attached to nothing) or a request's own: never another of the site's files.
 A call from the browser leaves only after the server's yes (`voice` asks
 `uscita.perche_no` again, whatever the screen did), and shows a number of the
 centre's or the caller's own line: never one the browser made up.
+
+### Telnyx, the other carrier (docs/crm/65)
+| File | Role |
+|---|---|
+| `crm/telephony/operatore.py` | The carrier the centre's phone goes through, one at a time: `attivo()`, `collegati()`, its settings, its own line's field (`linea`), its page (`pagina`); `libero_per` refuses connecting the second |
+| `crm/telephony/telnyx/regole.py`, `numeri_regole.py`, `consumi_regole.py`, `errori_regole.py` | Pure: the two codes (an API key, the account's public key), a webhook's Ed25519 signature of «timestamp\|raw body» within five minutes (`firma_valida`), DottorCloud's resources named after the site and the numbers' tag (`etichetta`), what a number of the account needs (`cosa_fare`: a switchboard's stays), the kinds Telnyx sells in Italy (geographic, toll-free: no mobile), its requirements in DottorCloud's words, PDF only, this month by kind, the balance, the alerts, its error codes and a call's D codes in sentences — tested with plain `unittest` |
+| `crm/telephony/telnyx/cliente.py`, `collegamento.py` + `CRM Telnyx Settings`, `Settings/Telephony/TelnyxSettings.vue`, `utils/telnyx.js` | Telnyx's REST API through `requests` (`telnyx_api` in a test bench's config points at a fake); the centre pastes its API key and public key once (or the agency's account, `dottorcloud_telnyx` in `common_site_config.json`): DottorCloud makes or finds its TeXML application, credential connection (calls parked, so `voice` authorises each), outbound voice profile (the allowed countries) and messaging profile, points the numbers at itself, keeps the key (Password, permlevel 1: Telnyx has no key for a part of an account); `assicura()` every hour; Check says the balance; Disconnect forgets the key and the people's credentials |
+| `crm/telephony/providers/telnyx.py` + `crm/telephony/telnyx/texml.py`, `crm/integrations/telnyx/api.py` | The answering service in TeXML (the browser rung as `<Sip>sip:…@sip.telnyx.com</Sip>`); the guest webhooks, each signed (`valida_la_richiesta`, on the raw body), an SMS event once; a browser's credential and its token (`generate_access_token`), the call it is about to place (`prepare_call`), who calls when the phones ring (`who_is_calling`) |
+| `crm/telephony/telnyx/sms.py`, `registrazioni.py` | An SMS through the messaging profile, STOP and START, its state and error; a recording downloaded at once into the call's private file (Telnyx's link lasts ten minutes), played from there |
+| `crm/telephony/telnyx/numeri.py`, `consumi.py`, `verificati.py`, `trasloco.py` + `NewNumberDialog.vue`, `VerifyNumberDialog.vue`, `TelnyxMoveDialog.vue` | A new number chosen first and ordered with its requirement group, every hour how it went (`aggiorna_le_richieste`, the decline's reason from Telnyx's comments); the month and the balance, the alerts DottorCloud checks every hour (Telnyx has no usage trigger); a number verified with the code Telnyx says, typed here; one of the centre's account taken in without codes — tested with a fake Telnyx (`crm/telephony/telnyx/tests/telnyx_finto.py`) |
+| `frontend/src/components/Telephony/TelnyxCallUI.vue` + `utils/operatori.js` | The call in the browser with `@telnyx/webrtc`, imported where it is used; which carrier a page's calls go to (`moduloDi`) |
+
+Telnyx's key is kept, so it travels only in variables named `*_secret` and is never
+logged; a webhook is refused unless its signature is right, and in the agency's
+account a call of another site's connection is refused too. A number on the centre's
+switchboard (a SIP connection) is never touched, and in the agency's account a free
+number is not taken.
 
 ### WhatsApp's templates (docs/crm/12)
 | File | Role |
@@ -1175,7 +1195,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **1528 tests · ~25s** — all must pass before committing
+- **1556 tests · ~25s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

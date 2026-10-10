@@ -2,6 +2,9 @@
 
 **Stato:** in corso (02/10/2026). Prima parte: il collegamento.
 
+Twilio non è più il solo gestore: **Telnyx** fa le stesse cose, al suo posto, uno
+alla volta (doc 65).
+
 ## Il bisogno
 
 - Il centro usa **il suo account Twilio**: chiamate e SMS li paga lui a Twilio, al
