@@ -199,6 +199,7 @@
   />
 </template>
 <script setup>
+import { leggibile } from '@/utils/telefono'
 import HeartIcon from '@/components/Icons/HeartIcon.vue'
 import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import ListBulkActions from '@/components/ListBulkActions.vue'
@@ -256,6 +257,13 @@ function onColumnWidthUpdated({ width, save }, column) {
 }
 
 function getLabel(label, column) {
+  // a number in its groups, as the phone's lists draw it (utils/telefono.js)
+  if (
+    column.type === 'Phone' ||
+    column.options === 'Phone' ||
+    ['mobile_no', 'phone'].includes(column.key)
+  )
+    return leggibile(label)
   if (column.type === 'Select') return __(label)
   if (column.options && isTranslatable(column.options)) return __(label)
   return label

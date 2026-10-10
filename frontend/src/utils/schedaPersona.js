@@ -124,6 +124,28 @@ export function giornoInBreve(data, locale) {
 }
 
 /**
+ * How old a person is and when they were born, the second thing that tells
+ * one patient from another after the name (NISTIR 7804: the name and the date
+ * of birth on every clinical screen): `{ anni, nascita }`, the full years at
+ * `oggi` - a birthday not reached yet this year does not count - and the day in
+ * the reader's words. Nothing without a date, or with one still to come.
+ */
+export function etaENascita(nascita, oggi = new Date(), locale) {
+  const giorno = String(nascita || '').slice(0, 10)
+  const m = giorno.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const [anno, mese, di] = m.slice(1).map(Number)
+  let anni = oggi.getFullYear() - anno
+  if (
+    oggi.getMonth() + 1 < mese ||
+    (oggi.getMonth() + 1 === mese && oggi.getDate() < di)
+  )
+    anni -= 1
+  if (anni < 0) return null
+  return { anni, nascita: giornoInBreve(giorno, locale) }
+}
+
+/**
  * An appointment on the page of somebody it is for: its service. Its title
  * names who takes part - the person again, or in a class two of the others
  * («Pilates — Sofia Pellegrini, Marco Conti +3»), whose names are not theirs

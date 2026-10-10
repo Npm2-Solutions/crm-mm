@@ -86,10 +86,15 @@
               {{ contattoDi(persona) }}
             </span>
           </span>
+          <!-- when they come next: a date alone («14 ott») did not say
+               whether it was the last visit or the next one -->
           <span
             v-if="torna(persona)"
-            class="shrink-0 rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+            class="flex shrink-0 items-center gap-1 rounded bg-surface-gray-2 px-1.5 py-0.5 text-xs text-ink-gray-7"
+            :title="__('Next appointment')"
           >
+            <span class="lucide-calendar-clock size-3" aria-hidden="true" />
+            <span class="sr-only">{{ __('Next appointment') }}:</span>
             {{ torna(persona) }}
           </span>
         </router-link>
