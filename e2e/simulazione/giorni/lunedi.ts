@@ -220,34 +220,22 @@ async function fattureInBozza(s: Settimana) {
 			await expect(notifica).toBeVisible()
 			await premi(r, notifica)
 			await page.waitForURL(/\/crm\/fatture/)
+			// the notification opens a draft to complete
+			await expect(page.getByRole('dialog').last().getByText('Prima di emetterla')).toBeVisible()
 			let emesse = 0
 			for (const chiave of pagati) {
 				const appuntamento = s.stato[chiave].appuntamento
 				const bozza = await s.banco.valore('CRM Invoice', { advance_for: appuntamento }, ['name', 'docstatus'])
 				if (!bozza || bozza.docstatus !== 0) continue
-				const dialogo = page.getByRole('dialog').last()
-				if (!(await dialogo.isVisible().catch(() => false)) || !(await dialogo.getByText(s.p(chiave).nome).count())) {
-					await page.keyboard.press('Escape').catch(() => {})
-					await page.goto(`/crm/fatture?open=${bozza.name}`, { waitUntil: 'domcontentloaded' })
-				}
-				await expect(page.getByRole('dialog').last()).toBeVisible()
-				const d = page.getByRole('dialog').last()
-				await expect(d.getByText('Prima di emetterla')).toBeVisible()
-				if (
-					!(await d
-						.getByLabel('Codice fiscale')
-						.isVisible()
-						.catch(() => false))
+				// each draft as its row in the things to do opens it
+				await page.keyboard.press('Escape').catch(() => {})
+				await page.goto(`/crm/fatture?open=${bozza.name}`, { waitUntil: 'domcontentloaded' })
+				await expect(page.getByRole('dialog').last().getByText(s.p(chiave).nome).first()).toBeVisible()
+				await emettiLaBozza(s, r, page, chiave)
+				const dopo = await s.attendi(
+					() => s.banco.valore('CRM Invoice', bozza.name, ['docstatus', 'collected_on', 'posting_date']),
+					(v) => v?.docstatus === 1,
 				)
-					await premi(r, d.getByRole('button', { name: 'Dati in fattura' }))
-				const dati = s.persona(chiave)
-				await d.getByLabel('Codice fiscale').fill(dati.fiscal_code)
-				await d.getByLabel('Indirizzo', { exact: true }).fill(`${dati.address.street} ${dati.address.number}`)
-				await d.getByLabel('CAP').fill(dati.address.postcode)
-				await d.getByLabel('Città').fill(dati.address.city)
-				await premi(r, d.getByRole('button', { name: 'Emetti', exact: true }))
-				await esito(page, /emessa/i)
-				const dopo = await s.banco.valore('CRM Invoice', bozza.name, ['docstatus', 'collected_on', 'posting_date'])
 				s.verifica(dopo.docstatus === 1, 'The advance invoice is issued', `${chiave} ${bozza.name}`)
 				s.verifica(!!dopo.collected_on, 'The advance invoice paid online is collected', `${chiave} ${bozza.name}`)
 				s.verifica(

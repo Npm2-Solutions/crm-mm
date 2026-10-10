@@ -29,7 +29,8 @@ export default defineConfig({
 		baseURL: process.env.SIM_BASE || 'http://collaudo.localhost:8000',
 		actionTimeout: 20000,
 		navigationTimeout: 45000,
-		trace: 'retain-on-failure',
+		// every step has its screenshots in the report: a week's trace is too big to keep
+		trace: 'off',
 		launchOptions: process.env.SIM_CHROMIUM ? { executablePath: process.env.SIM_CHROMIUM } : {},
 	},
 })

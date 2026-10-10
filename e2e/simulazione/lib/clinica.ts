@@ -58,7 +58,7 @@ export async function puntoSulCorpo(
 	const punto = { x: box.width * x, y: box.height * y }
 	if (chi.tocco) await sagoma.tap({ position: punto })
 	else await sagoma.click({ position: punto })
-	await page.getByPlaceholder('Bruciore, lungo la gamba').last().fill(parole)
+	await page.getByLabel('Cosa senti, dove').last().fill(parole)
 	const intensita = page.getByRole('group', { name: /Quanto, da 0/ }).last()
 	await premi(chi, intensita.getByRole('button', { name: String(quanto), exact: true }))
 }

@@ -164,9 +164,22 @@ export async function emettiLaBozza(
 	return esito(page, /emessa/i)
 }
 
-/** A person's page, on a tab. */
+/** At the reception desk, the «Emetti la fattura» of somebody's appointment: in
+ * the block of the day that names them (a class's says whose place it is). */
+export function fatturaDi(page: Page, nome: string) {
+	return page
+		.getByRole('link', { name: nome })
+		.first()
+		.locator('xpath=ancestor::div[.//button[starts-with(normalize-space(.), "Emetti la fattura")]][1]')
+		.getByRole('button', { name: /^Emetti la fattura/ })
+		.first()
+}
+
+/** A person's page, on a tab, as a link opens it: a hash alone does not change
+ * the tab of the page already open. */
 export async function persona(s: Settimana, chi: Persona, lead: string, scheda = 'summary'): Promise<Page> {
-	const page = await chi.apri(s.browser, s.banco)
+	const page = chi.password ? await s.alLavoro(chi) : await chi.apri(s.browser, s.banco)
+	if (page.url().includes(`/crm/persone/${lead}`)) await page.goto('about:blank')
 	await page.goto(`/crm/persone/${lead}#${scheda}`, { waitUntil: 'domcontentloaded' })
 	await page.waitForLoadState('networkidle').catch(() => {})
 	return page

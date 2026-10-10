@@ -3,10 +3,12 @@
 
 import { expect, test } from '@playwright/test'
 import { lunedi } from './giorni/lunedi'
+import { martedi } from './giorni/martedi'
 import { Settimana } from './lib/settimana'
 
 const GIORNI: Array<[string, (s: Settimana) => Promise<void>]> = [
 	['lunedi', lunedi],
+	['martedi', martedi],
 ]
 
 test('una settimana del centro', async ({ browser }) => {

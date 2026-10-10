@@ -7,21 +7,26 @@ import { premi } from './azioni'
 import type { Persona } from './persone'
 import type { Settimana } from './settimana'
 
+/** Inside the area, on whatever page: its greeting, or its way out. */
+function dentroDellArea(page: Page) {
+	return page
+		.getByText(/Ciao, /)
+		.or(page.getByRole('button', { name: 'Esci', exact: true }))
+		.first()
+}
+
 /** The client area as a person reaches it: from the link of an email, or with a
  * code by email; already in, it is just open. */
 export async function entraNellArea(s: Settimana, chi: Persona, { link }: { link?: string } = {}): Promise<Page> {
 	const page = await chi.apri(s.browser, s.banco)
+	const dentro = dentroDellArea(page)
+	// the code's door: the email to send it to
+	const email = page.getByLabel('Email')
 	if (link) {
 		await page.goto(link, { waitUntil: 'domcontentloaded' })
 		// the link's door («Entra»), the code's (a link already spent), or already in
 		const entra = page.getByRole('button', { name: 'Entra', exact: true })
-		const email = page.getByLabel('Email')
-		await expect(
-			entra
-				.or(email)
-				.or(page.getByText(/Ciao, /))
-				.first(),
-		).toBeVisible({ timeout: 30000 })
+		await expect(entra.or(email).or(dentro).first()).toBeVisible({ timeout: 30000 })
 		if ((await entra.isVisible()) && !(await email.isVisible())) {
 			await s.dito(chi, entra)
 			await premi(chi, entra)
@@ -29,9 +34,7 @@ export async function entraNellArea(s: Settimana, chi: Persona, { link }: { link
 	} else {
 		await page.goto('/area', { waitUntil: 'domcontentloaded' })
 	}
-	const porta = page.getByRole('heading', { name: 'Entra nella tua area' })
-	const dentro = page.getByText(/Ciao, /).first()
-	await expect(porta.or(dentro)).toBeVisible({ timeout: 30000 })
+	await expect(dentro.or(email).first()).toBeVisible({ timeout: 30000 })
 	if (await dentro.isVisible().catch(() => false)) return page
 	// the door: the email, a code to it
 	const dopo = s.banco.ora
