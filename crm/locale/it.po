@@ -49907,3 +49907,7 @@ msgstr "La pagina che cercavi non è qui"
 #: frontend/src/components/Settings/Settings.vue
 msgid "It is not among the settings you can see: your level does not open it, or it is not on for this centre. Whoever manages the centre can tell you more."
 msgstr "Non è tra le impostazioni che puoi vedere: il tuo livello non la apre, oppure non è attiva per questo centro. Chi gestisce il centro può dirti di più."
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Choose the service first: the free times depend on how long it lasts and who does it."
+msgstr "Prima scegli il servizio: gli orari liberi dipendono da quanto dura e da chi lo fa."

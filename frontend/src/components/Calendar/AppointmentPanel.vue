@@ -620,15 +620,17 @@
             }"
           />
         </div>
-        <FormControl
-          :modelValue="form.service"
-          class="w-full"
-          type="select"
-          variant="outline"
-          :options="serviceOptions"
-          :aria-label="__('Service')"
-          @update:modelValue="onServiceChange"
-        />
+        <div ref="campoServizio" class="w-full">
+          <FormControl
+            :modelValue="form.service"
+            class="w-full"
+            type="select"
+            variant="outline"
+            :options="serviceOptions"
+            :aria-label="__('Service')"
+            @update:modelValue="onServiceChange"
+          />
+        </div>
       </div>
       <div
         v-if="serviceSummary"
@@ -768,36 +770,55 @@
           @update:modelValue="setDate"
         />
       </div>
-      <div class="flex items-center gap-3 px-4.5 py-[7px] text-ink-gray-7">
-        <span class="lucide-clock size-4 shrink-0" aria-hidden="true" />
-        <div class="flex w-full items-center gap-x-1.5">
-          <TimePicker
-            class="w-full"
-            variant="outline"
-            :modelValue="form.time"
-            :placeholder="__('Start', null, 'Start time')"
-            @update:modelValue="setStart"
-          />
-          <TimePicker
-            class="w-full"
-            variant="outline"
-            :modelValue="form.end"
-            :options="endOptions"
-            :placeholder="__('End')"
-            placement="bottom-end"
-            @update:modelValue="setEnd"
-          />
+      <div class="flex items-end gap-3 px-4.5 py-[7px] text-ink-gray-7">
+        <!-- level with the fields, under their words -->
+        <span
+          class="flex h-7 shrink-0 items-center max-md:h-10"
+          aria-hidden="true"
+        >
+          <span class="lucide-clock size-4" />
+        </span>
+        <!-- which time is which, in sight once both are filled: «16:45» and
+             «17:15» side by side said it only by their order -->
+        <div class="flex w-full items-end gap-x-1.5">
+          <div class="flex w-full min-w-0 flex-col gap-0.5">
+            <span class="text-p-xs text-ink-gray-5" aria-hidden="true">
+              {{ __('Start', null, 'Start time') }}
+            </span>
+            <TimePicker
+              class="w-full"
+              variant="outline"
+              :modelValue="form.time"
+              :placeholder="__('Start', null, 'Start time')"
+              @update:modelValue="setStart"
+            />
+          </div>
+          <div class="flex w-full min-w-0 flex-col gap-0.5">
+            <span class="text-p-xs text-ink-gray-5" aria-hidden="true">
+              {{ __('End') }}
+            </span>
+            <TimePicker
+              class="w-full"
+              variant="outline"
+              :modelValue="form.end"
+              :options="endOptions"
+              :placeholder="__('End')"
+              placement="bottom-end"
+              @update:modelValue="setEnd"
+            />
+          </div>
         </div>
       </div>
       <div class="pb-1 pl-[46px] pr-4.5">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <!-- never greyed: without a service it says so and takes one to
+               the field (a grey button said nothing of why) -->
           <Button
             size="sm"
             variant="subtle"
             iconLeft="search"
             :label="__('Find a free time')"
             :loading="slots.loading"
-            :disabled="!form.service"
             @click="findSlots"
           />
           <span v-if="slotHint" class="text-p-xs text-ink-gray-5">
@@ -1215,7 +1236,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 const t = (text, args, context) => __(text, args, context)
 
@@ -1892,8 +1913,16 @@ function refreshConflicts() {
     .catch(() => {})
 }
 
+const campoServizio = ref(null)
+
 function findSlots() {
-  if (!form.service) return
+  if (!form.service) {
+    slotHint.value = __(
+      'Choose the service first: the free times depend on how long it lasts and who does it.',
+    )
+    campoServizio.value?.querySelector('select, button, input')?.focus()
+    return
+  }
   slotHint.value = ''
   slots
     .submit(
@@ -2128,6 +2157,8 @@ function afterOpen() {
 
 function onServiceChange(value) {
   form.service = value
+  // «choose the service first» has been answered
+  if (value) slotHint.value = ''
   const picked = serviceOf(value)
   if (!picked) return
   form.end = addMinutes(form.time, picked.duration || 30)
@@ -2211,24 +2242,53 @@ function save() {
 
 // --- leaving ---------------------------------------------------------------
 
-function discardFirst(then) {
-  if (props.mode === 'details' || snapshot() === opened.value) return then()
-  $dialog({
-    title: __('Discard unsaved changes?'),
-    message: __('What you changed in this appointment will be lost.'),
-    actions: [
-      { label: __('Keep editing'), onClick: (closeDialog) => closeDialog() },
-      {
-        label: __('Discard'),
-        variant: 'solid',
-        onClick: (closeDialog) => {
-          closeDialog()
-          then()
+// what was thrown away, as it was: the same leaving asks the guard again on a
+// redirect (People's /view goes on to /view/list), and the answer stands while
+// nothing is written after it
+let scartato = null
+watch(
+  () => props.mode,
+  () => (scartato = null),
+)
+
+// whether what was written may go: yes at once when nothing changed, else the
+// answer to the question (closed any other way, a no)
+function siPuoLasciare() {
+  const ora = snapshot()
+  if (props.mode === 'details' || ora === opened.value || ora === scartato)
+    return Promise.resolve(true)
+  return new Promise((resolve) => {
+    let lascia = false
+    $dialog({
+      title: __('Discard unsaved changes?'),
+      message: __('What you changed in this appointment will be lost.'),
+      actions: [
+        { label: __('Keep editing'), onClick: (closeDialog) => closeDialog() },
+        {
+          label: __('Discard'),
+          variant: 'solid',
+          onClick: (closeDialog) => {
+            lascia = true
+            closeDialog()
+          },
         },
+      ],
+      onClose: () => {
+        if (lascia) scartato = ora
+        resolve(lascia)
       },
-    ],
+    })
   })
 }
+
+function discardFirst(then) {
+  siPuoLasciare().then((lascia) => lascia && then())
+}
+
+// Leaving the page asks too: on a phone the bar at the bottom stays live under
+// the panel, and a tap on «Persone» lost a half-written appointment that the X
+// would have asked about
+onBeforeRouteLeave(() => siPuoLasciare())
 
 function close() {
   discardFirst(() => emit('close'))

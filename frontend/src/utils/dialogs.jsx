@@ -18,7 +18,12 @@ export let Dialogs = {
         position={dialog.position}
         actions={dialog.actions}
         open={dialog.show}
-        onUpdate:open={(val) => (dialog.show = val)}
+        onUpdate:open={(val) => {
+          dialog.show = val
+          // however it closes (an action, Escape, a tap outside): a caller
+          // waiting on the answer hears it ends
+          if (!val) dialog.onClose?.()
+        }}
       >
         {{
           default: () => {
