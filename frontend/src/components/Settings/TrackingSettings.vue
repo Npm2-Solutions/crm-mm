@@ -50,15 +50,19 @@
           </span>
         </div>
         <div class="relative mt-3.5">
+          <!-- named by the words above it, and its button by what it does:
+               a tooltip is no name for a screen reader -->
           <textarea
             readonly
             rows="2"
+            :aria-label="__('Tracking script')"
             class="w-full resize-none rounded-md border border-outline-gray-2 bg-surface-gray-1 py-2 pl-3 pr-10 font-mono text-xs text-ink-gray-7 focus:border-outline-gray-4 focus:outline-none focus:ring-0 focus-visible:outline-none"
             :value="snippet.data?.snippet || ''"
           />
           <button
-            class="touch-target absolute right-2 top-2 flex text-ink-gray-5 transition-colors hover:text-ink-gray-8"
+            class="touch-target absolute right-1 top-1 flex rounded p-1 text-ink-gray-5 transition-colors hover:text-ink-gray-8"
             :title="__('Copy')"
+            :aria-label="__('Copy')"
             @click="copySnippet"
           >
             <LucideCopy class="h-4 w-4" />

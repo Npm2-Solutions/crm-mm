@@ -63,42 +63,46 @@
         <div class="flex flex-col gap-2.5" role="list">
           <!-- each language said in its own words: whoever reads the other
                one finds theirs -->
-          <button
-            v-for="lingua in LINGUE"
-            :key="lingua.value"
-            type="button"
-            role="listitem"
-            class="flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors hover:bg-surface-gray-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)] disabled:opacity-60"
-            :class="
-              dati.data.language === lingua.value
-                ? 'border-outline-gray-4'
-                : 'border-outline-gray-2'
-            "
-            :lang="lingua.value"
-            :disabled="scegli.loading"
-            @click="sceltaLaLingua(lingua.value)"
-          >
-            <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span class="text-lg-semibold text-ink-gray-9">
-                {{ lingua.label }}
+          <!-- a button inside each item: a button that is a listitem is no
+               longer a button to a screen reader -->
+          <div v-for="lingua in LINGUE" :key="lingua.value" role="listitem">
+            <button
+              type="button"
+              :aria-current="dati.data.language === lingua.value || undefined"
+              class="flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors hover:bg-surface-gray-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)] disabled:opacity-60"
+              :class="
+                dati.data.language === lingua.value
+                  ? 'border-outline-gray-4'
+                  : 'border-outline-gray-2'
+              "
+              :lang="lingua.value"
+              :disabled="scegli.loading"
+              @click="sceltaLaLingua(lingua.value)"
+            >
+              <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span class="text-lg-semibold text-ink-gray-9">
+                  {{ lingua.label }}
+                </span>
+                <span class="text-p-sm text-ink-gray-6">{{ lingua.riga }}</span>
               </span>
-              <span class="text-p-sm text-ink-gray-6">{{ lingua.riga }}</span>
-            </span>
-            <LoadingIndicator
-              v-if="scegli.loading && scegli.params?.language === lingua.value"
-              class="size-4 shrink-0 text-ink-gray-5"
-            />
-            <span
-              v-else-if="dati.data.language === lingua.value"
-              class="dc-scelto lucide-check size-4 shrink-0 text-ink-gray-7"
-              aria-hidden="true"
-            />
-            <span
-              v-else
-              class="lucide-chevron-right size-4 shrink-0 text-ink-gray-5"
-              aria-hidden="true"
-            />
-          </button>
+              <LoadingIndicator
+                v-if="
+                  scegli.loading && scegli.params?.language === lingua.value
+                "
+                class="size-4 shrink-0 text-ink-gray-5"
+              />
+              <span
+                v-else-if="dati.data.language === lingua.value"
+                class="dc-scelto lucide-check size-4 shrink-0 text-ink-gray-7"
+                aria-hidden="true"
+              />
+              <span
+                v-else
+                class="lucide-chevron-right size-4 shrink-0 text-ink-gray-5"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
         </div>
       </section>
 

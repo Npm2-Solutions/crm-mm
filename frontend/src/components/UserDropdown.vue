@@ -16,7 +16,7 @@
               ? 'bg-surface-elevation-3 shadow-sm'
               : 'hover:bg-surface-gray-2'),
         ]"
-        :aria-label="platform.name"
+        :aria-label="__('{0} · {1}', [platform.name, __('Your account')])"
       >
         <!-- the product's logo heads the sidebar (design system Espresso): on its
              own row, the user under it; collapsed, its icon. The centre's mark

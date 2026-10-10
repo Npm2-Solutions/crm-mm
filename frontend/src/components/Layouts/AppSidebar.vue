@@ -11,7 +11,12 @@
        column falls through to the white page canvas. The token cannot be
        overridden on the Sidebar element itself — `bg-surface-sidebar` is emitted
        after `bg-surface-gray-1` in the utilities layer and would win. -->
-  <div class="relative flex h-full bg-surface-gray-1">
+  <!-- a landmark of its own: the account, the notifications and the first
+       steps were outside every region a screen reader lists -->
+  <aside
+    class="relative flex h-full bg-surface-gray-1"
+    :aria-label="__('Menu')"
+  >
     <Sidebar
       v-model:collapsed="isSidebarCollapsed"
       class="border-r border-outline-gray-1"
@@ -23,9 +28,12 @@
              active row's shadow. Widen the scroll box to the sidebar edges and
              pad the content back in so the shadow has room. -->
         <div class="-mx-2 mt-2 flex flex-1 flex-col gap-1 overflow-y-auto px-2">
+          <!-- lit while their own page is open (/notifications), as every
+               other entry is on its page -->
           <SidebarItem
             id="notifications-btn"
             :label="__('Notifications')"
+            :active="route.name === 'Notifications'"
             @click="toggleNotificationPanel()"
           >
             <template #prefix>
@@ -182,7 +190,7 @@
       </div>
     </Sidebar>
     <Notifications />
-  </div>
+  </aside>
 </template>
 
 <script setup>

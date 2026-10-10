@@ -1,3 +1,5 @@
+<!-- A list's quick filters: each named by its label for a screen reader, a
+     placeholder alone is no name for a select's button (WCAG 4.1.2) -->
 <template>
   <FormControl
     v-if="filter.fieldtype == 'Check'"
@@ -13,6 +15,7 @@
     type="select"
     :options="filter.options"
     :placeholder="filter.label"
+    :aria-label="filter.label"
     @update:modelValue="updateFilter(filter, $event)"
   />
   <Link
@@ -20,6 +23,7 @@
     :value="filter.value"
     :doctype="filter.options"
     :placeholder="filter.label"
+    :aria-label="filter.label"
     @change="(data) => updateFilter(filter, data)"
   />
   <component
@@ -28,6 +32,7 @@
     class="border-none"
     :value="filter.value"
     :placeholder="filter.label"
+    :aria-label="filter.label"
     @change="(v) => updateFilter(filter, v)"
   />
   <FormControl
@@ -35,6 +40,7 @@
     v-model="filter.value"
     type="text"
     :placeholder="filter.label"
+    :aria-label="filter.label"
     @input.stop="debouncedFn(filter, $event.target.value)"
   />
 </template>

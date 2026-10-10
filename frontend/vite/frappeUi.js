@@ -208,6 +208,38 @@ const SOSTITUZIONI = {
   'ListView/ListFooter.vue': [attributo('label', 'Load More'), testo('of')],
   // the bar over a list's chosen rows: «3 rows selected», «Select all»
   'ListView/ListSelectBanner.vue': [frase('Select all')],
+  // a row's box and the header's, named: a screen reader read twenty-one
+  // «checkbox, not checked» down every list, never whose row it was (WCAG
+  // 4.1.2). A row's box takes the name its first column shows
+  'ListView/ListRow.vue': [
+    [
+      `:modelValue="isSelected"
+            :disabled="row.disabled"`,
+      `:modelValue="isSelected"
+            :disabled="row.disabled"
+            :aria-label="nomeDellaRiga()"`,
+    ],
+    [
+      'const handleCheckboxClick = (event) => {',
+      `// DottorCloud (frontend/vite/frappeUi.js): the row's box says whose row
+function nomeDellaRiga() {
+  const primo = props.row?.[list.value.columns?.[0]?.key]
+  const nome =
+    primo && typeof primo === 'object' ? primo.label || primo.title : primo
+  const t = globalThis.__ || String
+  return nome ? t('Select {0}', [String(nome)]) : t('Select row')
+}
+
+const handleCheckboxClick = (event) => {`,
+    ],
+  ],
+  'ListView/ListHeader.vue': [
+    [
+      `:modelValue="list.allRowsSelected"`,
+      `:modelValue="list.allRowsSelected"
+      :aria-label="__('Select all')"`,
+    ],
+  ],
   'ListView/ListView.vue': [
     [
       "((val) => (val === 1 ? '1 row selected' : `${val} rows selected`))",
