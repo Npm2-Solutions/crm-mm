@@ -42,10 +42,13 @@ def _nuova(nome) -> dict:
 	return next(s for s in json.loads(LEAD_QUICK_ENTRY) if s["name"] == nome)
 
 
-def _come_il_centro(nuova, vecchia, senza=()) -> dict:
+def _come_il_centro(nuova, vecchia, solo=None) -> dict:
 	"""The shipped section in its new shape, with what the centre set on the old
-	one around its fields: its title, whether it folds, hides or is fixed."""
-	tenute = {k: v for k, v in vecchia.items() if k not in ("name", "columns", *senza)}
+	one around its fields: its title, whether it folds, hides or is fixed (only
+	the keys in `solo`, when given)."""
+	tenute = {
+		k: v for k, v in vecchia.items() if k not in ("name", "columns") and (solo is None or k in solo)
+	}
 	return {**nuova, **tenute}
 
 
@@ -63,8 +66,9 @@ def _rifai(sezioni) -> bool:
 				_come_il_centro(_nuova("person_section"), persona),
 				_come_il_centro(_nuova("person_contacts_section"), recapiti),
 				# the new row of the two: hidden or fixed as the row it comes out
-				# of, never a second time under its title
-				_come_il_centro(_nuova("person_more_section"), recapiti, senza=("label",)),
+				# of, and nothing more - not its title a second time, nor folded
+				# without a title to open it by
+				_come_il_centro(_nuova("person_more_section"), recapiti, solo=("hidden", "editable")),
 			]
 			cambiato = True
 	for k, sezione in enumerate(sezioni):
