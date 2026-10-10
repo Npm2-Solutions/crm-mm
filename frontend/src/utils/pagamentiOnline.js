@@ -185,3 +185,53 @@ export function addebitoInParole(carta, t, giorno, { reception = false } = {}) {
   } else if (carta.expired) problema = t('The card has expired.')
   return { riga, problema }
 }
+
+/**
+ * A booking's deposit on its appointment, in a line (the panel and the reception
+ * desk, `crm.pagamenti.pagamenti.acconti_di`): waiting, paid with its advance
+ * invoice, kept at a cancellation, given back and by whom. The invoice's number
+ * comes only to whoever reads invoices.
+ */
+export function accontoInParole(acconto, t) {
+  if (!acconto) return ''
+  const importo = acconto.formatted_amount
+  if (acconto.state === 'waiting')
+    return t('Deposit waiting for payment: {0}', [importo])
+  if (acconto.state === 'partly_refunded')
+    return t('Deposit given back in part: {0} of {1}', [
+      acconto.formatted_refunded,
+      importo,
+    ])
+  if (acconto.state === 'refunded') {
+    const reso = acconto.formatted_refunded || importo
+    if (acconto.refunded_by)
+      return acconto.credit_note
+        ? t('Deposit given back by {0}: {1} · credit note no. {2}', [
+            acconto.refunded_by,
+            reso,
+            acconto.credit_note,
+          ])
+        : t('Deposit given back by {0}: {1}', [acconto.refunded_by, reso])
+    return acconto.credit_note
+      ? t('Deposit given back: {0} · credit note no. {1}', [
+          reso,
+          acconto.credit_note,
+        ])
+      : t('Deposit given back: {0}', [reso])
+  }
+  if (acconto.kept)
+    return acconto.invoice
+      ? t('Deposit kept at the cancellation: {0} · invoice no. {1}', [
+          importo,
+          acconto.invoice,
+        ])
+      : t('Deposit kept at the cancellation: {0}', [importo])
+  if (acconto.invoice)
+    return t('Deposit paid online: {0} · invoice no. {1}', [
+      importo,
+      acconto.invoice,
+    ])
+  if (acconto.invoice_draft)
+    return t('Deposit paid online: {0} · invoice still a draft', [importo])
+  return t('Deposit paid online: {0}', [importo])
+}

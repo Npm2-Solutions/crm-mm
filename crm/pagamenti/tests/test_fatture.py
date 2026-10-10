@@ -262,3 +262,89 @@ class TestFatturaDAcconto(AccontoCase):
 		bozza = frappe.new_doc("CRM Invoice")
 		bozza.appointment = self.appuntamento(risultato)
 		self.assertEqual(pagamenti.per_la_fattura(bozza)["deposit"]["amount"], 30)
+
+
+class TestAccontoSullAppuntamento(AccontoCase):
+	"""The appointment's panel and the reception desk say the deposit; kept after a
+	late cancellation, the desk gives it back as a courtesy, with its credit note."""
+
+	def deposito(self, risultato):
+		from crm.api.appointments import get_appointment
+
+		[riga] = get_appointment(self.appuntamento(risultato))["participants"]
+		return riga.get("deposit")
+
+	def disdici(self, risultato):
+		frappe.set_user("Guest")
+		SB.cancel(token=risultato["token"])
+		frappe.set_user("Administrator")
+
+	def test_il_pannello_e_l_accoglienza_lo_dicono(self):
+		from crm.api import oggi
+
+		risultato = self.prenota()
+		self.assertEqual(self.deposito(risultato)["state"], "waiting")
+		self.paga(risultato)
+		acconto = self.deposito(risultato)
+		numero = frappe.db.get_value("CRM Invoice", self.pagamento(risultato).invoice, "document_number")
+		self.assertEqual(
+			(acconto["state"], acconto["amount"], acconto["invoice"], acconto["kept"]),
+			("paid", 30, numero, False),
+		)
+		self.assertFalse(acconto["can_give_back"])
+		giorno = frappe.db.get_value("CRM Appointment", self.appuntamento(risultato), "starts_on")
+		[riga] = [
+			a
+			for a in oggi.get_day(str(giorno.date()))["appointments"]
+			if a["name"] == self.appuntamento(risultato)
+		]
+		self.assertEqual(riga["participants"][0]["deposit"]["invoice"], numero)
+
+	def test_disdetto_tardi_si_restituisce_per_cortesia(self):
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_on_cancel", 1)
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_hours", 72)
+		risultato = self.prenota()
+		self.paga(risultato)
+		# not before the cancellation: the place is still theirs
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(self.pagamento(risultato).name)
+		self.disdici(risultato)
+		self.assertEqual(self.finto.rimborsi, [])
+		acconto = self.deposito(risultato)
+		self.assertTrue(acconto["kept"])
+		self.assertTrue(acconto["can_give_back"])
+
+		# whoever does not record the payments cannot
+		frappe.set_user(self.anna)
+		with self.assertRaises(frappe.PermissionError):
+			pagamenti.give_back_deposit(acconto["payment"])
+		frappe.set_user("Administrator")
+
+		dopo = pagamenti.give_back_deposit(acconto["payment"])["deposit"]
+		self.assertEqual(len(self.finto.rimborsi), 1)
+		self.assertEqual(self.finto.rimborsi[0]["amount"], "3000")
+		pagamento = self.pagamento(risultato)
+		self.assertEqual((pagamento.status, pagamento.refunded_by), ("Refunded", "Administrator"))
+		nota = frappe.db.get_value(
+			"CRM Invoice",
+			pagamento.credit_note,
+			["docstatus", "reference_invoice", "document_number"],
+			as_dict=True,
+		)
+		self.assertEqual((nota.docstatus, nota.reference_invoice), (1, pagamento.invoice))
+		self.assertEqual((dopo["state"], dopo["credit_note"]), ("refunded", nota.document_number))
+		self.assertFalse(dopo["can_give_back"])
+		# twice is once
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(acconto["payment"])
+		self.assertEqual(len(self.finto.rimborsi), 1)
+
+	def test_mai_un_acconto_di_prova(self):
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_hours", 72)
+		risultato = self.prenota()
+		self.paga(risultato)
+		frappe.db.set_value("CRM Invoice", self.pagamento(risultato).invoice, "test_document", 1)
+		self.disdici(risultato)
+		self.assertFalse(self.deposito(risultato)["can_give_back"])
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(self.pagamento(risultato).name)

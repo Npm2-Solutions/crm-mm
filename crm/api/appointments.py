@@ -539,6 +539,10 @@ def get_appointment(name: str) -> dict:
 		person = person_of(row.get("party_type"), row.get("party"))
 		if person:
 			row["party_type"], row["party"] = "CRM Lead", person
+	# each person's deposit paid online, kept or given back, on their row (doc 60)
+	from crm.pagamenti import pagamenti
+
+	pagamenti.del_appuntamento(doc, data.get("participants") or [])
 	data["start_utc"] = from_system_naive(doc.starts_on).isoformat()
 	data["end_utc"] = from_system_naive(doc.ends_on).isoformat()
 	# where the price came from, in the reader's language: it is stored in the

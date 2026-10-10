@@ -49831,3 +49831,79 @@ msgstr "pagata online, ancora in bozza"
 #: crm/pagamenti/fatture.py
 msgid "The deposit paid online has its invoice still in draft: issue it first, then the balance (Invoices, things to do)"
 msgstr "L'acconto pagato online ha la fattura ancora in bozza: emetti prima quella, poi il saldo (Fatture, da fare)"
+
+#: frontend/src/utils/pagamentiOnline.js
+msgid "Deposit waiting for payment: {0}"
+msgstr "Acconto in attesa di pagamento: {0}"
+
+msgid "Deposit given back in part: {0} of {1}"
+msgstr "Acconto rimborsato in parte: {0} di {1}"
+
+msgid "Deposit given back by {0}: {1} · credit note no. {2}"
+msgstr "Acconto rimborsato da {0}: {1} · nota di credito N. {2}"
+
+msgid "Deposit given back by {0}: {1}"
+msgstr "Acconto rimborsato da {0}: {1}"
+
+msgid "Deposit given back: {0} · credit note no. {1}"
+msgstr "Acconto rimborsato: {0} · nota di credito N. {1}"
+
+msgid "Deposit given back: {0}"
+msgstr "Acconto rimborsato: {0}"
+
+msgid "Deposit kept at the cancellation: {0} · invoice no. {1}"
+msgstr "Acconto trattenuto alla disdetta: {0} · fattura N. {1}"
+
+msgid "Deposit kept at the cancellation: {0}"
+msgstr "Acconto trattenuto alla disdetta: {0}"
+
+msgid "Deposit paid online: {0} · invoice no. {1}"
+msgstr "Acconto pagato online: {0} · fattura N. {1}"
+
+msgid "Deposit paid online: {0} · invoice still a draft"
+msgstr "Acconto pagato online: {0} · fattura ancora in bozza"
+
+msgid "Deposit paid online: {0}"
+msgstr "Acconto pagato online: {0}"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Give the deposit back"
+msgstr "Restituisci l'acconto"
+
+msgid "Give the deposit back to {0}?"
+msgstr "Restituire l'acconto a {0}?"
+
+msgid "After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe, and a credit note cancels its advance invoice. It cannot be undone."
+msgstr "Dopo questa disdetta l'acconto resta al centro. Per cortesia, {0} tornano sulla carta con cui è stato pagato, su Stripe, e una nota di credito storna la fattura d'acconto. Non si può annullare."
+
+msgid "Deposit given back"
+msgstr "Acconto restituito"
+
+msgid "Could not give the deposit back"
+msgstr "Non è stato possibile restituire l'acconto"
+
+#: crm/pagamenti/pagamenti.py
+msgid "Giving a deposit back is for whoever records the payments"
+msgstr "Restituire un acconto spetta a chi registra gli incassi"
+
+msgid "This deposit is not paid, or was given back already"
+msgstr "Questo acconto non è pagato, o è già stato restituito"
+
+msgid "The deposit is given back once the place is cancelled"
+msgstr "L'acconto si restituisce quando il posto è disdetto"
+
+msgid "A test or demo deposit is never given back on Stripe"
+msgstr "Un acconto di prova o dei dati di prova non si restituisce mai su Stripe"
+
+msgid "Stripe is not connected"
+msgstr "Stripe non è collegato"
+
+msgid "This payment is not a booking's deposit"
+msgstr "Questo pagamento non è l'acconto di una prenotazione"
+
+#: crm/pagamenti/doctype/crm_online_payment/crm_online_payment.json
+msgid "Given back by"
+msgstr "Restituito da"
+
+msgid "Whoever gave it back from the appointment, as a courtesy: empty when DottorCloud did it at a cancellation in time"
+msgstr "Chi lo ha restituito dall'appuntamento, per cortesia: vuoto quando lo ha fatto DottorCloud a una disdetta in tempo"

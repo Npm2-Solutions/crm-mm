@@ -17,6 +17,7 @@
   "paid_on",
   "refunded_amount",
   "refunded_on",
+  "refunded_by",
   "stripe_section",
   "mode",
   "checkout_session",
@@ -121,6 +122,14 @@
    "fieldname": "refunded_on",
    "fieldtype": "Datetime",
    "label": "Refunded on"
+  },
+  {
+   "description": "Whoever gave it back from the appointment, as a courtesy: empty when DottorCloud did it at a cancellation in time",
+   "fieldname": "refunded_by",
+   "fieldtype": "Link",
+   "label": "Given back by",
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "stripe_section",
@@ -236,7 +245,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-09 18:00:00.000000",
+ "modified": "2026-10-10 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Pagamenti",
  "name": "CRM Online Payment",
