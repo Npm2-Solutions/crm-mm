@@ -53,7 +53,16 @@ function nuovaFattura(cliente = null, { alCambio, bozza } = {}) {
  * else the draft the agenda filled in opens, to check and issue. The invoices'
  * page and the reception desk invoice an appointment this one way.
  */
-async function fatturaDellIncontro(appuntamento, { alCambio } = {}) {
+async function fatturaDellIncontro(
+  appuntamento,
+  { alCambio, bozzaSalvata } = {},
+) {
+  // a draft already made for it, left without issuing: that one, taken up
+  // again - a second would invoice the visit twice
+  if (bozzaSalvata) {
+    apriFattura(bozzaSalvata, { alCambio })
+    return
+  }
   try {
     const proposta = await call(
       'crm.invoicing.api.appointment_invoice_proposal',

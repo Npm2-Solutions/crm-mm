@@ -239,7 +239,8 @@ def _visite(ctx: Contesto, desk: str) -> list[tuple]:
 	voci = []
 	for riga in da_fare:
 		giorno = getdate(riga["starts_on"])
-		if riga.get("status") != "Completed" or giorno > ultimo:
+		# one with a draft already has its invoice on the way
+		if riga.get("status") != "Completed" or giorno > ultimo or riga.get("draft"):
 			continue
 		voci.append(
 			(giorno, lambda giorno, appuntamento=riga["name"]: _visita(ctx, appuntamento, persone, giorno))

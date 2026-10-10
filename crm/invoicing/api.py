@@ -921,14 +921,20 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	"""
 	frappe.has_permission("CRM Invoice", "create", throw=True)
 	da = frappe.utils.add_days(frappe.utils.nowdate(), -int(days))
-	fatturati = {
-		riga.appointment
-		for riga in frappe.get_all(
-			"CRM Invoice",
-			filters={"appointment": ["is", "set"], "docstatus": ["<", 2]},
-			fields=["appointment"],
-		)
-	}
+	fatture = frappe.get_all(
+		"CRM Invoice",
+		filters={"appointment": ["is", "set"], "docstatus": ["<", 2]},
+		fields=["name", "appointment", "docstatus"],
+		order_by="creation asc",
+	)
+	fatturati = {riga.appointment for riga in fatture if riga.docstatus == 1}
+	# a draft is not an invoice: «Emetti la fattura» saves one and opens it, and
+	# closed without issuing, the appointment left this list while nothing had
+	# been issued. It stays, with its draft to take up again (never a second one)
+	bozze: dict[str, str] = {}
+	for riga in fatture:
+		if riga.docstatus == 0:
+			bozze.setdefault(riga.appointment, riga.name)
 	# a session of a cycle paid as a whole is invoiced with its cycle
 	interi = set(frappe.get_all("CRM Session Cycle", filters={"billing": CICLO_INTERO}, pluck="name"))
 	incontri = frappe.get_all(
@@ -964,7 +970,7 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 
 	coperti |= pagate_online.coperti(incontri)
 	return [
-		dict(i)
+		{**i, "draft": bozze.get(i.name)}
 		for i in incontri
 		if i.name not in fatturati
 		and not (i.session_cycle and i.session_cycle in interi)

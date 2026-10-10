@@ -206,7 +206,11 @@
               <Button
                 v-if="daFatturare(appointment)"
                 variant="solid"
-                :label="__('Invoice it')"
+                :label="
+                  bozzaDi(appointment)
+                    ? __('Finish the draft invoice')
+                    : __('Invoice it')
+                "
                 icon-left="file-text"
                 :size="isMobileView ? 'lg' : 'sm'"
                 class="mt-1 self-start max-md:w-full"
@@ -418,6 +422,18 @@ watch(
 const nonFatturati = computed(
   () => new Set((toInvoice.data || []).map((incontro) => incontro.name)),
 )
+// the draft invoice already made for it and never issued, if any
+const bozze = computed(
+  () =>
+    new Map(
+      (toInvoice.data || [])
+        .filter((incontro) => incontro.draft)
+        .map((incontro) => [incontro.name, incontro.draft]),
+    ),
+)
+function bozzaDi(appointment) {
+  return bozze.value.get(appointment.name) || ''
+}
 // somebody came, and no invoice was made for it
 function daFatturare(appointment) {
   return (
@@ -430,7 +446,10 @@ const emettendo = ref('')
 async function fattura(appointment) {
   emettendo.value = appointment.name
   try {
-    await fatturaDellIncontro(appointment.name, { alCambio: ricarica })
+    await fatturaDellIncontro(appointment.name, {
+      alCambio: ricarica,
+      bozzaSalvata: bozzaDi(appointment),
+    })
   } finally {
     emettendo.value = ''
   }

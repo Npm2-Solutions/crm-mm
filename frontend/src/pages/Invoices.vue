@@ -169,7 +169,11 @@
               <Button
                 variant="subtle"
                 :loading="emettendo === incontro.name"
-                :label="__('Invoice it')"
+                :label="
+                  incontro.draft
+                    ? __('Finish the draft invoice')
+                    : __('Invoice it')
+                "
                 @click="fatturaIncontro(incontro)"
               />
             </div>
@@ -197,16 +201,20 @@
           >
             {{ __('Nothing waiting. Every issued document has been routed.') }}
           </div>
+          <!-- the row opens from its words, a button stretched over the
+               row; its own buttons sit above it: a row that was a button
+               holding buttons was one control holding others for a screen
+               reader, and «Invia» read as part of the invoice's name -->
           <div
             v-for="row in pending.data || []"
             :key="row.action + row.name"
-            role="button"
-            tabindex="0"
-            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-            @click="apriFattura(row.name, { alCambio: ricarica })"
-            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
+            class="relative flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
-            <div class="flex min-w-0 flex-col">
+            <button
+              type="button"
+              :class="RIGA_CHE_APRE"
+              @click="apriFattura(row.name, { alCambio: ricarica })"
+            >
               <span class="truncate text-p-base-medium text-ink-gray-8">
                 {{ row.document_number }} · {{ row.billing_name }}
               </span>
@@ -214,7 +222,7 @@
                 {{ row.label }} ·
                 {{ dayjs(row.posting_date).format('DD/MM/YYYY') }}
               </span>
-            </div>
+            </button>
             <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Badge
                 :theme="row.state.startsWith('scart') ? 'red' : 'orange'"
@@ -229,6 +237,7 @@
                   tsMode !== 'export' &&
                   puo('fatture.invia')
                 "
+                class="relative z-10"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
@@ -236,7 +245,7 @@
               />
               <!-- the whole row opens it; on a phone the button would only take room -->
               <Button
-                class="max-md:hidden"
+                class="relative z-10 max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -250,13 +259,13 @@
           <div
             v-for="row in invoices.data || []"
             :key="row.name"
-            role="button"
-            tabindex="0"
-            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-            @click="apriFattura(row.name, { alCambio: ricarica })"
-            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
+            class="relative flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
-            <div class="flex min-w-0 flex-col">
+            <button
+              type="button"
+              :class="RIGA_CHE_APRE"
+              @click="apriFattura(row.name, { alCambio: ricarica })"
+            >
               <span class="truncate text-p-base-medium text-ink-gray-8">
                 {{ row.document_number || __('Draft') }} ·
                 {{ row.billing_name }}
@@ -269,7 +278,7 @@
                   · {{ channelLabel(row.channel) }}
                 </template>
               </span>
-            </div>
+            </button>
             <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <!-- On a draft, where it will go matters more than where it has
                    been: a document that turns out to be un-issuable at submit
@@ -310,13 +319,14 @@
                   row.docstatus === 1 &&
                   row.sdi_status === 'da_inviare'
                 "
+                class="relative z-10"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Transmit')"
                 @click.stop="transmit(row)"
               />
               <Button
-                class="max-md:hidden"
+                class="relative z-10 max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -515,6 +525,11 @@ const { puo } = usersStore()
 const { $dialog } = globalStore()
 const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
 
+// a row's words as the button that opens it, stretched over the whole row
+// (its own buttons sit above it), with the row's ring when the keyboard is on it
+const RIGA_CHE_APRE =
+  "flex min-w-0 flex-col text-left after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-outline-gray-4"
+
 // a notification about a supplier's invoice opens it, in its tab (`?ricevuta=`)
 const route = useRoute()
 const tab = ref(route.query.ricevuta ? 'received' : 'todo')
@@ -606,7 +621,10 @@ const allAppointments = ref(false)
 async function fatturaIncontro(incontro) {
   emettendo.value = incontro.name
   try {
-    await fatturaDellIncontro(incontro.name, { alCambio: ricarica })
+    await fatturaDellIncontro(incontro.name, {
+      alCambio: ricarica,
+      bozzaSalvata: incontro.draft,
+    })
   } finally {
     emettendo.value = ''
   }
