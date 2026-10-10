@@ -3,6 +3,9 @@ import { ref } from 'vue'
 
 export const whatsappEnabled = ref(false)
 export const isWhatsappInstalled = ref(false)
+// whether the server has answered: until then a page that needs WhatsApp
+// cannot be told from one that is not there (Settings.vue)
+export const whatsappNoto = ref(false)
 
 const enabled = createResource({
   url: 'crm.api.whatsapp.is_whatsapp_enabled',
@@ -19,6 +22,10 @@ const installed = createResource({
   auto: true,
   onSuccess: (data) => {
     isWhatsappInstalled.value = Boolean(data)
+    whatsappNoto.value = true
+  },
+  onError: () => {
+    whatsappNoto.value = true
   },
 })
 
