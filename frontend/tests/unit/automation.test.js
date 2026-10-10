@@ -399,6 +399,11 @@ describe('triggers', () => {
     expect(triggerSummary(trigger, campi)).toBe('60 days before «Last visit»')
     trigger.config.offset_days = 0
     expect(triggerSummary(trigger, campi)).toBe('on the day of «Last visit»')
+    // one day has its own sentence: never «1 days»
+    trigger.config.offset_days = 1
+    expect(triggerSummary(trigger, campi)).toBe('the day before «Last visit»')
+    trigger.config.direction = 'after'
+    expect(triggerSummary(trigger, campi)).toBe('the day after «Last visit»')
   })
 })
 

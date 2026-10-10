@@ -21,7 +21,7 @@
    would take clicks meant for whatever is next to it. `.touch-target` is for a
    small control with room around it; frappe-ui's switch is always one, and is
    already positioned for the ring; its small and medium buttons get a ring
-   that grows them to 40px, less on the sides where buttons sit in a row. A
+   that grows them to 44px, less on the sides where buttons sit in a row. A
    button that opens a page (`:route`, `:link`) is drawn as a link with the
    same classes, and gets the same ring: «Call round» on the calls page took a
    tap on 24px. A record's field drawn as a button (a select, a link: `min-h-7`)

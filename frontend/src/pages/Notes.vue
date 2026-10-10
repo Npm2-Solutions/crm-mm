@@ -179,22 +179,25 @@ watch(
         nota.reference_docname,
       )
     }
-    for (const [tipo, nomi] of Object.entries(perTipo)) {
-      try {
-        const trovati = await call('frappe.client.get_list', {
-          doctype: tipo,
-          filters: { name: ['in', [...nomi]] },
-          fields: ['name', CAMPO_DEL_NOME[tipo]],
-          limit_page_length: nomi.size,
-        })
-        const nuovi = {}
-        for (const riga of trovati || [])
-          nuovi[`${tipo}:${riga.name}`] = riga[CAMPO_DEL_NOME[tipo]] || ''
-        nomiDelleNote.value = { ...nomiDelleNote.value, ...nuovi }
-      } catch {
-        // a person the session may not read: the note says nothing of them
-      }
-    }
+    // the people's and the deals' names asked together, not one after the other
+    const nuovi = {}
+    await Promise.all(
+      Object.entries(perTipo).map(async ([tipo, nomi]) => {
+        try {
+          const trovati = await call('frappe.client.get_list', {
+            doctype: tipo,
+            filters: { name: ['in', [...nomi]] },
+            fields: ['name', CAMPO_DEL_NOME[tipo]],
+            limit_page_length: nomi.size,
+          })
+          for (const riga of trovati || [])
+            nuovi[`${tipo}:${riga.name}`] = riga[CAMPO_DEL_NOME[tipo]] || ''
+        } catch {
+          // a person the session may not read: the note says nothing of them
+        }
+      }),
+    )
+    nomiDelleNote.value = { ...nomiDelleNote.value, ...nuovi }
   },
 )
 const loadMore = ref(1)

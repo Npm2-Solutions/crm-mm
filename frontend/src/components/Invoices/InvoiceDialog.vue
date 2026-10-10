@@ -353,9 +353,9 @@
               :aria-label="__('How it was paid')"
             >
               <Button
-                v-for="modo in MODI_RAPIDI"
+                v-for="modo in modiRapidi"
                 :key="modo.value"
-                :label="__(modo.label)"
+                :label="modo.label"
                 :variant="
                   vista.payment.payment_method === modo.value
                     ? 'solid'
@@ -687,13 +687,18 @@ const { stato, chiudiFattura } = useFattura()
 
 const vista = ref(null)
 
-// the desk's three ways of being paid, as quick choices (the codes stay the
-// list's: cash, card, bank transfer)
-const MODI_RAPIDI = [
-  { value: 'MP01', label: 'Cash' },
-  { value: 'MP08', label: 'Card' },
-  { value: 'MP05', label: 'Bank transfer' },
-]
+// the desk's three ways of being paid, as quick choices: cash, card, bank
+// transfer. Named as the list below names them, from invoicing's vocabulary
+// («Carta o app», never a second word for the same code), and only those the
+// list offers
+const MODI_RAPIDI = ['MP01', 'MP08', 'MP05']
+const modiRapidi = computed(() =>
+  MODI_RAPIDI.map((codice) =>
+    (vista.value?.options?.payment_method || []).find(
+      (opzione) => opzione.value === codice,
+    ),
+  ).filter(Boolean),
+)
 // whether somebody chose it in this invoice: a new one opens on the default
 // (MP05, the DocType's), and says so until a way is tapped or picked from the
 // list. Set when an invoice opens (apri): a save or a correction hands the

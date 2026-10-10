@@ -312,9 +312,11 @@ const fiscali = puo('persone.dati_fiscali')
 const anagrafica = createResource({
   url: 'crm.invoicing.anagrafica.get_billing_profile',
   params: { party_type: 'CRM Lead', party: props.doc.name },
-  auto: fiscali,
   onError: () => anagrafica.setData(null),
 })
+// asked by hand, its refusal caught: frappe-ui throws again what it handed to
+// onError, and an `auto` resource refused left an uncaught rejection
+if (fiscali) anagrafica.fetch().catch(() => {})
 const eta = computed(() =>
   fiscali
     ? etaENascita(anagrafica.data?.birth_date, adessoDelCentro(), lingua)
@@ -333,7 +335,9 @@ const fatti = computed(() => {
     fatti.push(
       eta.value.anni < 1
         ? __('Under a year · {0}', [eta.value.nascita])
-        : __('{0} years · {1}', [eta.value.anni, eta.value.nascita]),
+        : eta.value.anni === 1
+          ? __('1 year · {0}', [eta.value.nascita])
+          : __('{0} years · {1}', [eta.value.anni, eta.value.nascita]),
     )
   if (props.doc.last_visit)
     fatti.push(

@@ -895,12 +895,18 @@ export function triggerSummary(trigger, fields = []) {
     const campo = (fields || []).find((f) => f.fieldname === config.date_field)
     const nome = campo?.label || config.date_field
     const giorni = Number(config.offset_days || 0)
+    // one sentence a case: «1 days after» was no sentence in either language
+    const dopo = config.direction === 'after'
     parts.push(
       !giorni
         ? __('on the day of «{0}»', [nome])
-        : config.direction === 'after'
-          ? __('{0} days after «{1}»', [giorni, nome])
-          : __('{0} days before «{1}»', [giorni, nome]),
+        : giorni === 1
+          ? dopo
+            ? __('the day after «{0}»', [nome])
+            : __('the day before «{0}»', [nome])
+          : dopo
+            ? __('{0} days after «{1}»', [giorni, nome])
+            : __('{0} days before «{1}»', [giorni, nome]),
     )
   }
   const groups = cleanGroups(trigger?.condition_groups)
