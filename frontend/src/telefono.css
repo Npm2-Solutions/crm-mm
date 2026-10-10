@@ -63,6 +63,16 @@
   }
 }
 
+/* The sidebar on a touch screen (a tablet keeps it, folded to its icons when
+   held upright): frappe-ui's rows are 28px, rows of links and buttons one
+   under the other with 4px between them, no room for a ring. On a finger they
+   are 40px tall: «Notifications», «Settings» and «Expand» took a tap on 28. */
+@media (pointer: coarse) {
+  [data-slot='sidebar-item'].h-7 {
+    height: 2.5rem;
+  }
+}
+
 /* A composer's tools (WhatsApp, email, SMS, a note: `strumenti-compositore`)
    and other icon buttons side by side (`icone-a-dito`: a conversation's
    decisions) on a phone: 40px each. They were frappe-ui's 28px buttons side
