@@ -32,6 +32,8 @@ def get_context(context):
 	context.description = cal.description or ""
 	context.duration = cal.duration
 	context.location = cal.location or ""
+	# the calendar's own clock: the page names the visitor's zone only when it is another
+	context.cal_timezone = cal.timezone or ""
 	context.formatted_price = (
 		frappe.utils.fmt_money(cal.price, currency=cal.currency or "EUR") if cal.price else ""
 	)

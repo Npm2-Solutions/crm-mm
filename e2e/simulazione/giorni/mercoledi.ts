@@ -326,6 +326,15 @@ async function gliAbbonamenti(s: Settimana) {
 				const carta_ = page.locator('article', { hasText: s.copione.subscriptions.mensile }).first()
 				await expect(carta_).toBeVisible({ timeout: 30000 })
 				await premi(chi, carta_.getByRole('button', { name: 'Acquista' }))
+				// the sheet asks the codice fiscale where the billing details lack it
+				const codice = page
+					.getByRole('dialog')
+					.last()
+					.getByRole('textbox', { name: /^Codice fiscale/ })
+				if (await codice.count()) {
+					await codice.fill(s.persona(chiave).fiscal_code)
+					s.nota('Il foglio d’acquisto chiede il codice fiscale')
+				}
 				const vai = page.getByRole('dialog').last().getByRole('button', { name: 'Vai al pagamento' })
 				await s.dito(chi, vai)
 				await premi(chi, vai)
@@ -357,9 +366,9 @@ async function gliAbbonamenti(s: Settimana) {
 				)
 				s.verifica(!!fattura?.name, 'The first instalment is invoiced', JSON.stringify(fattura))
 				if (fattura?.docstatus === 0) {
-					// nobody asked her codice fiscale yet: the invoice waits as a draft, and
-					// the managers are told (the area's purchase asks none, by design)
-					s.nota(`La fattura della prima rata è una bozza: manca il codice fiscale (${fattura.name})`)
+					// what the area does not ask (an address, for an electronic invoice): the
+					// invoice waits as a draft, and the managers are told
+					s.nota(`La fattura della prima rata è una bozza (${fattura.name})`)
 					s.stato[chiave].bozza = fattura.name
 				} else {
 					s.verifica(!!fattura?.collected_on, 'Paid online: collected', JSON.stringify(fattura))

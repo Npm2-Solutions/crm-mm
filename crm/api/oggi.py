@@ -16,6 +16,7 @@ import frappe
 from frappe.utils import get_datetime, getdate
 
 from crm.convenzioni import convenzioni
+from crm.pagamenti import pagamenti
 from crm.permissions import livelli
 from crm.scheduling import cicli, esiti, promemoria, sedi
 
@@ -87,6 +88,8 @@ def _appuntamenti(
 	promemoria.nelle_righe(fuori)
 	# the convention it is under, and an authorisation still missing (doc 61)
 	convenzioni.nelle_righe(fuori)
+	# each person's deposit paid online, or still waiting (doc 60)
+	pagamenti.nelle_righe(fuori)
 	return fuori
 
 

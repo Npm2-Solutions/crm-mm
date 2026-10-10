@@ -79,6 +79,16 @@
           <span :class="[risposta.icona, 'size-3']" aria-hidden="true" />
         </template>
       </Badge>
+      <!-- their deposit paid online, or still waiting (doc 60) -->
+      <span
+        v-if="participant.deposit"
+        class="flex min-w-0 items-center gap-1 text-p-sm text-ink-gray-6"
+      >
+        <span class="lucide-credit-card size-3.5 shrink-0" aria-hidden="true" />
+        <span class="min-w-0 [overflow-wrap:anywhere]">
+          {{ accontoInParole(participant.deposit, __) }}
+        </span>
+      </span>
       <span
         v-if="participant.status === 'Arrived'"
         class="shrink-0 text-p-sm tabular-nums text-ink-gray-5"
@@ -116,6 +126,7 @@ import {
   timeOf,
   waitingLabel,
 } from '@/utils/oggi'
+import { accontoInParole } from '@/utils/pagamentiOnline'
 import { segnoDelPromemoria } from '@/utils/promemoriaAppuntamenti'
 import { Badge, Button, call, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'

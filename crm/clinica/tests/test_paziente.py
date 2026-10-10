@@ -222,9 +222,11 @@ class LaFattura(ClinicCase):
 		)
 		self.corso = fatturazione.InvoicingBase.crea_servizio("Consulenza", healthcare=False, exempt=False)
 
-	def fattura(self, persona, servizio, data=None):
+	def fattura(self, persona, servizio, data=None, acconto=None):
 		documento = frappe.get_doc(
 			{
+				# a deposit's advance invoice, paid at /prenota (doc 60)
+				"advance_for": acconto,
 				"doctype": "CRM Invoice",
 				"company": self.azienda.name,
 				"recipient_type": "persona_fisica",
@@ -258,6 +260,77 @@ class LaFattura(ClinicCase):
 		scheda = self.scheda(self.mario)
 		self.assertEqual(scheda.rule, regole.FATTURA_SANITARIA.valore)
 		self.assertEqual(scheda.source_name, documento.name)
+
+	def test_l_acconto_di_un_deposito_non_fa_un_paziente(self):
+		"""Paid at /prenota for a visit still to come: neither a patient nor a client
+		the day they book; the visit makes both."""
+		incontro = self.appuntamento(self.mario, self.tomorrow(10))
+		self.fattura(self.mario, self.seduta, acconto=incontro.name)
+		self.assertFalse(paziente.e_paziente(self.mario.name))
+		persona = frappe.db.get_value(
+			"CRM Lead", self.mario.name, ["client_since", "patient_since", "relationship"], as_dict=True
+		)
+		self.assertEqual(
+			(persona.client_since, persona.patient_since, persona.relationship), (None, None, "Contact")
+		)
+		incontro.participants[0].status = "Attended"
+		incontro.save()
+		self.assertEqual(self.scheda(self.mario).rule, regole.APPUNTAMENTO_SVOLTO.valore)
+
+	def test_il_ricalcolo_toglie_chi_aveva_solo_l_acconto(self):
+		"""The cards an advance wrote before the rule left it out: taken away, or moved
+		to the first real fact, quietly."""
+		from crm.clienti import cliente
+		from crm.clienti import regole as regole_dei_clienti
+
+		def come_prima(persona, fattura):
+			# as the rules were before: the advance wrote the card and the client
+			quando = frappe.utils.get_datetime(fattura.posting_date)
+			paziente.assicura_paziente(
+				persona.name,
+				regole.FATTURA_SANITARIA,
+				quando=quando,
+				fonte=("CRM Invoice", fattura.name),
+				annuncia=False,
+			)
+			cliente.diventa_cliente(persona.name, regole_dei_clienti.FATTURA, quando=quando, annuncia=False)
+
+		lucia = self.persona("Lucia", "Accontoprima")
+		tre_giorni_fa = frappe.utils.add_days(frappe.utils.nowdate(), -3)
+		come_prima(
+			self.mario,
+			self.fattura(
+				self.mario, self.seduta, tre_giorni_fa, self.appuntamento(self.mario, self.tomorrow(9)).name
+			),
+		)
+		come_prima(
+			lucia,
+			self.fattura(lucia, self.seduta, tre_giorni_fa, self.appuntamento(lucia, self.tomorrow(11)).name),
+		)
+		# Lucia came yesterday, after paying
+		venuta = self.appuntamento(lucia, self.ieri(12))
+		venuta.status = "Completed"
+		venuta.save()
+		self.assertTrue(paziente.e_paziente(self.mario.name))
+
+		cliente.ricalcola_dagli_acconti()
+		self.assertGreaterEqual(paziente.ricalcola_dagli_acconti(), 2)
+		self.assertFalse(paziente.e_paziente(self.mario.name))
+		mario = frappe.db.get_value(
+			"CRM Lead", self.mario.name, ["client_since", "patient_since", "relationship"], as_dict=True
+		)
+		self.assertEqual(
+			(mario.client_since, mario.patient_since, mario.relationship), (None, None, "Contact")
+		)
+		scheda = self.scheda(lucia)
+		self.assertEqual(scheda.rule, regole.APPUNTAMENTO_SVOLTO.valore)
+		self.assertEqual(scheda.patient_since, frappe.utils.get_datetime(venuta.starts_on))
+		self.assertEqual(
+			frappe.db.get_value("CRM Lead", lucia.name, ["patient_since", "relationship"]),
+			(frappe.utils.get_datetime(venuta.starts_on), "Patient"),
+		)
+		# twice is once
+		self.assertEqual(paziente.ricalcola_dagli_acconti(), 0)
 
 	def test_un_corso_o_un_abbonamento_no(self):
 		self.fattura(self.mario, self.corso)

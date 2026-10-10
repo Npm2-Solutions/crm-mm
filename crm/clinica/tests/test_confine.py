@@ -24,8 +24,10 @@ RADICE = pathlib.Path(__file__).resolve().parents[3]
 CRM = RADICE / "crm"
 CLINICA = CRM / "clinica"
 VIETATO = "crm.clinica"
-#: The composition root: deciding which modules exist is its whole job.
-AMMESSI = {CRM / "registrazione.py"}
+#: The composition root: deciding which modules exist is its whole job. A test
+#: bench's centre (`crm/collaudo`, never reachable on a real site) is composed the
+#: same way: the clinic switched on, its sheets loaded, the photograph saying so.
+AMMESSI = {CRM / "registrazione.py", CRM / "collaudo" / "prepara.py"}
 #: The patient card is who is a patient, not what is wrong with them; an opening
 #: out of the care team says who opened a record and why. The foods' library says
 #: what a food is; a tooth lives inside its chart. (Plans, programmes, exercises, a

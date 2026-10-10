@@ -175,11 +175,13 @@
           />
           <FormControl
             v-model="form.font_family"
-            type="text"
+            type="select"
             :label="__('Font')"
-            placeholder="Inter"
+            :options="fontOptions"
             :description="
-              __('A Google Fonts family. Empty keeps the theme default.')
+              __(
+                'No font comes from another site: Inter from the site itself, the others are the device’s own.',
+              )
             "
           />
         </div>
@@ -500,6 +502,25 @@ const form = reactive({
   meta_pixel_id: '',
   consent_banner: true,
   consent_text: '',
+})
+
+// the faces a centre's site wears, none fetched from another site
+// (crm/api/site_render.py, CARATTERI); a family named before stays, the device's
+const fontOptions = computed(() => {
+  const opzioni = [
+    { label: __('The theme’s own'), value: '' },
+    { label: __('Inter, from the site itself'), value: 'Inter' },
+    { label: __('The device’s own'), value: 'System' },
+    { label: __('The device’s own, with serifs'), value: 'Serif' },
+    { label: __('The device’s own, rounded'), value: 'Rounded' },
+  ]
+  const scelto = form.font_family
+  if (scelto && !opzioni.some((opzione) => opzione.value === scelto))
+    opzioni.push({
+      label: __('{0}, where the device has it', [scelto]),
+      value: scelto,
+    })
+  return opzioni
 })
 
 const linkTypes = [

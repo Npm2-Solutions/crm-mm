@@ -24,34 +24,22 @@ Each fix carries its test where there is logic to test.
 | 17 | With the deposit's invoice still a draft, the desk invoiced the whole price as the balance: 120 € after 30 € paid online | `crm/pagamenti/fatture.py` | 17fd378b |
 | 18 | A child's payment reminder said «call them» though his mother had booked; a visit made out to a company was reminded to its employee | `crm/invoicing/solleciti.py` | a84c35da |
 | 19 | On a tablet a record's fields drawn as buttons (a country, a select) were 28px to a finger | `frontend/src/telefono.css` | bc38f43d |
+| 20 | A deposit's advance invoice made its person a client - a patient, for a health service - the day they booked, and kept them one after a cancellation; the people it had marked are recounted by two patches | `crm/clienti`, `crm/clinica/paziente.py` | 2514e1f5 |
+| 21 | The appointment's panel and the reception desk did not say a deposit was paid, waiting, kept or given back; a deposit kept after a late cancellation could not be given back as a courtesy | `crm/pagamenti/pagamenti.py`, `AppointmentPanel.vue`, `ParticipantRow.vue` | 1ca4e41f |
+| 22 | /prenota and the area's «Acquista» asked no codice fiscale: the healthcare invoice of what was paid online waited as a draft until the desk asked it | `crm/api/service_booking.py`, `crm/www/prenota.html`, `crm/pagamenti/addebiti.py`, `BuyDialog.vue` | 30473858 |
+| 23 | Opening the area for a child without an email, the dialog started on «The person» | `Area/AreaAccessCard.vue`, `crm/area/accesso.py` | 38ae31f7 |
+| 24 | The old /book pages wrote the hour with the zone's raw name and English month names, and named the visitor's zone «Europe/Rome» | `crm/api/booking.py`, `crm/www/book.*` | 6af718f6 |
+| 25 | The public forms and /prenota read a required field's «*» in its name to a screen reader, and no control said it was required | `crm/public/js/moduli_campi.js`, `crm/www/prenota.html`, `composables/nomeAlControllo.js` | d1403aab |
+| 26 | The centre's own website loaded its font from Google Fonts | `crm/api/site_render.py` | b80f7f06 |
 
-## Open questions (not changed)
+## Decided (left as they are)
 
-- A deposit paid online makes its advance invoice, and that invoice makes the
-  person a client - a patient, for a health service - before they ever came
-  («Paziente dal…» the day they booked); Marco, who cancelled in time and got
-  his deposit back with a credit note, stays «Paziente».
-- A child booked online by a parent is the invoice's client (his codice fiscale
-  for the Sistema TS): the booking records that she books, not that she pays,
-  so the invoice is not made out to her unless the desk ticks it.
-- A late cancellation by phone keeps the deposit; the desk's panel offers no way
-  to give it back as a courtesy, nor says that it is kept.
-- /prenota and the area's purchases ask no codice fiscale: a healthcare
-  invoice for what is paid online waits as a draft until the desk asks it (the
-  simulation completes them as the manager would). Asking it there would close
-  the loop.
-- The appointment's panel does not say that a deposit was paid.
+- A child booked online by a parent is the invoice's client: in Italy the
+  dependant's own codice fiscale goes to the Sistema TS, and the parent deducts the
+  expense from theirs; the desk ticks who pays when somebody else does.
 - A company in test mode keeps the cash closing, the payment reminders and the
-  area's invoices out: the simulation takes invoicing live on Monday morning.
-- Opening the area for a child without an email, the dialog starts on «The
-  person», not on «A parent or guardian».
-- The centre's own website (`site_render`) loads Google Fonts when the centre
-  chooses one.
-- The old /book pages still write the hour with the zone's raw name and
-  English month names (`_format_when`).
-- A form's required mark («*», hidden from screen readers) is read in the
-  question's name by Playwright's accessible name: worth checking with
-  VoiceOver and TalkBack.
+  area's invoices out: a test invoice has no fiscal value, it is no money in the
+  till nor anything to remind; the simulation takes invoicing live on Monday morning.
 
 ## What the week cannot play
 

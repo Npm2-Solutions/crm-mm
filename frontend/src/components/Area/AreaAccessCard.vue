@@ -89,7 +89,9 @@
           :placeholder="
             dialog.relation === 'Self'
               ? accesses.data?.email || ''
-              : __('The email of who answers for them')
+              : (dialog.relation === 'Parent or guardian' &&
+                  accesses.data?.guardian_email) ||
+                __('The email of who answers for them')
           "
         />
         <p class="text-p-xs text-ink-gray-5">
@@ -118,6 +120,7 @@
 
 <script setup>
 import { globalStore } from '@/stores/global'
+import { chiEntraPerPrimo } from '@/utils/areaCliente'
 import { formatDate } from '@/utils'
 import {
   Badge,
@@ -177,7 +180,11 @@ const apri = computed(() =>
 function openDialog() {
   Object.assign(dialog, {
     show: true,
-    relation: propriaAperta.value ? 'Parent or guardian' : 'Self',
+    // a child without an email of their own: who answers for them
+    relation: chiEntraPerPrimo({
+      propriaAperta: propriaAperta.value,
+      email: accesses.data?.email,
+    }),
     email: '',
     busy: false,
     error: '',

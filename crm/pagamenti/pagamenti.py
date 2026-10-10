@@ -606,9 +606,11 @@ def _di_a_chi_fattura(frase: str, nomi: list, pagamento, oggetto: tuple[str, str
 # ------------------------------------------------------------------ refunds
 
 
-def rimborsa(nome: str) -> bool:
+def rimborsa(nome: str, da: str | None = None) -> bool:
 	"""Give a payment's money back on Stripe: what is left of it. The webhook's
-	``charge.refunded`` confirms it; this records it already."""
+	``charge.refunded`` confirms it; this records it already. ``da``: the person who
+	asked it at the desk (a courtesy, `give_back_deposit`), told in words when Stripe
+	refuses; nobody for what DottorCloud gives back by itself."""
 	pagamento = frappe.get_doc(PAGAMENTO, nome)
 	resta = round(flt(pagamento.amount) - flt(pagamento.refunded_amount), 2)
 	if resta <= 0 or not pagamento.payment_intent:
@@ -627,10 +629,14 @@ def rimborsa(nome: str) -> bool:
 			idempotenza=f"{frappe.local.site}:{pagamento.name}:refund:{R.in_centesimi(resta, valuta)}",
 		)
 	except cliente.ErroreStripe as errore:
+		if da:
+			frappe.throw(errore.in_parole(), title=_("Online payment"))
 		pagamento.db_set("last_error", f"Refund: {errore}")
 		return False
 	totale = round(flt(pagamento.amount), 2)
-	pagamento.db_set({"status": RIMBORSATO, "refunded_amount": totale, "refunded_on": now_datetime()})
+	pagamento.db_set(
+		{"status": RIMBORSATO, "refunded_amount": totale, "refunded_on": now_datetime(), "refunded_by": da}
+	)
 	if pagamento.purpose == PER_ACCONTO:
 		# its advance invoice: a credit note for what went back
 		fatture.acconto_rimborsato(pagamento)
@@ -709,6 +715,172 @@ def chiudi_su_stripe(sessione: str) -> None:
 		cliente.chiama("POST", R.percorso("checkout", "sessions", sessione, "expire"), collegamento.chiave())
 	except cliente.ErroreStripe:
 		pass
+
+
+# ------------------------------------------------------------------ on the appointment
+
+#: What a deposit says on its appointment, by its status: a link that expired or
+#: closed says nothing, its place went with it.
+STATI_DEL_DEPOSITO = {
+	ATTESA: "waiting",
+	PAGATO: "paid",
+	RIMBORSATO_IN_PARTE: "partly_refunded",
+	RIMBORSATO: "refunded",
+}
+
+
+def acconti_di(appuntamenti: list[str]) -> dict[tuple[str, str], dict]:
+	"""The deposit each person of these appointments was asked online - the last
+	one - by (appointment, person): its state, how much, its advance invoice. The
+	invoice's number and whether it is a draft only to whoever reads invoices."""
+	from crm.permissions import livelli
+
+	if not appuntamenti:
+		return {}
+	righe = frappe.get_all(
+		PAGAMENTO,
+		filters={
+			"appointment": ["in", list(appuntamenti)],
+			"purpose": PER_ACCONTO,
+			"status": ["in", list(STATI_DEL_DEPOSITO)],
+		},
+		fields=[
+			"name",
+			"appointment",
+			"party",
+			"access_token",
+			"status",
+			"amount",
+			"currency",
+			"refunded_amount",
+			"refunded_by",
+			"invoice",
+			"credit_note",
+		],
+		order_by="creation asc",
+	)
+	if not righe:
+		return {}
+	nomi = [n for r in righe for n in (r.invoice, r.credit_note) if n]
+	fatture_viste = (
+		{
+			f.name: f
+			for f in frappe.get_all(
+				FATTURA,
+				filters={"name": ["in", nomi]},
+				fields=["name", "document_number", "docstatus", "test_document"],
+			)
+		}
+		if nomi
+		else {}
+	)
+	legge = livelli.puo("fatture.vedi")
+	fuori = {}
+	for riga in righe:
+		fattura, nota = fatture_viste.get(riga.invoice), fatture_viste.get(riga.credit_note)
+		fuori[(riga.appointment, riga.party)] = {
+			"payment": riga.name,
+			"party": riga.party,
+			"access_token": riga.access_token,
+			"state": STATI_DEL_DEPOSITO[riga.status],
+			"amount": flt(riga.amount),
+			"formatted_amount": _soldi(riga.amount, riga.currency),
+			"formatted_refunded": _soldi(riga.refunded_amount, riga.currency)
+			if flt(riga.refunded_amount)
+			else "",
+			"invoice": fattura.document_number if legge and fattura and fattura.docstatus == 1 else None,
+			"invoice_draft": bool(legge and fattura and fattura.docstatus == 0),
+			# given back, an issued advance invoice gets its credit note (said before asking)
+			"invoiced": bool(fattura and fattura.docstatus == 1),
+			"credit_note": nota.document_number if legge and nota and nota.docstatus == 1 else None,
+			"refunded_by": frappe.utils.get_fullname(riga.refunded_by) if riga.refunded_by else "",
+			# a test invoice and the demo's are never given back by hand
+			"test": bool(fattura and cint(fattura.test_document)),
+		}
+	return fuori
+
+
+def nelle_righe(righe: list[dict]) -> None:
+	"""The reception desk's rows: each person's deposit paid online, or waiting."""
+	acconti = acconti_di([r["name"] for r in righe if r.get("name")])
+	if not acconti:
+		return
+	for riga in righe:
+		for persona in riga.get("participants") or []:
+			acconto = acconti.get((riga["name"], persona.get("party")))
+			if acconto and persona.get("party_type") == "CRM Lead":
+				persona["deposit"] = _per_la_pagina(acconto)
+
+
+def _per_la_pagina(acconto: dict) -> dict:
+	return {chiave: valore for chiave, valore in acconto.items() if chiave not in ("access_token", "test")}
+
+
+def del_appuntamento(doc, righe: list[dict]) -> None:
+	"""The appointment's panel: each person's deposit on their row, kept when their
+	place was cancelled without its refund, and whether the desk may give it back
+	(`give_back_deposit`)."""
+	acconti = acconti_di([doc.name])
+	if not acconti:
+		return
+	for riga in righe:
+		acconto = acconti.get((doc.name, riga.get("party")))
+		if not acconto or riga.get("party_type") != "CRM Lead":
+			continue
+		pagato = acconto["state"] in ("paid", "partly_refunded")
+		trattenuto = pagato and _disdetti(doc, acconto["access_token"])
+		riga["deposit"] = {
+			**_per_la_pagina(acconto),
+			"kept": trattenuto,
+			"can_give_back": trattenuto and not _perche_non_restituibile(acconto, doc),
+		}
+
+
+def _perche_non_restituibile(acconto: dict, doc) -> str | None:
+	"""Why the desk cannot give this deposit back by hand; None when it can."""
+	from crm.permissions import livelli
+
+	if not livelli.puo("fatture.incassi"):
+		return _("Giving a deposit back is for whoever records the payments")
+	if acconto["state"] not in ("paid", "partly_refunded"):
+		return _("This deposit is not paid, or was given back already")
+	if not _disdetti(doc, acconto["access_token"]):
+		return _("The deposit is given back once the place is cancelled")
+	if acconto["test"] or _demo((APPUNTAMENTO, doc.name), ("CRM Lead", acconto.get("party"))):
+		return _("A test or demo deposit is never given back on Stripe")
+	if not collegamento.collegato():
+		return _("Stripe is not connected")
+	return None
+
+
+@frappe.whitelist(methods=["POST"])
+def give_back_deposit(payment: str) -> dict:
+	"""«Give the deposit back», a courtesy: the deposit somebody who cancelled late
+	leaves to the centre, given back on Stripe with its credit note - the path a
+	cancellation in time takes - and recorded with who did it."""
+	from crm.permissions import livelli
+
+	livelli.verifica("fatture.incassi")
+	pagamento = frappe.get_doc(PAGAMENTO, payment)
+	pagamento.check_permission("read")
+	if pagamento.purpose != PER_ACCONTO or not pagamento.appointment:
+		frappe.throw(_("This payment is not a booking's deposit"))
+	doc = frappe.get_doc(APPUNTAMENTO, pagamento.appointment)
+	acconto = acconti_di([doc.name]).get((doc.name, pagamento.party))
+	if not acconto or acconto["payment"] != pagamento.name:
+		frappe.throw(_("This deposit is not paid, or was given back already"))
+	motivo = _perche_non_restituibile(acconto, doc)
+	if motivo:
+		frappe.throw(motivo)
+	if not rimborsa(pagamento.name, da=frappe.session.user):
+		frappe.throw(_("This deposit is not paid, or was given back already"))
+	righe = [r.as_dict() for r in doc.participants]
+	del_appuntamento(doc, righe)
+	return {
+		"deposit": next(
+			(r["deposit"] for r in righe if (r.get("deposit") or {}).get("payment") == pagamento.name), None
+		)
+	}
 
 
 # ------------------------------------------------------------------ every ten minutes

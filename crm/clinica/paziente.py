@@ -209,6 +209,8 @@ def _fatture_sanitarie() -> list[dict]:
 			& (Invoice.test_document == 0)
 			& Invoice.name.isin(sanitarie)
 			& IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO)
+			# a deposit's advance, paid before any visit, makes nobody a patient
+			& (IfNull(Invoice.advance_for, "") == "")
 		)
 		.run(as_dict=True)
 	)
@@ -289,6 +291,92 @@ def recupera() -> int:
 				frappe.db.commit()  # nosemgrep: frappe-manual-commit — a job over every person: what is done stays if it stops
 	frappe.db.set_default(RECUPERO_FATTO, str(now_datetime()))
 	return creati
+
+
+#: What carries health data about a person, and the moment it was written: rule 1's
+#: facts, for a recount (`eventi.modulo_firmato`, `messaggio_scritto`, `sanitario_scritto`).
+INFORMAZIONI_MEDICHE = (
+	("CRM Form", "signed_on", {"clinical": 1, "docstatus": 1}),
+	("CRM Area Message", "creation", {"kind": "Care"}),
+	("CRM Personal Plan", "creation", {"clinical": 1}),
+	("CRM Programme", "creation", {"clinical": 1}),
+	("CRM Document", "creation", {"clinical": 1}),
+	("CRM Quote", "creation", {"clinical": 1}),
+)
+
+
+def _prima_informazione_medica(lead: str) -> tuple[datetime.datetime, tuple[str, str]] | None:
+	"""The first health data the centre keeps about ``lead``, and where."""
+	trovate = []
+	for doctype, campo, filtri in INFORMAZIONI_MEDICHE:
+		if not frappe.db.table_exists(doctype):
+			continue
+		riga = frappe.get_all(
+			doctype,
+			filters={"lead": lead, campo: ["is", "set"], **filtri},
+			fields=["name", campo],
+			order_by=f"{campo} asc",
+			limit=1,
+		)
+		if riga:
+			trovate.append((get_datetime(riga[0][campo]), (doctype, riga[0].name)))
+	return min(trovate, key=lambda t: t[0]) if trovate else None
+
+
+def ricalcola_dagli_acconti() -> int:
+	"""The patients a deposit's advance invoice made, before the rules left it out
+	(`regole.vendita`): the card goes to the first real fact - a visit, a check-in,
+	the health data the centre keeps - or is taken away, and the person reads what
+	the CRM's rules say they are (a client, or a contact). Quietly: nothing is
+	announced. How many cards changed."""
+	from crm.clienti import cliente
+
+	Card = frappe.qb.DocType(DOCTYPE)
+	Invoice = frappe.qb.DocType("CRM Invoice")
+	schede = (
+		frappe.qb.from_(Card)
+		.join(Invoice)
+		.on((Card.source_doctype == "CRM Invoice") & (Card.source_name == Invoice.name))
+		.select(Card.name, Card.lead)
+		.where((Card.rule == regole.FATTURA_SANITARIA.valore) & (IfNull(Invoice.advance_for, "") != ""))
+		.run(as_dict=True)
+	)
+	if not schede:
+		return 0
+	fatti = fatti_esistenti()
+	for scheda in schede:
+		suoi = dict(fatti.get(scheda.lead, {}))
+		medica = _prima_informazione_medica(scheda.lead)
+		if medica:
+			suoi[regole.INFORMAZIONE_MEDICA.valore] = medica
+		trovata = regole.prima_regola({valore: quando for valore, (quando, _fonte) in suoi.items()})
+		if trovata:
+			regola, quando = trovata
+			fonte = suoi[regola.valore][1]
+			frappe.db.set_value(
+				DOCTYPE,
+				scheda.name,
+				{
+					"rule": regola.valore,
+					"patient_since": quando,
+					"source_doctype": fonte[0],
+					"source_name": fonte[1],
+				},
+				update_modified=False,
+			)
+			frappe.db.set_value("CRM Lead", scheda.lead, CAMPO, quando, update_modified=False)
+			continue
+		frappe.delete_doc(DOCTYPE, scheda.name, ignore_permissions=True, force=True)
+		frappe.db.set_value(
+			"CRM Lead",
+			scheda.lead,
+			{
+				CAMPO: None,
+				cliente.RAPPORTO: cliente.CLIENTE if cliente.cliente_da(scheda.lead) else cliente.CONTATTO,
+			},
+			update_modified=False,
+		)
+	return len(schede)
 
 
 # ------------------------------------------------------------------ the page

@@ -190,6 +190,25 @@ def acconto(modo: str | None, importo_acconto, prezzo) -> float:
 	return float(max(somma, Decimal(0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
+#: Whether a payment online asks the codice fiscale of whom its invoice is for.
+CF_NO, CF_FACOLTATIVO, CF_OBBLIGATORIO = "", "optional", "required"
+
+
+def codice_fiscale_da_chiedere(
+	paga_online: bool, scheda_sanitaria: bool | None, centro_sanitario: bool
+) -> str:
+	"""Whether /prenota or the area's purchase asks the codice fiscale of whom it is
+	for. What is paid online is invoiced the day it arrives (`fatture`): a healthcare
+	invoice needs it for the Sistema TS, or it waits as a draft until the desk asks.
+	Healthcare is what the service's fiscal card says (``scheda_sanitaria``, None
+	without one: then whether the centre is a medical one). Optional where no
+	healthcare invoice follows; nothing paid online, nothing asked."""
+	if not paga_online:
+		return CF_NO
+	sanitaria = centro_sanitario if scheda_sanitaria is None else scheda_sanitaria
+	return CF_OBBLIGATORIO if sanitaria else CF_FACOLTATIVO
+
+
 # ------------------------------------------------------------------ the form Stripe reads
 
 

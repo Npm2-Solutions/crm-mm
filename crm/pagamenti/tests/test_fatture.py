@@ -71,7 +71,7 @@ class AccontoCase(SchedulingCase):
 		frappe.set_user("Administrator")
 		super().tearDown()
 
-	def prenota(self, modo="Deposit", acconto=30, prezzo=80, nome="Seduta con acconto"):
+	def prenota(self, modo="Deposit", acconto=30, prezzo=80, nome="Seduta con acconto", profilo=True, **dati):
 		servizio = self.online_service(
 			nome, staff=[self.anna], default_price=prezzo, online_payment=modo, online_deposit=acconto
 		)
@@ -90,19 +90,21 @@ class AccontoCase(SchedulingCase):
 				"enabled": 1,
 			}
 		).insert()
-		risultato = self.book(servizio, self.tomorrow(10), email="acconto.fattura@example.com")
+		# a healthcare card: /prenota asks the codice fiscale of who is coming
+		dati.setdefault("fiscal_code", fatturazione.CF_PAZIENTE)
+		risultato = self.book(servizio, self.tomorrow(10), email="acconto.fattura@example.com", **dati)
 		persona = frappe.db.get_value(
 			"CRM Appointment Participant", {"access_token": risultato["token"]}, "party"
 		)
-		self.profilo(persona)
+		if profilo:
+			self.profilo(persona)
 		return risultato
 
 	def profilo(self, persona):
-		if frappe.db.exists("CRM Billing Profile", {"party": persona}):
-			return
-		frappe.get_doc(
+		nome = frappe.db.get_value("CRM Billing Profile", {"party": persona})
+		doc = frappe.get_doc("CRM Billing Profile", nome) if nome else frappe.new_doc("CRM Billing Profile")
+		doc.update(
 			{
-				"doctype": "CRM Billing Profile",
 				"party_type": "CRM Lead",
 				"party": persona,
 				"fiscal_code": fatturazione.CF_PAZIENTE,
@@ -112,7 +114,8 @@ class AccontoCase(SchedulingCase):
 				"province": "MI",
 				"country": "IT",
 			}
-		).insert(ignore_permissions=True)
+		)
+		doc.save(ignore_permissions=True)
 
 	def paga(self, risultato):
 		sessione = risultato["checkout_url"].rsplit("/", 1)[1]
@@ -262,3 +265,153 @@ class TestFatturaDAcconto(AccontoCase):
 		bozza = frappe.new_doc("CRM Invoice")
 		bozza.appointment = self.appuntamento(risultato)
 		self.assertEqual(pagamenti.per_la_fattura(bozza)["deposit"]["amount"], 30)
+
+
+class TestAccontoSullAppuntamento(AccontoCase):
+	"""The appointment's panel and the reception desk say the deposit; kept after a
+	late cancellation, the desk gives it back as a courtesy, with its credit note."""
+
+	def deposito(self, risultato):
+		from crm.api.appointments import get_appointment
+
+		[riga] = get_appointment(self.appuntamento(risultato))["participants"]
+		return riga.get("deposit")
+
+	def disdici(self, risultato):
+		frappe.set_user("Guest")
+		SB.cancel(token=risultato["token"])
+		frappe.set_user("Administrator")
+
+	def test_il_pannello_e_l_accoglienza_lo_dicono(self):
+		from crm.api import oggi
+
+		risultato = self.prenota()
+		self.assertEqual(self.deposito(risultato)["state"], "waiting")
+		self.paga(risultato)
+		acconto = self.deposito(risultato)
+		numero = frappe.db.get_value("CRM Invoice", self.pagamento(risultato).invoice, "document_number")
+		self.assertEqual(
+			(acconto["state"], acconto["amount"], acconto["invoice"], acconto["kept"]),
+			("paid", 30, numero, False),
+		)
+		self.assertFalse(acconto["can_give_back"])
+		self.assertTrue(acconto["invoiced"])
+		giorno = frappe.db.get_value("CRM Appointment", self.appuntamento(risultato), "starts_on")
+		[riga] = [
+			a
+			for a in oggi.get_day(str(giorno.date()))["appointments"]
+			if a["name"] == self.appuntamento(risultato)
+		]
+		self.assertEqual(riga["participants"][0]["deposit"]["invoice"], numero)
+
+	def test_disdetto_tardi_si_restituisce_per_cortesia(self):
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_on_cancel", 1)
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_hours", 72)
+		risultato = self.prenota()
+		self.paga(risultato)
+		# not before the cancellation: the place is still theirs
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(self.pagamento(risultato).name)
+		self.disdici(risultato)
+		self.assertEqual(self.finto.rimborsi, [])
+		acconto = self.deposito(risultato)
+		self.assertTrue(acconto["kept"])
+		self.assertTrue(acconto["can_give_back"])
+
+		# whoever does not record the payments cannot
+		frappe.set_user(self.anna)
+		with self.assertRaises(frappe.PermissionError):
+			pagamenti.give_back_deposit(acconto["payment"])
+		frappe.set_user("Administrator")
+
+		dopo = pagamenti.give_back_deposit(acconto["payment"])["deposit"]
+		self.assertEqual(len(self.finto.rimborsi), 1)
+		self.assertEqual(self.finto.rimborsi[0]["amount"], "3000")
+		pagamento = self.pagamento(risultato)
+		self.assertEqual((pagamento.status, pagamento.refunded_by), ("Refunded", "Administrator"))
+		nota = frappe.db.get_value(
+			"CRM Invoice",
+			pagamento.credit_note,
+			["docstatus", "reference_invoice", "document_number"],
+			as_dict=True,
+		)
+		self.assertEqual((nota.docstatus, nota.reference_invoice), (1, pagamento.invoice))
+		self.assertEqual((dopo["state"], dopo["credit_note"]), ("refunded", nota.document_number))
+		self.assertFalse(dopo["can_give_back"])
+		# twice is once
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(acconto["payment"])
+		self.assertEqual(len(self.finto.rimborsi), 1)
+
+	def test_mai_un_acconto_di_prova(self):
+		frappe.db.set_single_value("CRM Stripe Settings", "refund_hours", 72)
+		risultato = self.prenota()
+		self.paga(risultato)
+		frappe.db.set_value("CRM Invoice", self.pagamento(risultato).invoice, "test_document", 1)
+		self.disdici(risultato)
+		self.assertFalse(self.deposito(risultato)["can_give_back"])
+		with self.assertRaises(frappe.ValidationError):
+			pagamenti.give_back_deposit(self.pagamento(risultato).name)
+
+
+class TestCodiceFiscaleOnline(AccontoCase):
+	"""/prenota asks the codice fiscale of who is coming where what is paid online is
+	invoiced as healthcare: written in their billing details, the advance invoice is
+	issued at once instead of waiting as a draft."""
+
+	def test_la_scheda_lo_chiede(self):
+		self.prenota(profilo=False)
+		scheda = next(s for s in SB.get_catalog()["services"] if s["name"] == "Seduta con acconto")
+		self.assertEqual(scheda["deposit"]["fiscal_code"], "required")
+
+	def test_scritto_alla_prenotazione_la_fattura_d_acconto_si_emette(self):
+		risultato = self.prenota(profilo=False, fiscal_code=" rss mra 80a01 h501u ")
+		persona = frappe.db.get_value(
+			"CRM Appointment Participant", {"access_token": risultato["token"]}, "party"
+		)
+		self.assertEqual(
+			frappe.db.get_value("CRM Billing Profile", {"party": persona}, "fiscal_code"), "RSSMRA80A01H501U"
+		)
+		self.paga(risultato)
+		fattura = frappe.db.get_value(
+			"CRM Invoice", self.pagamento(risultato).invoice, ["docstatus", "fiscal_code"], as_dict=True
+		)
+		self.assertEqual((fattura.docstatus, fattura.fiscal_code), (1, "RSSMRA80A01H501U"))
+
+	def test_per_un_figlio_il_suo(self):
+		risultato = self.prenota(
+			profilo=False,
+			for_name="Tommaso Acconto",
+			for_relation="Parent",
+			fiscal_code=fatturazione.CF_PAZIENTE,
+		)
+		riga = frappe.db.get_value(
+			"CRM Appointment Participant",
+			{"access_token": risultato["token"]},
+			["party", "booked_by"],
+			as_dict=True,
+		)
+		self.assertTrue(riga.booked_by)
+		self.assertTrue(frappe.db.get_value("CRM Billing Profile", {"party": riga.party}, "fiscal_code"))
+		self.assertFalse(frappe.db.exists("CRM Billing Profile", {"party": riga.booked_by}))
+
+	def test_manca_o_e_sbagliato_niente_prenotazione(self):
+		prima = frappe.db.count("CRM Appointment")
+		with self.assertRaises(frappe.ValidationError):
+			self.prenota(profilo=False, fiscal_code="")
+		with self.assertRaises(frappe.ValidationError):
+			self.prenota(profilo=False, nome="Seduta con acconto due", fiscal_code="RSSMRA80A01H501X")
+		self.assertEqual(frappe.db.count("CRM Appointment"), prima)
+
+	def test_quello_che_il_centro_sa_resta(self):
+		risultato = self.prenota()
+		persona = frappe.db.get_value(
+			"CRM Appointment Participant", {"access_token": risultato["token"]}, "party"
+		)
+		from crm.invoicing import anagrafica
+
+		self.assertFalse(anagrafica.scrivi_se_manca(persona, "BNCLRA85M41F205B"))
+		self.assertEqual(
+			frappe.db.get_value("CRM Billing Profile", {"party": persona}, "fiscal_code"),
+			fatturazione.CF_PAZIENTE,
+		)

@@ -293,6 +293,31 @@
                 {{ rigaDelPromemoria(row.reminder, __) }}
               </span>
             </div>
+            <!-- their deposit paid online: waiting, its advance invoice, kept
+                 at a cancellation, given back (doc 60) -->
+            <div
+              v-if="row.deposit"
+              class="mt-0.5 flex items-start gap-1.5 text-p-sm text-ink-gray-6"
+            >
+              <span
+                class="lucide-credit-card mt-0.5 size-3.5 shrink-0"
+                aria-hidden="true"
+              />
+              <span class="min-w-0 [overflow-wrap:anywhere]">
+                {{ accontoInParole(row.deposit, __) }}
+              </span>
+            </div>
+            <!-- kept after a late cancellation: given back as a courtesy -->
+            <Button
+              v-if="row.deposit?.can_give_back"
+              size="sm"
+              variant="subtle"
+              class="touch-target mt-1.5"
+              icon-left="lucide-undo-2"
+              :label="__('Give the deposit back')"
+              :loading="restituendo === row.deposit.payment"
+              @click="chiediDiRestituire(row)"
+            />
           </div>
           <div class="ms-auto flex shrink-0 items-center gap-3">
             <Dropdown v-if="doc.can_write" :options="attendanceActions(row)">
@@ -1184,6 +1209,7 @@ import {
 } from '@/utils/promemoriaAppuntamenti'
 import { laSeduta } from '@/utils/cicli'
 import { nomeDellaForma, statoInParole } from '@/utils/convenzioni'
+import { accontoInParole } from '@/utils/pagamentiOnline'
 import { appLocale } from '@/utils/locale'
 import {
   adessoDelCentro,
@@ -1368,6 +1394,56 @@ function money(amount, currency) {
 
 function openPerson(lead) {
   router.push({ name: 'Lead', params: { leadId: lead } })
+}
+
+// --- a deposit kept, given back as a courtesy (doc 60) ------------------------
+
+const restituendo = ref('')
+
+function chiediDiRestituire(row) {
+  const acconto = row.deposit
+  $dialog({
+    title: __('Give the deposit back to {0}?', [
+      row.participant_name || row.party,
+    ]),
+    // a credit note only where its advance invoice was issued
+    message: acconto.invoiced
+      ? __(
+          'After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe, and a credit note cancels its advance invoice. It cannot be undone.',
+          [acconto.formatted_amount],
+        )
+      : __(
+          'After this cancellation the deposit stays to the centre. As a courtesy, {0} go back to the card it was paid with, on Stripe. It cannot be undone.',
+          [acconto.formatted_amount],
+        ),
+    actions: [
+      {
+        label: __('Give the deposit back'),
+        variant: 'solid',
+        onClick: (closeDialog) => {
+          closeDialog()
+          restituisci(row)
+        },
+      },
+    ],
+  })
+}
+
+function restituisci(row) {
+  restituendo.value = row.deposit.payment
+  chiedi({
+    url: 'crm.pagamenti.pagamenti.give_back_deposit',
+    params: { payment: row.deposit.payment },
+    onSuccess: (risposta) => {
+      restituendo.value = ''
+      if (risposta?.deposit) row.deposit = risposta.deposit
+      toast.success(__('Deposit given back'))
+    },
+    onError: (e) => {
+      restituendo.value = ''
+      toast.error(e.messages?.[0] || __('Could not give the deposit back'))
+    },
+  })
 }
 
 // --- quick changes while reading --------------------------------------------

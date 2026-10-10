@@ -33,6 +33,8 @@ export type Prenotazione = {
 	perAltro?: { nome: string; relazione?: string }
 	convenzione?: string
 	tessera?: string
+	/** written where the page asks it: a payment online invoiced as healthcare */
+	codiceFiscale?: string
 	marketing?: boolean
 	/** the cards tried on Stripe's page, in order */
 	carte?: string[]
@@ -115,6 +117,17 @@ export async function compilaDati(s: Settimana, chi: Persona, page: Page, p: Pre
 	if (p.convenzione) {
 		await main.locator('#f-convention').selectOption({ label: p.convenzione })
 		if (p.tessera) await main.locator('#f-card_number').fill(p.tessera)
+	}
+	// what is paid online is invoiced the day it arrives: its codice fiscale, the
+	// child's for a child (the field says whose)
+	const cf = main.getByRole('textbox', { name: /^Codice fiscale/ })
+	if (await cf.count()) {
+		const chiViene = p.perAltro
+			? s.copione.people.find((x) => `${x.first_name} ${x.last_name}` === p.perAltro?.nome)
+			: s.copione.people.find((x) => x.email === p.email)
+		const codice = p.codiceFiscale || chiViene?.fiscal_code
+		if (codice) await cf.fill(codice)
+		else s.nota(`/prenota asked a codice fiscale ${chi.nome} did not give`)
 	}
 	if (await main.locator('#f-consent').count()) await main.locator('#f-consent').check()
 	if (p.marketing && (await main.locator('#f-marketing').count())) await main.locator('#f-marketing').check()

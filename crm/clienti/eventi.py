@@ -71,8 +71,9 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 
 def fattura_confermata(doc, method=None) -> None:
 	"""The first confirmed invoice made out to the person. A credit note sells nothing,
-	and neither does a test invoice: it is gone the day invoicing goes live."""
-	if not regole.vendita(doc.get("document_type")):
+	nor does a deposit's advance invoice (they have not come yet), nor a test invoice:
+	it is gone the day invoicing goes live."""
+	if not regole.vendita(doc.get("document_type"), doc.get("advance_for")):
 		return
 	if cint(doc.get("test_document")):
 		return

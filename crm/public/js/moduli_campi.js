@@ -139,7 +139,8 @@ export function drawForm({
       const id = idPrefix + field.id
       wrap.append(
         // `for` names a control one writes in; `id` names a group of buttons
-        h('label', { class: 'label', for: id, id: id + '-q' }, field.label || '', h('span', { class: 'req' })),
+        // the mark is for the eye: a screen reader hears «required» from the control
+        h('label', { class: 'label', for: id, id: id + '-q' }, field.label || '', h('span', { class: 'req', 'aria-hidden': 'true' })),
       )
       if (field.description) wrap.append(h('div', { class: 'help' }, field.description))
       wrap.append(control(field, id))
@@ -795,8 +796,15 @@ export function drawForm({
       const part = parts[field.id]
       if (!part) continue
       part.wrap.hidden = !state.visible[field.id]
+      const needed = required.has(field.id) && !skip.has(field.id)
       const star = part.wrap.querySelector('.req')
-      if (star) star.textContent = required.has(field.id) && !skip.has(field.id) ? ' *' : ''
+      if (star) star.textContent = needed ? ' *' : ''
+      // the control one writes or picks in says it is required (a group of buttons has no such word)
+      const own = part.wrap.querySelector('input.in[id], textarea.in[id], select.in[id]')
+      if (own) {
+        if (needed) own.setAttribute('aria-required', 'true')
+        else own.removeAttribute('aria-required')
+      }
       part.missing.hidden = !(tried && missing.has(field.id))
       part.missing.textContent = field.must_accept
         ? t('To go on, this has to be accepted')

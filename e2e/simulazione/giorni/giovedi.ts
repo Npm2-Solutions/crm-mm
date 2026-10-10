@@ -14,7 +14,8 @@ import { permessi } from './permessi'
 /** Thursday: Marco cancels Friday's visit in time and gets his deposit back; Luca's
  * online visit with the dietitian, both entering the room; Paolo does not come;
  * Anna's first session of her cycle; marketing sends the autumn news to a list;
- * Giulia cancels her check-up too late, and the deposit stays. */
+ * Giulia cancels her check-up too late, the deposit stays, and the desk gives it
+ * back as a courtesy. */
 export async function giovedi(s: Settimana) {
 	await s.giornata('giovedi', '07:30')
 	await marcoDisdice(s)
@@ -363,7 +364,55 @@ async function giuliaDisdiceTardi(s: Settimana) {
 			)
 			const nota = acconto ? await s.banco.conta('CRM Invoice', { reference_invoice: acconto, docstatus: 1 }) : 0
 			s.verifica(nota === 0, 'No credit note for a deposit kept', String(nota))
+			// and the panel says it is kept
+			await expect(page.getByText(/^Acconto trattenuto alla disdetta: /).first()).toBeVisible({ timeout: 30000 })
 		},
 		{ chiave: 'giulia.disdice', dopo: ['giulia.tardi'] },
+	)
+	await s.passo(
+		'Per cortesia la segreteria restituisce l’acconto a Giulia: rimborso su Stripe e nota di credito',
+		seg,
+		async () => {
+			const page = await s.alLavoro(seg)
+			// a cancelled appointment leaves the day's grid: it opens on the agenda's
+			// panel from the person's page, as this address does
+			await page.goto(`/crm/calendar?appointment=${s.stato.giulia.controllo}`, { waitUntil: 'domcontentloaded' })
+			const restituisci = page.getByRole('button', { name: "Restituisci l'acconto" }).first()
+			await expect(restituisci).toBeVisible({ timeout: 30000 })
+			await s.dito(seg, restituisci)
+			await premi(seg, restituisci)
+			const conferma = page.getByRole('dialog').last()
+			await expect(conferma.getByText(/Restituire l'acconto a /)).toBeVisible()
+			await premi(seg, conferma.getByRole('button', { name: "Restituisci l'acconto" }))
+			await esito(page, /Acconto restituito/)
+			const pagamento = await s.attendi(
+				() =>
+					s.banco.valore('CRM Online Payment', { appointment: s.stato.giulia.controllo }, [
+						'status',
+						'refunded_amount',
+						'refunded_by',
+						'credit_note',
+					]),
+				(v) => v?.status === 'Refunded',
+			)
+			s.nota(`Pagamento: ${JSON.stringify(pagamento)}`)
+			s.verifica(
+				pagamento?.status === 'Refunded',
+				'The courtesy gives the deposit back on Stripe',
+				JSON.stringify(pagamento),
+			)
+			s.verifica(pagamento?.refunded_by === seg.email, 'The refund says who gave it back', pagamento?.refunded_by)
+			const nota = pagamento?.credit_note
+				? await s.banco.valore('CRM Invoice', pagamento.credit_note, ['document_type', 'docstatus', 'document_number'])
+				: null
+			s.verifica(
+				nota?.document_type === 'TD04' && nota?.docstatus === 1,
+				'The deposit given back gets its credit note',
+				JSON.stringify(nota),
+			)
+			await expect(page.getByText(/^Acconto rimborsato da /).first()).toBeVisible({ timeout: 30000 })
+			await expect(page.getByRole('button', { name: "Restituisci l'acconto" })).toHaveCount(0)
+		},
+		{ chiave: 'giulia.restituito', dopo: ['giulia.disdice'] },
 	)
 }

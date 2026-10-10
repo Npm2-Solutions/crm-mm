@@ -68,10 +68,11 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 
 def fattura_confermata(doc, method=None) -> None:
 	"""Rule 4: a confirmed invoice with a healthcare line. A course or a membership
-	makes nobody a patient, nor does a credit note."""
+	makes nobody a patient, nor does a credit note, nor a deposit's advance invoice:
+	paid at /prenota, before any visit, it would make a patient of whoever booked."""
 	if not any(riga.get("is_healthcare") for riga in doc.items or []):
 		return
-	if not regole.vendita(doc.get("document_type")) or cint(doc.get("test_document")):
+	if not regole.vendita(doc.get("document_type"), doc.get("advance_for")) or cint(doc.get("test_document")):
 		return
 	if not paziente.clinica_accesa():
 		return

@@ -25,6 +25,7 @@ from frappe import _
 
 from crm.invoicing.doctype.crm_billing_profile.crm_billing_profile import TITOLARI
 from crm.invoicing.engine import anagrafica as motore
+from crm.invoicing.engine import codice_fiscale as cf
 from crm.invoicing.engine.codici import TipoDestinatario
 from crm.permissions import livelli
 
@@ -204,6 +205,46 @@ def _completa(fattura) -> str | None:
 	profilo.flags.ignore_permissions = True
 	profilo.save()
 	return profilo.name
+
+
+# ------------------------------------------------------------------- given online
+
+
+def codice_scritto(valore: str | None) -> str | None:
+	"""A person's codice fiscale as /prenota or the area takes it (`crm.pagamenti`):
+	written the way the profile writes it, refused in words when it is not one."""
+	codice = motore.normalizza({"fiscal_code": valore}).get("fiscal_code")
+	if not codice:
+		return None
+	if len(codice) != 16 or not cf.valido(codice):
+		frappe.throw(
+			_("The codice fiscale {0} is not right: check its 16 letters and digits").format(codice),
+			title=_("Codice fiscale"),
+		)
+	return codice
+
+
+def ha_il_codice(lead: str | None) -> bool:
+	"""Whether the person's billing details have their codice fiscale."""
+	return bool(
+		lead and frappe.db.get_value(DOCTYPE, {"party_type": "CRM Lead", "party": lead}, "fiscal_code")
+	)
+
+
+def scrivi_se_manca(lead: str | None, codice: str | None) -> bool:
+	"""The codice fiscale given online, in the person's billing details as the desk
+	would write it - where they have none: what the centre knows stays. True when
+	written."""
+	if not (lead and codice) or ha_il_codice(lead):
+		return False
+	nome = nome_del_profilo("CRM Lead", lead)
+	profilo = frappe.get_doc(DOCTYPE, nome) if nome else frappe.new_doc(DOCTYPE)
+	if not nome:
+		profilo.party_type, profilo.party = "CRM Lead", lead
+	profilo.fiscal_code = codice
+	profilo.flags.ignore_permissions = True
+	profilo.save()
+	return True
 
 
 # ------------------------------------------------------------------- the panel

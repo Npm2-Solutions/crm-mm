@@ -786,13 +786,16 @@ def get_shop(person: str) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 @rate_limit(limit=30, seconds=60 * 60)
-def buy_subscription(person: str, subscription_type: str) -> dict:
+def buy_subscription(person: str, subscription_type: str, fiscal_code: str | None = None) -> dict:
 	"""«Buy»: Stripe's page for a subscription, for one of the session's people (a
-	parent for their child). Never in the centre's preview."""
+	parent for their child), with their codice fiscale where the sheet asked it.
+	Never in the centre's preview."""
 	from crm.pagamenti import addebiti
 
 	_mia(person)
-	return addebiti.compra(person, subscription_type, frappe.utils.get_url("/area/appointments"))
+	return addebiti.compra(
+		person, subscription_type, frappe.utils.get_url("/area/appointments"), codice_fiscale=fiscal_code
+	)
 
 
 def _abbonamento_di(person: str, subscription: str):

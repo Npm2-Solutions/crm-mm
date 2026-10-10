@@ -132,15 +132,29 @@ export function useNomeAlControllo(scatola) {
   return perId
 }
 
-/** A form's field: its words (`etichetta`) name the first control after them in `scatola`. */
-export function useEtichettaDelCampo(scatola, etichetta) {
+// what may say it is required (ARIA): a field one writes in, a list to pick from
+const OBBLIGABILI =
+  "input:not([type='hidden']), textarea, select, [role='combobox'], [role='listbox'], [role='radiogroup']"
+
+/**
+ * A form's field: its words (`etichetta`) name the first control after them in
+ * `scatola`. With `obbligatorio` (a ref) the control says it is required: the
+ * red mark beside the words is for the eye only (`aria-hidden`), so a screen
+ * reader hears «required» from the control and never «asterisk» in its name.
+ */
+export function useEtichettaDelCampo(scatola, etichetta, obbligatorio = null) {
   seguiLaScatola(scatola, () => {
     const parole = etichetta.value
     if (!parole) return
     const controllo = [...(scatola.value?.querySelectorAll(CAMPI) || [])].find(
       (elemento) => !parole.contains(elemento),
     )
-    if (controllo) collega(parole, controllo)
+    if (!controllo) return
+    collega(parole, controllo)
+    if (obbligatorio && controllo.matches(OBBLIGABILI)) {
+      if (obbligatorio.value) controllo.setAttribute('aria-required', 'true')
+      else controllo.removeAttribute('aria-required')
+    }
   })
 }
 

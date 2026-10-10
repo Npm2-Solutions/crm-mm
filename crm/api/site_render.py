@@ -21,6 +21,7 @@ is data — escaped by the templates, which is what `escape_html` above is for.
 """
 
 import json
+import re
 
 import frappe
 from frappe import _
@@ -210,6 +211,39 @@ def _site_of_page(page_name: str | None):
 	return frappe.get_cached_doc("CRM Web Site", name)
 
 
+#: The faces a centre's website wears, none fetched from another site: a font from
+#: Google Fonts told Google every visitor of the centre's pages, before any consent.
+#: Inter is DottorCloud's own, served by the site itself; the others are the device's.
+CARATTERI = {
+	"Inter": '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+	"System": 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+	"Serif": 'ui-serif, Georgia, Cambria, "Times New Roman", serif',
+	"Rounded": 'ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", system-ui, sans-serif',
+}
+#: Inter, Latin, variable (100-900): the brand's own file (brand/dottorcloud/font).
+INTER = "/assets/crm/fonts/Inter-Variable-latin.woff2"
+
+
+def carattere(scelto: str | None) -> tuple[str | None, str | None]:
+	"""The CSS family list of the face the centre chose, and the @font-face that
+	serves it from the site (Inter's); nothing for the theme's own. A family named
+	before the choice was a list (one of Google's) is used where the device has it,
+	never downloaded; only its letters, digits and spaces reach the page."""
+	scelto = (scelto or "").strip()
+	if not scelto:
+		return None, None
+	if scelto in CARATTERI:
+		faccia = (
+			'@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;'
+			f'font-display:swap;src:url("{INTER}") format("woff2")}}'
+			if scelto == "Inter"
+			else None
+		)
+		return CARATTERI[scelto], faccia
+	nome = " ".join(re.sub(r"[^\w\s-]", "", scelto).split())[:60]
+	return (f'"{nome}", {CARATTERI["System"]}' if nome else None), None
+
+
 def build_head_html(settings) -> str:
 	"""The markup the CRM owns in a page's <head>.
 
@@ -223,15 +257,12 @@ def build_head_html(settings) -> str:
 	tokens = []
 	if settings.primary_color:
 		tokens.append(f"--crm-primary:{settings.primary_color}")
-	if settings.font_family:
-		tokens.append(f'--crm-font:"{settings.font_family}"')
-	if tokens:
-		parts.append("<style>:root{" + ";".join(tokens) + "}</style>")
-	if settings.font_family:
-		family = settings.font_family.replace(" ", "+")
+	famiglia, faccia = carattere(settings.font_family)
+	if famiglia:
+		tokens.append(f"--crm-font:{famiglia}")
+	if tokens or faccia:
 		parts.append(
-			f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={family}'
-			':wght@400;500;600;700&display=swap">'
+			"<style>" + (faccia or "") + (":root{" + ";".join(tokens) + "}" if tokens else "") + "</style>"
 		)
 
 	parts.append('<script src="/assets/crm/js/tracker.js" defer></script>')

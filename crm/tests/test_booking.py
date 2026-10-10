@@ -59,6 +59,23 @@ class TestBooking(IntegrationTestCase):
 
 	# ---- calendar validation ----
 
+	def test_the_email_says_the_hour_in_words(self):
+		"""The day in the reader's language and the 24-hour clock; the zone in words
+		only for who booked from another one, never its database name."""
+		cal = make_calendar("hour-words", timezone="Europe/Rome")
+		inizio = to_system_naive(datetime.datetime(2026, 10, 12, 8, 0, tzinfo=datetime.UTC))
+		prima = frappe.local.lang
+		frappe.local.lang = "it"
+		try:
+			roma = B._format_when(frappe._dict(starts_on=inizio, invitee_timezone="Europe/Rome"), cal)
+			londra = B._format_when(frappe._dict(starts_on=inizio, invitee_timezone="Europe/London"), cal)
+		finally:
+			frappe.local.lang = prima
+		self.assertEqual(roma, "lunedì 12 ottobre 2026, 10:00")
+		self.assertTrue(londra.startswith("lunedì 12 ottobre 2026, 09:00 ("), londra)
+		self.assertIn("Londra", londra)
+		self.assertNotIn("Europe/", londra)
+
 	def test_invalid_timezone_rejected(self):
 		with self.assertRaises(frappe.ValidationError):
 			make_calendar(route="bad-tz", timezone="Mars/Olympus")

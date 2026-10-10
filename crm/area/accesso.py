@@ -262,9 +262,14 @@ def get_accesses(lead: str) -> dict:
 	"""Who enters this person's area: for the person's page."""
 	livelli.verifica("area.invita")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+	from crm.moduli import richieste
+
+	# whoever answers for them (a child's parent): where «A parent or guardian» goes
+	rappresentante = richieste.destinatario(lead)
 	return {
 		"accesses": accessi(lead),
 		"email": frappe.db.get_value("CRM Lead", lead, "email"),
+		"guardian_email": rappresentante.get("email") if rappresentante.get("given_by") else None,
 		"url": get_url("/area"),
 	}
 

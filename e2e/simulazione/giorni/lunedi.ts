@@ -18,6 +18,7 @@ export async function lunedi(s: Settimana) {
 	await prenotazioniOnline(s)
 	await laSegreteriaApre(s)
 	await fattureInBozza(s)
+	await lAccontoNelPannello(s)
 	await alTelefono(s)
 	await listaDAttesa(s)
 	await areaAperta(s)
@@ -147,6 +148,7 @@ async function prenotazioniOnline(s: Settimana) {
 					email: chi.email,
 					telefono: dati.mobile,
 					marketing: chiave === 'giulia' || chiave === 'sara',
+					codiceFiscale: dati.fiscal_code,
 				})
 				s.stato[chiave] = { ...(s.stato[chiave] || {}), token }
 				const righe = await s.banco.lista(
@@ -183,18 +185,27 @@ async function prenotazioniOnline(s: Settimana) {
 					])
 					s.verifica(acconti.length === 1, 'The deposit paid online has its advance invoice', JSON.stringify(acconti))
 					if (acconti[0]) {
-						// /prenota asks no codice fiscale: a healthcare invoice stays a draft
-						// and whoever manages invoicing is told
+						// /prenota asked the codice fiscale: the healthcare invoice is issued at once
 						s.nota(`Fattura d’acconto ${acconti[0].docstatus === 1 ? 'emessa' : 'in bozza'}: ${acconti[0].name}`)
-						if (acconti[0].docstatus === 0) {
-							const avvisi = await s.banco.conta('CRM Notification', {
-								notification_type_doc: acconti[0].name,
-							})
-							s.verifica(avvisi > 0, 'A draft of a payment online is told to invoicing', acconti[0].name)
-						}
+						s.verifica(
+							acconti[0].docstatus === 1,
+							'The advance invoice is issued at once: the codice fiscale was asked at booking',
+							acconti[0].name,
+						)
 						if (s.esito('produzione'))
 							s.verifica(!acconti[0].test_document, 'The advance invoice is a real one', acconti[0].name)
 					}
+				}
+				// a booking, paid or not, makes nobody a client nor a patient: coming does
+				const chiViene = righe[0]?.party
+				if (chiViene) {
+					const rapporto = await s.banco.valore('CRM Lead', chiViene, ['client_since', 'patient_since', 'relationship'])
+					const oggi = s.data('lunedi')
+					s.verifica(
+						!(rapporto?.patient_since || '').startsWith(oggi) && !(rapporto?.client_since || '').startsWith(oggi),
+						'Nobody becomes a client or a patient by booking',
+						JSON.stringify(rapporto),
+					)
 				}
 			},
 			{ chiave: `${chiave}.prenota` },
@@ -202,52 +213,89 @@ async function prenotazioniOnline(s: Settimana) {
 	}
 }
 
-/** What was paid online stayed a draft where the person gave no codice fiscale:
- * the manager is told, asks each one for it and issues the invoice, the day the
- * money arrived. */
+/** What was paid online is invoiced the day the money arrives: with the codice
+ * fiscale given on /prenota, each advance invoice is issued and collected by
+ * itself. One left a draft (a codice fiscale the page did not get) the manager
+ * issues from its row of the things to do, as she would. */
 async function fattureInBozza(s: Settimana) {
 	await s.alle('09:10')
 	const r = s.p('responsabile')
 	const pagati = ['giulia', 'marco', 'sara', 'luca'].filter((k) => s.stato[k]?.appuntamento)
 	await s.passo(
-		'La responsabile apre la notifica delle fatture d’acconto in bozza, scrive i codici fiscali e le emette',
+		'La responsabile trova le fatture d’acconto già emesse, col codice fiscale dato prenotando',
 		r,
 		async () => {
 			const page = await r.apri(s.browser, s.banco)
-			await page.goto('/crm/accoglienza', { waitUntil: 'domcontentloaded' })
-			await premi(r, page.getByRole('button', { name: 'Notifiche' }).first())
-			const notifica = page.getByText(/rimasta in bozza/).first()
-			await expect(notifica).toBeVisible()
-			await premi(r, notifica)
-			await page.waitForURL(/\/crm\/fatture/)
-			// the notification opens a draft to complete
-			await expect(page.getByRole('dialog').last().getByText('Prima di emetterla')).toBeVisible()
-			let emesse = 0
+			await page.goto('/crm/fatture', { waitUntil: 'domcontentloaded' })
+			let subito = 0
 			for (const chiave of pagati) {
 				const appuntamento = s.stato[chiave].appuntamento
-				const bozza = await s.banco.valore('CRM Invoice', { advance_for: appuntamento }, ['name', 'docstatus'])
-				if (!bozza || bozza.docstatus !== 0) continue
-				// each draft as its row in the things to do opens it
-				await page.keyboard.press('Escape').catch(() => {})
-				await page.goto(`/crm/fatture?open=${bozza.name}`, { waitUntil: 'domcontentloaded' })
-				await expect(page.getByRole('dialog').last().getByText(s.p(chiave).nome).first()).toBeVisible()
-				await emettiLaBozza(s, r, page, chiave)
-				const dopo = await s.attendi(
-					() => s.banco.valore('CRM Invoice', bozza.name, ['docstatus', 'collected_on', 'posting_date']),
-					(v) => v?.docstatus === 1,
-				)
-				s.verifica(dopo.docstatus === 1, 'The advance invoice is issued', `${chiave} ${bozza.name}`)
-				s.verifica(!!dopo.collected_on, 'The advance invoice paid online is collected', `${chiave} ${bozza.name}`)
+				const campi = ['name', 'docstatus', 'collected_on', 'posting_date', 'fiscal_code', 'document_number']
+				let fattura = await s.banco.valore('CRM Invoice', { advance_for: appuntamento }, campi)
+				if (!fattura) continue
+				if (fattura.docstatus === 0) {
+					// still a draft: from its row of the things to do, as the manager would
+					await page.goto(`/crm/fatture?open=${fattura.name}`, { waitUntil: 'domcontentloaded' })
+					await expect(page.getByRole('dialog').last().getByText(s.p(chiave).nome).first()).toBeVisible()
+					await emettiLaBozza(s, r, page, chiave)
+					await page.keyboard.press('Escape').catch(() => {})
+					fattura = await s.attendi(
+						() => s.banco.valore('CRM Invoice', fattura.name, campi),
+						(v) => v?.docstatus === 1,
+					)
+				} else subito += 1
+				s.verifica(fattura.docstatus === 1, 'The advance invoice is issued', `${chiave} ${fattura.name}`)
+				s.verifica(!!fattura.collected_on, 'The advance invoice paid online is collected', `${chiave} ${fattura.name}`)
 				s.verifica(
-					dopo.posting_date === s.data('lunedi'),
+					fattura.posting_date === s.data('lunedi'),
 					'The advance invoice is dated the day the money arrived',
-					`${chiave} ${dopo.posting_date}`,
+					`${chiave} ${fattura.posting_date}`,
 				)
-				emesse += 1
+				s.verifica(
+					fattura.fiscal_code === s.persona(chiave).fiscal_code,
+					'The advance invoice carries the codice fiscale given on /prenota',
+					`${chiave} ${fattura.fiscal_code}`,
+				)
+				// the invoices' list shows it, by its number
+				if (fattura.document_number)
+					await expect(page.getByText(fattura.document_number).first()).toBeVisible({ timeout: 30000 })
 			}
-			s.nota(`${emesse} fatture d’acconto emesse`)
+			s.nota(`${subito} di ${pagati.length} fatture d’acconto emesse da sole`)
 		},
 		{ chiave: 'acconti.emessi', dopo: ['produzione'] },
+	)
+}
+
+/** The desk opens Giulia's visit on the agenda: her deposit, paid online, and the
+ * advance invoice of it, on her row of the panel. */
+async function lAccontoNelPannello(s: Settimana) {
+	const seg = s.p('segreteria')
+	await s.passo(
+		'La segreteria apre la visita di Giulia: l’acconto pagato online e la sua fattura',
+		seg,
+		async () => {
+			const giulia = s.p('giulia')
+			const page = await s.alLavoro(seg)
+			await page.goto(`/crm/calendar?date=${s.data('mercoledi')}`, { waitUntil: 'domcontentloaded' })
+			await premi(seg, page.getByText(giulia.nome).first())
+			const numero = await s.banco.valore(
+				'CRM Invoice',
+				{ advance_for: s.stato.giulia.appuntamento, docstatus: 1 },
+				'document_number',
+			)
+			const riga = page.getByText(/^Acconto pagato online: /).first()
+			await expect(riga).toBeVisible({ timeout: 30000 })
+			const parole = (await riga.innerText()).trim()
+			s.nota(`Nel pannello: «${parole}»`)
+			s.verifica(
+				!numero || parole.includes(`fattura N. ${numero}`),
+				'The panel names the advance invoice of the deposit',
+				parole,
+			)
+			s.verifica(/\d,\d\d\s?€/.test(parole), 'The deposit is said in euros as Italian writes them', parole)
+			await page.keyboard.press('Escape').catch(() => {})
+		},
+		{ chiave: 'giulia.acconto.pannello', dopo: ['giulia.prenota'] },
 	)
 }
 

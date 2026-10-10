@@ -2,8 +2,10 @@
 // Online payments' words and checks: the same rules as crm/pagamenti/regole.py.
 import { expect, test } from 'vitest'
 import {
+  accontoInParole,
   addebitoInParole,
   cartaInParole,
+  codiceFiscaleScritto,
   modalita,
   modoInParole,
   oreValide,
@@ -177,4 +179,56 @@ test('the monthly charge in the area and at the desk', () => {
   expect(
     addebitoInParole({ ...carta, active: false, stopped_on: null }, t, g),
   ).toEqual({ riga: '', problema: '' })
+})
+
+test('a booking’s deposit on its appointment, in a line', () => {
+  const pagato = { state: 'paid', formatted_amount: '30,00 €' }
+  expect(accontoInParole(null, t)).toBe('')
+  expect(accontoInParole({ ...pagato, state: 'waiting' }, t)).toBe(
+    'Deposit waiting for payment: 30,00 €',
+  )
+  expect(accontoInParole({ ...pagato, invoice: '2026/S/12' }, t)).toBe(
+    'Deposit paid online: 30,00 € · invoice no. 2026/S/12',
+  )
+  expect(accontoInParole({ ...pagato, invoice_draft: true }, t)).toBe(
+    'Deposit paid online: 30,00 € · invoice still a draft',
+  )
+  // the invoice's number only to whoever reads invoices: the server leaves it out
+  expect(accontoInParole(pagato, t)).toBe('Deposit paid online: 30,00 €')
+  // a cancellation that keeps it says so
+  expect(
+    accontoInParole({ ...pagato, kept: true, invoice: '2026/S/12' }, t),
+  ).toBe('Deposit kept at the cancellation: 30,00 € · invoice no. 2026/S/12')
+  const reso = {
+    state: 'refunded',
+    formatted_amount: '30,00 €',
+    formatted_refunded: '30,00 €',
+  }
+  expect(accontoInParole(reso, t)).toBe('Deposit given back: 30,00 €')
+  expect(accontoInParole({ ...reso, credit_note: '2026/S/13' }, t)).toBe(
+    'Deposit given back: 30,00 € · credit note no. 2026/S/13',
+  )
+  expect(
+    accontoInParole(
+      { ...reso, refunded_by: 'Paolo Rinaldi', credit_note: '2026/S/13' },
+      t,
+    ),
+  ).toBe(
+    'Deposit given back by Paolo Rinaldi: 30,00 € · credit note no. 2026/S/13',
+  )
+  expect(
+    accontoInParole(
+      { ...reso, state: 'partly_refunded', formatted_refunded: '10,00 €' },
+      t,
+    ),
+  ).toBe('Deposit given back in part: 10,00 € of 30,00 €')
+})
+
+test('a codice fiscale as the billing details keep it', () => {
+  expect(codiceFiscaleScritto(' rss mra 80a01 h501u ')).toEqual({
+    codice: 'RSSMRA80A01H501U',
+    giusto: true,
+  })
+  expect(codiceFiscaleScritto('RSSMRA80A01H501').giusto).toBe(false)
+  expect(codiceFiscaleScritto(null)).toEqual({ codice: '', giusto: false })
 })
