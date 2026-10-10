@@ -38,7 +38,7 @@
       <Button
         v-if="!isMobileView && puo('trattative.scrivi')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New deal')"
         iconLeft="plus"
         @click="showDealModal = true"
       />
@@ -201,6 +201,13 @@
             size="xs"
           />
         </div>
+        <!-- a number in its groups, as the list draws it -->
+        <div
+          v-else-if="['mobile_no', 'phone'].includes(fieldName)"
+          class="truncate text-base tabular-nums"
+        >
+          {{ leggibile(getRow(itemName, fieldName).label) }}
+        </div>
         <div v-else class="truncate text-base">
           {{ getRow(itemName, fieldName).label }}
         </div>
@@ -314,6 +321,7 @@ import { pipelinesStore } from '@/stores/pipelines'
 import { callEnabled } from '@/composables/telephony'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
 import { intestazioneDelGruppo } from '@/utils/gruppi'
+import { leggibile } from '@/utils/telefono'
 import { kanbanColumnsForPipeline, pipelineOfColumns } from '@/utils/pipelines'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useTelemetry } from 'frappe-ui/frappe'

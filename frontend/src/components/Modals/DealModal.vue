@@ -15,8 +15,8 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
-              :aria-label="__('Edit Fields Layout')"
               v-if="puo('viste.configura') && !isMobileView"
+              :aria-label="__('Edit Fields Layout')"
               variant="ghost"
               class="w-7"
               :tooltip="__('Edit Fields Layout')"
@@ -37,24 +37,27 @@
             v-if="hasOrganizationSections || hasContactSections"
             class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3"
           >
-            <div
-              v-if="hasOrganizationSections"
-              class="flex items-center gap-3 text-sm text-ink-gray-5"
-            >
-              <div>{{ __('Choose Existing Organization') }}</div>
-              <Switch
-                :aria-label="__('Choose Existing Organization')"
-                v-model="chooseExistingOrganization"
-              />
-            </div>
+            <!-- whose deal it is, first: in a medical centre the person is
+                 usually one already known, and a new one typed here was a
+                 second record of a patient the centre has -->
             <div
               v-if="hasContactSections"
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
               <div>{{ __('Choose Existing Person') }}</div>
               <Switch
-                :aria-label="__('Choose Existing Person')"
                 v-model="chooseExistingContact"
+                :aria-label="__('Choose Existing Person')"
+              />
+            </div>
+            <div
+              v-if="hasOrganizationSections"
+              class="flex items-center gap-3 text-sm text-ink-gray-5"
+            >
+              <div>{{ __('Choose Existing Organization') }}</div>
+              <Switch
+                v-model="chooseExistingOrganization"
+                :aria-label="__('Choose Existing Organization')"
               />
             </div>
           </div>
@@ -81,10 +84,11 @@
             :loading="isDealCreating"
             @click="createDeal"
           />
+          <!-- from a company's website: there only once one is written -->
           <Button
+            v-if="deal.doc.website"
             :label="__('Enrich')"
             :loading="isEnriching"
-            :disabled="!deal.doc.website"
             :tooltip="__('Fill fields from the company website')"
             iconLeft="zap"
             @click="enrichFromWebsite"
@@ -138,8 +142,11 @@ const hasContactSections = ref(true)
 
 const isDealCreating = ref(false)
 const isEnriching = ref(false)
-const chooseExistingContact = ref(false)
-const chooseExistingOrganization = ref(false)
+// an existing person, and a company only if one is chosen: the form opened on
+// seven fields of a new company («1-10» employees, «0,00 €» of revenue) and a
+// new person, the commonest way to make a patient twice
+const chooseExistingContact = ref(true)
+const chooseExistingOrganization = ref(true)
 const { capture } = useTelemetry()
 
 // Prefill the form from the company website (Domain Enrichment) — synchronous,
@@ -186,25 +193,25 @@ async function enrichFromWebsite() {
   }
 }
 
-watch(
-  [chooseExistingOrganization, chooseExistingContact],
-  ([organization, contact]) => {
-    tabs.data.forEach((tab) => {
-      tab.sections.forEach((section) => {
-        if (section.name === 'organization_section') {
-          section.hidden = !organization
-        } else if (section.name === 'organization_details_section') {
-          section.hidden = organization
-        } else if (section.name === 'contact_section') {
-          section.hidden = !contact
-        } else if (section.name.startsWith('contact_details')) {
-          // the person's two rows (crm.install.DEAL_QUICK_ENTRY)
-          section.hidden = contact
-        }
-      })
+function applicaLeScelte() {
+  const organization = chooseExistingOrganization.value
+  const contact = chooseExistingContact.value
+  tabs.data?.forEach((tab) => {
+    tab.sections.forEach((section) => {
+      if (section.name === 'organization_section') {
+        section.hidden = !organization
+      } else if (section.name === 'organization_details_section') {
+        section.hidden = organization
+      } else if (section.name === 'contact_section') {
+        section.hidden = !contact
+      } else if (section.name.startsWith('contact_details')) {
+        // the person's two rows (crm.install.DEAL_QUICK_ENTRY)
+        section.hidden = contact
+      }
     })
-  },
-)
+  })
+}
+watch([chooseExistingOrganization, chooseExistingContact], applicaLeScelte)
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
@@ -213,6 +220,23 @@ const tabs = createResource({
   auto: true,
   transform: (_tabs) => {
     hasOrganizationSections.value = false
+    // the person's sections before the company's, as the switches above them
+    const diChi = (section) =>
+      section.name === 'contact_section' ||
+      section.name.startsWith('contact_details')
+        ? 0
+        : ['organization_section', 'organization_details_section'].includes(
+              section.name,
+            )
+          ? 1
+          : 2
+    _tabs.forEach((tab) => {
+      if (tab.sections?.length)
+        tab.sections = [...tab.sections].sort((a, b) => {
+          const [x, y] = [diChi(a), diChi(b)]
+          return x < 2 && y < 2 ? x - y : 0
+        })
+    })
     return _tabs.forEach((tab) => {
       tab.sections.forEach((section) => {
         section.columns.forEach((column) => {
@@ -249,6 +273,9 @@ const tabs = createResource({
     })
   },
 })
+
+// the layout comes after the switches: they are applied to it when it does
+watch(() => tabs.data, applicaLeScelte)
 
 // only the stages of the pipeline the deal is being created in
 const dealStatuses = computed(() =>
@@ -327,6 +354,12 @@ async function createDeal() {
       }
       if (deal.doc.email && !deal.doc.email.includes('@')) {
         error.value = __('Invalid email address')
+        return error.value
+      }
+      if (chooseExistingContact.value && !deal.doc.contact) {
+        error.value = __(
+          'Choose the person, or switch off «Choose Existing Person» to write a new one.',
+        )
         return error.value
       }
       if (!deal.doc.status) {

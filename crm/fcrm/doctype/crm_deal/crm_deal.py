@@ -482,33 +482,30 @@ class CRMDeal(Document):
 
 	@staticmethod
 	def default_list_data():
+		# A deal is a person's (doc 19): the list opens on whose it is, the step it
+		# is at and what its quotes make it worth. It opened on «Organization» and
+		# «Annual Revenue», empty and 0,00 € on every row of a medical centre, and
+		# said whose deal it was only through an email or a number
 		columns = [
 			{
-				"label": "Organization",
-				"type": "Link",
-				"key": "organization",
-				"options": "CRM Organization",
-				"width": "11rem",
-			},
-			{
-				"label": "Annual Revenue",
-				"type": "Currency",
-				"key": "annual_revenue",
-				"align": "right",
-				"width": "9rem",
+				"label": "Person",
+				"type": "Data",
+				"key": "lead_name",
+				"width": "13rem",
 			},
 			{
 				"label": "Status",
 				"type": "Link",
 				"options": "CRM Deal Status",
 				"key": "status",
-				"width": "10rem",
+				"width": "12rem",
 			},
 			{
-				"label": "Email",
-				"type": "Data",
-				"key": "email",
-				"width": "12rem",
+				"label": "Deal Value",
+				"type": "Currency",
+				"key": "deal_value",
+				"align": "right",
+				"width": "9rem",
 			},
 			{
 				"label": "Mobile No.",
@@ -533,6 +530,7 @@ class CRMDeal(Document):
 			"name",
 			"organization",
 			"annual_revenue",
+			"deal_value",
 			"status",
 			"pipeline",
 			"email",
@@ -553,8 +551,9 @@ class CRMDeal(Document):
 	def default_kanban_settings():
 		return {
 			"column_field": "status",
-			"title_field": "organization",
-			"kanban_fields": '["annual_revenue", "email", "mobile_no", "_assign", "modified"]',
+			# the person on each card, and what the deal is worth
+			"title_field": "lead_name",
+			"kanban_fields": '["deal_value", "mobile_no", "_assign", "modified"]',
 		}
 
 
