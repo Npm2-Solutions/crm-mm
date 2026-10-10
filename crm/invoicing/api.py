@@ -325,6 +325,8 @@ def appointment_invoice_proposal(appointment: str) -> dict:
 		"party_type": fattura.party_type,
 		"party": fattura.party,
 		"billing_name": fattura.billing_name,
+		# the balance of an appointment paid in advance online says which advance it settles
+		"causale": fattura.causale or "",
 		"items": [
 			{
 				"billable_service": riga.billable_service,
@@ -337,11 +339,13 @@ def appointment_invoice_proposal(appointment: str) -> dict:
 	}
 
 
-def _fattura_da_appuntamento(appointment: str, billable_service: str = "", service_provider: str = ""):
+def _fattura_da_appuntamento(
+	appointment: str, billable_service: str = "", service_provider: str = "", saldo: bool = True
+):
 	"""The draft an appointment proposes, in memory: the service's fiscal card, the
 	professional of whoever is on its staff (or the card's), the first participant
 	who pays as the client - or whoever pays for them. The professional may be
-	missing."""
+	missing. Paid in advance online, its balance (`crm.pagamenti.fatture.saldo`)."""
 	incontro = frappe.get_doc("CRM Appointment", appointment)
 	incontro.check_permission("read")
 	if (
@@ -407,6 +411,10 @@ def _fattura_da_appuntamento(appointment: str, billable_service: str = "", servi
 			"rate": convenzioni.da_pagare_dalla_persona(incontro),
 		},
 	)
+	if saldo:
+		from crm.pagamenti import fatture as pagate_online
+
+		pagate_online.saldo(fattura, incontro)
 	return fattura
 
 
@@ -487,6 +495,15 @@ def issue_from_subscription(subscription: str, instalment: str, service_provider
 		frappe.throw(_("No such instalment"))
 	if rata.invoice and frappe.db.get_value("CRM Invoice", rata.invoice, "docstatus") in (0, 1):
 		frappe.throw(_("This instalment is invoiced already: {0}").format(rata.invoice))
+	fattura = fattura_della_rata(abbonamento, rata, service_provider)
+	fattura.insert()
+	return fattura.name
+
+
+def fattura_della_rata(abbonamento, rata, service_provider: str = ""):
+	"""The draft of an instalment, in memory: what `issue_from_subscription` saves,
+	and what a charge on the saved card adds up before it asks the money
+	(`crm.pagamenti.addebiti`)."""
 	billable_service = abbonamento.billable_service
 	if not billable_service:
 		frappe.throw(_("This subscription has no fiscal card: its instalments are not invoiced"))
@@ -509,7 +526,7 @@ def issue_from_subscription(subscription: str, instalment: str, service_provider
 	fino = add_days(dopo[0], -1) if dopo else abbonamento.ends_on
 
 	fattura = frappe.new_doc("CRM Invoice")
-	fattura.subscription = subscription
+	fattura.subscription = abbonamento.name
 	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
 	fattura.party_type = "CRM Lead"
 	fattura.party = abbonamento.lead
@@ -530,8 +547,7 @@ def issue_from_subscription(subscription: str, instalment: str, service_provider
 			"period_to": fino,
 		},
 	)
-	fattura.insert()
-	return fattura.name
+	return fattura
 
 
 @frappe.whitelist(methods=["POST"])
@@ -943,6 +959,10 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	from crm.preventivi import rate as rate_dei_preventivi
 
 	coperti |= rate_dei_preventivi.pagati_a_rate([i.name for i in incontri])
+	# paid in advance online, all of it: its advance invoice is the invoice
+	from crm.pagamenti import fatture as pagate_online
+
+	coperti |= pagate_online.coperti(incontri)
 	return [
 		dict(i)
 		for i in incontri

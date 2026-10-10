@@ -30,11 +30,23 @@ def _api() -> str:
 
 
 class ErroreStripe(Exception):
-	"""Stripe refused, or did not answer (``stato`` None)."""
+	"""Stripe refused, or did not answer (``stato`` None). A card that was declined
+	says why (``rifiuto``, Stripe's ``decline_code``)."""
 
-	def __init__(self, stato: int | None, tipo: str | None = None, codice: str | None = None):
-		self.stato, self.tipo, self.codice = stato, tipo, codice
-		super().__init__(f"Stripe {stato} {tipo or ''} {codice or ''}".strip())
+	def __init__(
+		self,
+		stato: int | None,
+		tipo: str | None = None,
+		codice: str | None = None,
+		rifiuto: str | None = None,
+	):
+		self.stato, self.tipo, self.codice, self.rifiuto = stato, tipo, codice, rifiuto
+		super().__init__(f"Stripe {stato} {tipo or ''} {codice or ''} {rifiuto or ''}".strip())
+
+	@property
+	def della_carta(self) -> bool:
+		"""The card was declined: a try that happened, not Stripe away."""
+		return self.tipo == "card_error" or self.stato == 402
 
 	def in_parole(self) -> str:
 		from frappe import _
@@ -77,7 +89,7 @@ def chiama(
 		raise ErroreStripe(None) from None
 	if stato >= 400:
 		problema = (corpo or {}).get("error") or {}
-		errore = ErroreStripe(stato, problema.get("type"), problema.get("code"))
+		errore = ErroreStripe(stato, problema.get("type"), problema.get("code"), problema.get("decline_code"))
 		frappe.log_error(title="Stripe refused", message=f"{metodo} {percorso.split('?')[0]}: {errore}")
 		raise errore
 	return corpo or {}

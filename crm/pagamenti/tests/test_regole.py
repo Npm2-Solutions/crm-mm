@@ -193,6 +193,33 @@ class TestSignificato(unittest.TestCase):
 		)
 		self.assertEqual((f.cosa, f.intento, f.errore), (R.NON_RIUSCITO, "pi_3", "Your card was declined."))
 
+	def test_un_addebito_sulla_carta_salvata(self):
+		oggetto = {
+			"id": "pi_9",
+			"amount": 4080,
+			"amount_received": 4080,
+			"currency": "eur",
+			"metadata": {"payment": "PAY-9", "site": "centro", "charge": R.ADDEBITO},
+		}
+		r = R.significato({"type": "payment_intent.succeeded", "data": {"object": oggetto}})
+		self.assertEqual((r.cosa, r.intento, r.importo, r.pagamento), (R.PAGATO, "pi_9", 40.8, "PAY-9"))
+		# a Checkout's payment is told by its session, never twice
+		del oggetto["metadata"]["charge"]
+		self.assertIsNone(R.significato({"type": "payment_intent.succeeded", "data": {"object": oggetto}}))
+		f = R.significato(
+			{
+				"type": "payment_intent.payment_failed",
+				"data": {
+					"object": {
+						"id": "pi_9",
+						"last_payment_error": {"code": "card_declined", "decline_code": "insufficient_funds"},
+					}
+				},
+			}
+		)
+		self.assertEqual(f.codice, "insufficient_funds")
+		self.assertIn("payment_intent.succeeded", R.EVENTI)
+
 	def test_altro(self):
 		self.assertIsNone(R.significato({"type": "customer.created", "data": {"object": {}}}))
 

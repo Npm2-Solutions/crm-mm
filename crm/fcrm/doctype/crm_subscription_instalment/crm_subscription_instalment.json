@@ -9,7 +9,10 @@
   "amount",
   "currency",
   "invoice",
-  "problem"
+  "problem",
+  "charge_attempts",
+  "last_charge_on",
+  "charge_problem"
  ],
  "fields": [
   {
@@ -45,11 +48,29 @@
    "fieldtype": "Small Text",
    "label": "Not invoiced because",
    "read_only": 1
+  },
+  {
+   "fieldname": "charge_attempts",
+   "fieldtype": "Int",
+   "label": "Card charges tried",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_charge_on",
+   "fieldtype": "Date",
+   "label": "Card last tried on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "charge_problem",
+   "fieldtype": "Small Text",
+   "label": "Card not charged because",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 09:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Subscription Instalment",

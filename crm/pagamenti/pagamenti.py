@@ -33,7 +33,7 @@ from frappe import _
 from frappe.utils import add_to_date, cint, flt, get_datetime, get_url, getdate, now_datetime
 
 from crm.notifiche import regole as NR
-from crm.pagamenti import cliente, collegamento
+from crm.pagamenti import cliente, collegamento, fatture
 from crm.pagamenti import regole as R
 
 PAGAMENTO = "CRM Online Payment"
@@ -43,6 +43,8 @@ APPUNTAMENTO = "CRM Appointment"
 ATTESA, PAGATO, SCADUTO, NON_RIUSCITO = "Waiting", "Paid", "Expired", "Failed"
 RIMBORSATO, RIMBORSATO_IN_PARTE, ANNULLATO = "Refunded", "Partly refunded", "Cancelled"
 PER_FATTURA, PER_ACCONTO = "Invoice", "Deposit"
+#: a subscription bought from the area, an instalment of one (`addebiti`)
+PER_ABBONAMENTO, PER_RATA = "Subscription", "Instalment"
 
 
 def _soldi(importo, valuta: str | None = None) -> str:
@@ -64,9 +66,12 @@ def _demo(*riferimenti: tuple[str, str | None]) -> bool:
 # ------------------------------------------------------------------ a Checkout session
 
 
-def _sessione(pagamento, descrizione: str, ritorno: str, email: str | None, minuti: int) -> None:
+def _sessione(
+	pagamento, descrizione: str, ritorno: str, email: str | None, minuti: int, altro: dict | None = None
+) -> None:
 	"""Stripe's Checkout session for ``pagamento``, its link kept on it for ``minuti``
-	(Stripe takes 30 minutes to 24 hours)."""
+	(Stripe takes 30 minutes to 24 hours). ``altro``: what a purchase adds (the
+	customer, the card kept for the monthly charge, the mandate's words)."""
 	# Stripe reads a Unix time; the payment keeps the server's clock
 	scade = add_to_date(now_datetime(), minutes=minuti)
 	stripe_secret = collegamento.chiave()
@@ -76,6 +81,10 @@ def _sessione(pagamento, descrizione: str, ritorno: str, email: str | None, minu
 		metadati["invoice"] = pagamento.invoice
 	if pagamento.appointment:
 		metadati["appointment"] = pagamento.appointment
+	if pagamento.get("subscription"):
+		metadati["subscription"] = pagamento.subscription
+	altro = dict(altro or {})
+	intento = {"description": descrizione[:250], "metadata": metadati, **altro.pop("payment_intent_data", {})}
 	unisci = "&" if "?" in ritorno else "?"
 	sessione = cliente.chiama(
 		"POST",
@@ -84,7 +93,8 @@ def _sessione(pagamento, descrizione: str, ritorno: str, email: str | None, minu
 		{
 			"mode": "payment",
 			"client_reference_id": pagamento.name,
-			"customer_email": email or None,
+			# a customer of the centre's (a card kept for the monthly charge) has their own email
+			"customer_email": None if altro.get("customer") else (email or None),
 			"line_items": [
 				{
 					"quantity": 1,
@@ -97,11 +107,12 @@ def _sessione(pagamento, descrizione: str, ritorno: str, email: str | None, minu
 			],
 			"metadata": metadati,
 			# a refund on the charge finds the payment by its own metadata too
-			"payment_intent_data": {"description": descrizione[:250], "metadata": metadati},
+			"payment_intent_data": intento,
 			"success_url": f"{ritorno}{unisci}pagamento=fatto",
 			"cancel_url": f"{ritorno}{unisci}pagamento=annullato",
 			"expires_at": int(time.time()) + minuti * 60,
 			"locale": "auto",
+			**altro,
 		},
 		idempotenza=f"{frappe.local.site}:{pagamento.name}:{pagamento.modified}",
 	)
@@ -246,6 +257,7 @@ def per_la_fattura(doc) -> dict:
 		if doc.name and not doc.is_new()
 		else []
 	)
+	# deposits paid before the advance invoice was (doc 60): the old path, said
 	acconti = (
 		frappe.get_all(
 			PAGAMENTO,
@@ -253,6 +265,7 @@ def per_la_fattura(doc) -> dict:
 				"appointment": doc.appointment,
 				"purpose": PER_ACCONTO,
 				"status": ["in", (PAGATO, RIMBORSATO_IN_PARTE)],
+				"invoice": ["is", "not set"],
 			},
 			fields=["amount", "currency", "paid_on", "refunded_amount"],
 		)
@@ -273,6 +286,10 @@ def per_la_fattura(doc) -> dict:
 			for r in pagati
 		],
 		"deposit": {"amount": acconto, "formatted_amount": _soldi(acconto)} if acconto > 0 else None,
+		# the advance invoices of its appointment: this one is their balance
+		"advances": fatture.per_la_fattura(doc.appointment)
+		if (doc.document_type or "TD01") not in fatture.NOTE
+		else [],
 	}
 
 
@@ -281,12 +298,21 @@ def per_la_fattura(doc) -> dict:
 
 def acconto_da_chiedere(servizio, prezzo, *persone: str | None) -> float:
 	"""What a booking of ``servizio`` asks online before it is confirmed: nothing
-	while Stripe is not connected, for the demo, or a service that asks nothing."""
+	while Stripe is not connected, for the demo, or a service that asks nothing.
+	The whole price is what its invoice would add up to - the fund, the VAT, the
+	stamp duty on top - so the advance invoice of it is the whole invoice."""
 	modo = servizio.get("online_payment")
 	if not modo or not collegamento.collegato():
 		return 0.0
 	if _demo(("CRM Service", servizio.name), *(("CRM Lead", p) for p in persone)):
 		return 0.0
+	if modo == R.TUTTO and flt(prezzo) > 0:
+		from crm.pagamenti import addebiti
+
+		scheda = frappe.db.get_value(
+			"CRM Billable Service", {"crm_service": servizio.name, "enabled": 1}, "name"
+		)
+		prezzo = addebiti.lordo(next((p for p in persone if p), None), scheda, prezzo) if scheda else prezzo
 	return R.acconto(modo, servizio.get("online_deposit"), prezzo)
 
 
@@ -397,8 +423,13 @@ def applica(significato: R.Significato) -> str | None:
 	elif significato.cosa == R.RIMBORSATO:
 		_rimborsato(pagamento, significato.importo)
 	elif significato.cosa == R.NON_RIUSCITO:
-		# the person may try again on the same page while the link holds
-		pagamento.db_set("last_error", (significato.errore or "")[:500])
+		if pagamento.purpose == PER_RATA and cint(pagamento.attempt):
+			from crm.pagamenti import addebiti
+
+			addebiti.non_riuscito(pagamento, significato.codice)
+		else:
+			# the person may try again on the same page while the link holds
+			pagamento.db_set("last_error", (significato.errore or "")[:500])
 	return pagamento.name
 
 
@@ -419,6 +450,10 @@ def _pagato(pagamento, significato: R.Significato) -> None:
 		_fattura_pagata(pagamento)
 	elif pagamento.purpose == PER_ACCONTO and pagamento.appointment:
 		_acconto_pagato(pagamento)
+	elif pagamento.purpose in (PER_ABBONAMENTO, PER_RATA):
+		from crm.pagamenti import addebiti
+
+		addebiti.pagato(pagamento)
 
 
 def _fattura_pagata(pagamento) -> None:
@@ -468,6 +503,8 @@ def _acconto_pagato(pagamento) -> None:
 	# now the booking is one: told as /prenota tells it
 	service_booking.send_client_email(appuntamento, pagamento.access_token, "booked")
 	service_booking.notify_staff(appuntamento, _("New online booking, deposit paid"))
+	# paid before the service: invoiced the day it is paid (art. 6 DPR 633/72)
+	fatture.acconto_pagato(pagamento)
 
 
 def _scaduto(pagamento) -> None:
@@ -502,7 +539,7 @@ def _rimborsato(pagamento, importo: float) -> None:
 	stato = RIMBORSATO if importo >= round(flt(pagamento.amount), 2) else RIMBORSATO_IN_PARTE
 	pagamento.db_set({"status": stato, "refunded_amount": importo, "refunded_on": now_datetime()})
 	soldi = _soldi(importo, pagamento.currency)
-	if pagamento.purpose == PER_FATTURA and pagamento.invoice:
+	if pagamento.purpose != PER_ACCONTO and pagamento.invoice:
 		from crm.invoicing import documento
 
 		doc = frappe.get_doc(FATTURA, pagamento.invoice)
@@ -525,13 +562,14 @@ def _rimborsato(pagamento, importo: float) -> None:
 			[soldi, _nome(pagamento.party)],
 			pagamento,
 		)
+		fatture.acconto_rimborsato(pagamento)
 
 
 def _nome(persona: str | None) -> str:
 	return (frappe.db.get_value("CRM Lead", persona, "lead_name") if persona else None) or persona or ""
 
 
-def _di_a_chi_fattura(frase: str, nomi: list, pagamento) -> None:
+def _di_a_chi_fattura(frase: str, nomi: list, pagamento, oggetto: tuple[str, str] | None = None) -> None:
 	"""Whoever manages invoicing is told. Never raises: a payment recorded is worth
 	more than the notification about it."""
 	try:
@@ -549,7 +587,7 @@ def _di_a_chi_fattura(frase: str, nomi: list, pagamento) -> None:
 				frase,
 				nomi,
 				riguarda=("CRM Lead", pagamento.party) if pagamento.party else None,
-				oggetto=(PAGAMENTO, pagamento.name),
+				oggetto=oggetto or (PAGAMENTO, pagamento.name),
 				una_volta=True,
 			)
 	except Exception:
@@ -586,6 +624,9 @@ def rimborsa(nome: str) -> bool:
 		return False
 	totale = round(flt(pagamento.amount), 2)
 	pagamento.db_set({"status": RIMBORSATO, "refunded_amount": totale, "refunded_on": now_datetime()})
+	if pagamento.purpose == PER_ACCONTO:
+		# its advance invoice: a credit note for what went back
+		fatture.acconto_rimborsato(pagamento)
 	return True
 
 
@@ -726,19 +767,31 @@ def _chiudi(riga, stripe_secret: str) -> None:
 
 
 def cancella_con_la_persona(doc, method=None) -> None:
-	"""A person's online payments go with them."""
-	for nome in frappe.get_all(PAGAMENTO, filters={"party": doc.name}, pluck="name"):
-		frappe.delete_doc(PAGAMENTO, nome, ignore_permissions=True, force=True)
+	"""A person's online payments go with them, and their customer on Stripe's
+	account here (the customer there stays the centre's: Stripe keeps its records)."""
+	for doctype in (PAGAMENTO, "CRM Stripe Customer"):
+		for nome in frappe.get_all(doctype, filters={"party": doc.name}, pluck="name"):
+			frappe.delete_doc(doctype, nome, ignore_permissions=True, force=True)
 
 
 def get_permission_query_conditions(user: str | None = None) -> str:
 	"""A payment is listed to whoever sees its person."""
+	return della_persona(PAGAMENTO, user)
+
+
+def get_customer_permission_query_conditions(user: str | None = None) -> str:
+	"""A person's customer on Stripe is listed to whoever sees them."""
+	return della_persona("CRM Stripe Customer", user)
+
+
+def della_persona(doctype: str, user: str | None = None) -> str:
+	"""A record of a person's (a payment, a customer) is listed to whoever sees them."""
 	from crm.permissions import org_hierarchy
 
 	visibili = org_hierarchy.visible_leads(user)
 	if visibili is None:
 		return ""
-	riga = frappe.qb.DocType(PAGAMENTO)
+	riga = frappe.qb.DocType(doctype)
 	return riga.party.isin(visibili or [""]).get_sql(
 		with_namespace=True, quote_char="`", secondary_quote_char="'"
 	)

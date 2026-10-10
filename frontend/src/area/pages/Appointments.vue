@@ -1,10 +1,24 @@
 <!-- Appointments: booking again, the cycles of sessions and the subscriptions going on, what
-     the person waits for, the ones coming, then the last ones. -->
+     the centre sells online, what the person waits for, the ones coming, then the last ones. -->
 <template>
   <div class="flex flex-col gap-5">
     <h1 class="area-title">
       {{ __('Your appointments') }}
     </h1>
+    <!-- back from Stripe's page: said once -->
+    <p
+      v-if="returned"
+      class="rounded-[12px_12px_12px_2px] bg-[var(--brand-subtle)] px-3 py-2 text-p-sm text-[var(--on-brand-subtle)]"
+      role="status"
+    >
+      {{
+        returned === 'done'
+          ? __(
+              'Thank you: the payment went through. Your subscription shows here in a moment, its invoice in your Documents.',
+            )
+          : __('The payment was not made: nothing was bought.')
+      }}
+    </p>
     <BookAgain v-if="appointments.data?.book" :book="appointments.data.book" />
     <section
       v-if="appointments.data?.cycles?.length"
@@ -26,10 +40,28 @@
       <h2 class="area-label">
         {{ __('Your subscriptions') }}
       </h2>
+      <p
+        v-if="saidOfCard"
+        class="rounded-[12px_12px_12px_2px] bg-[var(--brand-subtle)] px-3 py-2 text-p-sm text-[var(--on-brand-subtle)]"
+        role="status"
+      >
+        {{ saidOfCard }}
+      </p>
       <SubscriptionCard
         v-for="subscription in appointments.data.subscriptions"
         :key="subscription.name"
         :subscription="subscription"
+        @changed="cardChanged"
+      />
+    </section>
+    <!-- what the centre sells online (crm/pagamenti/addebiti.py): never in its preview -->
+    <section v-if="shop.data?.items?.length" class="flex flex-col gap-2">
+      <h2 class="area-label">{{ __('Buy online') }}</h2>
+      <ShopCard
+        v-for="item in shop.data.items"
+        :key="item.name"
+        :item="item"
+        @buy="buying = item"
       />
     </section>
     <section
@@ -98,16 +130,24 @@
       />
     </section>
     <WaitingJoinDialog v-model="joining" @changed="changed('')" />
+    <BuyDialog
+      :model-value="Boolean(buying)"
+      :item="buying"
+      @update:model-value="(open) => !open && (buying = null)"
+    />
   </div>
 </template>
 
 <script setup>
 import { Button, createResource } from 'frappe-ui'
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { anteprima } from '../anteprima'
 import AppointmentCard from '../components/AppointmentCard.vue'
 import BookAgain from '../components/BookAgain.vue'
+import BuyDialog from '../components/BuyDialog.vue'
 import CycleCard from '../components/CycleCard.vue'
+import ShopCard from '../components/ShopCard.vue'
 import SubscriptionCard from '../components/SubscriptionCard.vue'
 import WaitingCard from '../components/WaitingCard.vue'
 import WaitingJoinDialog from '../components/WaitingJoinDialog.vue'
@@ -126,5 +166,31 @@ const appointments = createResource({
 function changed(message) {
   said.value = message || ''
   appointments.reload()
+}
+
+// what the centre sells online: nothing asked in its preview
+const shop = createResource({
+  url: 'crm.area.api.get_shop',
+  params: { person: area.person },
+  auto: !anteprima,
+})
+const buying = ref(null)
+
+const saidOfCard = ref('')
+function cardChanged(message) {
+  saidOfCard.value = message || ''
+  appointments.reload()
+}
+
+// back from Stripe's page: said once, the address put back; Stripe tells the
+// centre a moment after the person comes back
+const route = useRoute()
+const router = useRouter()
+const returned = ref(
+  { fatto: 'done', annullato: 'cancelled' }[route.query.pagamento] || '',
+)
+if (returned.value) {
+  router.replace({ query: { ...route.query, pagamento: undefined } })
+  if (returned.value === 'done') setTimeout(() => appointments.reload(), 4000)
 }
 </script>

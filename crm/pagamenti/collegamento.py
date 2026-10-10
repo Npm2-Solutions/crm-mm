@@ -63,6 +63,17 @@ def regola_dei_rimborsi() -> tuple[bool, int]:
 	return bool(cint(impostazioni.refund_on_cancel)), cint(impostazioni.refund_hours)
 
 
+def vendite() -> tuple[bool, bool]:
+	"""Whether the area sells subscriptions, and whether a monthly one is charged on
+	the saved card: the centre's two switches, off to start with, nothing without
+	Stripe."""
+	impostazioni = _impostazioni()
+	if not collegato(impostazioni):
+		return False, False
+	vende = bool(cint(impostazioni.sell_in_area))
+	return vende, vende and bool(cint(impostazioni.card_charges))
+
+
 def stato() -> dict:
 	"""The connection as the page shows it: whose account, in which mode. The key
 	masked; the secrets never leave the server."""
@@ -83,6 +94,8 @@ def stato() -> dict:
 		else "",
 		"refund_on_cancel": bool(cint(impostazioni.refund_on_cancel)),
 		"refund_hours": cint(impostazioni.refund_hours),
+		"sell_in_area": bool(cint(impostazioni.sell_in_area)),
+		"card_charges": bool(cint(impostazioni.card_charges)),
 	}
 
 
@@ -97,6 +110,14 @@ def online_payments_on() -> bool:
 	"""Whether a service may ask a deposit online: for the service editor."""
 	livelli.verifica("agenda.configura")
 	return collegato()
+
+
+@frappe.whitelist()
+def online_sales_on() -> dict:
+	"""Whether a subscription type may be sold from the area: for the types' page."""
+	livelli.verifica("agenda.configura")
+	vende, addebita = vendite()
+	return {"connected": collegato(), "sell_in_area": vende, "card_charges": addebita}
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +222,9 @@ def check_stripe() -> dict:
 			if errore.stato != 404:
 				raise
 			endpoint = None
+		if endpoint and endpoint.get("status") == "enabled" and endpoint.get("url") == get_url(WEBHOOK):
+			# an endpoint made before DottorCloud read more events: it asks them too
+			rifatto = _eventi_mancanti(stripe_secret, endpoint) or rifatto
 		if not endpoint or endpoint.get("status") != "enabled" or endpoint.get("url") != get_url(WEBHOOK):
 			nuovo = _endpoint(stripe_secret)
 			if endpoint:
@@ -217,6 +241,36 @@ def check_stripe() -> dict:
 	except cliente.ErroreStripe as errore:
 		return {**stato(), "ok": False, "error": errore.in_parole()}
 	return {**stato(), "ok": True, "repaired": rifatto}
+
+
+def _eventi_mancanti(stripe_secret: str, endpoint: dict) -> bool:
+	"""The endpoint asks every event DottorCloud reads (`regole.EVENTI`): one made
+	before a new event was read gets it. True when it changed."""
+	if set(R.EVENTI) <= set(endpoint.get("enabled_events") or []):
+		return False
+	cliente.chiama(
+		"POST",
+		R.percorso("webhook_endpoints", endpoint.get("id")),
+		stripe_secret,
+		{"enabled_events": list(R.EVENTI)},
+	)
+	return True
+
+
+def assicura_gli_eventi() -> None:
+	"""The endpoint of the account asks every event DottorCloud reads: after a
+	release that reads a new one, or before the card is charged. Never raises."""
+	impostazioni = _impostazioni()
+	if not collegato(impostazioni) or not impostazioni.webhook_id:
+		return
+	try:
+		stripe_secret = chiave(impostazioni)
+		endpoint = cliente.chiama(
+			"GET", R.percorso("webhook_endpoints", impostazioni.webhook_id), stripe_secret
+		)
+		_eventi_mancanti(stripe_secret, endpoint)
+	except cliente.ErroreStripe as errore:
+		frappe.log_error(title="Stripe: the webhook's events", message=str(errore))
 
 
 @frappe.whitelist(methods=["POST"])
@@ -247,11 +301,27 @@ def disconnect_stripe() -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def save_stripe_options(refund_on_cancel: int | str = 0, refund_hours: int | str = 24) -> dict:
-	"""The deposits' rule: whether a cancellation in time gives the deposit back."""
+def save_stripe_options(
+	refund_on_cancel: int | str = 0,
+	refund_hours: int | str = 24,
+	sell_in_area: int | str | None = None,
+	card_charges: int | str | None = None,
+) -> dict:
+	"""The deposits' rule: whether a cancellation in time gives the deposit back;
+	whether the area sells subscriptions, and charges a monthly one on the saved
+	card (only while it sells)."""
 	livelli.verifica(CAPACITA)
 	impostazioni = _impostazioni()
 	impostazioni.refund_on_cancel = cint(refund_on_cancel)
 	impostazioni.refund_hours = max(cint(refund_hours), 0)
+	if sell_in_area is not None:
+		impostazioni.sell_in_area = cint(sell_in_area)
+	if card_charges is not None:
+		impostazioni.card_charges = cint(card_charges)
+	if not cint(impostazioni.sell_in_area):
+		impostazioni.card_charges = 0
 	impostazioni.save(ignore_permissions=True)
+	if cint(impostazioni.card_charges):
+		# the charge's outcome comes by the webhook too
+		assicura_gli_eventi()
 	return stato()

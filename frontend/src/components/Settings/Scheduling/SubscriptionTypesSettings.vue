@@ -204,6 +204,17 @@
               : __('Without a fiscal card the instalments are only a schedule.')
           }}
         </p>
+        <!-- sold from the client area, paid on the centre's Stripe (doc 60) -->
+        <template v-if="vendita.data?.sell_in_area">
+          <FormControl
+            v-model="form.sold_online"
+            type="checkbox"
+            :label="__('Sold online from the area')"
+          />
+          <p class="-mt-1 text-p-sm text-ink-gray-6">
+            {{ rigaDellaVendita(form, vendita.data, t) }}
+          </p>
+        </template>
         <FormControl
           v-model="form.description"
           type="textarea"
@@ -258,6 +269,7 @@ import {
   SUBITO,
   cosaDa,
   erroreDelTipo,
+  rigaDellaVendita,
 } from '@/utils/abbonamenti'
 import { appLocale } from '@/utils/locale'
 import {
@@ -284,6 +296,11 @@ const cards = createResource({
   url: 'crm.scheduling.abbonamenti.get_fiscal_cards',
   auto: true,
 })
+// whether the area sells subscriptions: only then a type is offered online
+const vendita = createResource({
+  url: 'crm.pagamenti.collegamento.online_sales_on',
+  auto: true,
+})
 
 const editor = reactive({ show: false, name: null, sold: 0 })
 const form = reactive({})
@@ -306,6 +323,8 @@ function line(type) {
         : money(type.price, type.currency),
     )
   parts.push(type.sold === 1 ? __('1 sold') : __('{0} sold', [type.sold || 0]))
+  if (type.sold_online && vendita.data?.sell_in_area)
+    parts.push(__('sold online'))
   return parts.join(' · ')
 }
 
@@ -359,6 +378,7 @@ function open(type) {
     max_suspension_days: type?.max_suspension_days || '',
     remind_days: type?.remind_days ?? 7,
     auto_renew: Boolean(type?.auto_renew),
+    sold_online: Boolean(type?.sold_online),
   })
   Object.assign(editor, {
     show: true,
@@ -381,6 +401,7 @@ async function save() {
         missed_count: form.missed_count ? 1 : 0,
         can_suspend: form.can_suspend ? 1 : 0,
         auto_renew: form.auto_renew ? 1 : 0,
+        sold_online: form.sold_online ? 1 : 0,
         price: Number(form.price) || 0,
         remind_days: Number(form.remind_days) || 0,
       }),

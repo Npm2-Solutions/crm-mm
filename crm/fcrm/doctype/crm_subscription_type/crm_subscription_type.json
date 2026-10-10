@@ -17,6 +17,7 @@
   "column_break_price",
   "billable_service",
   "issue_invoices",
+  "sold_online",
   "entries_section",
   "services",
   "entries",
@@ -108,6 +109,13 @@
    "description": "Off: on an instalment's day a draft waits for the desk"
   },
   {
+   "fieldname": "sold_online",
+   "fieldtype": "Check",
+   "label": "Sold online from the area",
+   "default": "0",
+   "description": "The person buys it from their area and pays it by card on the centre's Stripe"
+  },
+  {
    "fieldname": "entries_section",
    "fieldtype": "Section Break",
    "label": "Entries"
@@ -177,7 +185,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 09:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Subscription Type",

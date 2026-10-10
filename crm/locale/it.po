@@ -49463,3 +49463,333 @@ msgstr "1 in ritardo, {0}"
 
 msgid "{0} late, {1}"
 msgstr "{0} in ritardo, {1}"
+
+msgid "A deposit paid online is invoiced the same day by itself, as an advance invoice: the invoice of the appointment is then its balance. A deposit given back gets its credit note."
+msgstr "Un acconto pagato online è fatturato da solo il giorno stesso, con una fattura d'acconto: la fattura dell'appuntamento ne è poi il saldo. Un acconto restituito ha la sua nota di credito."
+
+msgid "A subscription paid by the month: the card of the first payment is charged on each instalment day, and the instalment is invoiced once paid. The person can stop it from their area."
+msgstr "Un abbonamento pagato al mese: la carta del primo pagamento è addebitata il giorno di ogni rata, e la rata si fattura quando è pagata. La persona può interrompere gli addebiti dalla sua area."
+
+msgid "A subscription sold online needs a fiscal card: its invoice is made at the payment."
+msgstr "Un abbonamento venduto online vuole una scheda fiscale: la sua fattura si fa al pagamento."
+
+msgid "A subscription sold online needs a price."
+msgstr "Un abbonamento venduto online vuole un prezzo."
+
+msgid "A subscription paid by the month is sold online only with the monthly charge on the saved card."
+msgstr "Un abbonamento pagato al mese si vende online solo con l'addebito mensile sulla carta salvata."
+
+msgid "The centre does not sell from the area."
+msgstr "Il centro non vende dall'area."
+
+msgid "This subscription is not sold online."
+msgstr "Questo abbonamento non si vende online."
+
+msgid "Advance for {0} of {1}"
+msgstr "Acconto per {0} del {1}"
+
+msgid "Advance invoice no. {0} of {1}: {2}"
+msgstr "Fattura d'acconto N. {0} del {1}: {2}"
+
+msgid "Advance invoice still a draft: {0}"
+msgstr "Fattura d'acconto ancora in bozza: {0}"
+
+msgid "Automatic charge on · card {0}"
+msgstr "Addebito automatico attivo · carta {0}"
+
+msgid "Balance"
+msgstr "Saldo"
+
+msgid "Buy"
+msgstr "Acquista"
+
+msgid "Buy online"
+msgstr "Acquista online"
+
+msgid "Card charges stopped on {0}"
+msgstr "Addebiti sulla carta interrotti il {0}"
+
+msgid "Card charges stopped on {0} · {1}"
+msgstr "Addebiti sulla carta interrotti il {0} · {1}"
+
+msgid "Card charges stopped on {0}."
+msgstr "Addebiti sulla carta interrotti il {0}."
+
+msgid "Could not stop the charges: try again."
+msgstr "Non è stato possibile interrompere gli addebiti: riprova."
+
+msgid "Deposit paid online without an invoice: {0}"
+msgstr "Acconto pagato online senza fattura: {0}"
+
+msgid "From today until {0}"
+msgstr "Da oggi al {0}"
+
+msgid "Go to payment"
+msgstr "Vai al pagamento"
+
+msgid "It does not add up to the {0} paid: check its amount"
+msgstr "Non torna con i {0} pagati: controllane l'importo"
+
+msgid "Monthly charge on the card {0}"
+msgstr "Addebito mensile sulla carta {0}"
+
+msgid "Monthly charge on the card {0} · next {1}"
+msgstr "Addebito mensile sulla carta {0} · prossimo {1}"
+
+msgid "Monthly charge on the card {0} · next {1}, {2}"
+msgstr "Addebito mensile sulla carta {0} · prossimo {1}, {2}"
+
+msgid "Monthly charge on the saved card"
+msgstr "Addebito mensile con carta salvata"
+
+msgid "Not charged on {0}: the person has the link to pay"
+msgstr "Non riuscito il {0}: la persona ha il link per pagare"
+
+msgid "Nothing is left to pay on this subscription."
+msgstr "Su questo abbonamento non resta niente da pagare."
+
+msgid "Paid by the month, it is sold online only with the monthly charge on the saved card: Settings > Invoicing > Online payments."
+msgstr "Pagato al mese, si vende online solo con l'addebito mensile sulla carta salvata: Impostazioni > Fatturazione > Pagamenti online."
+
+msgid "Pay from your area"
+msgstr "Paga dalla tua area"
+
+msgid "Pay now"
+msgstr "Paga ora"
+
+msgid "Sell subscriptions from the client area"
+msgstr "Vendi abbonamenti dall'area clienti"
+
+msgid "Sold online from the area"
+msgstr "Vendibile online dall'area"
+
+msgid "Stop the charges"
+msgstr "Interrompi gli addebiti"
+
+msgid "Stop the charges on the card?"
+msgstr "Interrompere gli addebiti sulla carta?"
+
+msgid "Subscription {0} · {1}"
+msgstr "Abbonamento {0} · {1}"
+
+msgid "Subscriptions from the client area"
+msgstr "Abbonamenti dall'area clienti"
+
+msgid "Thank you: the payment went through. Your subscription shows here in a moment, its invoice in your Documents."
+msgstr "Grazie: il pagamento è andato a buon fine. Il tuo abbonamento compare qui tra un momento, la fattura nei tuoi Documenti."
+
+msgid "The card has expired."
+msgstr "La carta è scaduta."
+
+msgid "The card is not charged any more: the next instalments are invoiced as the subscription says, and the person pays them another way."
+msgstr "La carta non sarà più addebitata: le prossime rate si fatturano come dice l'abbonamento, e la persona le paga in un altro modo."
+
+msgid "The card is tried again on {0}."
+msgstr "La carta sarà riprovata il {0}."
+
+msgid "The card will not be charged any more."
+msgstr "La carta non sarà più addebitata."
+
+msgid "The card will not be charged any more. The instalments stay to pay as your subscription says: the centre tells you how."
+msgstr "La carta non sarà più addebitata. Le rate restano da pagare come previsto dal tuo abbonamento: il centro ti dice come."
+
+msgid "The card will not be tried again: the instalment stays to pay."
+msgstr "La carta non sarà riprovata: la rata resta da pagare."
+
+msgid "The charge of {0} did not go through: {1}"
+msgstr "L'addebito del {0} non è riuscito: {1}"
+
+msgid "The demo's people never pay online."
+msgstr "Le persone dei dati di prova non pagano mai online."
+
+msgid "The instalments stay to pay as your subscription says."
+msgstr "Le rate restano da pagare come previsto dal tuo abbonamento."
+
+msgid "The monthly charge of {0} for your subscription {1} did not go through: {2}"
+msgstr "L'addebito mensile di {0} per il tuo abbonamento {1} non è riuscito: {2}"
+
+msgid "The payment was not made: nothing was bought."
+msgstr "Il pagamento non è stato fatto: non hai acquistato niente."
+
+msgid "The person buys from their area and pays by card: the subscription starts once the payment arrives."
+msgstr "La persona acquista dalla sua area e paga con carta: l'abbonamento parte quando arriva il pagamento."
+
+msgid "The person buys it from their area and pays by card: its invoice is issued once paid."
+msgstr "La persona lo acquista dalla sua area e paga con carta: la fattura si emette a pagamento arrivato."
+
+msgid "The person buys it from their area: the first instalment by card, the next ones charged on the same card on their day."
+msgstr "La persona lo acquista dalla sua area: la prima rata con carta, le successive addebitate sulla stessa carta il loro giorno."
+
+msgid "The person, from their area"
+msgstr "La persona, dalla sua area"
+
+msgid "This appointment is invoiced already: advance invoice {0}"
+msgstr "Questo appuntamento è già fatturato: fattura d'acconto {0}"
+
+msgid "We will try the card again on {0}."
+msgstr "Riproveremo la carta il {0}."
+
+msgid "What it comprises"
+msgstr "Cosa comprende"
+
+msgid "Which subscriptions are sold online is chosen on each type: Agenda > Services > Subscriptions. Each is invoiced when it is paid."
+msgstr "Quali abbonamenti si vendono online si sceglie su ogni tipo: Agenda > Servizi > Abbonamenti. Ognuno si fattura quando è pagato."
+
+msgid "You authorise the centre to charge {0} every month on the card until {1}; you can stop it from your area."
+msgstr "Autorizzi il centro ad addebitare {0} ogni mese sulla carta fino al {1}; puoi disdire dall'area."
+
+msgid "You can pay it from your area."
+msgstr "Puoi pagarla dalla tua area."
+
+msgid "You can pay it now from your area, by card."
+msgstr "Puoi pagarla subito dalla tua area, con carta."
+
+msgid "You pay"
+msgstr "Paghi"
+
+msgid "You pay by card on Stripe, the centre’s payment service: the centre never sees the card. The invoice comes in your Documents once paid."
+msgstr "Paghi con carta su Stripe, il servizio di pagamento del centro: il centro non vede mai la carta. La fattura arriva nei tuoi Documenti a pagamento fatto."
+
+msgid "Your payment did not go through"
+msgstr "Il tuo pagamento non è riuscito"
+
+msgid "advance invoice no. {0} of {1}"
+msgstr "acconto fattura N. {0} del {1}"
+
+msgid "card not charged"
+msgstr "carta non addebitata"
+
+msgid "card {0}"
+msgstr "carta {0}"
+
+msgid "sold online"
+msgstr "venduto online"
+
+msgid "{0} a month, {1} instalments"
+msgstr "{0} al mese, {1} rate"
+
+msgid "{0} at once"
+msgstr "{0} in una volta"
+
+msgid "Invoices, deposits and subscriptions paid online by card, on the centre's own Stripe account."
+msgstr "Fatture, acconti e abbonamenti pagati online con carta, sull'account Stripe del centro."
+
+msgid "Payment data are handled by Stripe as the centre's own processor: {brand} never sees the card. The key is kept encrypted and used only to make the payment links, read their outcome, give a deposit back and charge the cards the people saved for their subscriptions."
+msgstr "I dati di pagamento li tratta Stripe, come fornitore del centro: {brand} non vede mai la carta. La chiave è conservata cifrata e serve solo a creare i link di pagamento, leggerne l'esito, restituire un acconto e addebitare le carte che le persone hanno salvato per i loro abbonamenti."
+
+msgid "The invoice of what {0} paid online stayed a draft: {1}"
+msgstr "La fattura di quanto {0} ha pagato online è rimasta in bozza: {1}"
+
+msgid "The deposit {0} paid online has no invoice yet: {1}"
+msgstr "L'acconto che {0} ha pagato online non ha ancora una fattura: {1}"
+
+msgid "The credit note for the deposit given back to {0} was not made: {1}"
+msgstr "La nota di credito per l'acconto restituito a {0} non è stata fatta: {1}"
+
+msgid "{0} bought the subscription {1} from their area: {2}"
+msgstr "{0} ha acquistato l'abbonamento {1} dalla sua area: {2}"
+
+msgid "The monthly charge of {0} on the card of {1} did not go through: {2}"
+msgstr "L'addebito mensile di {0} sulla carta di {1} non è riuscito: {2}"
+
+msgid "The card of {0} was not charged after three tries: the instalment of {1} is invoiced as usual"
+msgstr "La carta di {0} non è stata addebitata dopo tre tentativi: la rata di {1} si fattura come sempre"
+
+msgid "{0} stopped the monthly charges on the card for the subscription {1}"
+msgstr "{0} ha interrotto gli addebiti mensili sulla carta per l'abbonamento {1}"
+
+msgid "There is not enough money on the card."
+msgstr "Sulla carta non ci sono fondi sufficienti."
+
+msgid "The bank asks the person to confirm the payment."
+msgstr "La banca chiede alla persona di confermare il pagamento."
+
+msgid "The card was reported lost."
+msgstr "La carta risulta smarrita."
+
+msgid "The card was reported stolen."
+msgstr "La carta risulta rubata."
+
+msgid "The card's spending limit was reached."
+msgstr "La carta ha raggiunto il limite di spesa."
+
+msgid "The bank could not process the payment: it is tried again."
+msgstr "La banca non ha potuto elaborare il pagamento: si riprova."
+
+msgid "The card was declined."
+msgstr "La carta è stata rifiutata."
+
+msgid "The card could not be charged."
+msgstr "Non è stato possibile addebitare la carta."
+
+msgid "Subscription type"
+msgstr "Tipo di abbonamento"
+
+msgid "Stripe customer"
+msgstr "Cliente Stripe"
+
+msgid "Attempt"
+msgstr "Tentativo"
+
+msgid "The credit note made on the advance invoice when the deposit was given back"
+msgstr "La nota di credito fatta sulla fattura d'acconto quando l'acconto è stato restituito"
+
+msgid "The invoice it pays; for a deposit, a subscription or an instalment, the invoice made when it was paid"
+msgstr "La fattura che paga; per un acconto, un abbonamento o una rata, la fattura fatta quando è stato pagato"
+
+msgid "A payment asked online through the centre's Stripe account: an invoice, a booking's deposit, a subscription bought from the area, an instalment charged on the saved card"
+msgstr "Un pagamento chiesto online sull'account Stripe del centro: una fattura, l'acconto di una prenotazione, un abbonamento acquistato dall'area, una rata addebitata sulla carta salvata"
+
+msgid "The person buys it from their area and pays it by card on the centre's Stripe"
+msgstr "La persona lo acquista dalla sua area e lo paga con carta sullo Stripe del centro"
+
+msgid "Monthly charge on the card"
+msgstr "Addebito mensile sulla carta"
+
+msgid "Charged on the saved card"
+msgstr "Addebitato sulla carta salvata"
+
+msgid "Card"
+msgstr "Carta"
+
+msgid "Last four digits"
+msgstr "Ultime quattro cifre"
+
+msgid "Expiry"
+msgstr "Scadenza"
+
+msgid "Stripe payment method"
+msgstr "Metodo di pagamento Stripe"
+
+msgid "Authorised on"
+msgstr "Autorizzato il"
+
+msgid "Charges stopped on"
+msgstr "Addebiti interrotti il"
+
+msgid "Charges stopped by"
+msgstr "Addebiti interrotti da"
+
+msgid "Card charges tried"
+msgstr "Addebiti tentati"
+
+msgid "Card last tried on"
+msgstr "Ultimo addebito tentato il"
+
+msgid "Card not charged because"
+msgstr "Carta non addebitata perché"
+
+msgid "Advance for the appointment"
+msgstr "Acconto per l'appuntamento"
+
+msgid "A deposit paid online before the appointment: invoiced the day it was paid, the appointment's invoice is its balance"
+msgstr "Un acconto pagato online prima dell'appuntamento: fatturato il giorno in cui è pagato, la fattura dell'appuntamento ne è il saldo"
+
+msgid "CRM Stripe Customer"
+msgstr "Cliente Stripe"
+
+msgid "A person as a customer on the centre's Stripe account: only Stripe's id, to charge the card saved for a subscription"
+msgstr "Una persona come cliente sull'account Stripe del centro: solo l'id di Stripe, per addebitare la carta salvata per un abbonamento"
+
+msgid "Card not charged: {0}"
+msgstr "Carta non addebitata: {0}"

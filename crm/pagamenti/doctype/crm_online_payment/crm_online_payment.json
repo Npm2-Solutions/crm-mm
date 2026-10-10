@@ -1,7 +1,7 @@
 {
  "actions": [],
  "creation": "2026-10-08 18:00:00.000000",
- "description": "A payment asked online through the centre's Stripe account: an invoice, or a booking's deposit",
+ "description": "A payment asked online through the centre's Stripe account: an invoice, a booking's deposit, a subscription bought from the area, an instalment charged on the saved card",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -28,7 +28,15 @@
   "last_error",
   "booking_section",
   "access_token",
-  "status_when_paid"
+  "status_when_paid",
+  "subscription_section",
+  "subscription_type",
+  "subscription",
+  "instalment",
+  "column_break_subscription",
+  "customer",
+  "attempt",
+  "credit_note"
  ],
  "fields": [
   {
@@ -52,7 +60,7 @@
    "fieldname": "purpose",
    "fieldtype": "Select",
    "label": "For",
-   "options": "Invoice\nDeposit",
+   "options": "Invoice\nDeposit\nSubscription\nInstalment",
    "in_list_view": 1,
    "reqd": 1
   },
@@ -61,7 +69,8 @@
    "fieldtype": "Link",
    "label": "Invoice",
    "options": "CRM Invoice",
-   "search_index": 1
+   "search_index": 1,
+   "description": "The invoice it pays; for a deposit, a subscription or an instalment, the invoice made when it was paid"
   },
   {
    "fieldname": "appointment",
@@ -179,11 +188,55 @@
    "fieldtype": "Data",
    "label": "Appointment status once paid",
    "hidden": 1
+  },
+  {
+   "fieldname": "subscription_section",
+   "fieldtype": "Section Break",
+   "label": "Subscription"
+  },
+  {
+   "fieldname": "subscription_type",
+   "fieldtype": "Link",
+   "label": "Subscription type",
+   "options": "CRM Subscription Type"
+  },
+  {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "label": "Subscription",
+   "options": "CRM Subscription",
+   "search_index": 1
+  },
+  {
+   "fieldname": "instalment",
+   "fieldtype": "Data",
+   "label": "Instalment"
+  },
+  {
+   "fieldname": "column_break_subscription",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Data",
+   "label": "Stripe customer"
+  },
+  {
+   "fieldname": "attempt",
+   "fieldtype": "Int",
+   "label": "Attempt"
+  },
+  {
+   "fieldname": "credit_note",
+   "fieldtype": "Link",
+   "label": "Credit note",
+   "options": "CRM Invoice",
+   "description": "The credit note made on the advance invoice when the deposit was given back"
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-08 18:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Pagamenti",
  "name": "CRM Online Payment",

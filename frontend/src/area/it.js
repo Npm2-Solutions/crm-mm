@@ -393,4 +393,49 @@ export default {
   'next {0}, {1}': 'prossima {0}, {1}',
   '1 late, {0}': '1 in ritardo, {0}',
   '{0} late, {1}': '{0} in ritardo, {1}',
+  // bought online, charged on the card (crm/pagamenti/addebiti.py)
+  'Buy online': 'Acquista online',
+  Buy: 'Acquista',
+  'What it comprises': 'Cosa comprende',
+  When: 'Quando',
+  'From today until {0}': 'Da oggi al {0}',
+  'You pay': 'Paghi',
+  'Go to payment': 'Vai al pagamento',
+  'You pay by card on Stripe, the centre’s payment service: the centre never sees the card. The invoice comes in your Documents once paid.':
+    'Paghi con carta su Stripe, il servizio di pagamento del centro: il centro non vede mai la carta. La fattura arriva nei tuoi Documenti a pagamento fatto.',
+  'You authorise the centre to charge {0} every month on the card until {1}; you can stop it from your area.':
+    'Autorizzi il centro ad addebitare {0} ogni mese sulla carta fino al {1}; puoi disdire dall’area.',
+  '{0} a month, {1} instalments': '{0} al mese, {1} rate',
+  '{0} at once': '{0} in una volta',
+  '1 month': '1 mese',
+  '{0} months': '{0} mesi',
+  'any number of entries': 'ingressi illimitati',
+  '1 entry a week': '1 ingresso a settimana',
+  '{0} entries a week': '{0} ingressi a settimana',
+  '1 entry a month': '1 ingresso al mese',
+  '{0} entries a month': '{0} ingressi al mese',
+  'Thank you: the payment went through. Your subscription shows here in a moment, its invoice in your Documents.':
+    'Grazie: il pagamento è andato a buon fine. Il tuo abbonamento compare qui tra un momento, la fattura nei tuoi Documenti.',
+  'The payment was not made: nothing was bought.':
+    'Il pagamento non è stato fatto: non hai acquistato niente.',
+  'Monthly charge on the card {0}': 'Addebito mensile sulla carta {0}',
+  'Monthly charge on the card {0} · next {1}':
+    'Addebito mensile sulla carta {0} · prossimo {1}',
+  'Monthly charge on the card {0} · next {1}, {2}':
+    'Addebito mensile sulla carta {0} · prossimo {1}, {2}',
+  'The charge of {0} did not go through: {1}':
+    'L’addebito del {0} non è riuscito: {1}',
+  'The card is tried again on {0}.': 'La carta sarà riprovata il {0}.',
+  'The card has expired.': 'La carta è scaduta.',
+  'Card charges stopped on {0}.': 'Addebiti sulla carta interrotti il {0}.',
+  'The instalments stay to pay as your subscription says.':
+    'Le rate restano da pagare come previsto dal tuo abbonamento.',
+  'Pay now': 'Paga ora',
+  'Stop the charges': 'Interrompi gli addebiti',
+  'Stop the charges on the card?': 'Interrompere gli addebiti sulla carta?',
+  'The card will not be charged any more. The instalments stay to pay as your subscription says: the centre tells you how.':
+    'La carta non sarà più addebitata. Le rate restano da pagare come previsto dal tuo abbonamento: il centro ti dice come.',
+  'The card will not be charged any more.': 'La carta non sarà più addebitata.',
+  'Could not stop the charges: try again.':
+    'Non è stato possibile interrompere gli addebiti: riprova.',
 }

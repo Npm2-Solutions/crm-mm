@@ -105,6 +105,18 @@ MESSAGGIO_AREA_MOLTI = "{0} wrote {1} messages to the centre from their area"
 PAGATA_ONLINE = "{0} paid invoice {1} online: {2}"
 RIMBORSO_FATTURA = "Stripe gave back {0} to {1} for invoice {2}: it is still marked as collected"
 RIMBORSO_ACCONTO = "Stripe gave back {0} of the online deposit to {1}"
+#: What was paid online is invoiced by itself (`crm.pagamenti.fatture`): when it
+#: cannot be, or a refund's credit note cannot be made, whoever manages invoicing.
+PAGATA_ONLINE_IN_BOZZA = "The invoice of what {0} paid online stayed a draft: {1}"
+ACCONTO_SENZA_FATTURA = "The deposit {0} paid online has no invoice yet: {1}"
+NOTA_DELL_ACCONTO_NON_FATTA = "The credit note for the deposit given back to {0} was not made: {1}"
+#: Bought from the area, charged on the saved card (`crm.pagamenti.addebiti`).
+ABBONAMENTO_COMPRATO = "{0} bought the subscription {1} from their area: {2}"
+ADDEBITO_NON_RIUSCITO = "The monthly charge of {0} on the card of {1} did not go through: {2}"
+ADDEBITI_ESAURITI = (
+	"The card of {0} was not charged after three tries: the instalment of {1} is invoiced as usual"
+)
+ADDEBITI_INTERROTTI = "{0} stopped the monthly charges on the card for the subscription {1}"
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -154,6 +166,13 @@ FRASI = (
 	PAGATA_ONLINE,
 	RIMBORSO_FATTURA,
 	RIMBORSO_ACCONTO,
+	PAGATA_ONLINE_IN_BOZZA,
+	ACCONTO_SENZA_FATTURA,
+	NOTA_DELL_ACCONTO_NON_FATTA,
+	ABBONAMENTO_COMPRATO,
+	ADDEBITO_NON_RIUSCITO,
+	ADDEBITI_ESAURITI,
+	ADDEBITI_INTERROTTI,
 )
 
 #: The sentences that take something away: the panel draws them apart.

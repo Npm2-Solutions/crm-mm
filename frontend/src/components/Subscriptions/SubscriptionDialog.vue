@@ -199,6 +199,27 @@
           </p>
         </section>
 
+        <!-- bought from the area, charged month by month on the saved card (doc 60) -->
+        <div
+          v-if="carta.riga"
+          class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-outline-gray-2 px-3 py-2"
+        >
+          <div class="flex min-w-[15rem] flex-1 flex-col gap-0.5">
+            <span class="text-p-base text-ink-gray-8">{{ carta.riga }}</span>
+            <span v-if="carta.problema" class="text-p-sm text-ink-red-7">
+              {{ carta.problema }}
+            </span>
+          </div>
+          <Button
+            v-if="sub.card?.active && sub.can_manage"
+            size="sm"
+            class="shrink-0"
+            :label="__('Stop the charges')"
+            :loading="busy === 'card'"
+            @click="stopCharges"
+          />
+        </div>
+
         <section class="flex flex-col gap-1.5">
           <h4 class="text-p-sm-medium text-ink-gray-7">
             {{ __('Instalments') }}
@@ -217,7 +238,11 @@
               </span>
               <span
                 class="text-p-sm"
-                :class="row.problem ? 'text-ink-red-7' : 'text-ink-gray-6'"
+                :class="
+                  row.problem || (row.charge_problem && !row.invoice)
+                    ? 'text-ink-red-7'
+                    : 'text-ink-gray-6'
+                "
               >
                 {{ instalmentLine(row) }}
               </span>
@@ -344,6 +369,7 @@ import {
 } from '@/utils/abbonamenti'
 import { SEDUTA } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
+import { addebitoInParole } from '@/utils/pagamentiOnline'
 import { oggiDelCentro } from '@/utils/scheduler'
 import {
   Badge,
@@ -552,6 +578,9 @@ const facts = computed(() => {
 
 function instalmentLine(row) {
   if (row.problem) return row.problem
+  // charged on the card, not gone through: tried again, or paid from the area
+  if (row.charge_problem && !row.invoice)
+    return __('Card not charged: {0}', [row.charge_problem])
   if (row.invoice)
     return row.issued
       ? __('Invoiced {0}', [row.number || ''])
@@ -560,6 +589,33 @@ function instalmentLine(row) {
   return row.due_on <= oggiDelCentro()
     ? __('To invoice')
     : __('Invoiced on its day')
+}
+
+// the monthly charge on the card, as the desk reads it
+const carta = computed(() =>
+  addebitoInParole(sub.card, t, (giorno) => formatDate(giorno, 'D MMM YYYY'), {
+    reception: true,
+  }),
+)
+
+function stopCharges() {
+  $dialog({
+    title: __('Stop the charges on the card?'),
+    message: __(
+      'The card is not charged any more: the next instalments are invoiced as the subscription says, and the person pays them another way.',
+    ),
+    actions: [
+      {
+        label: __('Stop the charges'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          act('card', 'crm.pagamenti.addebiti.stop_card_charges')
+        },
+      },
+    ],
+  })
 }
 
 function canInvoiceRow(row) {
