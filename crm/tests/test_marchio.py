@@ -386,6 +386,27 @@ class TestMarchio(IntegrationTestCase):
 			self.assertIn('.es-button[data-variant="solid"]', pagine["login"])
 		self.assertNotIn("font-size: 16px !important", pagine["prenota"])
 
+	def test_il_rifiuto_del_framework_ha_il_colore_del_marchio(self):
+		# «Not permitted» is the framework's message page drawn at the address it
+		# refuses: its button was black at /crm
+		from frappe.website.serve import get_response
+
+		accento = marchio.accento()["light"]["--accent"]
+		estraneo = "marchio.estraneo@example.com"
+		if not frappe.db.exists("User", estraneo):
+			frappe.get_doc(
+				{"doctype": "User", "email": estraneo, "first_name": "Estraneo", "user_type": "Website User"}
+			).insert(ignore_permissions=True)
+		utente = frappe.session.user
+		frappe.set_user(estraneo)
+		try:
+			set_request(method="GET", path="/crm")
+			risposta = get_response("/crm")
+		finally:
+			frappe.set_user(utente)
+		self.assertEqual(risposta.status_code, 403)
+		self.assertIn(f"--accent: {accento}", risposta.get_data(as_text=True))
+
 	def test_il_manifest_del_telefono_e_del_marchio(self):
 		with con_il_verticale(PROVA.chiave):
 			marchio.manifest(app="area")

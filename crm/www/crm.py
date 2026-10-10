@@ -30,6 +30,7 @@ def get_context():
 	from crm.api import check_app_permission
 
 	if not check_app_permission():
+		_nella_sua_area()
 		frappe.throw(con_nome(_("You do not have permission to access {brand}")), frappe.PermissionError)
 
 	redirect_to_set_password()
@@ -39,6 +40,19 @@ def get_context():
 	# the head of the page (index.html): the brand's name, icons and manifest
 	context.marchio = context.boot.brand
 	return context
+
+
+def _nella_sua_area() -> None:
+	"""A patient signed in to their area who opens the staff's address (a link kept,
+	an address typed) goes to their area: the framework's «Not permitted» with a
+	«Login» button told them nothing they could do."""
+	from crm.area.accesso import RUOLO
+
+	if frappe.session.user != "Guest" and RUOLO in frappe.get_roles():
+		frappe.local.flags.redirect_location = "/area"
+		redirect = frappe.Redirect()
+		redirect.http_status_code = 302
+		raise redirect
 
 
 def redirect_to_set_password():

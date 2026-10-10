@@ -325,7 +325,12 @@ def contesto(context) -> dict:
 	add its colour and a phone's sizes to the website's own head."""
 	dati = context.get("marchio") or per_le_pagine()
 	valori = {"favicon": dati["favicon"], "splash_image": dati["icon"], "marchio": dati}
-	if getattr(frappe.local, "path", None) in PAGINE_DEL_FRAMEWORK:
+	# a refusal is the framework's message page drawn at the address refused (its
+	# context's path, not the request's): «Not permitted» at /crm had a black button
+	if (
+		getattr(frappe.local, "path", None) in PAGINE_DEL_FRAMEWORK
+		or context.get("path") in PAGINE_DEL_FRAMEWORK
+	):
 		stile = frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 			"templates/includes/marchio_framework.html", {"marchio": dati}
 		)
