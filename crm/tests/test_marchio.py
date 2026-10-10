@@ -380,6 +380,10 @@ class TestMarchio(IntegrationTestCase):
 			frappe.set_user(utente)
 		self.assertIn(f"--accent: {accento}", pagine["login"])
 		self.assertIn("font-size: 16px !important", pagine["login"])
+		# the button the framework draws now is a solid «es-button»: dressed too
+		# (the simulation of a week found the sign-in black again after Frappe 16.50)
+		if 'class="es-button' in pagine["login"]:
+			self.assertIn('.es-button[data-variant="solid"]', pagine["login"])
 		self.assertNotIn("font-size: 16px !important", pagine["prenota"])
 
 	def test_il_manifest_del_telefono_e_del_marchio(self):

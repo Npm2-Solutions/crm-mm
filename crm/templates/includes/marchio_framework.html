@@ -3,19 +3,21 @@
     The framework's own pages a person opens without DottorCloud around them -
     signing in, a new password, the message after either - in the product's
     brand and made for a thumb: the brand's action colour on the button the
-    framework draws in its darkest gray, and on a phone fields of 16px (under it
+    framework draws in its darkest gray (`.btn-login` before Frappe 16.50, its
+    solid `.es-button` after: the simulation of a week found the sign-in black
+    again), and on a phone fields of 16px (under it
     an iPhone zooms the page as one taps them) and 44px tall, its links a
     thumb's height. The framework's stylesheets come after this and write the
     fields with a long selector: what must win says so. `marchio` comes from
     `crm.marchio.contesto`. -#}
 <style>
 .page-card { {% for k, v in marchio.accent.light.items() %}{{ k }}: {{ v }}; {% endfor %} }
-.page-card :is(.btn-primary, .btn-login, .btn-signup):not(:disabled) {
+.page-card :is(.btn-primary, .btn-login, .btn-signup, .es-button[data-variant="solid"]):not(:disabled) {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
   color: var(--accent-ink) !important;
 }
-.page-card :is(.btn-primary, .btn-login, .btn-signup):not(:disabled):is(:hover, :active) {
+.page-card :is(.btn-primary, .btn-login, .btn-signup, .es-button[data-variant="solid"]):not(:disabled):is(:hover, :active) {
   background: var(--accent-hover) !important;
   border-color: var(--accent-hover) !important;
 }
@@ -24,7 +26,7 @@
     height: 44px !important;
     font-size: 16px !important;
   }
-  .page-card .btn {
+  .page-card :is(.btn, .es-button) {
     min-height: 44px;
   }
   .page-card-body p a,
