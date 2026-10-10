@@ -133,7 +133,7 @@
    "label": "Primary colour"
   },
   {
-   "description": "A Google Fonts family name, e.g. Inter. Empty uses the theme default.",
+   "description": "Inter, served by the site itself, or the device's own face (System, Serif, Rounded). No font is ever loaded from another site; another family's name is used only where the device has it. Empty uses the theme default.",
    "fieldname": "font_family",
    "fieldtype": "Data",
    "label": "Font family"
@@ -278,7 +278,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-10 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Web Site",

@@ -49919,3 +49919,29 @@ msgstr "Scrivi il codice fiscale di chi viene all'appuntamento: serve alla fattu
 #: crm/pagamenti/addebiti.py
 msgid "Write the codice fiscale of whom the subscription is for: its invoice needs it"
 msgstr "Scrivi il codice fiscale di chi usa l'abbonamento: serve alla sua fattura"
+
+#: frontend/src/components/Settings/Website/WebsiteSettings.vue
+msgid "No font comes from another site: Inter from the site itself, the others are the device’s own."
+msgstr "Nessun carattere arriva da un altro sito: Inter dal sito stesso, gli altri sono quelli del dispositivo."
+
+msgid "The theme’s own"
+msgstr "Quello del tema"
+
+msgid "Inter, from the site itself"
+msgstr "Inter, dal sito stesso"
+
+msgid "The device’s own"
+msgstr "Quello del dispositivo"
+
+msgid "The device’s own, with serifs"
+msgstr "Quello del dispositivo, con grazie"
+
+msgid "The device’s own, rounded"
+msgstr "Quello del dispositivo, arrotondato"
+
+msgid "{0}, where the device has it"
+msgstr "{0}, dove il dispositivo ce l'ha"
+
+#: crm/fcrm/doctype/crm_web_site/crm_web_site.json
+msgid "Inter, served by the site itself, or the device's own face (System, Serif, Rounded). No font is ever loaded from another site; another family's name is used only where the device has it. Empty uses the theme default."
+msgstr "Inter, servito dal sito stesso, o il carattere del dispositivo (System, Serif, Rounded). Nessun carattere arriva mai da un altro sito; il nome di un'altra famiglia vale solo dove il dispositivo ce l'ha. Se lo lasci vuoto, resta quello del tema."

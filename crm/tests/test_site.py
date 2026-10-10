@@ -9,6 +9,8 @@ would break the booking links already in circulation. Frappe checks neither — 
 uniqueness test only compares one page's route with another's.
 """
 
+import os
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -401,3 +403,45 @@ class TestFirstSitePatch(IntegrationTestCase):
 			("CRM Website Settings", "tagline", ""),
 		)
 		self.assertNotIn("tagline", create_first_web_site._stored_values("CRM Website Settings"))
+
+
+class TestTheSitesFont(IntegrationTestCase):
+	"""The centre's website loads no font from another site: Inter from the site
+	itself, the others the device's own; a family named before only where the
+	device has it."""
+
+	def head(self, **valori):
+		from crm.api import site_render
+
+		return site_render.build_head_html(
+			frappe._dict(primary_color=None, ga4_id=None, meta_pixel_id=None, **valori)
+		)
+
+	def test_inter_comes_from_the_site(self):
+		testa = self.head(font_family="Inter")
+		self.assertNotIn("googleapis", testa)
+		self.assertNotIn("gstatic", testa)
+		self.assertIn('url("/assets/crm/fonts/Inter-Variable-latin.woff2")', testa)
+		self.assertIn('--crm-font:"Inter"', testa)
+		# the brand's own file, shipped with the app
+		self.assertTrue(
+			os.path.exists(frappe.get_app_path("crm", "public", "fonts", "Inter-Variable-latin.woff2"))
+		)
+
+	def test_the_devices_own_face_downloads_nothing(self):
+		testa = self.head(font_family="Serif")
+		self.assertIn("--crm-font:ui-serif", testa)
+		self.assertNotIn("@font-face", testa)
+		self.assertNotIn("http", testa.split("<script")[0])
+
+	def test_a_family_named_before_is_the_devices_and_nothing_more(self):
+		testa = self.head(font_family="Roboto Slab")
+		self.assertIn('--crm-font:"Roboto Slab", system-ui', testa)
+		self.assertNotIn("googleapis", testa)
+		# whatever was typed, nothing leaves the CSS string
+		testa = self.head(font_family='X"}</style><script>alert(1)</script>')
+		self.assertNotIn("<script>alert", testa)
+		self.assertEqual(testa.count("</style>"), 1)
+
+	def test_the_themes_own(self):
+		self.assertNotIn("--crm-font", self.head(font_family=""))

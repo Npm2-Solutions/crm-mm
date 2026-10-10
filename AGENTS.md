@@ -745,6 +745,9 @@ stands in at the top only for a centre with neither a logo nor a name. A sentenc
 fills it in the browser, `con_nome(_("…"))` on the server (before any `.format()`).
 A public page's title names the centre (`FCRM Settings.brand_name`) beside the
 product's name: `nome_scelto()` treats every brand's name as no name of the centre's.
+The centre's own website (`crm/api/site_render.py`, on Builder) loads no font from
+another site: Inter from the site itself (`/assets/crm/fonts`), else the device's own
+face (`CARATTERI`); a family named before is the device's, never downloaded.
 
 A screen looks the way the design system says (`brand/dottorcloud/design-system/espresso`):
 frappe-ui's components with its variables, the brand's action colour for what one
