@@ -10,6 +10,9 @@
     `crm.marchio.contesto`. -#}
 <style>
 .page-card { {% for k, v in marchio.accent.light.items() %}{{ k }}: {{ v }}; {% endfor %} }
+/* the labels and «Password dimenticata?» in the product's gray for labels,
+   4.99:1 on white: the framework's is 4.17:1 */
+.page-card { --ink-gray-5: #6a716f; }
 .page-card :is(.btn-primary, .btn-login, .btn-signup):not(:disabled) {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
@@ -19,6 +22,16 @@
   background: var(--accent-hover) !important;
   border-color: var(--accent-hover) !important;
 }
+/* Frappe 16.50 draws these pages with Espresso's own buttons (`.es-button`,
+   `data-variant`), which read their colours from variables: the solid one
+   («Continua», «Invia il link») takes the brand's action colour there. Without
+   it the sign-in button came in the framework's near-black */
+.page-card .es-button {
+  --bt-solid-bg: var(--accent);
+  --bt-solid-bg-hover: var(--accent-hover);
+  --bt-solid-bg-active: var(--accent-hover);
+  --bt-solid-fg: var(--accent-ink);
+}
 @media (max-width: 767px), (pointer: coarse) {
   .page-card input.form-control {
     height: 44px !important;
@@ -27,6 +40,11 @@
   .page-card .btn {
     min-height: 44px;
   }
+  /* and their buttons a thumb's height: Espresso's are 28px */
+  .page-card .es-button {
+    --es-bt-h: 44px;
+    font-size: 16px;
+  }
   .page-card-body p a,
   .page-card-actions a {
     display: inline-block;
@@ -34,3 +52,12 @@
   }
 }
 </style>
+{#- The framework's mark at the top of the card is an image with no words: a
+    screen reader read its file's name (WCAG 1.1.1) -#}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".page-card img.app-logo:not([alt])").forEach(function (img) {
+    img.alt = {{ marchio.name | tojson }};
+  });
+});
+</script>

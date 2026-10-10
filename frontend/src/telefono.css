@@ -39,17 +39,19 @@
     position: absolute;
     inset: -10px -8px;
   }
+  /* 44px tall to a finger (Apple's HIG): an icon on its own («×», «⋯», a
+     bin) was 34-36px; the sides stay narrow, where buttons sit in a row */
   button.h-7:not([role='switch'])::after,
   a.h-7.inline-flex.justify-center::after {
     content: '';
     position: absolute;
-    inset: -6px -3px;
+    inset: -8px -3px;
   }
   button.h-8:not([role='switch'])::after,
   a.h-8.inline-flex.justify-center::after {
     content: '';
     position: absolute;
-    inset: -4px -2px;
+    inset: -6px -2px;
   }
   /* a toast's ×, 20px (vue-sonner's, unstyled): a ring of 40px, inside the
      toast's own padding */
@@ -103,14 +105,14 @@
       tapped and leaves it zoomed. A line one types on is 40px tall. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
-    [type='checkbox'],
-    [type='radio'],
-    [type='range'],
-    [type='color'],
-    [type='file'],
-    [type='button'],
-    [type='submit']
-  ),
+      [type='checkbox'],
+      [type='radio'],
+      [type='range'],
+      [type='color'],
+      [type='file'],
+      [type='button'],
+      [type='submit']
+    ),
   textarea,
   select,
   [contenteditable='true'] {
@@ -160,10 +162,12 @@
   }
   /* a switch of a few segments (frappe-ui's TabButtons: «Tutte · Da leggere»,
      «Mie · Di tutti», «Appuntamento · Evento», the sister pages «Da fare ·
-     Note» drawn as links): each segment 36px tall, not 26px, and side by
-     side there is no room for a ring around them */
+     Note» drawn as links, «Tutti · Lead · Clienti · Pazienti»): each segment
+     44px tall, a thumb's height (Apple's HIG), not 26px - and 36px was still
+     short of it on the switches people use most; side by side there is no
+     room for a ring around them */
   [data-slot='tab-button'] > span {
-    min-height: 2.25rem;
+    min-height: 2.75rem;
   }
   /* an editor's toolbar: its buttons on two rows rather than the last ones
      cut off at the edge of the screen */

@@ -554,9 +554,11 @@
 .dc-evento--prima :is(.dc-evento__chi, .dc-evento__titolo) {
   color: var(--on-brand-solid);
 }
+/* the hour and the what and where a step quieter than the person, still read
+   at 4.5:1 on the block (at 80% they were 4.48:1, the hour at 11px) */
 .dc-evento--prima
   :is(.dc-evento__ora, .dc-evento__dettagli, .dc-evento__segno) {
-  color: color-mix(in srgb, var(--on-brand-solid) 80%, var(--brand-solid));
+  color: color-mix(in srgb, var(--on-brand-solid) 90%, var(--brand-solid));
 }
 .dc-evento--adesso {
   box-shadow: 0 0 0 2px var(--brand-segno, var(--brand));
