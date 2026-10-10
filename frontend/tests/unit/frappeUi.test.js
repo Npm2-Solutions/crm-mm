@@ -75,6 +75,15 @@ describe('frappe-ui in the user’s language', () => {
     }
   })
 
+  it("names the boxes that choose a list's rows", () => {
+    const riga = tradotto('ListView/ListRow.vue')
+    expect(riga).toContain(':aria-label="nomeDellaRiga()"')
+    expect(riga).toContain("t('Select {0}', [String(nome)])")
+    expect(tradotto('ListView/ListHeader.vue')).toContain(
+      `:aria-label="__('Select all')"`,
+    )
+  })
+
   it("takes the icon picker's words through the translator", () => {
     const codice = tradotto('IconPicker.vue', ICONE)
     expect(codice).toContain(`__('No icons found for "{0}"', [searchTerm])`)

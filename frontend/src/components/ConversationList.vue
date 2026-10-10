@@ -129,6 +129,7 @@
           <span
             v-else-if="row.conversation_unread"
             class="size-2.5 shrink-0 rounded-full bg-surface-blue-7"
+            role="img"
             :aria-label="__('Unread')"
           />
         </div>

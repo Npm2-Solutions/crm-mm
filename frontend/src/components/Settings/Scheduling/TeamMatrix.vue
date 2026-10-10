@@ -9,7 +9,14 @@
 <template>
   <!-- the body of the Services page: services by people, one grid -->
   <div class="isolate flex min-h-0 flex-1 flex-col gap-4 text-ink-gray-8">
-    <div class="flex-1 overflow-auto px-2">
+    <!-- scrolled sideways by the keyboard too: a box that scrolls takes the
+         focus (WCAG 2.1.1) -->
+    <div
+      class="flex-1 overflow-auto px-2"
+      tabindex="0"
+      role="region"
+      :aria-label="__('Services and who does them')"
+    >
       <table
         v-if="matrix.data?.services?.length"
         class="w-max border-separate border-spacing-0 text-p-sm"

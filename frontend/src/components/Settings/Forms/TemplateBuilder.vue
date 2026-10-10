@@ -251,7 +251,7 @@
             <Button
               size="sm"
               :label="__('Clear the answers')"
-              @click="((previewValues = {}), (previewChecked = false))"
+              @click="(previewValues = {}), (previewChecked = false)"
             />
           </div>
         </div>
@@ -525,6 +525,7 @@
             <textarea
               readonly
               rows="4"
+              :aria-label="__('In another site')"
               class="w-full resize-none rounded-md border border-outline-gray-2 bg-surface-gray-1 py-2 pl-3 pr-10 font-mono text-xs text-ink-gray-7 focus:border-outline-gray-4 focus:outline-none focus:ring-0"
               :value="snippet"
             />

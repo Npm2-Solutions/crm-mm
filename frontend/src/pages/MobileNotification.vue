@@ -12,14 +12,15 @@
       />
     </template>
     <template #right-header>
+      <!-- the page's one action in words: a double tick alone is the
+           agenda's «came» too -->
       <Button
         v-if="unreadNotificationsCount && scheda !== 'events'"
         variant="ghost"
-        :tooltip="__('Mark all as read')"
-        :aria-label="__('Mark all as read')"
+        :label="__('Mark all as read')"
         @click="segnaTutte"
       >
-        <template #icon><LucideCheckCheck class="size-4" /></template>
+        <template #prefix><LucideCheckCheck class="size-4" /></template>
       </Button>
     </template>
   </LayoutHeader>

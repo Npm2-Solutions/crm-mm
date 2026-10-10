@@ -55,6 +55,7 @@
       <span
         class="size-2 rounded-full"
         :class="riga.read ? 'bg-transparent' : 'bg-[var(--brand-segno)]'"
+        :role="riga.read ? undefined : 'img'"
         :aria-label="riga.read ? undefined : __('Unread')"
       />
       <Button
