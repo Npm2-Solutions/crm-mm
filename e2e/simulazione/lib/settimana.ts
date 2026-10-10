@@ -8,6 +8,7 @@ import { Banco } from './banco'
 import {
 	grandeAbbastanza,
 	largo,
+	nomiConLaStella,
 	nomiCrudi,
 	paroleCrude,
 	testoCrudo,
@@ -357,6 +358,7 @@ export class Settimana {
 					...(await largo(page)),
 					...(await paroleCrude(page, opzioni.ammessi)),
 					...(await nomiCrudi(page)),
+					...(await nomiConLaStella(page)),
 					...(await toastDiErrore(page)),
 					...(p.tocco ? await tocco(page) : []),
 				]

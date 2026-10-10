@@ -121,6 +121,26 @@ export async function nomiCrudi(page: Page): Promise<Trovato[]> {
 	]
 }
 
+/** A required field is said by its control (`aria-required`), never by its mark in
+ * the name a screen reader reads (the accessible name, not a label's text). */
+export async function nomiConLaStella(page: Page): Promise<Trovato[]> {
+	const albero = await page
+		.locator('body')
+		.ariaSnapshot({ timeout: 5000 })
+		.catch(() => '')
+	const stelle = [
+		...albero.matchAll(/- (textbox|combobox|checkbox|radiogroup|spinbutton|listbox|searchbox) "([^"]*\*[^"]*)"/g),
+	].map((m) => m[2])
+	if (!stelle.length) return []
+	return [
+		{
+			gravita: 'minore',
+			cosa: 'A field a screen reader names with its asterisk',
+			dettaglio: [...new Set(stelle)].slice(0, 6).join(' · '),
+		},
+	]
+}
+
 /** An error said to the person in a toast. */
 export async function toastDiErrore(page: Page): Promise<Trovato[]> {
 	const testi = await page

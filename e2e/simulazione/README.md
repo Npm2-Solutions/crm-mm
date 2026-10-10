@@ -9,7 +9,7 @@ in the dark theme, the dietitian on a 320 phone, the patients on their phones
 child). Each step is checked as it goes: no page error, no server error, nothing
 leaving the bench but to the fakes, nothing wider than the device, no raw code or
 English word on the screen or in an email, the main actions as big as a finger,
-every email once. Every day the permissions are swept: what each persona must not
+every email once, no field named with its «*» to a screen reader. Every day the permissions are swept: what each persona must not
 open is refused in words, with nothing in the answer.
 
 ## What it stands on
@@ -76,8 +76,10 @@ a fresh bench, `centro()`, the fakes, the week; the report is the run's artifact
 - **Monday**: the manager takes invoicing live; six people book from home on
   /prenota (a deposit paid, a card declined then another, a bank's
   confirmation, a visit paid in full and online, a fund's direct form, a mother
-  for her child); the desk confirms the fund's visit with its authorisation, the
-  manager issues the advance invoices left as drafts; phone bookings fill the
+  for her child), giving the codice fiscale a healthcare invoice needs, nobody a
+  client nor a patient by booking; the desk confirms the fund's visit with its
+  authorisation; the advance invoices issued by themselves, and the deposit read
+  on the appointment's panel; phone bookings fill the
   evening class, the next one joins the waiting list; the areas are opened (a
   mother to her son's); the reminders leave and are answered; a seat freed goes
   to the waiting list; the class: «I'm here» from the area, check-in at the desk,
@@ -96,7 +98,7 @@ a fresh bench, `centro()`, the fakes, the week; the report is the run's artifact
 - **Thursday**: a cancellation in time refunds the deposit with its credit note;
   the online visit, both entering the room; a no-show; marketing's campaign to a
   list (only who agreed); the review request; a session of the cycle; a late
-  cancellation keeps the deposit.
+  cancellation keeps the deposit, and the desk gives it back as a courtesy.
 - **Friday**: a visit invoiced to the company that pays for it; the fund's
   month; the dashboard's money against the invoices; the centre's data taken
   away.

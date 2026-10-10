@@ -18,8 +18,9 @@ export async function nuovaVisita(chi: Persona, page: Page, scheda: string | Reg
 	await expect(page.getByRole('button', { name: 'Firma', exact: true })).toBeVisible()
 }
 
-/** A question's words, as its control is named by them (a required one's mark
- * may be read with them). */
+/** A question's words, as its control is named by them: `getByLabel` reads the
+ * label's text, the required mark too (hidden from a screen reader, which the
+ * step's checks read: `nomiConLaStella`). */
 export function domanda(parole: string): RegExp {
 	return new RegExp(`^\\s*${parole.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\*?\\s*$`)
 }
