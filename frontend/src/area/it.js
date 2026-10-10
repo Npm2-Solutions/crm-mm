@@ -8,6 +8,8 @@ export default {
     'Ti mandiamo un codice: nessuna password da ricordare.',
   Email: 'Email',
   'Send me the code': 'Mandami il codice',
+  'Write the email you gave the centre.':
+    'Scrivi l’email che hai dato al centro.',
   'If this address has an area, a code is on its way. It is valid for {0} minutes.':
     'Se questo indirizzo ha un’area, il codice sta arrivando. Vale {0} minuti.',
   'The code': 'Il codice',

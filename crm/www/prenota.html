@@ -14,8 +14,10 @@
       :root {
         --ink-strong: oklch(0.168 0 0);
         --ink: oklch(0.205 0 0);
-        --muted: oklch(0.52 0 0);
-        --faint: oklch(0.683 0 0);
+        /* text that has to be read is 4.5:1 on the page and the cards: the
+           steps to come, the summary's line and «Powered by» were 2.65:1 */
+        --muted: oklch(0.47 0 0);
+        --faint: oklch(0.54 0 0);
         --border: oklch(0.913 0 0);
         --border-focus: oklch(0.8 0 0);
         --bg: oklch(0.975 0 0);
@@ -38,8 +40,8 @@
         :root {
           --ink-strong: oklch(0.98 0 0);
           --ink: oklch(0.92 0 0);
-          --muted: oklch(0.72 0 0);
-          --faint: oklch(0.55 0 0);
+          --muted: oklch(0.76 0 0);
+          --faint: oklch(0.66 0 0);
           --border: oklch(0.3 0 0);
           --border-focus: oklch(0.45 0 0);
           --bg: oklch(0.17 0 0);
@@ -282,7 +284,7 @@
           convHint: "Il centro verifica la tua copertura e ti conferma la prenotazione.",
           consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
           confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
-          summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", with: "Con", when: "Quando", duration: "Durata",
+          summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", summaryEmptyLocation: "Scegli una sede per iniziare.", with: "Con", when: "Quando", duration: "Durata",
           price: "Prezzo", where: "Dove", manual: "La prenotazione sarà confermata dallo studio.",
           doneTitle: "Prenotazione confermata", pendingTitle: "Richiesta inviata", pendingSub: "Riceverai un'email appena lo studio conferma.",
           doneSub: "Ti abbiamo inviato un'email con tutti i dettagli.", cancelledTitle: "Prenotazione annullata",
@@ -326,7 +328,7 @@
           convHint: "The centre checks your cover and confirms your booking.",
           consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
           confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
-          summary: "Summary", summaryEmpty: "Pick a service to start.", with: "With", when: "When", duration: "Duration",
+          summary: "Summary", summaryEmpty: "Pick a service to start.", summaryEmptyLocation: "Pick a location to start.", with: "With", when: "When", duration: "Duration",
           price: "Price", where: "Where", manual: "The booking will be confirmed by our team.",
           doneTitle: "Booking confirmed", pendingTitle: "Request sent", pendingSub: "You'll get an email as soon as we confirm it.",
           doneSub: "We've emailed you all the details.", cancelledTitle: "Booking cancelled",
@@ -493,7 +495,9 @@
         // where, once chosen: a location's name and address
         const sede = !S.manage && locationOf((S.slot && S.slot.location_id) || S.location);
         if (sede) box.append(row("⌖", T("stepLocation"), [sede.name, sede.address].filter(Boolean).join(", ")));
-        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
+        // what to do first, as the step on screen asks it: «Scegli un servizio»
+        // under «In quale sede?» sent one to a step that was not there yet
+        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T(S.step === "location" ? "summaryEmptyLocation" : "summaryEmpty"))); return; }
         box.append(row("◆", T("stepService"), svc.name));
         if (S.manage) {
           if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));

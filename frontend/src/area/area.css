@@ -17,18 +17,55 @@
    same rule as the CRM's (telefono.css), which the area does not load. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
-    [type='checkbox'],
-    [type='radio'],
-    [type='range'],
-    [type='color'],
-    [type='file'],
-    [type='button'],
-    [type='submit']
-  ),
+      [type='checkbox'],
+      [type='radio'],
+      [type='range'],
+      [type='color'],
+      [type='file'],
+      [type='button'],
+      [type='submit']
+    ),
   textarea,
   select {
     font-size: 16px !important;
   }
+}
+
+/* A field a patient types in is seen as one: frappe-ui's fields are a gray
+   fill with no edge, and on the area's gray page the email to sign in with was
+   a rectangle at 1.04:1, the only thing on the page to fill. White, with an
+   edge that reads at 3:1 (WCAG 1.4.11), in the dark too */
+input:is(
+    [type='email'],
+    [type='text'],
+    [type='tel'],
+    [type='search'],
+    :not([type])
+  ):not(.area-code > input),
+textarea {
+  background-color: var(--surface-base, #fff) !important;
+  border: 1px solid #858c8a !important;
+}
+input:is(
+    [type='email'],
+    [type='text'],
+    [type='tel'],
+    [type='search'],
+    :not([type])
+  ):not(.area-code > input):focus,
+textarea:focus {
+  border-color: var(--brand-action, #0b6f64) !important;
+}
+:root[data-theme='dark']
+  input:is(
+    [type='email'],
+    [type='text'],
+    [type='tel'],
+    [type='search'],
+    :not([type])
+  ):not(.area-code > input),
+:root[data-theme='dark'] textarea {
+  border-color: #757c7a !important;
 }
 
 /* A small button of frappe-ui (28px: «Esci» at the top, «Non ora» on a card)
