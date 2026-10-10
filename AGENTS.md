@@ -838,6 +838,23 @@ keeps something by a person outside its records (a file, a cache) makes sure
 `togli` finds it. A demo person has an address at example.com and a number the
 guards know: never a real domain, never a real person's number.
 
+### Testing a whole centre (crm/collaudo, e2e/simulazione)
+| File | Role |
+|---|---|
+| `crm/collaudo/regole.py` | Pure: the centre a test bench plays (two locations, the team by levels with their shifts, the services, the fund, the subscriptions, the campaign and the review request), the week's people with their devices and codici fiscali born at «Y», the week to play (`lunedi_dopo`: no holiday in it), what does not hold together (`problemi`) — tested with plain `unittest` |
+| `crm/collaudo/prepara.py` | `centro()` (System Manager, a site whose `site_config.json` says `dottorcloud_collaudo: 1`; refused where people or appointments are not the simulation's, unless `forza`): an empty site made that centre through the modules' own code, found again and gone on when made again, never the demo's records; `persone` a JSON of the team's real users on staging; `servizi_finti=1` points Stripe at the fakes (`stripe_api`, `dottorcloud_collaudo_finti`) and the online visits at `video.example.com`, `0` (staging) sets up nothing outside |
+| `crm/collaudo/tempo.py` | The bench's clock moved through the week: freezegun in every request and job of that site only (`allinea`, in `before_request` and `before_job`), never backwards, the scheduler's jobs run on demand (`esegui`, only `scheduler_events`) |
+| `crm/collaudo/api.py` | What the suite reads besides the screens: the mail each person received (`posta`, from the Email Queue a muted bench keeps), SMS, the Error Log, the week's script (`copione`) |
+| `e2e/simulazione/` | The week, Monday to Saturday and a month after, played by the staff and the patients each in their own browser and device through the real screens (`yarn simulazione`, `README.md`): `giorni/` a file a day, `lib/` the personas, the bench, the screens' helpers and the checks after every step (page and console errors, 5xx, a request leaving the bench, a page wider than its device, raw English or codes on screen or in an email, a main action smaller than a finger, the same email twice, the Error Log), `finti/server.py` Stripe with its hosted page and signed webhooks; the report in `rapporto/` (not versioned), `DIFETTI.md` what it found and which commit put it right; `.github/workflows/simulazione.yml` by hand |
+
+Nothing of `crm/collaudo` is reachable on a real site: every call starts with
+`verifica()` and the clock's hook does nothing without the flag. A step does what
+its persona does on their device, by the words and roles the screen gives its
+controls (a control without a name is a step that cannot find it), then asks the
+database whether it is so; what it finds is put right in a `fix:` commit with its
+test and listed in `e2e/simulazione/DIFETTI.md`. A flow people do every day gets
+its step in the day it belongs to.
+
 ### A campaign to a list of people (`crm/automation/campagne.py`)
 | File | Role |
 |---|---|
