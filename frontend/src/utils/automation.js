@@ -890,14 +890,17 @@ export function triggerSummary(trigger, fields = []) {
   if (config.tag) parts.push(__('tag «{0}»', [config.tag]))
   if (config.link) parts.push(__('link «{0}»', [config.link]))
   if (config.date_field) {
-    // nothing to translate in «{0} {1} {2}»: the words are in the parts, and
-    // the direction is already translated on its own
+    // a whole sentence, the field by its name: «last_visit 60 after» glued the
+    // fieldname, a number and an English word together
+    const campo = (fields || []).find((f) => f.fieldname === config.date_field)
+    const nome = campo?.label || config.date_field
+    const giorni = Number(config.offset_days || 0)
     parts.push(
-      [
-        config.date_field,
-        config.offset_days || 0,
-        __(config.direction || 'before'),
-      ].join(' '),
+      !giorni
+        ? __('on the day of «{0}»', [nome])
+        : config.direction === 'after'
+          ? __('{0} days after «{1}»', [giorni, nome])
+          : __('{0} days before «{1}»', [giorni, nome]),
     )
   }
   const groups = cleanGroups(trigger?.condition_groups)
