@@ -393,7 +393,9 @@ class LaVisitaAllAppuntamento(ClinicCase):
 
 	def test_la_visita_all_appuntamento_dice_che_e_venuto(self):
 		visita = self.scrive()
-		self.assertEqual(frappe.db.get_value("Clinic Record", visita["name"], "appointment"), self.incontro.name)
+		self.assertEqual(
+			frappe.db.get_value("Clinic Record", visita["name"], "appointment"), self.incontro.name
+		)
 		self.assertEqual(self.presenza(), "Attended")
 
 	def test_una_nota_non_dice_niente(self):
