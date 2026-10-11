@@ -12,9 +12,9 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-col gap-0.5">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Messages in the area') }}
-      </h3>
+      </h2>
       <p class="text-p-sm text-ink-gray-5">
         {{
           board.data.kind === 'Care'

@@ -11,7 +11,7 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Quotes') }}
         <span
           v-if="quotes.data.quotes.length"
@@ -19,7 +19,7 @@
         >
           {{ quotes.data.quotes.length }}
         </span>
-      </h3>
+      </h2>
       <Button
         v-if="quotes.data.can_write"
         class="shrink-0"

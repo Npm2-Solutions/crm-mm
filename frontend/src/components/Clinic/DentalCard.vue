@@ -11,9 +11,9 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Teeth') }}
-      </h3>
+      </h2>
       <div class="flex shrink-0 flex-wrap items-center gap-2">
         <!-- on a phone the chart is written top to bottom: saving is at
              its end -->
