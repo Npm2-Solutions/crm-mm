@@ -20,10 +20,13 @@
         {{ nome }}
       </span>
     </div>
+    <!-- a day's least height holds its number and three appointments of
+         24px with the «more» line under them (8.5rem): at 6.75rem they were
+         20px each, too small a target (WCAG 2.5.8) -->
     <div
       class="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto"
       :style="{
-        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '6.75rem'}, 1fr))`,
+        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '8.5rem'}, 1fr))`,
       }"
     >
       <template v-for="settimana in settimane" :key="settimana[0]">
@@ -74,7 +77,7 @@
               v-for="cosa in giorni[data].primi"
               :key="cosa.id"
               type="button"
-              class="relative flex min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-5 hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+              class="relative flex min-h-6 min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-5 hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
               :class="scelto === cosa.id ? 'bg-surface-gray-2' : ''"
               @click.stop="$emit('apri', cosa)"
             >
