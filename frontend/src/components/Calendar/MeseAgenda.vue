@@ -20,13 +20,15 @@
         {{ nome }}
       </span>
     </div>
-    <!-- a day's least height holds its number and three appointments of
-         24px with the «more» line under them (8.5rem): at 6.75rem they were
-         20px each, too small a target (WCAG 2.5.8) -->
+    <!-- the weeks share the height there is, the whole month in sight; each
+         day lists as many appointments of 24px (WCAG 2.5.8) as its height
+         holds (quantiNelGiorno): three were 20px each, and taller weeks to
+         hold them hid a six-week month's last on a laptop -->
     <div
+      ref="griglia"
       class="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto"
       :style="{
-        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '8.5rem'}, 1fr))`,
+        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '6.75rem'}, 1fr))`,
       }"
     >
       <template v-for="settimana in settimane" :key="settimana[0]">
@@ -118,12 +120,13 @@ import {
   coloreDelBlocco,
   giornoDelMese,
   meseDi,
+  quantiNelGiorno,
   testoDelBlocco,
 } from '@/utils/agenda'
 import { NAMED_HEX } from '@/utils/calendarColors'
 import { appLocale } from '@/utils/locale'
 import { formatMinutes, oggiDelCentro } from '@/utils/scheduler'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = defineProps({
   /** any day of the month shown, YYYY-MM-DD */
@@ -145,11 +148,33 @@ const settimane = computed(() => meseDi(props.giorno))
 const mese = computed(() => props.giorno.slice(0, 7))
 const delMese = (data) => data.slice(0, 7) === mese.value
 
+// the grid's height, followed as the window changes: a week's is its share
+// of it, never under 6.75rem (108px), where the grid scrolls instead
+const griglia = ref(null)
+const altezza = ref(0)
+let osservatore = null
+onMounted(() => {
+  if (!griglia.value || typeof ResizeObserver === 'undefined') return
+  osservatore = new ResizeObserver(([voce]) => {
+    altezza.value = voce.contentRect.height
+  })
+  osservatore.observe(griglia.value)
+})
+onBeforeUnmount(() => osservatore?.disconnect())
+const quanti = computed(() =>
+  altezza.value
+    ? quantiNelGiorno(Math.max(108, altezza.value / settimane.value.length))
+    : quantiNelGiorno(undefined),
+)
+
 const giorni = computed(() =>
   Object.fromEntries(
     settimane.value
       .flat()
-      .map((data) => [data, giornoDelMese(props.cose.get(data) || [], 3)]),
+      .map((data) => [
+        data,
+        giornoDelMese(props.cose.get(data) || [], quanti.value),
+      ]),
   ),
 )
 

@@ -471,6 +471,19 @@ export function etichettaDelPeriodo(vista, giorno, lingua = 'it-IT') {
  * few by their time and their person, how many more. `cose` are the day's
  * rows as the grid takes them (`startMinutes`, the appointment or the event).
  */
+/**
+ * How many appointments of 24px (WCAG 2.5.8) a day of the month holds at its
+ * height: the cell's padding and border (13px), its number (24px) and the
+ * «more» line with its gap (21px) take the rest, each appointment 24px and a
+ * gap of 2. One at least, three at most: a taller day would only make the
+ * month scroll, and a whole month on a laptop's screen is the point of it.
+ */
+export function quantiNelGiorno(altezza) {
+  const libere = Number(altezza) - 58
+  if (!Number.isFinite(libere)) return 3
+  return Math.min(3, Math.max(1, Math.floor(libere / 26)))
+}
+
 export function giornoDelMese(cose = [], quanti = 3) {
   const ordinate = [...cose].sort(
     (x, y) =>

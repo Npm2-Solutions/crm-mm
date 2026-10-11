@@ -19,6 +19,7 @@ import {
   orarioDelGiorno,
   paroleDelBlocco,
   periodoDi,
+  quantiNelGiorno,
   righeDelBlocco,
   segniDelBlocco,
   spostaPeriodo,
@@ -350,6 +351,21 @@ describe('giornoDelMese', () => {
     expect(giorno.totale).toBe(3)
     expect(giorno.primi.map((c) => c.name)).toEqual(['a', 'b'])
     expect(giorno.altri).toBe(2)
+  })
+})
+
+describe('quantiNelGiorno', () => {
+  it('fits the 24px appointments a day of the month has room for', () => {
+    // 13 of padding and border, 24 of the number, 21 of «more», 26 each
+    expect(quantiNelGiorno(108)).toBe(1) // 6.75rem, the least a week gets
+    expect(quantiNelGiorno(110)).toBe(2)
+    expect(quantiNelGiorno(135)).toBe(2)
+    expect(quantiNelGiorno(136)).toBe(3)
+    // never none, never more than three
+    expect(quantiNelGiorno(60)).toBe(1)
+    expect(quantiNelGiorno(400)).toBe(3)
+    // not measured yet: as many as a day ever shows
+    expect(quantiNelGiorno(undefined)).toBe(3)
   })
 })
 
