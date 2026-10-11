@@ -26,7 +26,7 @@
             />
             <button
               type="button"
-              class="touch-target flex w-8 flex-col items-center gap-0.5 rounded px-0.5 py-1 hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+              class="touch-target flex w-8 flex-col items-center gap-0.5 rounded px-0.5 py-1 hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
               :class="[
                 n < divisione ? '' : 'flex-col-reverse',
                 selected === String(dente)

@@ -506,9 +506,9 @@ const oggi = oggiDelCentro()
 const carta =
   'flex break-inside-avoid flex-col gap-0.5 rounded-lg border border-outline-gray-2 p-2'
 const testata =
-  'flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-base-semibold text-ink-gray-8 hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none'
+  'flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-base-semibold text-ink-gray-8 hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]'
 const riga =
-  'flex w-full items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none'
+  'flex w-full items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]'
 const gruppo = 'px-2 pt-1 text-p-sm font-medium text-ink-gray-5'
 
 // What the modules have for this person, in one call. Asked again each time

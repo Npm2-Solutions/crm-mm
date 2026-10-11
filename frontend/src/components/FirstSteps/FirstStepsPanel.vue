@@ -66,7 +66,7 @@
       <li v-for="passo in passi.data?.steps || []" :key="passo.key">
         <button
           type="button"
-          class="flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+          class="flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
           :class="passo.key === stato.prossimo?.key && 'bg-surface-gray-1'"
           @click="fai(passo)"
         >

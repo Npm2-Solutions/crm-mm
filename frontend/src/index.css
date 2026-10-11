@@ -350,3 +350,11 @@ input:is(
   outline: var(--focus-outline-default, 2px solid #0e8a7c);
   outline-offset: -2px;
 }
+
+/* frappe-ui's sidebar item takes the outline off its link and draws none on
+   its row (markup: SidebarItem): in the menu the keyboard's place showed
+   nowhere. The row wears the brand's ring while its link has the focus */
+[data-slot='sidebar-item']:has(> :focus-visible) {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
+}

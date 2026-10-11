@@ -27,7 +27,7 @@
             v-for="cycle in cycles.data.cycles"
             :key="cycle.name"
             type="button"
-            class="flex flex-col gap-1 rounded px-3 py-1.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+            class="flex flex-col gap-1 rounded px-3 py-1.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
             @click="open(cycle.name)"
           >
             <span class="flex items-center justify-between gap-2">

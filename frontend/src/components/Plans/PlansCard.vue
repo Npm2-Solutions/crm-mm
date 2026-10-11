@@ -163,7 +163,7 @@
         v-for="programme in programmes.data?.programmes || []"
         :key="programme.name"
         type="button"
-        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
         @click="openProgramme(programme.name)"
       >
         <span class="flex min-w-0 flex-col">
@@ -204,7 +204,7 @@
         v-for="plan in plans.data.plans"
         :key="plan.name"
         type="button"
-        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
         @click="open(plan.name)"
       >
         <span class="flex min-w-0 flex-col">

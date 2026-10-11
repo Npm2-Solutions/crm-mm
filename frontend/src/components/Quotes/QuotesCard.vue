@@ -41,7 +41,7 @@
         v-for="quote in quotes.data.quotes"
         :key="quote.name"
         type="button"
-        class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none max-md:gap-x-1"
+        class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px] max-md:gap-x-1"
         @click="openQuote(quote.name)"
       >
         <span class="flex min-w-[12rem] flex-1 flex-col">

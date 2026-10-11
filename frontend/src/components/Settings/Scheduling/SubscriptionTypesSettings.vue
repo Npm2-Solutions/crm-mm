@@ -39,7 +39,7 @@
             v-for="type in types.data"
             :key="type.name"
             type="button"
-            class="flex w-full flex-col gap-1 px-3 py-2.5 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:outline-none"
+            class="flex w-full flex-col gap-1 px-3 py-2.5 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:[outline-offset:-2px]"
             @click="open(type)"
           >
             <span class="flex items-center justify-between gap-2">

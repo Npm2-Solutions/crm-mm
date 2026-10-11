@@ -47,6 +47,8 @@
   --outline-elevation-2: #ebeeed;
   /* 2. the focus ring in the brand's colour; shadows tinted with its dark green */
   --focus-outline-default: 2px solid #0e8a7c;
+  /* the same colour for a ring a control draws instead (25) */
+  --colore-del-fuoco: #0e8a7c;
   --elevation-sm: 0px 0px 1px 0px rgba(11, 46, 42, 0.2),
     0px 1px 3px 0px rgba(11, 46, 42, 0.14);
   --elevation-base: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.16),
@@ -121,6 +123,7 @@
   --outline-elevation-1: #272a29;
   --outline-elevation-2: #353938;
   --focus-outline-default: 2px solid #5fe0cc;
+  --colore-del-fuoco: #5fe0cc;
   --elevation-sm: 0px 0px 14px 0px rgba(0, 0, 0, 0.18),
     0px 1px 3px 0px rgba(0, 0, 0, 0.7);
   --elevation-base: 0px 0px 14px 0px rgba(0, 0, 0, 0.18),
@@ -508,4 +511,16 @@
        tail (markup: CalendarWeekDayEvent and CalendarMonthEvent) */
 [data-marchio='dottorcloud'] .event.rounded {
   border-bottom-left-radius: 2px;
+}
+
+/* 25. A control that takes its outline off for a ring of its own drew the
+       ring in the outlines' pale gray (`focus-visible:ring-outline-gray-3`,
+       1.7:1 on white): the keyboard's place wears the brand's focus colour,
+       as the outline does everywhere else (3:1 or more, WCAG 1.4.11) */
+:root[data-marchio='dottorcloud']
+  :is(
+    .focus-visible\:ring-outline-gray-3,
+    .focus-visible\:ring-outline-gray-4
+  ):focus-visible {
+  --tw-ring-color: var(--colore-del-fuoco);
 }

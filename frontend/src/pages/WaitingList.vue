@@ -86,7 +86,7 @@
         <li v-for="entry in entries" :key="entry.name" class="flex">
           <button
             type="button"
-            class="flex min-w-0 flex-1 flex-col gap-0.5 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:outline-none"
+            class="flex min-w-0 flex-1 flex-col gap-0.5 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:[outline-offset:-2px]"
             @click="open(entry)"
           >
             <!-- the name is read whole: the chips go under it when the row
