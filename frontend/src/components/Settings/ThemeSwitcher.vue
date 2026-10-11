@@ -16,7 +16,7 @@
 <template>
   <div class="flex gap-3" role="radiogroup" :aria-label="__('Theme')">
     <label
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
+      class="relative min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'light'
           ? 'border-outline-gray-7'
@@ -77,7 +77,7 @@
       </div>
     </label>
     <label
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
+      class="relative min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'dark' ? 'border-outline-gray-7' : 'border-outline-elevation-2'
       "
@@ -136,7 +136,7 @@
       </div>
     </label>
     <label
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
+      class="relative min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'system'
           ? 'border-outline-gray-7'

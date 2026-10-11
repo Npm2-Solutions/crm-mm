@@ -358,11 +358,13 @@
 /* 15. The cloud's tail on what floats - menus, the lists of a select, the
        calendar of a date, popovers - and on the cards of a page (markup:
        frappe-ui's menu-content and PopoverPanel; a bordered `rounded-lg` or
-       `rounded-xl` box is a card) */
+       `rounded-xl` box is a card, and so is a label drawn as one around the
+       choice it holds: the theme, a first opening's language, invoicing's
+       choices) */
 [data-marchio='dottorcloud'] .menu-content,
 [data-marchio='dottorcloud'] [data-slot='content-body'][data-panel],
-[data-marchio='dottorcloud'] div.rounded-lg.border,
-[data-marchio='dottorcloud'] div.rounded-xl.border {
+[data-marchio='dottorcloud'] :is(div, label).rounded-lg.border,
+[data-marchio='dottorcloud'] :is(div, label).rounded-xl.border {
   border-bottom-left-radius: 2px;
 }
 
