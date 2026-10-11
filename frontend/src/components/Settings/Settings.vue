@@ -12,6 +12,11 @@
     @close="activeSettingsPage = ''"
   >
     <template #body>
+      <!-- what a screen reader hears of the missing-page notice below
+           (`paginaMancante`): a region there from the start, its words put in
+           once the notice is in place (one inserted already filled is not
+           announced reliably) -->
+      <p role="status" class="sr-only">{{ avvisoMancante }}</p>
       <!-- Two levels: the categories on the left, each with its icon; on the
            right a category's entries, each saying what it is for, and the
            entry one opens, with the way back to its category. On a phone they
@@ -19,10 +24,6 @@
            and comes back, and it takes the whole screen (`.settings-modal` in
            telefono.css): as a card it kept frappe-ui's margins, 16px a side and
            48px above, and was 32px taller than the screen. -->
-      <!-- what a screen reader hears of the notice above: a region there
-           from the start, its words put in once it is in place (one inserted
-           already filled is not announced reliably) -->
-      <p role="status" class="sr-only">{{ avvisoMancante }}</p>
       <div
         ref="radice"
         class="settings-modal relative flex bg-surface-gray-1"
