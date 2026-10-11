@@ -10,10 +10,13 @@
       :placeholder="__('field')"
       @update:modelValue="pickField"
     />
+    <!-- named for a screen reader: a select is a combobox, which takes no
+         name from what it shows («è» was all, or nothing at all) -->
     <FormControl
       :modelValue="condition.operator"
       type="select"
       :options="operatorOptions"
+      :aria-label="__('Operator')"
       @update:modelValue="(value) => setOperator(value)"
     />
     <div v-if="!needsValue(condition.operator)" class="text-sm text-ink-gray-5">
@@ -24,6 +27,7 @@
       :modelValue="condition.value"
       :field="field"
       :placeholder="__('value')"
+      :aria-label="__('Value')"
       @update:modelValue="setValue"
     />
     <Button
