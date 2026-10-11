@@ -5,19 +5,35 @@
   draws two windows, and at their natural width it pushed itself off a
   phone's screen. On a phone the window shows the mark without the name,
   which a third of the screen cut in half.
+
+  Each card is a radio button of its own (a label around a native radio):
+  three boxes that took only a click were out of reach of the keyboard, and
+  said to a screen reader neither what they were nor which was chosen. The
+  pictures are a window in light and one in dark whatever the theme now,
+  so their words wear that theme's grey, not the page's (the dark one's read
+  at 3.6:1), and a screen reader skips them.
 -->
 <template>
-  <div class="flex gap-3">
-    <div
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
+  <div class="flex gap-3" role="radiogroup" :aria-label="__('Theme')">
+    <label
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'light'
           ? 'border-outline-gray-7'
           : 'border-outline-elevation-2'
       "
-      @click="theme = 'light'"
     >
-      <div class="pl-5 pt-3.5 bg-surface-gray-2 rounded-t-[10.5px]">
+      <input
+        v-model="theme"
+        type="radio"
+        name="tema-dell-app"
+        value="light"
+        class="sr-only"
+      />
+      <div
+        class="pl-5 pt-3.5 bg-surface-gray-2 rounded-t-[10.5px]"
+        aria-hidden="true"
+      >
         <div class="bg-white rounded-tl-sm">
           <div class="flex gap-[3px] py-[3px] px-1 border-b border-gray-100">
             <div class="size-1.5 bg-[#FF5F57] rounded-full"></div>
@@ -26,11 +42,12 @@
           </div>
           <div class="flex items-start justify-between gap-2 p-2.5 pr-0 pb-1">
             <div
-              class="flex items-center flex-1 gap-1 text-xs-semibold text-ink-gray-5"
+              class="flex items-center flex-1 gap-1 text-xs-semibold text-[#6a716f]"
             >
               <img
                 v-if="typeof logo == 'string'"
                 :src="logo"
+                alt=""
                 class="size-5 object-cover"
               />
               <component :is="logo" v-else class="size-5 shrink-0 rounded" />
@@ -55,17 +72,27 @@
               ? 'border-4 border-outline-gray-7'
               : 'border  border-outline-gray-4'
           "
+          aria-hidden="true"
         />
       </div>
-    </div>
-    <div
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
+    </label>
+    <label
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'dark' ? 'border-outline-gray-7' : 'border-outline-elevation-2'
       "
-      @click="theme = 'dark'"
     >
-      <div class="pl-5 pt-3.5 bg-surface-gray-2 rounded-t-[10.5px]">
+      <input
+        v-model="theme"
+        type="radio"
+        name="tema-dell-app"
+        value="dark"
+        class="sr-only"
+      />
+      <div
+        class="pl-5 pt-3.5 bg-surface-gray-2 rounded-t-[10.5px]"
+        aria-hidden="true"
+      >
         <div class="bg-gray-900 rounded-tl-sm">
           <div class="flex gap-[3px] py-[3px] px-1 border-b border-gray-800">
             <div class="size-1.5 bg-[#FF5F57] rounded-full"></div>
@@ -74,11 +101,12 @@
           </div>
           <div class="flex items-start justify-between gap-2 p-2.5 pr-0 pb-1">
             <div
-              class="flex items-center flex-1 gap-1 text-xs-semibold text-ink-gray-5"
+              class="flex items-center flex-1 gap-1 text-xs-semibold text-[#858c8a]"
             >
               <img
                 v-if="typeof logo == 'string'"
                 :src="logo"
+                alt=""
                 class="size-5 object-cover"
               />
               <component :is="logo" v-else class="size-5 shrink-0 rounded" />
@@ -103,19 +131,26 @@
               ? 'border-4 border-outline-gray-7'
               : 'border border-outline-gray-4'
           "
+          aria-hidden="true"
         />
       </div>
-    </div>
-    <div
-      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
+    </label>
+    <label
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border has-[:focus-visible]:[outline:var(--focus-outline-default)] has-[:focus-visible]:[outline-offset:2px]"
       :class="
         theme == 'system'
           ? 'border-outline-gray-7'
           : 'border-outline-elevation-2'
       "
-      @click="theme = 'system'"
     >
-      <div class="flex">
+      <input
+        v-model="theme"
+        type="radio"
+        name="tema-dell-app"
+        value="system"
+        class="sr-only"
+      />
+      <div class="flex" aria-hidden="true">
         <div
           class="flex min-w-0 flex-1 pl-5 pt-3.5 bg-surface-gray-2 rounded-tl-[10.5px]"
         >
@@ -127,11 +162,12 @@
             </div>
             <div class="flex items-start justify-between gap-2 p-2.5 pr-0 pb-1">
               <div
-                class="flex items-center flex-1 gap-1 text-xs-semibold text-ink-gray-5"
+                class="flex items-center flex-1 gap-1 text-xs-semibold text-[#6a716f]"
               >
                 <img
                   v-if="typeof logo == 'string'"
                   :src="logo"
+                  alt=""
                   class="size-5 object-cover"
                 />
                 <component :is="logo" v-else class="size-5 shrink-0 rounded" />
@@ -151,11 +187,12 @@
             </div>
             <div class="flex items-start justify-between gap-2 p-2.5 pb-3 pr-0">
               <div
-                class="flex items-center flex-1 gap-1 text-xs-semibold text-ink-gray-5"
+                class="flex items-center flex-1 gap-1 text-xs-semibold text-[#858c8a]"
               >
                 <img
                   v-if="typeof logo == 'string'"
                   :src="logo"
+                  alt=""
                   class="size-5 object-cover"
                 />
                 <component :is="logo" v-else class="size-5 shrink-0 rounded" />
@@ -176,9 +213,10 @@
               ? 'border-4 border-outline-gray-7'
               : 'border border-outline-gray-4'
           "
+          aria-hidden="true"
         ></div>
       </div>
-    </div>
+    </label>
   </div>
 </template>
 
