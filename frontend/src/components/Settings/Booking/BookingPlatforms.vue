@@ -83,13 +83,12 @@
               />
             </div>
             <!-- the reason it failed is what somebody opens this for: its own
-                 lines, not the truncated tail of the subtitle. Drawn over the
-                 name's stretched button, so it can be selected and copied;
-                 the whole of it is in the editor -->
+                 lines, not the truncated tail of the subtitle. Under the
+                 name's stretched button like the rest of the row, so a tap on
+                 it opens the editor, where it is whole and can be copied -->
             <div
               v-if="conn.status === 'Error' && conn.last_error"
-              class="relative mt-0.5 line-clamp-2 select-text text-p-sm text-ink-red-8"
-              :title="conn.last_error"
+              class="mt-0.5 line-clamp-2 text-p-sm text-ink-red-8"
             >
               {{ conn.last_error }}
             </div>
@@ -875,6 +874,17 @@ async function test() {
   }
   testing.value = false
   connections.reload()
+  // the test wrote how the connection stands, and why it failed: «Last error»
+  // follows it, and nothing typed in the editor is reloaded
+  try {
+    const ora = await call('crm.api.booking_platforms.get_connection', {
+      name: editingName.value,
+    })
+    details.status = ora.status
+    details.last_error = ora.last_error
+  } catch {
+    // read again on the next opening
+  }
 }
 
 async function loadCatalog() {
