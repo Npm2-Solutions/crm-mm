@@ -87,13 +87,23 @@ describe('the files Twilio takes', () => {
 })
 
 describe('where a request is', () => {
-  it('in review, with where Twilio writes', () => {
+  it('in review, with the carrier and where it writes', () => {
     const stato = statoDellaRichiesta({
       status: 'In review',
       email: 'info@aurora.example',
     })
     expect(stato.theme).toBe('orange')
-    expect(stato.riga[1]).toEqual(['info@aurora.example'])
+    expect(stato.riga[1]).toEqual(['Twilio', 'info@aurora.example'])
+    expect(
+      statoDellaRichiesta(
+        { status: 'In review', email: 'info@aurora.example' },
+        'Telnyx',
+      ).riga[1],
+    ).toEqual(['Telnyx', 'info@aurora.example'])
+    // Telnyx asks no email of its own: the sentence names nobody
+    const senza = statoDellaRichiesta({ status: 'In review' }, 'Telnyx').riga
+    expect(senza[0]).not.toContain('{1}')
+    expect(senza[1]).toEqual(['Telnyx'])
   })
 
   it('approved: choose the number, then another', () => {
@@ -108,9 +118,12 @@ describe('where a request is', () => {
     ).toContain('another number')
   })
 
-  it('refused and draft', () => {
+  it('refused and draft, naming the carrier', () => {
     expect(statoDellaRichiesta({ status: 'Rejected' }).theme).toBe('red')
     expect(statoDellaRichiesta({ status: 'Draft' }).label).toBe('Draft')
+    expect(statoDellaRichiesta({ status: 'Draft' }, 'Telnyx').riga[1]).toEqual([
+      'Telnyx',
+    ])
   })
 
   it('named with its area', () => {

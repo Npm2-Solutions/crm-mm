@@ -110,7 +110,14 @@ class SquillanoTutti(SquilloCase):
 		((tipo, squillo),) = self.provider.asked
 		self.assertEqual(tipo, "ring")
 		self.assertEqual(
-			squillo, Ring(agents=(MANAGER,), phones=("+393471112233",), caller_id=CALLER, seconds=20)
+			squillo,
+			Ring(
+				agents=(MANAGER,),
+				phones=("+393471112233",),
+				caller_id=CALLER,
+				seconds=20,
+				called=STUDIO_NUMBER,
+			),
 		)
 
 	def test_chi_non_c_e_non_squilla(self):

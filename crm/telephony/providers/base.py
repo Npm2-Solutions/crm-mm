@@ -52,6 +52,9 @@ class Ring:
 	#: what a phone shows: the caller's own number
 	caller_id: str | None = None
 	seconds: int = 20
+	#: the centre's number that was called: what a phone shows where the carrier
+	#: refuses to present the caller's own (Telnyx)
+	called: str | None = None
 
 
 @dataclass(frozen=True)

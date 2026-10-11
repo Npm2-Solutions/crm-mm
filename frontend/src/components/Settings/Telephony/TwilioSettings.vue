@@ -459,7 +459,7 @@
                   />
                 </div>
                 <span class="text-p-sm text-ink-gray-6">
-                  {{ __(...statoDellaRichiesta(riga).riga) }}
+                  {{ __(...statoDellaRichiesta(riga, 'Twilio').riga) }}
                 </span>
                 <span
                   v-if="riga.numbers.length"

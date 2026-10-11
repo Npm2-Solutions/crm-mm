@@ -39,12 +39,29 @@ AGENZIA = {
 		"webhook_base_url",
 		"sip_trunks",
 	),
+	"CRM Telnyx Settings": (
+		"api_key",
+		"public_key",
+		"texml_application_id",
+		"credential_connection_id",
+		"outbound_voice_profile_id",
+		"messaging_profile_id",
+		"verify_webhook_signature",
+		"webhook_base_url",
+	),
 	"CRM Transcription Settings": ("base_url", "model", "api_key", "max_recording_mb", "request_timeout"),
 	"CRM Tracking Settings": ("retention_days", "allowed_origins", "excluded_ips"),
 }
 CENTRO = {
 	"FCRM Settings": ("currency", "service_provider", "enable_forecasting"),
 	"CRM Twilio Settings": ("enabled", "record_calls", "recording_notice"),
+	"CRM Telnyx Settings": (
+		"enabled",
+		"record_calls",
+		"recording_notice",
+		"allowed_countries",
+		"spend_alert",
+	),
 	"CRM Transcription Settings": (
 		"enabled",
 		"auto_transcribe",

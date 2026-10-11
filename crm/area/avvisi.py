@@ -29,7 +29,7 @@ from frappe.utils import cint, get_url, now_datetime
 
 from crm.area import accesso
 from crm.permissions import livelli
-from crm.telephony import sms
+from crm.telephony import operatore, sms
 
 AVVISO = "CRM Area Notice"
 IMPOSTAZIONI = "CRM Area Settings"
@@ -77,7 +77,8 @@ def get_notice_settings() -> dict:
 		"whatsapp_template": frappe.db.get_single_value(IMPOSTAZIONI, "whatsapp_template"),
 		"sms_sender": _numero_sms(),
 		"templates": modelli,
-		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
+		# the centre's carrier, whose page sets the SMS sender
+		"carrier": operatore.attivo() or "",
 		"email_new_documents": cint(frappe.db.get_single_value(IMPOSTAZIONI, "email_new_documents")),
 		"self_check_in": int(arrivo_dal_telefono()),
 	}
@@ -90,7 +91,7 @@ def save_notice_settings(
 	self_check_in: int | None = None,
 ) -> dict:
 	"""What the area offers besides the email: the centre's, with the channels'
-	capability. The SMS leave from the centre's one sender (Twilio's page). And
+	capability. The SMS leave from the centre's one sender (the carrier's page). And
 	whether a new document is told by email (`collegamento`), and whether the
 	person may say «I'm here» from the area (`api.check_in`)."""
 	livelli.verifica("canali.configura")
@@ -233,7 +234,7 @@ def _manda_whatsapp(lead_utente: str, numero: str, centro: str) -> None:
 
 
 def _manda_sms(lead_utente: str, numero: str, centro: str) -> None:
-	from crm.api.sms import create_sms, deliver_via_twilio
+	from crm.api.sms import create_sms, deliver_sms
 
 	doc = create_sms(
 		type="Outgoing",
@@ -243,7 +244,7 @@ def _manda_sms(lead_utente: str, numero: str, centro: str) -> None:
 		reference_doctype="CRM Lead",
 		reference_name=lead_utente,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 
 
 def _chiave_pausa(user: str, canale: str) -> str:

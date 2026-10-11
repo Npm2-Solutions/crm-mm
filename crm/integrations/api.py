@@ -404,6 +404,15 @@ def download_recording(call_log, max_bytes: int | None = None) -> tuple[bytes, s
 	if not call_log.recording_url:
 		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
 
+	from crm.telephony.telnyx import registrazioni
+
+	if registrazioni.e_un_file(call_log.recording_url):
+		# kept by DottorCloud as a private file of the call (Telnyx's link lasts ten minutes)
+		audio, content_type, _size, _part = registrazioni.contenuto(call_log)
+		if max_bytes and len(audio) > max_bytes:
+			frappe.throw(_("Recording is larger than the configured limit"), frappe.ValidationError)
+		return audio, content_type
+
 	auth = _get_recording_credentials(call_log.telephony_medium)
 	upstream = _fetch_recording(call_log.recording_url, auth, {})
 	try:
@@ -438,6 +447,18 @@ def get_recording_url(call_log_name: str):
 
 	if not log.recording_url:
 		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
+
+	from crm.telephony.telnyx import registrazioni
+
+	if registrazioni.e_un_file(log.recording_url):
+		# a recording DottorCloud keeps (Telnyx's): its bytes, or the part asked
+		audio, content_type, size, part = registrazioni.contenuto(log, frappe.get_request_header("Range"))
+		response = Response(audio, status=206 if part else 200, mimetype=content_type)
+		response.headers["Accept-Ranges"] = "bytes"
+		response.headers["Content-Length"] = str(len(audio))
+		if part:
+			response.headers["Content-Range"] = f"bytes {part[0]}-{part[1]}/{size}"
+		return response
 
 	auth = _get_recording_credentials(log.telephony_medium)
 	# forward the browser's Range header so the provider (Twilio's CDN) can return

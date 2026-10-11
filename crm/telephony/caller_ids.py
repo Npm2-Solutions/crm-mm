@@ -68,15 +68,16 @@ def classify(phone_number: str, default_region: str | None = None) -> dict:
 # --------------------------------------------------------------------------
 
 
-def sync(provider_name: str = "twilio") -> dict:
+def sync(provider_name: str | None = None) -> dict:
 	"""Rebuild the list from what the provider actually has.
 
 	Numbers that have gone from the account are switched off rather than deleted:
 	an agent or a call log may still point at one, and losing the row would lose
 	the label that explains what it was.
 	"""
-	from crm.telephony import providers
+	from crm.telephony import operatore, providers
 
+	provider_name = provider_name or operatore.attivo() or operatore.TWILIO
 	provider = providers.get(provider_name)
 	if not provider.is_enabled():
 		frappe.throw(_("{0} is not enabled.").format(provider.label), title=_("Not Configured"))
@@ -139,7 +140,7 @@ def _upsert(provider_name: str, row: dict) -> tuple[str | None, bool]:
 		# Twilio lists a verified number only once its code was typed
 		"verification_status": "Verified" if source == SOURCE_VERIFIED else "",
 	}
-	values.update(_routing(row))
+	values.update(_routing(row, provider_name))
 	synced = now_datetime()
 
 	if frappe.db.exists("CRM Caller ID", number):
@@ -181,8 +182,10 @@ def _differs(current, new) -> bool:
 	return (current or None) != (new or None)
 
 
-def _routing(row: dict) -> dict:
+def _routing(row: dict, provider_name: str = "twilio") -> dict:
 	"""Does a call to this number reach us, and if not, why not."""
+	if provider_name == "telnyx":
+		return _instradamento_telnyx(row)
 	if row.get("sip_trunk_sid"):
 		return {
 			"routes_to_crm": 0,
@@ -235,6 +238,36 @@ def _routing(row: dict) -> dict:
 	return {
 		"routes_to_crm": 0,
 		"routing_note": _("No voice webhook is configured, so incoming calls go nowhere."),
+	}
+
+
+def _instradamento_telnyx(row: dict) -> dict:
+	"""The same question of a Telnyx number: a number answers on the connection or
+	application it is assigned to, and only DottorCloud's TeXML application reaches it."""
+	if row.get("source") == SOURCE_VERIFIED:
+		return _routing({"source": SOURCE_VERIFIED})
+	if row.get("points_at_crm") is True:
+		return {"routes_to_crm": 1, "routing_note": None}
+	if row.get("sip_trunk_sid"):
+		return {
+			"routes_to_crm": 0,
+			"routing_note": con_nome(
+				_(
+					"Assigned to the Telnyx connection {0}: its calls go to that connection's "
+					"own equipment, not to {brand}, so the answering service cannot run on it."
+				)
+			).format(row.get("sip_trunk") or row["sip_trunk_sid"]),
+		}
+	if row.get("voice_url"):
+		return {
+			"routes_to_crm": 0,
+			"routing_note": con_nome(
+				_("Assigned to {0} in Telnyx, not to {brand}: incoming calls are handled there.")
+			).format(row["voice_url"]),
+		}
+	return {
+		"routes_to_crm": 0,
+		"routing_note": _("Assigned to no connection in Telnyx, so incoming calls go nowhere."),
 	}
 
 
@@ -298,7 +331,7 @@ def get_caller_ids(provider: str | None = None, only_enabled: bool = True) -> li
 
 
 @frappe.whitelist(methods=["POST"])
-def sync_caller_ids(provider: str = "twilio") -> dict:
+def sync_caller_ids(provider: str | None = None) -> dict:
 	"""Refresh the list from the provider. Managers only — it talks to the carrier."""
 	if not frappe.has_permission("CRM Caller ID", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
@@ -322,7 +355,7 @@ def set_enabled(name: str, enabled: bool = True) -> dict:
 	doc.check_permission("write")
 	doc.enabled = 1 if frappe.utils.sbool(enabled) else 0
 	if doc.enabled and doc.source == SOURCE_VERIFIED and doc.verification_status != "Verified":
-		# Twilio would refuse the call that shows it
+		# the carrier would refuse the call that shows it
 		frappe.throw(_("{0} is not verified: verify it first.").format(doc.phone_number))
 	doc.save()
 	return {"name": doc.name, "enabled": bool(doc.enabled)}
@@ -334,11 +367,11 @@ def answering_capable_numbers() -> list[str]:
 
 
 def outbound_filters(provider: str = "twilio") -> dict:
-	"""The rows that may be presented as a caller ID. Twilio presents only a number
-	of the space or one verified there: a row typed by hand would get the call
-	refused (13214), so it is not offered."""
+	"""The rows that may be presented as a caller ID. Twilio and Telnyx present only
+	a number of the account or one verified there: a row typed by hand would get the
+	call refused (Twilio's 13214), so it is not offered."""
 	filters = {"enabled": 1, "provider": provider, "voice_capable": 1}
-	if provider == "twilio":
+	if provider in ("twilio", "telnyx"):
 		filters["source"] = ["in", [SOURCE_ACCOUNT, SOURCE_VERIFIED]]
 	return filters
 

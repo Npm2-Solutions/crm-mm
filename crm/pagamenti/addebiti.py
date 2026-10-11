@@ -692,7 +692,7 @@ def _scrivi_alla_persona(doc, pagamento, motivo: str, prossimo) -> None:
 		)
 	conf = solleciti.impostazioni()
 	if conf.sms and dove.numero and not dove.fermato:
-		from crm.api.sms import create_sms, deliver_via_twilio
+		from crm.api.sms import create_sms, deliver_sms
 		from crm.telephony import sms
 
 		da = sms.mittente()
@@ -705,7 +705,7 @@ def _scrivi_alla_persona(doc, pagamento, motivo: str, prossimo) -> None:
 				reference_doctype="CRM Lead",
 				reference_name=dove.lead,
 			)
-			deliver_via_twilio(messaggio)
+			deliver_sms(messaggio)
 
 
 # ------------------------------------------------------------------ paid from the area, stopped

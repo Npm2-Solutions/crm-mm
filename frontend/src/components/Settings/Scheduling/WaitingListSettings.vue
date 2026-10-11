@@ -184,7 +184,7 @@
           <SmsSenderLine
             class="!px-0"
             :sender="settings.data.sms_sender || ''"
-            :twilio="settings.data.twilio"
+            :carrier="settings.data.carrier || ''"
           />
         </section>
         <ErrorMessage :message="error" />

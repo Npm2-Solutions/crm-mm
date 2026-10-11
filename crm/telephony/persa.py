@@ -92,7 +92,7 @@ def gia_scritto(numero: str, giorno=None) -> bool:
 def scrivi_a_chi_ha_chiamato(numero: str, call_log: str | None = None) -> bool:
 	"""One SMS to a number nobody knows that found no answer: once a day, to a mobile
 	of the countries the centre calls, from the centre's sender, never for the demo."""
-	from crm.api.sms import create_sms, deliver_via_twilio
+	from crm.api.sms import create_sms, deliver_sms
 	from crm.demo import guardie
 	from crm.scheduling.availability import settings as agenda
 	from crm.scheduling.promemoria import _nella_lingua_del_centro, _nome_del_centro
@@ -120,7 +120,7 @@ def scrivi_a_chi_ha_chiamato(numero: str, call_log: str | None = None) -> bool:
 		reference_doctype="CRM Call Log" if call_log else None,
 		reference_name=call_log,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 	return doc.status == "Sent"
 
 

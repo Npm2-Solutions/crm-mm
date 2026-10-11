@@ -10,7 +10,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
 from crm.integrations.api import find_contact_by_phone_number
-from crm.telephony import answering, inbound, messaggi, transcription, uscita
+from crm.telephony import answering, inbound, messaggi, operatore, transcription, uscita
 from crm.telephony.providers import get as get_provider
 
 from .twilio_handler import Twilio, TwilioCallDetails
@@ -153,7 +153,7 @@ def voice(**kwargs):
 	twilio = validate_twilio_request(args, require_application_sid=True)
 
 	# where the call may go: the centre's countries, never a premium-rate number
-	if motivo := uscita.perche_no(args.To):
+	if motivo := uscita.perche_no(args.To, operatore.TWILIO):
 		resp = VoiceResponse()
 		resp.say(motivo, language=answering.settings().language or "it-IT")
 		resp.hangup()
@@ -460,6 +460,7 @@ def incoming_sms_handler(**kwargs):
 			from_number=args.From,
 			to=args.To,
 			message=args.Body or "",
+			telephony_medium="Twilio",
 		)
 	except Exception:
 		frappe.db.rollback()
@@ -487,6 +488,7 @@ def incoming_sms_handler(**kwargs):
 					reference_doctype=messaggio.reference_doctype,
 					reference_name=messaggio.reference_name,
 					status="Sent",
+					telephony_medium="Twilio",
 				)
 		except Exception:
 			frappe.db.rollback(save_point="stop_o_start")

@@ -42,6 +42,7 @@ from crm.integrations.twilio.utils import get_public_url
 from crm.marchio import con_nome
 from crm.permissions import livelli
 from crm.telephony import collegamento_regole as R
+from crm.telephony import operatore
 
 #: The agency's account, in common_site_config.json.
 CONF = "dottorcloud_twilio"
@@ -167,6 +168,7 @@ def connect_twilio(account_sid: str, auth_token: str) -> dict:
 	and not kept."""
 	livelli.verifica(CENTRO)
 	_puo_cambiare(_impostazioni())
+	operatore.libero_per(operatore.TWILIO)
 	return _collega(account_sid, auth_token, R.CENTRO)
 
 
@@ -174,6 +176,7 @@ def connect_twilio(account_sid: str, auth_token: str) -> dict:
 def connect_agency_twilio() -> dict:
 	"""Connect the agency's account, for a centre with the agency's front desk."""
 	livelli.verifica(TECNICO)
+	operatore.libero_per(operatore.TWILIO)
 	conf = configurazione_dell_agenzia()
 	if not conf:
 		frappe.throw(_("The agency's Twilio account is not set up on this server."))

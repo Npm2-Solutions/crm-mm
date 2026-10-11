@@ -26,7 +26,7 @@ class CRMSMSMessage(Document):
 		reference_doctype: DF.Link | None
 		reference_name: DF.DynamicLink | None
 		status: DF.Literal["Queued", "Sent", "Delivered", "Undelivered", "Failed", "Received"]
-		telephony_medium: DF.Literal["Twilio"]
+		telephony_medium: DF.Literal["Twilio", "Telnyx"]
 		to: DF.Data
 		type: DF.Literal["Incoming", "Outgoing"]
 	# end: auto-generated types

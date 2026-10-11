@@ -178,7 +178,9 @@ FEATURES: dict[str, Feature] = {
 			"WhatsApp",
 			_whatsapp,
 		),
-		Feature("sms", _lt("SMS"), _lt("Turn on Twilio to send and receive SMS"), "Telephony", _sms),
+		Feature(
+			"sms", _lt("SMS"), _lt("Connect Twilio or Telnyx to send and receive SMS"), "Telephony", _sms
+		),
 		Feature("calls", _lt("Calls"), _lt("Connect a telephony provider to see calls"), "Telephony", _calls),
 		Feature(
 			"agenda", _lt("Agenda"), _lt("Add your services to start using the agenda"), "Services", _agenda

@@ -387,7 +387,7 @@ def _per_email(fattura, dove, testo: dict) -> None:
 
 
 def _per_sms(fattura, dove, testo: dict, da: str) -> None:
-	from crm.api.sms import create_sms, deliver_via_twilio
+	from crm.api.sms import create_sms, deliver_sms
 
 	parole = [f"{testo['centro']}: {testo['frase']}"]
 	if testo["come"]:
@@ -401,6 +401,6 @@ def _per_sms(fattura, dove, testo: dict, da: str) -> None:
 		reference_doctype="CRM Lead",
 		reference_name=dove.lead,
 	)
-	deliver_via_twilio(doc)
+	deliver_sms(doc)
 	if doc.status == "Failed":
 		raise frappe.ValidationError(doc.error_message or _("The SMS did not leave"))
