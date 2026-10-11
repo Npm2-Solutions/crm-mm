@@ -27,7 +27,7 @@
       :modelValue="condition.value"
       :field="field"
       :placeholder="__('value')"
-      :aria-label="__('Value')"
+      :label="__('Value')"
       @update:modelValue="setValue"
     />
     <Button
