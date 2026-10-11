@@ -83,10 +83,12 @@
               />
             </div>
             <!-- the reason it failed is what somebody opens this for: its own
-                 lines, not the truncated tail of the subtitle -->
+                 lines, not the truncated tail of the subtitle. Drawn over the
+                 name's stretched button, so it can be selected and copied;
+                 the whole of it is in the editor -->
             <div
               v-if="conn.status === 'Error' && conn.last_error"
-              class="mt-0.5 line-clamp-2 text-p-sm text-ink-red-8"
+              class="relative mt-0.5 line-clamp-2 select-text text-p-sm text-ink-red-8"
               :title="conn.last_error"
             >
               {{ conn.last_error }}
@@ -214,6 +216,17 @@
               'Beta: built from the official documentation but not yet proven on a real account. Only the agency sees it — the team sees it once it is verified.',
             )
           }}
+        </div>
+        <!-- why the last sync failed, whole: the list has room for two lines
+             of it, and a tooltip is no place to read the rest -->
+        <div
+          v-if="details.status === 'Error' && details.last_error"
+          class="rounded-lg bg-surface-red-1 px-3 py-2 text-p-sm text-ink-red-8"
+        >
+          <div class="text-p-sm-medium">{{ __('Last error') }}</div>
+          <div class="mt-0.5 select-text whitespace-pre-line break-words">
+            {{ details.last_error }}
+          </div>
         </div>
         <div
           class="rounded-lg bg-surface-gray-1 px-3 py-2 text-p-sm text-ink-gray-7"
