@@ -12,7 +12,7 @@ from crm.api import appointments as A
 from crm.api.activities import appointments_on, calendar_moment
 from crm.scheduling import intervals as iv
 from crm.scheduling import pricing
-from crm.scheduling.availability import find_conflicts, get_slots
+from crm.scheduling.availability import find_conflicts, forget_settings, get_slots
 from crm.scheduling.timeutils import UTC, from_system_naive, to_system_naive
 
 ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -938,6 +938,8 @@ class TestAppointmentApi(SchedulingCase):
 			{"doctype": "CRM Lead", "first_name": "Specchio", "email": "specchio@example.com"}
 		).insert(ignore_permissions=True)
 		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		# the engine kept the settings it read before the switch
+		forget_settings()
 		try:
 			appointment = self.make_appointment(
 				"Visita specchio",
@@ -974,6 +976,8 @@ class TestAppointmentApi(SchedulingCase):
 			{"doctype": "CRM Lead", "first_name": "Copia", "email": "copia.cliente@example.com"}
 		).insert(ignore_permissions=True)
 		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		# the engine kept the settings it read before the switch
+		forget_settings()
 		try:
 			appointment = self.make_appointment(
 				"Visita copia",
