@@ -542,6 +542,81 @@ describe('charts', () => {
     ])
   })
 
+  // the palette's checks, computed rather than eyeballed
+  const lineare = (hex) =>
+    [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+  const luminanza = (hex) => {
+    const [r, g, b] = lineare(hex)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  // WCAG's contrast ratio
+  const contrasto = (a, b) => {
+    const [chiaro, scuro] = [luminanza(a), luminanza(b)].sort((x, y) => y - x)
+    return (chiaro + 0.05) / (scuro + 0.05)
+  }
+  // OKLab ΔE ×100, as seen with protanopia or deuteranopia (Machado, Oliveira
+  // and Fernandes 2009, severity 1) or without
+  const MACHADO = {
+    protan: [
+      [0.152286, 1.052583, -0.204868],
+      [0.114503, 0.786281, 0.099216],
+      [-0.003882, -0.048116, 1.051998],
+    ],
+    deutan: [
+      [0.367322, 0.860646, -0.227968],
+      [0.280085, 0.672501, 0.047413],
+      [-0.01182, 0.04294, 0.968881],
+    ],
+  }
+  const oklab = ([r, g, b]) => {
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+    return [
+      0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+      1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+      0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+    ]
+  }
+  const visto = (hex, come) => {
+    const rgb = lineare(hex)
+    if (!come) return oklab(rgb)
+    return oklab(
+      MACHADO[come].map((riga) =>
+        Math.min(
+          1,
+          Math.max(0, riga[0] * rgb[0] + riga[1] * rgb[1] + riga[2] * rgb[2]),
+        ),
+      ),
+    )
+  }
+  const distanza = (a, b, come) => {
+    const [x, y] = [visto(a, come), visto(b, come)]
+    return 100 * Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2])
+  }
+
+  it('draws every series at 3:1 or more on its card, in both themes', () => {
+    // WCAG 1.4.11: a line or a bar with no value on it is told by its colour
+    for (const colore of PALETTE.light)
+      expect(contrasto(colore, '#ffffff')).toBeGreaterThanOrEqual(3)
+    for (const colore of PALETTE.dark)
+      expect(contrasto(colore, '#1d201f')).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps two neighbours in the order apart, colour-blind or not', () => {
+    for (const tavolozza of [PALETTE.light, PALETTE.dark]) {
+      for (let i = 1; i < tavolozza.length; i++) {
+        const [a, b] = [tavolozza[i - 1], tavolozza[i]]
+        expect(distanza(a, b)).toBeGreaterThanOrEqual(15)
+        expect(distanza(a, b, 'protan')).toBeGreaterThanOrEqual(8)
+        expect(distanza(a, b, 'deutan')).toBeGreaterThanOrEqual(8)
+      }
+    }
+  })
+
   it('wraps names under vertical bars when each bar has room', () => {
     const buckets = {
       x: { type: 'category', values: ['Under 5 min', '5–15 min', 'No answer'] },

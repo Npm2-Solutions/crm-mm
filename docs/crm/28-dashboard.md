@@ -154,7 +154,12 @@ Le regole sono quelle della data visualization, non del gusto:
 
 - **Una palette categoriale validata** (separazione per daltonismo e contrasto,
   tema chiaro e scuro, con lo script di validazione), assegnata in ordine fisso
-  e mai ciclata.
+  e mai ciclata. Ogni colore sta ad almeno 3:1 sulla carta, bianca nel tema
+  chiaro e #1d201f nello scuro (WCAG 1.4.11): una linea senza valori scritti si
+  riconosce dal colore. Dal 12/10/2026 verde, ambra e rosa del tema chiaro sono
+  scuriti quanto basta lungo la loro tinta (erano a 2,8, 2,2 e 2,7:1); il test
+  calcola il contrasto di ogni colore e la distanza fra vicini, anche con la
+  deuteranopia e la protanopia.
 - **Un colore segue la cosa, non il suo posto.** Uno stato noto tiene il suo slot
   per nome: gli appuntamenti completati sono verdi, i no show rosa, le chiamate
   perse rosse e tratteggiate — mai verdi perche' capitavano terze. Le
