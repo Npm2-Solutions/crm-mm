@@ -11,8 +11,12 @@ the site's room, which every desk user's browser joins - the reception,
 marketing, the other professionals, the agency - with the notes, and each browser
 kept them. A colleague who left, the patient's area and an address of nobody's
 get nothing.
+
+An all-day event's reminder leaves at its hour: the database gives the hour as a
+span since midnight, and the round failed on it.
 """
 
+import datetime
 from unittest.mock import patch
 
 import frappe
@@ -161,3 +165,38 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 		self.senza_note(self.avvisi(evento.name))
 		# nothing of any event to the site's room, the reception's browser among them
 		self.assertNotIn("all", [stanza for _nome, _messaggio, stanza in self.mandati])
+
+	def test_un_evento_di_tutto_il_giorno_alla_sua_ora(self):
+		# the centre's reminder of all-day events, the day before at an hour: the time
+		# came from the database as a span since midnight, and the round failed on it
+		adesso = now_datetime().replace(microsecond=0)
+		domani = datetime.datetime.combine(adesso.date() + datetime.timedelta(days=1), datetime.time())
+		frappe.db.delete("Event Notifications", {"parenttype": "FCRM Settings"})
+		frappe.get_doc(
+			{
+				"doctype": "Event Notifications",
+				"parenttype": "FCRM Settings",
+				"parentfield": "all_day_event_notifications",
+				"parent": "FCRM Settings",
+				"type": "Notification",
+				"before": 1,
+				"interval": "days",
+				"time": adesso.strftime("%H:%M:%S"),
+			}
+		).db_insert()
+		evento = frappe.get_doc(
+			{
+				"doctype": "Event",
+				"subject": OGGETTO,
+				"event_type": "Private",
+				"all_day": 1,
+				"starts_on": domani,
+				"ends_on": domani.replace(hour=23, minute=59),
+			}
+		).insert(ignore_permissions=True)
+		with (
+			patch.object(E, "now_datetime", return_value=adesso),
+			patch.object(E.frappe, "log_error", side_effect=AssertionError("the round failed")),
+		):
+			E._process_event_notifications_by_interval("days")
+		self.assertEqual(self.stanze(evento.name), ["user:Administrator"])

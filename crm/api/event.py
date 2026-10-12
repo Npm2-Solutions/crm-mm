@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import add_to_date, now_datetime
+from frappe.utils import add_to_date, get_time, now_datetime
 
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
@@ -244,7 +244,8 @@ def _calculate_trigger_datetime(event_start, before_value, interval, all_day_eve
 		elif interval == "weeks":
 			trigger_date = event_start.date() - timedelta(weeks=before_value)
 
-		trigger_datetime = datetime.combine(trigger_date, time_of_day)
+		# the database gives a time as the span since midnight, which combine refuses
+		trigger_datetime = datetime.combine(trigger_date, get_time(time_of_day))
 	else:
 		interval_kwargs = _get_interval_kwargs(interval, before_value)
 		trigger_datetime = add_to_date(event_start, **interval_kwargs)
