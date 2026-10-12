@@ -298,8 +298,11 @@ describe('frappe-ui in the user’s language', () => {
     expect(composable).toContain(
       "import { adessoDelCentro } from '@/utils/scheduler'",
     )
-    // the field's own format first, then the day typed, and only then dayjs(raw)
-    const scritto = composable.indexOf('giornoScritto(raw, format,')
+    // the field's own format first, then the day typed, and only then
+    // dayjs(raw); the centre's clock handed over, asked only when needed
+    const scritto = composable.indexOf(
+      'giornoScritto(raw, format, adessoDelCentro)',
+    )
     expect(scritto).toBeGreaterThan(
       composable.indexOf('dayjs(raw, format, true)'),
     )
@@ -307,8 +310,11 @@ describe('frappe-ui in the user’s language', () => {
       composable.indexOf('const dLoose = dayjs(raw)'),
     )
     const { giornoScritto } = selettore('it')
+    // the centre's now, 12 October 2026: how many times it was asked
+    let chiesto = 0
+    const adesso = () => (chiesto++, new Date(2026, 9, 12))
     const giorno = (testo, formato = 'DD/MM/YYYY') =>
-      giornoScritto(testo, formato, 2026)
+      giornoScritto(testo, formato, adesso)
     for (const testo of [
       '1/10/2026',
       '1-10-2026',
@@ -323,10 +329,29 @@ describe('frappe-ui in the user’s language', () => {
     expect(giorno('12/10/26 9:30')).toBe('2026-10-12 09:30:00')
     expect(giorno('12/10/2026 9.30')).toBe('2026-10-12 09:30:00')
     expect(giorno('12/10/2026 09:30:15')).toBe('2026-10-12 09:30:15')
-    // two digits of a year as dayjs reads YY, none this year
+    // two digits of a year: the one within the next twenty years and the last
+    // eighty (a birth in 1958, never 2058); none, this year
     expect(giorno('1/2/80')).toBe('1980-02-01')
-    expect(giorno('1/2/68')).toBe('2068-02-01')
-    expect(giornoScritto('1/10', 'DD/MM/YYYY', 2027)).toBe('2027-10-01')
+    expect(giorno('12/3/58')).toBe('1958-03-12')
+    expect(giorno('1/2/68')).toBe('1968-02-01')
+    expect(giorno('1/2/47')).toBe('1947-02-01')
+    expect(giorno('1/2/46')).toBe('2046-02-01')
+    expect(giorno('1/10/26')).toBe('2026-10-01')
+    expect(giorno('1/10/00')).toBe('2000-10-01')
+    expect(
+      giornoScritto('1/10', 'DD/MM/YYYY', () => new Date(2027, 0, 5)),
+    ).toBe('2027-10-01')
+    expect(
+      giornoScritto('1/10/05', 'DD/MM/YYYY', () => new Date(2090, 0, 5)),
+    ).toBe('2105-10-01')
+    // the clock is asked only for a year missing or of two digits, never for
+    // a value from the server, which every picker reads this way too
+    chiesto = 0
+    giorno('1/10/2026')
+    giorno('2026-10-01 09:30:00')
+    expect(chiesto).toBe(0)
+    giorno('1/10')
+    expect(chiesto).toBe(1)
     // with no format, or the server's, the day first as well
     expect(giorno('1/10/2026', undefined)).toBe('2026-10-01')
     expect(giorno('1/10/2026', 'YYYY-MM-DD')).toBe('2026-10-01')

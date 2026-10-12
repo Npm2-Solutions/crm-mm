@@ -92,12 +92,14 @@ export function inizialiDeiGiorni() {
   )
 }
 // A day typed by hand, «1/10/2026», «1.10.26», «1-10 9:30»: the day first, the
-// month first only where the field's format starts with it (MM/DD/YYYY), a
-// year of two digits as dayjs reads YY, none this year (\`anno\`). Its value as
-// dayjs reads it («2026-10-01», «2026-10-01 09:30:00»), null for a day that
-// does not exist (31/02), undefined for a text not written so (a value from
-// the server, a month in words): that one goes on to frappe-ui's reading.
-export function giornoScritto(testo, formato, anno = new Date().getFullYear()) {
+// month first only where the field's format starts with it (MM/DD/YYYY), none
+// this year. Its value as dayjs reads it («2026-10-01», «2026-10-01
+// 09:30:00»), null for a day that does not exist (31/02), undefined for a text
+// not written so (a value from the server, a month in words): that one goes on
+// to frappe-ui's reading. \`adesso\` gives now on the centre's clock, asked only
+// when the year is missing or has two digits: never for the value every
+// picker gets from the server, which comes this way too.
+export function giornoScritto(testo, formato, adesso = () => new Date()) {
   const scritto = String(testo ?? '').trim()
   if (!/^[0-9]{1,2}[./ -][0-9]{1,2}(?![0-9])/.test(scritto)) return undefined
   const parti = scritto.match(
@@ -108,7 +110,7 @@ export function giornoScritto(testo, formato, anno = new Date().getFullYear()) {
   const [giorno, mese] = String(formato || '').startsWith('M')
     ? [+secondo, +primo]
     : [+primo, +secondo]
-  const pieno = !y ? anno : y.length === 2 ? +y + (+y > 68 ? 1900 : 2000) : +y
+  const pieno = y?.length === 4 ? +y : annoScritto(y, adesso().getFullYear())
   if (pieno < 1000 || mese < 1 || mese > 12 || giorno < 1) return null
   if (giorno > new Date(Date.UTC(pieno, mese, 0)).getUTCDate()) return null
   const due = (n) => String(n).padStart(2, '0')
@@ -116,6 +118,15 @@ export function giornoScritto(testo, formato, anno = new Date().getFullYear()) {
   if (!ore) return data
   if (+ore > 23 || +minuti > 59 || +secondi > 59) return null
   return data + ' ' + due(ore) + ':' + minuti + ':' + secondi
+}
+// The year of a day typed without one (this one), or with two digits: the one
+// within the next twenty years and the last eighty, as ICU and Java read them.
+// dayjs's YY (19xx only above 68) made a birth typed «12/3/58» 2058.
+function annoScritto(dueCifre, anno) {
+  if (dueCifre === undefined) return anno
+  const pieno = anno - (anno % 100) + +dueCifre
+  if (pieno > anno + 20) return pieno - 100
+  return pieno <= anno - 80 ? pieno + 100 : pieno
 }
 `
 
@@ -303,7 +314,7 @@ import { adessoDelCentro } from '@/utils/scheduler'`,
     [
       'const dLoose = dayjs(raw)',
       `// DottorCloud (frontend/vite/frappeUi.js): a day typed by hand, the day first
-    const scritto = giornoScritto(raw, format, adessoDelCentro().getFullYear())
+    const scritto = giornoScritto(raw, format, adessoDelCentro)
     if (scritto !== undefined) return scritto ? dayjs(scritto) : null
     const dLoose = dayjs(raw)`,
     ],
