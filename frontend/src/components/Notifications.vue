@@ -2,21 +2,26 @@
   The notifications panel, beside the sidebar: what is new for you in the
   centre (docs/crm/43-notifiche.md). All of them or only the unread
   ones, under their days, each with its kind's mark; your upcoming events in a
-  tab of their own. Escape, a click outside or the cross close it.
+  tab of their own. Escape, a click outside or the cross close it. A dialog
+  named by its title: an aside takes no role of dialog, and its name was a
+  copy of the title in aria-label.
 -->
 <template>
   <Transition name="dc-pannello">
-    <aside
+    <div
       v-if="visible"
       ref="target"
-      class="absolute top-0 z-20 flex h-screen w-[400px] max-w-[calc(100vw-1rem)] flex-col border-r border-outline-gray-1 bg-surface-base shadow-2xl focus:outline-none"
+      class="absolute top-0 z-20 flex h-app w-[400px] max-w-[calc(100vw-1rem)] flex-col border-r border-outline-gray-1 bg-surface-base shadow-2xl focus:outline-none"
       :style="{ left: 'calc(100% + 1px)' }"
       role="dialog"
-      :aria-label="__('Notifications')"
+      aria-labelledby="titolo-delle-notifiche"
       tabindex="-1"
     >
       <header class="flex items-center gap-2 px-4 pb-2 pt-3">
-        <h2 class="text-lg-semibold text-ink-gray-9">
+        <h2
+          id="titolo-delle-notifiche"
+          class="text-lg-semibold text-ink-gray-9"
+        >
           {{ __('Notifications') }}
         </h2>
         <span
@@ -49,12 +54,13 @@
         <TabButtons
           v-model="scheda"
           :buttons="schede"
+          :aria-label="__('Show')"
           class="[&_button]:w-full [&_div]:w-full [&_button>span]:w-full"
         />
       </div>
       <EventNotificationsArea v-if="scheda === 'events'" />
       <NotificationsList v-else />
-    </aside>
+    </div>
   </Transition>
 </template>
 

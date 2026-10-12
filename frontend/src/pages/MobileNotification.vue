@@ -30,6 +30,7 @@
       <TabButtons
         v-model="scheda"
         :buttons="schede"
+        :aria-label="__('Show')"
         class="[&_button]:w-full [&_div]:w-full [&_button>span]:w-full"
       />
     </div>
