@@ -147,6 +147,7 @@ import {
   call,
   toast,
 } from 'frappe-ui'
+import { sessionStore } from '@/stores/session'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -235,9 +236,10 @@ async function go() {
       given_by: holder.value || '',
       appointment: props.appointment,
     })
-    // the operator's session ends here: the person sees their forms only
-    await call('logout')
-    window.location.href = handed.url
+    // the operator's session ends here, through the desk's way out: the
+    // device's notifications let go, what the browser kept of the session
+    // taken away (utils/esci.js). The person sees their forms only
+    await sessionStore().esciVerso(handed.url)
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message
   } finally {

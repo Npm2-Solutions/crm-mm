@@ -1,7 +1,11 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { defineStore } from 'pinia'
-import { createResource } from 'frappe-ui'
+import { call, createResource, toast } from 'frappe-ui'
 import router from '@/router'
-import { ref, computed } from 'vue'
+import { usersStore } from '@/stores/users'
+import { esci } from '@/utils/esci'
+import { ref, computed, reactive } from 'vue'
 
 export const sessionStore = defineStore('crm-session', () => {
   function sessionUser() {
@@ -28,11 +32,48 @@ export const sessionStore = defineStore('crm-session', () => {
     },
   })
 
-  const logout = createResource({
-    url: 'logout',
-    onSuccess() {
-      user.value = null
-      window.location.href = '/login?redirect-to=/crm'
+  // this device's notifications let go (composables/spinta.js), where it could
+  // have them at all: imported then, as main.js does, never in the first
+  // download
+  function lasciaIlDispositivo() {
+    if (window.Notification?.permission !== 'granted') return
+    return import('@/composables/spinta').then((spinta) => spinta.lascia())
+  }
+
+  /**
+   * Out of the desk, through the one way out (utils/esci.js): this device's
+   * notifications let go while the session is there, the server ends it, then
+   * what the browser kept of it goes; the page goes `verso`, the sign-in
+   * unless said (the tablet handed to a person: their forms). Rejects, having
+   * cleared nothing, when the server did not end the session.
+   */
+  async function esciVerso(verso = '/login?redirect-to=/crm') {
+    // whose drafts go, read while the session is there: the user, and the
+    // email the composer keeps them under (composables/drafts.js), as the
+    // users' list has it - asked of nobody
+    const { allUsers } = usersStore()
+    const utenti = [
+      user.value,
+      (allUsers || []).find((utente) => utente.name === user.value)?.email,
+    ]
+    await esci(() => call('logout'), { utenti, prima: lasciaIlDispositivo })
+    user.value = null
+    window.location.href = verso
+  }
+
+  // the account menu's way out, and «Access denied»'s: a logout the server did
+  // not end is said, and the session goes on as it was
+  const logout = reactive({
+    loading: false,
+    async submit() {
+      if (logout.loading) return
+      logout.loading = true
+      try {
+        await esciVerso()
+      } catch {
+        logout.loading = false
+        toast.error(__('Could not log out: try again.'))
+      }
     },
   })
 
@@ -41,5 +82,6 @@ export const sessionStore = defineStore('crm-session', () => {
     isLoggedIn,
     login,
     logout,
+    esciVerso,
   }
 })

@@ -2,6 +2,7 @@
 // among the session's own (the server checks it on every call anyway).
 import { call } from 'frappe-ui'
 import { reactive } from 'vue'
+import { esci } from '@/utils/esci'
 
 const KEY = 'area:person'
 
@@ -50,11 +51,22 @@ export function choose(person) {
   }
 }
 
+// Out of the area, through the one way out (utils/esci.js): the server ends
+// the session, then what the browser kept of it goes - whose area was open, a
+// form's session, a diet's shopping list ticked. Back to the door either way:
+// a logout the server did not end leaves the area as it was.
 export async function logout() {
-  await fetch('/api/method/logout', {
-    method: 'POST',
-    headers: { 'X-Frappe-CSRF-Token': window.csrf_token || '' },
-  }).catch(() => {})
+  try {
+    await esci(async () => {
+      const risposta = await fetch('/api/method/logout', {
+        method: 'POST',
+        headers: { 'X-Frappe-CSRF-Token': window.csrf_token || '' },
+      })
+      if (!risposta.ok) throw new Error(risposta.statusText)
+    })
+  } catch {
+    // not out: the session goes on, and nothing was taken away
+  }
   window.location.href = '/area'
 }
 
