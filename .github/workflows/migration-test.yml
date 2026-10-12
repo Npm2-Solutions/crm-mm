@@ -43,6 +43,14 @@ jobs:
               with:
                   path: pr-crm
 
+            # The base branch through the workflow's token: the repository is
+            # private, and git cannot clone it from its address with no credentials.
+            - name: Checkout base branch code
+              uses: actions/checkout@v6
+              with:
+                  ref: ${{ env.BASE_BRANCH }}
+                  path: base-crm
+
             - name: Resolve frappe branch for base
               id: frappe
               run: |
@@ -91,10 +99,10 @@ jobs:
                   cp "${GITHUB_WORKSPACE}/pr-crm/.github/helper/site_config.json" sites/test_site/site_config.json
                   sed -i 's/watch:/# watch:/g; s/schedule:/# schedule:/g; s/socketio:/# socketio:/g; s/redis_socketio:/# redis_socketio:/g' Procfile
                   # This repository, not upstream. Installing frappe/crm here and then
-                  # rsyncing this fork over it tested a migration nobody will ever run,
-                  # and left the one that matters - this fork's base branch to the PR -
+                  # rsyncing this code over it tested a migration nobody will ever run,
+                  # and left the one that matters - this repository's base branch to the PR -
                   # covered by nothing. That is the lane a seeder crash reached develop through.
-                  bench get-app crm "${{ github.server_url }}/${{ github.repository }}" --branch "$BASE_BRANCH"
+                  bench get-app crm "${GITHUB_WORKSPACE}/base-crm"
                   bench setup requirements --dev
                   bench start &>> "$BENCH_PATH/bench_start.log" &
                   CI=Yes bench build --app frappe &
