@@ -49,11 +49,14 @@
             :loading="loading"
             @click="createOrganization"
           />
+          <!-- from the company's website: there only once one is written, as
+               in a person's and a deal's. Switched off, it said why only in a
+               tooltip, which a switched-off button never opens, nor a touch -->
           <Button
+            v-if="organization.doc.website"
             class="w-full"
             :label="__('Enrich')"
             :loading="isEnriching"
-            :disabled="!organization.doc.website"
             :tooltip="__('Fill fields from the company website')"
             iconLeft="zap"
             @click="enrichFromWebsite"
