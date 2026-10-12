@@ -1711,8 +1711,9 @@ liste d'attesa sono del CRM (`crm/scheduling/attese.py`, le regole in
     dalla pagina "Lista d'attesa" del menu, che mostra tutta la fila per servizio e
     professionista.
   - Da `/prenota`, quando nessun orario va bene o la lezione è piena. Si chiedono
-    nome, email, cellulare e consensi, come per una prenotazione, e arriva un link per
-    vedere o lasciare la lista (`/lista-attesa/<link>`).
+    nome, email, cellulare e le caselle di una prenotazione (l'informativa letta, il
+    marketing), e arriva un link per vedere o lasciare la lista
+    (`/lista-attesa/<link>`).
   - Dall'area del cliente, per i servizi della pagina di prenotazione.
 
   La voce tiene l'email e il cellulare scritti entrando, come una prenotazione li

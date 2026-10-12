@@ -75,8 +75,9 @@ cliente contano chi viene. Le regole sono in
 
 **Quando nessun orario va bene** (01/10/2026). Sotto gli orari, e su una lezione piena,
 la pagina offre la lista d'attesa: giorni e parti del giorno in cui si può, fino a
-quando, nome, email, cellulare e consensi. Quando un posto si libera arriva una proposta
-con un link: il primo che conferma lo prende, e l'appuntamento è prenotato come da qui.
+quando, nome, email, cellulare e le caselle della prenotazione (l'informativa letta, il
+marketing). Quando un posto si libera arriva una proposta con un link: il primo che
+conferma lo prende, e l'appuntamento è prenotato come da qui.
 Come funziona, chi la vede e le impostazioni sono in
 [gestionale medico](../../verticali/clinica/README.md#le-liste-dattesa-il-posto-che-si-libera-va-a-chi-aspetta).
 
