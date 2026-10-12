@@ -392,3 +392,28 @@ export function quanteNellaBarra(
   while (spazio && quante > 1 && somma(quante) + altre > spazio) quante--
   return quante
 }
+
+/**
+ * The id of a record's tab on the phone's bar (`SchedeDelTelefono`), which the
+ * panel under it is named by (`aria-labelledby`): the same for a tab in the bar
+ * and for one under «More», whose words «More» shows while it is open.
+ */
+export function idDellaScheda(nome = '') {
+  return `scheda-${String(nome).replace(/[^\w-]+/g, '-')}`
+}
+
+/**
+ * Where a key takes the focus among the bar's `quante` tabs from the one at
+ * `da`, as the tabs of a computer do (reka-ui's): the arrows to the next and the
+ * one before, round the ends, Home and End to the first and the last; another
+ * key, nowhere (-1). The focus only moves: a tab opens on Enter or a tap, and
+ * the bar is one stop for Tab.
+ */
+export function schedaColTasto(da, quante, tasto) {
+  if (!(quante > 0) || !(da >= 0)) return -1
+  if (tasto === 'ArrowRight') return (da + 1) % quante
+  if (tasto === 'ArrowLeft') return (da - 1 + quante) % quante
+  if (tasto === 'Home') return 0
+  if (tasto === 'End') return quante - 1
+  return -1
+}

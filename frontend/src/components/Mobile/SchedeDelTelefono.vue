@@ -10,6 +10,11 @@
   «Documenti» was «Docu…» beside «Eventi». The bar holds as many as fit beside
   "More" (`quanteNellaBarra`): a page zoomed - large text on Android, 277
   points on a 360 phone - had four tabs read «Detta…», «Eve…», «Preventi…».
+
+  From the keyboard the bar is one stop, the open tab (or «More» holding it);
+  the arrows, Home and End move along it and Enter opens, as the computer's
+  tabs do. Each tab has the id the panel under it is named by
+  (`idDellaScheda`): for one under «More», the words «More» shows for it.
 -->
 <template>
   <div
@@ -17,13 +22,16 @@
     class="flex shrink-0 items-stretch border-b border-outline-gray-2 px-1"
     role="tablist"
     :aria-label="__('Sections')"
+    @keydown="muovi"
   >
     <button
       v-for="scheda in inBarra"
+      :id="idDellaScheda(scheda.name)"
       :key="scheda.name"
       type="button"
       role="tab"
       :aria-selected="scheda.name === aperta?.name"
+      :tabindex="scheda === fermata ? 0 : -1"
       class="relative flex min-w-0 flex-auto items-center justify-center px-1 py-3 text-base"
       :class="
         scheda.name === aperta?.name
@@ -41,17 +49,23 @@
     </button>
     <Dropdown v-if="altre.length" :options="opzioniAltre" placement="right">
       <template #default="{ open }">
+        <!-- the id on its words: the button's own is reka-ui's, which its
+             menu is named by -->
         <button
           type="button"
           role="tab"
           :aria-selected="apertaTraLeAltre"
           aria-haspopup="menu"
+          :tabindex="apertaTraLeAltre ? 0 : -1"
           class="relative flex min-w-0 flex-auto items-center justify-center gap-1 px-1 py-3 text-base"
           :class="
             apertaTraLeAltre ? 'font-medium text-ink-gray-9' : 'text-ink-gray-5'
           "
         >
-          <span class="truncate">
+          <span
+            :id="apertaTraLeAltre ? idDellaScheda(aperta.name) : undefined"
+            class="truncate"
+          >
             {{ apertaTraLeAltre ? aperta.label : __('More') }}
           </span>
           <span
@@ -71,7 +85,11 @@
 </template>
 
 <script setup>
-import { quanteNellaBarra } from '@/utils/sulTelefono'
+import {
+  idDellaScheda,
+  quanteNellaBarra,
+  schedaColTasto,
+} from '@/utils/sulTelefono'
 import { useElementSize } from '@vueuse/core'
 import { Dropdown } from 'frappe-ui'
 import { computed, h, onMounted, ref } from 'vue'
@@ -142,6 +160,24 @@ const altre = computed(() =>
 )
 const aperta = computed(() => props.tabs[indice.value])
 const apertaTraLeAltre = computed(() => altre.value.includes(aperta.value))
+// the tab Tab stops on: the open one; «More» while the open one is under it;
+// the first when none is open
+const fermata = computed(() => {
+  if (apertaTraLeAltre.value) return null
+  return inBarra.value.includes(aperta.value) ? aperta.value : inBarra.value[0]
+})
+
+function muovi(evento) {
+  const schede = [...(barra.value?.querySelectorAll('[role="tab"]') ?? [])]
+  const dove = schedaColTasto(
+    schede.indexOf(evento.target),
+    schede.length,
+    evento.key,
+  )
+  if (dove < 0) return
+  evento.preventDefault()
+  schede[dove].focus()
+}
 
 const opzioniAltre = computed(() =>
   altre.value.map((scheda) => ({

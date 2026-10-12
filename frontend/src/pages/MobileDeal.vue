@@ -73,6 +73,7 @@
         v-if="dettagliMontati"
         v-show="inDettagli"
         role="tabpanel"
+        :aria-labelledby="nomeDelPannello"
         class="flex grow flex-col overflow-auto"
       >
         <div>
@@ -257,6 +258,7 @@
         v-if="attivitaMontate"
         v-show="!inDettagli"
         role="tabpanel"
+        :aria-labelledby="nomeDelPannello"
         class="flex grow flex-col overflow-auto"
       >
         <Activities
@@ -351,6 +353,7 @@ import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { apertoUnaVolta } from '@/utils/aRichiesta'
+import { idDellaScheda } from '@/utils/sulTelefono'
 import {
   createResource,
   Dropdown,
@@ -536,6 +539,10 @@ const tabs = computed(() => {
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
 })
 const { tabIndex } = useActiveTabManager(tabs, 'lastDealTab')
+// the panel shown is named by the open tab (SchedeDelTelefono)
+const nomeDelPannello = computed(() =>
+  idDellaScheda(tabs.value[tabIndex.value]?.name),
+)
 
 // Details is a tab of its own; every other one is the conversation, which draws
 // the tab chosen - and while Details is shown stays on the one it drew, hidden

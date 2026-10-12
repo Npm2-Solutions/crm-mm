@@ -105,6 +105,7 @@
         v-if="dettagliMontati"
         v-show="inDettagli"
         role="tabpanel"
+        :aria-labelledby="nomeDelPannello"
         class="flex grow flex-col overflow-auto"
       >
         <div>
@@ -146,6 +147,7 @@
         v-if="attivitaMontate"
         v-show="!inDettagli"
         role="tabpanel"
+        :aria-labelledby="nomeDelPannello"
         class="flex grow flex-col overflow-auto"
       >
         <Activities
@@ -226,6 +228,7 @@ import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useTestataRaccolta } from '@/composables/testataRaccolta'
 import { useChatAperta } from '@/composables/chatAperta'
 import { apertoUnaVolta } from '@/utils/aRichiesta'
+import { idDellaScheda } from '@/utils/sulTelefono'
 import DopoIlDisegno from '@/components/DopoIlDisegno.vue'
 import {
   Avatar,
@@ -476,6 +479,10 @@ const tabs = computed(() => {
 })
 
 const { tabIndex } = useActiveTabManager(tabs, 'lastLeadTab')
+// the panel shown is named by the open tab (SchedeDelTelefono)
+const nomeDelPannello = computed(() =>
+  idDellaScheda(tabs.value[tabIndex.value]?.name),
+)
 
 // the person's data are a tab of their own; every other one is the
 // conversation, which draws the tab chosen - and while the data are shown stays

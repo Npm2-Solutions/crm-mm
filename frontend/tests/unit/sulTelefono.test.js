@@ -12,12 +12,14 @@ import {
   elencoDelGiorno,
   faseIniziale,
   gruppoDi,
+  idDellaScheda,
   partiDellIndirizzo,
   quandoTorna,
   quanteNellaBarra,
   rigaDellAzienda,
   rigaDellaNota,
   scadenzaInBreve,
+  schedaColTasto,
   settimanaDi,
   spostaGiorno,
   valoreDellaTrattativa,
@@ -396,6 +398,33 @@ describe("a record's tabs in the phone's bar", () => {
     expect(quanteNellaBarra(sei, 180, 60)).toBe(1)
     // one tab at least, however narrow
     expect(quanteNellaBarra(sei, 90, 60)).toBe(1)
+  })
+
+  it('gives each tab the id its panel is named by', () => {
+    expect(idDellaScheda('Activity')).toBe('scheda-Activity')
+    // an id is one word: aria-labelledby reads a space as two ids
+    expect(idDellaScheda('Client area')).toBe('scheda-Client-area')
+  })
+
+  it('moves the focus along the bar with the arrows, round its ends', () => {
+    // three tabs and «More»
+    expect(schedaColTasto(0, 4, 'ArrowRight')).toBe(1)
+    expect(schedaColTasto(3, 4, 'ArrowRight')).toBe(0)
+    expect(schedaColTasto(1, 4, 'ArrowLeft')).toBe(0)
+    expect(schedaColTasto(0, 4, 'ArrowLeft')).toBe(3)
+  })
+
+  it('takes Home and End to the first tab and the last', () => {
+    expect(schedaColTasto(2, 4, 'Home')).toBe(0)
+    expect(schedaColTasto(1, 4, 'End')).toBe(3)
+  })
+
+  it('leaves the other keys, and a focus outside the bar, where they are', () => {
+    // Enter opens the tab, ArrowDown opens «More»'s menu: theirs
+    expect(schedaColTasto(1, 4, 'Enter')).toBe(-1)
+    expect(schedaColTasto(1, 4, 'ArrowDown')).toBe(-1)
+    expect(schedaColTasto(-1, 4, 'ArrowRight')).toBe(-1)
+    expect(schedaColTasto(0, 0, 'ArrowRight')).toBe(-1)
   })
 })
 
