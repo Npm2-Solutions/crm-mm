@@ -303,7 +303,7 @@ Questa famiglia raccoglie le regole per usare DottorCloud con un dito: sul telef
 
 **Come si verifica.** Ricerca nel codice: ogni elemento fixed o sticky al bordo basso o alto usa env(safe-area-inset-\*). A mano su un iPhone con l'isola dinamica e su un Android a gesti, nel browser e come app installata, in verticale e in orizzontale: barra in basso, «+», pulsanti dei fogli e toast non toccano la linea di Home né la tacca.
 
-**Errori da evitare.** La barra in basso di frappe-ui (MobileNav.vue) aggiunge solo pb-4, 16 px fissi, e solo in display-mode standalone: non è l'area sicura del sistema; da provare su un iPhone vero e, se serve, sostituire con max(…, env(safe-area-inset-bottom)) (verifica sul codice, 11/10/2026). Usare cover senza env(): in orizzontale il contenuto finisce sotto la tacca. Gesti della pagina che partono dai bordi laterali: litigano con l'Indietro di Android.
+**Errori da evitare.** La barra in basso di frappe-ui (MobileNav.vue) aggiunge solo pb-4, 16 px fissi, e solo in display-mode standalone: non è l'area sicura del sistema (verifica sul codice, 11/10/2026; corretto il 12/10/2026: telefono.css, sezione 9, le dà env(safe-area-inset-bottom)). Usare cover senza env(): in orizzontale il contenuto finisce sotto la tacca. Gesti della pagina che partono dai bordi laterali: litigano con l'Indietro di Android.
 
 **Fonti.**
 

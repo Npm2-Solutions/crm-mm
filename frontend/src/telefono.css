@@ -837,6 +837,16 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  /* the bar at the bottom ends above the iPhone's home line, the strip a
+     finger swiping up takes home: frappe-ui pads it 16px, and only once the
+     app is installed (MobileNav.vue), 18px short of the line, and not at all
+     in a browser's tab. The safe area is the line's height, 0 where the
+     system's own bar is outside the page (Android). The toast (6.) and the
+     «+» (PulsanteAggiungi.vue) add the same inset to their height, and stay
+     above the bar */
+  nav[data-slot='mobile-nav'] {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 /* 10. A phone held sideways (under 500px tall) keeps the phone's layout
