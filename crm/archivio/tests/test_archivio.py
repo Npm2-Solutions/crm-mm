@@ -120,6 +120,13 @@ class TestArchivio(IntegrationTestCase):
 	def locale(self, doc):
 		return archivio.percorso(doc.file_url) if doc.is_private else doc.get_full_path()
 
+	def togli_dal_disco(self, doc):
+		"""A File the database deleted leaves its file on the disk, which the
+		framework would have taken away: the test takes it, as it found the site."""
+		percorso = self.locale(doc)
+		if os.path.exists(percorso):
+			os.remove(percorso)
+
 	def test_senza_archivio_non_si_sposta_niente(self):
 		doc = self.nuovo()
 		with patch.dict(frappe.local.conf, {archivio.CONF: None}):
@@ -257,6 +264,7 @@ class TestArchivio(IntegrationTestCase):
 
 	def test_tolto_dal_database_la_notte_lo_porta_via(self):
 		doc = self.nuovo()
+		self.addCleanup(self.togli_dal_disco, doc)
 		archivio.sposta()
 		chiave = archivio.archiviato(doc.file_url).object_key
 		frappe.db.delete("File", {"name": doc.name})
