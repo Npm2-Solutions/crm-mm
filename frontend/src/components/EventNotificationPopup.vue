@@ -58,22 +58,20 @@
 import { useEventNotificationAlert } from '@/data/notifications'
 import { usersStore } from '@/stores/users'
 import { Button, dayjs } from 'frappe-ui'
-import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const { getUser } = usersStore()
 
+// the session's own, neither closed nor over: the list is the browser's, and
+// whoever signed in before on it is not who reads the screen now
 const {
-  eventNotificationAlerts,
+  activeAlerts: visibleAlerts,
   completeEventNotificationAlert,
   removeCompletedEventNotificationAlerts,
 } = useEventNotificationAlert()
-
-const visibleAlerts = computed(() => {
-  return eventNotificationAlerts.value.filter((alert) => !alert.completed)
-})
 
 function openEvent(e) {
   completeAlert(e.id)

@@ -146,7 +146,12 @@ senza nessuno in mezzo che le legga.
   l'agenzia), con la descrizione: nella copia di un appuntamento, le sue note. Ora
   va a chi possiede l'evento e ai suoi partecipanti che sono utenti attivi del
   centro, trovati per nome o per email, ognuno nella sua stanza, con quello che
-  l'avviso mostra e senza la descrizione (`crm/api/event.py`). Resta da fare: il
+  l'avviso mostra e senza la descrizione (`crm/api/event.py`). Il browser, che
+  tiene gli avvisi in localStorage (una lista per browser, non per utente), scarta
+  quello di un evento che non è di chi è entrato, ne tiene solo quello che
+  l'avviso mostra e per chi l'ha preso, e toglie gli avvisi chiusi, di eventi
+  finiti sull'orologio del centro o di chi c'era prima su quel browser
+  (`utils/avvisiDegliEventi.js`). Resta da fare: il
   giro che cerca gli eventi guarda solo quelli dell'utente con cui gira (lo
   scheduler, Administrator), e un promemoria «minuti» o «ore» può partire più
   volte nella sua finestra; farlo arrivare a ogni professionista, una volta sola,
@@ -217,7 +222,9 @@ comparivano da soli.
   messaggio indicato dall'indirizzo.
 - I promemoria degli eventi del calendario: `crm/api/event.py`
   (`_send_system_notification`, `_destinatari`), provato in
-  `crm/tests/test_avvisi_degli_eventi.py`.
+  `crm/tests/test_avvisi_degli_eventi.py`; nel browser `data/notifications.js`,
+  `components/EventNotificationPopup.vue` e `utils/avvisiDegliEventi.js`,
+  provato in `tests/unit/avvisiDegliEventi.test.js`.
 - Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
   dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
   `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi

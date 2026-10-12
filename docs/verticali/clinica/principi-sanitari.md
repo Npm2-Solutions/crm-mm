@@ -218,7 +218,7 @@ Cosa rivedere:
 **Errori da evitare.**
 
 - Notifiche push che restano legate al browser dopo l'uscita: nessun `on_logout` in `crm/hooks.py` toglie l'abbonamento (`CRM Push Subscription`) e il service worker (`crm/notifiche/spinta_sw.js`) mostra tutto ciò che arriva. Su un PC condiviso arrivano le notifiche di chi è uscito finché un altro utente non apre DottorCloud su quel browser: allora `sincronizza()` (`composables/spinta.js`) passa l'abbonamento a lui, senza chiederglielo.
-- Un avviso in tempo reale pubblicato senza destinatario: `frappe.publish_realtime` senza `user` va a tutti gli utenti della scrivania collegati. `crm/api/event.py` (`_send_system_notification`) manda così gli avvisi degli eventi del calendario, con oggetto e descrizione (per un appuntamento copiato: servizio, persona e note), e il browser li tiene in localStorage (`eventNotificationAlerts` in `data/notifications.js`) (verifica del codice, 12/10/2026).
+- Un avviso in tempo reale pubblicato senza destinatario: `frappe.publish_realtime` senza `user` va a tutti gli utenti della scrivania collegati. `crm/api/event.py` (`_send_system_notification`) mandava così gli avvisi degli eventi del calendario, con oggetto e descrizione (per un appuntamento copiato: servizio, persona e note), e il browser li teneva in localStorage (`eventNotificationAlerts` in `data/notifications.js`) (verifica del codice, 12/10/2026; corretto il 12/10/2026: l'avviso va solo a chi possiede l'evento o vi partecipa, ognuno nella sua stanza, senza la descrizione, e il browser tiene solo quelli di chi è entrato).
 - Il nome della persona e il servizio nell'oggetto dell'email a un collega.
 - Un toast con un contenuto clinico che resta sullo schermo mentre il paziente guarda.
 
