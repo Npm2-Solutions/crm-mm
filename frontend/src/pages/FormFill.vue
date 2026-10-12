@@ -194,7 +194,7 @@
             <Button
               class="shrink-0"
               icon="more-horizontal"
-              :aria-label="__('More')"
+              :aria-label="__('Options')"
             />
           </Dropdown>
           <Button
