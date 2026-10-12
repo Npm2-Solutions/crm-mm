@@ -45,6 +45,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
 | Any screen a phone will see (rules below) | [docs/crm/29-telefono.md](./docs/crm/29-telefono.md) |
 | How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/dottorcloud/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
+| Designing, writing or reviewing any screen: the principles, their thresholds and sources, the checklist | [docs/crm/66-principi-di-esperienza.md](./docs/crm/66-principi-di-esperienza.md) (eight families in `docs/crm/principi/`; the clinic's in [docs/verticali/clinica/principi-sanitari.md](./docs/verticali/clinica/principi-sanitari.md)) |
 
 ---
 
