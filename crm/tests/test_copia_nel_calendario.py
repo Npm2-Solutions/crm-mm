@@ -17,6 +17,7 @@ Event the centre makes itself is the framework's.
 from unittest import mock
 
 import frappe
+import frappe.client
 from frappe.utils import add_to_date, now_datetime
 
 from crm.area import accesso
@@ -159,6 +160,26 @@ class LaCopiaNelCalendario(SchedulingCase):
 			self.indirizzi(copia.name),
 			{**self.dei_professionisti(), ("CRM Lead", persona.name): None},
 		)
+		self.letta_solo_dai_professionisti(copia.name, anna)
+
+	def test_cambiata_dall_editor_degli_eventi_non_riprende_l_indirizzo(self):
+		# the CRM's own event editor (EventModal.vue) writes an Event through
+		# frappe.client.set_value, its rows whole and each with the address typed
+		anna = self.utente_dell_area("copia.editor@example.com")
+		voce = self.voce_della_rubrica(anna)
+		copia = self.copia("Contact", voce)
+		righe = [
+			{"reference_doctype": "User", "reference_docname": utente, "email": utente}
+			for utente in (self.neri, self.verdi)
+		]
+		righe.append({"reference_doctype": "Contact", "reference_docname": voce, "email": anna})
+
+		frappe.set_user(self.neri)
+		try:
+			frappe.client.set_value("Event", copia.name, {"event_participants": righe})
+		finally:
+			frappe.set_user("Administrator")
+		self.assertEqual(self.indirizzi(copia.name), {**self.dei_professionisti(), ("Contact", voce): None})
 		self.letta_solo_dai_professionisti(copia.name, anna)
 
 	def test_salvata_dalla_scrivania_non_riprende_l_indirizzo(self):
