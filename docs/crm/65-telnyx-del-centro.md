@@ -93,6 +93,13 @@
   **parcheggia** ogni chiamata e chiede a DottorCloud (`voice`) se può partire:
   `uscita.perche_no` decide sul server qualunque cosa abbia fatto la pagina, come con
   Twilio.
+- **Chi chiama**: la finestra lo chiede come quella di Twilio, a ogni chiamata e a
+  ogni cambio di numero (`composables/chiChiama.js`). Se il browser vede il numero
+  del centro (ha squillato anche un telefono), il server dice chi chiama
+  (`who_is_calling`) e la finestra chiede di quel numero; la risposta sul numero
+  del centro, se arriva dopo, non conta. Fino al 12/10/2026 la finestra di Telnyx
+  usava la ricerca di quella di Twilio, con il numero di Twilio, e non nominava
+  mai nessuno.
 - **Le registrazioni**: Telnyx dà un link che scade in dieci minuti, quindi un
   lavoro le scarica subito in un file privato del registro della chiamata
   (`registrazioni.py`); il lettore le serve da lì, a pezzi.

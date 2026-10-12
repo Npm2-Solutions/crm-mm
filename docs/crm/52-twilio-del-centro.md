@@ -187,6 +187,16 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   chiamate vengono bloccate: scegli un numero fisso».
 - **Il tastierino (fatto).** Durante la chiamata manda i toni ai menu automatici
   degli altri («premi 1 per…»); i tasti premuti restano scritti sopra.
+- **Chi chiama (corretto il 12/10/2026).** La finestra della chiamata, in arrivo
+  o in uscita, chiede al server di chi è il numero a ogni chiamata e a ogni
+  cambio di numero: mentre il server risponde il nome resta vuoto (la riga tiene
+  il suo posto, i pulsanti non si spostano), poi la persona o «Sconosciuto»; una
+  risposta su un numero che la chiamata non ha più non conta. La ricerca era una
+  sola per la pagina, tenuta con il numero con cui la finestra era nata: la
+  chiamata dopo mostrava il nome di chi aveva chiamato prima finché il server non
+  rispondeva, e per tutta la chiamata se non rispondeva; la finestra di Telnyx
+  usava quella di Twilio, con il numero di Twilio, e non nominava mai nessuno
+  (`composables/chiChiama.js`, `cercaChiChiama` in `utils/chiamate.js`, provato).
 - **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
   Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
   responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un
@@ -353,7 +363,7 @@ DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **ver
 | `frontend/src/components/Settings/Telephony/NewNumberDialog.vue` + `utils/numeri.js` | La finestra del nuovo numero e la scelta del numero; le richieste sulla pagina di Twilio, il rilascio sulla pagina dei numeri; il prezzo, il prefisso, i file e cosa manca prima di mandare — provati |
 | `crm/telephony/uscita_regole.py` | Senza sito: dove può andare una chiamata (i paesi scelti, mai un numero a pagamento, un numero italiano anche senza +39), il cellulare italiano che l'AGCOM blocca, i permessi di Twilio da mettere — provato con `unittest` |
 | `crm/telephony/uscita.py` + `CRM Twilio Settings.allowed_countries` | Le chiamate in uscita: `check_number` e `get_outbound_numbers` per la finestra, `perche_no` e `numero_da_mostrare` per `voice`, `allinea_i_paesi` (al salvataggio, al collegamento, ogni ora, solo nello spazio) |
-| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | La finestra della chiamata: il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
+| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js`, `composables/chiChiama.js` | La finestra della chiamata: chi chiama, chiesto a ogni chiamata e a ogni cambio di numero (mai chi aveva chiamato prima), il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
 | `crm/telephony/sms_regole.py` | Senza sito: il nome del mittente che Twilio prende, quello fatto con il nome del centro, un messaggio che è solo STOP o START, gli orari delle promozioni — provato con `unittest` |
 | `crm/telephony/sms.py` + `CRM Twilio Settings` (`sms_from`, `sms_sender_name`, `sms_sender_number`) | Il mittente di tutti gli SMS (`mittente()`) e le opzioni della pagina (`get_sms_sender_options`); STOP e START (`ascolta`, `ferma`, `riprendi`, `ha_fermato`) da `incoming_sms_handler`, la risposta tenuta nella conversazione |
 | `frontend/src/components/Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Da dove partono gli SMS, sulle pagine dell'area e della lista d'attesa; sopra il box, la persona che ha scritto STOP |

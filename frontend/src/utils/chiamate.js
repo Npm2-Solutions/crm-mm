@@ -5,7 +5,8 @@
  * Calls going out from DottorCloud (doc 52), without a screen: the countries the
  * centre may call as the server reads them (`crm/telephony/uscita_regole.py`),
  * a country's name in the reader's language, the number a call shows to start
- * with, the keypad. The words are English, translated where they are drawn.
+ * with, the keypad; and for every call, in or out, who calls. The words are
+ * English, translated where they are drawn.
  */
 
 import { nomeDelPaese } from './paesi'
@@ -113,3 +114,39 @@ export const TASTI = [
   ['7', '8', '9'],
   ['*', '0', '#'],
 ]
+
+/**
+ * Who calls, asked one number at a time, for the call's window (Twilio's and
+ * Telnyx's): `chiedi(numero)` asks the server, `aggiorna(contatto, cercando)`
+ * tells the window. What it gives back is called with the call's number each
+ * time a call starts or its number changes: the window hears nobody at once,
+ * while the server is asked, then whom it found for that number - nobody where
+ * it found nobody or could not answer. An answer about a number the call no
+ * longer has is dropped. The window kept the last call's caller until the
+ * server answered, and for the whole call where it did not.
+ */
+export function cercaChiChiama(chiedi, aggiorna) {
+  let ultima = 0
+  return async function cerca(numero) {
+    const questa = ++ultima
+    aggiorna(null, Boolean(numero))
+    if (!numero) return
+    let trovato = null
+    try {
+      trovato = (await chiedi(numero)) || null
+    } catch {
+      // nobody named: the window says it does not know who it is
+    }
+    if (questa === ultima) aggiorna(trovato, false)
+  }
+}
+
+/**
+ * The name the call's window gives whoever calls: the one the server found;
+ * nothing yet while it is asked (`cercando`); «Unknown» once it found nobody or
+ * could not say (`t`, the translator).
+ */
+export function nomeDiChiChiama(contatto, cercando, t) {
+  if (contatto?.full_name) return contatto.full_name
+  return cercando ? '' : t('Unknown')
+}

@@ -40,8 +40,10 @@
           :class="onCall || calling || scelta ? '' : 'pulse'"
         />
         <div class="flex flex-col items-center justify-center gap-1">
+          <!-- the name keeps its line while the server is asked who it is:
+               the buttons below do not move when it comes -->
           <div class="text-2xl-medium">
-            {{ contact?.full_name ?? __('Unknown') }}
+            {{ nomeDiChi || '\u00a0' }}
           </div>
           <div class="text-sm text-ink-gray-5">
             {{ contact?.mobile_no || phoneNumber }}
@@ -256,7 +258,7 @@
         class="riga-stesa max-w-[120px] truncate text-left after:rounded-lg"
         @click="toggleCallWindow"
       >
-        {{ contact?.full_name ?? __('Unknown') }}
+        {{ nomeDiChi }}
         <span class="sr-only">{{ __('Show the call') }}</span>
       </button>
     </div>
@@ -327,6 +329,7 @@ import DialpadIcon from '@/components/Icons/DialpadIcon.vue'
 import MinimizeIcon from '@/components/Icons/MinimizeIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CountUpTimer from '@/components/CountUpTimer.vue'
+import { useChiChiama } from '@/composables/chiChiama'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import {
   TASTI,
@@ -347,8 +350,8 @@ import {
   useResizeObserver,
   useWindowSize,
 } from '@vueuse/core'
-import { Avatar, call, createResource, toast } from 'frappe-ui'
-import { computed, nextTick, ref, watch } from 'vue'
+import { Avatar, call, toast } from 'frappe-ui'
+import { computed, nextTick, ref } from 'vue'
 
 let client = null
 let log = ref('Connecting...')
@@ -367,31 +370,14 @@ let callPopup = ref(null)
 let counterUp = ref(null)
 let callStatus = ref('')
 
-const phoneNumber = ref('')
-
-const contact = ref({
-  full_name: '',
-  image: '',
-  mobile_no: '',
-})
-
-watch(phoneNumber, (value) => {
-  if (!value) return
-  getContact.fetch()
-})
-
-const getContact = createResource({
-  url: 'crm.integrations.api.get_contact_by_phone_number',
-  makeParams() {
-    return {
-      phone_number: phoneNumber.value,
-    }
-  },
-  cache: ['contact', phoneNumber.value],
-  onSuccess(data) {
-    contact.value = data
-  },
-})
+// the number the call is about and who it is, asked again at every call and
+// every change of the number: never the last call's caller
+const {
+  numero: phoneNumber,
+  contatto: contact,
+  nome: nomeDiChi,
+  perIlNumero,
+} = useChiChiama()
 
 const { showModal } = useDoctypeModal()
 const note = ref({
@@ -601,17 +587,19 @@ function toggleMute() {
 async function handleIncomingCall(chiamata) {
   const numero = chiamata.options?.remoteCallerNumber || ''
   log.value = `Incoming call from ${numero}`
-  phoneNumber.value = numero
+  perIlNumero(numero)
   // a call coming in takes the popup from a call not yet made
   scelta.value = false
   showCallPopup.value = true
   _call = chiamata
-  // the centre's own number shown (a phone rang too): the server says who it is
+  // the centre's own number shown (a phone rang too): the server says who it
+  // is, and who has that number is asked in place of who has the centre's
   try {
     const chi = await call('crm.integrations.telnyx.api.who_is_calling', {
       number: numero,
     })
-    if (chi?.number && _call === chiamata) phoneNumber.value = chi.number
+    if (chi?.number && chi.number !== numero && _call === chiamata)
+      perIlNumero(chi.number)
   } catch {
     // the number shown stays
   }
@@ -690,7 +678,7 @@ async function makeOutgoingCall(number) {
     return
   }
 
-  phoneNumber.value = number
+  perIlNumero(number)
   numeri.value = dati.numbers || []
   paeseChiamato.value = esito.country || ''
   mostrato.value = numeroIniziale(numeri.value, ricordato())
@@ -713,7 +701,7 @@ function chiama() {
 function annullaLaScelta() {
   scelta.value = false
   showCallPopup.value = false
-  phoneNumber.value = ''
+  perIlNumero('')
 }
 
 // while the number is asked: Enter calls, Escape gives up - one key per call in
