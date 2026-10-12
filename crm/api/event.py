@@ -24,6 +24,10 @@ from frappe.utils import add_to_date, get_time, now_datetime
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 
+#: An appointment's calendar copy (`sync_event`): its title is the service and the
+#: people, its description the appointment's notes.
+APPUNTAMENTO = "CRM Appointment"
+
 
 def trigger_offset_event_notifications():
 	"""Trigger event notifications for offset-based intervals (minutes)."""
@@ -67,8 +71,8 @@ def _process_event_notifications_by_interval(interval):
 			e.starts_on,
 			e.ends_on,
 			e.owner,
-			e.description,
 			e.all_day as all_day_event,
+			e.reference_doctype,
 			en.type as notification_type,
 			en.before as before_value,
 			en.time as time_of_day,
@@ -205,19 +209,22 @@ def _apply_global_notifications_to_events(events_without_notifications, interval
 			):
 				continue
 
-			notification = {
-				"event_name": event.event_name,
-				"notification_type": global_notification.type,
-				"before_value": global_notification.before,
-				"time_of_day": global_notification.time,
-				"subject": event.subject,
-				"starts_on": event.starts_on,
-				"ends_on": event.ends_on,
-				"owner": event.owner,
-				"description": event.description,
-				"all_day_event": event.all_day_event,
-				"event_participants": event.get("event_participants", []),
-			}
+			# read by attribute as an event's own are: a plain dict failed the email
+			notification = frappe._dict(
+				{
+					"event_name": event.event_name,
+					"notification_type": global_notification.type,
+					"before_value": global_notification.before,
+					"time_of_day": global_notification.time,
+					"subject": event.subject,
+					"starts_on": event.starts_on,
+					"ends_on": event.ends_on,
+					"owner": event.owner,
+					"all_day_event": event.all_day_event,
+					"reference_doctype": event.reference_doctype,
+					"event_participants": event.get("event_participants", []),
+				}
+			)
 			notifications.append(notification)
 
 	return notifications
@@ -304,61 +311,68 @@ def _split_participant_emails(participant_emails_csv):
 
 
 def _send_email_notification(notification, event_start, before_value, interval):
-	"""Send email notification for an event"""
+	"""The reminder by email to whom the event is for: the enabled System Users who
+	own it or take part in it (`_utenti`), Administrator left out, whose address is
+	the setup's. Never to an address on the event that is nobody's of the centre: a
+	participant's row may carry a client's (the framework fills it in from a
+	contact).
+
+	It says the event's title, when, how long to it and where to open it, never the
+	description, as the screen's reminder does: on an appointment's calendar copy the
+	description is its notes. Of such a copy it says only that it is an appointment:
+	its title is the service and the people, which stay out of an email to a
+	colleague, kept in a mailbox and shown on a phone's locked screen
+	(PRIV-NOTIFICHE-SENZA-SALUTE, docs/verticali/clinica/principi-sanitari.md)."""
 
 	try:
-		recipients = set()
-		subject = _("Reminder: {0}").format(notification.subject)
-
-		if notification.owner and notification.owner != "Administrator":
-			recipients.add(notification.owner)
-
-		participant_emails = notification.get("event_participants") or []
-		if participant_emails:
-			recipients.update(participant_emails)
-		else:
-			event_doc = frappe.get_doc("Event", notification.event_name)
-			for participant in event_doc.get("event_participants", []):
-				email = getattr(participant, "email", None)
-				if email:
-					recipients.add(email)
-
-		recipients = [email for email in recipients if email]
-
+		recipients = [
+			utente.email
+			for utente in _utenti(notification)
+			if utente.name != "Administrator" and utente.email
+		]
 		if not recipients:
 			return
-		time_remaining_text = _format_time_remaining(before_value, interval)
-
-		esc = frappe.utils.escape_html
-		descrizione = frappe.utils.strip_html(notification.description or "").strip()
-		message = "".join(
-			[
-				"<p><b>{}</b><br>{}</p>".format(
-					esc(notification.subject),
-					esc(frappe.utils.format_datetime(event_start, "EEEE d MMMM, HH:mm")),
-				),
-				f"<p>{esc(descrizione)}</p>" if descrizione else "",
-				f"<p>{esc(time_remaining_text)}</p>",
-				pulsante(
-					frappe.utils.get_url(f"/crm/calendar?date={event_start.strftime('%Y-%m-%d')}"),
-					con_nome(_("Open the agenda in {brand}")),
-				),
-			]
-		)
-
-		frappe.sendmail(
-			recipients=recipients,
-			subject=subject,
-			header=_("Event reminder"),
-			with_container=True,
-			message=message,
-			reference_doctype="Event",
-			reference_name=notification.event_name,
-			now=True,
-		)
+		_manda_l_email(notification, recipients, event_start, before_value, interval)
 
 	except Exception as e:
 		frappe.log_error(f"Failed to send email for event {notification.event_name}: {e!s}")
+
+
+def _manda_l_email(notification, recipients, event_start, before_value, interval):
+	esc = frappe.utils.escape_html
+	tutto_il_giorno = frappe.utils.cint(notification.get("all_day_event"))
+	quando = frappe.utils.format_datetime(
+		event_start, "EEEE d MMMM" if tutto_il_giorno else "EEEE d MMMM, HH:mm"
+	)
+	if notification.get("reference_doctype") == APPUNTAMENTO:
+		# the copy's title is the service and the people: only that it is one
+		titolo = _("Appointment")
+		oggetto = _("Reminder: appointment on {0}").format(quando)
+	else:
+		# one line: a title may have been written on more
+		titolo = " ".join(str(notification.get("subject") or "").split()) or _("Event")
+		oggetto = _("Reminder: {0}").format(titolo)
+	message = "".join(
+		[
+			f"<p><b>{esc(titolo)}</b><br>{esc(quando)}</p>",
+			f"<p>{esc(_format_time_remaining(before_value, interval))}</p>",
+			pulsante(
+				frappe.utils.get_url(f"/crm/calendar?date={event_start.strftime('%Y-%m-%d')}"),
+				con_nome(_("Open the agenda in {brand}")),
+			),
+		]
+	)
+
+	frappe.sendmail(
+		recipients=recipients,
+		subject=oggetto,
+		header=_("Event reminder"),
+		with_container=True,
+		message=message,
+		reference_doctype="Event",
+		reference_name=notification.event_name,
+		now=True,
+	)
 
 
 def _format_time_remaining(before_value, interval):
@@ -408,10 +422,10 @@ def _send_system_notification(notification):
 		frappe.publish_realtime("event_notification", messaggio, user=utente)
 
 
-def _destinatari(notification) -> list[str]:
-	"""The enabled System Users an event is for: its owner and its participants,
-	which the event keeps by email - a user's name, or the email of a user whose
-	name is not one (Administrator)."""
+def _utenti(notification) -> list:
+	"""The enabled System Users an event is for, with their email: its owner and its
+	participants, which the event keeps by email - a user's name, or the email of a
+	user whose name is not one (Administrator)."""
 	chi = {
 		str(valore).strip()
 		for valore in (notification.get("owner"), *(notification.get("event_participants") or []))
@@ -423,6 +437,11 @@ def _destinatari(notification) -> list[str]:
 		"User",
 		filters={"enabled": 1, "user_type": "System User"},
 		or_filters={"name": ["in", sorted(chi)], "email": ["in", sorted(chi)]},
-		pluck="name",
+		fields=["name", "email"],
 		order_by="name asc",
 	)
+
+
+def _destinatari(notification) -> list[str]:
+	"""The names of the users an event is for (`_utenti`)."""
+	return [utente.name for utente in _utenti(notification)]

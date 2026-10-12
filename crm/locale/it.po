@@ -51130,3 +51130,6 @@ msgstr "Altro, {0} notifiche da leggere"
 #: frontend/src/stores/session.js
 msgid "Could not log out: try again."
 msgstr "Non è stato possibile uscire: riprova."
+#: crm/api/event.py
+msgid "Reminder: appointment on {0}"
+msgstr "Promemoria: appuntamento di {0}"

@@ -12,11 +12,17 @@ marketing, the other professionals, the agency - with the notes, and each browse
 kept them. A colleague who left, the patient's area and an address of nobody's
 get nothing.
 
+By email it goes to the centre's users only, never to the patient's address on
+the copy. Like the screen's, it never says the description; of an appointment's
+copy, whose title is the service and the person, it says only that it is an
+appointment, and when.
+
 An all-day event's reminder leaves at its hour: the database gives the hour as a
 span since midnight, and the round failed on it.
 """
 
 import datetime
+import html
 from unittest.mock import patch
 
 import frappe
@@ -27,6 +33,7 @@ from crm.api import event as E
 
 NOTE = "Dolore lombare, peggiora la sera"
 OGGETTO = "Fisioterapia — Anna Bianchi"
+PAZIENTE = "anna.bianchi@example.com"
 
 
 def _utente(email: str, tipo: str = "System User", **campi) -> str:
@@ -58,10 +65,59 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 		)
 		emetti.start()
 		self.addCleanup(emetti.stop)
+		# the reminders of the centre and of other tests' events are not these tests'
+		frappe.db.delete("Event Notifications", {"parenttype": ["in", ["Event", "FCRM Settings"]]})
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
 		frappe.db.rollback()
+
+	def evento(self, inizio, promemoria, proprietario=None, partecipanti=(), **campi) -> str:
+		"""An event at ``inizio`` with its own ``promemoria``, whose ``proprietario`` it is
+		(the session's where none), with these users on it and Anna Bianchi by her address."""
+		evento = frappe.get_doc(
+			{
+				"doctype": "Event",
+				"subject": OGGETTO,
+				"description": NOTE,
+				"event_type": "Private",
+				"starts_on": inizio,
+				"ends_on": add_to_date(inizio, minutes=45),
+				"notifications": promemoria,
+				"event_participants": [
+					*(
+						{"reference_doctype": "User", "reference_docname": u, "email": u}
+						for u in partecipanti
+					),
+					{
+						"reference_doctype": "CRM Lead",
+						"reference_docname": "CRM-LEAD-FINTO",
+						"email": PAZIENTE,
+					},
+				],
+				**campi,
+			}
+		).insert(ignore_permissions=True, ignore_links=True)
+		if proprietario:
+			frappe.db.set_value("Event", evento.name, "owner", proprietario, update_modified=False)
+		return evento.name
+
+	def giri(self, interval, *quando):
+		"""The round of ``interval`` at each of these moments: (to, subject, message) of
+		every email it handed over. What it could not do fails the test."""
+		email = []
+
+		def manda(**kwargs):
+			email.append((tuple(kwargs["recipients"]), kwargs["subject"], kwargs["message"]))
+
+		with (
+			patch.object(E.frappe, "sendmail", side_effect=manda),
+			patch.object(E.frappe, "log_error", side_effect=AssertionError("the round logged an error")),
+		):
+			for momento in quando:
+				with patch.object(E, "now_datetime", return_value=momento):
+					E._process_event_notifications_by_interval(interval)
+		return email
 
 	def avvisi(self, evento=None):
 		"""(room, message) of every reminder sent, of one event where it is given."""
@@ -200,3 +256,64 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 		):
 			E._process_event_notifications_by_interval("days")
 		self.assertEqual(self.stanze(evento.name), ["user:Administrator"])
+
+	# ------------------------------------------------------------------ by email
+
+	def test_la_copia_di_un_appuntamento_non_dice_cosa_ne_chi(self):
+		adesso = now_datetime().replace(microsecond=0)
+		inizio = add_to_date(adesso, hours=1)
+		self.evento(
+			inizio,
+			[{"type": "Email", "before": 1, "interval": "hours"}],
+			partecipanti=[self.verdi],
+			reference_doctype="CRM Appointment",
+			reference_docname="APPT-FINTO",
+		)
+		email = self.giri("hours", adesso)
+		# to Dott. Verdi: never Administrator, never the patient's address on the copy
+		self.assertEqual([a for a, _oggetto, _testo in email], [(self.verdi,)])
+		_a, oggetto, testo = email[0]
+		# the service and the person are its title, the notes its description
+		for parola in ("Fisioterapia", "Anna Bianchi", NOTE):
+			self.assertNotIn(parola, oggetto)
+			self.assertNotIn(parola, testo)
+		self.assertIn(inizio.strftime("%H:%M"), oggetto)
+
+	def test_un_evento_dice_il_suo_titolo_mai_la_descrizione(self):
+		adesso = now_datetime().replace(microsecond=0)
+		inizio = add_to_date(adesso, minutes=10)
+		self.evento(
+			inizio,
+			[{"type": "Email", "before": 10, "interval": "minutes"}],
+			partecipanti=[self.verdi, self.andata_via, self.area],
+			subject="Riunione d'équipe",
+		)
+		email = self.giri("minutes", adesso)
+		# the centre's users only: not who left, not the area, not the patient
+		self.assertEqual([a for a, _oggetto, _testo in email], [(self.verdi,)])
+		_a, oggetto, testo = email[0]
+		# its title, when and where to open it, as on the screen; never its description
+		self.assertIn("Riunione d'équipe", oggetto)
+		self.assertIn("Riunione d'équipe", html.unescape(testo))
+		self.assertNotIn(NOTE, testo)
+		self.assertIn(inizio.strftime("%H:%M"), testo)
+		self.assertIn(f"/crm/calendar?date={inizio.date().isoformat()}", testo)
+
+	def test_i_promemoria_del_centro_anche_per_email(self):
+		# the centre's reminders were handed over as plain dicts, which the email read
+		# by attribute: it failed every time
+		adesso = now_datetime().replace(microsecond=0)
+		frappe.get_doc(
+			{
+				"doctype": "Event Notifications",
+				"parenttype": "FCRM Settings",
+				"parentfield": "event_notifications",
+				"parent": "FCRM Settings",
+				"type": "Email",
+				"before": 10,
+				"interval": "minutes",
+			}
+		).db_insert()
+		self.evento(add_to_date(adesso, minutes=10), [], partecipanti=[self.verdi])
+		email = self.giri("minutes", adesso)
+		self.assertEqual([a for a, _oggetto, _testo in email], [(self.verdi,)])
