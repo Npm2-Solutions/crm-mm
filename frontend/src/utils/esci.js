@@ -54,22 +54,31 @@ function svuota(nome, utenti) {
  *   notifications go (composables/spinta.js `lascia`). Whatever happens to it,
  *   the logout goes on;
  * - `chiudi`, the server ending the session;
- * - once it has, frappe-ui's old copies, the drafts of `utenti` (whoever signs
- *   out: their user, and the email their drafts are kept under) and the app's
- *   keys that are no preference.
+ * - once it has, what `prima` answered it leaves for then (a function: the
+ *   browser letting go of its subscription), frappe-ui's old copies, the
+ *   drafts of `utenti` (whoever signs out: their user, and the email their
+ *   drafts are kept under) and the app's keys that are no preference.
  *
  * When `chiudi` fails the session goes on, and nothing is taken away: its
- * drafts are still its own. Rejects then as `chiudi` did.
+ * drafts and its device are still its own. Rejects then as `chiudi` did.
  */
 export async function esci(chiudi, { utenti = [], prima } = {}) {
+  let dopo = null
   if (prima) {
     try {
-      await prima()
+      dopo = await prima()
     } catch {
       // the device not let go: the session ends all the same
     }
   }
   const risposta = await chiudi()
+  if (typeof dopo === 'function') {
+    try {
+      await dopo()
+    } catch {
+      // the session is over all the same
+    }
+  }
   togliLeCopie()
   svuota('localStorage', utenti)
   svuota('sessionStorage', utenti)

@@ -216,10 +216,11 @@ paziente, le notifiche arrivavano a chi non c'era più.
   tiene il suo abbonamento, e chi entra dopo lo riceve alla prima apertura. Se
   il server non risponde in tempo, o il promemoria dice che l'ultimo a
   sincronizzarlo era un altro (il server dimentica solo la riga della sessione),
-  è il browser a lasciare l'abbonamento: lì non arriva più niente, il servizio
-  di chi fa il browser risponde che non c'è più e il server lo dimentica al
-  primo invio. Chi esce mentre la prima apertura sta ancora sincronizzando
-  aspetta che finisca: ciò che passa a lui viene lasciato con il resto.
+  è il browser a lasciare l'abbonamento, appena il server ha chiuso la
+  sessione: lì non arriva più niente, il servizio di chi fa il browser risponde
+  che non c'è più e il server lo dimentica al primo invio. Chi esce mentre la
+  prima apertura sta ancora sincronizzando aspetta che finisca: ciò che passa
+  a lui viene lasciato con il resto.
 - **Una sessione scaduta senza uscire** lo lascia all'ultimo che l'ha usato,
   finché qualcuno non entra in quel browser: allora passa a lui. Su un computer
   condiviso si esce.
@@ -231,8 +232,12 @@ paziente, le notifiche arrivavano a chi non c'era più.
   preferenza del dispositivo (`utils/dopoLUscita.js`); restano la vista
   dell'agenda, il menu ripiegato, la larghezza della colonna, il tema, gli
   inviti messi da parte. Un'uscita che il server non accetta non toglie niente:
-  la sessione continua con le sue bozze, e la pagina dice «Non è stato possibile
-  uscire: riprova.».
+  la sessione continua con le sue bozze e con il suo dispositivo (il browser
+  tiene l'abbonamento, e ciò che il server aveva già dimenticato gli torna
+  subito, `resta`), e la pagina dice «Non è stato possibile uscire: riprova.».
+  Prima, rifiutata l'uscita con la rete giù, il browser aveva già lasciato
+  l'abbonamento e chi restava dentro non riceveva più niente lì, finché non
+  riaccendeva le notifiche.
 
 ## Come è fatta
 
@@ -275,11 +280,13 @@ paziente, le notifiche arrivavano a chi non c'era più.
   `Mobile/NotificheSulTelefono.vue`; il router segna letta la notifica toccata
   (`?notifica=`).
 - Il dispositivo e l'uscita: `composables/spinta.js` (`sincronizza` a ogni
-  apertura, `lascia` all'uscita), le scelte senza browser in `utils/spinta.js`
-  (`memoriaDi`, `daChiedere`, `tieneLAbbonamento`, `entroIlTempo`); l'uscita
-  in `utils/esci.js`, presa da `stores/session.js` (il menu, «Accesso negato»,
-  `Moduli/SendFormsDialog.vue` per il tablet) e da `area/store.js`; le chiavi
-  che vanno e quelle che restano in `utils/dopoLUscita.js`.
+  apertura, `lascia` all'uscita, che risponde la parte del browser da fare a
+  sessione chiusa, `resta` se l'uscita è rifiutata), le scelte senza browser
+  in `utils/spinta.js` (`memoriaDi`, `daChiedere`, `tieneLAbbonamento`,
+  `entroIlTempo`); l'uscita in `utils/esci.js`, presa da `stores/session.js`
+  (il menu, «Accesso negato», `Moduli/SendFormsDialog.vue` per il tablet) e da
+  `area/store.js`; le chiavi che vanno e quelle che restano in
+  `utils/dopoLUscita.js`.
 
 ## Verifiche
 
@@ -300,6 +307,7 @@ paziente, le notifiche arrivavano a chi non c'era più.
   riga per abbonamento come `spinta.py`: Anna, Bruno e di nuovo Anna sullo
   stesso browser, il dispositivo passa ogni volta (sul codice di prima restava
   di Bruno); l'uscita col server che dimentica, che rifiuta, con l'abbonamento
-  di un altro. `tests/unit/esci.test.js` e `dopoLUscita.test.js`: l'ordine
-  dell'uscita, niente tolto se il server rifiuta, ogni chiave che l'app scrive
-  decisa.
+  di un altro; un'uscita rifiutata con la rete giù, che lascia il dispositivo a
+  chi resta. Ogni accesso è una pagina nuova, come nel browser.
+  `tests/unit/esci.test.js` e `dopoLUscita.test.js`: l'ordine dell'uscita,
+  niente tolto se il server rifiuta, ogni chiave che l'app scrive decisa.

@@ -192,8 +192,11 @@ async function sincronizzaOra() {
  * seconds, or the memo says somebody else was the last to sync it (what the
  * server forgot for this session was then not it), the browser lets go of it
  * instead: nothing reaches the device, its push service answers that it is
- * gone, and the server forgets it at its next notification. The memo goes
- * either way. Never throws, and never waits long: the logout goes on.
+ * gone, and the server forgets it at its next notification. That waits for
+ * the server to end the session: answered here as what is left to do then
+ * (utils/esci.js), so that a logout it refuses leaves the device to the
+ * session that goes on. The memo goes either way. Never throws, and never
+ * waits long: the logout goes on.
  */
 export async function lascia() {
   // the opening's sync still on its way lands first: what it hands over is
@@ -202,7 +205,7 @@ export async function lascia() {
   const memoria = laMemoria()
   dimentica()
   const abbonamento = await abbonamentoQui().catch(() => null)
-  if (!abbonamento) return
+  if (!abbonamento) return null
   const segno = impronta.value
   const dimenticato = await entroIlTempo(
     call('crm.notifiche.spinta.unsubscribe', { endpoint_hash: segno }),
@@ -216,10 +219,22 @@ export async function lascia() {
       dimenticato,
     })
   )
-    return
-  await entroIlTempo(
-    Promise.resolve().then(() => abbonamento.unsubscribe()),
-    ATTESA,
-  )
-  impronta.value = ''
+    return null
+  return async () => {
+    await entroIlTempo(
+      Promise.resolve().then(() => abbonamento.unsubscribe()),
+      ATTESA,
+    )
+    impronta.value = ''
+  }
+}
+
+/**
+ * A logout the server refused: the session goes on, and the device with it.
+ * What `lascia` had the server forget is handed back now, not at the next
+ * opening: the memo goes, so the server is asked.
+ */
+export function resta() {
+  dimentica()
+  return sincronizza()
 }

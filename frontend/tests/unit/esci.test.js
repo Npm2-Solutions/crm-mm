@@ -71,11 +71,21 @@ describe('esci', () => {
       },
       {
         utenti: [ANNA],
-        prima: async () => fatto.push('lascia'),
+        // what the device leaves for once the session is over: the browser
+        // letting go of its subscription
+        prima: async () => {
+          fatto.push('lascia')
+          return async () => fatto.push('il browser lascia')
+        },
       },
     )
     expect(risposta).toBe('ok')
-    expect(fatto).toEqual(['lascia', 'logout', 'deleteDatabase keyval-store'])
+    expect(fatto).toEqual([
+      'lascia',
+      'logout',
+      'il browser lascia',
+      'deleteDatabase keyval-store',
+    ])
     // how the device is set stays; a colleague's drafts stay theirs
     expect(Object.keys(localStorage).sort()).toEqual([
       'crmAgenda',
@@ -90,9 +100,15 @@ describe('esci', () => {
     const tolti = []
     globalThis.indexedDB = { deleteDatabase: (nome) => tolti.push(nome) }
     const rifiuto = new Error('502 Bad Gateway')
+    let lasciato = false
     await expect(
-      esci(() => Promise.reject(rifiuto), { utenti: [ANNA] }),
+      esci(() => Promise.reject(rifiuto), {
+        utenti: [ANNA],
+        prima: async () => () => (lasciato = true),
+      }),
     ).rejects.toBe(rifiuto)
+    // the device is still the session's: the browser kept its subscription
+    expect(lasciato).toBe(false)
     // the session goes on, and its draft is still its own
     expect(
       localStorage.getItem(`emailBoxContent-${ANNA}-CRM Lead-CRM-LEAD-0001`),
@@ -117,6 +133,19 @@ describe('esci', () => {
       },
     )
     expect(uscita).toBe(true)
+    expect(localStorage.getItem('eventNotificationAlerts')).toBeNull()
+  })
+
+  it('clears all the same when the browser could not let go once out', async () => {
+    unaGiornata()
+    await expect(
+      esci(async () => 'ok', {
+        utenti: [ANNA],
+        prima: async () => () => {
+          throw new Error('push service unreachable')
+        },
+      }),
+    ).resolves.toBe('ok')
     expect(localStorage.getItem('eventNotificationAlerts')).toBeNull()
   })
 

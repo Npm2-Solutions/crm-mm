@@ -34,10 +34,18 @@ export const sessionStore = defineStore('crm-session', () => {
 
   // this device's notifications let go (composables/spinta.js), where it could
   // have them at all: imported then, as main.js does, never in the first
-  // download
+  // download. What it answers, the browser's part, waits for the logout
   function lasciaIlDispositivo() {
     if (window.Notification?.permission !== 'granted') return
     return import('@/composables/spinta').then((spinta) => spinta.lascia())
+  }
+
+  // a logout refused: the device is the session's again, at once
+  function tieniIlDispositivo() {
+    if (window.Notification?.permission !== 'granted') return
+    import('@/composables/spinta')
+      .then((spinta) => spinta.resta())
+      .catch(() => {})
   }
 
   /**
@@ -45,7 +53,8 @@ export const sessionStore = defineStore('crm-session', () => {
    * notifications let go while the session is there, the server ends it, then
    * what the browser kept of it goes; the page goes `verso`, the sign-in
    * unless said (the tablet handed to a person: their forms). Rejects, having
-   * cleared nothing, when the server did not end the session.
+   * cleared nothing and kept the device, when the server did not end the
+   * session.
    */
   async function esciVerso(verso = '/login?redirect-to=/crm') {
     // whose drafts go, read while the session is there: the user, and the
@@ -56,7 +65,12 @@ export const sessionStore = defineStore('crm-session', () => {
       user.value,
       (allUsers || []).find((utente) => utente.name === user.value)?.email,
     ]
-    await esci(() => call('logout'), { utenti, prima: lasciaIlDispositivo })
+    try {
+      await esci(() => call('logout'), { utenti, prima: lasciaIlDispositivo })
+    } catch (errore) {
+      tieniIlDispositivo()
+      throw errore
+    }
     user.value = null
     window.location.href = verso
   }

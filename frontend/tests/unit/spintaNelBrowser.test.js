@@ -1,9 +1,10 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // Notifications on a browser that colleagues share (composables/spinta.js): the
 // device follows whoever signs in, and a logout lets it go, against a server
-// that keeps one row per subscription as crm/notifiche/spinta.py does.
+// that keeps one row per subscription as crm/notifiche/spinta.py does. Each
+// sign-in is a page of its own, as in the browser: the composable is loaded
+// again, and the way out is the desk's (utils/esci.js).
 import { createHash } from 'node:crypto'
-import { attiva, lascia, sincronizza } from '@/composables/spinta'
 
 // the key a browser subscribes with (any P-256 point the browser takes)
 const CHIAVE =
@@ -13,7 +14,7 @@ const BRUNO = 'bruno@centro.it'
 
 const sessione = vi.hoisted(() => ({ user: null }))
 // the server: whose each subscription is, by its endpoint's fingerprint, what
-// it was asked, and whether it refuses (down, the session already gone)
+// it was asked, and whether it refuses (down)
 const server = vi.hoisted(() => ({
   righe: new Map(),
   chiesto: [],
@@ -25,6 +26,8 @@ vi.mock('frappe-ui', () => ({
   call: async (metodo, argomenti = {}) => {
     server.chiesto.push(metodo)
     if (server.rifiuta) throw new Error('502 Bad Gateway')
+    // only a session of the centre's (`_del_centro`): a logout ended it
+    if (!sessione.user) throw new Error('403 Forbidden')
     const dispositivi = () =>
       [...server.righe]
         .filter(([, utente]) => utente === sessione.user)
@@ -75,9 +78,21 @@ function diChi() {
   return server.righe.get(impronta(browser.abbonamento.endpoint)) || null
 }
 
-function entra(utente) {
+// the page open now: the composable as it loaded it, and the way out
+let pagina
+let esci
+async function entra(utente) {
   sessione.user = utente
   server.chiesto.length = 0
+  vi.resetModules()
+  pagina = await import('@/composables/spinta')
+  ;({ esci } = await import('@/utils/esci'))
+}
+
+// the desk's way out (stores/session.js): the device let go while the session
+// is there, then the server ends it
+function esce(chiudi = async () => (sessione.user = null)) {
+  return esci(chiudi, { utenti: [sessione.user], prima: pagina.lascia })
 }
 
 beforeAll(() => {
@@ -112,45 +127,45 @@ beforeEach(() => {
 describe('the device follows whoever signs in', () => {
   it('is handed to each colleague who signs in after another, every time', async () => {
     // Anna turns them on, and opens DottorCloud again another day
-    entra(ANNA)
-    await attiva(CHIAVE)
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await entra(ANNA)
+    await pagina.sincronizza()
     expect(diChi()).toBe(ANNA)
 
     // Bruno signs in on the same browser: the server is asked, and hands it over
-    entra(BRUNO)
-    await sincronizza()
+    await entra(BRUNO)
+    await pagina.sincronizza()
     expect(diChi()).toBe(BRUNO)
 
     // Anna again: asked as well, not «already synced» by a memo of hers
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.sincronizza()
     expect(server.chiesto).toContain('crm.notifiche.spinta.get_push')
     expect(diChi()).toBe(ANNA)
   })
 
   it('asks nothing of the server when it is already the one signed in', async () => {
-    entra(ANNA)
-    await attiva(CHIAVE)
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await entra(ANNA)
+    await pagina.sincronizza()
     expect(server.chiesto).toEqual([])
     expect(diChi()).toBe(ANNA)
   })
 
   it('takes away the memos older versions kept one per person', async () => {
-    entra(ANNA)
-    await attiva(CHIAVE)
-    entra(BRUNO)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await entra(BRUNO)
+    await pagina.sincronizza()
     // what an older version left: Anna's memo, still equal to the subscription
     localStorage.setItem(
       `crm-spinta:${ANNA}`,
       impronta(browser.abbonamento.endpoint),
     )
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.sincronizza()
     expect(diChi()).toBe(ANNA)
     expect(localStorage.getItem(`crm-spinta:${ANNA}`)).toBeNull()
     expect(localStorage.getItem('crm-spinta')).toBe(
@@ -159,8 +174,8 @@ describe('the device follows whoever signs in', () => {
   })
 
   it('stays out of a browser where they were never turned on', async () => {
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.sincronizza()
     expect(server.chiesto).toEqual([])
     expect(browser.abbonamento).toBeNull()
   })
@@ -168,26 +183,26 @@ describe('the device follows whoever signs in', () => {
 
 describe('a logout lets the device go', () => {
   it('the server forgets it, and whoever signs in next is handed it', async () => {
-    entra(ANNA)
-    await attiva(CHIAVE)
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
     const prima = browser.abbonamento
-    await lascia()
+    await esce()
     // nobody's: nothing reaches the device
     expect(diChi()).toBeNull()
     expect(localStorage.getItem('crm-spinta')).toBeNull()
     // the browser kept its subscription, for Bruno's first opening
     expect(browser.abbonamento).toBe(prima)
-    entra(BRUNO)
-    await sincronizza()
+    await entra(BRUNO)
+    await pagina.sincronizza()
     expect(diChi()).toBe(BRUNO)
   })
 
   it('the browser lets go of it when the server does not forget it', async () => {
-    entra(ANNA)
-    await attiva(CHIAVE)
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
     const segno = impronta(browser.abbonamento.endpoint)
     server.rifiuta = true
-    await lascia()
+    await esce()
     // nothing reaches the device: its push service now says it is gone, and
     // the server forgets the row at its next notification
     expect(browser.abbonamento).toBeNull()
@@ -198,23 +213,23 @@ describe('a logout lets the device go', () => {
   it('the browser lets go of somebody else’s, which the server does not forget for this session', async () => {
     // Anna's session ran out without a logout; Bruno signs in and is out again
     // before his first opening had synced the device
-    entra(ANNA)
-    await attiva(CHIAVE)
-    entra(BRUNO)
-    await lascia()
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await entra(BRUNO)
+    await esce()
     expect(browser.abbonamento).toBeNull()
     expect(localStorage.getItem('crm-spinta')).toBeNull()
   })
 
   it('lets go of what the opening’s sync, still on its way, hands over', async () => {
-    entra(ANNA)
-    await attiva(CHIAVE)
-    entra(ANNA)
-    await sincronizza()
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await entra(ANNA)
+    await pagina.sincronizza()
     // Bruno signs in, and out again while his first opening is still syncing
-    entra(BRUNO)
-    const apertura = sincronizza()
-    await lascia()
+    await entra(BRUNO)
+    const apertura = pagina.sincronizza()
+    await esce()
     await apertura
     // nobody's: none of his notifications after he is out
     expect(diChi()).toBeNull()
@@ -222,8 +237,38 @@ describe('a logout lets the device go', () => {
   })
 
   it('asks nothing where the browser has no subscription', async () => {
-    entra(ANNA)
-    await lascia()
+    await entra(ANNA)
+    await esce()
     expect(server.chiesto).toEqual([])
+  })
+})
+
+describe('a logout the server refuses', () => {
+  it('leaves the device to the session that goes on', async () => {
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    const prima = browser.abbonamento
+    // the network is down: the device is not let go, nor is the session
+    server.rifiuta = true
+    const rifiuto = new Error('Failed to fetch')
+    await expect(esce(() => Promise.reject(rifiuto))).rejects.toBe(rifiuto)
+    // the browser kept its subscription, and the server never forgot it: her
+    // notifications go on arriving while she works
+    expect(browser.abbonamento).toBe(prima)
+    expect(diChi()).toBe(ANNA)
+  })
+
+  it('gives back at once what the server had forgotten before it', async () => {
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    const rifiuto = new Error('502 Bad Gateway')
+    await expect(esce(() => Promise.reject(rifiuto))).rejects.toBe(rifiuto)
+    expect(diChi()).toBeNull()
+    // the desk, told the logout was refused (stores/session.js)
+    await pagina.resta()
+    expect(diChi()).toBe(ANNA)
+    expect(localStorage.getItem('crm-spinta')).toBe(
+      `${ANNA}|${impronta(browser.abbonamento.endpoint)}`,
+    )
   })
 })
