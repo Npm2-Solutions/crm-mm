@@ -181,4 +181,32 @@ describe('useTiraPerAggiornare', () => {
     app.unmount()
     smonta()
   })
+
+  it('tells a screen reader it reloads, in a region there from the start', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, smonta } = monta(aggiorna)
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    const app = createApp({ render: () => h(TiraPerAggiornare, stato) })
+    app.config.globalProperties.__ = globalThis.__
+    app.mount(radice)
+    await nextTick()
+    // there before anything is said, and never under a hidden box: one put
+    // in already filled is not announced reliably
+    const regione = radice.querySelector('[role=status]')
+    expect(regione.textContent.trim()).toBe('')
+    expect(regione.closest('[aria-hidden="true"]')).toBeNull()
+    const fatto = stato.aggiornaOra()
+    await nextTick()
+    expect(radice.querySelector('[role=status]')).toBe(regione)
+    expect(regione.textContent.trim()).toBe('Updating the list…')
+    expect(regione.closest('[aria-hidden="true"]')).toBeNull()
+    finisci()
+    await fatto
+    await nextTick()
+    expect(regione.textContent.trim()).toBe('')
+    app.unmount()
+    smonta()
+  })
 })

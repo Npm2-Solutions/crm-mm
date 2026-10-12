@@ -396,6 +396,10 @@ Con il tocco, come in un'app:
   «Segna tutto come letto» (`Mobile/PulsanteAggiorna.vue`): fa lo stesso con
   un tocco, la lista resta dov'è e il tasto gira finché non è tornata; un
   aggiornamento alla volta, che venga dal dito o dal tasto (`aggiornaOra`).
+  Mentre torna, un lettore di schermo sente «Aggiorno l'elenco…», da una
+  regione che c'è fin dall'inizio: arrivava già scritta, dentro un riquadro
+  nascosto fino a quel momento, e così non si sentiva
+  (`Mobile/TiraPerAggiornare.vue`).
 - **Tornando indietro, una lista è com'era.** Aperta una persona (una
   trattativa, una chat) e tornati indietro, la lista ha ancora le parole
   cercate, le righe che aveva e il punto a cui era arrivata; poi si aggiorna da
