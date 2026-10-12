@@ -124,9 +124,11 @@ esempio RES-11): [segnalazioni.md](../segnalazioni.md).
   Note: ______________________________________________
 
 - [ ] **RES-17 · La prenotazione online.** Impostazioni › Agenda › Prenotazione
-  online: i servizi e le persone, la pagina e le regole. Poi `/prenota` dal telefono.
+  online: i servizi e le persone, la pagina e le regole, con l'indirizzo
+  dell'informativa del centro. Poi `/prenota` dal telefono.
   *Atteso:* prima la sede, poi i servizi che vi si tengono; l'acconto detto prima del
-  pulsante; il fondo tra quelli proposti.
+  pulsante; il fondo tra quelli proposti; tra i dati la casella «Ho letto
+  l'informativa sulla privacy», con il collegamento (senza l'indirizzo non c'è).
   Note: ______________________________________________
 
 - [ ] **RES-18 · Le pipeline.** Impostazioni › Trattative › Pipeline: «Nuovi

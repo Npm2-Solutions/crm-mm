@@ -278,10 +278,13 @@ Fatto il 29/09/2026, nel CRM e non nella clinica, perché serve a tutti: in
   revoca si timbra sulla stessa riga, un nuovo sì è una riga nuova. Lo stato di
   una persona è la sua ultima risposta.
 - **`/prenota`** registra la spunta dell'informativa con le parole che la pagina
-  ha mostrato, nella lingua del visitatore, e l'indirizzo dell'informativa. Se il
-  centro lo accende nelle impostazioni della prenotazione, chiede anche il
-  marketing: una casella facoltativa e mai spuntata in anticipo, col testo del
-  centro.
+  ha mostrato, nella lingua del visitatore, e l'indirizzo dell'informativa. È una
+  presa visione, «Ho letto l'informativa sulla privacy», mai un consenso: prenotare
+  non ne chiede. La pagina la chiede solo dove il centro ha scritto l'indirizzo
+  dell'informativa (12/10/2026: senza, diceva «Acconsento al trattamento dei miei
+  dati…»). Se il centro lo accende nelle impostazioni della prenotazione, chiede
+  anche il marketing: una casella facoltativa e mai spuntata in anticipo, col testo
+  del centro.
 - **Sulla pagina della persona** la sezione "Consents": lo stato di ogni tipo, e
   un bottone per registrare una risposta o revocare. Revocare è facile quanto
   dare (art. 7(3) GDPR): chi sente "non scrivetemi più" lo registra, commerciale

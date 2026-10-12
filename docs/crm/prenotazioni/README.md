@@ -45,9 +45,24 @@ accetta un servizio, un vecchio calendario o niente (tutto il menu).
 ### Il percorso del cliente
 
 Servizio → professionista (o "chiunque", o già scelto dal link) → giorno e ora (solo i
-giorni liberi, orari per fascia, scorciatoia *Primo orario libero*) → dati e consenso →
+giorni liberi, orari per fascia, scorciatoia *Primo orario libero*) → dati e informativa →
 conferma con Google/Outlook e `.ics`. Prezzi "da …" e durate min–max quando i
 professionisti differiscono.
+
+**L'informativa letta, non un consenso** (12/10/2026). Prenotare non chiede un consenso:
+la prenotazione è quello che la persona ha chiesto (art. 6, par. 1, lett. b, GDPR), e i
+dati per curarla li tratta un professionista tenuto al segreto (art. 9, par. 2, lett. h,
+e par. 3; il Garante, chiarimenti del 7/3/2019). La pagina chiede soltanto di confermare
+di aver letto l'informativa: una casella obbligatoria, «Ho letto l'informativa sulla
+privacy», con il collegamento all'informativa del centro. C'è dove il centro ne ha
+scritto l'indirizzo e lo vuole (*Impostazioni → Agenda → Prenotazione online → Pagina e
+regole*, «Chiedi la presa visione dell'informativa», acceso all'inizio): senza indirizzo
+non c'è niente da leggere, e la pagina non chiede nulla. Prima, senza indirizzo, la
+casella diceva «Acconsento al trattamento dei miei dati per gestire la prenotazione». La
+spunta va nel registro dei consensi come presa visione (`privacy_notice`), con le parole
+mostrate nella lingua del visitatore e l'indirizzo; la lista d'attesa fa lo stesso. Il
+marketing resta una casella a parte, facoltativa e mai spuntata, dove il centro la
+chiede.
 
 **Per me o per un'altra persona** (29/09/2026). La pagina chiede per chi è
 l'appuntamento: il genitore prenota per il figlio, il figlio per la madre anziana. Chi
