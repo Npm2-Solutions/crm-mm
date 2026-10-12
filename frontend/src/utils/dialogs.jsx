@@ -1,5 +1,8 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
 import { Dialog, ErrorMessage } from 'frappe-ui'
+import { DialogDescription } from 'reka-ui'
 import { reactive, ref } from 'vue'
+import { conAnnulla } from '@/utils/conferme'
 
 let dialogs = ref([])
 
@@ -28,8 +31,12 @@ export let Dialogs = {
         {{
           default: () => {
             return [
+              // the dialog's description: reka-ui's aria-describedby points
+              // at it, and a screen reader reads it as the dialog opens
               dialog.message && (
-                <p class="text-p-base text-ink-gray-7">{dialog.message}</p>
+                <DialogDescription asChild>
+                  <p class="text-p-base text-ink-gray-7">{dialog.message}</p>
+                </DialogDescription>
               ),
               dialog.html && <div v-html={dialog.html} />,
               <ErrorMessage class="mt-2" message={dialog.error} />,
@@ -43,6 +50,8 @@ export let Dialogs = {
 
 export function createDialog(dialogOptions) {
   let dialog = reactive(dialogOptions)
+  // only a red button: «Cancel» in front of it, once (utils/conferme.js)
+  dialog.actions = conAnnulla(dialog.actions, __('Cancel'))
   dialog.key = 'dialog-' + dialogs.value.length
   dialog.show = false
   setTimeout(() => {

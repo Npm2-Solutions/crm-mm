@@ -84,7 +84,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | File | Role |
 |---|---|
 | `frontend/src/stores/meta.js` | `getMeta(doctype)` — fetches DocType meta, exposes `getFields()`, formatters |
-| `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall` |
+| `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall`; `$dialog` is `utils/dialogs.jsx`: its message the dialog's description, «Cancel» in front of a confirmation whose actions are all red (`utils/conferme.js`, tested) |
 
 ### Dashboard
 | File | Role |
