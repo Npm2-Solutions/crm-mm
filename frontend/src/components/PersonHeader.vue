@@ -289,25 +289,31 @@ function prenota() {
   })
 }
 
+// the next appointment is the agenda's: asked, and drawn, only for whoever
+// reads it. A colleague who does not (Marketing) was shown the one the last
+// reader at the same computer had read, from a copy no request had asked for
+const leggeLAgenda = puo('agenda.vedi')
 const appuntamenti = createResource({
   url: 'crm.api.appointments.get_person_appointments',
   params: { doctype: 'CRM Lead', name: props.doc.name },
   cache: ['person-appointments', props.doc.name],
-  auto: puo('agenda.vedi'),
+  auto: leggeLAgenda,
 })
 
 // the agenda keeps the centre's clock: now is the centre's, not the phone's
 const prossimo = computed(() =>
-  prossimoAppuntamento(appuntamenti.data, adessoDelCentro()),
+  leggeLAgenda
+    ? prossimoAppuntamento(appuntamenti.data, adessoDelCentro())
+    : null,
 )
 
 // how old they are and when they were born: after the name, what tells one
 // patient from another with the same name (NISTIR 7804), on every tab. From
 // the billing details the page reads anyway (the codice fiscale's date), for
-// whoever may read them: the others see what they saw before. Never kept in
-// the browser (no `cache`): a cached resource lands in IndexedDB, which no
-// logout clears, and a colleague without the fiscal details at the same
-// reception PC was shown the last reader's copy
+// whoever may read them: the others see what they saw before. Shared with no
+// other part of the page (no `cache`): when frappe-ui kept a cached resource
+// in IndexedDB, a colleague without the fiscal details at the same reception
+// PC was shown the last reader's copy
 const fiscali = puo('persone.dati_fiscali')
 const anagrafica = createResource({
   url: 'crm.invoicing.anagrafica.get_billing_profile',
@@ -361,5 +367,5 @@ const tasti = computed(
     ].filter(Boolean).length || 1,
 )
 
-defineExpose({ reload: () => appuntamenti.reload() })
+defineExpose({ reload: () => leggeLAgenda && appuntamenti.reload() })
 </script>
