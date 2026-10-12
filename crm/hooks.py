@@ -577,6 +577,14 @@ doc_events = {
 		],
 		"after_delete": ["crm.scheduling.attese.appuntamento_eliminato"],
 	},
+	# an appointment's calendar copy reads to its professionals by their address, never
+	# to who comes: the framework's own before_save writes a Contact's address on every
+	# participant row without one (Event.set_participants_email), and Document.hook
+	# (frappe/model/document.py, `compose`, Frappe 16.51) runs the controller's method
+	# first and the apps' doc_events after it, so this one comes after the framework's
+	"Event": {
+		"before_save": ["crm.fcrm.doctype.crm_appointment.crm_appointment.copia_solo_ai_professionisti"],
+	},
 	# a new shift, a service or a room changed: the waiting lists are looked at again
 	"CRM Staff Schedule": {
 		"on_update": [
@@ -676,8 +684,10 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# a notification older than six months goes, read or not (Log Settings, crm.notifiche)
-default_log_clearing_doctypes = {"CRM Notification": 180}
+# a notification older than six months goes, read or not (Log Settings, crm.notifiche);
+# an event's reminder written down three months after the event started, when no round
+# looks at it again (crm.api.event)
+default_log_clearing_doctypes = {"CRM Notification": 180, "CRM Event Reminder": 90}
 
 # the framework's emails for an assignment, a mention, a document shared: they named
 # doctypes and IDs and opened the Desk. DottorCloud's notifications go by email in
@@ -691,6 +701,8 @@ make_email_body_message = ["crm.posta.servizio.intestazioni"]
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
+		# the event reminders of hours, days and weeks before, each at its hour: once a
+		# day or a week, most of them fell between two rounds (crm.api.event)
 		"crm.api.event.trigger_hourly_event_notifications",
 		"crm.integrations.meta.conversions.flush",
 		# a conversation parked until this morning has to come back on its own,
@@ -717,7 +729,6 @@ scheduler_events = {
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
 		"crm.integrations.meta.insights.sync_ad_spend",
-		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		# the centre's archive holds everything: it goes after a week
 		"crm.esportazione.esporta.togli_le_vecchie",
@@ -737,7 +748,6 @@ scheduler_events = {
 		# where the centre switched them on, the reminders of what a person still owes
 		"crm.invoicing.solleciti.ogni_giorno",
 	],
-	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
 		"crm.integrations.meta.leads.reconcile_synced_pages",
 		# the private files written a while ago, to the agency's archive (crm.archivio)
@@ -820,6 +830,9 @@ ignore_links_on_delete = [
 	# a payment stays in the register when its appointment is deleted
 	"CRM Online Payment",
 	"CRM Stripe Event",
+	# an event's reminder that left stays written down: its event (an appointment's
+	# calendar copy goes when the appointment is cancelled) and its user go anyway
+	"CRM Event Reminder",
 ]
 
 # Request Events
@@ -971,8 +984,9 @@ standard_dropdown_items = [
 # worker that finds them there never imports this file.
 # Itala pushes its updates with `Authorization: Bearer`: taken away from that one
 # address before Frappe authenticates the request (crm/invoicing/sdi/webhook.py)
-# an archived private file is opened from the agency's archive, after the framework's
-# own check (crm/archivio/archivio.py)
+# a private file is never kept by the browser (`Cache-Control: private, no-store`
+# over the framework's hour behind nginx), and an archived one is opened from the
+# agency's archive, after the framework's own check (crm/archivio/archivio.py)
 before_request = [
 	"crm.registrazione.carica",
 	"crm.invoicing.sdi.webhook.prima_della_richiesta",

@@ -2,27 +2,47 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
+  <!-- named for a screen reader: its body draws no title of its own, and
+       VoiceOver read «dialog» and nothing else (the title is not drawn) -->
   <Dialog
     v-model:open="showSettings"
+    :title="__('Settings')"
     :size="'5xl'"
     :disableOutsideClickToClose="disableSettingModalOutsideClick"
     @close="activeSettingsPage = ''"
   >
     <template #body>
+      <!-- what a screen reader hears of the missing-page notice below
+           (`paginaMancante`): a region there from the start, its words put in
+           once the notice is in place (one inserted already filled is not
+           announced reliably) -->
+      <p role="status" class="sr-only">{{ avvisoMancante }}</p>
       <!-- Two levels: the categories on the left, each with its icon; on the
            right a category's entries, each saying what it is for, and the
            entry one opens, with the way back to its category. On a phone they
            do not fit side by side, so it becomes a list that pushes to a page
            and comes back, and it takes the whole screen (`.settings-modal` in
            telefono.css): as a card it kept frappe-ui's margins, 16px a side and
-           48px above, and was 32px taller than the screen. -->
+           48px above, and was 32px taller than the screen. On a desk or a
+           tablet it is a card as tall as what one sees less 8rem (`dvh`: a
+           tablet's 100vh is measured with its browser's bar hidden). -->
       <div
         ref="radice"
-        class="settings-modal flex bg-surface-gray-1"
+        class="settings-modal relative flex bg-surface-gray-1"
         :class="
-          isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100vh_-_8rem)]'
+          isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100dvh_-_8rem)]'
         "
       >
+        <!-- on a desk too, a way out one can see: only Escape and a click
+             outside closed it, and nothing said so (the phone has its own) -->
+        <Button
+          v-if="!isMobileView"
+          variant="ghost"
+          icon="x"
+          class="absolute right-3 top-3 z-20"
+          :aria-label="__('Close')"
+          @click="showSettings = false"
+        />
         <div
           class="flex shrink-0 flex-col overflow-y-auto bg-surface-gray-1"
           :class="
@@ -182,6 +202,30 @@
             v-else-if="gruppoAperto"
             class="flex flex-col gap-6 px-6 py-8 max-md:px-3 max-md:py-5"
           >
+            <!-- a link to a page this person does not see, or that is not on
+                 here: it opened the first group, «Il tuo account», as if that
+                 were what was asked, and nothing said otherwise -->
+            <div
+              v-if="paginaMancante"
+              class="flex items-start gap-3 rounded-lg bg-surface-amber-1 px-4 py-3 text-ink-amber-7"
+            >
+              <span
+                class="lucide-circle-alert mt-0.5 size-4 shrink-0"
+                aria-hidden="true"
+              />
+              <div class="flex min-w-0 flex-col gap-0.5">
+                <span class="text-base-medium">
+                  {{ __('The page you asked for is not here') }}
+                </span>
+                <span class="text-p-sm">
+                  {{
+                    __(
+                      'It is not among the settings you can see: your level does not open it, or it is not on for this centre. Whoever manages the centre can tell you more.',
+                    )
+                  }}
+                </span>
+              </div>
+            </div>
             <div class="flex items-start gap-3 px-2">
               <span
                 class="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-gray-2"
@@ -252,7 +296,7 @@ import {
   isMobileView,
   disableSettingModalOutsideClick,
 } from '@/composables/settings'
-import { isWhatsappInstalled } from '@/composables/whatsapp'
+import { isWhatsappInstalled, whatsappNoto } from '@/composables/whatsapp'
 import { menuDi, trova } from '@/utils/impostazioni'
 import { chiudeConIndietro } from '@/utils/indietro'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
@@ -560,7 +604,13 @@ watch(
 onBeforeUnmount(() => togliDaIndietro?.())
 
 watch(showSettings, (open) => {
-  if (!open) return
+  // closed however (its X sets this, and the dialog's own close is not heard
+  // then): the page asked for goes with it, or a later plain opening said it
+  // was not there
+  if (!open) {
+    activeSettingsPage.value = ''
+    return
+  }
   showingDetail.value = !!activeSettingsPage.value
   // opened without a page: the first category's entries
   if (!activeSettingsPage.value) {
@@ -594,6 +644,23 @@ watch(tabs, () => {
     categoria.value = tabs.value[0]?.key
 })
 
+// A page asked for by name that the menu has not: once the menu is whole (the
+// WhatsApp group waits for the server), the group shown says it is not the one
+// asked for. Choosing a group clears the page asked for, and the notice with it.
+const paginaMancante = computed(
+  () =>
+    Boolean(activeSettingsPage.value) && !activeTab.value && whatsappNoto.value,
+)
+const avvisoMancante = ref('')
+watch(paginaMancante, (manca) => {
+  avvisoMancante.value = ''
+  if (manca)
+    setTimeout(() => {
+      if (paginaMancante.value)
+        avvisoMancante.value = __('The page you asked for is not here')
+    }, 150)
+})
+
 // Tapping a row has to push to the detail even when it is the row you were last
 // on: `activeSettingsPage` does not change then, so the watch above never fires.
 function openSettingsPage(id) {
@@ -601,6 +668,30 @@ function openSettingsPage(id) {
   setActiveTab(id)
   showingDetail.value = true
 }
+
+// the browser's tab says where one is, «Promemoria degli appuntamenti ·
+// Impostazioni», and goes back to the page's own name when they close: it
+// stayed «Accoglienza» over every page of the settings, for a screen reader
+// and in the history too
+const titoloDelleImpostazioni = computed(() => {
+  if (!showSettings.value) return ''
+  const pagina = activeTab.value?.label || gruppoAperto.value?.label
+  return pagina ? `${__(pagina)} · ${__('Settings')}` : __('Settings')
+})
+let titoloDiPrima = null
+watch(
+  titoloDelleImpostazioni,
+  (titolo) => {
+    if (titolo) {
+      if (titoloDiPrima === null) titoloDiPrima = document.title
+      document.title = titolo
+    } else if (titoloDiPrima !== null) {
+      document.title = titoloDiPrima
+      titoloDiPrima = null
+    }
+  },
+  { immediate: true },
+)
 
 // deep link: /crm?settings=<page> opens the modal on that page (an OAuth
 // callback, an email's preferences, a notification touched): the router reads

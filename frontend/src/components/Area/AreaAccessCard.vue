@@ -14,9 +14,9 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Who enters the area') }}
-      </h3>
+      </h2>
       <div class="flex shrink-0 flex-wrap gap-2">
         <Button
           icon-left="eye"

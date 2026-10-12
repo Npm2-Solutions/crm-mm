@@ -14,7 +14,7 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Documents') }}
         <span
           v-if="archive.data.documents.length"
@@ -22,7 +22,7 @@
         >
           {{ archive.data.documents.length }}
         </span>
-      </h3>
+      </h2>
       <Button
         v-if="archive.data.can_add"
         class="shrink-0"

@@ -293,7 +293,7 @@ def parse_call_log(call):
 		contact = find_contact_by_phone_number(call.get("from"))
 		receiver = _user_label(call.get("receiver"))
 		call["_caller"] = {
-			"label": contact.get("full_name", "Unknown"),
+			"label": contact.get("full_name") or _("Unknown"),
 			"image": contact.get("image"),
 		}
 		call["_receiver"] = {
@@ -309,7 +309,7 @@ def parse_call_log(call):
 			"image": caller[1],
 		}
 		call["_receiver"] = {
-			"label": contact.get("full_name", "Unknown"),
+			"label": contact.get("full_name") or _("Unknown"),
 			"image": contact.get("image"),
 		}
 

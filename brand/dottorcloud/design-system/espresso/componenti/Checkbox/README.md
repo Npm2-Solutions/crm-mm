@@ -7,6 +7,7 @@ La casella di spunta: spuntata, vuota, a metà, disabilitata.
 
 ## Personalizzazione DottorCloud
 - Spuntata e a metà: fondo `brand-solid` con spunta `on-brand-solid` (in `marchio.css` già `color: var(--brand-action)` sulle checkbox spuntate).
+- Vuota: bordo `outline-gray-5`, almeno 3:1 sul bianco e sul fondo delle intestazioni nei due temi (`outline-gray-4` dava 2,83:1; `espresso.css` §5).
 - Forma a nuvola: angolo in basso a sinistra a 2px.
 - Riga con `padding`: quando è spuntata il fondo diventa `brand-subtle`.
 

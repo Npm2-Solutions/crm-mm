@@ -17,7 +17,7 @@ msgstr "Light"
 
 #: crm/marchio.py
 msgid "Welcome to Frappe!"
-msgstr "Welcome to DottorCloud!"
+msgstr "Welcome to DottorCloud"
 
 #: frontend/src/utils/rapporto.js
 msgctxt "Relationship"

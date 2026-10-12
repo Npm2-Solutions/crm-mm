@@ -9,10 +9,13 @@
       :active="activeTab === tab.key"
     />
     <!-- the rest is on the "More" page, the notifications first: a dot says
-         something is new. It stays lit on the pages one opens from there -->
+         something is new. It stays lit on the pages one opens from there.
+         The item's name says it for whoever does not see the dot: frappe-ui
+         names the item by its label, over anything inside it -->
     <MobileNavItem
       :to="{ name: 'More' }"
       :label="__('More')"
+      :aria-label="nomeAltro"
       :active="!activeTab"
     >
       <template #default="{ active }">
@@ -25,7 +28,7 @@
           <span
             v-if="unreadNotificationsCount"
             class="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-[var(--brand-segno)] ring-2 ring-[var(--surface-base)]"
-            :aria-label="__('Unread notifications')"
+            aria-hidden="true"
           />
         </span>
       </template>
@@ -41,6 +44,7 @@ import { callEnabled } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
 import { barraDelTelefono, menuDi } from '@/utils/menu'
 import { bottomNavTabFor } from '@/utils/navigation'
+import { nomeDiAltro } from '@/utils/notifiche'
 import { MobileNav, MobileNavItem } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -70,5 +74,11 @@ const activeTab = computed(() =>
     route,
     tabs.value.map((tab) => tab.key),
   ),
+)
+
+// «Altro, 5 notifiche da leggere»: the visible word first, then the dot and
+// how many (an aria-label on the dot, a span with no role, was never read)
+const nomeAltro = computed(() =>
+  nomeDiAltro(unreadNotificationsCount.value, __),
 )
 </script>

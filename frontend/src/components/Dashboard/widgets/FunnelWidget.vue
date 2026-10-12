@@ -16,12 +16,16 @@
         class="flex items-center gap-3"
         :title="stepTitle(step, index)"
       >
-        <!-- a step's name read whole, on two lines if it must
-             («Proposta/Preventivo» on a phone) -->
+        <!-- a step's name read whole, on two lines if it must: after its
+             slash («Proposta/» «Preventivo»), never in the middle of a word
+             («Preventiv» «o»); a long word is hyphenated in the page's
+             language -->
         <span
-          class="w-28 shrink-0 break-words text-xs leading-tight text-ink-gray-7"
+          class="w-28 shrink-0 hyphens-auto break-words text-xs leading-tight text-ink-gray-7"
         >
-          {{ step.label }}
+          <template v-for="(parte, i) in conLeBarre(step.label)" :key="i"
+            >{{ parte }}<wbr
+          /></template>
         </span>
         <span
           class="relative h-5 min-w-0 flex-1 overflow-hidden rounded bg-surface-gray-1"
@@ -57,6 +61,11 @@ const props = defineProps({
 })
 
 const steps = computed(() => props.answer.steps || [])
+
+// a name cut after each slash, where it may go on the next line
+function conLeBarre(nome) {
+  return String(nome ?? '').split(/(?<=\/)/)
+}
 const dark = useDarkCharts()
 const fill = computed(() => colors(1, dark.value)[0])
 

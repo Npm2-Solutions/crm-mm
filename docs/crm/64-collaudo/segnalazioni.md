@@ -17,7 +17,7 @@ livelli: la simulazione, il server di collaudo, il centro pilota.
 | **Dispositivo** | computer, telefono o tablet; il sistema e la versione; il browser; l'app sulla schermata Home o il browser; il testo grande, il tema scuro, il telefono girato | Samsung A54, Android 15, app installata, testo grande |
 | **Quando** | il giorno e l'ora **al minuto**: servono per trovare il registro del server | 14/10/2026 10:42 |
 | **Dove** | l'indirizzo della pagina (la barra del browser), o il nome della schermata | `/crm/accoglienza` |
-| **Cosa ho fatto** | i passi, uno per riga, dall'inizio | 1. Accoglienza 2. «Emetti la fattura» 3. … |
+| **Cosa ho fatto** | i passi, uno per riga, dall'inizio | 1. Accoglienza 2. «Prepara la fattura» 3. … |
 | **Cosa mi aspettavo** | quello che dice la riga *Atteso*, o quello che ti sembrava ovvio | la fattura di prova con la fascia |
 | **Cosa è successo** | le parole esatte di un messaggio, copiate, non riassunte | «Qualcosa è andato storto» |
 | **Si ripete?** | sempre, a volte, una volta | sempre |

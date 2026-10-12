@@ -5,15 +5,18 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from crm.fcrm.doctype.crm_call_log.crm_call_log import parse_call_log
 from crm.integrations.api import (
 	add_note_to_call_log,
 	add_task_to_call_log,
+	find_contact_by_phone_number,
 	get_contact_by_phone_number,
 	get_contact_lead_or_deal_from_number,
 	get_user_default_calling_medium,
 	is_call_integration_enabled,
 	set_default_calling_medium,
 )
+from crm.integrations.twilio.api import link
 
 
 class TestIntegrations(IntegrationTestCase):
@@ -552,6 +555,116 @@ class TestIntegrations(IntegrationTestCase):
 
 		self.assertEqual(doctype, "CRM Lead")
 		self.assertEqual(docname, lead.name)
+
+
+class TestNumbersOfTheCentresCountry(IntegrationTestCase):
+	"""Whose number it is, for a number typed or received without its prefix.
+
+	The phone panel's keypad dials the digits as typed, and the call is filed and
+	named by them: read in India, `333 123 4567` was nobody's, the call missing from
+	the person's history and «Unknown» in the log. An Italian landline keeps its 0.
+	"""
+
+	def setUp(self):
+		frappe.db.set_single_value("System Settings", "country", "Italy", update_modified=False)
+
+	def tearDown(self):
+		# the country goes back with the rollback, and what this request kept of the settings
+		frappe.db.rollback()
+		frappe.clear_document_cache("System Settings", "System Settings")
+
+	def persona(self, nome, numero):
+		return (
+			frappe.get_doc(
+				{
+					"doctype": "CRM Lead",
+					"first_name": nome,
+					"last_name": "Numeri",
+					"mobile_no": numero,
+					"lead_owner": "Administrator",
+				}
+			)
+			.insert(ignore_permissions=True)
+			.name
+		)
+
+	def test_a_mobile_typed_without_its_prefix_finds_its_person(self):
+		persona = self.persona("Mobile", "+39 333 123 4567")
+
+		for scritto in ("3331234567", "333 123 4567", "333-123-4567", "+39 333 123 4567"):
+			self.assertEqual(find_contact_by_phone_number(scritto).get("lead"), persona, scritto)
+		self.assertEqual(get_contact_lead_or_deal_from_number("3331234567"), (persona, "CRM Lead"))
+		self.assertEqual(get_contact_by_phone_number("333 123 4567")["full_name"], "Mobile Numeri")
+
+	def test_a_landline_is_found_with_its_zero(self):
+		persona = self.persona("Fisso", "+39 02 1234 5678")
+
+		for scritto in ("+390212345678", "+39 02 1234 5678", "02 1234 5678", "02-1234-5678", "0212345678"):
+			self.assertEqual(find_contact_by_phone_number(scritto).get("lead"), persona, scritto)
+		# a stranger's landline is named by its digits, the 0 with them
+		self.assertEqual(get_contact_by_phone_number("+39 02 4567 0123"), {"mobile_no": "0245670123"})
+
+	def test_a_number_saved_with_its_spaces_is_found_by_its_digits(self):
+		# the address book keeps a number as `+390212345678`, an older entry or one
+		# brought from another program as somebody wrote it: the search reads the
+		# digits of what is saved. A deal's contact, with no person in front of it to
+		# answer first (a person's own number is kept as typed, spaces and all)
+		azienda = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Numeri in rubrica Srl"}
+		).insert(ignore_permissions=True)
+		contatto = frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Rubrica",
+				"last_name": "Numeri",
+				"phone_nos": [{"phone": "+39 02 1234 5678", "is_primary_mobile_no": 1}],
+			}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value(
+			"Contact Phone", {"parent": contatto.name}, "phone", "+39 02-1234 5678", update_modified=False
+		)
+		trattativa = frappe.get_doc(
+			{"doctype": "CRM Deal", "organization": azienda.name, "deal_owner": "Administrator"}
+		)
+		trattativa.append("contacts", {"contact": contatto.name, "is_primary": 1})
+		trattativa.insert(ignore_permissions=True)
+
+		for scritto in ("0212345678", "02 1234 5678", "+390212345678"):
+			trovato = find_contact_by_phone_number(scritto)
+			self.assertEqual(
+				(trovato.get("name"), trovato.get("deal")), (contatto.name, trattativa.name), scritto
+			)
+		self.assertEqual(get_contact_lead_or_deal_from_number("0212345678"), (trattativa.name, "CRM Deal"))
+
+	def test_the_call_made_from_the_keypad_is_the_persons(self):
+		persona = self.persona("Chiamata", "+39 333 123 4567")
+
+		parsed = parse_call_log({"type": "Outgoing", "to": "3331234567", "caller": "Administrator"})
+		self.assertEqual(parsed["_receiver"]["label"], "Chiamata Numeri")
+
+		call_log = frappe.new_doc("CRM Call Log")
+		link("333 123 4567", call_log)
+		self.assertEqual([(r.link_doctype, r.link_name) for r in call_log.links], [("CRM Lead", persona)])
+
+	def test_whatsapp_numbers_of_other_countries_find_their_person(self):
+		# WhatsApp drops the plus, and in Italy 33612345678 is also a mobile's
+		# voicemail box: read first as Italian, the French number still finds its person
+		francese = self.persona("Francese", "+33 6 12 34 56 78")
+		albanese = self.persona("Albanese", "+355 67 212 3456")
+		italiana = self.persona("Italiana", "+39 347 765 1234")
+
+		self.assertEqual(find_contact_by_phone_number("33612345678").get("lead"), francese)
+		self.assertEqual(find_contact_by_phone_number("355672123456").get("lead"), albanese)
+		self.assertEqual(find_contact_by_phone_number("393477651234").get("lead"), italiana)
+
+	def test_a_person_out_of_sight_answers_like_a_number_nobody_has(self):
+		# found by the second reading, the French number came back as its own digits,
+		# `612345678`: a number nobody has comes back as the first reading's
+		self.persona("Nascosta", "+33 6 12 34 56 78")
+
+		with self.set_user("Guest"):
+			self.assertEqual(get_contact_by_phone_number("33612345678"), {"mobile_no": "33612345678"})
+			self.assertEqual(get_contact_by_phone_number("33698765432"), {"mobile_no": "33698765432"})
 
 
 def create_test_call_log(**kwargs):

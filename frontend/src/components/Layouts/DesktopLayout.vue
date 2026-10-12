@@ -2,7 +2,11 @@
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 -->
 <template>
-  <div class="flex h-screen w-screen">
+  <!-- `h-app` and `w-full`, as the phone's frame (MobileLayout.vue): a tablet
+       draws this one too, and where its browser hides its bar 100vh is
+       measured without the bar, so the bottom of a list, the agenda's last
+       hours and the sidebar's foot sat under it -->
+  <div class="flex h-app w-full">
     <AppSidebar />
     <!-- `main`: where a screen reader jumps to the page -->
     <main class="flex-1 flex flex-col h-full overflow-auto bg-surface-base">

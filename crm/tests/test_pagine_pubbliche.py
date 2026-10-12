@@ -3,8 +3,9 @@
 
 """The pages a patient opens without signing in load nothing from another site: a
 font from Google told Google every visitor of /prenota (the simulation of a week
-found it, e2e/simulazione). And a finger's size where a finger taps. Pure: reads
-the templates, runs with plain unittest."""
+found it, e2e/simulazione). And a finger's size where a finger taps, and the
+privacy notice read on /prenota, never a consent. Pure: reads the templates, runs
+with plain unittest."""
 
 import re
 import unittest
@@ -35,6 +36,21 @@ class TestPaginePubbliche(unittest.TestCase):
 			self.assertNotIn(crudo, pagina)
 		self.assertNotIn('"aria-label": key', pagina)
 		self.assertIn("@media (pointer: coarse)", pagina)
+
+	def test_booking_page_asks_the_notice_read_never_a_consent(self):
+		# a booking needs no consent: the box says what the register keeps, the
+		# `privacy_notice` read, with the link to it. It said «Ho letto e accetto»,
+		# and «Acconsento al trattamento dei miei dati…» where there was no link
+		pagina = (WWW / "prenota.html").read_text(encoding="utf-8")
+		for parole in (
+			'consent: "Ho letto l\'"',
+			'privacy: "informativa sulla privacy"',
+			'consent: "I have read the "',
+			'privacy: "privacy notice"',
+		):
+			self.assertIn(parole, pagina)
+		for consenso in ("accetto", "Acconsento", "consentPlain", "I agree", "and accept"):
+			self.assertNotIn(consenso, pagina)
 
 
 if __name__ == "__main__":

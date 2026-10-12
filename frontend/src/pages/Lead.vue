@@ -50,11 +50,7 @@
   </LayoutHeader>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <Tabs
-        v-model="tabIndex"
-        :tabs="tabs"
-        class="flex flex-1 overflow-hidden flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-5 [&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
-      >
+      <SchedeDelRecord v-model="tabIndex" :tabs="tabs">
         <template #tab-panel>
           <Activities
             ref="activities"
@@ -67,7 +63,7 @@
             @afterSave="reloadResources"
           />
         </template>
-      </Tabs>
+      </SchedeDelRecord>
     </div>
     <Resizer class="flex flex-col justify-between border-l" side="right">
       <!-- who the person is, how to reach them, what comes next: the head
@@ -186,6 +182,7 @@ import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
+import SchedeDelRecord from '@/components/SchedeDelRecord.vue'
 import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
 import LucideLayoutList from '~icons/lucide/layout-list'
@@ -226,7 +223,6 @@ import {
   FileUploader,
   Dropdown,
   Avatar,
-  Tabs,
   Breadcrumbs,
   call,
   usePageMeta,

@@ -20,6 +20,9 @@
  * list before anybody asks, a Markdown format nobody uses; and what it mounts
  * for nobody: tooltips on a phone, which a touch never opens, and dialogs and
  * menus before anybody opens them.
+ *
+ * And it keeps in the page what frappe-ui kept in the browser: the copy of what
+ * a resource fetched, written into IndexedDB, outlived the logout.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -60,7 +63,7 @@ function nomiDeiGiorni(stile) {
 // there for everybody, and the letters over its columns are read from the
 // same day. frappe-ui's grid followed dayjs's language (Monday in Italian) while
 // its letters were an English list from Sunday, which put «S» (Saturday) over
-// Sunday the 4th.
+// Sunday the 4th. A day typed by hand is read the day first (`giornoScritto`).
 export const SELETTORE = `
 // DottorCloud: the picker in the user's language (frontend/vite/frappeUi.js)
 function linguaDelSelettore() {
@@ -90,6 +93,43 @@ export function inizialiDeiGiorni() {
   return Array.from({ length: 7 }, (_, giorno) =>
     formato.format(new Date(2000, 0, 3 + giorno)),
   )
+}
+// A day typed by hand, «1/10/2026», «1.10.26», «1-10 9:30»: the day first, the
+// month first only where the field's format starts with it (MM/DD/YYYY), none
+// this year. Its value as dayjs reads it («2026-10-01», «2026-10-01
+// 09:30:00»), null for a day that does not exist (31/02), undefined for a text
+// not written so (a value from the server, a month in words): that one goes on
+// to frappe-ui's reading. \`adesso\` gives now on the centre's clock, asked only
+// when the year is missing or has two digits: never for the value every
+// picker gets from the server, which comes this way too.
+export function giornoScritto(testo, formato, adesso = () => new Date()) {
+  const scritto = String(testo ?? '').trim()
+  if (!/^[0-9]{1,2}[./ -][0-9]{1,2}(?![0-9])/.test(scritto)) return undefined
+  const parti = scritto.match(
+    /^([0-9]{1,2})[./ -]([0-9]{1,2})(?:[./ -]([0-9]{4}|[0-9]{2}))?(?:[ ,]+([0-9]{1,2})[:.]([0-9]{2})(?:[:.]([0-9]{2}))?)?$/,
+  )
+  if (!parti) return null
+  const [, primo, secondo, y, ore, minuti, secondi = '00'] = parti
+  const [giorno, mese] = String(formato || '').startsWith('M')
+    ? [+secondo, +primo]
+    : [+primo, +secondo]
+  const pieno = y?.length === 4 ? +y : annoScritto(y, adesso().getFullYear())
+  if (pieno < 1000 || mese < 1 || mese > 12 || giorno < 1) return null
+  if (giorno > new Date(Date.UTC(pieno, mese, 0)).getUTCDate()) return null
+  const due = (n) => String(n).padStart(2, '0')
+  const data = pieno + '-' + due(mese) + '-' + due(giorno)
+  if (!ore) return data
+  if (+ore > 23 || +minuti > 59 || +secondi > 59) return null
+  return data + ' ' + due(ore) + ':' + minuti + ':' + secondi
+}
+// The year of a day typed without one (this one), or with two digits: the one
+// within the next twenty years and the last eighty, as ICU and Java read them.
+// dayjs's YY (19xx only above 68) made a birth typed «12/3/58» 2058.
+function annoScritto(dueCifre, anno) {
+  if (dueCifre === undefined) return anno
+  const pieno = anno - (anno % 100) + +dueCifre
+  if (pieno > anno + 20) return pieno - 100
+  return pieno <= anno - 80 ? pieno + 100 : pieno
 }
 `
 
@@ -208,6 +248,47 @@ const SOSTITUZIONI = {
   'ListView/ListFooter.vue': [attributo('label', 'Load More'), testo('of')],
   // the bar over a list's chosen rows: «3 rows selected», «Select all»
   'ListView/ListSelectBanner.vue': [frase('Select all')],
+  // a row's box and the header's, named: a screen reader read twenty-one
+  // «checkbox, not checked» down every list, never whose row it was (WCAG
+  // 4.1.2). A row's box takes the name its first column shows. And the box,
+  // 14px, is not all one hits: a click on its cell did nothing, a click just
+  // past it opened the row (WCAG 2.5.8 asks 24px). The cell is the box's
+  // target, 30 by 39px around it - into the row's own padding on the left,
+  // as far on the right - and a click there is the box's, shift too; it
+  // looks as it did
+  'ListView/ListRow.vue': [
+    [
+      /class="w-fit pe-2 py-3 flex"(\s+)@click\.stop\.prevent(\s)/,
+      'class="w-fit -ms-2 ps-2 pe-2 py-3 flex cursor-pointer"$1@click.stop.prevent="handleCheckboxClick"$2',
+    ],
+    [
+      `:modelValue="isSelected"
+            :disabled="row.disabled"`,
+      `:modelValue="isSelected"
+            :disabled="row.disabled"
+            :aria-label="nomeDellaRiga()"`,
+    ],
+    [
+      'const handleCheckboxClick = (event) => {',
+      `// DottorCloud (frontend/vite/frappeUi.js): the row's box says whose row
+function nomeDellaRiga() {
+  const primo = props.row?.[list.value.columns?.[0]?.key]
+  const nome =
+    primo && typeof primo === 'object' ? primo.label || primo.title : primo
+  const t = globalThis.__ || String
+  return nome ? t('Select {0}', [String(nome)]) : t('Select row')
+}
+
+const handleCheckboxClick = (event) => {`,
+    ],
+  ],
+  'ListView/ListHeader.vue': [
+    [
+      `:modelValue="list.allRowsSelected"`,
+      `:modelValue="list.allRowsSelected"
+      :aria-label="__('Select all')"`,
+    ],
+  ],
   'ListView/ListView.vue': [
     [
       "((val) => (val === 1 ? '1 row selected' : `${val} rows selected`))",
@@ -228,6 +309,26 @@ const SOSTITUZIONI = {
     [
       "const start = monthStart(year, monthIndex).startOf('week')",
       'const start = dalLunedi(monthStart(year, monthIndex))',
+    ],
+  ],
+  // A day typed by hand is read the day first, as the centre writes it, and
+  // the month first only where the field's format puts it there. What the
+  // format did not take frappe-ui handed to `dayjs(raw)`, which is
+  // `new Date(raw)` and reads the American way: «1/10/2026» and «1.10.2026»
+  // were 10 January, «12/10/26» 10 December, «1/10» 10 January 2001.
+  'DatePicker/composables.ts': [
+    [
+      "import { monthStart, getDateValue } from './utils'",
+      `import { giornoScritto, monthStart, getDateValue } from './utils'
+// DottorCloud (frontend/vite/frappeUi.js): this year on the centre's clock
+import { adessoDelCentro } from '@/utils/scheduler'`,
+    ],
+    [
+      'const dLoose = dayjs(raw)',
+      `// DottorCloud (frontend/vite/frappeUi.js): a day typed by hand, the day first
+    const scritto = giornoScritto(raw, format, adessoDelCentro)
+    if (scritto !== undefined) return scritto ? dayjs(scritto) : null
+    const dLoose = dayjs(raw)`,
     ],
   ],
   'DatePicker/CalendarPanel.vue': [
@@ -717,9 +818,51 @@ const SOSTITUZIONI_ICONE = {
   ],
 }
 
+// frappe-ui's resources: a resource with a `cache` key kept a copy of what it
+// fetched in the browser's IndexedDB (idb-keyval's 'keyval-store') and drew it
+// at the next opening before the server answered, even for a resource that
+// never asks. No logout emptied it: on a shared computer the next session was
+// drawn from the last one's people - a list's names and numbers, a person's
+// record, the next appointment for a colleague who does not read the agenda.
+// The copy now lives in the page only: resources.js keeps its map of resources
+// in memory, so `cache` still shares one resource within the page
+// (getCachedResource), and saving, reading and deleting the copy resolve to
+// nothing without opening IndexedDB. What older versions left there goes when
+// the app starts (main.js) and at every logout (utils/esci.js).
+const SOSTITUZIONI_RISORSE = {
+  'local.ts': [
+    [
+      "import { del, get, set } from 'idb-keyval'",
+      `// DottorCloud (frontend/vite/frappeUi.js): nothing kept in the browser
+const get = (_chiave: IDBValidKey): Promise<string | undefined> =>
+  Promise.resolve(undefined)
+const set = (_chiave: IDBValidKey, _valore: unknown): Promise<void> =>
+  Promise.resolve()
+const del = (_chiave: IDBValidKey): Promise<void> => Promise.resolve()`,
+    ],
+    // nor turned into text for nobody, at every answer
+    ['return set(key, JSON.stringify(data))', 'return set(key, data)'],
+  ],
+}
+
+// frappe-ui's newer data layer (useList, useDoc, useCall: none of DottorCloud's
+// screens uses it yet) keeps its copies the same way, in the same database:
+// in the page's memory, which it already falls back on where IndexedDB is not
+const SOSTITUZIONI_DATI = {
+  'idbStore.ts': [
+    [
+      "this.useIndexedDB = typeof window !== 'undefined' && !!window.indexedDB",
+      `// DottorCloud (frontend/vite/frappeUi.js): nothing kept in the browser
+    this.useIndexedDB = false`,
+    ],
+  ],
+}
+
 const RADICI = {
   '/frappe-ui/src/components/': SOSTITUZIONI,
   '/frappe-ui/src/molecules/': SOSTITUZIONI_MOLECOLE,
+  '/frappe-ui/src/resources/': SOSTITUZIONI_RISORSE,
+  '/frappe-ui/src/data-fetching/': SOSTITUZIONI_DATI,
   '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
   '/frappe-ui/icons/': SOSTITUZIONI_ICONE,
 }
@@ -741,6 +884,12 @@ export const FILE_MOLECOLE = Object.keys(SOSTITUZIONI_MOLECOLE)
 
 /** The same, under frappe-ui's icons. */
 export const FILE_ICONE = Object.keys(SOSTITUZIONI_ICONE)
+
+/** The same, under frappe-ui's resources. */
+export const FILE_RISORSE = Object.keys(SOSTITUZIONI_RISORSE)
+
+/** The same, under frappe-ui's data-fetching. */
+export const FILE_DATI = Object.keys(SOSTITUZIONI_DATI)
 
 /** The module's code in the user's language, or null when it is not one to rewrite. */
 export function traduciFrappeUi(codice, id) {

@@ -46,7 +46,7 @@
       <div v-if="$slots.default || voci.length" class="flex gap-1.5 pt-1">
         <slot />
         <Dropdown v-if="voci.length" :options="voci">
-          <Button icon="more-horizontal" :aria-label="__('More')" />
+          <Button icon="more-horizontal" :aria-label="__('Options')" />
         </Dropdown>
       </div>
       <ErrorMessage :message="errore" />

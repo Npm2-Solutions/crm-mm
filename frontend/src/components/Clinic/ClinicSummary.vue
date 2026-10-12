@@ -15,9 +15,9 @@
     class="sintesi flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Summary', null, "Patient's clinical summary") }}
-      </h3>
+      </h2>
       <Badge
         v-if="summary.data.proposals.length"
         theme="blue"

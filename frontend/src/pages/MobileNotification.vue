@@ -12,35 +12,43 @@
       />
     </template>
     <template #right-header>
+      <!-- the page's one action in words: a double tick alone is the
+           agenda's «came» too -->
       <Button
         v-if="unreadNotificationsCount && scheda !== 'events'"
         variant="ghost"
-        :tooltip="__('Mark all as read')"
-        :aria-label="__('Mark all as read')"
+        :label="__('Mark all as read')"
         @click="segnaTutte"
       >
-        <template #icon><LucideCheckCheck class="size-4" /></template>
+        <template #prefix><LucideCheckCheck class="size-4" /></template>
       </Button>
     </template>
   </LayoutHeader>
   <!-- the empty state centres in what is below the header, not in 106px -->
   <div class="flex min-h-0 flex-1 flex-col text-ink-gray-9">
-    <div class="px-3 pb-1 pt-2">
+    <div class="flex items-center gap-2 px-3 pb-1 pt-2">
       <TabButtons
         v-model="scheda"
         :buttons="schede"
-        class="[&_button]:w-full [&_div]:w-full [&_button>span]:w-full"
+        :aria-label="__('Show')"
+        class="min-w-0 flex-1 [&_button]:w-full [&_div]:w-full [&_button>span]:w-full"
       />
+      <!-- on a phone the list pulled down, in one tap, for whoever cannot
+           pull. Beside the tabs: the header has the page's words, and the
+           key there cut «Notifiche» to «Notifi…» at 360 points -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="lista?.tira" />
     </div>
-    <EventNotificationsArea v-if="scheda === 'events'" />
-    <NotificationsList v-else />
+    <EventNotificationsArea v-if="scheda === 'events'" ref="lista" />
+    <NotificationsList v-else ref="lista" :livello="2" />
   </div>
 </template>
 
 <script setup>
 import EventNotificationsArea from '@/components/EventNotificationsArea.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import NotificationsList from '@/components/Notifications/NotificationsList.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   notificationsStore,
   unreadNotificationsCount,
@@ -51,6 +59,8 @@ import LucideCheckCheck from '~icons/lucide/check-check'
 
 const store = notificationsStore()
 const { scegli, segnaTutte } = store
+// the list drawn, the notifications or the events: its pull is the key's
+const lista = ref(null)
 
 const eventi = ref(false)
 const scheda = computed({

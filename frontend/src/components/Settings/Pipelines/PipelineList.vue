@@ -8,7 +8,7 @@
   >
     <template #header-actions>
       <Button
-        :label="__('New')"
+        :label="__('New Pipeline')"
         variant="solid"
         icon-left="lucide-plus"
         @click="openNewPipelineDialog"
@@ -26,7 +26,11 @@
           v-if="!pipelines.data?.length"
           name="Pipeline"
           :title="__('No pipelines yet')"
-          :description="__('Add one to get started.')"
+          :description="
+            __(
+              'A pipeline lines up the stages a deal goes through: make one with «New Pipeline».',
+            )
+          "
           :icon="KanbanIcon"
         />
         <template v-else>
@@ -49,6 +53,7 @@
               <!-- on a phone the name is read whole and its marks go under
                    it: beside «Predefinito» it was «Ve…» at 320 -->
               <div
+                v-riga-cliccabile
                 class="w-full min-w-0 pl-2 col-span-5 flex items-center h-14 gap-2 max-md:col-span-1 max-md:h-auto max-md:min-h-14 max-md:flex-wrap max-md:content-center max-md:gap-y-1 max-md:py-2"
                 @click="openPipeline(pipeline)"
               >

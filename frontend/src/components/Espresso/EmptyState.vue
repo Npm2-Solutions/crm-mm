@@ -9,8 +9,16 @@
 <template>
   <div class="dc-empty">
     <EmptyArt />
-    <h3 class="dc-empty__title">{{ title }}</h3>
-    <p v-if="text" class="dc-empty__text">{{ text }}</p>
+    <!-- the words handed as they are written in the code read in the
+         user's language: translated where they are drawn -->
+    <!-- a heading at the level of where it stands: under a page's own name
+         a page-sized state (the address that leads nowhere) is the next one -->
+    <ElementoNativo :tag="`h${livello}`" class="dc-empty__title">
+      {{ __(title) }}
+    </ElementoNativo>
+    <p v-if="text || description" class="dc-empty__text">
+      {{ __(text || description) }}
+    </p>
     <div v-if="$slots.default" class="dc-empty__actions">
       <slot />
     </div>
@@ -19,10 +27,15 @@
 
 <script setup>
 import EmptyArt from '@/components/Espresso/EmptyArt.vue'
+import ElementoNativo from '@/components/ElementoNativo.js'
 
 defineProps({
   // the state: «No visits today»
   title: { type: String, required: true },
   text: { type: String, default: '' },
+  // the name the lists' EmptyState gives the same sentence
+  description: { type: String, default: '' },
+  // its heading's level: 3 inside a page's section, 2 for a page of its own
+  livello: { type: Number, default: 3 },
 })
 </script>

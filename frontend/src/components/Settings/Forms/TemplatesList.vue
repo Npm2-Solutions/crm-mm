@@ -28,7 +28,7 @@
           @click="paper = true"
         />
         <Button
-          :label="__('New')"
+          :label="__('New form')"
           icon-left="lucide-plus"
           variant="solid"
           @click="openCreate"

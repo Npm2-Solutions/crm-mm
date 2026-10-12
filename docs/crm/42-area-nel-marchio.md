@@ -31,7 +31,9 @@ L'area segue quelle schermate, con i token di Espresso e i segni del marchio:
   del marchio e la carta del momento finito si tinge. «In parte» e «Saltato»
   restano sotto, come fatti e mai in rosso.
 - **Il codice in sei caselle** alla porta («Entra nella tua area»), sopra un
-  campo solo, così il telefono lo riempie dall'email e si incolla intero.
+  campo solo, così il telefono lo riempie dall'email e si incolla intero, anche
+  con uno spazio o un trattino in mezzo («246 810»): il campo ne tiene le cifre
+  e il server legge solo quelle (12/10/2026).
 - **In basso cinque posti**: Oggi, Agenda, Piani (solo per chi ne segue uno),
   Documenti e Messaggi; quello aperto nel colore del marchio. Le fatture sono
   dentro Documenti, come sul telefono del kit; `/area/invoices` porta lì.

@@ -119,5 +119,6 @@ const { puo } = usersStore()
 const { testo, righe, contenitore, carica, cerca, forseAltre, tira } =
   useElencoDelTelefono('crm.api.sul_telefono.get_organizations', 'aziende')
 
-defineExpose({ ricarica: cerca })
+// `tira`: the pull, which the page's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ ricarica: cerca, tira })
 </script>

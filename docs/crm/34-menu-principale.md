@@ -49,7 +49,9 @@ testata al posto del titolo (`SORELLE` in `utils/menu.js`, disegnato da
 Il selettore mostra solo le pagine che il livello apre: una sola, nessun
 selettore. Sul telefono tre pagine non stanno accanto ai pulsanti della testata:
 lì il nome della pagina aperta è il titolo, e le altre sono nel suo menu
-(«Accoglienza ▾»). Una pagina senza voce tiene accesa la voce in cui vive (anche una
+(«Accoglienza ▾»). Il titolo cede ai pulsanti: dove non c'è posto si taglia
+(«Accogl… ▾»), non passa sotto le frecce del giorno. Una pagina senza voce
+tiene accesa la voce in cui vive (anche una
 persona tiene accese le Persone), nella barra laterale come in quella del
 telefono (`utils/navigation.js`).
 
@@ -84,7 +86,10 @@ sul computer, dal basso sul telefono (`components/Telephony/PhoneButton.vue`,
   (`crm.telephony.pannello.find_people`, anche per le ultime cifre scritte con
   spazi o prefisso); un tocco mette il numero nel tastierino.
 - **Il tastierino** e **Chiama**: la chiamata parte con la telefonia del centro,
-  dopo il sì del server.
+  dopo il sì del server. Un numero scritto senza prefisso è del paese del centro,
+  un fisso con il suo 0: «333 123 4567» è la persona che ha «+39 333 123 4567», e
+  la chiamata va nella sua storia con il suo nome
+  (`crm.integrations.api.find_contact_by_phone_number`).
 - **Da richiamare adesso**: i richiami promessi dalla segreteria telefonica.
 - **Le ultime chiamate** che si leggono (`telefono.registro`), le perse in rosso,
   ciascuna con la sua persona e un pulsante per richiamare.
@@ -125,5 +130,8 @@ accanto alle azioni della pagina.
 - `crm/telephony/tests/test_pannello.py`: le ultime chiamate con la loro persona e
   le perse, le persone trovate per nome e per numero comunque scritto, nessuna per
   chi non chiama.
+- `crm/tests/test_integrations.py`: la chiamata fatta dal tastierino con
+  «333 123 4567» sulla persona che ha «+39 333 123 4567», un fisso trovato con il
+  suo 0, il numero di un altro paese che WhatsApp passa senza il +.
 - Nel browser, in italiano, sul computer e sul telefono: il menu, i selettori, il
   pannello del telefono con la ricerca e le chiamate.

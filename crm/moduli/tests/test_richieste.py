@@ -173,6 +173,13 @@ class IlLinkACasa(RichiesteCase):
 		self.assertEqual(capo.code_attempts, richieste.TENTATIVI_CODICE)
 		self.assertNotEqual(capo.code_hash, richieste._impronta("123456"))
 
+	def test_il_codice_incollato_con_un_trattino_apre(self):
+		self.manda()
+		frappe.set_user("Guest")
+		with mock.patch.object(richieste, "_codice", return_value="123456"):
+			richieste.send_code(LINK)
+		self.assertTrue(richieste.verify_code(LINK, " 123-456")["session"])
+
 	def test_un_codice_apre_solo_il_suo_link(self):
 		self.manda(token=LINK)
 		self.manda(token=LINK_2)

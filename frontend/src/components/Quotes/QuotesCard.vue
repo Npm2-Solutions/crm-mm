@@ -11,7 +11,7 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">
+      <h2 class="text-base-semibold text-ink-gray-8">
         {{ __('Quotes') }}
         <span
           v-if="quotes.data.quotes.length"
@@ -19,7 +19,7 @@
         >
           {{ quotes.data.quotes.length }}
         </span>
-      </h3>
+      </h2>
       <Button
         v-if="quotes.data.can_write"
         class="shrink-0"
@@ -41,7 +41,7 @@
         v-for="quote in quotes.data.quotes"
         :key="quote.name"
         type="button"
-        class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none max-md:gap-x-1"
+        class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px] max-md:gap-x-1"
         @click="openQuote(quote.name)"
       >
         <span class="flex min-w-[12rem] flex-1 flex-col">

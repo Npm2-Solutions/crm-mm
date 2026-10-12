@@ -4,7 +4,9 @@
   the answer is the same whether the address has an area or not.
 -->
 <template>
-  <div class="flex min-h-full items-center justify-center px-5 py-10">
+  <!-- the page's main region: drawn outside the area's shell, it had none and
+       a screen reader found nothing to jump to -->
+  <main class="flex min-h-full items-center justify-center px-5 py-10">
     <div class="flex w-full max-w-sm flex-col gap-6">
       <div class="flex flex-col items-center gap-3 text-center">
         <img
@@ -63,6 +65,7 @@
       >
         <ErrorMessage v-if="linkError" :message="linkError" />
         <FormControl
+          ref="campoEmail"
           v-model="email"
           type="email"
           size="lg"
@@ -70,13 +73,15 @@
           autocomplete="email"
         />
         <ErrorMessage :message="error" />
+        <!-- always the action's colour: disabled until something was typed,
+             the page's only button looked switched off. Pressed without an
+             address it says what it needs -->
         <Button
           variant="solid"
           size="lg"
           type="submit"
           :label="__('Send me the code')"
           :loading="busy === true"
-          :disabled="!email.trim()"
         />
         <template v-if="passkeys">
           <div class="flex items-center gap-2 text-p-sm text-ink-gray-5">
@@ -95,7 +100,9 @@
       </form>
       <form v-else class="flex flex-col gap-4" @submit.prevent="verify">
         <!-- six boxes over the one field that takes the code: the phone fills it
-             from the email, and a paste goes in whole -->
+             from the email, and a paste goes in whole. The field keeps the
+             code's digits, never its first six characters: with a maxlength a
+             «123 456» or « 123456» pasted lost a digit before anything read it -->
         <label class="area-code">
           <span
             v-for="i in 6"
@@ -115,9 +122,11 @@
             :aria-label="__('The code')"
             inputmode="numeric"
             autocomplete="one-time-code"
-            maxlength="6"
             @input="
-              (e) => (code = e.target.value.replace(/\D/g, '').slice(0, 6))
+              (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                code = e.target.value
+              }
             "
             @focus="focused = true"
             @blur="focused = false"
@@ -150,7 +159,7 @@
         {{ __('Powered by {brand}') }}
       </p>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -183,7 +192,14 @@ const minutes = ref(10)
 const busy = ref(false)
 const error = ref('')
 
+const campoEmail = ref(null)
+
 async function send() {
+  if (!email.value.trim()) {
+    error.value = __('Write the email you gave the centre.')
+    campoEmail.value?.$el?.querySelector('input')?.focus()
+    return
+  }
   busy.value = true
   error.value = ''
   try {

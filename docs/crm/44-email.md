@@ -43,8 +43,13 @@ modo suo:
 - **Il codice sta nella sua casella**: grande, spaziato, facile da leggere e da
   copiare.
 - **Il promemoria di un evento** è in italiano: il titolo, il giorno e l'ora
-  («giovedì 2 ottobre, 10:00»), la descrizione senza HTML, «Inizia fra un'ora» e il
-  pulsante che apre l'agenda su quel giorno.
+  («giovedì 2 ottobre, 10:00»), «Inizia fra un'ora» e il
+  pulsante che apre l'agenda su quel giorno. Dal 12/10/2026 non porta più la
+  descrizione, come l'avviso a schermo, e della copia di un appuntamento dice solo
+  che è un appuntamento («Promemoria: appuntamento di giovedì 2 ottobre, 10:00»):
+  il suo titolo è servizio e persona, la sua descrizione le note, che restano in
+  DottorCloud (doc 43). Va solo agli utenti del centro a cui l'evento è, mai
+  all'indirizzo di un cliente, una volta sola e nella lingua di chi lo riceve.
 - **Le notifiche arrivano anche per email**, quando restano da leggere: cinque
   minuti dopo, se non l'hai letta in DottorCloud, ti arriva la frase del pannello
   con le prime parole del messaggio e il pulsante che la apre in DottorCloud (la

@@ -9,10 +9,10 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import appointments as A
-from crm.api.activities import appointments_on
+from crm.api.activities import appointments_on, calendar_moment
 from crm.scheduling import intervals as iv
 from crm.scheduling import pricing
-from crm.scheduling.availability import find_conflicts, get_slots
+from crm.scheduling.availability import find_conflicts, forget_settings, get_slots
 from crm.scheduling.timeutils import UTC, from_system_naive, to_system_naive
 
 ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -401,6 +401,36 @@ class TestResources(SchedulingCase):
 		slot = next(s for s in get_slots("Visita", start.date(), start.date()) if s.start == start)
 		self.assertEqual(slot.resources, [], "the room is taken but it was only optional")
 
+	def test_a_room_in_use_is_kept_in_words(self):
+		# the framework's refusal named an appointment's code and linked the Desk
+		anna = self.make_user("anna_sched@example.com")
+		room = self.make_resource("Sala da tenere", capacity=1)
+		self.make_service("Visita in sala", [anna])
+		self.make_appointment(
+			"Visita in sala", self.tomorrow(10), [anna], resources=[{"resource": room.name, "quantity": 1}]
+		)
+		with self.assertRaises(frappe.LinkExistsError) as rifiuto:
+			frappe.delete_doc("CRM Resource", room.name)
+		self.assertIn("Sala da tenere", str(rifiuto.exception))
+		self.assertNotIn("/desk/", str(rifiuto.exception))
+		self.assertTrue(frappe.db.exists("CRM Resource", room.name))
+
+	def test_a_room_a_service_needs_names_the_service(self):
+		anna = self.make_user("anna_sched@example.com")
+		room = self.make_resource("Sala del servizio", capacity=1)
+		service = self.make_service("Servizio con la sala", [anna])
+		service.append("resources", {"resource": room.name, "quantity": 1, "required": 1})
+		service.save()
+		with self.assertRaises(frappe.LinkExistsError) as rifiuto:
+			frappe.delete_doc("CRM Resource", room.name)
+		self.assertIn("Servizio con la sala", str(rifiuto.exception))
+		self.assertNotIn("/desk/", str(rifiuto.exception))
+
+	def test_a_room_nothing_uses_goes(self):
+		room = self.make_resource("Sala fatta per sbaglio")
+		frappe.delete_doc("CRM Resource", room.name)
+		self.assertFalse(frappe.db.exists("CRM Resource", room.name))
+
 
 # ---------------------------------------------------------------------------
 # group sessions
@@ -725,6 +755,23 @@ class LaFonteDelPrezzoInParole(IntegrationTestCase):
 			self.assertIn(f'_("{modello}")', codice, modello)
 
 
+class LAppuntamentoNellaChat(IntegrationTestCase):
+	"""Where an appointment sits in a person's history (doc 17)."""
+
+	def test_finche_non_arriva_sta_dove_e_stato_prenotato(self):
+		adesso = datetime.datetime(2026, 10, 12, 10, 0)
+		prenotato = datetime.datetime(2026, 10, 9, 17, 30)
+		# still to come: where it was booked, not below today's messages
+		domani = frappe._dict(starts_on=datetime.datetime(2026, 10, 13, 15, 0), creation=prenotato)
+		self.assertEqual(calendar_moment(domani, adesso), prenotato)
+		# come: at its moment, the way a call is
+		ieri = frappe._dict(starts_on=datetime.datetime(2026, 10, 11, 15, 0), creation=prenotato)
+		self.assertEqual(calendar_moment(ieri, adesso), ieri.starts_on)
+		self.assertEqual(calendar_moment(frappe._dict(starts_on=adesso, creation=prenotato), adesso), adesso)
+		# no moment: where it was written
+		self.assertEqual(calendar_moment(frappe._dict(starts_on=None, creation=prenotato), adesso), prenotato)
+
+
 # ---------------------------------------------------------------------------
 # API surface
 # ---------------------------------------------------------------------------
@@ -891,6 +938,8 @@ class TestAppointmentApi(SchedulingCase):
 			{"doctype": "CRM Lead", "first_name": "Specchio", "email": "specchio@example.com"}
 		).insert(ignore_permissions=True)
 		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		# the engine kept the settings it read before the switch
+		forget_settings()
 		try:
 			appointment = self.make_appointment(
 				"Visita specchio",
@@ -927,6 +976,8 @@ class TestAppointmentApi(SchedulingCase):
 			{"doctype": "CRM Lead", "first_name": "Copia", "email": "copia.cliente@example.com"}
 		).insert(ignore_permissions=True)
 		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 1)
+		# the engine kept the settings it read before the switch
+		forget_settings()
 		try:
 			appointment = self.make_appointment(
 				"Visita copia",

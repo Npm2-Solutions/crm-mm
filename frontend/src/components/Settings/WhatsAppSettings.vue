@@ -218,7 +218,7 @@
                     size="sm"
                     variant="ghost"
                     :loading="checking == account.name"
-                    :aria-label="__('More')"
+                    :aria-label="__('Options')"
                   />
                 </Dropdown>
               </div>

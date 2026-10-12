@@ -14,7 +14,7 @@
           class="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left"
           :class="
             linked(item)
-              ? 'cursor-pointer hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:outline-none'
+              ? 'cursor-pointer hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:[outline-offset:-2px]'
               : ''
           "
           :role="linked(item) ? 'button' : undefined"

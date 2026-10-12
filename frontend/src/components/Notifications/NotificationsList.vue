@@ -33,12 +33,17 @@
       />
     </div>
     <div v-else class="shrink-0 px-2 pb-3">
-      <section v-for="s in giorni" :key="s.key" :aria-label="__(s.label)">
-        <h3
+      <!-- a day is its heading, not a region: named, each section was a
+           landmark of its own, the day said twice -->
+      <section v-for="s in giorni" :key="s.key">
+        <!-- under the panel's title a third level; on the page, under the
+             page's own name, the second -->
+        <ElementoNativo
+          :tag="`h${livello}`"
           class="sticky top-0 z-[1] bg-surface-base px-2 pb-1 pt-3 text-[11px] font-medium uppercase tracking-wide text-ink-gray-5"
         >
           {{ __(s.label) }}
-        </h3>
+        </ElementoNativo>
         <NotificationRow
           v-for="riga in s.rows"
           :key="riga.name"
@@ -63,6 +68,7 @@
 
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
+import ElementoNativo from '@/components/ElementoNativo.js'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import NotificationRow from '@/components/Notifications/NotificationRow.vue'
@@ -73,6 +79,9 @@ import { sezioni } from '@/utils/notifiche'
 import { dayjsLocal } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
+// the days' headings' level: the panel has a title of its own above them
+defineProps({ livello: { type: Number, default: 3 } })
+
 const store = notificationsStore()
 const { segnaLetta, segnaDaLeggere, mostraAltre } = store
 const filtro = computed(() => store.filtro)
@@ -82,6 +91,8 @@ const righe = computed(() => notifications.data?.rows || [])
 // pulled down on a phone: the same page of rows again, from the server
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => notifications.reload())
+// the pull, which the phone's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ tira })
 
 // the reader's clock: the server's moments are moved onto it before the days
 // are cut, as the conversations' list does

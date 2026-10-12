@@ -80,6 +80,7 @@
           <Select
             v-model="settings.doc.currency_precision"
             :options="getOptions('currency_precision')"
+            :aria-label="__('Currency Precision')"
             :placeholder="3"
             class="!w-16 max-md:!w-full"
           />
@@ -103,6 +104,7 @@
           <Select
             v-model="settings.doc.number_format"
             :options="getOptions('number_format')"
+            :aria-label="__('Number Format')"
             class="!w-32 max-md:!w-full"
           />
         </div>
@@ -120,6 +122,7 @@
           <Select
             v-model="settings.doc.float_precision"
             :options="getOptions('float_precision')"
+            :aria-label="__('Float Precision')"
             :placeholder="3"
             class="!w-16 max-md:!w-full"
           />
@@ -139,6 +142,7 @@
           <Select
             v-model="settings.doc.date_format"
             :options="getOptions('date_format')"
+            :aria-label="__('Date Format')"
             class="!w-32 max-md:!w-full"
           />
         </div>
@@ -156,6 +160,7 @@
           <Select
             v-model="settings.doc.time_format"
             :options="getOptions('time_format')"
+            :aria-label="__('Time Format')"
             class="!w-28 max-md:!w-full"
           />
         </div>

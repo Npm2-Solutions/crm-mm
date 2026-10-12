@@ -10,7 +10,8 @@
   disk". A file brought back to be read leaves again the same way.
 - **Opening** (`prima_della_richiesta`): `/private/files/…` of an archived file is
   answered by a link to the bucket that lasts minutes, after the framework's own
-  check (`find_file_by_url`) and its access log.
+  check (`find_file_by_url`) and its access log. No private file is kept by the
+  browser, archived or not (`regole.NON_TENERE`).
 - **Reading** (`riporta`, from `crm.overrides.file`): code that reads a file's
   content finds it on the disk again, brought back whole.
 - **Deleting** (`al_cestino`, `orfani`): the last File with that address gone, the
@@ -96,10 +97,14 @@ def _pieno(percorso_locale: str) -> bool:
 # Moving
 
 
-def sposta() -> dict:
+def sposta(solo: set[str] | None = None) -> dict:
 	"""Every hour: the private files written a while ago, then the ones brought
 	back to be read, to the bucket. A file that fails is logged and tried at the
-	next round; the bucket unreachable stops the round."""
+	next round; the bucket unreachable stops the round.
+
+	``solo``: only these addresses. The tests move theirs alone: on a site that
+	holds a centre's files a round over all of them, into a bucket that lives in
+	the test's memory, left every private file of the site empty (12/10/2026)."""
 	c = conf()
 	esito = {"moved": 0, "emptied": 0, "bytes": 0, "failed": 0}
 	if not c:
@@ -107,11 +112,11 @@ def sposta() -> dict:
 	soglia = add_to_date(now_datetime(), minutes=-regole.ATTESA)
 	budget = [regole.FILE_PER_GIRO, regole.BYTE_PER_GIRO]
 	try:
-		for riga in _da_archiviare(soglia):
+		for riga in _da_archiviare(soglia, solo):
 			if budget[0] <= 0 or budget[1] <= 0:
 				break
 			_archivia_uno(c, riga.file_url, esito, budget)
-		for riga in _da_svuotare(soglia):
+		for riga in _da_svuotare(soglia, solo):
 			if budget[0] <= 0 or budget[1] <= 0:
 				break
 			_archivia_uno(c, riga.file_url, esito, budget, riportato=True)
@@ -126,8 +131,11 @@ def sposta() -> dict:
 	return esito
 
 
-def _da_archiviare(soglia):
-	"""The private files on the server only, oldest first, one row per address."""
+def _da_archiviare(soglia, solo=None):
+	"""The private files on the server only, oldest first, one row per address
+	(of ``solo`` alone, where it is given)."""
+	if solo is not None and not solo:
+		return []
 	return frappe.db.sql(
 		"""
 		select f.file_url, min(f.creation) as creation
@@ -137,17 +145,28 @@ def _da_archiviare(soglia):
 			and f.file_url like %(privati)s
 			and f.creation < %(soglia)s
 			and a.name is null
+			and (%(tutti)s or f.file_url in %(solo)s)
 		group by f.file_url
 		order by creation
 		limit %(quanti)s
 		""",
-		{"soglia": soglia, "quanti": regole.FILE_PER_GIRO, "privati": "/private/files/%"},
+		{
+			"soglia": soglia,
+			"quanti": regole.FILE_PER_GIRO,
+			"privati": "/private/files/%",
+			"tutti": solo is None,
+			"solo": tuple(solo or ("",)),
+		},
 		as_dict=True,
 	)
 
 
-def _da_svuotare(soglia):
-	"""The archived files brought back to be read a while ago."""
+def _da_svuotare(soglia, solo=None):
+	"""The archived files brought back to be read a while ago (of ``solo``
+	alone, where it is given)."""
+	if solo is not None and not solo:
+		return []
+	soltanto = {} if solo is None else {"file_url": ["in", list(solo)]}
 	nomi = set()
 	try:
 		nomi = {n.decode() if isinstance(n, bytes) else n for n in frappe.cache.smembers(RIPORTATI)}
@@ -155,7 +174,7 @@ def _da_svuotare(soglia):
 		nomi = set()
 	righe = frappe.get_all(
 		"CRM Archived File",
-		filters={"restored_on": ["<", soglia]},
+		filters={"restored_on": ["<", soglia], **soltanto},
 		fields=["name", "file_url"],
 		limit=regole.FILE_PER_GIRO,
 	)
@@ -163,7 +182,7 @@ def _da_svuotare(soglia):
 	altri = [n for n in nomi if n not in visti]
 	if altri:
 		righe += frappe.get_all(
-			"CRM Archived File", filters={"name": ["in", altri]}, fields=["name", "file_url"]
+			"CRM Archived File", filters={"name": ["in", altri], **soltanto}, fields=["name", "file_url"]
 		)
 	return righe
 
@@ -287,11 +306,23 @@ def riporta(file_url: str | None) -> bool:
 
 
 def prima_della_richiesta() -> None:
-	"""`/private/files/…` of an archived file: whoever may read it, as the
-	framework decides, goes to the bucket by a link that lasts minutes. Anybody
-	else, and any file still on the server, is the framework's to answer."""
+	"""`/private/files/…`: whatever the answer, the browser keeps nothing. Of an
+	archived file, whoever may read it, as the framework decides, goes to the
+	bucket by a link that lasts minutes. Anybody else, and any file still on the
+	server, is the framework's to answer.
+
+	Behind nginx the framework answers a private file with
+	`private,max-age=3600,stale-while-revalidate=86400`: a report stayed in the
+	browser, and after signing out its address showed it again without asking the
+	server. What a request puts in `frappe.local.response_headers` (new at every
+	request, before the hooks) goes over the framework's own headers last
+	(`frappe.app.process_response`), on the file, its X-Accel-Redirect and its 403
+	alike."""
 	richiesta = getattr(frappe.local, "request", None)
-	if not richiesta or richiesta.method != "GET" or not richiesta.path.startswith("/private/files/"):
+	if not richiesta or not richiesta.path.startswith("/private/files/"):
+		return
+	frappe.local.response_headers["Cache-Control"] = regole.NON_TENERE
+	if richiesta.method != "GET":
 		return
 	file_url = richiesta.path
 	record = archiviato(file_url)
@@ -322,7 +353,7 @@ def prima_della_richiesta() -> None:
 		raise NotFound
 	nome = file.file_name or file_url.rsplit("/", 1)[-1]
 	risposta = redirect(s3.link(c, record.object_key, nome, mimetypes.guess_type(nome)[0]), code=302)
-	risposta.headers["Cache-Control"] = "private, no-store"
+	risposta.headers["Cache-Control"] = regole.NON_TENERE
 	risposta.headers["Referrer-Policy"] = "no-referrer"
 	raise HTTPException(response=risposta)
 

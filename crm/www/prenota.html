@@ -11,8 +11,10 @@
       :root {
         --ink-strong: oklch(0.168 0 0);
         --ink: oklch(0.205 0 0);
-        --muted: oklch(0.52 0 0);
-        --faint: oklch(0.683 0 0);
+        /* text that has to be read is 4.5:1 on the page and the cards: the
+           steps to come, the summary's line and «Powered by» were 2.65:1 */
+        --muted: oklch(0.47 0 0);
+        --faint: oklch(0.54 0 0);
         --border: oklch(0.913 0 0);
         --border-focus: oklch(0.8 0 0);
         --bg: oklch(0.975 0 0);
@@ -35,8 +37,8 @@
         :root {
           --ink-strong: oklch(0.98 0 0);
           --ink: oklch(0.92 0 0);
-          --muted: oklch(0.72 0 0);
-          --faint: oklch(0.55 0 0);
+          --muted: oklch(0.76 0 0);
+          --faint: oklch(0.66 0 0);
           --border: oklch(0.3 0 0);
           --border-focus: oklch(0.45 0 0);
           --bg: oklch(0.17 0 0);
@@ -74,7 +76,11 @@
       ol.steps { list-style: none; display: flex; gap: .25rem; padding: 0; margin: 0 0 1.25rem; flex-wrap: wrap; }
       ol.steps li { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--faint); padding: .3rem .6rem .3rem .35rem; border-radius: 999px; }
       ol.steps li .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); font-size: .72rem; font-weight: 600; }
-      ol.steps li.done { color: var(--muted); cursor: pointer; }
+      ol.steps li.done { color: var(--muted); cursor: pointer; padding: 0; }
+      /* a step done is its button, the whole pill: the li's padding moves in,
+         or only the words took a tap (on a phone, a 21px circle) */
+      ol.steps li button { all: unset; display: flex; align-items: center; gap: .45rem; cursor: pointer; border-radius: 999px; padding: .3rem .6rem .3rem .35rem; }
+      ol.steps li button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
       ol.steps li.done:hover { background: var(--hover); }
       ol.steps li.done .n { background: var(--accent-soft); border-color: transparent; }
       ol.steps li.current { color: var(--ink-strong); font-weight: 600; }
@@ -85,6 +91,8 @@
         ol.steps { flex-wrap: nowrap; }
         ol.steps li:not(.current) .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         ol.steps li:not(.current) { padding-right: .35rem; }
+        ol.steps li.done { padding: 0; }
+        ol.steps li.done button { padding-right: .35rem; }
       }
 
       /* minmax(0, …): a column never grows to its widest row (the categories' chips scroll in their own box) */
@@ -251,7 +259,7 @@
         <p id="page-intro"></p>
       </header>
 
-      <ol class="steps" id="steps" aria-label="progress"></ol>
+      <nav id="steps-nav"><ol class="steps" id="steps"></ol></nav>
 
       <div class="layout">
         <main class="panel" id="main" aria-live="polite">
@@ -271,6 +279,7 @@
       // --- i18n -----------------------------------------------------------
       const DICT = {
         it: {
+          stepsLabel: "Passi della prenotazione",
           stepLocation: "Sede", pickLocation: "In quale sede?", anyLocation: "Qualsiasi sede", anyLocationSub: "Il primo orario libero in tutte le sedi", openMap: "Apri la mappa", map: "Mappa",
           stepService: "Servizio", stepStaff: "Professionista", stepTime: "Data e ora", stepDetails: "I tuoi dati", stepDone: "Conferma",
           search: "Cerca un servizio…", all: "Tutti", noServices: "Nessun servizio prenotabile online al momento.",
@@ -283,9 +292,9 @@
           name: "Nome e cognome", email: "Email", phone: "Telefono", notes: "Note per lo studio", optional: "facoltativo",
           convention: "Fondo sanitario, assicurazione o convenzione", convNone: "Nessuna, pago io", cardNumber: "Numero di tessera o di polizza",
           convHint: "Il centro verifica la tua copertura e ti conferma la prenotazione.",
-          consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
+          consent: "Ho letto l'", privacy: "informativa sulla privacy",
           confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
-          summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", with: "Con", when: "Quando", duration: "Durata",
+          summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", summaryEmptyLocation: "Scegli una sede per iniziare.", with: "Con", when: "Quando", duration: "Durata",
           price: "Prezzo", where: "Dove", manual: "La prenotazione sarà confermata dallo studio.",
           doneTitle: "Prenotazione confermata", pendingTitle: "Richiesta inviata", pendingSub: "Riceverai un'email appena lo studio conferma.",
           doneSub: "Ti abbiamo inviato un'email con tutti i dettagli.", cancelledTitle: "Prenotazione annullata",
@@ -318,6 +327,7 @@
           prevMonth: "Il mese prima", nextMonth: "Il mese dopo", fewer: "Una persona in meno", more: "Una persona in più",
         },
         en: {
+          stepsLabel: "Booking steps",
           stepLocation: "Location", pickLocation: "Which location?", anyLocation: "Any location", anyLocationSub: "The earliest free time in every location", openMap: "Open the map", map: "Map",
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
           search: "Search a service…", all: "All", noServices: "No service can be booked online right now.",
@@ -330,9 +340,9 @@
           name: "Full name", email: "Email", phone: "Phone", notes: "Notes for us", optional: "optional",
           convention: "Health fund, insurance or convention", convNone: "None, I pay myself", cardNumber: "Card or policy number",
           convHint: "The centre checks your cover and confirms your booking.",
-          consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
+          consent: "I have read the ", privacy: "privacy notice",
           confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
-          summary: "Summary", summaryEmpty: "Pick a service to start.", with: "With", when: "When", duration: "Duration",
+          summary: "Summary", summaryEmpty: "Pick a service to start.", summaryEmptyLocation: "Pick a location to start.", with: "With", when: "When", duration: "Duration",
           price: "Price", where: "Where", manual: "The booking will be confirmed by our team.",
           doneTitle: "Booking confirmed", pendingTitle: "Request sent", pendingSub: "You'll get an email as soon as we confirm it.",
           doneSub: "We've emailed you all the details.", cancelledTitle: "Booking cancelled",
@@ -385,6 +395,7 @@
       }
       const $ = (id) => document.getElementById(id);
       if (BOOT.embed) document.body.classList.add("embed");
+      $("steps-nav").setAttribute("aria-label", T("stepsLabel"));
 
       // --- API ------------------------------------------------------------------
       async function api(method, params = {}, post = false, base = API) {
@@ -484,14 +495,20 @@
       function renderSteps() {
         const ol = $("steps");
         ol.replaceChildren();
-        if (S.step === "manage" || S.step === "wait" || S.step === "waited" || (S.step === "time" && S.moving)) { ol.classList.add("hidden"); return; }
-        ol.classList.remove("hidden");
+        // hidden whole, the named nav with its list: an empty «Passi della
+        // prenotazione» stayed among the landmarks
+        const nav = $("steps-nav");
+        if (S.step === "manage" || S.step === "wait" || S.step === "waited" || (S.step === "time" && S.moving)) { nav.hidden = true; return; }
+        nav.hidden = false;
         const list = STEPS();
         const at = list.findIndex(([k]) => k === S.step);
         list.forEach(([key, label], i) => {
           const done = i < at && S.step !== "done";
-          ol.append(h("li", { class: done ? "done" : i === at ? "current" : "", onclick: done ? () => go(key) : null, "aria-current": i === at ? "step" : null },
-            h("span", { class: "n" }, done ? "✓" : String(i + 1)), h("span", { class: "t" }, label)));
+          // a step done goes back to it from the keyboard too: a button, not a
+          // list item that only a mouse could open
+          const parts = [h("span", { class: "n", "aria-hidden": "true" }, done ? "✓" : String(i + 1)), h("span", { class: "t" }, label)];
+          ol.append(h("li", { class: done ? "done" : i === at ? "current" : "", "aria-current": i === at ? "step" : null },
+            ...(done ? [h("button", { type: "button", onclick: () => go(key) }, ...parts)] : parts)));
         });
       }
 
@@ -503,7 +520,9 @@
         // where, once chosen: a location's name and address
         const sede = !S.manage && locationOf((S.slot && S.slot.location_id) || S.location);
         if (sede) box.append(row("⌖", T("stepLocation"), [sede.name, sede.address].filter(Boolean).join(", ")));
-        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
+        // what to do first, as the step on screen asks it: «Scegli un servizio»
+        // under «In quale sede?» sent one to a step that was not there yet
+        if (!svc) { if (!sede) box.append(h("div", { class: "empty" }, T(S.step === "location" ? "summaryEmptyLocation" : "summaryEmpty"))); return; }
         box.append(row("◆", T("stepService"), svc.name));
         if (S.manage) {
           if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));
@@ -683,7 +702,9 @@
           h("button", { class: "icon-btn", "aria-label": T("prevMonth"), disabled: S.month <= today.slice(0, 7) + "-01" || S.loadingSlots, onclick: () => loadMonth(prevMonth) }, "‹"),
           h("b", {}, fmtMonth.format(m)),
           h("button", { class: "icon-btn", "aria-label": T("nextMonth"), disabled: (S.maxDate && nextMonth > S.maxDate) || S.loadingSlots, onclick: () => loadMonth(nextMonth) }, "›")));
-        const grid = h("div", { class: "month", role: "grid" });
+        // a group of the month's days, each read as its date («lunedì 12 ottobre»),
+        // never «2026-10-12»: a grid role wanted rows and cells it never had
+        const grid = h("div", { class: "month", role: "group", "aria-label": fmtMonth.format(m) });
         const dows = [];
         for (let i = 0; i < 7; i++) dows.push(new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i))));
         dows.forEach((x) => grid.append(h("div", { class: "dow" }, x)));
@@ -697,7 +718,7 @@
           const full = !free && waitOn() && (S.full[key] || []).length > 0;
           const avail = !S.loadingSlots && (free || full);
           const cls = ["day", avail ? "avail" : "", full ? "full" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
-          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": fmtDay.format(new Date(key + "T12:00:00Z")), "data-day": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
+          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": fmtDay.format(new Date(key + "T12:00:00Z")), "aria-pressed": key === S.date ? "true" : "false", "data-day": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
         }
         wrap.append(grid);
 
@@ -830,13 +851,14 @@
           field("email", T("email"), { type: "email", autocomplete: "email", inputmode: "email" }, true),
           field("phone", T("phone"), { type: "tel", autocomplete: "tel", inputmode: "tel" }, !!svc.require_phone)));
         if (withNotes) form.append(field("notes", svc.question || T("notes"), { tag: "textarea", rows: 3 }, !!svc.require_notes));
+        // the notice read, never a consent: a booking needs none. Asked only where
+        // the notice has an address (the server says so in `require_consent`), and
+        // what it says is what the register keeps: «Ho letto l'informativa sulla privacy»
         if (S.catalog.require_consent) {
           const cb = h("input", { type: "checkbox", id: "f-consent", required: true });
           cb.checked = S.form.consent;
           cb.addEventListener("change", (e) => (S.form.consent = e.target.checked));
-          const text = S.catalog.privacy_policy_url
-            ? h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req", "aria-hidden": "true" }, " *"))
-            : h("span", {}, T("consentPlain"), h("span", { class: "req", "aria-hidden": "true" }, " *"));
+          const text = h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req", "aria-hidden": "true" }, " *"));
           form.append(h("label", { class: "check", for: "f-consent", id: "f-consent-label" }, cb, text));
         }
         // optional and never ticked for them: a consent has to be given, not left in place

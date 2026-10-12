@@ -28,7 +28,7 @@
         <p class="text-p-sm text-ink-gray-6">
           {{
             stato.finiti
-              ? __('The centre is ready. Have a good day at work!')
+              ? __('The centre is ready: every first step is done.')
               : __(
                   'What to do to start with {brand}: each step ticks itself once it is done.',
                 )
@@ -66,7 +66,7 @@
       <li v-for="passo in passi.data?.steps || []" :key="passo.key">
         <button
           type="button"
-          class="flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+          class="flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:[outline-offset:-2px]"
           :class="passo.key === stato.prossimo?.key && 'bg-surface-gray-1'"
           @click="fai(passo)"
         >

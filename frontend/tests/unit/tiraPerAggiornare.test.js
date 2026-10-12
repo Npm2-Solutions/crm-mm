@@ -1,5 +1,8 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
-// A list pulled down from its top reloads, as in a phone's own apps.
+// A list pulled down from its top reloads, as in a phone's own apps; the
+// page's «Refresh» reloads it the same way, with one tap.
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import {
   MASSIMO_TIRATA,
   SOGLIA_TIRATA,
@@ -7,6 +10,27 @@ import {
   useTiraPerAggiornare,
 } from '@/composables/tiraPerAggiornare'
 import { createApp, h, nextTick, ref } from 'vue'
+
+vi.mock('frappe-ui', async () => {
+  const { h } = await import('vue')
+  return {
+    LoadingIndicator: { render: () => null },
+    // frappe-ui's Button as far as the key goes: a native button, disabled
+    // while `loading` as frappe-ui's own is
+    Button: {
+      inheritAttrs: false,
+      props: { loading: Boolean, disabled: Boolean, tooltip: String },
+      setup(props, { attrs, slots }) {
+        return () =>
+          h(
+            'button',
+            { ...attrs, disabled: props.disabled || props.loading },
+            slots.icon?.(),
+          )
+      },
+    },
+  }
+})
 
 describe('tirata', () => {
   it('follows half the finger, up to a limit', () => {
@@ -117,6 +141,124 @@ describe('useTiraPerAggiornare', () => {
     tocco(box, 'touchcancel')
     expect(aggiorna).not.toHaveBeenCalled()
     expect(stato.distanza).toBe(0)
+    smonta()
+  })
+
+  it('reloads from the key, the list where it is, and turns until done', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, smonta } = monta(aggiorna)
+    const fatto = stato.aggiornaOra()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    expect(stato.inCorso).toBe(true)
+    // the mark comes down only under a finger: the rows do not move
+    expect(stato.distanza).toBe(0)
+    finisci()
+    await fatto
+    expect(stato.inCorso).toBe(false)
+    smonta()
+  })
+
+  it('runs one reload at a time, from a pull or from the key', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, box, smonta } = monta(aggiorna)
+    // the key while a pull reloads
+    tocco(box, 'touchstart', 100)
+    tocco(box, 'touchmove', 100 + 2 * SOGLIA_TIRATA + 10)
+    tocco(box, 'touchend')
+    await stato.aggiornaOra()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    finisci()
+    await nextTick()
+    await nextTick()
+    expect(stato.inCorso).toBe(false)
+    // a pull while the key reloads
+    const fatto = stato.aggiornaOra()
+    tocco(box, 'touchstart', 100)
+    tocco(box, 'touchmove', 100 + 2 * SOGLIA_TIRATA + 10)
+    tocco(box, 'touchend')
+    expect(aggiorna).toHaveBeenCalledTimes(2)
+    expect(stato.distanza).toBe(0)
+    finisci()
+    await fatto
+    expect(stato.inCorso).toBe(false)
+    smonta()
+  })
+
+  it('leaves the key off the mark, which the state is bound on', async () => {
+    const { stato, smonta } = monta(vi.fn())
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    // as the lists draw it: <TiraPerAggiornare v-bind="tira" />
+    const app = createApp({ render: () => h(TiraPerAggiornare, stato) })
+    app.mount(radice)
+    await nextTick()
+    const nomi = [...radice.firstElementChild.attributes].map((a) => a.name)
+    expect(nomi.some((nome) => nome.toLowerCase() === 'aggiornaora')).toBe(
+      false,
+    )
+    app.unmount()
+    smonta()
+  })
+
+  it('tells a screen reader it reloads, in a region there from the start', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, smonta } = monta(aggiorna)
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    const app = createApp({ render: () => h(TiraPerAggiornare, stato) })
+    app.config.globalProperties.__ = globalThis.__
+    app.mount(radice)
+    await nextTick()
+    // there before anything is said, and never under a hidden box: one put
+    // in already filled is not announced reliably
+    const regione = radice.querySelector('[role=status]')
+    expect(regione.textContent.trim()).toBe('')
+    expect(regione.closest('[aria-hidden="true"]')).toBeNull()
+    const fatto = stato.aggiornaOra()
+    await nextTick()
+    expect(radice.querySelector('[role=status]')).toBe(regione)
+    expect(regione.textContent.trim()).toBe('Updating the list…')
+    expect(regione.closest('[aria-hidden="true"]')).toBeNull()
+    finisci()
+    await fatto
+    await nextTick()
+    expect(regione.textContent.trim()).toBe('')
+    app.unmount()
+    smonta()
+  })
+
+  it('keeps the keyboard on «Refresh» while the list comes back', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, smonta } = monta(aggiorna)
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    const app = createApp({
+      render: () => h(PulsanteAggiorna, { tira: stato }),
+    })
+    app.config.globalProperties.__ = globalThis.__
+    app.mount(radice)
+    const tasto = radice.querySelector('button')
+    expect(tasto.getAttribute('aria-label')).toBe('Refresh')
+    tasto.focus()
+    tasto.click()
+    await nextTick()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    expect(stato.inCorso).toBe(true)
+    // a button disabled under the focus drops it to the page's top
+    expect(tasto.disabled).toBe(false)
+    expect(document.activeElement).toBe(tasto)
+    // pressed again meanwhile, it asks for nothing more
+    tasto.click()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    finisci()
+    await nextTick()
+    await nextTick()
+    expect(stato.inCorso).toBe(false)
+    app.unmount()
     smonta()
   })
 })

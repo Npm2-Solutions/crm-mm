@@ -10,10 +10,12 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Notes" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoNote?.tira" />
       <Button
         v-if="!isMobileView && puo('note.scrivi')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New note')"
         iconLeft="plus"
         @click="createNote"
       />
@@ -81,6 +83,21 @@
             />
           </Dropdown>
         </div>
+        <!-- whom it is about, before what it says: a clinical note («lesione
+             parziale del menisco») without the patient's name read as anybody's -->
+        <router-link
+          v-if="diChi(note)"
+          :to="
+            note.reference_doctype === 'CRM Deal'
+              ? { name: 'Deal', params: { dealId: note.reference_docname } }
+              : { name: 'Lead', params: { leadId: note.reference_docname } }
+          "
+          class="-mt-1 flex min-h-6 min-w-0 items-center gap-1.5 self-start text-sm font-medium text-ink-gray-7 touch-target hover:underline"
+          @click.stop
+        >
+          <span class="lucide-user size-3.5 shrink-0" aria-hidden="true" />
+          <span class="truncate">{{ diChi(note) }}</span>
+        </router-link>
         <!-- content is passed through sanitizeHTML() (DOMPurify) before rendering, so v-html is safe here -->
         <!-- eslint-disable vue/no-v-html -->
         <div
@@ -125,6 +142,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoNote from '@/components/Mobile/ElencoNote.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
@@ -141,6 +159,50 @@ const { capture } = useTelemetry()
 const { showModal } = useDoctypeModal()
 
 const notes = ref({})
+
+// whom each note is about: the person, or the deal's person, by name, asked
+// once for the notes on the page and only of what the session reads
+const nomiDelleNote = ref({})
+const CAMPO_DEL_NOME = { 'CRM Lead': 'lead_name', 'CRM Deal': 'lead_name' }
+function chiaveDi(nota) {
+  return `${nota.reference_doctype}:${nota.reference_docname}`
+}
+function diChi(nota) {
+  return nomiDelleNote.value[chiaveDi(nota)] || ''
+}
+watch(
+  () => notes.value?.data?.data,
+  async (righe) => {
+    const perTipo = {}
+    for (const nota of righe || []) {
+      if (!CAMPO_DEL_NOME[nota.reference_doctype] || !nota.reference_docname)
+        continue
+      if (chiaveDi(nota) in nomiDelleNote.value) continue
+      ;(perTipo[nota.reference_doctype] ||= new Set()).add(
+        nota.reference_docname,
+      )
+    }
+    // the people's and the deals' names asked together, not one after the other
+    const nuovi = {}
+    await Promise.all(
+      Object.entries(perTipo).map(async ([tipo, nomi]) => {
+        try {
+          const trovati = await call('frappe.client.get_list', {
+            doctype: tipo,
+            filters: { name: ['in', [...nomi]] },
+            fields: ['name', CAMPO_DEL_NOME[tipo]],
+            limit_page_length: nomi.size,
+          })
+          for (const riga of trovati || [])
+            nuovi[`${tipo}:${riga.name}`] = riga[CAMPO_DEL_NOME[tipo]] || ''
+        } catch {
+          // a person the session may not read: the note says nothing of them
+        }
+      }),
+    )
+    nomiDelleNote.value = { ...nomiDelleNote.value, ...nuovi }
+  },
+)
 const loadMore = ref(1)
 const updatedPageCount = ref(20)
 const viewControls = ref(null)

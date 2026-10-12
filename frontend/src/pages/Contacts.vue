@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Contacts" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoContatti?.tira" />
       <CustomActions
         v-if="contactsListView?.customListActions"
         :actions="contactsListView.customListActions"
@@ -17,7 +19,7 @@
       <Button
         v-if="!isMobileView"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New contact')"
         iconLeft="plus"
         @click="showContactModal = true"
       />
@@ -25,7 +27,7 @@
   </LayoutHeader>
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
-    <ElencoContatti />
+    <ElencoContatti ref="elencoContatti" />
     <PulsanteAggiungi
       v-if="puo('persone.scrivi')"
       :label="__('New contact')"
@@ -86,6 +88,7 @@ import ContactsListView from '@/components/ListViews/ContactsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoContatti from '@/components/Mobile/ElencoContatti.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { usersStore } from '@/stores/users'
@@ -103,6 +106,7 @@ const { puo } = usersStore()
 const showContactModal = ref(false)
 
 const contactsListView = ref(null)
+const elencoContatti = ref(null)
 
 // contacts data is loaded in the ViewControls component
 const contacts = ref({})

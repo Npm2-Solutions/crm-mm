@@ -5,17 +5,21 @@
   The device has lost the network - a lift, a corridor, a basement - and
   nothing said so: a save failed with the browser's own words. A line under
   the header says it, and what it means, until the network comes back.
+  The region is always there and only its words come and go: a region drawn
+  with its words already in it is not always read out. Empty, it takes no
+  height in the layouts' columns.
 -->
 <template>
-  <div
-    v-if="senzaRete"
-    role="status"
-    class="flex shrink-0 items-start gap-2 border-b border-outline-amber-2 bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
-  >
-    <span class="lucide-wifi-off mt-0.5 size-4 shrink-0" aria-hidden="true" />
-    <span class="min-w-0">
-      {{ __('No network: until it comes back, changes are not saved.') }}
-    </span>
+  <div role="status" class="shrink-0">
+    <div
+      v-if="senzaRete"
+      class="flex items-start gap-2 border-b border-outline-amber-2 bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
+    >
+      <span class="lucide-wifi-off mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span class="min-w-0">
+        {{ __('No network: until it comes back, changes are not saved.') }}
+      </span>
+    </div>
   </div>
 </template>
 

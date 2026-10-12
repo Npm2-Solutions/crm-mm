@@ -179,10 +179,11 @@
    "options": "URL"
   },
   {
+   "default": "1",
+   "description": "A required box with the link to the notice above: it appears on the page once its address is written.",
    "fieldname": "require_privacy_consent",
    "fieldtype": "Check",
-   "label": "Require Privacy Consent",
-   "default": "1"
+   "label": "Ask to confirm the privacy notice was read"
   },
   {
    "default": "0",
@@ -354,7 +355,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-08 20:00:00.000000",
+ "modified": "2026-10-12 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

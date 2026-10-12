@@ -6,12 +6,14 @@
     <!-- the pages that live together, one switch between them: Persone and
          Aziende, Da fare and Note (docs/crm/34). Three do not fit
          beside a phone's buttons: there the one open is the title, the
-         others in its menu -->
+         others in its menu. It gives way to the page's keys, its word cut
+         with «…» (LayoutHeader.vue): frappe-ui's Button does not shrink, and
+         at 320 points «Accoglienza» ran under the day's arrows -->
     <Dropdown v-if="aTendina" :options="vociSorelle">
       <template #default="{ open }">
         <Button
           variant="ghost"
-          class="text-lg-medium text-nowrap"
+          class="min-w-0 !shrink text-lg-medium text-nowrap"
           :label="sorelle.find((pagina) => pagina.value === routeName)?.label"
           :iconRight="open ? 'chevron-up' : 'chevron-down'"
         />
@@ -29,6 +31,7 @@
       class="mr-1 shrink-0"
       :options="sorelle"
       :modelValue="routeName"
+      :aria-label="__('Pages')"
     />
     <router-link
       v-else

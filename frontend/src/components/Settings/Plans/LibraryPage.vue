@@ -95,7 +95,7 @@
             </span>
             <button
               type="button"
-              class="flex min-w-0 flex-1 flex-col text-left after:absolute after:inset-0 after:rounded-md after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-outline-gray-3"
+              class="riga-stesa flex min-w-0 flex-1 flex-col text-left after:rounded-md"
               @click="emit('edit', { ...row })"
             >
               <!-- the name read whole: two exercises cut were the same
@@ -120,7 +120,7 @@
               :label="__('The centre’s own')"
             />
             <Switch
-              class="relative z-10 shrink-0"
+              class="relative shrink-0"
               :model-value="Boolean(row.enabled)"
               :aria-label="row[library.nameField]"
               @update:model-value="(acceso) => accendi(row, acceso)"

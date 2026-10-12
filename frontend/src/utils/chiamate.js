@@ -5,7 +5,9 @@
  * Calls going out from DottorCloud (doc 52), without a screen: the countries the
  * centre may call as the server reads them (`crm/telephony/uscita_regole.py`),
  * a country's name in the reader's language, the number a call shows to start
- * with, the keypad. The words are English, translated where they are drawn.
+ * with, the keypad; and for every call, in or out, who calls and whether the
+ * window is taken by another. The words are English, translated where they are
+ * drawn.
  */
 
 import { nomeDelPaese } from './paesi'
@@ -113,3 +115,70 @@ export const TASTI = [
   ['7', '8', '9'],
   ['*', '0', '#'],
 ]
+
+/**
+ * Whether the call's window is taken (Twilio's and Telnyx's): by a call it
+ * shows, ringing or on, other than `nuova`, or by one being placed (`stato`
+ * 'initiating': the server or the carrier has not answered yet, and there is no
+ * call object). One call at a time: no call goes out over it, and one coming in
+ * rings on the centre's other phones. A call coming in while another was being
+ * placed took the window and its name, then the call going out took them back,
+ * and the window lost the call it had shown.
+ */
+export function finestraOccupata(attuale, stato, nuova = null) {
+  if (attuale) return attuale !== nuova
+  return stato === 'initiating'
+}
+
+/**
+ * What Twilio's window does with a call coming in: 'mostra' where the window is
+ * free; 'aspetta' while the call it shows still rings in this browser
+ * (`squilla`: that call's `status() === 'pending'`) and none is being placed;
+ * 'ignora' else - a call on, or one going out - and it rings on the centre's
+ * other phones. Twilio plays one looping tone for every call ringing in the
+ * browser, and ignoring any of them stops it: a second call ignored while the
+ * first rang left the first in the window with no sound. A call that waits
+ * rings on, is shown when the one before it ends unanswered, and is ignored
+ * once that one is answered (the tone stopped then).
+ */
+export function nuovaChiamata(attuale, stato, nuova, squilla = false) {
+  if (!finestraOccupata(attuale, stato, nuova)) return 'mostra'
+  if (attuale && squilla && stato !== 'initiating') return 'aspetta'
+  return 'ignora'
+}
+
+/**
+ * Who calls, asked one number at a time, for the call's window (Twilio's and
+ * Telnyx's): `chiedi(numero)` asks the server, `aggiorna(contatto, cercando)`
+ * tells the window. What it gives back is called with the call's number each
+ * time a call starts or its number changes: the window hears nobody at once,
+ * while the server is asked, then whom it found for that number - nobody where
+ * it found nobody or could not answer. An answer about a number the call no
+ * longer has is dropped. The window kept the last call's caller until the
+ * server answered, and for the whole call where it did not.
+ */
+export function cercaChiChiama(chiedi, aggiorna) {
+  let ultima = 0
+  return async function cerca(numero) {
+    const questa = ++ultima
+    aggiorna(null, Boolean(numero))
+    if (!numero) return
+    let trovato = null
+    try {
+      trovato = (await chiedi(numero)) || null
+    } catch {
+      // nobody named: the window says it does not know who it is
+    }
+    if (questa === ultima) aggiorna(trovato, false)
+  }
+}
+
+/**
+ * The name the call's window gives whoever calls: the one the server found;
+ * nothing yet while it is asked (`cercando`); «Unknown» once it found nobody or
+ * could not say (`t`, the translator).
+ */
+export function nomeDiChiChiama(contatto, cercando, t) {
+  if (contatto?.full_name) return contatto.full_name
+  return cercando ? '' : t('Unknown')
+}

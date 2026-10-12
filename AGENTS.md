@@ -45,6 +45,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
 | Any screen a phone will see (rules below) | [docs/crm/29-telefono.md](./docs/crm/29-telefono.md) |
 | How DottorCloud looks: tokens, the brand's marks, components | [brand/dottorcloud/design-system/espresso](./brand/dottorcloud/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
+| Designing, writing or reviewing any screen: the principles, their thresholds and sources, the checklist | [docs/crm/66-principi-di-esperienza.md](./docs/crm/66-principi-di-esperienza.md) (eight families in `docs/crm/principi/`; the clinic's in [docs/verticali/clinica/principi-sanitari.md](./docs/verticali/clinica/principi-sanitari.md)) |
 
 ---
 
@@ -83,7 +84,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | File | Role |
 |---|---|
 | `frontend/src/stores/meta.js` | `getMeta(doctype)` — fetches DocType meta, exposes `getFields()`, formatters |
-| `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall` |
+| `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall`; `$dialog` is `utils/dialogs.jsx`: its message the dialog's description, «Cancel» in front of a confirmation whose actions are all red (`utils/conferme.js`, tested) |
 
 ### Dashboard
 | File | Role |
@@ -92,13 +93,13 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)`; who reads a widget is the capability of its category (`registry.READERS`: doc 30's numbers) or its own `reader`, a template's `reader` says whom it is for (`store.reads`, `store.offers`) |
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
-| `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |
+| `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid (a widget moved or resized a step at a time from its menu, «Move or resize», never only by dragging: `spostaWidget`, `passiPossibili`), catalogue search, palette, ECharts options — tested |
 | `docs/crm/28-dashboard.md` | What it does and why |
 
 ### The agenda's screen (docs/crm/56)
 | File | Role |
 |---|---|
-| `frontend/src/utils/agenda.js` | Pure: an hour's height (`ALTEZZE`), the whole lines a block holds (`righeDelBlocco`, `formaDelBlocco`), what it says, the person first (`testoDelBlocco`, `segniDelBlocco`, `paroleDelBlocco`), the colour by service or by state, a column's hours and where it is closed (`orarioDelGiorno`, `chiusure`), the hours a grid shows, a day's columns (who works or has something) and a week's days, the periods and their headings, what each column and each day of the month draws (`cosePerColonna`, `cosePerGiorno`) — tested |
+| `frontend/src/utils/agenda.js` | Pure: an hour's height (`ALTEZZE`), the whole lines a block holds (`righeDelBlocco`, `formaDelBlocco`), what it says, the person first (`testoDelBlocco`, `segniDelBlocco`, `paroleDelBlocco`), the colour by service or by state, a column's hours and where it is closed (`orarioDelGiorno`, `chiusure`), the hours a grid shows, a day's columns (who works or has something) and a week's days, the periods and their headings, what each column and each day of the month draws (`cosePerColonna`, `cosePerGiorno`), how many appointments of 24px a day of the month holds at its height (`quantiNelGiorno`: the month stays whole on a laptop's screen) — tested |
 | `frontend/src/pages/Calendar.vue` + `components/Calendar/GrigliaAgenda.vue`, `BloccoAgenda.vue`, `MeseAgenda.vue`, `ChiNellAgenda.vue`, `FiltriAgenda.vue`, `VistaAgenda.vue`, `VistaDelTelefono.vue` | One bar for every view (‹ Today › and the date, Day · Week · Month, whose, Filters, View; on a phone one row of keys of one height: the view's switch, «All», Filters and View as icons); the day one column per professional or room that works it, at least `--col-min` wide, scrolling sideways under its headers while the hours stay; a week of one of them; the month; what the reader chose kept in their browser (`crmAgenda`: the view, whose day and month, whose week, columns, height, colours), the centre's (opening view, grid step: `FCRM Settings.calendar_grid_step`) in Settings > Agenda > Agenda & reminders; who books only for themselves (`ambito('agenda.prenota') === 'suoi'`) books in their own column (`prenotabile`), who reads only their own agenda opens on it |
 | `crm/api/appointments.py` `get_calendar(with_hours=1)` | For a day or a week, each professional's and room's open windows in the centre's minutes (`orari_di`, from the engine's own shifts, overrides and holidays; `null` where no hours were set) and the professionals' events as busy time (`engaged`: when, never what) |
 
@@ -111,7 +112,15 @@ colleague's column takes no tap and no drop from a practitioner, as the server
 would refuse it. An appointment's calendar copy (`Event`, `sync_event`) is its first
 professional's, every professional of it a participant by their user; the people who
 come are linked by their record, never by their email (it would read the copy to
-the area's user and get the framework's reminders).
+the area's user and get the events' reminders). The framework writes a Contact's
+address on every participant row without one when an Event is saved
+(`set_participants_email`): an `Event` `before_save` of ours, which runs after the
+framework's own, leaves an address only on the professionals' rows, each their own,
+whatever saves a copy (`copia_solo_ai_professionisti`; the copies made before it,
+the patch `the_calendar_copy_keeps_no_address_of_who_comes`); an Event the centre
+makes itself is the framework's. A copy is made with `send_reminder` 0: the
+framework's nightly digest mailed its owner the copy's title and notes
+(`the_calendar_copy_sends_no_digest` for the copies made before).
 A call asked once whose refusal its `onError` says is `chiedi()` (`utils/chiedi.js`),
 and a resource's `submit()` so answered ends in `.catch(() => {})`: frappe-ui throws
 again what it handed to `onError`, and a `createResource({ auto: true })` refused
@@ -134,7 +143,7 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 | File | Role |
 |---|---|
 | `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest`; whoever missed `no_show_limit` appointments in the last `no_show_months` (`CRM Scheduling Settings`, off where empty; counted from the participants' «No Show», `missed`) books only with the centre's yes, or not at all (`check_no_shows`, `no_show_action`), a class's seat then refused |
-| `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine; a service's deposit paid on the centre's Stripe before the booking is one (`crm.pagamenti`, doc 60), with the codice fiscale of who is coming (a child's own) where its invoice is a healthcare one (`pagamenti.regole.codice_fiscale_da_chiedere`: the card says so, or a medical centre's service without one; optional where none follows), checked as invoicing checks it (`anagrafica.codice_scritto`) and written in their billing details where they have none (`scrivi_se_manca`): the advance invoice is issued at once |
+| `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine; the privacy notice confirmed read («Ho letto l'informativa sulla privacy», linked to it), never a consent - a booking needs none -, and only where the centre wrote its address (`_chiede_la_presa_visione`: the page, the booking, the waiting list and the register ask it); a service's deposit paid on the centre's Stripe before the booking is one (`crm.pagamenti`, doc 60), with the codice fiscale of who is coming (a child's own) where its invoice is a healthcare one (`pagamenti.regole.codice_fiscale_da_chiedere`: the card says so, or a medical centre's service without one; optional where none follows), checked as invoicing checks it (`anagrafica.codice_scritto`) and written in their billing details where they have none (`scrivi_se_manca`): the advance invoice is issued at once |
 | `crm/scheduling/unify.py` | One booking system: legacy Booking Calendars → services, /book redirects |
 | `crm/api/booking_admin.py` | Who-does-what matrix, team rota, "why not available" explainer |
 | `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
@@ -162,7 +171,7 @@ appointment's status: «Confirmed» is the centre's yes to an online request.
 | `crm/moduli/modelli.py` | Drafts (`CRM Form Template`) and immutable versions (`CRM Form Template Version`), consents' words frozen at publish; the uses: a "Form" the person fills (sent, owed at a booking, giving consents), a "Sheet" the operator writes at the desk (a treatment sheet; with the health data mark, the clinic's clinical sheet, written in the record) and a "Website" form anybody fills, built by marketing (`moduli_lead.gestisci`), a module registers its own (`registra_uso`); what a use does not allow (`problemi_dell_uso`); the summary's lines |
 | `crm/moduli/sito.py` + `crm/www/crm_form.*` | A form of the website at `/crm-form/<address>`, in another site (`?embed=1`, the sites listed) or in a page of the centre's (`site_render.crm_form_html`, `templates/site/form_inline.html`): the guest `submit_site_form` finds the person by email or mobile or makes them (`find_or_create_person`), fills what the centre did not know, keeps the answers as their form (channel "Website"), records the consents, opens the deal, fires "Lead Form Submitted"; a honeypot, a rate limit; a draft only tried (`try_site_form`) |
 | `crm/public/js/moduli_campi.js`, `crm/public/css/moduli_campi.css` | The questions of a public page drawn without a framework, on the engine the page hands over: `/modulo`, the website's page and block (`versione_del_motore` versions all three) |
-| `frontend/src/components/Moduli/` | `FormRenderer` + `FormFieldInput`: draw and fill a schema |
+| `frontend/src/components/Moduli/` | `FormRenderer` + `FormFieldInput`: draw and fill a schema; a single choice is a radio group, one Tab stop whose arrows move and pick (`utils/frecce.js`, tested) |
 | `frontend/src/components/Settings/Forms/Template*.vue` + `utils/moduliSito.js` | The one builder, in Settings > Clients > Forms: forms, sheets and the website's (its address, its Share tab, the person's field a question fills); what a use does not allow, live, the address from a title, the embed code — tested |
 | `crm/moduli/compilazioni.py` | A person's forms: start, save half-way, sign (checks, strokes, submit, PDF, consents) |
 | `crm/moduli/pdf.py` + `templates/modulo_firmato.html` | The signed form's PDF/A with its evidence page, made once |
@@ -228,10 +237,10 @@ is never a menu entry.
 | File | Role |
 |---|---|
 | `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number; notes by their title or words, their first words in plain text — tested in `crm/tests/test_sul_telefono.py` |
-| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoNote`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+»), `DescrizioneRipiegata` (a tab's explaining line, two lines and «Show more») |
+| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoNote`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More; one Tab stop, the arrows, Home and End along it, its panels named by the open tab: `idDellaScheda`), `PulsanteAggiungi` (the page's «+»), `PulsanteAggiorna` (the header's «Refresh»: the list's pull in one tap), `DescrizioneRipiegata` (a tab's explaining line, two lines and «Show more») |
 | `frontend/src/pages/Altro.vue` + `composables/vociAccount.js`, `visteSalvate.js` | The phone's «More» page (`/altro`): the profile, the notifications, the menu entries the bar has no room for, the saved views, the first steps, the account's entries the sidebar's dropdown draws too; the card that puts the app on the home screen (`Mobile/InstallaApp.vue`, `utils/installa.js`: the browser's offer on Android, Safari's two taps on an iPhone, nothing once installed; the client area's own on its home, `area/components/InstallCard.vue`) |
 | `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
-| `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
+| `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls, how many tabs a record's bar holds and where a key moves among them (`quanteNellaBarra`, `schedaColTasto`) — tested |
 
 ### Notifications (docs/crm/43)
 | File | Role |
@@ -242,7 +251,8 @@ is never a menu entry.
 | `frontend/src/components/Notifications/`, `Notifications.vue`, `pages/MobileNotification.vue`, `stores/notifications.js`, `composables/notifiche.js` + `utils/notifiche.js` | The panel and the phone's page on one list (days, the kind's mark, the dot), listened to once per layout, the brand's toast when one arrives; the look and the days tested |
 | `frontend/src/socket.js`, `composables/diNuovoInLinea.js` + `utils/inLinea.js` | Real time on a phone: the socket never gives up (every ten seconds at most), and tries at once when the app comes back into view or the network comes back; what a page shows from events (the conversations, a person's activity, the notifications' count) is asked again when the app is back after fifteen seconds out of sight or the connection is back after a break (`useDiNuovoInLinea`): the events of that time never came — the timing tested |
 | `crm/notifiche/spinta.py` + `spinta_regole.py`, `spinta_sw.js`, `CRM Push Subscription` | On the phone and the computer (Web Push): each device turned on in Settings > Your account > Notifications (an iPhone only as the app on the home screen) keeps how to reach it, its person's own; every notification `avvisa()` writes goes to it in a job, encrypted for that browser (RFC 8291) and signed with the site's key (VAPID, in `FCRM Settings`) under the site's address as the world reaches it (`mittente()`: the one a device was turned on from, `crm_push_contact`, else `host_name`, else the request's that wrote it; https, no port: a job has no request, and Apple refuses a local name with 403 BadJwtToken), only to a browser maker's push service (`SERVIZI`), never about the demo; a message `Urgency: high`, the rest `normal`; a person's message titled as a messenger titles it (`titolo_di_un_messaggio`: its channel's mark and who wrote, «💬 Laura Bassi (3)», its words below); the first refusal of a streak in the Error Log with the service's reason («Web Push refused»); the kinds by group as the email's, all on; delivered, no email as well; a device gone is forgotten. The service worker over `/crm` only shows and opens, served from `/api/method` with `Service-Worker-Allowed`: touched, DottorCloud comes forward and is told where to go (`main.js` answers on the message's port); a page that does not answer (asleep, an old version) is loaded there, none open a new window — `spinta_regole` tested on RFC 8291's own example |
-| `frontend/src/utils/spinta.js`, `composables/spinta.js`, `Settings/NotificationsSettings.vue`, `Mobile/NotificheSulTelefono.vue` | What this device can do in words (`statoDelDispositivo`), turning on and off, the test, the devices, the «Devices» column; synced once the app is idle where permission was given; a touched notification opens its page (`?notifica=` marks it read in the router) — the pure part tested |
+| `frontend/src/utils/spinta.js`, `composables/spinta.js`, `Settings/NotificationsSettings.vue`, `Mobile/NotificheSulTelefono.vue` | What this device can do in words (`statoDelDispositivo`), turning on and off, the test, the devices, the «Devices» column; synced once the app is idle where permission was given, one memo for the browser (`crm-spinta`: whose, which subscription; `daChiedere`), so whoever signs in after somebody else is handed the device; let go at every logout while the session is there, after the opening's sync still on its way (`lascia`: the server forgets it for the session within two seconds, else - or where that sync has not landed, or the memo names somebody else - the browser unsubscribes once the server has ended the session; `tieneLAbbonamento`), an opening's sync that starts once the logout is on its way handing it to nobody, a logout refused leaving it to the session that goes on (`resta`), a session that ran out without a logout leaving it to its last user until somebody signs in; a touched notification opens its page (`?notifica=` marks it read in the router) — the pure part tested, the device's scenarios against a fake server (`tests/unit/spintaNelBrowser.test.js`) |
+| `crm/api/event.py` + `CRM Event Reminder`, `data/notifications.js`, `EventNotificationPopup.vue`, `EventNotificationsArea.vue`, `utils/avvisiDegliEventi.js` | A calendar event's reminder, whoever's the event is (the round runs as the scheduler's Administrator and reads every event whose reminder can fall in its window, `fin_dove_cercare`; none while nothing has a reminder of the unit), at the first round after its time and never before (`e_il_momento`: every four minutes for minutes and hours, every hour for days and weeks; by email never once the event began), to its owner and its participants who are enabled System Users, a participant found by name or by email (`_destinatari`). On the screen (the popup, not a row of the panel) in their own rooms, never the site's, with what the popup draws and never the description, an appointment's notes on its calendar copy (`CAMPI_DEL_PROMEMORIA`). By email once each, Administrator left out, in their language: written in the register before it leaves (`_segna`, named by its key: event, reminder, recipient, channel and the time reminded of, `nome_del_promemoria`; Log Settings clears it 90 days after the event started), with the event's title, when, how long to it and where to open it, never the description, and of an appointment's calendar copy, whose title is the service and the people, only «appointment»; never to a client's address, nor to the client-area account that has it; an event about the demo only on the screen (`guardie.solo_nel_pannello`). The browser keeps them in `eventNotificationAlerts`, one list per browser: only an event the session owns or takes part in (`eDellUtente`), each alert with whom it was taken for and only what the popup draws (`soloIlNecessario`), and what is closed, over on the centre's clock or of whoever signed in before goes when the list is read (`avvisiDaTenere`). The panel's Events tab asks for the session's open events not over at the centre's now (`filtriDegliEventi`: a UTC instant was read by the server as the centre's hour, and took in events over), at every opening and pull (`useEventNotifications`, `ricarica`), and files each a minute at a time (`tipoDellEvento`): one over leaves it, never under «Upcoming» — tested, the browser's part too |
 
 A module tells somebody something with `avvisa()`: a sentence of `regole` (a new
 one goes in its `FRASI` and in `it.po`) and its names, never words glued
@@ -254,6 +264,22 @@ toast (from anywhere on it: a swipe only dismisses it), the phone's notification
 and the email open the same place; only a notification with nowhere to go opens
 the notifications. A page a notification opens on one thing takes it from its
 query (`?open=`) and leaves the address without it (`history.replaceState`).
+Whatever goes out in real time about somebody's work names its user
+(`publish_realtime(..., user=)`) or its document's room: the site's room is every
+desk user's browser, and only a signal with no words in it (two ids) goes there.
+
+### What the browser keeps (docs/crm/43, PRIV-NULLA-NEL-BROWSER)
+| File | Role |
+|---|---|
+| `frontend/vite/frappeUi.js` (`local.ts`, `idbStore.ts`) | What a frappe-ui resource fetches stays in the page: saving, reading and deleting its copy resolve to nothing without opening IndexedDB, and `cache:` shares a resource within the page only (`getCachedResource`, the socket's `refetch_resource`); frappe-ui's newer data layer keeps its copies in memory. What older versions left in `keyval-store` goes at startup (`main.js`, `utils/esci.js` `togliLeCopie`) — tested on the pinned source |
+| `frontend/src/utils/esci.js` + `utils/dopoLUscita.js` | The one way out: the desk's (`stores/session.js`: `logout` for the account menu and «Access denied», `esciVerso` for the tablet handed over in `Moduli/SendFormsDialog.vue`) and the area's (`area/store.js`). In order: the device's notifications let go while the session is there (`lascia`, the desk's), the POST, then - only once it succeeded - what `lascia` left for then (the browser's subscription), `keyval-store`, the drafts of whoever signed out (their user and the email `useDraft` keys them under) and every key of the app's localStorage and sessionStorage that is no preference (`daTogliere`); a logout refused clears nothing and keeps the device, and the desk says so — tested |
+
+Nothing about people outlives the page in the browser: a resource's `cache:`
+lives in the page, and a key the app writes in localStorage or sessionStorage is
+decided in `utils/dopoLUscita.js` - a preference of the device (a view, a width,
+a card put aside) stays, anything else goes at the logout; a file that starts
+writing one fails `tests/unit/dopoLUscita.test.js` until its key is decided.
+Every logout goes through `esci()`, never a bare POST to `logout`.
 
 ### Emails (docs/crm/44)
 | File | Role |
@@ -286,12 +312,16 @@ its own document needs nothing more: the answer reaches the person.
 | File | Role |
 |---|---|
 | `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<prefix>/<site>/<sha[:2]>/<sha>/<name>`: the bucket is NPM2's, shared with other projects, and every site has its own folder), which files move (private only), what the plan includes (`SPAZIO_COMPRESO` by size: 300 GB, 600 GB, 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
-| `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link, the bucket's versions and CORS (`imposta_il_bucket`) |
-| `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); `/private/files/…` of an archived one sends whoever the framework lets read it to the bucket for five minutes (`prima_della_richiesta`, its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory |
+| `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link (signed with `response-cache-control: private, no-store`: an object answers with only its Last-Modified, and a browser reused one after its link expired), the bucket's versions and CORS (`imposta_il_bucket`) |
+| `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); every answer at `/private/files/…`, archived or not, a refusal too, says `private, no-store` (`prima_della_richiesta` through `frappe.local.response_headers`, over the framework's `max-age=3600` behind nginx), and an archived one sends whoever the framework lets read it to the bucket for five minutes (its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory, each test moving only its own files (`sposta(solo=…)`: a round over a whole test bench, into that bucket, left every private file of it empty) |
 
 A private file is read through its `File` (`get_content()`), never by opening its
 path: an archived one is an empty file on the server until something asks for it.
-A public file stays on the server.
+A public file stays on the server. No browser keeps a private file: what serves one
+says `Cache-Control: private, no-store` (`regole.NON_TENERE`), the bucket's link
+asks the bucket the same, and signing out sends no `Clear-Site-Data` (its «cache»
+empties the browser's whole cache before the answer, its «storage» the push
+subscription and the preferences).
 
 ### The centre's Twilio account (docs/crm/52)
 | File | Role |
@@ -310,7 +340,7 @@ A public file stays on the server.
 | `crm/telephony/trasloco_regole.py`, `trasloco.py` + `Settings/Telephony/MoveNumberDialog.vue` | "I already have a number": a number of the centre's own account moves into the space with the account's codes pasted for that one request (never kept), its approved bundle cloned there first (Twilio's Clones endpoint, through `Client.request`: SDK 8.5 lacks it) and its address copied, then pointed at DottorCloud; a SIP trunk's number stays; another operator's number is forwarded or ported, explained — tested with the fake Twilio |
 | `crm/telephony/uscita_regole.py` + `uscita.py` | Calls going out: only to the countries the centre chose (`CRM Twilio Settings.allowed_countries`, Italy to start with), never to a premium-rate number; the number shown is the one chosen for the call when it is the centre's (`caller_ids.usable_for_outbound`), else one's own line; an Italian mobile shown on a call to Italy is blocked since 19/11/2025 (AGCOM), so the screen says so. The same countries are Twilio's dialing permissions of the space, set on saving, on connecting and every hour (`allinea_i_paesi`, only in a space). The rules pure, tested with plain `unittest` |
 | `crm/telephony/verificati_regole.py`, `verificati.py` + `Settings/Telephony/VerifyNumberDialog.vue`, `utils/verificati.js` | A number of another operator's shown on calls once Twilio verified it in the space: no document, Twilio calls from +1 415 723 4000 in English and the page shows the code; the row waits switched off and is switched on by Twilio's StatusCallback (`caller_id_verified`, signed), the page asking while it waits, or the hourly check; whoever asked is told unless the page was watching; removed from Twilio here. A verified Italian landline is shown in Italy only as far as the operators let it (AGCOM, August 2025): the dialog, the list and the call say so (`uscita_regole.incerta_in_italia`). Only the space's numbers and the verified ones are offered (`caller_ids.outbound_filters`) — tested with the fake Twilio |
-| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | The call in the browser: before it leaves, `check_number` and `get_outbound_numbers`; with more than one number the popup asks which to show (the last one used chosen already, kept in the browser), the AGCOM warning beside a mobile; during the call the keypad (`sendDigits`); the countries in Twilio's settings page — the same rules as the server's, tested |
+| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js`, `composables/chiChiama.js` | The call in the browser: before it leaves, `check_number` and `get_outbound_numbers`; with more than one number the popup asks which to show (the last one used chosen already, kept in the browser), the AGCOM warning beside a mobile (a call coming in takes the popup from the choice and leaves its numbers, country and warning behind, Telnyx's too); during the call the keypad (`sendDigits`); who calls, asked again at every call and every change of its number (`useChiChiama`, Telnyx's window's too: nothing while the server answers, then the name or «Unknown», never the last call's caller; an answer about a number left behind dropped, `cercaChiChiama`; under the name the number as the call has it, never the server's reading of it); one call at a time (`finestraOccupata`, Telnyx's window's too): one coming in while another is on or being placed rings on the other phones, and one going out does not start over a call that came in, or another that started going out, while the server checked it; one coming in while the window's still rings here waits behind it, ringing (`nuovaChiamata`: Twilio plays one tone for every call ringing in the browser, and `ignore()` stops it for all), left to the other phones once that one is answered, shown once it ends unanswered (Telnyx's window, given no ringtone, still hangs it up); the countries in Twilio's settings page — the same rules as the server's, tested |
 
 An SMS DottorCloud sends leaves from `sms.mittente()`, never from somebody's own
 line; one it sends by itself skips a person who wrote STOP (`sms.ha_fermato`), and a
@@ -343,7 +373,7 @@ centre's or the caller's own line: never one the browser made up.
 | `crm/telephony/providers/telnyx.py` + `crm/telephony/telnyx/texml.py`, `crm/integrations/telnyx/api.py` | The answering service in TeXML (the browser rung as `<Sip>sip:…@sip.telnyx.com</Sip>`); the guest webhooks, each signed (`valida_la_richiesta`, on the raw body), an SMS event once; a browser's credential and its token (`generate_access_token`), the call it is about to place (`prepare_call`), who calls when the phones ring (`who_is_calling`) |
 | `crm/telephony/telnyx/sms.py`, `registrazioni.py` | An SMS through the messaging profile, STOP and START, its state and error; a recording downloaded at once into the call's private file (Telnyx's link lasts ten minutes), played from there |
 | `crm/telephony/telnyx/numeri.py`, `consumi.py`, `verificati.py`, `trasloco.py` + `NewNumberDialog.vue`, `VerifyNumberDialog.vue`, `TelnyxMoveDialog.vue` | A new number chosen first and ordered with its requirement group, every hour how it went (`aggiorna_le_richieste`, the decline's reason from Telnyx's comments); the month and the balance, the alerts DottorCloud checks every hour (Telnyx has no usage trigger); a number verified with the code Telnyx says, typed here; one of the centre's account taken in without codes — tested with a fake Telnyx (`crm/telephony/telnyx/tests/telnyx_finto.py`) |
-| `frontend/src/components/Telephony/TelnyxCallUI.vue` + `utils/operatori.js` | The call in the browser with `@telnyx/webrtc`, imported where it is used; which carrier a page's calls go to (`moduloDi`) |
+| `frontend/src/components/Telephony/TelnyxCallUI.vue` + `utils/operatori.js` | The call in the browser with `@telnyx/webrtc`, imported where it is used; which carrier a page's calls go to (`moduloDi`); who calls as Twilio's window asks it (`useChiChiama`), the caller's number in place of the centre's where a phone rang too (`who_is_calling`) |
 
 Telnyx's key is kept, so it travels only in variables named `*_secret` and is never
 logged; a webhook is refused unless its signature is right, and in the agency's
@@ -479,7 +509,12 @@ conversation or its notification, opens their chat; the same summary sits beside
 the chat in Conversations. A module with something to say about a person
 registers a line of the summary, its own key, from its `registra()`; the page
 draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
-server writes (an email, a push, the Desk) says so.
+server writes (an email, a push, the Desk) says so. The chat is what happened, so
+it opens on its last message: a row of the history (`crm/api/activities.py`, a
+`crm_timeline_gatherers` hook's too) is filed at a moment that has come, never
+one ahead - an appointment still to come where it was booked
+(`calendar_moment`), its card saying so (`bookedAhead`) - and every day past
+yesterday has its date (`dayLabel`).
 
 ### What a list offers to choose (docs/crm/55)
 | File | Role |
@@ -671,7 +706,7 @@ the draft with `modello.accetta`.
 | File | Role |
 |---|---|
 | `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
-| `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts, the data import pages, the editor's toolbar), the agenda's calendar named by Intl in the boot's language, the date picker's months and the letters over its columns, the agenda's and the picker's weeks from Monday, «4 more» under a full day; each rewrite must match frappe-ui's source — tested |
+| `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts, the data import pages, the editor's toolbar), the agenda's calendar named by Intl in the boot's language, the date picker's months and the letters over its columns, the agenda's and the picker's weeks from Monday, a day typed by hand read the day first (`giornoScritto`, before frappe-ui's `dayjs(raw)`: «1/10/2026» is 1 October, the month first only where the field's format puts it there, two digits the year within the next twenty and the last eighty: «12/3/58» is 1958), «4 more» under a full day; each rewrite must match frappe-ui's source — tested |
 | `frontend/src/area/it.js` | The client area's dictionary: a test reads every `__()` of `src/area` and wants it there |
 | `frontend/src/utils/emoji.js` + `src/assets/emoji/it.json` | The emoji found and named by their Italian words too, in the picker (`IconPicker.vue`) and after ":" in the editor (rewritten in `vite/frappeUi.js`), the closest first: Unicode's CLDR annotations for the emoji gemoji has, made by `scripts/emoji-italiane.mjs` (`it.LICENSE.txt` carries Unicode's notice, the About credits it), fetched with the picker and only for a reader in Italian — tested |
 | `crm/lingue.py` | The language DottorCloud writes its own words in on a site (`del_centro()`): the one the centre chose, else the site's, Italian where it was left on the framework's English in Italy or nowhere said; the consents' texts, the pipelines' stages, the libraries' words. What DottorCloud wrote in another language follows it at a migrate and after the setup wizard (a consent's text by `registro.testo_da_tradurre`, a new version of the forms frozen on it, the libraries loaded again); the centre's words stay. The currency the centre counts in (`valuta()`): the one chosen in Settings, else its country's, the euro where nobody said; the dashboard and a deal's exchange rate ask it, never a fallback of their own. Italian and English, nothing else (`LINGUE`): at install and every migrate the two are on, the framework's other languages off and System Settings' language the centre's (`solo_italiano_e_inglese`): the framework ships Italian off, and a visitor reads only a language the site has on, so /prenota and the sign-in came in English to a phone set in Italian, and in the framework's German around DottorCloud's English to one set in German. The centre picks Italian or English and a zone of Europe in Settings > The centre > General > Language & time (`get_centre_language`, `save_centre_language`, `CentreLanguageSettings.vue`): its own whatever its country (`SCELTA`), whoever kept the centre's clock following it, DottorCloud's words following it in a job (the `crm_lingua_del_centro` hooks); each user reads the centre's («As the centre», which follows it) or their own (Preferences), whoever had another the centre's (`everybody_reads_italian_or_english`). A site the setup wizard never ran on (no country) reads as a centre in Italy at every migrate (`italia_dove_nessuno_ha_scelto`): Rome's clock, not the framework's Kolkata, Italy's date and number formats, the euro, the week from Monday, Italian where no language was written, and the users made meanwhile, who took Kolkata as their own zone (`utenti_sul_fuso_del_centro`); what somebody chose stays — tested |
@@ -981,14 +1016,17 @@ row, the bar's words beside their icons).
   (`minmax(min-content, 1fr)`), the record's tabs are as many as fit beside
   «More» (`quanteNellaBarra`), a sentence wraps rather than stopping
   half-way, and a key that is a word on a desk may be its icon on a phone
-  (with its `aria-label`).
+  (with its `aria-label`). In the header the title gives way to the page's
+  keys, cut with «…», never under them (`LayoutHeader`): what it draws in a
+  frappe-ui Button shrinks only with `min-w-0 !shrink`.
 - What a finger drags never takes the page's scroll: a list that reorders has
   a handle, or waits on a finger (`:delay="200" :delay-on-touch-only="true"`:
   the mouse of a touch screen's PC drags at once);
   a widget of the dashboard moves from its grip, the only place that does not
   pan (`touch-action: none`, `Dashboard/DashboardGrid.vue`: grid-layout-plus
-  says so only on Android). An appointment is not dragged by a finger: its
-  hours change in its panel.
+  says so only on Android), or a step at a time from its menu. An appointment
+  is not dragged by a finger: its hours change in its panel. What is dragged
+  is done without dragging too (WCAG 2.5.7): a tap, a menu, a field.
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its
@@ -999,7 +1037,10 @@ row, the bar's words beside their icons).
   no room for a ring, are 40px on a phone (`strumenti-compositore`, a composer's
   tools; `icone-a-dito` elsewhere, a conversation's decisions). A row a link
   opens is opened from the whole row (the link's `after:absolute after:inset-0`,
-  the row's other controls above it). Long dialogs put `.dialog-footer` on their actions
+  the row's other controls above it). The box that chooses a row of the desk's
+  lists is chosen from its whole cell, 30 by 39px around it (`vite/frappeUi.js`
+  on frappe-ui's `ListRow`): a click just past the 14px box opened the row.
+  Long dialogs put `.dialog-footer` on their actions
   (frappe-ui's own `#actions` row gets the same treatment in `index.css`).
 - Titles have no fixed height; a header stacks title, description, then actions.
 - In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.
@@ -1012,7 +1053,10 @@ row, the bar's words beside their icons).
   `SchedeDelTelefono`; pulled down from its top it reloads
   (`useTiraPerAggiornare` and `TiraPerAggiornare`: the browser's own pull is
   off, it reloaded the whole app), on the box that scrolls, there even when the
-  list is empty; a back finds it as it was left, its search, rows and scroll,
+  list is empty, and «Refresh» at its top does the same with one tap, for
+  whoever cannot pull (`PulsanteAggiorna`, the pull's `aggiornaOra()`:
+  VoiceOver scrolls without a touch, a switch has no finger); a back finds it
+  as it was left, its search, rows and scroll,
   then brought up to date (`useRitorno`; a list found by typing is
   `useElencoDelTelefono`), while the menu opens it from the top; the crumb or
   the tab a record came from goes back to it (`tornaConLeBriciole`: an
@@ -1120,7 +1164,9 @@ row, the bar's words beside their icons).
   `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
   keyboard: iPhone's decimal pad has only the comma. A DocType's amount reads
   the keyboard's separator whatever the site's format (`flt()` in
-  `utils/numberFormat.js`): «12,5» is 12.5 where the site writes 1,234.56.
+  `utils/numberFormat.js`): «12,5» is 12.5 where the site writes 1,234.56,
+  and a blank with three digits after it groups thousands («1 250,50» pasted
+  from a sheet is 1250.5, never 1).
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
   setting's words above, its field under them as wide as the screen, a switch
   beside its words; a page's save bar is the screen's bar, its button as wide

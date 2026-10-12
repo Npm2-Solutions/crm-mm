@@ -16,11 +16,17 @@
       :style="style"
     >
       <div class="flex min-h-4 flex-row-reverse items-center gap-1">
-        <MinimizeIcon
+        <!-- a button with its words: the icon took a click and no key -->
+        <button
           v-if="!scelta"
-          class="h-4 w-4 cursor-pointer"
+          ref="riduci"
+          type="button"
+          class="touch-target rounded"
+          :aria-label="__('Minimize')"
           @click="toggleCallWindow"
-        />
+        >
+          <MinimizeIcon class="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
       <div class="flex flex-col items-center justify-center gap-3">
         <Avatar
@@ -31,11 +37,16 @@
           :class="onCall || calling || scelta ? '' : 'pulse'"
         />
         <div class="flex flex-col items-center justify-center gap-1">
+          <!-- the name keeps its line while the server is asked who it is:
+               the buttons below do not move when it comes -->
           <div class="text-2xl-medium">
-            {{ contact?.full_name ?? __('Unknown') }}
+            {{ nomeDiChi || '\u00a0' }}
           </div>
+          <!-- the number of the call, as it came or was dialled: the server's
+               answer has the person's main mobile, not always the number that
+               calls, and for nobody the digits without their country -->
           <div class="text-sm text-ink-gray-5">
-            {{ contact?.mobile_no || phoneNumber }}
+            {{ phoneNumber }}
           </div>
         </div>
         <CountUpTimer ref="counterUp">
@@ -175,6 +186,7 @@
             @click="openNoteModal"
           />
           <Button
+            :aria-label="__('Hang Up')"
             class="rounded-full bg-surface-red-7 hover:bg-surface-red-8 text-ink-base"
             :tooltip="__('Hang Up')"
             @click="hangUpCall"
@@ -225,11 +237,13 @@
       </div>
     </div>
   </div>
+  <!-- the bar opens the call from the name, a button stretched over it
+       (.riga-stesa): a div with a click reached no key. The call's buttons
+       come after it and are drawn over it -->
   <div
     v-show="showSmallCallWindow"
-    class="ml-2 flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg bg-surface-gray-10 px-2 py-[7px] text-base text-ink-gray-2"
+    class="relative ml-2 flex select-none items-center justify-between gap-3 rounded-lg bg-surface-gray-10 px-2 py-[7px] text-base text-ink-gray-2"
     v-bind="$attrs"
-    @click="toggleCallWindow"
   >
     <div class="flex items-center gap-2">
       <Avatar
@@ -238,9 +252,15 @@
         :label="contact.full_name"
         class="relative flex !h-5 !w-5 items-center justify-center"
       />
-      <div class="max-w-[120px] truncate">
-        {{ contact?.full_name ?? __('Unknown') }}
-      </div>
+      <button
+        ref="espandi"
+        type="button"
+        class="riga-stesa max-w-[120px] truncate text-left after:rounded-lg"
+        @click="toggleCallWindow"
+      >
+        {{ nomeDiChi }}
+        <span class="sr-only">{{ __('Show the call') }}</span>
+      </button>
     </div>
     <div v-if="onCall" class="flex items-center gap-2">
       <div class="my-1 min-w-[40px] text-center">
@@ -250,7 +270,7 @@
         :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         @click.stop="hangUpCall"
       >
         <template #icon>
@@ -269,7 +289,7 @@
         :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         @click.stop="cancelCall"
       >
         <template #icon>
@@ -282,15 +302,16 @@
         :aria-label="__('Accept Call')"
         variant="solid"
         theme="green"
-        class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-base"
+        class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-base motion-reduce:animate-none"
         :tooltip="__('Accept Call')"
         :icon="PhoneIcon"
         @click.stop="acceptIncomingCall"
       />
       <Button
+        :aria-label="__('Reject Call')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         :tooltip="__('Reject Call')"
         @click.stop="rejectIncomingCall"
       >
@@ -308,11 +329,14 @@ import DialpadIcon from '@/components/Icons/DialpadIcon.vue'
 import MinimizeIcon from '@/components/Icons/MinimizeIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CountUpTimer from '@/components/CountUpTimer.vue'
+import { useChiChiama } from '@/composables/chiChiama'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import {
   TASTI,
   bloccataInItalia,
+  finestraOccupata,
   incertaInItalia,
+  nuovaChiamata,
   numeroIniziale,
   siSceglie,
 } from '@/utils/chiamate'
@@ -323,8 +347,8 @@ import {
   useWindowSize,
 } from '@vueuse/core'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { Avatar, call, createResource, toast } from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { Avatar, call, toast } from 'frappe-ui'
+import { computed, nextTick, ref } from 'vue'
 
 const { capture } = useTelemetry()
 
@@ -334,6 +358,9 @@ let _call = null
 // each call going out is an attempt: one cancelled, or overtaken by another,
 // while Twilio was still connecting it is hung up as soon as it exists
 let tentativo = 0
+// the calls ringing here behind the one the window shows, first come first:
+// ignoring any of them stops the one tone Twilio plays for all
+let inAttesa = []
 
 let showCallPopup = ref(false)
 let showSmallCallWindow = ref(false)
@@ -344,31 +371,14 @@ let callPopup = ref(null)
 let counterUp = ref(null)
 let callStatus = ref('')
 
-const phoneNumber = ref('')
-
-const contact = ref({
-  full_name: '',
-  image: '',
-  mobile_no: '',
-})
-
-watch(phoneNumber, (value) => {
-  if (!value) return
-  getContact.fetch()
-})
-
-const getContact = createResource({
-  url: 'crm.integrations.api.get_contact_by_phone_number',
-  makeParams() {
-    return {
-      phone_number: phoneNumber.value,
-    }
-  },
-  cache: ['contact', phoneNumber.value],
-  onSuccess(data) {
-    contact.value = data
-  },
-})
+// the number the call is about and who it is, asked again at every call and
+// every change of the number: never the last call's caller
+const {
+  numero: phoneNumber,
+  contatto: contact,
+  nome: nomeDiChi,
+  perIlNumero,
+} = useChiChiama()
 
 const { showModal } = useDoctypeModal()
 const note = ref({
@@ -556,35 +566,77 @@ function toggleMute() {
 }
 
 function handleIncomingCall(call) {
+  // one call at a time: the window keeps the call it shows, or the one being
+  // placed
+  const decisione = nuovaChiamata(
+    _call,
+    callStatus.value,
+    call,
+    _call?.status() === 'pending',
+  )
+  // a call on, or going out: this one rings on the centre's other phones - as
+  // the SDK leaves an invite while a call is on
+  if (decisione === 'ignora') {
+    call.ignore()
+    return
+  }
+  // the call shown still rings: this one waits behind it, ringing too
+  if (decisione === 'aspetta') {
+    aspetta(call)
+    return
+  }
   log.value = `Incoming call from ${call.parameters.From}`
-  phoneNumber.value = call.parameters.From
-  // a call coming in takes the popup from a call not yet made
+  perIlNumero(call.parameters.From)
+  // a call coming in takes the popup from a call not yet made, and leaves its
+  // numbers and its country behind: the AGCOM warning was about that call
   scelta.value = false
+  paeseChiamato.value = ''
+  numeri.value = []
+  mostrato.value = ''
 
   showCallPopup.value = true
   _call = call
 
   // add event listener to call object
-  call.on('cancel', handleDisconnectedIncomingCall)
-  call.on('disconnect', handleDisconnectedIncomingCall)
-  call.on('reject', handleDisconnectedIncomingCall)
+  const finita = () => handleDisconnectedIncomingCall(call)
+  call.on('cancel', finita)
+  call.on('disconnect', finita)
+  call.on('reject', finita)
+}
+
+// a call waiting leaves the line when it stops ringing here: its caller hung
+// up, or a colleague answered it
+function aspetta(chiamata) {
+  inAttesa.push(chiamata)
+  const togli = () => {
+    inAttesa = inAttesa.filter((c) => c !== chiamata)
+  }
+  chiamata.on('cancel', togli)
+  chiamata.on('reject', togli)
+  chiamata.on('disconnect', togli)
 }
 
 async function acceptIncomingCall() {
   log.value = 'Accepted incoming call.'
   onCall.value = true
+  // the calls waiting ring on the centre's other phones: here the tone stops,
+  // as the SDK stops it at the answer
+  const lasciate = inAttesa
+  inAttesa = []
+  for (const chiamata of lasciate) chiamata.ignore()
   await _call.accept()
   counterUp.value.start()
 }
 
 function rejectIncomingCall() {
-  _call.reject()
   log.value = 'Rejected incoming call'
   showCallPopup.value = false
   showSmallCallWindow.value = false
 
   callStatus.value = ''
   muted.value = false
+  // its 'reject' empties the window, and gives it to a call waiting
+  _call.reject()
 }
 
 function hangUpCall() {
@@ -602,7 +654,9 @@ function hangUpCall() {
   counterUp.value.stop()
 }
 
-function handleDisconnectedIncomingCall() {
+function handleDisconnectedIncomingCall(chiamata) {
+  // a call the window no longer shows closes nothing
+  if (chiamata !== _call) return
   log.value = `Call ended from handle disconnected Incoming call.`
   showCallPopup.value = false
   showSmallCallWindow.value = false
@@ -611,6 +665,11 @@ function handleDisconnectedIncomingCall() {
   onCall.value = false
   aChiamataFinita()
   counterUp.value.stop()
+  // ended unanswered: the first call still ringing behind it is shown, the one
+  // whose tone sounds
+  inAttesa = inAttesa.filter((c) => c.status() === 'pending')
+  const prossima = inAttesa.shift()
+  if (prossima) handleIncomingCall(prossima)
 }
 
 async function makeOutgoingCall(number) {
@@ -619,7 +678,7 @@ async function makeOutgoingCall(number) {
     toast.error(__('The phone is not ready yet: try again in a moment.'))
     return
   }
-  if (_call || callStatus.value === 'initiating') {
+  if (finestraOccupata(_call, callStatus.value)) {
     toast.error(__('Finish the call in progress first.'))
     return
   }
@@ -637,12 +696,18 @@ async function makeOutgoingCall(number) {
     )
     return
   }
+  // a call came in, or another started going out, while the server answered:
+  // it keeps the window and its name
+  if (finestraOccupata(_call, callStatus.value)) {
+    toast.error(__('Finish the call in progress first.'))
+    return
+  }
   if (!esito.ok) {
     toast.error(esito.reason)
     return
   }
 
-  phoneNumber.value = number
+  perIlNumero(number)
   numeri.value = dati.numbers || []
   paeseChiamato.value = esito.country || ''
   mostrato.value = numeroIniziale(numeri.value, ricordato())
@@ -665,7 +730,7 @@ function chiama() {
 function annullaLaScelta() {
   scelta.value = false
   showCallPopup.value = false
-  phoneNumber.value = ''
+  perIlNumero('')
 }
 
 // while the number is asked: Enter calls, Escape gives up - one key per call in
@@ -790,9 +855,15 @@ function cancelCall() {
   }
 }
 
+// the popup and the bar take each other's place: the keyboard goes with them,
+// or it was left on a button no longer drawn
+const riduci = ref(null)
+const espandi = ref(null)
+
 function toggleCallWindow() {
   showCallPopup.value = !showCallPopup.value
   showSmallCallWindow.value = !showSmallCallWindow.value
+  nextTick(() => (showCallPopup.value ? riduci : espandi).value?.focus())
 }
 
 defineExpose({ makeOutgoingCall, setup: startupClient })
@@ -834,6 +905,15 @@ defineExpose({ makeOutgoingCall, setup: startupClient })
   100% {
     transform: scale(1.3);
     opacity: 0;
+  }
+}
+
+/* the rings stand still for whoever asked for less motion: they went on as
+   long as a call rang */
+@media (prefers-reduced-motion: reduce) {
+  .pulse::before,
+  .pulse::after {
+    animation: none;
   }
 }
 </style>

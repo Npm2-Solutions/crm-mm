@@ -129,3 +129,15 @@ export function conteggio(unread) {
   if (n <= 0) return ''
   return n > 99 ? '99+' : String(n)
 }
+
+/**
+ * The name of «More» in the phone's bar for a screen reader, which hears
+ * nothing of the dot on it: the word one sees first (WCAG 2.5.3), then how
+ * many notifications wait. `quante` is `conteggio()`'s, «» with none.
+ */
+export function nomeDiAltro(quante, t) {
+  if (!quante) return t('More')
+  return quante === '1'
+    ? t('More, 1 unread notification')
+    : t('More, {0} unread notifications', [quante])
+}

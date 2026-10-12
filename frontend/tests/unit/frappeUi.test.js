@@ -6,11 +6,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import dayjs from 'dayjs/esm'
+import { transformWithOxc } from 'vite'
 import {
   FILE,
   FILE_FRAPPE,
   FILE_MOLECOLE,
   FILE_ICONE,
+  FILE_RISORSE,
+  FILE_DATI,
   NOMI,
   SELETTORE,
   traduciFrappeUi,
@@ -32,10 +35,41 @@ const ICONE = path.resolve(
   import.meta.dirname,
   '../../node_modules/frappe-ui/icons',
 )
+const SORGENTI = path.resolve(
+  import.meta.dirname,
+  '../../node_modules/frappe-ui/src',
+)
+const RISORSE = path.join(SORGENTI, 'resources')
+const DATI = path.join(SORGENTI, 'data-fetching')
 
 function tradotto(file, cartella = COMPONENTI) {
   const id = path.join(cartella, file)
   return traduciFrappeUi(fs.readFileSync(id, 'utf8'), id)
+}
+
+// the rewritten copies of the resources, run as the browser runs them: their
+// TypeScript taken away, nothing else
+async function copieDelleRisorse() {
+  const id = path.join(RISORSE, 'local.ts')
+  const { code } = await transformWithOxc(tradotto('local.ts', RISORSE), id)
+  return new Function(
+    `${code.replace(/^export /gm, '')}; return { saveLocal, getLocal, deleteLocal }`,
+  )()
+}
+
+// frappe-ui's files that import idb-keyval, its tests and stories left out
+function chiUsaIndexedDB(cartella, trovati = []) {
+  for (const voce of fs.readdirSync(cartella, { withFileTypes: true })) {
+    const percorso = path.join(cartella, voce.name)
+    if (voce.isDirectory()) chiUsaIndexedDB(percorso, trovati)
+    else if (
+      /\.(ts|js|vue)$/.test(voce.name) &&
+      !/\.(test|spec|story|cy)\./.test(voce.name) &&
+      fs.readFileSync(percorso, 'utf8').includes('idb-keyval')
+    )
+      trovati.push(path.relative(SORGENTI, percorso))
+  }
+  return trovati.sort()
 }
 
 function nomi(lang) {
@@ -43,11 +77,11 @@ function nomi(lang) {
   return new Function(`${NOMI}; return { nomiDeiMesi, nomiDeiGiorni }`)()
 }
 
-// the date picker's names and its Monday
+// the date picker's names, its Monday and a day typed by hand
 function selettore(lang) {
   window.lang = lang
   return new Function(
-    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni, dalLunedi }`,
+    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni, dalLunedi, giornoScritto }`,
   )()
 }
 
@@ -73,6 +107,125 @@ describe('frappe-ui in the user’s language', () => {
       expect(() => tradotto(file, ICONE), file).not.toThrow()
       expect(tradotto(file, ICONE), file).not.toBeNull()
     }
+    for (const file of FILE_RISORSE) {
+      expect(() => tradotto(file, RISORSE), file).not.toThrow()
+      expect(tradotto(file, RISORSE), file).not.toBeNull()
+    }
+    for (const file of FILE_DATI) {
+      expect(() => tradotto(file, DATI), file).not.toThrow()
+      expect(tradotto(file, DATI), file).not.toBeNull()
+    }
+  })
+
+  describe('nothing about people outlives the page', () => {
+    let primaDelTest
+    beforeEach(() => {
+      primaDelTest = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    })
+    afterEach(() => {
+      if (primaDelTest)
+        Object.defineProperty(globalThis, 'indexedDB', primaDelTest)
+      else delete globalThis.indexedDB
+    })
+
+    it('keeps a resource’s copy in the page, never in IndexedDB', async () => {
+      const codice = tradotto('local.ts', RISORSE)
+      expect(codice).not.toContain('idb-keyval')
+      // nothing turned into text for nobody either
+      expect(codice).not.toContain('JSON.stringify')
+      // a browser that has IndexedDB: the copies never open it
+      const aperture = []
+      globalThis.indexedDB = {
+        open: (...come) => {
+          aperture.push(come)
+          throw new Error('IndexedDB opened')
+        },
+      }
+      const { saveLocal, getLocal, deleteLocal } = await copieDelleRisorse()
+      const chiave = JSON.stringify(['person-appointments', 'CRM-LEAD-0001'])
+      const persone = [{ name: 'CRM-LEAD-0001', lead_name: 'Laura Bassi' }]
+      await expect(saveLocal(chiave, persone)).resolves.toBeUndefined()
+      // what resources.js and documentResource.js draw before the server
+      // answers: nothing, so a page waits for the server's own answer
+      await expect(getLocal(chiave)).resolves.toBeFalsy()
+      await expect(deleteLocal(chiave)).resolves.toBeUndefined()
+      expect(aperture).toEqual([])
+    })
+
+    it('keeps frappe-ui’s newer data layer in the page’s memory too', async () => {
+      const negozio = tradotto('idbStore.ts', DATI)
+      expect(negozio).not.toContain('!!window.indexedDB')
+      // run as the browser runs it, idb-keyval's calls standing by to say
+      // whether anybody reached them
+      const raggiunti = []
+      const idbKeyval = Object.fromEntries(
+        ['get', 'set', 'del', 'setMany', 'keys'].map((nome) => [
+          nome,
+          () => raggiunti.push(nome),
+        ]),
+      )
+      globalThis.indexedDB = {}
+      const id = path.join(DATI, 'idbStore.ts')
+      const { code } = await transformWithOxc(negozio, id)
+      const { IDBStore } = new Function(
+        'idbKeyval',
+        `const { get, set, del, setMany, keys } = idbKeyval;
+        ${code.replace(/^import .*$/m, '').replace(/^export /gm, '')}
+        return { IDBStore }`,
+      )(idbKeyval)
+      const memoria = new IDBStore()
+      await memoria.set('lista', [{ lead_name: 'Laura Bassi' }])
+      await expect(memoria.get('lista')).resolves.toEqual([
+        { lead_name: 'Laura Bassi' },
+      ])
+      await memoria.delete('lista')
+      await expect(memoria.get('lista')).resolves.toBeNull()
+      expect(raggiunti).toEqual([])
+    })
+
+    it('finds no other way of frappe-ui’s into IndexedDB than the two it rewrites', () => {
+      // an upgrade that writes the browser's database from a third file fails
+      // here: that file is rewritten too, or nothing about people stays out
+      expect(chiUsaIndexedDB(SORGENTI)).toEqual([
+        path.join('data-fetching', 'idbStore.ts'),
+        path.join('resources', 'local.ts'),
+      ])
+      // and the resources, the documents and the lists keep their copies
+      // through local.ts
+      for (const file of [
+        'resources.js',
+        'documentResource.js',
+        'listResource.js',
+      ]) {
+        expect(fs.readFileSync(path.join(RISORSE, file), 'utf8'), file).toMatch(
+          /from '\.\/local'/,
+        )
+      }
+    })
+  })
+
+  it("names the boxes that choose a list's rows", () => {
+    const riga = tradotto('ListView/ListRow.vue')
+    expect(riga).toContain(':aria-label="nomeDellaRiga()"')
+    expect(riga).toContain("t('Select {0}', [String(nome)])")
+    expect(tradotto('ListView/ListHeader.vue')).toContain(
+      `:aria-label="__('Select all')"`,
+    )
+  })
+
+  it("takes a click on a row box's cell as the box's, around it", () => {
+    const riga = tradotto('ListView/ListRow.vue')
+    // the cell reaches 8px on each side of the 14px box: 30px wide
+    expect(riga).toContain(
+      'class="w-fit -ms-2 ps-2 pe-2 py-3 flex cursor-pointer"',
+    )
+    // what the box does, shift and all, never the row's link nor its click
+    expect(riga).toMatch(
+      /@click\.stop\.prevent="handleCheckboxClick"\s+@dblclick\.stop/,
+    )
+    expect(riga).not.toMatch(/@click\.stop\.prevent\s/)
+    // the box keeps its own click, which stops there: one toggle, not two
+    expect(riga).toContain('@click.stop="handleCheckboxClick"')
   })
 
   it("takes the icon picker's words through the translator", () => {
@@ -279,6 +432,108 @@ describe('frappe-ui in the user’s language', () => {
     const { mesiDelSelettore, inizialiDeiGiorni } = selettore('en')
     expect(mesiDelSelettore()[9]).toBe('Oct')
     expect(inizialiDeiGiorni()).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+  })
+
+  it('reads a day typed by hand the day first, before frappe-ui’s American reading', () => {
+    const composable = tradotto('DatePicker/composables.ts')
+    expect(composable).toContain(
+      "import { giornoScritto, monthStart, getDateValue } from './utils'",
+    )
+    expect(composable).toContain(
+      "import { adessoDelCentro } from '@/utils/scheduler'",
+    )
+    // the field's own format first, then the day typed, and only then
+    // dayjs(raw); the centre's clock handed over, asked only when needed
+    const scritto = composable.indexOf(
+      'giornoScritto(raw, format, adessoDelCentro)',
+    )
+    expect(scritto).toBeGreaterThan(
+      composable.indexOf('dayjs(raw, format, true)'),
+    )
+    expect(scritto).toBeLessThan(
+      composable.indexOf('const dLoose = dayjs(raw)'),
+    )
+    const { giornoScritto } = selettore('it')
+    // the centre's now, 12 October 2026: how many times it was asked
+    let chiesto = 0
+    const adesso = () => (chiesto++, new Date(2026, 9, 12))
+    const giorno = (testo, formato = 'DD/MM/YYYY') =>
+      giornoScritto(testo, formato, adesso)
+    for (const testo of [
+      '1/10/2026',
+      '1-10-2026',
+      '1.10.2026',
+      '01.10.2026',
+      '1 10 2026',
+      '1.10.26',
+      ' 1/10/2026 ',
+    ]) {
+      expect(giorno(testo), testo).toBe('2026-10-01')
+    }
+    expect(giorno('12/10/26 9:30')).toBe('2026-10-12 09:30:00')
+    expect(giorno('12/10/2026 9.30')).toBe('2026-10-12 09:30:00')
+    expect(giorno('12/10/2026 09:30:15')).toBe('2026-10-12 09:30:15')
+    // two digits of a year: the one within the next twenty years and the last
+    // eighty (a birth in 1958, never 2058); none, this year
+    expect(giorno('1/2/80')).toBe('1980-02-01')
+    expect(giorno('12/3/58')).toBe('1958-03-12')
+    expect(giorno('1/2/68')).toBe('1968-02-01')
+    expect(giorno('1/2/47')).toBe('1947-02-01')
+    expect(giorno('1/2/46')).toBe('2046-02-01')
+    expect(giorno('1/10/26')).toBe('2026-10-01')
+    expect(giorno('1/10/00')).toBe('2000-10-01')
+    expect(
+      giornoScritto('1/10', 'DD/MM/YYYY', () => new Date(2027, 0, 5)),
+    ).toBe('2027-10-01')
+    expect(
+      giornoScritto('1/10/05', 'DD/MM/YYYY', () => new Date(2090, 0, 5)),
+    ).toBe('2105-10-01')
+    // the clock is asked only for a year missing or of two digits, never for
+    // a value from the server, which every picker reads this way too
+    chiesto = 0
+    giorno('1/10/2026')
+    giorno('2026-10-01 09:30:00')
+    expect(chiesto).toBe(0)
+    giorno('1/10')
+    expect(chiesto).toBe(1)
+    // with no format, or the server's, the day first as well
+    expect(giorno('1/10/2026', undefined)).toBe('2026-10-01')
+    expect(giorno('1/10/2026', 'YYYY-MM-DD')).toBe('2026-10-01')
+    // the month first only where the field's format starts with it
+    expect(giorno('1/10/2026', 'MM/DD/YYYY')).toBe('2026-01-10')
+    expect(giorno('10-1-2026', 'MM-DD-YYYY HH:mm')).toBe('2026-10-01')
+    // a day that does not exist is no day, never the next one
+    for (const testo of [
+      '31/02/2026',
+      '29/02/2027',
+      '0/10/2026',
+      '1/13/2026',
+      '1/10/202',
+      '1/10/2026 24:00',
+      '1/10/2026 9:60',
+      '1/10/2026 dopo',
+    ]) {
+      expect(giorno(testo), testo).toBeNull()
+    }
+    expect(giorno('29/02/2028')).toBe('2028-02-29')
+    // what is not written so goes on to frappe-ui: the server's value, a month
+    // in words, a time alone
+    for (const testo of [
+      '2026-10-01',
+      '2026-10-01 09:30:00',
+      '2026-10-01 09:30:00.123456',
+      '1 Oct 2026',
+      '9:30',
+      '',
+      null,
+    ]) {
+      expect(giorno(testo), testo).toBeUndefined()
+    }
+    // dayjs reads what it gives as the day typed
+    expect(dayjs(giorno('1/10/2026')).format('YYYY-MM-DD')).toBe('2026-10-01')
+    expect(dayjs(giorno('12/10/26 9:30')).format('DD/MM/YYYY HH:mm')).toBe(
+      '12/10/2026 09:30',
+    )
   })
 
   it('says how many more events a day holds in the user’s language', () => {

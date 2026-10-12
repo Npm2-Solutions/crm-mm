@@ -89,8 +89,20 @@
               class="hidden size-7 cursor-move place-items-center rounded-md text-ink-gray-6 [touch-action:none] [@media(pointer:coarse)]:grid"
               aria-hidden="true"
             >
-              <span class="lucide-move size-3.5" />
+              <span class="lucide-grip-vertical size-3.5" />
             </span>
+            <!-- the same without dragging, a step at a time, with a tap or the
+                 keyboard (WCAG 2.5.7): a drag is never the only way -->
+            <Dropdown :options="mosse[i] || []">
+              <template #default>
+                <button
+                  class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9 [@media(pointer:coarse)]:size-7"
+                  :aria-label="__('Move or resize')"
+                >
+                  <span class="lucide-move size-3.5" aria-hidden="true" />
+                </button>
+              </template>
+            </Dropdown>
             <Tooltip v-if="configurable(byKey[i])" :text="__('Settings')">
               <button
                 class="grid size-6 place-items-center rounded-md text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9 [@media(pointer:coarse)]:size-7"
@@ -131,14 +143,16 @@ import { isMobileView } from '@/composables/breakpoints'
 import {
   GRID_COLUMNS,
   GRIGLIA_MINIMA,
+  PASSI,
   ROW_HEIGHT,
   highlightedNumbers,
   larghezzaDiUno,
   mobileOrder,
+  passiPossibili,
   perRiga,
 } from '@/utils/dashboard'
 import { useElementSize } from '@vueuse/core'
-import { GridLayout, Tooltip } from 'frappe-ui'
+import { Dropdown, GridLayout, Tooltip } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
 const props = defineProps({
@@ -153,11 +167,67 @@ const props = defineProps({
   configurable: { type: Function, default: () => true },
 })
 
-defineEmits(['navigate', 'setup', 'configure', 'duplicate', 'remove'])
+const emit = defineEmits([
+  'navigate',
+  'setup',
+  'configure',
+  'duplicate',
+  'remove',
+  'move',
+])
 
 const items = defineModel({ type: Array, default: () => [] })
 
 const mobileItems = computed(() => mobileOrder(items.value))
+
+// What dragging does, from each widget's menu: a step at a time (`PASSI`), the
+// steps that would change nothing switched off
+const MOSSE = [
+  [
+    { passo: 'su', label: __('Move up'), icon: 'lucide-arrow-up' },
+    { passo: 'giu', label: __('Move down'), icon: 'lucide-arrow-down' },
+    { passo: 'sinistra', label: __('Move left'), icon: 'lucide-arrow-left' },
+    { passo: 'destra', label: __('Move right'), icon: 'lucide-arrow-right' },
+  ],
+  [
+    {
+      passo: 'piuLargo',
+      label: __('Wider'),
+      icon: 'lucide-chevrons-left-right',
+    },
+    {
+      passo: 'piuStretto',
+      label: __('Narrower'),
+      icon: 'lucide-chevrons-right-left',
+    },
+    { passo: 'piuAlto', label: __('Taller'), icon: 'lucide-chevrons-up-down' },
+    {
+      passo: 'piuBasso',
+      label: __('Shorter'),
+      icon: 'lucide-chevrons-down-up',
+    },
+  ],
+]
+
+const mosse = computed(() => {
+  if (!props.editing) return {}
+  return Object.fromEntries(
+    items.value.map((item) => {
+      const possibili = passiPossibili(items.value, item.layout.i)
+      const gruppi = MOSSE.map((gruppo, n) => ({
+        group: `mosse-${n}`,
+        hideLabel: true,
+        options: gruppo.map(({ passo, label, icon }) => ({
+          label,
+          icon,
+          disabled: !possibili[passo],
+          onClick: () => emit('move', item, PASSI[passo]),
+        })),
+      }))
+      return [item.layout.i, gruppi]
+    }),
+  )
+})
 
 // the grid's own width, its padding included: the same at mount (offsetWidth)
 // as when it is observed, so a width near the line does not flip it once

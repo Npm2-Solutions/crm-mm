@@ -6,6 +6,7 @@ import {
   CHANNELS,
   TONES,
   WAYS,
+  bookedAhead,
   buildStream,
   channelOf,
   clockOf,
@@ -279,6 +280,40 @@ describe('what happened, as opposed to what was said', () => {
     }
   })
 
+  it('knows an appointment still to come by where the server filed it', () => {
+    // until it comes, at its booking; once it has, at its moment
+    const prenotato = {
+      name: 'a1',
+      activity_type: 'appointment',
+      creation: '2026-10-09 17:30:12.123456',
+      data: { starts_on: '2026-10-15 14:30:00' },
+    }
+    const venuto = {
+      name: 'a2',
+      activity_type: 'appointment',
+      creation: '2026-10-08 11:00:00',
+      data: { starts_on: '2026-10-08 11:00:00' },
+    }
+    expect(bookedAhead(prenotato)).toBe(true)
+    expect(bookedAhead(venuto)).toBe(false)
+    expect(
+      bookedAhead({ ...prenotato, activity_type: 'event', name: 'e1' }),
+    ).toBe(true)
+    // no moment, or not something one books
+    expect(bookedAhead({ ...prenotato, data: {} })).toBe(false)
+    expect(bookedAhead({ ...prenotato, activity_type: 'task' })).toBe(false)
+    expect(bookedAhead(null)).toBe(false)
+    // so the chat ends on the last message, not on next week's appointment
+    const rows = buildStream([
+      prenotato,
+      wa('w1', 'Incoming', '2026-10-12 09:00:00'),
+    ])
+    expect(rows.map((row) => row.key)).toEqual([
+      'appointment:a1',
+      'whatsapp:w1',
+    ])
+  })
+
   it('tells a move down the pipeline from a phone number being corrected', () => {
     expect(
       isStageChange({ activity_type: 'changed', data: { field: 'status' } }),
@@ -377,9 +412,12 @@ describe('dayLabel', () => {
     expect(dayLabel('2026-09-24', now, 'it')).toBe('Domani')
   })
 
-  it('gives the weekday for the rest of the past week', () => {
-    expect(dayLabel('2026-09-19', now, 'it')).toBe('Sabato')
-    expect(dayLabel('2026-09-17', now, 'en')).toBe('Thursday')
+  it('dates the rest of the past week too, beside its weekday', () => {
+    // «Giovedì» alone had to be counted back, and read as next Thursday too
+    expect(dayLabel('2026-09-19', now, 'it')).toBe('Sabato 19 settembre')
+    expect(dayLabel('2026-09-17', now, 'en-GB')).toBe('Thursday 17 September')
+    // and the week ahead the same way
+    expect(dayLabel('2026-09-25', now, 'it')).toBe('Venerdì 25 settembre')
   })
 
   it('gives the date for anything older, with the year once it is not this one', () => {

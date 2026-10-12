@@ -9,9 +9,11 @@
     class="flex min-h-0 w-full flex-1 flex-col overflow-y-auto"
   >
     <TiraPerAggiornare v-bind="tira" class="shrink-0" />
-    <template v-if="events?.length">
+    <!-- only the headings with something under them: events over, which the
+         list may still hold, leave it, and the tab says there is nothing -->
+    <template v-if="computedEvents.length">
       <template v-for="(event, i) in computedEvents" :key="event.type">
-        <div v-if="event.count" class="p-3">
+        <div class="p-3">
           <CollapsibleSection :opened="!event.collapsed">
             <template #header="{ opened, toggle: toggleHeader }">
               <div class="flex items-center justify-between">
@@ -82,7 +84,7 @@
           </CollapsibleSection>
         </div>
         <div
-          v-if="i < computedEvents.length - 1 && event.count"
+          v-if="i < computedEvents.length - 1"
           class="border-t border-outline-elevation-2"
         />
       </template>
@@ -102,18 +104,23 @@ import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { useEventNotifications } from '@/data/notifications'
 import { notificationsStore } from '@/stores/notifications'
-import { adessoDelCentro } from '@/utils/scheduler'
+import { tipoDellEvento } from '@/utils/avvisiDegliEventi'
+import { adessoDelCentro, oraDelCentro } from '@/utils/scheduler'
+import { useNow } from '@vueuse/core'
 import { dayjs } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const { events, eventsResource } = useEventNotifications()
+const { events, ricarica } = useEventNotifications()
 
-// pulled down on a phone: the events again, from the server
+// pulled down on a phone: the events again, from the server, not over at the
+// time of the pull
 const contenitore = ref(null)
-const tira = useTiraPerAggiornare(contenitore, () => eventsResource.reload())
+const tira = useTiraPerAggiornare(contenitore, () => ricarica())
+// the pull, which the phone's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ tira })
 const { toggle } = notificationsStore()
 
 function handleEventClick(e) {
@@ -128,37 +135,18 @@ function handleEventClick(e) {
   })
 }
 
+// the browser's clock a minute at a time: the headings follow the hour while
+// the tab stays open, and an event leaves it once it is over
+const orologio = useNow({ interval: 60 * 1000 })
+
 const computedEvents = computed(() => {
   if (!events.value?.length) return []
 
   // the centre's now: an event's times are the centre's, and the phone's own
   // clock, in another time zone, called «starting now» what was hours away
-  const adesso = dayjs(adessoDelCentro())
-  let mappedEvents = events.value.map((event) => {
-    let type = 'upcoming'
-
-    // Starting Now: Event is within [now - 5 min, now + 5 min]
-    if (
-      dayjs(event.starts_on).isBetween(
-        adesso.subtract(5, 'minute'),
-        adesso.add(5, 'minute'),
-      )
-    ) {
-      type = 'startingNow'
-    }
-    // Upcoming: Event is greater than now + 5 min
-    else if (dayjs(event.starts_on).isAfter(adesso.add(5, 'minute'))) {
-      type = 'upcoming'
-    }
-    // Ongoing: Event is currently happening (now is between starts_on + 5 min and ends_on)
-    else if (
-      dayjs(event.starts_on).isBefore(adesso.add(5, 'minute')) &&
-      dayjs(event.ends_on).isAfter(adesso)
-    ) {
-      type = 'ongoing'
-    }
-
-    return {
+  const adesso = oraDelCentro(adessoDelCentro(undefined, orologio.value))
+  const mappedEvents = events.value
+    .map((event) => ({
       id: event.name,
       title: event.subject,
       fromDate: dayjs(event.starts_on).format('YYYY-MM-DD'),
@@ -168,9 +156,10 @@ const computedEvents = computed(() => {
       allDay: event.all_day,
       owner: event.owner,
       participants: event.participants,
-      type,
-    }
-  })
+      // null once it is over: it went under «Upcoming»
+      type: tipoDellEvento(event, adesso),
+    }))
+    .filter((event) => event.type)
 
   const ongoingEvents = mappedEvents.filter((event) => event.type === 'ongoing')
 
@@ -201,7 +190,7 @@ const computedEvents = computed(() => {
       count: upcomingEvents.length,
       items: upcomingEvents,
     },
-  ]
+  ].filter((gruppo) => gruppo.count)
 })
 
 // the day's clock, as everywhere in the app: «10:00 – 11:30»

@@ -456,7 +456,8 @@ class LaLezione(AtteseCase):
 		self.assertEqual(persone, [self.cliente.name, self.sara.name])
 
 	def test_da_prenota_si_vede_piena_e_si_entra_in_lista(self):
-		self.online(require_privacy_consent=1)
+		# the box is asked where the notice has an address to read
+		self.online(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
 		giorno = str(getdate(self.tomorrow(18)))
 		fatto = self.da_ospite(SB.get_slots_public, "pilates-in-attesa", giorno, giorno)
 		[piena] = fatto["full"][giorno]
@@ -469,16 +470,17 @@ class LaLezione(AtteseCase):
 			email="sara.attese@example.com",
 			session=piena["session"],
 			consent=1,
-			consent_text="Ho letto l'informativa",
+			consent_text="Ho letto l'informativa sulla privacy",
 		)
 		self.assertTrue(LINK.search(entrato["link"]))
 		voce = frappe.get_doc(A.VOCE, {"lead": self.sara.name})
 		self.assertEqual((voce.class_session, voce.source, voce.days), (self.lezione.name, R.ONLINE, []))
 		# a seat in a class is waited for until the class
 		self.assertEqual(getdate(voce.until), self.tomorrow(18).date())
-		# the tick is in the register, with the entry it came with
-		self.assertTrue(
-			frappe.db.exists(
+		# the tick is in the register, with the entry it came with and the words the
+		# box showed, the notice's address after them: a booking's own
+		self.assertEqual(
+			frappe.db.get_value(
 				"CRM Consent",
 				{
 					"lead": self.sara.name,
@@ -486,7 +488,9 @@ class LaLezione(AtteseCase):
 					"source_doctype": A.VOCE,
 					"source_name": voce.name,
 				},
-			)
+				"text",
+			),
+			"Ho letto l'informativa sulla privacy (https://example.com/privacy)",
 		)
 
 
@@ -563,6 +567,19 @@ class DaPrenota(AtteseCase):
 	def test_un_ultimo_giorno_che_non_si_puo(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.entra(until=str(A._oggi() - datetime.timedelta(days=1)))
+
+	def test_l_informativa_letta_solo_dove_ha_un_indirizzo(self):
+		# as on a booking: the box is asked where the notice has an address to read
+		self.online(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
+		with self.assertRaises(frappe.ValidationError) as rifiuto:
+			self.entra()
+		self.assertIn("privacy", str(rifiuto.exception))
+		# no address: no box, and nothing in the register, even from a page cached before
+		self.online(require_privacy_consent=1, privacy_policy_url="")
+		self.entra(consent=1, consent_text="Acconsento al trattamento dei miei dati")
+		lead = frappe.db.get_value("CRM Lead", {"email": "paola.attese@example.com"}, "name")
+		self.assertTrue(frappe.db.exists(A.VOCE, {"lead": lead}))
+		self.assertFalse(frappe.db.exists("CRM Consent", {"lead": lead, "consent_type": "privacy_notice"}))
 
 
 class IlBanco(AtteseCase):

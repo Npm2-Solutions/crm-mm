@@ -239,11 +239,13 @@ class DaPrenota(SchedulingCase):
 	def test_la_spunta_della_privacy_si_registra_con_le_sue_parole(self):
 		consensi.assicura_tipi()
 		self.with_settings(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
+		self.assertEqual(SB.get_catalog()["require_consent"], 1)
+		# the words the page shows: the notice read, as the register keeps it, never «I accept»
 		result = self.book(
 			self.online_service(),
 			self.tomorrow(10),
 			consent=1,
-			consent_text="Ho letto e accetto l'informativa sulla privacy",
+			consent_text="Ho letto l'informativa sulla privacy",
 		)
 		appuntamento = self.appointment_of(result)
 		persona = appuntamento.participants[0].party
@@ -255,10 +257,37 @@ class DaPrenota(SchedulingCase):
 		self.assertEqual(riga.status, DATO)
 		self.assertEqual(riga.channel, "Online booking")
 		self.assertEqual(riga.source_name, appuntamento.name)
-		self.assertIn("informativa sulla privacy", riga.text)
-		self.assertIn("https://example.com/privacy", riga.text)
+		self.assertEqual(riga.text, "Ho letto l'informativa sulla privacy (https://example.com/privacy)")
 		# the page's own words are not a version of the kind's text
 		self.assertFalse(riga.text_version)
+
+	def test_con_l_informativa_senza_la_spunta_non_si_prenota(self):
+		self.with_settings(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
+		with self.assertRaises(frappe.ValidationError) as rifiuto:
+			self.book(self.online_service(), self.tomorrow(10))
+		self.assertIn("privacy", str(rifiuto.exception))
+
+	def test_senza_l_indirizzo_dell_informativa_non_si_chiede_niente(self):
+		"""No notice to read, no box: a booking needs no consent, and the page used to
+		ask one («Acconsento al trattamento dei miei dati…») where the centre had not
+		written the notice's address - the shipped settings."""
+		consensi.assicura_tipi()
+		self.with_settings(require_privacy_consent=1, privacy_policy_url="")
+		self.assertEqual(SB.get_catalog()["require_consent"], 0)
+		# nothing ticked, and booked
+		result = self.book(self.online_service(), self.tomorrow(10), email="senza@example.com")
+		persona = self.appointment_of(result).participants[0].party
+		self.assertFalse(frappe.db.exists("CRM Consent", {"lead": persona}))
+		# a tick from a page cached before is no answer: the page asked nothing
+		result = self.book(
+			self.online_service("Online Massage"),
+			self.tomorrow(11),
+			email="vecchia@example.com",
+			consent=1,
+			consent_text="Acconsento al trattamento dei miei dati per gestire la prenotazione.",
+		)
+		persona = self.appointment_of(result).participants[0].party
+		self.assertFalse(frappe.db.exists("CRM Consent", {"lead": persona}))
 
 	def test_il_marketing_solo_se_chiesto_e_spuntato(self):
 		consensi.assicura_tipi()
@@ -286,8 +315,13 @@ class DaPrenota(SchedulingCase):
 
 	def test_una_pagina_vecchia_senza_parole_non_ferma_la_prenotazione(self):
 		consensi.assicura_tipi()
-		self.with_settings(require_privacy_consent=1, privacy_policy_url="")
+		self.with_settings(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
 		with patch.object(frappe, "get_request_header", return_value=None):
 			result = self.book(self.online_service(), self.tomorrow(12), consent=1)
 		persona = self.appointment_of(result).participants[0].party
 		self.assertEqual(consensi.stato(persona, "privacy_notice"), DATO)
+		# the kind's own words stand in, with the address the box linked to
+		self.assertIn(
+			"https://example.com/privacy",
+			frappe.db.get_value("CRM Consent", {"lead": persona, "consent_type": "privacy_notice"}, "text"),
+		)

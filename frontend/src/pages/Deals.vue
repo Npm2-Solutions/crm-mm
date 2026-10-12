@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Deals" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="trattativePerFase?.tira" />
       <CustomActions
         v-if="dealsListView?.customListActions"
         :actions="dealsListView.customListActions"
@@ -38,7 +40,7 @@
       <Button
         v-if="!isMobileView && puo('trattative.scrivi')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New deal')"
         iconLeft="plus"
         @click="showDealModal = true"
       />
@@ -201,6 +203,13 @@
             size="xs"
           />
         </div>
+        <!-- a number in its groups, as the list draws it -->
+        <div
+          v-else-if="['mobile_no', 'phone'].includes(fieldName)"
+          class="truncate text-base tabular-nums"
+        >
+          {{ leggibile(getRow(itemName, fieldName).label) }}
+        </div>
         <div v-else class="truncate text-base">
           {{ getRow(itemName, fieldName).label }}
         </div>
@@ -302,6 +311,7 @@ import DealPanel from '@/components/Deals/DealPanel.vue'
 import DealModal from '@/components/Modals/DealModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import TrattativePerFase from '@/components/Mobile/TrattativePerFase.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
@@ -314,6 +324,7 @@ import { pipelinesStore } from '@/stores/pipelines'
 import { callEnabled } from '@/composables/telephony'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
 import { intestazioneDelGruppo } from '@/utils/gruppi'
+import { leggibile } from '@/utils/telefono'
 import { kanbanColumnsForPipeline, pipelineOfColumns } from '@/utils/pipelines'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useTelemetry } from 'frappe-ui/frappe'
@@ -510,8 +521,10 @@ function parseRows(rows, columns = []) {
         _rows[row] = formatDate(deal[row], '', true, fieldType == 'Datetime')
       }
 
+      // an amount nobody has set yet (no quote proposed) is empty, not
+      // «0,00 €» on every card and row as if the deal were worth nothing
       if (fieldType && fieldType == 'Currency') {
-        _rows[row] = getFormattedCurrency(row, deal)
+        _rows[row] = deal[row] ? getFormattedCurrency(row, deal) : ''
       }
 
       if (fieldType && fieldType == 'Float') {

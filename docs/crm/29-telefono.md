@@ -389,7 +389,20 @@ Con il tocco, come in un'app:
   che si gira quando basta lasciare, poi il segno che gira finché la lista non
   è tornata (`composables/tiraPerAggiornare.js`). Si tira la scatola che
   scorre, che c'è anche quando la lista è vuota: «Nessuna notifica» si tira
-  come una lista piena, per vedere se ne è arrivata una.
+  come una lista piena, per vedere se ne è arrivata una. Chi non può tirare
+  (VoiceOver scorre senza toccare la lista, un sensore o un puntatore a testa
+  non hanno un dito) ha «Ricarica» nella testata di ognuna, come le chat e la
+  panoramica, e nelle notifiche accanto alle schede, perché la testata ha già
+  «Segna tutto come letto» (`Mobile/PulsanteAggiorna.vue`): fa lo stesso con
+  un tocco, senza far scendere la lista, e il tasto gira finché non è
+  tornata; un aggiornamento alla volta, che venga dal dito o dal tasto
+  (`aggiornaOra`). Mentre gira resta un tasto come prima, non spento: spento,
+  chi lo premeva dalla tastiera (una pagina ingrandita al 400% ha il
+  disegno del telefono) perdeva il fuoco, che tornava in cima alla pagina.
+  Mentre torna, un lettore di schermo sente «Aggiorno l'elenco…», da una
+  regione che c'è fin dall'inizio: arrivava già scritta, dentro un riquadro
+  nascosto fino a quel momento, e così non si sentiva
+  (`Mobile/TiraPerAggiornare.vue`).
 - **Tornando indietro, una lista è com'era.** Aperta una persona (una
   trattativa, una chat) e tornati indietro, la lista ha ancora le parole
   cercate, le righe che aveva e il punto a cui era arrivata; poi si aggiorna da
@@ -494,7 +507,7 @@ Con il tocco, come in un'app:
     un'email sta su una riga: grassetto, corsivo, elenchi, link, immagine
     (`phoneToolbar` in `components/editor/config.ts`), non le due righe del
     computer;
-  - **«Emetti la fattura»** su un appuntamento di cui l'agenda non sa chi ha
+  - **«Prepara la fattura»** su un appuntamento di cui l'agenda non sa chi ha
     fatto la prestazione dava un errore e nessuna strada: ora si apre la
     fattura con quello che l'agenda sa e chiede solo «Chi l'ha eseguito»
     (`appointment_invoice_proposal`, `nuovaFattura(cliente, { bozza })`); sotto
@@ -599,7 +612,7 @@ Con il tocco, come in un'app:
   l'appuntamento. Ora dice cosa toglie: «Annulla l'arrivo», o «Annulla
   l'esito» dopo «Presente» o «Assente». Dopo «Presente» la fattura era in
   Fatture, in mezzo agli appuntamenti delle ultime due settimane: ora
-  «Emetti la fattura» sta sull'appuntamento stesso, finché non è fatturato,
+  «Prepara la fattura» sta sull'appuntamento stesso, finché non è fatturato,
   e apre la fattura già compilata (`useFattura().fatturaDellIncontro`, la
   stessa strada della pagina Fatture).
 - **Un appuntamento per una persona nuova, provato davvero.** Dal «+»
@@ -794,7 +807,10 @@ Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
 griglia è quella che il centro ha sistemato, e un titolo lungo resta tagliato
-come su un computer stretto.
+come su un computer stretto. Le caselle, dal 12/10/2026, si prendono da tutta
+la loro cella, 30 punti per 39 intorno ai 14 della casella (`vite/frappeUi.js`
+su `ListRow`): un tocco o un clic appena fuori dalla casella non faceva niente,
+o apriva la riga.
 
 ## Nona parte: la pagina ingrandita (05/10/2026)
 
@@ -1043,7 +1059,8 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `frontend/src/components/Mobile/ElencoAziende.vue`, `ElencoContatti.vue`, `ElencoChiamate.vue` + `crm/api/sul_telefono.py` (`get_organizations`, `get_contacts`, `get_calls`) | Le liste di aziende, contatti e chiamate |
 | `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
 | `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | L'accoglienza sul telefono |
-| `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu |
+| `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu; il titolo cede ai tasti della testata, tagliato con «…» (a 320 punti «Accoglienza» passava sotto le frecce del giorno) |
+| `frontend/src/pages/Invoices.vue`, `Leads.vue` | Nella testata il nome dell'azienda che emette si taglia con «…» (la classe sul Dropdown non arrivava a nessun elemento) e «Fuori dalla tua équipe» è la sua icona, con il suo nome: a 360 punti passavano sotto i tasti |
 | `frontend/src/pages/MobileOrganization.vue`, `MobileContact.vue` | Le trattative e i contatti di un'azienda e di un contatto, per nome della scheda |
 | `frontend/tests/unit/automationParole.test.js` | Ogni parola del catalogo delle automazioni ha il suo italiano, nessuna nomina un altro prodotto |
 | `frontend/src/components/Mobile/ElencoNote.vue`, `pages/Notes.vue` + `crm/api/sul_telefono.py` (`get_notes`) | Le note sul telefono |
@@ -1064,7 +1081,7 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
 | `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
 | `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
-| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
+| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, `PulsanteAggiorna.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue`, le pagine delle liste (`Leads.vue`, `Contacts.vue`, `Organizations.vue`, `CallLogs.vue`, `Notes.vue`, `Tasks.vue`, `Deals.vue`, `Calendar.vue`, `MobileNotification.vue`) | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. «Ricarica» fa lo stesso con un tocco (`aggiornaOra`), un aggiornamento alla volta. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css`, `index.html`, `area.html` | La cornice che segue la tastiera, il tocco da app; Android accorcia la pagina da sé (`interactive-widget`), su iPhone la pagina non scorre mai e un campo si porta in vista nella sua scatola (`inVista`), senza inseguire lo scorrimento (dodicesima parte). Testato in `tests/unit/tastieraAperta.test.js` |
@@ -1152,7 +1169,7 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `Settings/Scheduling/TeamMatrix.vue`, `ServicesSettings.vue` | Nella griglia di chi fa cosa le caselle che scorrono passano sotto il nome del servizio, non sopra; nel servizio il nome ha la riga per sé («Massaggio decont…») |
 | `crm/fcrm/doctype/crm_deal/crm_deal.py` (`value_from_quotes`) | Una trattativa rimasta da prima della griglia dei prodotti teneva il suo totale: con «Aggiorna in automatico il valore previsto» acceso, ogni salvataggio lo scriveva sopra il valore del preventivo (doc 50). Ora un preventivo oltre la bozza dice quanto vale la trattativa |
 | `crm_invoicing_company.json`, `crm/locale/it.po` | L'azienda emittente: «Nome in fattura» e «Nome» del professionista, dove c'erano due «Nome»; «l'editor del modulo» al posto di «il builder» |
-| `Activities/EventArea.vue`, `EventNotificationsArea.vue` | «In arrivo» e «comincia ora» sull'orologio del centro: con l'ora del telefono, in un altro fuso, l'appuntamento di stasera stava tra quelli in arrivo |
+| `Activities/EventArea.vue`, `EventNotificationsArea.vue` | «In arrivo» e «comincia ora» sull'orologio del centro: con l'ora del telefono, in un altro fuso, l'appuntamento di stasera stava tra quelli in arrivo. La scheda Eventi chiede al server gli eventi non finiti con l'adesso del centro, non con un istante UTC che il server leggeva come l'ora del centro (in Italia prendeva gli eventi finiti fino a due ore prima, e li metteva fra quelli in arrivo); un evento finito esce dalla lista (`filtriDegliEventi`, `tipoDellEvento`, 12/10/2026) |
 | `Settings/Pipelines/PipelineList.vue`, `QuotesPipeline.vue`, `NewClientsPipeline.vue`, `frontend/vite/frappeUi.js` | La pagina Pipeline: la pipeline predefinita non ha più il «…» che apriva un menu vuoto, e le pipeline dei nuovi clienti e dei preventivi tengono ciascuna la sua «Salva» in fondo alla sezione (erano due barre una sopra l'altra). «(obbligatorio)» dopo un campo richiesto e «Nessuna opzione» in un menu vuoto, che erano in inglese |
 | `Settings/AssignmentRules/`, `Settings/Sla/`, `SLASection.vue` | Regole di assegnazione e tempi di risposta in italiano: le priorità («Medio-bassa»), a chi si applicano («Persone», «Trattative»), gli stati («Aperto», «Risposto»: arrivavano dai record così come sono), i giorni degli orari di lavoro (erano Monday, Tuesday…). Sulla scheda «Prima risposta», «Risposta successiva» e «Rispettato in 2h 5m», una frase intera dove c'era un «in» inglese incollato |
 | `Settings/EmailTemplate/EditEmailTemplate.vue`, `NewEmailTemplate.vue` | Il tipo di contenuto di un modello email è «Testo formattato» o HTML: diceva «Rich Text» |
@@ -1166,10 +1183,11 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `Settings/Hierarchy/Hierarchy.vue` | «Abilita» e «Disattiva» della gerarchia li vede solo chi può davvero accenderla, l'amministratore di sistema (la regola del server: un responsabile messo nell'albero si toglierebbe il suo limite). Il responsabile premeva «Abilita» e riceveva un errore; ora legge «Solo un amministratore di sistema può attivarla», e l'albero lo gestisce come prima |
 | `Settings/Scheduling/SchedulingDefaults.vue`, `utils/fusiOrari.js` | Il fuso orario dell'agenda: dopo quello del sito, il fuso del dispositivo e «Europe/Rome», ognuno col suo nome («Europe/Rome · Ora dell'Europa centrale»), poi gli altri. Sul telefono era un foglio di quattrocento righe che partiva da «Africa/Abidjan» |
 | `pages/Invoices.vue` | «Comunica» al Sistema TS chiede conferma: sul telefono sta nella scheda che si tocca per aprire la fattura, e un tocco sbagliato mandava subito la spesa |
-| `utils/numberFormat.js` (`flt`) | Un importo scritto con la tastiera decimale del telefono, che ha solo il separatore della sua lingua: su un sito che scrive i numeri all'inglese «12,5» diventava 125, e un prezzo di 12,50 € ne valeva 1250. Ora il separatore delle migliaia preso una volta sola, con una o due cifre dopo, è la virgola dei decimali che la tastiera aveva; «1,234» resta milleduecentotrentaquattro. Test: `tests/unit/numberFormat.test.js` |
+| `utils/numberFormat.js` (`flt`) | Un importo scritto con la tastiera decimale del telefono, che ha solo il separatore della sua lingua: su un sito che scrive i numeri all'inglese «12,5» diventava 125, e un prezzo di 12,50 € ne valeva 1250. Ora il separatore delle migliaia preso una volta sola, con una o due cifre dopo, è la virgola dei decimali che la tastiera aveva; «1,234» resta milleduecentotrentaquattro. Dal 12/10/2026 uno spazio con tre cifre dopo raggruppa le migliaia, qualunque sia il formato del sito: «1 250,50» incollato da un foglio o da un estratto conto (anche con lo spazio unificatore) vale 1250,5, non 1. Test: `tests/unit/numberFormat.test.js` |
 | `crm/lingue.py` (`valuta()`), `crm/dashboard/context.py`, `crm/api/dashboard.py`, `crm_deal.py`, `crm_organization.py` | La dashboard del medico diceva «0 USD»: dove il centro non ha scelto una valuta, il codice ereditato ripiegava sul dollaro, e ogni trattativa in euro chiedeva il cambio a un servizio esterno e si sommava in dollari. Ora vale la valuta scelta nelle impostazioni, altrimenti quella del paese del centro, l'euro dove nessuno l'ha detto. I record di prova delle trattative sono in euro. Test: `crm/tests/test_valuta_del_centro.py` |
 | `crm/install.py` (`add_genders_and_titles`), patch `a_person_has_genders_and_titles` | «Genere» sulla scheda di una persona era un elenco vuoto, e «Titolo» aveva solo «Sig.» e «Sig.ra»: li crea la procedura guidata del framework, e un sito installato senza non li aveva. Ora DottorCloud assicura i generi del framework («Donna», «Uomo», «Non conforme», «Preferisce non dirlo»…) e i titoli che si scrivono in Italia («Sig.», «Sig.ra», «Dott.», «Prof.»). Test: `crm/tests/test_generi_e_titoli.py` |
 | `crm/utils/__init__.py` (`default_region`) | Un cellulare scritto senza prefisso («333 123 4567») su un sito che non ha detto il paese restava com'era: la libreria lo leggeva indiano, e senza il +39 non partivano WhatsApp, SMS e chiamate. Ora dove il sito non ha detto il paese il numero è italiano, la stessa regola della lingua e della valuta. Test in `crm/tests/test_valuta_del_centro.py` |
+| `crm/utils/__init__.py` (`parse_phone_number`, `are_same_phone_number`), `crm/integrations/api.py` (`find_contact_by_phone_number`) | Lo stesso numero, per sapere di chi è: chiamato dal tastierino del ☎ in alto a destra, «333 123 4567» si leggeva indiano anche su un sito in Italia. La chiamata non trovava la persona che ha «+39 333 123 4567»: la finestra della chiamata diceva «Sconosciuto», il registro non ne diceva il nome e la chiamata mancava dalla sua storia. Un fisso perdeva lo 0 («212345678» per Milano), e chi chiamava da un fisso non era mai riconosciuto. Ora un numero senza prefisso è del paese del centro e un fisso tiene il suo 0; un numero che WhatsApp passa senza il + si cerca anche nel suo paese. Test in `crm/tests/test_integrations.py` e `crm/tests/test_utils.py` |
 | `Modals/DoctypeModal.vue`, `utils/schedaChiusa.js` | Una nota o una cosa da fare aperta dal suo elenco si presentava, finché non arrivava, come «Nuova nota» vuota con «Crea»: sul telefono, con la rete lenta, un tocco su «Crea» ne avrebbe fatta un'altra. Ora la finestra di un record che ha un nome è «Modifica la nota» dal primo momento, con il segno del caricamento e il pulsante spento finché il record non c'è; se non si apre lo dice a parole («Non puoi aprire questa nota», «Questa cosa da fare non c'è più») |
 | `Settings/AssistantSettings.vue`, `crm/locale/it.po` | Nel registro dell'assistente il fornitore si legge «Compatibile con OpenAI», non «OpenAI compatible»; il ruolo di un contatto è «Ruolo», non «Designazione» |
 | `Mobile/AgendaDelGiorno.vue` | Nell'elenco del giorno «Prima visita» prendeva il posto dello stato: un paziente nuovo «Non venuto» o «Completato» non lo diceva. Ora i due segni stanno uno sopra l'altro |

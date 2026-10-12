@@ -63,16 +63,28 @@ def to_e164(number: str | None, region: str | None = None) -> str:
 	return number.strip()
 
 
-def parse_phone_number(phone_number: str, default_country: str = "IN"):
+def parse_phone_number(phone_number: str, default_country: str | None = None):
+	"""What a number says about itself, for finding whose it is.
+
+	A number without its prefix is read in `default_country`, else in the site's
+	country (`default_region`): the digits typed on the phone panel's keypad, and
+	the call made with them. India, the default this had, made `333 123 4567` an
+	Indian number, and the call was filed on nobody.
+
+	`national_number` keeps the 0 an Italian landline starts with: in Italy it is
+	part of the number, and `phonenumbers` keeps it apart from the digits, so a
+	call from Milan was compared as `212345678`, no Italian number, and its caller
+	never recognised.
+	"""
 	try:
 		# Parse the number
-		number = phonenumbers.parse(phone_number, default_country)
+		number = phonenumbers.parse(phone_number, default_country or default_region())
 
 		# Get various information about the number
 		result = {
 			"is_valid": phonenumbers.is_valid_number(number),
 			"country_code": number.country_code,
-			"national_number": str(number.national_number),
+			"national_number": phonenumbers.national_significant_number(number),
 			"formats": {
 				"international": phonenumbers.format_number(number, PNF.INTERNATIONAL),
 				"national": phonenumbers.format_number(number, PNF.NATIONAL),
@@ -94,22 +106,28 @@ def digits_of(number: str | None) -> str:
 	return "".join(character for character in (number or "") if character.isdigit())
 
 
-def are_same_phone_number(number1: str, number2: str, default_region: str = "IN", validate: bool = True):
+def are_same_phone_number(
+	number1: str, number2: str, default_region: str | None = None, validate: bool = True
+):
 	"""
 	Check if two phone numbers are the same, regardless of their format.
 
 	Args:
 	    number1 (str): First phone number
 	    number2 (str): Second phone number
-	    default_region (str): Default region code for parsing ambiguous numbers
+	    default_region (str): The region a number without its prefix is read in,
+	        the site's country where it is not given
 
 	Returns:
 	    bool: True if numbers are same, False otherwise
 	"""
+	# the parameter hides the module's `default_region()`: the same reading of the
+	# site's country, so `333 123 4567` is the person's `+39 333 123 4567` in Italy
+	region = default_region or _region_of(frappe.db.get_single_value("System Settings", "country"))
 	try:
 		# Parse both numbers
-		parsed1 = phonenumbers.parse(number1, default_region)
-		parsed2 = phonenumbers.parse(number2, default_region)
+		parsed1 = phonenumbers.parse(number1, region)
+		parsed2 = phonenumbers.parse(number2, region)
 
 		# Check if both numbers are valid
 		if validate and not (phonenumbers.is_valid_number(parsed1) and phonenumbers.is_valid_number(parsed2)):

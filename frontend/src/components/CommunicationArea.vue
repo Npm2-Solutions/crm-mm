@@ -343,7 +343,7 @@ async function submitEmail() {
   toast.promise(sent, {
     loading: __('Sending email...'),
     success: __('Email sent'),
-    error: (e) => e?.messages?.[0] || __('Failed to send email!'),
+    error: (e) => e?.messages?.[0] || __('The email was not sent'),
   })
   try {
     await sent

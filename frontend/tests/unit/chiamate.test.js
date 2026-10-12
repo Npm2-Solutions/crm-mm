@@ -6,9 +6,13 @@ import {
   PAESI_PROPOSTI,
   TASTI,
   bloccataInItalia,
+  cercaChiChiama,
   comeSalvati,
   conIlPaese,
+  finestraOccupata,
   nomeDelPaese,
+  nomeDiChiChiama,
+  nuovaChiamata,
   numeroIniziale,
   paesi,
   paesiDaAggiungere,
@@ -92,6 +96,196 @@ describe('the number a call shows', () => {
     expect(bloccataInItalia(numeri, '+393331234567', 'CH')).toBe(false)
     expect(bloccataInItalia(numeri, '+390212345678', 'IT')).toBe(false)
     expect(bloccataInItalia(numeri, '', 'IT')).toBe(false)
+  })
+})
+
+describe('who calls', () => {
+  const ANNA = { full_name: 'Anna Bianchi', mobile_no: '+393331234567' }
+  const MARCO = { full_name: 'Marco Neri', mobile_no: '+393407654321' }
+  // what the server answers for a number nobody has
+  const NESSUNO = { mobile_no: '+390212345678' }
+
+  // the server, answering when the test says so
+  function server() {
+    const attese = {}
+    const chiesti = []
+    const chiedi = (numero) => {
+      chiesti.push(numero)
+      return new Promise((risolvi, rifiuta) => {
+        attese[numero] = { risolvi, rifiuta }
+      })
+    }
+    return { chiedi, chiesti, attese }
+  }
+
+  // what the window was told, in order
+  function finestra() {
+    const detto = []
+    const aggiorna = (contatto, cercando) => detto.push([contatto, cercando])
+    return { detto, aggiorna, ultimo: () => detto.at(-1) }
+  }
+
+  it('says nobody at once, then whom the server found', async () => {
+    const { chiedi, chiesti, attese } = server()
+    const { detto, aggiorna } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    const fatto = cerca('+393331234567')
+    expect(detto).toEqual([[null, true]])
+    expect(chiesti).toEqual(['+393331234567'])
+    attese['+393331234567'].risolvi(ANNA)
+    await fatto
+    expect(detto).toEqual([
+      [null, true],
+      [ANNA, false],
+    ])
+  })
+
+  it('never shows the last call’s caller on the next one', async () => {
+    const { chiedi, attese } = server()
+    const { aggiorna, ultimo } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    const prima = cerca('+393331234567')
+    attese['+393331234567'].risolvi(ANNA)
+    await prima
+    expect(ultimo()).toEqual([ANNA, false])
+    // the next call, the server not answered yet: nobody, never Anna
+    cerca('+393407654321')
+    expect(ultimo()).toEqual([null, true])
+  })
+
+  it('asks again for the same number at the next call', async () => {
+    const { chiedi, chiesti, attese } = server()
+    const { aggiorna, ultimo } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    const prima = cerca('+393331234567')
+    attese['+393331234567'].risolvi(ANNA)
+    await prima
+    const seconda = cerca('+393331234567')
+    expect(ultimo()).toEqual([null, true])
+    attese['+393331234567'].risolvi(ANNA)
+    await seconda
+    expect(chiesti).toEqual(['+393331234567', '+393331234567'])
+    expect(ultimo()).toEqual([ANNA, false])
+  })
+
+  it('drops an answer about a number the call no longer has', async () => {
+    const { chiedi, attese } = server()
+    const { detto, aggiorna, ultimo } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    // Telnyx: the centre's own number shown first, then the caller's
+    const prima = cerca('+390212345678')
+    const seconda = cerca('+393407654321')
+    attese['+393407654321'].risolvi(MARCO)
+    await seconda
+    // nobody has the centre's number: said late, it would be «Unknown»
+    attese['+390212345678'].risolvi(NESSUNO)
+    await prima
+    expect(ultimo()).toEqual([MARCO, false])
+    expect(detto.some(([contatto]) => contatto === NESSUNO)).toBe(false)
+  })
+
+  it('drops it when it comes first, too', async () => {
+    const { chiedi, attese } = server()
+    const { aggiorna, ultimo } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    const prima = cerca('+390212345678')
+    const seconda = cerca('+393407654321')
+    attese['+390212345678'].risolvi(NESSUNO)
+    await prima
+    // still asking about the caller
+    expect(ultimo()).toEqual([null, true])
+    attese['+393407654321'].risolvi(MARCO)
+    await seconda
+    expect(ultimo()).toEqual([MARCO, false])
+  })
+
+  it('leaves nobody where the server could not answer', async () => {
+    const { chiedi, attese } = server()
+    const { aggiorna, ultimo } = finestra()
+    const cerca = cercaChiChiama(chiedi, aggiorna)
+    const prima = cerca('+393331234567')
+    attese['+393331234567'].risolvi(ANNA)
+    await prima
+    const seconda = cerca('+393407654321')
+    attese['+393407654321'].rifiuta(new Error('502'))
+    await seconda
+    // the call goes on with nobody named, never with Anna
+    expect(ultimo()).toEqual([null, false])
+  })
+
+  it('asks nothing without a number', async () => {
+    const { chiedi, chiesti } = server()
+    const { detto, aggiorna } = finestra()
+    await cercaChiChiama(chiedi, aggiorna)('')
+    expect(chiesti).toEqual([])
+    expect(detto).toEqual([[null, false]])
+  })
+
+  it('is named by the server’s name, nothing while asked, else «Unknown»', () => {
+    const t = (parola) => `«${parola}»`
+    expect(nomeDiChiChiama(ANNA, false, t)).toBe('Anna Bianchi')
+    expect(nomeDiChiChiama(null, true, t)).toBe('')
+    expect(nomeDiChiChiama(null, false, t)).toBe('«Unknown»')
+    expect(nomeDiChiChiama(NESSUNO, false, t)).toBe('«Unknown»')
+    expect(nomeDiChiChiama({ full_name: '' }, false, t)).toBe('«Unknown»')
+  })
+})
+
+describe('one call at a time', () => {
+  const SQUILLA = { id: 'in arrivo' }
+  const ALTRA = { id: "un'altra" }
+
+  it('the window is free with no call and none being placed', () => {
+    expect(finestraOccupata(null, '')).toBe(false)
+    expect(finestraOccupata(null, '', ALTRA)).toBe(false)
+  })
+
+  it('is taken by a call it shows, ringing or on', () => {
+    expect(finestraOccupata(SQUILLA, '')).toBe(true)
+    expect(finestraOccupata(SQUILLA, 'ringing', ALTRA)).toBe(true)
+  })
+
+  it('is taken by a call being placed, before the carrier has one', () => {
+    // a call coming in then rings on the centre's other phones
+    expect(finestraOccupata(null, 'initiating', ALTRA)).toBe(true)
+    expect(finestraOccupata(null, 'initiating')).toBe(true)
+  })
+
+  it('a call is never in its own way', () => {
+    // Telnyx tells of the ringing call again: still the one shown
+    expect(finestraOccupata(SQUILLA, '', SQUILLA)).toBe(false)
+    expect(finestraOccupata(SQUILLA, 'initiating', SQUILLA)).toBe(false)
+  })
+})
+
+describe('a call coming in to Twilio’s window', () => {
+  const PRIMA = { id: 'la prima' }
+  const SECONDA = { id: 'la seconda' }
+
+  it('is shown where the window is free', () => {
+    expect(nuovaChiamata(null, '', SECONDA)).toBe('mostra')
+    expect(nuovaChiamata(null, '', SECONDA, false)).toBe('mostra')
+  })
+
+  it('waits, ringing, while the call shown still rings here', () => {
+    // ignoring it would stop the one tone the browser plays for both
+    expect(nuovaChiamata(PRIMA, '', SECONDA, true)).toBe('aspetta')
+  })
+
+  it('is ignored when the call shown is on, or going out', () => {
+    // nothing else rings here: ignoring it silences only its own tone
+    expect(nuovaChiamata(PRIMA, '', SECONDA, false)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'ringing', SECONDA, false)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'in-progress', SECONDA, false)).toBe('ignora')
+  })
+
+  it('is ignored while a call is being placed', () => {
+    expect(nuovaChiamata(null, 'initiating', SECONDA)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'initiating', SECONDA, true)).toBe('ignora')
+  })
+
+  it('the call shown, told again, is still shown', () => {
+    expect(nuovaChiamata(PRIMA, '', PRIMA, true)).toBe('mostra')
   })
 })
 

@@ -179,6 +179,26 @@ all'inglese di DottorCloud), e teneva spento l'italiano.
   ne ha scelta una sua leggeva quella, mentre le parole di DottorCloud erano in
   italiano. A ogni migrate la lingua di System Settings torna quella del centro.
 
+## Fatto: una data scritta a mano, col giorno prima (12/10/2026)
+
+I selettori di data di frappe-ui provavano il formato del campo, e quello che non
+passava lo lasciavano a `dayjs`, che legge all'americana: «1/10/2026»,
+«1.10.2026» e «1-10-2026» diventavano il 10 gennaio, «12/10/26» il 10 dicembre.
+Valeva in ogni campo data dell'app e dell'area clienti: la data di nascita nella
+scheda, le finestre (la fattura, i documenti, i cicli, gli abbonamenti), la
+domanda di un modulo, le date con l'ora e gli intervalli.
+
+- **Il giorno prima del mese**: la build legge questi testi prima di `dayjs`
+  (`giornoScritto` in `frontend/vite/frappeUi.js`), con la barra, il punto, il
+  trattino o uno spazio, e l'ora se c'è («12/10/26 9:30»). Il mese viene prima
+  solo dove il formato del campo lo mette prima (mm/gg/aaaa).
+- **L'anno**: senza, è quello di oggi sull'orologio del centro; di due cifre, è
+  quello dei vent'anni che vengono o degli ottanta passati, così una nascita
+  scritta «12/3/58» è del 1958, non del 2058.
+- **Un giorno che non c'è** («31/02/2026») non è una data, mai quella dopo: il
+  campo torna com'era. Un valore del server e un mese in lettere vanno avanti
+  come prima.
+
 ## Come si trovano le frasi in inglese
 
 - **Nel codice**: le chiamate `__('…')` del frontend e `_()`/`_lt()` del server, e le
@@ -248,7 +268,7 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | `crm/locale/it.po` | Il catalogo di DottorCloud: vince su quello del framework |
 | `crm/lingue.py` | La lingua delle parole che DottorCloud scrive nel sito (consensi, fasi, librerie): quella scelta dal centro, altrimenti quella del sito, l'italiano se è rimasto sull'inglese del framework in Italia; solo italiano e inglese accesi; la pagina Lingua e fuso orario (`get_centre_language`, `save_centre_language`) |
 | `Settings/CentreLanguageSettings.vue`, `Settings/PreferencesSettings.vue` | La lingua e il fuso orario del centro; quelli di ciascuno, «Come il centro» o la sua |
-| `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build: i componenti, l'importazione dei dati, la barra dell'editor |
+| `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build: i componenti, l'importazione dei dati, la barra dell'editor; una data scritta a mano letta col giorno prima del mese (`giornoScritto`) |
 | `frontend/src/components/ListViews/*ListView.vue`, `Kanban/KanbanView.vue` | I valori a scelta e le colonne del Kanban tradotti |
 | `frontend/src/area/it.js` | Il dizionario dell'area clienti |
 | `crm/dashboard/widgets/sales.py` | Le fasi tradotte nell'imbuto e nelle liste (`stage_name`) |

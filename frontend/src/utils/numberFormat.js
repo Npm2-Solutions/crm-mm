@@ -69,6 +69,13 @@ export function flt(v, decimals, numberFormat, roundingMethod) {
   if (typeof v !== 'number') {
     v = v + ''
 
+    // A blank between digits with three after it is a thousands separator,
+    // whatever the site writes: «1 250,50» pasted from a French-format sheet
+    // or a bank's export (a space, a no-break, a narrow or a thin one) was read
+    // up to its first blank, 1. A currency before or after the amount keeps
+    // its blank (no digits around it).
+    v = v.replace(/(\d)\s+(?=\d{3}(?:\D|$))/g, '$1')
+
     // strip currency symbol if exists
     if (v.indexOf(' ') != -1) {
       // using slice(1).join(" ") because space could also be a group separator

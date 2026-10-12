@@ -21,7 +21,7 @@
    would take clicks meant for whatever is next to it. `.touch-target` is for a
    small control with room around it; frappe-ui's switch is always one, and is
    already positioned for the ring; its small and medium buttons get a ring
-   that grows them to 40px, less on the sides where buttons sit in a row. A
+   that grows them to 44px, less on the sides where buttons sit in a row. A
    button that opens a page (`:route`, `:link`) is drawn as a link with the
    same classes, and gets the same ring: «Call round» on the calls page took a
    tap on 24px. A record's field drawn as a button (a select, a link: `min-h-7`)
@@ -41,18 +41,20 @@
     position: absolute;
     inset: -10px -8px;
   }
+  /* 44px tall to a finger (Apple's HIG): an icon on its own («×», «⋯», a
+     bin) was 34-36px; the sides stay narrow, where buttons sit in a row */
   button.h-7:not([role='switch'])::after,
   button.min-h-7:not([role='switch'])::after,
   a.h-7.inline-flex.justify-center::after {
     content: '';
     position: absolute;
-    inset: -6px -3px;
+    inset: -8px -3px;
   }
   button.h-8:not([role='switch'])::after,
   a.h-8.inline-flex.justify-center::after {
     content: '';
     position: absolute;
-    inset: -4px -2px;
+    inset: -6px -2px;
   }
   /* a toast's ×, 20px (vue-sonner's, unstyled): a ring of 40px, inside the
      toast's own padding */
@@ -116,14 +118,14 @@
       tapped and leaves it zoomed. A line one types on is 40px tall. */
 @media (max-width: 767px), (max-height: 499px) and (pointer: coarse) {
   input:not(
-    [type='checkbox'],
-    [type='radio'],
-    [type='range'],
-    [type='color'],
-    [type='file'],
-    [type='button'],
-    [type='submit']
-  ),
+      [type='checkbox'],
+      [type='radio'],
+      [type='range'],
+      [type='color'],
+      [type='file'],
+      [type='button'],
+      [type='submit']
+    ),
   textarea,
   select,
   [contenteditable='true'] {
@@ -173,10 +175,12 @@
   }
   /* a switch of a few segments (frappe-ui's TabButtons: «Tutte · Da leggere»,
      «Mie · Di tutti», «Appuntamento · Evento», the sister pages «Da fare ·
-     Note» drawn as links): each segment 36px tall, not 26px, and side by
-     side there is no room for a ring around them */
+     Note» drawn as links, «Tutti · Lead · Clienti · Pazienti»): each segment
+     44px tall, a thumb's height (Apple's HIG), not 26px - and 36px was still
+     short of it on the switches people use most; side by side there is no
+     room for a ring around them */
   [data-slot='tab-button'] > span {
-    min-height: 2.25rem;
+    min-height: 2.75rem;
   }
   /* an editor's toolbar: its buttons on two rows rather than the last ones
      cut off at the edge of the screen */
@@ -502,13 +506,6 @@
     transform: translateY(100%);
   }
 }
-@media (max-width: 767px) and (prefers-reduced-motion: reduce),
-  (max-height: 499px) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
-  .dialog-content[data-state='open'],
-  .dialog-content[data-state='closed'] {
-    animation: none;
-  }
-}
 
 /* 5. A menu, the choices of a select, a combobox's list on a phone: a sheet of
       actions from the bottom, its rows 48px, the screen behind veiled. reka-ui
@@ -657,6 +654,27 @@
     div[style*='position: fixed']
     > [role='listbox'][data-slot='content'] {
     box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6) !important;
+  }
+}
+/* Less motion asked of the phone (iOS's Reduce Motion, Android's Remove
+   animations): no sheet rises nor falls, a dialog's (4.), a menu's, a
+   select's or a link field's list, a popover of choices (5.) are there at
+   once and go at once. After the rules that move them, as heavy as they are:
+   the later one wins */
+@media (max-width: 767px) and (prefers-reduced-motion: reduce),
+  (max-height: 499px) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
+  .dialog-content[data-state='open'],
+  .dialog-content[data-state='closed'],
+  [data-reka-popper-content-wrapper] > [role='menu'],
+  [data-reka-popper-content-wrapper] > [role='listbox'],
+  div[style*='position: fixed'] > [role='listbox'][data-slot='content'],
+  [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [role='listbox']),
+  [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [data-foglio]) {
+    animation: none;
   }
 }
 
@@ -832,6 +850,16 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+  }
+  /* the bar at the bottom ends above the iPhone's home line, the strip a
+     finger swiping up takes home: frappe-ui pads it 16px, and only once the
+     app is installed (MobileNav.vue), 18px short of the line, and not at all
+     in a browser's tab. The safe area is the line's height, 0 where the
+     system's own bar is outside the page (Android). The toast (6.) and the
+     «+» (PulsanteAggiungi.vue) add the same inset to their height, and stay
+     above the bar */
+  nav[data-slot='mobile-nav'] {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 

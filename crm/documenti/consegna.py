@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import re
 import secrets
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -319,7 +320,8 @@ def open_document(token: str, code: str) -> dict:
 	riga = _per_token(token)
 	if cint(riga.attempts) >= TENTATIVI:
 		frappe.throw(_("Too many wrong codes: ask the centre for a new one"), frappe.PermissionError)
-	if not _uguali(_impronta(token + (code or "").strip()), riga.code_hash):
+	# its digits: a code read out as «123 456» and typed so is the right one, not a try lost
+	if not _uguali(_impronta(token + re.sub(r"\D", "", code or "")), riga.code_hash):
 		riga.db_set("attempts", cint(riga.attempts) + 1)
 		traccia.traccia(CONSEGNA, riga.name, "code_wrong")
 		frappe.throw(_("The code is not right"))

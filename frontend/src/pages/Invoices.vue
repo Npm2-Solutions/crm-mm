@@ -12,18 +12,21 @@
         :items="[{ label: __('Invoices'), route: { name: 'Invoices' } }]"
       />
       <!-- the company's name gives way on a phone, it does not run under the
-           buttons -->
-      <Dropdown
-        v-if="companies.data?.length > 1"
-        class="min-w-0"
-        :options="companyOptions"
-      >
-        <Button variant="ghost" iconRight="chevron-down" class="max-w-full">
+           buttons: the button shrinks (frappe-ui's does not, and a class on
+           the Dropdown reaches no element), and its name is cut with «…» -->
+      <Dropdown v-if="companies.data?.length > 1" :options="companyOptions">
+        <Button
+          variant="ghost"
+          iconRight="chevron-down"
+          class="min-w-0 max-w-full !shrink"
+        >
           <span class="truncate">{{ company || __('All companies') }}</span>
         </Button>
       </Dropdown>
     </template>
     <template #right-header>
+      <!-- on a phone the lists pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <Button
         v-if="puo('fatture.configura')"
         variant="ghost"
@@ -169,7 +172,11 @@
               <Button
                 variant="subtle"
                 :loading="emettendo === incontro.name"
-                :label="__('Invoice it')"
+                :label="
+                  incontro.draft
+                    ? __('Finish the draft invoice')
+                    : __('Invoice it')
+                "
                 @click="fatturaIncontro(incontro)"
               />
             </div>
@@ -197,16 +204,20 @@
           >
             {{ __('Nothing waiting. Every issued document has been routed.') }}
           </div>
+          <!-- the row opens from its words, a button stretched over the
+               row; its own buttons sit above it: a row that was a button
+               holding buttons was one control holding others for a screen
+               reader, and «Invia» read as part of the invoice's name -->
           <div
             v-for="row in pending.data || []"
             :key="row.action + row.name"
-            role="button"
-            tabindex="0"
-            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-            @click="apriFattura(row.name, { alCambio: ricarica })"
-            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
+            class="relative flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
-            <div class="flex min-w-0 flex-col">
+            <button
+              type="button"
+              :class="RIGA_CHE_APRE"
+              @click="apriFattura(row.name, { alCambio: ricarica })"
+            >
               <span class="truncate text-p-base-medium text-ink-gray-8">
                 {{ row.document_number || __('Draft') }} ·
                 {{ row.billing_name }}
@@ -215,7 +226,7 @@
                 {{ row.label }} ·
                 {{ dayjs(row.posting_date).format('DD/MM/YYYY') }}
               </span>
-            </div>
+            </button>
             <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Badge
                 :theme="row.state.startsWith('scart') ? 'red' : 'orange'"
@@ -230,6 +241,7 @@
                   tsMode !== 'export' &&
                   puo('fatture.invia')
                 "
+                class="relative"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
@@ -237,7 +249,7 @@
               />
               <!-- the whole row opens it; on a phone the button would only take room -->
               <Button
-                class="max-md:hidden"
+                class="relative max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -251,13 +263,13 @@
           <div
             v-for="row in invoices.data || []"
             :key="row.name"
-            role="button"
-            tabindex="0"
-            class="flex cursor-pointer flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-            @click="apriFattura(row.name, { alCambio: ricarica })"
-            @keydown.enter.self="apriFattura(row.name, { alCambio: ricarica })"
+            class="relative flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 hover:bg-surface-gray-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
-            <div class="flex min-w-0 flex-col">
+            <button
+              type="button"
+              :class="RIGA_CHE_APRE"
+              @click="apriFattura(row.name, { alCambio: ricarica })"
+            >
               <span class="truncate text-p-base-medium text-ink-gray-8">
                 {{ row.document_number || __('Draft') }} ·
                 {{ row.billing_name }}
@@ -270,7 +282,7 @@
                   · {{ channelLabel(row.channel) }}
                 </template>
               </span>
-            </div>
+            </button>
             <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <!-- On a draft, where it will go matters more than where it has
                    been: a document that turns out to be un-issuable at submit
@@ -311,13 +323,14 @@
                   row.docstatus === 1 &&
                   row.sdi_status === 'da_inviare'
                 "
+                class="relative"
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Transmit')"
                 @click.stop="transmit(row)"
               />
               <Button
-                class="max-md:hidden"
+                class="relative max-md:hidden"
                 variant="subtle"
                 :label="__('Open', null, 'Action')"
                 @click.stop="apriFattura(row.name, { alCambio: ricarica })"
@@ -484,6 +497,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import ReceivedInvoices from '@/components/Invoices/ReceivedInvoices.vue'
 import ConventionClaims from '@/components/Invoices/ConventionClaims.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'
@@ -515,6 +529,11 @@ import { usersStore } from '@/stores/users'
 const { puo } = usersStore()
 const { $dialog } = globalStore()
 const { apriFattura, nuovaFattura, fatturaDellIncontro } = useFattura()
+
+// a row's words as the button that opens it, stretched over the whole row
+// (its own buttons sit above it), with the row's ring when the keyboard is on it
+const RIGA_CHE_APRE =
+  'riga-stesa flex min-w-0 flex-col text-left after:rounded-xl'
 
 // a notification about a supplier's invoice opens it, in its tab (`?ricevuta=`)
 const route = useRoute()
@@ -618,7 +637,10 @@ const allAppointments = ref(false)
 async function fatturaIncontro(incontro) {
   emettendo.value = incontro.name
   try {
-    await fatturaDellIncontro(incontro.name, { alCambio: ricarica })
+    await fatturaDellIncontro(incontro.name, {
+      alCambio: ricarica,
+      bozzaSalvata: incontro.draft,
+    })
   } finally {
     emettendo.value = ''
   }

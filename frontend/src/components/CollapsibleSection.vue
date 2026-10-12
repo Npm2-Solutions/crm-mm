@@ -7,17 +7,38 @@
         :class="headerClass"
       >
         <div
-          class="flex text-ink-gray-9 max-w-fit cursor-pointer items-center gap-2 text-base"
+          class="flex text-ink-gray-9 max-w-fit items-center gap-2 text-base"
           :class="labelClass"
-          @click="collapsible && toggle()"
         >
-          <span
-            v-if="collapsible && collapseIconPosition === 'left'"
-            class="lucide-chevron-right h-4 transition-all duration-300 ease-in-out"
-            :class="{ 'rotate-90': opened }"
-            aria-hidden="true"
-          />
-          <span>
+          <!-- a section folds from a button that says whether it is open
+               (APG disclosure): the header was a div with a click, which no
+               key reached, so a section that starts folded (a person's
+               company, their billing details) stayed shut to a keyboard. The
+               count is not part of its name -->
+          <button
+            v-if="collapsible"
+            type="button"
+            class="flex min-w-0 items-center gap-2 rounded text-left"
+            :aria-expanded="opened"
+            @click="toggle()"
+          >
+            <span
+              v-if="collapseIconPosition === 'left'"
+              class="lucide-chevron-right h-4 transition-all duration-300 ease-in-out"
+              :class="{ 'rotate-90': opened }"
+              aria-hidden="true"
+            />
+            <span>
+              {{ __(label) || __('Untitled') }}
+            </span>
+            <span
+              v-if="collapseIconPosition === 'right'"
+              class="lucide-chevron-right h-4 transition-all duration-300 ease-in-out"
+              :class="{ 'rotate-90': opened }"
+              aria-hidden="true"
+            />
+          </button>
+          <span v-else>
             {{ __(label) || __('Untitled') }}
           </span>
           <Badge
@@ -25,12 +46,6 @@
             :label="count"
             :variant="countVariant"
             :theme="countTheme"
-          />
-          <span
-            v-if="collapsible && collapseIconPosition === 'right'"
-            class="lucide-chevron-right h-4 transition-all duration-300 ease-in-out"
-            :class="{ 'rotate-90': opened }"
-            aria-hidden="true"
           />
         </div>
         <slot name="actions"></slot>

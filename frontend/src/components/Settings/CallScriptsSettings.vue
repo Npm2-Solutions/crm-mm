@@ -14,7 +14,7 @@
           icon-left="lucide-chevron-left"
           :label="draft.script_name || __('New script')"
           size="md"
-          class="cursor-pointer -ml-4 hover:bg-transparent focus:bg-transparent focus:outline-none focus:ring-0 active:bg-transparent text-2xl-semibold hover:opacity-70 !pr-0 !max-w-96 !justify-start"
+          class="cursor-pointer -ml-4 hover:bg-transparent focus:bg-transparent focus:ring-0 active:bg-transparent text-2xl-semibold hover:opacity-70 !pr-0 !max-w-96 !justify-start"
           @click="draft = null"
         />
         <h2

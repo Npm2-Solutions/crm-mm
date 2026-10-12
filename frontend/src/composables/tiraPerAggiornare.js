@@ -25,7 +25,11 @@ export function tirata(delta) {
  * pulls the box down from its top past the threshold and lets go,
  * `aggiorna()` runs and the mark turns until it is done. Gives back the
  * mark's state: `distanza`, `pronta` (letting go reloads), `inCorso`,
- * `trascinando` (a finger holds it).
+ * `trascinando` (a finger holds it), and `aggiornaOra()`: the same reload
+ * for the page's «Refresh» (Mobile/PulsanteAggiorna.vue), for whoever cannot
+ * pull - VoiceOver scrolls without a touch on the list, a switch or a head
+ * pointer has no finger. It leaves the list where it is (the mark comes down
+ * only under a finger), and one reload runs at a time, whoever asks.
  */
 export function useTiraPerAggiornare(contenitore, aggiorna) {
   const stato = reactive({
@@ -33,8 +37,21 @@ export function useTiraPerAggiornare(contenitore, aggiorna) {
     pronta: false,
     inCorso: false,
     trascinando: false,
+    aggiornaOra: () => ricarica(0),
   })
   let inizio = null
+
+  async function ricarica(segno) {
+    if (stato.inCorso) return
+    stato.inCorso = true
+    stato.distanza = segno
+    try {
+      await aggiorna()
+    } finally {
+      stato.inCorso = false
+      stato.distanza = 0
+    }
+  }
 
   function giu(evento) {
     const box = contenitore.value
@@ -65,14 +82,7 @@ export function useTiraPerAggiornare(contenitore, aggiorna) {
       return
     }
     stato.pronta = false
-    stato.inCorso = true
-    stato.distanza = SOGLIA_TIRATA
-    try {
-      await aggiorna()
-    } finally {
-      stato.inCorso = false
-      stato.distanza = 0
-    }
+    await ricarica(SOGLIA_TIRATA)
   }
 
   // the phone took the gesture back (a call, a swipe of the system): no reload

@@ -126,9 +126,11 @@
       >
         <span class="relative">
           <component :is="place.icon" class="size-[22px]" aria-hidden="true" />
+          <!-- the messages to read, at 12px as the design system's badges
+               (10px was too small to read), round and 18px tall -->
           <span
             v-if="place.name === 'Messages' && unread"
-            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-[var(--danger)] px-1 text-[10px] font-semibold leading-4 text-white"
+            class="absolute -right-2 -top-1 grid min-w-[18px] place-items-center rounded-full bg-[var(--danger)] px-1 text-xs font-semibold leading-[18px] text-white"
           >
             {{ unread }}
           </span>

@@ -44,6 +44,20 @@
   }
 }
 
+/* A value longer than its field says so: «silvia.fontana@example.c» in a
+   person's panel read as an address cut short, not as one that goes on. The
+   three dots while the field is at rest; written in, the field scrolls as it
+   always did */
+input:is(
+    [type='text'],
+    [type='email'],
+    [type='tel'],
+    [type='url'],
+    :not([type])
+  ):not(:focus) {
+  text-overflow: ellipsis;
+}
+
 @layer components {
   /* A speech bubble's tail, drawn as part of the bubble.
 
@@ -308,4 +322,39 @@
   > header
   h3 {
   overflow-wrap: anywhere;
+}
+
+/* A row a click opens, reached with the keyboard (utils/rigaCliccabile.js):
+   the brand's focus ring inside its edge, where a list's border would cut one
+   drawn outside */
+[data-riga-cliccabile]:focus-visible {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
+}
+
+/* A row that holds controls of its own opens from its words, a button
+   stretched over the whole row (`.riga-stesa`, the row `relative`): never a
+   button holding other buttons. The same brand ring, around the row: a gray
+   one was 2.8:1 on white. The row's own controls come after the button, so
+   they are drawn over it by their order alone (`relative`, no z-index: one
+   drew them over a phone's sticky settings header too) */
+.riga-stesa::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.riga-stesa:focus-visible {
+  outline: none;
+}
+.riga-stesa:focus-visible::after {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
+}
+
+/* frappe-ui's sidebar item takes the outline off its link and draws none on
+   its row (markup: SidebarItem): in the menu the keyboard's place showed
+   nowhere. The row wears the brand's ring while its link has the focus */
+[data-slot='sidebar-item']:has(> :focus-visible) {
+  outline: var(--focus-outline-default, 2px solid #0e8a7c);
+  outline-offset: -2px;
 }

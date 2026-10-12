@@ -11,8 +11,8 @@
 .crm-campi-sito {
   --ink-strong: oklch(0.168 0 0);
   --ink: oklch(0.205 0 0);
-  --muted: oklch(0.52 0 0);
-  --faint: oklch(0.683 0 0);
+  --muted: oklch(0.47 0 0);
+  --faint: oklch(0.54 0 0);
   --border: oklch(0.88 0 0);
   --border-focus: oklch(0.7 0 0);
   --card: oklch(1 0 0);
@@ -78,7 +78,8 @@
 .crm-campi .scroll table { min-width: 28rem; }
 .crm-campi .pad { position: relative; height: 170px; border: 1px solid var(--border-focus); border-radius: 12px; overflow: hidden; background: #fff; touch-action: none; }
 .crm-campi .pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
-.crm-campi .pad .line { position: absolute; left: 1rem; right: 1rem; bottom: .8rem; border-top: 1px solid #c9ccd1; padding-top: .25rem; font-size: .8rem; color: #8a8f98; pointer-events: none; }
+/* its words on the white paper in both themes, in the grey of the body chart's captions */
+.crm-campi .pad .line { position: absolute; left: 1rem; right: 1rem; bottom: .8rem; border-top: 1px solid #c9ccd1; padding-top: .25rem; font-size: .8rem; color: #5f6368; pointer-events: none; }
 .crm-campi .missing { color: var(--danger); font-size: .85rem; }
 .crm-campi .missing[hidden], .crm-campi .stop[hidden], .crm-campi .band[hidden] { display: none; }
 .crm-campi .stop { background: var(--danger-bg); color: var(--danger); border-radius: 10px; padding: .6rem .8rem; font-size: .9rem; }

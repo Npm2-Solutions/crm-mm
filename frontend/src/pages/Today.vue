@@ -14,6 +14,8 @@
       <ViewBreadcrumbs routeName="Today" label="Reception desk" />
     </template>
     <template #right-header>
+      <!-- on a phone the day pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <div class="flex items-center gap-1">
         <Button
           variant="ghost"
@@ -209,9 +211,15 @@
                 :key="participant.name"
                 variant="solid"
                 :label="
-                  appointment.participants.length > 1
-                    ? __('Invoice it to {0}', [participant.participant_name])
-                    : __('Invoice it')
+                  bozzaDi(appointment, participant)
+                    ? appointment.participants.length > 1
+                      ? __('Finish the draft invoice of {0}', [
+                          participant.participant_name,
+                        ])
+                      : __('Finish the draft invoice')
+                    : appointment.participants.length > 1
+                      ? __('Invoice it to {0}', [participant.participant_name])
+                      : __('Invoice it')
                 "
                 icon-left="file-text"
                 :size="isMobileView ? 'lg' : 'sm'"
@@ -342,6 +350,7 @@ import { useSedi } from '@/composables/sedi'
 import { nomeDellaSede, opzioniDelleSedi, sedeValida } from '@/utils/sedi'
 import { avviaLaVisita, linkDellaVisita } from '@/utils/visiteOnline'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
 import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'
@@ -431,6 +440,17 @@ const nonFatturati = computed(
       ]),
     ),
 )
+// the draft invoice already made for a place and never issued, if any
+const conBozze = computed(
+  () =>
+    new Map(
+      (toInvoice.data || []).map((incontro) => [incontro.name, incontro]),
+    ),
+)
+function bozzaDi(appointment, participant) {
+  const incontro = conBozze.value.get(appointment.name)
+  return incontro?.drafts?.[participant?.name] || incontro?.draft || ''
+}
 // who came and has no invoice of their place: a class has one a place
 function daFatturare(appointment) {
   const restano = nonFatturati.value.get(appointment.name)
@@ -448,6 +468,7 @@ async function fattura(appointment, participant) {
     await fatturaDellIncontro(appointment.name, {
       alCambio: ricarica,
       partecipante: participant.name,
+      bozzaSalvata: bozzaDi(appointment, participant),
     })
   } finally {
     emettendo.value = ''

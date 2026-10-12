@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Tasks" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoCose?.tira" />
       <CustomActions
         v-if="tasksListView?.customListActions"
         :actions="tasksListView.customListActions"
@@ -17,7 +19,7 @@
       <Button
         v-if="!isMobileView && !solaLettura()"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New task')"
         iconLeft="plus"
         @click="createTask"
       />
@@ -241,6 +243,7 @@ import EmptyState from '@/components/ListViews/EmptyState.vue'
 import KanbanView from '@/components/Kanban/KanbanView.vue'
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
 import ElencoCose from '@/components/Mobile/ElencoCose.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'

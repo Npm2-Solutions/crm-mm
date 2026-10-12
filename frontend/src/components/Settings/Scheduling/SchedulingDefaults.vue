@@ -186,6 +186,9 @@ const settings = createResource({
   },
 })
 
+// each switch says the rule it turns on, a verb first: «Un professionista in
+// due posti alla volta» switched on read as allowing it, beside «I responsabili
+// possono forzare un conflitto», whose on does allow
 const groups = computed(() => [
   {
     title: __('Double bookings'),
@@ -195,24 +198,24 @@ const groups = computed(() => [
     rules: [
       {
         field: 'enforce_staff_conflicts',
-        label: __('A professional in two places at once'),
+        label: __('Block a professional in two places at once'),
         hint: __(
           'Counts appointments, online bookings and calendar events, with the pauses.',
         ),
       },
       {
         field: 'enforce_resource_conflicts',
-        label: __('A room or machine over capacity'),
+        label: __('Block a room or machine over its capacity'),
         hint: __('Each one holds as many appointments as its capacity.'),
       },
       {
         field: 'enforce_participant_conflicts',
-        label: __('A client in two places at once'),
+        label: __('Block a client in two places at once'),
         hint: __('The same person cannot have two overlapping appointments.'),
       },
       {
         field: 'enforce_working_hours',
-        label: __('Appointments outside working hours'),
+        label: __('Block appointments outside working hours'),
         hint: __(
           'Off by default: an out-of-hours appointment is often on purpose.',
         ),

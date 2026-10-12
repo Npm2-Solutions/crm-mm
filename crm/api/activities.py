@@ -6,7 +6,7 @@ from frappe import _
 from frappe.desk.form.load import get_docinfo
 from frappe.query_builder import JoinType
 from frappe.translate import get_translated_doctypes
-from frappe.utils import get_datetime, getdate
+from frappe.utils import get_datetime, getdate, now_datetime
 
 from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_call_log.crm_call_log import parse_call_log
@@ -602,6 +602,18 @@ def is_translatable(doctype: str) -> bool:
 # with the actions cut out.
 
 
+def calendar_moment(row, now):
+	"""Where an appointment or an event sits in the history: at the moment it is,
+	once that has come, the way a call does; until then at the moment it was
+	booked, the one thing about it that has happened (doc 17: «Appuntamento
+	prenotato per giovedì 14:30»). Filed at a moment still to come, it sat below
+	today's messages, at the end the chat opens on, and nothing there said «now».
+	"""
+	if row.starts_on and get_datetime(row.starts_on) <= now:
+		return row.starts_on
+	return row.creation
+
+
 def appointments_on(doctype: str, name: str) -> list[dict]:
 	"""Appointments this person is a participant of.
 
@@ -625,13 +637,13 @@ def appointments_on(doctype: str, name: str) -> list[dict]:
 	)
 	# which session of its cycle each one is, as the agenda and the area say it
 	sedute = cicli.numero_della_seduta([row.name for row in rows])
+	now = now_datetime()
 	return [
 		{
 			"name": row.name,
 			"activity_type": "appointment",
-			# when it *is*, not when it was written down: an appointment belongs
-			# in the history at the moment it happens, the way a call does
-			"creation": row.starts_on or row.creation,
+			# when it is once it has come, when it was booked until then
+			"creation": calendar_moment(row, now),
 			"owner": row.owner,
 			# in a class, as it went for this person: their place given up is theirs
 			"data": {
@@ -653,11 +665,12 @@ def events_on(doctype: str, name: str) -> list[dict]:
 		fields=["name", "subject", "starts_on", "ends_on", "event_category", "creation", "owner"],
 		limit_page_length=0,
 	)
+	now = now_datetime()
 	return [
 		{
 			"name": row.name,
 			"activity_type": "event",
-			"creation": row.starts_on or row.creation,
+			"creation": calendar_moment(row, now),
 			"owner": row.owner,
 			"data": dict(row),
 			"is_lead": doctype == "CRM Lead",

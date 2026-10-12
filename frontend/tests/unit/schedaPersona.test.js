@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  etaENascita,
   giornoInBreve,
   indirizzoTel,
   mascherato,
@@ -239,5 +240,27 @@ describe('chiDellAppuntamento', () => {
     ).toBe('')
     expect(chiDellAppuntamento({ title: 'Visita — Anna Neri' })).toBe('')
     expect(chiDellAppuntamento(null)).toBe('')
+  })
+})
+
+describe('etaENascita', () => {
+  const oggi = new Date(2026, 9, 10)
+  it('counts the full years and says the day', () => {
+    expect(etaENascita('1961-06-02', oggi, 'it-IT')).toEqual({
+      anni: 65,
+      nascita: '2 giu 1961',
+    })
+  })
+  it('does not count a birthday still to come this year', () => {
+    expect(etaENascita('1990-10-11', oggi, 'it-IT').anni).toBe(35)
+    expect(etaENascita('1990-10-10', oggi, 'it-IT').anni).toBe(36)
+  })
+  it('says nothing without a date or with one to come', () => {
+    expect(etaENascita('', oggi)).toBeNull()
+    expect(etaENascita(null, oggi)).toBeNull()
+    expect(etaENascita('2027-01-01', oggi)).toBeNull()
+  })
+  it('takes a date with its hour', () => {
+    expect(etaENascita('2018-03-03 00:00:00', oggi, 'it-IT').anni).toBe(8)
   })
 })

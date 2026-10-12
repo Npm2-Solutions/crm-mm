@@ -235,6 +235,8 @@ const giorno = defineModel('date', { type: String, required: true })
 const emit = defineEmits(['open'])
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => props.aggiorna())
+// the pull, which the page's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ tira })
 // swiped sideways: the day's list moves a day, the week's strip a week
 const striscia = ref(null)
 useScorriGiorni(

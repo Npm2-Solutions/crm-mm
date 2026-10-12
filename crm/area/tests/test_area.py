@@ -190,6 +190,13 @@ class LaPorta(AreaCase):
 		io = api.get_me()
 		self.assertEqual([p["name"] for p in io["people"]], [self.anna.name])
 
+	def test_il_codice_incollato_con_uno_spazio_entra(self):
+		self.invita()
+		self.manda()
+		frappe.set_user("Guest")
+		accesso.verify_code(" 246 810", ANNA)
+		self.assertEqual(frappe.session.user, ANNA)
+
 	def test_la_stessa_risposta_per_chi_non_ha_l_area(self):
 		frappe.set_user("Guest")
 		prima = frappe.db.count("Email Queue")

@@ -1,10 +1,19 @@
 // How the dashboard's charts look: ECharts options built from the widgets' data.
-// Pure functions (tests/unit/dashboardCharts.test.js); the components only draw.
+// Pure functions (tests/unit/dashboard.test.js); the components only draw.
 //
-// The colours are a validated categorical palette (colour-blind separation and
-// contrast checked against the app's light and dark surfaces), assigned in a
-// fixed order and never cycled. Text never wears a series colour: labels, axes
-// and legends use the app's ink tokens. One value axis per chart, always.
+// The colours are a categorical palette, assigned in a fixed order and never
+// cycled. What was checked, with the dataviz palette validator and WCAG's own
+// formula (tests/unit/dashboard.test.js): every colour at 3:1 or more on the
+// card it is drawn on, white in the light theme and #1d201f in the dark, since a
+// line or a bar with no value written on it is told by its colour (WCAG 1.4.11).
+// Green, amber and pink were darkened along their own hue just enough for it
+// (#1baf7a, #eda100 and #e87ba4 stood at 2.8, 2.2 and 2.7:1, 12/10/2026). Two
+// neighbours in the order stay apart to a colour-blind eye and to anybody's
+// (OKLab ΔE ≥ 8 under protanopia and deuteranopia, ≥ 15 without); two slots
+// apart they need not - at one lightness orange and amber read alike to a
+// deuteranope - so a donut writes each slice's value beside it, in its order.
+// Text never wears a series colour: labels, axes and legends use the app's ink
+// tokens. One value axis per chart, always.
 
 import { escapeHtml, formatValue, parseISODate } from '@/utils/dashboard'
 
@@ -12,9 +21,9 @@ export const PALETTE = {
   light: [
     '#2a78d6',
     '#eb6834',
-    '#1baf7a',
-    '#eda100',
-    '#e87ba4',
+    '#0ba975',
+    '#c88805',
+    '#de729c',
     '#008300',
     '#4a3aa7',
     '#e34948',

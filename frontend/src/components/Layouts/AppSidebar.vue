@@ -11,7 +11,12 @@
        column falls through to the white page canvas. The token cannot be
        overridden on the Sidebar element itself — `bg-surface-sidebar` is emitted
        after `bg-surface-gray-1` in the utilities layer and would win. -->
-  <div class="relative flex h-full bg-surface-gray-1">
+  <!-- a landmark of its own: the account, the notifications and the first
+       steps were outside every region a screen reader lists -->
+  <aside
+    class="relative flex h-full bg-surface-gray-1"
+    :aria-label="__('Menu')"
+  >
     <Sidebar
       v-model:collapsed="isSidebarCollapsed"
       class="border-r border-outline-gray-1"
@@ -23,9 +28,12 @@
              active row's shadow. Widen the scroll box to the sidebar edges and
              pad the content back in so the shadow has room. -->
         <div class="-mx-2 mt-2 flex flex-1 flex-col gap-1 overflow-y-auto px-2">
+          <!-- lit while their own page is open (/notifications), as every
+               other entry is on its page -->
           <SidebarItem
             id="notifications-btn"
             :label="__('Notifications')"
+            :active="route.name === 'Notifications'"
             @click="toggleNotificationPanel()"
           >
             <template #prefix>
@@ -104,21 +112,26 @@
             :opened="section.opened"
           >
             <template #header="{ opened, hide, toggle }">
-              <SidebarLabel
-                v-if="!hide"
-                divider
-                class="mb-1 mt-4 select-none"
-                :class="!isCollapsed && 'cursor-pointer'"
-                @click="toggle()"
-              >
-                <span class="flex items-center gap-1.5">
+              <!-- the group's heading holds the button that folds it (APG
+                   accordion): the label took a click and no key, and said
+                   neither that it folds nor whether it was open. With the
+                   menu folded to its icons the heading is a line, and its
+                   button no stop for Tab -->
+              <SidebarLabel v-if="!hide" divider class="mb-1 mt-4 select-none">
+                <button
+                  type="button"
+                  class="flex min-w-0 items-center gap-1.5 rounded text-left"
+                  :aria-expanded="opened"
+                  :tabindex="isCollapsed ? -1 : 0"
+                  @click="toggle()"
+                >
                   <span
                     class="lucide-chevron-right -ml-0.5 size-4 shrink-0 text-ink-gray-9 transition-transform duration-300 ease-in-out"
                     :class="{ 'rotate-90': opened }"
                     aria-hidden="true"
                   />
                   <span class="truncate">{{ __(section.name) }}</span>
-                </span>
+                </button>
               </SidebarLabel>
             </template>
             <nav class="flex flex-col gap-1">
@@ -149,19 +162,27 @@
         <!-- the settings, where one looks for them: not only in the menu under
              the name -->
         <div class="mt-auto flex flex-col gap-1 pt-2">
+          <!-- the demo data's way out, in red, first and a line away from the
+               rest: right above the settings, where a hand goes every day, it
+               was a slip away (its confirmation stays) -->
+          <template v-if="puo('dati_prova.gestisci') && isDemoDataCreated">
+            <SidebarItem
+              :label="__('Remove the demo data')"
+              class="!text-ink-red-6 hover:!bg-surface-red-2"
+              @click="() => clearDemoData()"
+            >
+              <template #prefix>
+                <BrushCleaningIcon class="size-4" />
+              </template>
+            </SidebarItem>
+            <div
+              class="mx-2 my-2 border-t border-outline-gray-2"
+              aria-hidden="true"
+            />
+          </template>
           <div class="mb-1 flex flex-col gap-2">
             <FirstStepsCard :collapsed="isCollapsed" />
           </div>
-          <SidebarItem
-            v-if="puo('dati_prova.gestisci') && isDemoDataCreated"
-            :label="__('Remove the demo data')"
-            class="!text-ink-red-6 hover:!bg-surface-red-2"
-            @click="() => clearDemoData()"
-          >
-            <template #prefix>
-              <BrushCleaningIcon class="size-4" />
-            </template>
-          </SidebarItem>
           <SidebarItem :label="__('Settings')" @click="openSettings">
             <template #prefix>
               <LucideSettings class="size-4 text-ink-gray-7" />
@@ -182,7 +203,7 @@
       </div>
     </Sidebar>
     <Notifications />
-  </div>
+  </aside>
 </template>
 
 <script setup>

@@ -14,6 +14,8 @@
       <ViewBreadcrumbs routeName="Waiting List" label="Waiting list" />
     </template>
     <template #right-header>
+      <!-- on a phone the line pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <TabButtons
         v-model="closed"
         :buttons="[
@@ -86,7 +88,7 @@
         <li v-for="entry in entries" :key="entry.name" class="flex">
           <button
             type="button"
-            class="flex min-w-0 flex-1 flex-col gap-0.5 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:outline-none"
+            class="flex min-w-0 flex-1 flex-col gap-0.5 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1 focus-visible:[outline-offset:-2px]"
             @click="open(entry)"
           >
             <!-- the name is read whole: the chips go under it when the row
@@ -163,6 +165,8 @@ import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'

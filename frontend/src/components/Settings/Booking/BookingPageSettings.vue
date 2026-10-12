@@ -691,10 +691,14 @@ function downloadQr() {
 }
 
 const checks = computed(() => [
+  // the notice read, never a consent: a booking needs none. Without the notice's
+  // address the page asks nothing (`service_booking._chiede_la_presa_visione`)
   {
     field: 'require_privacy_consent',
-    label: __('Ask for privacy consent'),
-    hint: __('A required checkbox with the link to the policy above.'),
+    label: __('Ask to confirm the privacy notice was read'),
+    hint: __(
+      'A required box with the link to the notice above: it appears on the page once its address is written.',
+    ),
   },
   {
     field: 'ask_marketing_consent',

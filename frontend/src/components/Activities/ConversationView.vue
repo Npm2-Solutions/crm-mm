@@ -286,10 +286,16 @@
               />
             </HappenedCard>
 
+            <!-- still to come, it sits where it was booked and says so: at its
+                 moment it sat below today's messages, where the chat opens -->
             <HappenedCard
               v-else-if="row.channel === 'appointment'"
               :icon="CalendarIcon"
-              :title="__('Appointment')"
+              :title="
+                bookedAhead(row.item)
+                  ? __('Appointment booked')
+                  : __('Appointment')
+              "
               :when="momentLabel(localOf(row.item.data?.starts_on))"
               card
               opens
@@ -318,7 +324,9 @@
             <HappenedCard
               v-else-if="row.channel === 'event'"
               :icon="CalendarIcon"
-              :title="__('Event')"
+              :title="
+                bookedAhead(row.item) ? __('Event scheduled') : __('Event')
+              "
               :when="momentLabel(localOf(row.item.data?.starts_on))"
               card
               opens
@@ -510,6 +518,7 @@ import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { usersStore } from '@/stores/users'
 import { sanitizeHTML } from '@/utils'
 import {
+  bookedAhead,
   buildStream,
   clockOf,
   colleagueOf,

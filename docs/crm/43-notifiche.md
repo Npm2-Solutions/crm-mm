@@ -60,7 +60,8 @@ anche dei difetti veri:
 - **Quando ne arriva una** compare un avviso nel blocco verde profondo del marchio,
   come nel video, con il segno del tipo, la frase, le prime parole e «Apri». Non
   compare se il pannello o la pagina delle notifiche sono già aperti. Sul telefono
-  il pallino sta su «Altro».
+  il pallino sta su «Altro», e chi non lo vede lo sente nel nome della voce:
+  «Altro, 5 notifiche da leggere» (`utils/notifiche.js`, `nomeDiAltro`).
 - **La lingua è quella di chi legge**: la frase resta in inglese con i suoi nomi a
   parte e viene tradotta quando la si legge. Quelle scritte prima prendono la
   frase di oggi (03/10/2026): un messaggio, una menzione, un'assegnazione o una
@@ -138,6 +139,64 @@ senza nessuno in mezzo che le legga.
 - **Sul telefono**: la notifica toccata porta DottorCloud in primo piano e gli dice
   dove andare, senza ricaricare; se la pagina non risponde entro due secondi e
   mezzo (addormentata, o di una versione di prima) viene caricata lì.
+- **Il promemoria di un evento del calendario va solo a chi è l'evento**
+  (12/10/2026). L'avviso che compare in basso a destra quando un evento sta per
+  cominciare andava alla stanza del sito, dove entra il browser di ogni utente
+  della scrivania (la segreteria, il marketing, gli altri professionisti,
+  l'agenzia), con la descrizione: nella copia di un appuntamento, le sue note. Ora
+  va a chi possiede l'evento e ai suoi partecipanti che sono utenti attivi del
+  centro, trovati per nome o per email, ognuno nella sua stanza, con quello che
+  l'avviso mostra e senza la descrizione (`crm/api/event.py`). Il browser, che
+  tiene gli avvisi in localStorage (una lista per browser, non per utente), scarta
+  quello di un evento che non è di chi è entrato, ne tiene solo quello che
+  l'avviso mostra e per chi l'ha preso, e toglie gli avvisi chiusi, di eventi
+  finiti sull'orologio del centro o di chi c'era prima su quel browser
+  (`utils/avvisiDegliEventi.js`).
+- **Il promemoria di un evento arriva a ogni professionista, e per email una volta
+  sola** (12/10/2026). Il giro che cerca gli eventi guardava solo quelli
+  dell'utente con cui gira (lo scheduler, Administrator): un professionista non
+  riceveva mai i promemoria dei suoi eventi né delle copie dei suoi appuntamenti,
+  nemmeno quelli che il centro imposta in Impostazioni > Agenda > Agenda e
+  promemoria. E un promemoria partiva a ogni giro dentro la sua finestra (ogni
+  quattro minuti): due o tre email per uno «minuti», una trentina per uno «ore».
+  Ora il giro guarda gli eventi di tutti, ma solo quelli il cui promemoria può
+  cadere nella finestra, e nessuno quando non c'è un promemoria di quell'unità.
+  Ogni email si scrive nel registro (`CRM Event Reminder`: l'evento, quale
+  promemoria, a chi, per quale ora) prima di partire, così parte una volta sola
+  per persona; un evento spostato si ricorda di nuovo per la nuova ora. Va a chi
+  possiede l'evento e ai partecipanti che sono utenti attivi del centro (mai
+  Administrator, mai l'indirizzo di un cliente, nemmeno quando il suo account
+  dell'area ha quell'indirizzo), ognuno nella sua lingua. Dice il titolo, quando,
+  fra quanto e dove aprirlo, mai la descrizione; della copia di un appuntamento,
+  il cui titolo è servizio e persona, solo che è un appuntamento (doc 44). Un
+  appuntamento dei dati di prova si ricorda solo a schermo. L'avviso a schermo
+  non ha bisogno del registro: il browser mostra una volta sola quello di un
+  evento.
+- **Il promemoria di un evento parte alla sua ora, mai prima** (12/10/2026). La
+  sua finestra andava tanto prima dell'ora quanto dopo, e con il registro l'unica
+  email partiva all'inizio della finestra: quella «1 ora prima» due ore prima,
+  con «Inizia tra un'ora». E i promemoria di giorni e settimane si guardavano
+  solo a mezzanotte, quelli di settimane solo la domenica: quello «1 giorno prima»
+  di un appuntamento fra le 8 e le 16 non partiva mai, quello «alle 9» di un
+  evento di tutto il giorno partiva alla mezzanotte del giorno stesso, con
+  «Inizia domani». Ora parte al primo giro dopo la sua ora (`e_il_momento`): i
+  promemoria di minuti e ore entro quattro minuti, quelli di giorni e settimane
+  entro l'ora. E per email mai a evento cominciato: un appuntamento preso quando
+  l'ora del suo promemoria era già passata (stamattina, con quello «1 giorno
+  prima») riceveva l'email mentre cominciava, «Inizia domani»; a schermo l'avviso
+  di un evento in corso resta.
+- **La scheda Eventi va con l'orologio del centro** (12/10/2026). Il pannello
+  chiedeva al server gli eventi che finiscono da adesso in poi con un istante UTC
+  («2026-10-12T12:05:00.000Z»), che il server legge come l'ora del centro: in
+  Italia la scheda prendeva gli eventi finiti fino a due ore prima (un'ora
+  d'inverno), e un evento finito andava fra «In arrivo». La lista resta nella
+  pagina, e riaperta la chiedeva con l'adesso della prima apertura. Ora la chiede
+  con l'adesso del centro a ogni apertura e a ogni ricarica, ogni minuto rimette
+  gli eventi sotto il loro titolo, e uno finito esce dalla lista; se non resta
+  niente, la scheda dice che non ci sono eventi (`filtriDegliEventi` e
+  `tipoDellEvento` in `utils/avvisiDegliEventi.js`, provati). Anche quello che il
+  browser scrive di suo (quando ha chiuso un avviso, quando l'ha preso) è sull'ora
+  del centro.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
@@ -177,6 +236,58 @@ comparivano da soli.
   L'account Administrator non riceve le notifiche dei messaggi delle persone (né
   da assegnato né da proprietario): serve un utente del centro.
 
+## Il dispositivo è di chi è entrato, e l'uscita lo lascia (12/10/2026)
+
+Su un computer della segreteria che usano in tre, o sul tablet passato a un
+paziente, le notifiche arrivavano a chi non c'era più.
+
+- **Segue chi entra.** A ogni apertura il browser controlla che il server lo
+  conosca come di chi è entrato, e dove non è così il server glielo passa
+  (`subscribe`). Il browser se lo ricordava con un promemoria per persona
+  (`crm-spinta:<utente>`): rientrata Anna dopo Bruno, il suo promemoria diceva
+  ancora «a posto», non si chiedeva niente e il dispositivo restava di Bruno,
+  con i suoi messaggi («💬 Laura Bassi (3)» e le prime parole) mentre lavorava
+  Anna. Ora il promemoria è uno per il browser, chi e quale abbonamento
+  (`crm-spinta`): quando entra qualcuno dopo un altro il browser chiede sempre
+  al server, e il dispositivo passa a lui. Quelli per persona delle versioni di
+  prima si tolgono alla prima apertura.
+- **L'uscita lo lascia.** Uscendo, dal menu dell'account, da «Accesso negato» o
+  passando il tablet, il browser chiede al server di dimenticarlo per quella
+  sessione prima che finisca, e aspetta al più due secondi: risposto in tempo,
+  tiene il suo abbonamento, e chi entra dopo lo riceve alla prima apertura. Se
+  il server non risponde in tempo, o il promemoria dice che l'ultimo a
+  sincronizzarlo era un altro (il server dimentica solo la riga della sessione),
+  è il browser a lasciare l'abbonamento, appena il server ha chiuso la
+  sessione: lì non arriva più niente, il servizio di chi fa il browser risponde
+  che non c'è più e il server lo dimentica al primo invio. Chi esce mentre la
+  prima apertura sta ancora sincronizzando aspetta che finisca, al più due
+  secondi: ciò che passa a lui viene lasciato con il resto, e se non è finita
+  in tempo il browser lascia l'abbonamento (potrebbe ancora passarlo a lui);
+  un'apertura che comincia quando l'uscita è già partita non lo passa a
+  nessuno. Prima l'uscita aspettava l'apertura senza guardare se era finita,
+  e una che cominciava dopo, trovato il promemoria già tolto, chiedeva al
+  server e glielo ripassava: in entrambi i casi, su una rete lenta, il
+  dispositivo poteva tornare a chi era appena uscito.
+- **Una sessione scaduta senza uscire** lo lascia all'ultimo che l'ha usato,
+  finché qualcuno non entra in quel browser: allora passa a lui. Su un computer
+  condiviso si esce. Lo stesso vale per un'uscita dalla scrivania del framework
+  (`/desk`, «Amministrazione»), che non passa da `utils/esci.js`: non lascia il
+  dispositivo e non pulisce il browser.
+- **La stessa uscita pulisce il browser**, una per tutte (`utils/esci.js`): la
+  scrivania, il tablet e l'area. Solo quando il server ha chiuso la sessione se
+  ne vanno le copie di frappe-ui delle versioni di prima (IndexedDB
+  `keyval-store`: ora ciò che una pagina chiede resta nella pagina), le bozze di
+  chi esce, gli avvisi dell'agenda e ogni chiave dell'app che non è una
+  preferenza del dispositivo (`utils/dopoLUscita.js`); restano la vista
+  dell'agenda, il menu ripiegato, la larghezza della colonna, il tema, gli
+  inviti messi da parte. Un'uscita che il server non accetta non toglie niente:
+  la sessione continua con le sue bozze e con il suo dispositivo (il browser
+  tiene l'abbonamento, e ciò che il server aveva già dimenticato gli torna
+  subito, `resta`), e la pagina dice «Non è stato possibile uscire: riprova.».
+  Prima, rifiutata l'uscita con la rete giù, il browser aveva già lasciato
+  l'abbonamento e chi restava dentro non riceveva più niente lì, finché non
+  riaccendeva le notifiche.
+
 ## Come è fatta
 
 - `crm/notifiche/avvisi.py`: `avvisa()`, la porta da cui entra ogni notifica. Ci
@@ -202,6 +313,18 @@ comparivano da soli.
   layout, e l'avviso); `utils/notifiche.js`, provato in `tests/unit/notifiche.test.js`.
 - `composables/conversationScroll.js` (`target`): la conversazione si apre sul
   messaggio indicato dall'indirizzo.
+- I promemoria degli eventi del calendario: `crm/api/event.py`
+  (`_send_system_notification`, `_destinatari`; gli eventi da guardare,
+  `_promemoria_degli_eventi` e `fin_dove_cercare`; quando parte, `e_il_momento`,
+  ogni ora per giorni e settimane; l'email e il suo registro,
+  `_send_email_notification`, `_segna`, `nome_del_promemoria`) e `CRM Event
+  Reminder` (Log Settings ne toglie le righe degli eventi cominciati da più di 90
+  giorni), provato in
+  `crm/tests/test_avvisi_degli_eventi.py`; nel browser `data/notifications.js`,
+  `components/EventNotificationPopup.vue` e `utils/avvisiDegliEventi.js`,
+  provato in `tests/unit/avvisiDegliEventi.test.js`; la scheda Eventi del
+  pannello, `components/EventNotificationsArea.vue` (`useEventNotifications`),
+  sulle stesse regole.
 - Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
   dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
   `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi
@@ -212,6 +335,14 @@ comparivano da soli.
   `composables/spinta.js`, `Settings/NotificationsSettings.vue`,
   `Mobile/NotificheSulTelefono.vue`; il router segna letta la notifica toccata
   (`?notifica=`).
+- Il dispositivo e l'uscita: `composables/spinta.js` (`sincronizza` a ogni
+  apertura, `lascia` all'uscita, che risponde la parte del browser da fare a
+  sessione chiusa, `resta` se l'uscita è rifiutata), le scelte senza browser
+  in `utils/spinta.js` (`memoriaDi`, `daChiedere`, `tieneLAbbonamento`,
+  `entroIlTempo`); l'uscita in `utils/esci.js`, presa da `stores/session.js`
+  (il menu, «Accesso negato», `Moduli/SendFormsDialog.vue` per il tablet) e da
+  `area/store.js`; le chiavi che vanno e quelle che restano in
+  `utils/dopoLUscita.js`.
 
 ## Verifiche
 
@@ -228,3 +359,13 @@ comparivano da soli.
   parte `high`; il primo rifiuto nel registro con la ragione del servizio.
 - `crm.notifiche.tests` (33 test) e i moduli che scrivono notifiche: area, agenda,
   automazioni, WhatsApp, permessi, sola lettura.
+- `tests/unit/spintaNelBrowser.test.js`, contro un server finto che tiene una
+  riga per abbonamento come `spinta.py`: Anna, Bruno e di nuovo Anna sullo
+  stesso browser, il dispositivo passa ogni volta (sul codice di prima restava
+  di Bruno); l'uscita col server che dimentica, che rifiuta, con l'abbonamento
+  di un altro; un'uscita rifiutata con la rete giù, che lascia il dispositivo a
+  chi resta; un'apertura che comincia a uscita partita, o che dopo due secondi
+  sta ancora passando il dispositivo. Ogni accesso è una pagina nuova, come nel
+  browser.
+  `tests/unit/esci.test.js` e `dopoLUscita.test.js`: l'ordine dell'uscita,
+  niente tolto se il server rifiuta, ogni chiave che l'app scrive decisa.

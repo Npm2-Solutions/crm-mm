@@ -78,9 +78,15 @@
                     </Button>
                   </div>
                   <div v-else class="flex items-center gap-1">
+                    <!-- one's own name: the browser may offer it (frappe-ui's
+                         autocomplete="off" is for somebody else's), and the
+                         field says what it holds, with no label beside it -->
                     <TextInput
                       ref="fullNameRef"
                       v-model="fullName"
+                      autocomplete="name"
+                      v-bind="tastiera('nome')"
+                      :aria-label="__('Full Name')"
                       @keydown.enter="save"
                       @keydown.esc.stop="editName = false"
                     />
@@ -134,6 +140,7 @@ import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { validateIsImageFile } from '@/utils'
+import { tastiera } from '@/utils/tastiera'
 import {
   Avatar,
   TextInput,

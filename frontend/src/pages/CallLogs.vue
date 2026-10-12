@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Call Logs" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoChiamate?.tira" />
       <CustomActions
         v-if="callLogsListView?.customListActions"
         :actions="callLogsListView.customListActions"
@@ -33,7 +35,7 @@
       <Button
         v-if="!isMobileView && puo('telefono.chiama')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('Log a call')"
         iconLeft="plus"
         @click="createCallLog"
       />
@@ -102,6 +104,7 @@ import CallLogsListView from '@/components/ListViews/CallLogsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import ElencoChiamate from '@/components/Mobile/ElencoChiamate.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'

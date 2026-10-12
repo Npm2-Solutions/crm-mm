@@ -12,7 +12,7 @@ export class DealsPage {
 	}
 
 	async openCreateModal() {
-		await this.page.getByRole('button', { name: 'Create', exact: true }).click()
+		await this.page.getByRole('button', { name: 'New deal', exact: true }).click()
 		await expect(
 			this.page.getByRole('heading', { name: 'Create Deal' }),
 		).toBeVisible()
@@ -25,6 +25,8 @@ export class DealsPage {
 	 */
 	async createDeal(email: string) {
 		const dialog = this.page.getByRole('dialog')
+		// the dialog opens on an existing person: this test writes a new one
+		await dialog.getByRole('switch', { name: 'Choose Existing Person', exact: true }).click()
 		await dialog.getByPlaceholder('Primary email', { exact: true }).fill(email)
 		await this.fillIfPresent(dialog, 'Expected Deal Value', '1000')
 		await this.fillIfPresent(dialog, 'Expected Closure Date', '2026-12-31', true)

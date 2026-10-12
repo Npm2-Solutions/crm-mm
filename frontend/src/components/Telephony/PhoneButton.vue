@@ -71,6 +71,8 @@ const etichetta = computed(() =>
 
 const pulsante =
   'touch-target relative grid size-8 place-items-center rounded-md text-ink-gray-7 hover:bg-surface-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3'
+// how many, at 12px as the design system's badges (10px was too small to
+// read), in a round mark of 18px that a number of two figures widens
 const segno =
-  'absolute -right-1 -top-1 min-w-4 rounded-full bg-[var(--brand-action)] px-1 text-center text-[10px] font-semibold leading-4 text-[var(--on-brand-solid)]'
+  'absolute -right-1 -top-1 min-w-[18px] rounded-full bg-[var(--brand-action)] px-1 text-center text-xs font-semibold leading-[18px] text-[var(--on-brand-solid)]'
 </script>

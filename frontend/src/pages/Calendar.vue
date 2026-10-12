@@ -15,6 +15,12 @@
       <ViewBreadcrumbs routeName="Calendar" label="Agenda" />
     </template>
     <template #right-header>
+      <!-- on a phone the day's list pulled down, in one tap, for whoever
+           cannot pull -->
+      <PulsanteAggiorna
+        v-if="isMobileView && vista === 'elenco'"
+        :tira="agendaDelGiorno?.tira"
+      />
       <!-- making one is for who books (doc 30): an event or an appointment.
            «New» opens the panel on whatever was made last, and the panel's
            first line switches between the two. -->
@@ -96,6 +102,7 @@
             v-if="!isMobileView"
             :modelValue="vista"
             :buttons="vistePerIlComputer"
+            :aria-label="__('Period')"
             @update:modelValue="cambiaVista"
           />
           <VistaDelTelefono
@@ -156,6 +163,7 @@
 
       <AgendaDelGiorno
         v-if="vista === 'elenco'"
+        ref="agendaDelGiorno"
         v-model:date="giorno"
         :appointments="appuntamentiDelGiorno"
         :events="shownEvents"
@@ -257,6 +265,7 @@
       </CalendarEventPanel>
       <AppointmentPanel
         v-else-if="appointmentPanel.mode"
+        ref="pannelloAppuntamento"
         :mode="appointmentPanel.mode"
         :name="appointmentPanel.name"
         :seed="appointmentPanel.seed"
@@ -292,6 +301,7 @@ import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
 import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
@@ -914,7 +924,7 @@ const comeData = (data) => {
 // its windows - none when it does not work
 function apertoDi(orari, data) {
   if (orari === null) return null
-  return orari ? (orari[data]?.open ?? []) : undefined
+  return orari ? orari[data]?.open ?? [] : undefined
 }
 
 const colonne = computed(() => {
@@ -1059,7 +1069,9 @@ const countLabel = computed(() => {
   return parts.join(' · ')
 })
 
-// the day pulled down on a phone: its appointments and its events
+// the day pulled down on a phone: its appointments and its events; the
+// header's «Refresh» runs the same pull (the list's `tira`)
+const agendaDelGiorno = ref(null)
 function ricaricaIlGiorno() {
   return Promise.all([reloadScheduler(), events.reload()])
 }
@@ -1454,13 +1466,20 @@ watch(panelOpen, async (aperto) => {
 // on a phone the panel covers the agenda: a back closes it, not the page.
 // After `showEventPanel`: the watch reads it at once
 let togliDaIndietro = null
+const pannelloAppuntamento = ref(null)
 watch(
   () => panelOpen.value && isMobileView.value,
   (sopra) => {
     togliDaIndietro?.()
+    // an appointment's panel through its own close, which asks first over
+    // what was written: a back dropped a half-written appointment silently
     togliDaIndietro = sopra
       ? chiudeConIndietro(() =>
-          showEventPanel.value ? close() : closeAppointment(),
+          showEventPanel.value
+            ? close()
+            : pannelloAppuntamento.value
+              ? pannelloAppuntamento.value.close()
+              : closeAppointment(),
         )
       : null
   },

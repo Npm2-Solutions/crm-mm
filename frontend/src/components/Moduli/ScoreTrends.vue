@@ -12,9 +12,9 @@
     v-if="series.length"
     class="andamenti flex flex-col gap-4 rounded-lg border border-outline-gray-2 p-4"
   >
-    <h3 class="text-base-semibold text-ink-gray-8">
+    <h2 class="text-base-semibold text-ink-gray-8">
       {{ __('Questionnaires over time') }}
-    </h3>
+    </h2>
     <div
       v-for="serie in series"
       :key="`${serie.template}-${serie.field}`"

@@ -353,18 +353,34 @@ def _paganti(incontro) -> list:
 	]
 
 
-def _gia_fatturati(appuntamenti: list[str]) -> dict[str, list[str]]:
-	"""For each appointment, whom its invoices are for (one entry an invoice)."""
+def _gia_fatturati(appuntamenti: list[str], emesse: bool = False) -> dict[str, list[str]]:
+	"""For each appointment, whom its invoices are for (one entry an invoice); only
+	the issued ones with `emesse`, else its drafts too."""
 	if not appuntamenti:
 		return {}
 	fatti: dict[str, list[str]] = {}
 	for riga in frappe.get_all(
 		"CRM Invoice",
-		filters={"appointment": ["in", appuntamenti], "docstatus": ["<", 2]},
+		filters={"appointment": ["in", appuntamenti], "docstatus": 1 if emesse else ["<", 2]},
 		fields=["appointment", "party"],
 	):
 		fatti.setdefault(riga.appointment, []).append(riga.party or "")
 	return fatti
+
+
+def _bozze_di(appuntamenti: list[str]) -> dict[str, dict[str, str]]:
+	"""For each appointment, its drafts never issued, by whom each is for (the first)."""
+	if not appuntamenti:
+		return {}
+	bozze: dict[str, dict[str, str]] = {}
+	for riga in frappe.get_all(
+		"CRM Invoice",
+		filters={"appointment": ["in", appuntamenti], "docstatus": 0},
+		fields=["name", "appointment", "party"],
+		order_by="creation asc",
+	):
+		bozze.setdefault(riga.appointment, {}).setdefault(riga.party or "", riga.name)
+	return bozze
 
 
 def _ancora_da_fatturare(paganti: list, fatture: list[str]) -> list:
@@ -1029,7 +1045,11 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	# a class is invoiced a place at a time: it stays here while somebody who paid
 	# for their own place has no invoice of it
 	nomi = [i.name for i in incontri]
-	fatturati = _gia_fatturati(nomi)
+	# a draft is not an invoice: «Prepara la fattura» saves one and opens it, and
+	# closed without issuing, the place left this list while nothing had been
+	# issued. It stays, with its draft to take up again (never a second one)
+	fatturati = _gia_fatturati(nomi, emesse=True)
+	bozze = _bozze_di(nomi)
 	paganti: dict[str, list] = {}
 	for riga in frappe.get_all(
 		"CRM Appointment Participant",
@@ -1058,5 +1078,16 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			restano = _ancora_da_fatturare(chi, fatture)
 			if not restano:
 				continue
-		fuori.append({**i, "participants_left": [r.name for r in restano]})
+		sue = bozze.get(i.name, {})
+		per_posto = {r.name: sue[r.party] for r in restano if r.party in sue}
+		fuori.append(
+			{
+				**i,
+				"participants_left": [r.name for r in restano],
+				"drafts": per_posto,
+				# the first draft, for whoever invoices the appointment as a whole
+				"draft": next(iter(per_posto.values()), None)
+				or (None if chi else next(iter(sue.values()), None)),
+			}
+		)
 	return fuori

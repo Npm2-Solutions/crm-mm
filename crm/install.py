@@ -396,11 +396,15 @@ def _with_attribution(layout: str, doctype: str) -> str:
 	return json.dumps(parsed)
 
 
-# A person's rows are sections of their own - title, name, surname; mobile,
-# email, gender - one field per column: a phone reads a section column by column,
-# and three columns of two read «Title, Email, Name, Mobile, Surname»
-# (`crm.patches.v1_0.the_person_reads_in_order_on_a_phone`)
-LEAD_QUICK_ENTRY = '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation"]}, {"name": "column_5CPV", "fields": ["first_name"]}, {"name": "column_gXOy", "fields": ["last_name"]}]}, {"name": "person_contacts_section", "hideBorder": true, "columns": [{"name": "column_Mb7q", "fields": ["mobile_no"]}, {"name": "column_Em2w", "fields": ["email"]}, {"name": "column_Gn4z", "fields": ["gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "lead_section", "columns": [{"name": "column_RWBe", "fields": ["lead_owner"]}]}]'
+# A person's rows are sections of their own, one field per column: a phone reads
+# a section column by column, and three columns of two read «Title, Email, Name,
+# Mobile, Surname» (`crm.patches.v1_0.the_person_reads_in_order_on_a_phone`).
+# The person as a medical centre adds one (a_person_is_added_without_a_company):
+# name and surname, how to reach them, then the rest, two to a row; the company
+# they work for only by its name. Seven fields of a company - its website,
+# revenue «0,00 €», employees «1-10», sector, socials - stood between a
+# patient's name and the button
+LEAD_QUICK_ENTRY = '[{"name": "person_section", "columns": [{"name": "column_5CPV", "fields": ["first_name"]}, {"name": "column_gXOy", "fields": ["last_name"]}]}, {"name": "person_contacts_section", "hideBorder": true, "columns": [{"name": "column_Mb7q", "fields": ["mobile_no"]}, {"name": "column_Em2w", "fields": ["email"]}]}, {"name": "person_more_section", "hideBorder": true, "columns": [{"name": "column_Gn4z", "fields": ["gender"]}, {"name": "column_5jrk", "fields": ["salutation"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization"]}, {"name": "column_hXjS", "fields": []}]}, {"name": "lead_section", "columns": [{"name": "column_RWBe", "fields": ["lead_owner"]}]}]'
 DEAL_QUICK_ENTRY = '[{"name": "organization_section", "hidden": true, "editable": false, "columns": [{"name": "column_GpMP", "fields": ["organization"]}, {"name": "column_FPTn", "fields": []}]}, {"name": "organization_details_section", "editable": false, "columns": [{"name": "column_S3tQ", "fields": ["organization_name", "territory"]}, {"name": "column_KqV1", "fields": ["website", "annual_revenue", "company_description"]}, {"name": "column_1r67", "fields": ["no_of_employees", "industry", "linkedin", "twitter", "facebook"]}]}, {"name": "contact_section", "hidden": true, "editable": false, "columns": [{"name": "column_CeXr", "fields": ["contact"]}, {"name": "column_yHbk", "fields": []}]}, {"name": "contact_details_section", "editable": false, "columns": [{"name": "column_ZTWr", "fields": ["salutation"]}, {"name": "column_tabr", "fields": ["first_name"]}, {"name": "column_Qjdx", "fields": ["last_name"]}]}, {"name": "contact_details_more_section", "editable": false, "hideBorder": true, "columns": [{"name": "column_Kp3m", "fields": ["mobile_no"]}, {"name": "column_Rv8s", "fields": ["email"]}, {"name": "column_Wd5n", "fields": ["gender"]}]}, {"name": "deal_section", "columns": [{"name": "column_mdps", "fields": ["pipeline", "status"]}, {"name": "column_H40H", "fields": ["deal_owner"]}]}]'
 
 

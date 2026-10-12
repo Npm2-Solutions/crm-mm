@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Organizations" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoAziende?.tira" />
       <CustomActions
         v-if="organizationsListView?.customListActions"
         :actions="organizationsListView.customListActions"
@@ -17,7 +19,7 @@
       <Button
         v-if="!isMobileView"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New organization')"
         iconLeft="plus"
         @click="showOrganizationModal = true"
       />
@@ -25,7 +27,7 @@
   </LayoutHeader>
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
-    <ElencoAziende />
+    <ElencoAziende ref="elencoAziende" />
     <PulsanteAggiungi
       v-if="puo('persone.scrivi')"
       :label="__('New organization')"
@@ -83,6 +85,7 @@ import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import OrganizationsListView from '@/components/ListViews/OrganizationsListView.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoAziende from '@/components/Mobile/ElencoAziende.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { usersStore } from '@/stores/users'
@@ -96,6 +99,7 @@ const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Organization')
 
 const organizationsListView = ref(null)
+const elencoAziende = ref(null)
 const { puo } = usersStore()
 const showOrganizationModal = ref(false)
 

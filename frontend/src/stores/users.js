@@ -183,10 +183,12 @@ export const usersStore = defineStore('crm-users', () => {
 
   // What the session may do, as the server decides it (doc 30): its levels,
   // every capability with its scope, and the plan's modules. It comes with the
-  // page, so nothing appears late; it is asked again when levels change.
+  // page, so nothing appears late; it is asked again when levels change. The
+  // page's own map, never a copy kept from before: one kept in the browser
+  // took the place of every later session's, whoever signed in, and a session
+  // booted with 101 capabilities drew Marketing's menu of 4.
   const permissions = createResource({
     url: 'crm.api.session.get_permissions',
-    cache: 'crm-permissions',
     initialData: window.crm_permissions || null,
     auto: !window.crm_permissions,
   })

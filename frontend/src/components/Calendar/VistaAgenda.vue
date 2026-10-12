@@ -7,11 +7,18 @@
   state (with what each state's colour means), whether those off duty and the
   cancelled appointments show. Below, where the centre sets the agenda up and
   where one's own Google Calendar is connected.
+
+  The button opens them through reka-ui's trigger, which says whether they are
+  open, names their dialog after itself and takes the keyboard back when it
+  closes (the old #target did none of it); its name holds the word it shows
+  («Opzioni della vista»), and each group of choices is named by the words
+  above it. It is no field's trigger: a `data-slot='trigger'` button is as tall
+  as a field on a phone (telefono.css), beside keys of 28px.
 -->
 <template>
   <Popover placement="bottom-end">
-    <template #target="{ togglePopover }">
-      <Button :aria-label="__('View options')" @click="togglePopover">
+    <template #trigger>
+      <Button :aria-label="__('View options')" :data-slot="null">
         <template #prefix>
           <span
             class="lucide-sliders-horizontal size-4 text-ink-gray-6"
@@ -23,7 +30,7 @@
         }}</span>
       </Button>
     </template>
-    <template #body-main="{ close }">
+    <template #default="{ close }">
       <div
         data-foglio
         class="flex w-80 flex-col gap-1 overflow-y-auto p-3 max-md:gap-2"
@@ -34,6 +41,7 @@
           </span>
           <TabButtons
             :modelValue="colonne"
+            :aria-label="__('Columns')"
             :buttons="[
               { label: __('Professionals'), value: 'staff' },
               { label: __('Rooms', null, 'Agenda columns'), value: 'resource' },
@@ -47,6 +55,7 @@
           </span>
           <TabButtons
             :modelValue="altezza"
+            :aria-label="__('Height of the hours')"
             :buttons="[
               {
                 label: __('Compact', null, 'Agenda height'),
@@ -64,6 +73,7 @@
           </span>
           <TabButtons
             :modelValue="colore"
+            :aria-label="__('Colours')"
             :buttons="[
               { label: __('By service'), value: 'servizio' },
               { label: __('By state'), value: 'stato' },

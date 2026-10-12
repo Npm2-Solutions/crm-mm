@@ -329,6 +329,10 @@ class CRMAppointment(Document):
 			"event_type": "Private",
 			"description": self.notes,
 			"color": self.color,
+			# never in the framework's nightly digest («Upcoming Events for Today»,
+			# in English and on a 12-hour clock), which mailed the copy's owner its
+			# subject and its notes: the reminders are DottorCloud's (crm/api/event.py)
+			"send_reminder": 0,
 			"reference_doctype": "CRM Appointment",
 			"reference_docname": self.name,
 		}
@@ -359,14 +363,15 @@ class CRMAppointment(Document):
 		is the user: the owner alone left the others out). The people who come are
 		linked by their record and never by their email: an address on a participant
 		row reads the Event to the client area's user of that address, gets the
-		framework's event reminders and Google's invitations - the centre writes to
-		its clients itself (doc 59)."""
+		events' reminders by email (crm/api/event.py) and Google's invitations - the
+		centre writes to its clients itself (doc 59). The framework writes an address
+		on every row without one when the Event is saved: `copia_solo_ai_professionisti`
+		takes it away again."""
 		rows = []
 		for row in self.staff:
 			if not row.user:
 				continue
-			# the participant's email is the user it reads to: a user's name is its email
-			email = row.user if "@" in row.user else frappe.db.get_value("User", row.user, "email")
+			email = indirizzo_di(row.user)
 			if email and not any(r.get("email") == email for r in rows):
 				rows.append({"reference_doctype": "User", "reference_docname": row.user, "email": email})
 		for row in self.participants:
@@ -393,6 +398,55 @@ class CRMAppointment(Document):
 			frappe.log_error(frappe.get_traceback(), f"Appointment {self.name}: calendar cleanup failed")
 		finally:
 			frappe.flags.in_appointment_sync = False
+
+
+def indirizzo_di(user: str) -> str | None:
+	"""The address a private Event reads to ``user`` by: a user's name is its email,
+	Administrator's is not."""
+	return user if "@" in user else frappe.db.get_value("User", user, "email")
+
+
+def professionisti_di(appuntamento: str | None) -> set[str]:
+	"""The users of an appointment's professionals, as it is saved."""
+	if not appuntamento:
+		return set()
+	return set(
+		frappe.get_all(
+			"CRM Appointment Staff",
+			filters={"parenttype": "CRM Appointment", "parent": appuntamento, "user": ("is", "set")},
+			pluck="user",
+		)
+	)
+
+
+def indirizzo_della_riga(riga, professionisti: set[str]) -> str | None:
+	"""The only address a participant row of a calendar copy carries: the one of the
+	professional it names by their user. A person, a contact, a deal or a user who is
+	none of the appointment's professionals has none."""
+	if riga.get("reference_doctype") == "User" and riga.get("reference_docname") in professionisti:
+		return indirizzo_di(riga.get("reference_docname"))
+	return None
+
+
+def copia_solo_ai_professionisti(event, method=None):
+	"""``Event`` before_save (crm/hooks.py): on an appointment's calendar copy only
+	its professionals' rows keep an address, each their own.
+
+	The framework's own before_save (`Event.set_participants_email`) writes on every
+	participant row without an email the address of a Contact: the row's own, or the
+	one the framework finds for the person or the deal the row names. A private Event
+	reads to any user whose name is the address on one of its rows, so the client
+	area's user of that address listed the copy and read its description, the
+	appointment's notes; the events' reminders by email (crm/api/event.py) and, where
+	a copy goes to Google, its invitations are sent to the same addresses.
+	`Document.hook` runs the controller's method first and the apps' doc_events
+	after it, so this comes last whatever saves the copy: `sync_event`, the Desk, a
+	script. An Event the centre made itself is left to the framework."""
+	if event.reference_doctype != "CRM Appointment":
+		return
+	professionisti = professionisti_di(event.reference_docname)
+	for riga in event.get("event_participants") or []:
+		riga.email = indirizzo_della_riga(riga, professionisti)
 
 
 def person_of(party_type: str | None, party: str | None) -> str | None:

@@ -68,8 +68,10 @@
             :options="moreOptions"
             align="end"
           >
+            <!-- «Options», not «More»: on a phone «More» is the bar's own
+                 place (/altro), and two of them read as the same door -->
             <template #default>
-              <Button :aria-label="__('More')">
+              <Button :aria-label="__('Options')">
                 <template #icon>
                   <LucideEllipsis class="size-4" />
                 </template>
@@ -282,6 +284,7 @@
           @configure="configure"
           @duplicate="duplicate"
           @remove="remove"
+          @move="sposta"
         />
       </div>
 
@@ -350,6 +353,7 @@ import {
   groupDashboards,
   newItem,
   periodRange,
+  spostaWidget,
   toSavedLayout,
 } from '@/utils/dashboard'
 import { timeAgo } from '@/utils'
@@ -782,12 +786,14 @@ function add(widget) {
   if (widget.id === 'heading') configure(item)
 }
 
-function highlight(key) {
+// `block`: a widget added is brought to the middle; one moved a step only into
+// view, or every step would scroll the page under it
+function highlight(key, block = 'center') {
   highlighted.value = key
   nextTick(() => {
     scroller.value
       ?.querySelector(`[data-widget="${CSS.escape(key)}"]`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      ?.scrollIntoView({ behavior: 'smooth', block })
   })
   setTimeout(() => {
     if (highlighted.value === key) highlighted.value = ''
@@ -796,6 +802,12 @@ function highlight(key) {
 
 function remove(item) {
   items.value = items.value.filter((other) => other.layout.i !== item.layout.i)
+}
+
+// moved or resized from its menu, without dragging: what the grid will show
+function sposta(item, passo) {
+  items.value = spostaWidget(items.value, item.layout.i, passo)
+  highlight(item.layout.i, 'nearest')
 }
 
 function duplicate(item) {

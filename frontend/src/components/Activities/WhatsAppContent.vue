@@ -19,15 +19,24 @@
     v-html="formatWhatsAppMessage(message.message)"
   />
   <!-- a sticker is a picture: it was falling through to nothing at all, so a
-     sticker sent from the phone arrived as an empty bubble -->
+     sticker sent from the phone arrived as an empty bubble. A link opens it
+     whole, from the keyboard too (a click on the picture reached no key), and
+     it is «Foto» to a screen reader, its caption below being read as well -->
   <div v-else-if="['image', 'sticker'].includes(message.content_type)">
-    <img
+    <a
       v-if="message.attach"
-      :src="message.attach"
-      class="max-w-full cursor-pointer rounded-md"
-      :class="message.content_type == 'sticker' ? 'h-28' : 'max-h-64'"
-      @click="open(message.attach)"
-    />
+      :href="message.attach"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="block w-fit max-w-full rounded-md"
+    >
+      <img
+        :src="message.attach"
+        :alt="__('Photo')"
+        class="max-w-full rounded-md"
+        :class="message.content_type == 'sticker' ? 'h-28' : 'max-h-64'"
+      />
+    </a>
     <!-- the row is written the moment the webhook arrives and the file is
        fetched from Meta right after, so for a second there is a message with
        no picture yet -->

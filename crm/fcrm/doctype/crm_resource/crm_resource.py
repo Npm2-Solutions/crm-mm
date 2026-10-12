@@ -42,3 +42,47 @@ class CRMResource(Document):
 		for row in self.availability:
 			if as_time(row.start_time) >= as_time(row.end_time):
 				frappe.throw(_("Row {0}: start time must be before end time").format(row.idx))
+
+	def on_trash(self):
+		"""What still names it refuses in DottorCloud's words: the framework's own
+		refusal, which comes after this, names a record's code and links into the
+		Desk. Switched off, it is no longer booked and keeps what it was in."""
+		nome = frappe.bold(self.resource_name)
+		if frappe.db.exists("CRM Appointment Resource", {"resource": self.name}):
+			frappe.throw(
+				_("{0} has appointments, and they keep it: switch it off to stop booking it").format(nome),
+				frappe.LinkExistsError,
+			)
+		servizio = frappe.db.get_value(
+			"CRM Service Resource", {"resource": self.name, "parenttype": "CRM Service"}, "parent"
+		)
+		if servizio:
+			frappe.throw(
+				_(
+					"{0} is needed by the service {1}: take it off the service first, "
+					"or switch it off to stop booking it"
+				).format(nome, frappe.bold(servizio)),
+				frappe.LinkExistsError,
+			)
+		listino = frappe.db.get_value("CRM Service Price", {"resource": self.name}, "price_list")
+		if listino:
+			frappe.throw(
+				_(
+					"{0} has a price of its own in the price list {1}: take that price away first, "
+					"or switch it off to stop booking it"
+				).format(nome, frappe.bold(listino)),
+				frappe.LinkExistsError,
+			)
+		piattaforma = frappe.db.get_value(
+			"CRM Booking Connection Map",
+			{"resource": self.name, "parenttype": "CRM Booking Connection"},
+			"parent",
+		)
+		if piattaforma:
+			frappe.throw(
+				_(
+					"{0} is matched to the booking platform {1}: take the match away there first, "
+					"or switch it off to stop booking it"
+				).format(nome, frappe.bold(piattaforma)),
+				frappe.LinkExistsError,
+			)

@@ -261,6 +261,7 @@
               v-model="step.value"
               :field="selectedField"
               :placeholder="__('value')"
+              :label="__('Value')"
             />
           </div>
           <p class="text-xs text-ink-gray-5">

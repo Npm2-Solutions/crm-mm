@@ -21,7 +21,8 @@ DEL_FRAMEWORK = ("Contact", "Address", "Communication", "Comment", "ToDo", "File
 
 #: DottorCloud's document types that are no data of the centre's: how a browser is
 #: reached, links that enter the area once, what the demo made, the half-way states
-#: of a sign-up. They hold keys or fingerprints, never anything a centre needs elsewhere.
+#: of a sign-up, the event reminders that left (so they leave once). They hold keys
+#: or fingerprints, never anything a centre needs elsewhere.
 SOLO_PER_LA_MACCHINA = frozenset(
 	{
 		"CRM Push Subscription",
@@ -29,6 +30,7 @@ SOLO_PER_LA_MACCHINA = frozenset(
 		"CRM Demo Record",
 		"WhatsApp Signup Session",
 		"CRM Visitor Session",
+		"CRM Event Reminder",
 	}
 )
 

@@ -342,6 +342,37 @@
           <h4 class="text-p-base-medium text-ink-gray-8">
             {{ __('How it was paid') }}
           </h4>
+          <!-- the three ways a desk is paid, one tap each; the rest in the
+               list below. A new invoice came with «Bonifico» already chosen,
+               the DocType's default, before anybody knew how the person paid:
+               till somebody picks, it says so -->
+          <div v-if="modificabile" class="flex flex-col gap-1.5">
+            <div
+              class="flex flex-wrap gap-2"
+              role="group"
+              :aria-label="__('How it was paid')"
+            >
+              <Button
+                v-for="modo in modiRapidi"
+                :key="modo.value"
+                :label="modo.label"
+                :variant="
+                  vista.payment.payment_method === modo.value
+                    ? 'solid'
+                    : 'subtle'
+                "
+                :aria-pressed="vista.payment.payment_method === modo.value"
+                @click="scegliMetodo(modo.value)"
+              />
+            </div>
+            <p v-if="!metodoToccato" class="text-p-sm text-ink-amber-7">
+              {{
+                __(
+                  'This is the usual way, not yet confirmed: tap how the person really paid, the cash closing counts on it.',
+                )
+              }}
+            </p>
+          </div>
           <div
             v-if="modificabile"
             class="grid grid-cols-2 gap-3 max-md:grid-cols-1"
@@ -655,6 +686,36 @@ import { oggiDelCentro } from '@/utils/scheduler'
 const { stato, chiudiFattura } = useFattura()
 
 const vista = ref(null)
+
+// the desk's three ways of being paid, as quick choices: cash, card, bank
+// transfer. Named as the list below names them, from invoicing's vocabulary
+// («Carta o app», never a second word for the same code), and only those the
+// list offers
+const MODI_RAPIDI = ['MP01', 'MP08', 'MP05']
+const modiRapidi = computed(() =>
+  MODI_RAPIDI.map((codice) =>
+    (vista.value?.options?.payment_method || []).find(
+      (opzione) => opzione.value === codice,
+    ),
+  ).filter(Boolean),
+)
+// whether somebody chose it in this invoice: a new one opens on the default
+// (MP05, the DocType's), and says so until a way is tapped or picked from the
+// list. Set when an invoice opens (apri): a save or a correction hands the
+// invoice back as a new object, and it said «not yet confirmed» again under
+// the way just chosen and saved
+const METODO_PREDEFINITO = 'MP05'
+const metodoToccato = ref(false)
+function scegliMetodo(valore) {
+  vista.value.payment.payment_method = valore
+  metodoToccato.value = true
+}
+watch(
+  () => vista.value?.payment?.payment_method,
+  (metodo, primo) => {
+    if (primo && metodo && metodo !== primo) metodoToccato.value = true
+  },
+)
 const errore = ref('')
 const azione = ref('')
 const inAttesa = ref(false)
@@ -846,6 +907,7 @@ async function apri() {
   vista.value = null
   errore.value = ''
   datiAperti.value = false
+  metodoToccato.value = false
   try {
     if (stato.nome) {
       applica(
@@ -854,6 +916,10 @@ async function apri() {
         }),
         { tutta: true },
       )
+      // a draft saved with another way than the default had it chosen
+      metodoToccato.value =
+        (vista.value?.payment?.payment_method || METODO_PREDEFINITO) !==
+        METODO_PREDEFINITO
     } else {
       // what proposed it (an appointment) fills in what it knows; the rest is asked
       const bozza = stato.bozza || {}

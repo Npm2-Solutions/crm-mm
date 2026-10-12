@@ -48,6 +48,19 @@ diagnostiche, e per quelli c'è la soglia.
   bucket che dura **5 minuti**, `Cache-Control: private, no-store` e nessun
   referer. Un ospite o chi non può leggerlo lo respinge il framework, come
   sempre.
+- **Il browser non tiene niente** (12/10/2026). Ogni risposta a
+  `/private/files/…`, archiviato o no, anche un rifiuto, porta
+  `Cache-Control: private, no-store` (`prima_della_richiesta`, prima di ogni
+  richiesta). Dietro nginx il framework dava a un file privato un'ora
+  (`private,max-age=3600,stale-while-revalidate=86400`): dopo l'uscita lo stesso
+  indirizzo mostrava ancora il referto, senza chiedere al server. Il link al
+  bucket chiede la stessa cosa al bucket (`response-cache-control`, firmato con
+  il resto del link): un oggetto risponde solo con la sua data, e da quella il
+  browser riusava un file di dieci giorni prima anche a link scaduto. All'uscita
+  non si manda `Clear-Site-Data`: con «cache» Chromium svuota tutta la cache
+  prima di rispondere, e l'uscita rallenta; con «storage» se ne andrebbero anche
+  le notifiche del dispositivo e le preferenze. Con `no-store` non c'è niente da
+  togliere: quello che un browser teneva da prima scade in poco più di un giorno.
 - **Leggere nel codice.** `File.get_content()`, le miniature, gli zip, un file
   reso pubblico: `crm.overrides.file` lo riporta sul server intero prima
   (impronta controllata), e un'ora dopo riparte senza essere rispedito.
@@ -130,7 +143,8 @@ Il bucket è in Germania o Finlandia, privato; Hetzner firma il DPA (Art. 28 GDP
 nella Console. Le chiavi stanno nella configurazione del bench, mai nel database
 né nei log (un errore porta solo stato e codice S3). Il link al file dura cinque
 minuti ed è per chi l'ha aperto dopo il controllo dei permessi; il registro
-degli accessi lo scrive comunque. La cifratura lato client non c'è: renderebbe
+degli accessi lo scrive comunque. Né il file né il link restano nel browser
+(`no-store`). La cifratura lato client non c'è: renderebbe
 impossibile il link diretto, e il browser dovrebbe passare dal server per ogni
 file.
 

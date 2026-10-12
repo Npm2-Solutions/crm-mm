@@ -192,7 +192,7 @@
                     icon="more-horizontal"
                     size="sm"
                     variant="ghost"
-                    :aria-label="__('More')"
+                    :aria-label="__('Options')"
                   />
                 </Dropdown>
               </div>

@@ -184,9 +184,46 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   server mostra il numero scelto solo se è uno dei numeri del centro
   (`CRM Caller ID`), altrimenti la linea di chi chiama. Un cellulare italiano
   mostrato su una chiamata verso l'Italia ha l'avviso: «dal novembre 2025 queste
-  chiamate vengono bloccate: scegli un numero fisso».
+  chiamate vengono bloccate: scegli un numero fisso». Una chiamata che arriva
+  mentre si sceglie il numero prende la finestra e lascia la scelta con i suoi
+  numeri, il paese e l'avviso (corretto il 12/10/2026: l'avviso compariva sulla
+  chiamata in arrivo una volta presa; anche in quella di Telnyx).
 - **Il tastierino (fatto).** Durante la chiamata manda i toni ai menu automatici
   degli altri («premi 1 per…»); i tasti premuti restano scritti sopra.
+- **Chi chiama (corretto il 12/10/2026).** La finestra della chiamata, in arrivo
+  o in uscita, chiede al server di chi è il numero a ogni chiamata e a ogni
+  cambio di numero: mentre il server risponde il nome resta vuoto (la riga tiene
+  il suo posto, i pulsanti non si spostano), poi la persona o «Sconosciuto»; una
+  risposta su un numero che la chiamata non ha più non conta. La ricerca era una
+  sola per la pagina, tenuta con il numero con cui la finestra era nata: la
+  chiamata dopo mostrava il nome di chi aveva chiamato prima finché il server non
+  rispondeva, e per tutta la chiamata se non rispondeva; la finestra di Telnyx
+  usava quella di Twilio, con il numero di Twilio, e non nominava mai nessuno
+  (`composables/chiChiama.js`, `cercaChiChiama` in `utils/chiamate.js`, provato).
+  Sotto il nome c'è il numero della chiamata, come è arrivato o come è stato
+  composto: la risposta del server dava il cellulare principale della persona
+  (anche quando chiamava da un altro suo numero) e, per un numero di nessuno, le
+  cifre senza il prefisso del paese («612345678» per un cellulare francese).
+- **Una chiamata alla volta (corretto il 12/10/2026).** La finestra ne tiene una:
+  una chiamata che arriva mentre un'altra è in corso o sta partendo squilla sugli
+  altri telefoni del centro, e una chiamata in uscita non parte se, mentre il
+  server la controllava, ne è arrivata una o ne è partita un'altra
+  (`finestraOccupata` in `utils/chiamate.js`, provato; anche in quella di
+  Telnyx). Prima la chiamata arrivata prendeva la finestra e il suo nome, quella
+  in uscita li riprendeva, e la finestra perdeva la chiamata che aveva mostrato:
+  quando chi chiamava riattaccava, si chiudeva sulla chiamata in corso; e con
+  due «Chiama» di seguito (il secondo cliccato prima che il primo partisse,
+  mentre il server rispondeva o si sceglieva il numero) la prima chiamata
+  partiva sotto il nome e il numero della seconda. Una chiamata che arriva
+  mentre quella della finestra squilla ancora aspetta dietro di lei, e squilla
+  anche lei (`nuovaChiamata`, provato): Twilio suona una sola suoneria per tutte
+  le chiamate che squillano nel browser, e lasciarne una agli altri telefoni
+  (`ignore()`) la ferma per tutte, così la prima restava nella finestra senza
+  suono. Se la prima viene presa, quelle in attesa vanno agli altri telefoni; se
+  finisce senza risposta (chi chiama riattacca, la prende un collega, la si
+  rifiuta), la finestra mostra la prima in attesa che squilla ancora, quella che
+  si sente. Nella finestra di Telnyx l'SDK non suona nessuna suoneria
+  (DottorCloud non gliene dà una), e la seconda chiamata viene chiusa come prima.
 - **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
   Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
   responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un
@@ -353,7 +390,7 @@ DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **ver
 | `frontend/src/components/Settings/Telephony/NewNumberDialog.vue` + `utils/numeri.js` | La finestra del nuovo numero e la scelta del numero; le richieste sulla pagina di Twilio, il rilascio sulla pagina dei numeri; il prezzo, il prefisso, i file e cosa manca prima di mandare — provati |
 | `crm/telephony/uscita_regole.py` | Senza sito: dove può andare una chiamata (i paesi scelti, mai un numero a pagamento, un numero italiano anche senza +39), il cellulare italiano che l'AGCOM blocca, i permessi di Twilio da mettere — provato con `unittest` |
 | `crm/telephony/uscita.py` + `CRM Twilio Settings.allowed_countries` | Le chiamate in uscita: `check_number` e `get_outbound_numbers` per la finestra, `perche_no` e `numero_da_mostrare` per `voice`, `allinea_i_paesi` (al salvataggio, al collegamento, ogni ora, solo nello spazio) |
-| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | La finestra della chiamata: il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
+| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js`, `composables/chiChiama.js` | La finestra della chiamata: chi chiama, chiesto a ogni chiamata e a ogni cambio di numero (mai chi aveva chiamato prima), il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
 | `crm/telephony/sms_regole.py` | Senza sito: il nome del mittente che Twilio prende, quello fatto con il nome del centro, un messaggio che è solo STOP o START, gli orari delle promozioni — provato con `unittest` |
 | `crm/telephony/sms.py` + `CRM Twilio Settings` (`sms_from`, `sms_sender_name`, `sms_sender_number`) | Il mittente di tutti gli SMS (`mittente()`) e le opzioni della pagina (`get_sms_sender_options`); STOP e START (`ascolta`, `ferma`, `riprendi`, `ha_fermato`) da `incoming_sms_handler`, la risposta tenuta nella conversazione |
 | `frontend/src/components/Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Da dove partono gli SMS, sulle pagine dell'area e della lista d'attesa; sopra il box, la persona che ha scritto STOP |

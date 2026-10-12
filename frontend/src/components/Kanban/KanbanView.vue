@@ -61,6 +61,13 @@
                 </template>
               </Popover>
               <div class="text-ink-gray-9">{{ __(column.column.name) }}</div>
+              <!-- how many it holds, all of them, not only the cards loaded -->
+              <span
+                v-if="column.column.all_count != null"
+                class="ml-1.5 text-sm tabular-nums text-ink-gray-5"
+              >
+                {{ column.column.all_count }}
+              </span>
             </div>
             <div class="flex">
               <Dropdown :options="actions(column)">
@@ -84,6 +91,16 @@
             </div>
           </div>
           <div class="overflow-y-auto flex flex-col gap-2 h-full">
+            <!-- an empty stage says so, as the phone's does: headers alone read
+                 as a board that did not load. Under its header, where one
+                 looks: the cards' place below takes the whole column, and the
+                 words were at the bottom of the screen -->
+            <p
+              v-if="!column.data?.length"
+              class="px-1 text-p-sm text-ink-gray-5"
+            >
+              {{ __('Nothing in this column') }}
+            </p>
             <Draggable
               :list="column.data"
               group="fields"
@@ -152,14 +169,6 @@
                 </component>
               </template>
             </Draggable>
-            <!-- an empty stage says so, as the phone's does: headers alone read
-                 as a board that did not load -->
-            <p
-              v-if="!column.data?.length"
-              class="px-1 text-p-sm text-ink-gray-5"
-            >
-              {{ __('Nothing in this column') }}
-            </p>
             <div
               v-if="column.column.count < column.column.all_count"
               class="flex items-center justify-center"
@@ -231,10 +240,12 @@ const columns = computed(() => {
     return []
   let _columns = kanban.value.data.data
 
+  // a column nobody coloured is gray: colours handed out by position made
+  // «Fatto» red, the colour of «Alta» and of a lost deal
   let has_color = _columns.some((column) => column.column?.color)
   if (!has_color) {
-    _columns.forEach((column, i) => {
-      column.column['color'] = colors[i % colors.length]
+    _columns.forEach((column) => {
+      column.column['color'] = 'gray'
     })
   }
   return _columns

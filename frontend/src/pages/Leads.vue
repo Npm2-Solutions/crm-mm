@@ -14,15 +14,22 @@
       />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoPersone?.tira" />
       <CustomActions
         v-if="leadsListView?.customListActions"
         :actions="leadsListView.customListActions"
       />
-      <!-- a practitioner opens the record of somebody not in their care, saying why -->
+      <!-- a practitioner opens the record of somebody not in their care, saying
+           why. On a phone its icon, named: in words, beside «Persone |
+           Aziende», it ran under them at 360 points -->
       <Button
         v-if="apreFuoriEquipe"
-        :label="__('Out of your care')"
-        iconLeft="lucide-lock-open"
+        :label="isMobileView ? undefined : __('Out of your care')"
+        :iconLeft="isMobileView ? undefined : 'lucide-lock-open'"
+        :icon="isMobileView ? 'lucide-lock-open' : undefined"
+        :tooltip="isMobileView ? __('Out of your care') : undefined"
+        :aria-label="__('Out of your care')"
         @click="showOutOfCare = true"
       />
       <!-- a campaign to the people on screen (crm/automation/campagne.py); on a
@@ -36,7 +43,7 @@
       <Button
         v-if="!isMobileView && puo('persone.scrivi')"
         variant="solid"
-        :label="__('Create')"
+        :label="__('New person')"
         iconLeft="plus"
         @click="showLeadModal = true"
       />
@@ -44,7 +51,7 @@
   </LayoutHeader>
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
-    <ElencoPersone />
+    <ElencoPersone ref="elencoPersone" />
     <PulsanteAggiungi
       v-if="puo('persone.scrivi')"
       :label="__('New person')"
@@ -122,6 +129,7 @@ import OutOfCareDialog from '@/components/Clinic/OutOfCareDialog.vue'
 import SendToListDialog from '@/components/Automations/SendToListDialog.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoPersone from '@/components/Mobile/ElencoPersone.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { getMeta } from '@/stores/meta'
@@ -144,6 +152,7 @@ const { getLeadStatus } = statusesStore()
 const { on } = useBroadcast()
 
 const leadsListView = ref(null)
+const elencoPersone = ref(null)
 const showLeadModal = ref(false)
 const showOutOfCare = ref(false)
 const showSendToList = ref(false)

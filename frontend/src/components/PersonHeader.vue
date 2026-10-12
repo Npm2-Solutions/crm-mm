@@ -192,6 +192,7 @@ import {
   giornoInBreve,
   indirizzoTel,
   mascherato,
+  etaENascita,
   modiDiChiamare,
   nomeDellAppuntamento,
   numeriDi,
@@ -288,26 +289,62 @@ function prenota() {
   })
 }
 
+// the next appointment is the agenda's: asked, and drawn, only for whoever
+// reads it. A colleague who does not (Marketing) was shown the one the last
+// reader at the same computer had read, from a copy no request had asked for
+const leggeLAgenda = puo('agenda.vedi')
 const appuntamenti = createResource({
   url: 'crm.api.appointments.get_person_appointments',
   params: { doctype: 'CRM Lead', name: props.doc.name },
   cache: ['person-appointments', props.doc.name],
-  auto: puo('agenda.vedi'),
+  auto: leggeLAgenda,
 })
 
 // the agenda keeps the centre's clock: now is the centre's, not the phone's
 const prossimo = computed(() =>
-  prossimoAppuntamento(appuntamenti.data, adessoDelCentro()),
+  leggeLAgenda
+    ? prossimoAppuntamento(appuntamenti.data, adessoDelCentro())
+    : null,
+)
+
+// how old they are and when they were born: after the name, what tells one
+// patient from another with the same name (NISTIR 7804), on every tab. From
+// the billing details the page reads anyway (the codice fiscale's date), for
+// whoever may read them: the others see what they saw before. Shared with no
+// other part of the page (no `cache`): when frappe-ui kept a cached resource
+// in IndexedDB, a colleague without the fiscal details at the same reception
+// PC was shown the last reader's copy
+const fiscali = puo('persone.dati_fiscali')
+const anagrafica = createResource({
+  url: 'crm.invoicing.anagrafica.get_billing_profile',
+  params: { party_type: 'CRM Lead', party: props.doc.name },
+  onError: () => anagrafica.setData(null),
+})
+// asked by hand, its refusal caught: frappe-ui throws again what it handed to
+// onError, and an `auto` resource refused left an uncaught rejection
+if (fiscali) anagrafica.fetch().catch(() => {})
+const eta = computed(() =>
+  fiscali
+    ? etaENascita(anagrafica.data?.birth_date, adessoDelCentro(), lingua)
+    : null,
 )
 
 // who they are to the centre, in a few words: a contact, a client since, a
-// patient since (utils/rapporto.js); the last visit
+// patient since (utils/rapporto.js); their age; the last visit
 const fatti = computed(() => {
   const fatti = []
   const { frase, data } = fattoDel(props.doc)
   fatti.push(
     data ? __(frase, [giornoInBreve(data, lingua)]) : __(frase, null, CONTESTO),
   )
+  if (eta.value)
+    fatti.push(
+      eta.value.anni < 1
+        ? __('Under a year · {0}', [eta.value.nascita])
+        : eta.value.anni === 1
+          ? __('1 year · {0}', [eta.value.nascita])
+          : __('{0} years · {1}', [eta.value.anni, eta.value.nascita]),
+    )
   if (props.doc.last_visit)
     fatti.push(
       __('Last visit {0}', [giornoInBreve(props.doc.last_visit, lingua)]),
@@ -330,5 +367,5 @@ const tasti = computed(
     ].filter(Boolean).length || 1,
 )
 
-defineExpose({ reload: () => appuntamenti.reload() })
+defineExpose({ reload: () => leggeLAgenda && appuntamenti.reload() })
 </script>

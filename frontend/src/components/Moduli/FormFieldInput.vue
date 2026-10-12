@@ -101,6 +101,7 @@
           :aria-required="
             !field.multiple && required && !readonly ? 'true' : undefined
           "
+          @keydown="frecce"
         >
           <button
             v-for="option in options"
@@ -108,6 +109,9 @@
             type="button"
             :role="field.multiple ? 'checkbox' : 'radio'"
             :aria-checked="picked(option.value)"
+            :tabindex="
+              field.multiple ? undefined : option.value === fermata ? 0 : -1
+            "
             class="touch-target flex w-full min-w-0 items-center gap-2.5 rounded-md border px-3 py-2 text-left text-base"
             :class="
               picked(option.value)
@@ -419,6 +423,7 @@ import LucideSignature from '~icons/lucide/signature'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
 import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
 import { answerInWords } from '@/utils/moduli'
+import { dopoLaFreccia } from '@/utils/frecce'
 import { dateFormat, formatDate } from '@/utils'
 import { Badge, Button, Checkbox, FormControl } from 'frappe-ui'
 import { computed, getCurrentInstance, ref } from 'vue'
@@ -490,6 +495,33 @@ function picked(value) {
   return props.field.multiple
     ? Array.isArray(current) && current.includes(value)
     : current === value
+}
+
+// A single choice is one stop of the Tab key, as a radio group is: the answer
+// picked, else the first. The arrows go to the next or the one before (round
+// the ends), Home and End to the first and the last, and pick it: they set the
+// answer, never take it away as a click on the picked one does. Every option
+// was a stop of its own and the arrows did nothing, under a screen reader
+// that announced a group of radio buttons.
+const fermata = computed(() =>
+  options.value.some((option) => option.value === props.modelValue)
+    ? props.modelValue
+    : options.value[0]?.value,
+)
+
+function frecce(evento) {
+  if (props.field.multiple || props.readonly) return
+  if (evento.altKey || evento.ctrlKey || evento.metaKey) return
+  const pulsanti = [...evento.currentTarget.querySelectorAll('[role="radio"]')]
+  const dopo = dopoLaFreccia(
+    evento.key,
+    pulsanti.indexOf(evento.target),
+    pulsanti.length,
+  )
+  if (dopo === undefined) return
+  evento.preventDefault()
+  emit(options.value[dopo].value)
+  pulsanti[dopo].focus()
 }
 
 function pick(value) {

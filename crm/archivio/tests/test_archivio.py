@@ -8,9 +8,9 @@ A signed consent of Centro Aurora is written as a private file. An hour later it
 is on the archive and the server keeps an empty file with its name; whoever reads
 it in code finds it whole, and an hour after that it leaves again without being
 sent twice. Opening its address sends whoever may read it to the bucket, and
-nobody else. The logo stays on the server. Deleted, its object goes with it; a
-file deleted by the database leaves nothing behind at night. The space counts
-each address once.
+nobody else; archived or not, the browser keeps none of it. The logo stays on the
+server. Deleted, its object goes with it; a file deleted by the database leaves
+nothing behind at night. The space counts each address once.
 """
 
 import os
@@ -18,9 +18,14 @@ import types
 from unittest.mock import patch
 
 import frappe
+from frappe.app import process_response
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_to_date, now_datetime
-from werkzeug.exceptions import HTTPException
+from frappe.utils.response import download_private_file
+from werkzeug.datastructures import Headers
+from werkzeug.exceptions import Forbidden, HTTPException
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
 
 from crm.archivio import archivio, regole, s3
 
@@ -76,6 +81,18 @@ class TestArchivio(IntegrationTestCase):
 		self.conf = patch.dict(frappe.local.conf, {archivio.CONF: CONF})
 		self.conf.start()
 		self.addCleanup(self.conf.stop)
+		# what the hook writes in the answer's headers stays with this test, as it
+		# stays with its request
+		intestazioni = patch.object(frappe.local, "response_headers", Headers(), create=True)
+		intestazioni.start()
+		self.addCleanup(intestazioni.stop)
+		# only this test's files move: on a site that holds a centre's files a round
+		# over all of them, into the bucket in memory, left them empty on the disk
+		self.indirizzi = set()
+		sposta = self.sposta = archivio.sposta
+		solo_i_suoi = patch.object(archivio, "sposta", lambda: sposta(solo=self.indirizzi))
+		solo_i_suoi.start()
+		self.addCleanup(solo_i_suoi.stop)
 		frappe.cache.delete_value(archivio.CHIAVE_SPAZIO)
 		frappe.cache.delete_value(archivio.RIPORTATI)
 		self.file = []
@@ -93,6 +110,7 @@ class TestArchivio(IntegrationTestCase):
 			{"doctype": "File", "file_name": nome, "is_private": privato, "content": contenuto}
 		).insert(ignore_permissions=True)
 		self.file.append(doc.name)
+		self.indirizzi.add(doc.file_url)
 		frappe.db.set_value(
 			"File", doc.name, "creation", add_to_date(now_datetime(), hours=-ore_fa), update_modified=False
 		)
@@ -101,6 +119,13 @@ class TestArchivio(IntegrationTestCase):
 
 	def locale(self, doc):
 		return archivio.percorso(doc.file_url) if doc.is_private else doc.get_full_path()
+
+	def togli_dal_disco(self, doc):
+		"""A File the database deleted leaves its file on the disk, which the
+		framework would have taken away: the test takes it, as it found the site."""
+		percorso = self.locale(doc)
+		if os.path.exists(percorso):
+			os.remove(percorso)
 
 	def test_senza_archivio_non_si_sposta_niente(self):
 		doc = self.nuovo()
@@ -143,6 +168,15 @@ class TestArchivio(IntegrationTestCase):
 		self.assertEqual(os.path.getsize(self.locale(doc)), 0)
 		self.assertFalse(archivio.archiviato(doc.file_url).restored_on)
 
+	def test_un_giro_su_alcuni_file_lascia_stare_gli_altri(self):
+		mio = self.nuovo()
+		altro = self.nuovo(nome="altro-consenso-archivio.txt", contenuto=b"Consenso di Marco Neri")
+		self.assertEqual(self.sposta(solo={mio.file_url})["moved"], 1)
+		self.assertTrue(archivio.archiviato(mio.file_url))
+		self.assertFalse(archivio.archiviato(altro.file_url))
+		self.assertGreater(os.path.getsize(self.locale(altro)), 0)
+		self.assertEqual(self.sposta(solo=set())["moved"], 0)
+
 	def test_un_file_appena_scritto_aspetta(self):
 		doc = self.nuovo(ore_fa=0)
 		archivio.sposta()
@@ -180,6 +214,45 @@ class TestArchivio(IntegrationTestCase):
 		with patch.object(frappe.local, "request", richiesta, create=True):
 			self.assertIsNone(archivio.prima_della_richiesta())
 
+	def scarica(self, file_url, nginx=False):
+		"""What the framework answers a GET of a private file, after the hooks: the
+		file through nginx (X-Accel-Redirect) or werkzeug, or its refusal."""
+		frappe.local.response_headers = Headers()
+		intestazioni = {"X-Use-X-Accel-Redirect": "True"} if nginx else {}
+		richiesta = Request(EnvironBuilder(path=file_url, headers=intestazioni).get_environ())
+		# the dev server sends no-store whatever the answer: `bench serve` never
+		# showed the hour the framework gives a private file behind nginx
+		with (
+			patch.object(frappe.local, "request", richiesta, create=True),
+			patch.object(frappe, "_dev_server", 0),
+		):
+			self.assertIsNone(archivio.prima_della_richiesta())
+			try:
+				risposta = download_private_file(file_url)
+			except HTTPException as rifiuto:
+				risposta = rifiuto.get_response(richiesta.environ)
+			process_response(risposta)
+		risposta.close()
+		return risposta
+
+	def test_il_browser_non_tiene_un_file_privato(self):
+		doc = self.nuovo(ore_fa=0)
+		# behind nginx the framework says `private,max-age=3600,…`, and after signing
+		# out the same address showed the file without asking the server; werkzeug's
+		# no-cache still keeps a copy on the disk
+		dietro_nginx = self.scarica(doc.file_url, nginx=True)
+		self.assertTrue(dietro_nginx.headers["X-Accel-Redirect"].startswith("/protected/"))
+		self.assertEqual(dietro_nginx.headers.getlist("Cache-Control"), [regole.NON_TENERE])
+
+		dal_framework = self.scarica(doc.file_url)
+		self.assertEqual(dal_framework.status_code, 200)
+		self.assertEqual(dal_framework.headers.getlist("Cache-Control"), [regole.NON_TENERE])
+
+		frappe.set_user("Guest")
+		rifiutato = self.scarica(doc.file_url, nginx=True)
+		self.assertEqual(rifiutato.status_code, Forbidden.code)
+		self.assertEqual(rifiutato.headers.getlist("Cache-Control"), [regole.NON_TENERE])
+
 	def test_tolto_il_file_l_oggetto_va(self):
 		doc = self.nuovo()
 		archivio.sposta()
@@ -191,6 +264,7 @@ class TestArchivio(IntegrationTestCase):
 
 	def test_tolto_dal_database_la_notte_lo_porta_via(self):
 		doc = self.nuovo()
+		self.addCleanup(self.togli_dal_disco, doc)
 		archivio.sposta()
 		chiave = archivio.archiviato(doc.file_url).object_key
 		frappe.db.delete("File", {"name": doc.name})

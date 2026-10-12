@@ -10,12 +10,18 @@
         <p class="text-p-sm text-ink-gray-6">
           {{ reason || __('To download a document we send you a code again.') }}
         </p>
+        <!-- the field keeps the code's digits, never its first six
+             characters: with a maxlength a «123 456» pasted lost a digit. They
+             are kept before frappe-ui's own input handler reads the field -->
         <FormControl
           v-model="code"
           :label="__('The code')"
           inputmode="numeric"
           autocomplete="one-time-code"
-          maxlength="6"
+          @input="
+            (e) =>
+              (e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6))
+          "
         />
         <ErrorMessage :message="error" />
       </div>

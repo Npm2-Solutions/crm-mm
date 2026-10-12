@@ -206,12 +206,17 @@ def _chiudi_la_giornata(giorno: datetime.date, adesso: datetime.datetime, ieri: 
 	aperti = senza_esito(giorno)
 	if not aperti:
 		return
+	# one appointment is asked about in its own sentence, never «1 appuntamenti»
+	if len(aperti) == 1:
+		frase, nomi = (N.ESITO_IERI if ieri else N.ESITO_OGGI), []
+	else:
+		frase, nomi = (N.ESITI_IERI if ieri else N.ESITI_OGGI), [len(aperti)]
 	for utente in chi_avvisare():
 		avvisa(
 			utente,
 			"Agenda",
-			N.ESITI_IERI if ieri else N.ESITI_OGGI,
-			[len(aperti)],
+			frase,
+			nomi,
 			oggetto=("CRM Appointment", aperti[0]),
 			messaggio=", ".join(aperti),
 		)

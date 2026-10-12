@@ -705,7 +705,7 @@ async function laLezioneFinisce(s: Settimana) {
 			await page.goto('/crm/accoglienza', { waitUntil: 'domcontentloaded' })
 			for (const chiave of venuti) {
 				const nome = s.p(chiave).nome
-				const fattura = page.getByRole('button', { name: `Emetti la fattura a ${nome}` })
+				const fattura = page.getByRole('button', { name: `Prepara la fattura a ${nome}` })
 				await expect(fattura).toBeVisible({ timeout: 30000 })
 				await premi(seg, fattura)
 				await emettiLaBozza(s, seg, page, chiave, { pagamento: pagamenti[chiave] })

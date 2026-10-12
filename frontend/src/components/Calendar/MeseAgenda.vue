@@ -20,23 +20,31 @@
         {{ nome }}
       </span>
     </div>
+    <!-- the weeks share the height there is, the whole month in sight; each
+         day lists as many appointments of 24px (WCAG 2.5.8) as its height
+         holds (quantiNelGiorno): three were 20px each, and taller weeks to
+         hold them hid a six-week month's last on a laptop. A day keeps what
+         it draws inside itself, never over the week below -->
     <div
+      ref="griglia"
       class="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto"
       :style="{
-        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '6.75rem'}, 1fr))`,
+        gridTemplateRows: `repeat(${settimane.length}, minmax(${compatto ? '3.5rem' : '6rem'}, 1fr))`,
       }"
     >
       <template v-for="settimana in settimane" :key="settimana[0]">
         <div
           v-for="data in settimana"
           :key="data"
-          class="relative flex min-w-0 flex-col gap-0.5 border-b border-r border-outline-gray-2 p-1.5 [&:nth-child(7n)]:border-r-0"
+          class="relative flex min-w-0 flex-col gap-0.5 overflow-hidden border-b border-r border-outline-gray-2 p-1.5 [&:nth-child(7n)]:border-r-0"
           :class="delMese(data) ? '' : 'bg-surface-gray-1'"
         >
-          <!-- the whole day opens it -->
+          <!-- the whole day opens it; its keyboard ring is drawn inside it,
+               where the cell's clip does not reach (a contrast theme draws
+               no ring but this outline) -->
           <button
             type="button"
-            class="absolute inset-0 rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-4 active:bg-surface-gray-2"
+            class="absolute inset-0 rounded-none focus-visible:[outline-offset:-2px] active:bg-surface-gray-2"
             :aria-label="parolaDelGiorno(data)"
             @click="$emit('giorno', data)"
           />
@@ -55,15 +63,14 @@
             >
               {{ numero(data) }}
             </span>
-            <!-- how many: beside the day on a desk, a small tag under it on
-                 a phone, where a grey number read as another date -->
+            <!-- how many: a small tag beside the day on a desk, under it on a
+                 phone. A bare grey number beside the day's read as another
+                 date («28  21») on the desk too -->
             <span
               v-if="giorni[data].totale"
-              class="tabular-nums text-ink-gray-6"
+              class="rounded-full bg-surface-gray-2 px-1.5 tabular-nums text-ink-gray-6"
               :class="
-                compatto
-                  ? 'rounded-full bg-surface-gray-2 px-1.5 text-[11px] leading-4'
-                  : 'text-p-xs'
+                compatto ? 'text-[11px] leading-4' : 'text-p-xs leading-5'
               "
               aria-hidden="true"
             >
@@ -75,7 +82,7 @@
               v-for="cosa in giorni[data].primi"
               :key="cosa.id"
               type="button"
-              class="relative flex min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-[18px] hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+              class="relative flex min-h-6 min-w-0 items-center gap-1 rounded px-1 text-left text-p-xs leading-5 hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
               :class="scelto === cosa.id ? 'bg-surface-gray-2' : ''"
               @click.stop="$emit('apri', cosa)"
             >
@@ -116,12 +123,13 @@ import {
   coloreDelBlocco,
   giornoDelMese,
   meseDi,
+  quantiNelGiorno,
   testoDelBlocco,
 } from '@/utils/agenda'
 import { NAMED_HEX } from '@/utils/calendarColors'
 import { appLocale } from '@/utils/locale'
 import { formatMinutes, oggiDelCentro } from '@/utils/scheduler'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = defineProps({
   /** any day of the month shown, YYYY-MM-DD */
@@ -143,11 +151,36 @@ const settimane = computed(() => meseDi(props.giorno))
 const mese = computed(() => props.giorno.slice(0, 7))
 const delMese = (data) => data.slice(0, 7) === mese.value
 
+// the grid's height, followed as the window changes: a week's is its share
+// of it, never under 6rem, where the grid scrolls instead. The day is laid
+// out in rem, which the browser's text size makes larger than 16px
+const griglia = ref(null)
+const altezza = ref(0)
+const rem = ref(16)
+let osservatore = null
+onMounted(() => {
+  if (!griglia.value || typeof ResizeObserver === 'undefined') return
+  osservatore = new ResizeObserver(([voce]) => {
+    rem.value =
+      parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    altezza.value = voce.contentRect.height
+  })
+  osservatore.observe(griglia.value)
+})
+onBeforeUnmount(() => osservatore?.disconnect())
+const perSettimana = computed(() =>
+  altezza.value
+    ? Math.max(6 * rem.value, altezza.value / settimane.value.length)
+    : 0,
+)
+
 const giorni = computed(() =>
   Object.fromEntries(
-    settimane.value
-      .flat()
-      .map((data) => [data, giornoDelMese(props.cose.get(data) || [], 3)]),
+    settimane.value.flat().map((data) => {
+      const cose = props.cose.get(data) || []
+      const quanti = quantiNelGiorno(perSettimana.value, cose.length, rem.value)
+      return [data, giornoDelMese(cose, quanti)]
+    }),
   ),
 )
 

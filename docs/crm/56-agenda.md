@@ -47,9 +47,15 @@ Il design system diceva già come va un appuntamento (AgendaEvent, nella
   venerdì, sabato e domenica quando lavora o ha qualcosa. Un tocco
   sull'intestazione di un giorno apre quel giorno. Sette giorni con tutti i
   professionisti insieme non si leggono: per quello c'è il Giorno.
-- **Mese**: ogni giorno con quanti appuntamenti ha e i primi tre per orario e
-  persona, poi «altri N»; un tocco sul giorno lo apre, su una riga apre
-  l'appuntamento. Sul telefono il numero e quanti ne ha.
+- **Mese**: ogni giorno con quanti appuntamenti ha e i primi per orario e
+  persona, alti 24 px perché si tocchino: tutti se ci stanno, altrimenti quanti
+  ne stanno accanto ad «altri N», almeno uno, secondo l'altezza della settimana
+  (`quantiNelGiorno`, in rem: con il testo del browser più grande ne stanno
+  meno). Le settimane si dividono l'altezza dello schermo, mai sotto i 6rem: un
+  mese di sei settimane sta intero in una finestra del browser alta circa
+  700 px, come su un portatile da 1536×864; in una più bassa la griglia scorre.
+  Un tocco sul giorno lo apre, su una riga apre l'appuntamento. Sul telefono il
+  numero e quanti ne ha.
 - **Telefono**: il giorno si apre come elenco (come prima); Giorno e Mese sono una
   scelta più in là, la Settimana no (sette colonne su un telefono non dicono niente).
   La vista si sceglie da un tasto alto come gli altri della riga («Lista»,
@@ -149,6 +155,20 @@ prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
   predefinito della DocType dove non c'è niente, mai sopra una scelta. Gli orari mostrati non sono
   un'impostazione: vengono dagli orari del centro e dai turni (Impostazioni >
   Agenda > Orari e turni).
+- **I promemoria degli eventi** (le «Notifiche degli eventi» del centro, o quelle
+  che un evento ha di suo) arrivano a chi l'evento riguarda: a chi lo possiede e ai
+  partecipanti che sono utenti attivi del centro. La copia di un appuntamento è
+  del primo professionista e ogni professionista ne è partecipante, così ognuno
+  riceve il promemoria dei suoi appuntamenti; le persone che vengono no (le
+  avvisa il centro, doc 59). A schermo con il titolo; per email una volta sola,
+  scritta nel registro prima di partire, con il titolo (della copia di un
+  appuntamento solo «appuntamento»), il giorno, l'ora e il pulsante che apre
+  l'agenda, mai le note (doc 43, 12/10/2026). Ognuno parte alla sua ora, mai
+  prima: quelli di minuti e ore entro quattro minuti, quelli di giorni e
+  settimane entro l'ora (prima quello «1 giorno prima» di un appuntamento fra le 8
+  e le 16 non partiva mai); per email mai ad appuntamento cominciato (preso la
+  mattina stessa, con quello «1 giorno prima», lo riceveva mentre cominciava).
+  Nessun centro ne ha finché non li imposta: DottorCloud non ne mette di suoi.
 
 ### Il server
 
@@ -166,6 +186,38 @@ settimana, aggiunge:
   riguardano, mai l'oggetto.
 
 Un mese non li chiede.
+
+### La copia negli eventi del calendario
+
+Con «Copia gli appuntamenti negli eventi del calendario» (`CRM Scheduling
+Settings.sync_to_event`, acceso all'inizio) ogni appuntamento ha la sua copia, un
+`Event` privato (`sync_event` in `crm_appointment.py`), per il calendario del
+framework. È del primo professionista, chiunque abbia prenotato, e ogni
+professionista dell'appuntamento ne è partecipante con il suo utente e il suo
+indirizzo: un evento privato lo legge chi lo possiede e ogni utente il cui nome,
+che è il suo indirizzo, sta scritto su una delle sue righe. Chi viene c'è con la
+sua scheda (persona, contatto o trattativa), mai con un indirizzo: con il suo,
+l'utente dell'area cliente che ha quel nome trovava la copia nei suoi elenchi e ne
+leggeva la descrizione, cioè le note dell'appuntamento, e agli stessi indirizzi
+vanno i promemoria degli eventi per email (`crm/api/event.py`) e, dove una copia
+va su Google, i suoi inviti. Il framework però, quando salva un evento, scrive
+l'indirizzo di un contatto su ogni riga che non ne ha: quello del contatto stesso,
+o quello che trova per la persona o la trattativa della riga.
+Subito dopo, qualunque cosa salvi la copia (l'appuntamento, la scrivania del
+framework, uno script), DottorCloud lascia l'indirizzo solo sulle righe dei
+professionisti, a ciascuno il suo (`copia_solo_ai_professionisti`, un `before_save`
+dell'`Event` che il framework chiama dopo il proprio). Un evento che il centro crea
+da sé resta com'è. Le copie che c'erano le ha corrette la patch
+`the_calendar_copy_keeps_no_address_of_who_comes` (12/10/2026).
+Una copia non va nemmeno nel riepilogo notturno del framework («Upcoming Events
+for Today», in inglese e con l'orologio a 12 ore), che mandava per email al primo
+professionista il titolo e le note delle copie del suo giorno: `sync_event` la
+crea con «Send reminder» spento, e la patch `the_calendar_copy_sends_no_digest`
+lo ha spento sulle copie che c'erano (12/10/2026). I promemoria sono quelli di
+DottorCloud (`crm/api/event.py`).
+
+Nella griglia una copia non si disegna e non conta come impegno: l'appuntamento è
+già disegnato com'è (`_impegni`, `_plain_events`).
 
 ## File
 
@@ -185,3 +237,7 @@ Un mese non li chiede.
 - `crm/api/appointments.py` (`_giornate`, `orari_di`, `_impegni`), provato in
   `crm/tests/test_scheduling.py`; `FCRM Settings.calendar_grid_step`, la pagina
   `Settings/CalendarSettings.vue`.
+- `crm/fcrm/doctype/crm_appointment/crm_appointment.py` (`sync_event`,
+  `copia_solo_ai_professionisti`, agganciata in `crm/hooks.py`) e la patch
+  `crm/patches/v1_0/the_calendar_copy_keeps_no_address_of_who_comes.py`, provate in
+  `crm/tests/test_copia_nel_calendario.py`.

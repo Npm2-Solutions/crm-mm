@@ -5,6 +5,7 @@ import {
   ASPETTI,
   aspetto,
   conteggio,
+  nomeDiAltro,
   orario,
   sezioneDi,
   sezioni,
@@ -123,5 +124,21 @@ describe('the count on the sidebar', () => {
     expect(conteggio(undefined)).toBe('')
     expect(conteggio(7)).toBe('7')
     expect(conteggio(140)).toBe('99+')
+  })
+})
+
+describe("the name of «More» in the phone's bar", () => {
+  const t = (frase, valori) => frase.replace('{0}', valori?.[0])
+
+  it('is the word alone with nothing to read', () => {
+    expect(nomeDiAltro(conteggio(0), t)).toBe('More')
+  })
+
+  it('says how many wait after the word one sees, one in a sentence of its own', () => {
+    expect(nomeDiAltro(conteggio(1), t)).toBe('More, 1 unread notification')
+    expect(nomeDiAltro(conteggio(5), t)).toBe('More, 5 unread notifications')
+    expect(nomeDiAltro(conteggio(140), t)).toBe(
+      'More, 99+ unread notifications',
+    )
   })
 })

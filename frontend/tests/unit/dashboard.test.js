@@ -15,10 +15,13 @@ import {
   larghezzaDiUno,
   mobileOrder,
   newItem,
+  PASSI,
+  passiPossibili,
   perRiga,
   newKey,
   periodRange,
   searchCatalog,
+  spostaWidget,
   toSavedLayout,
   usage,
 } from '@/utils/dashboard'
@@ -320,6 +323,126 @@ describe('the grid', () => {
   })
 })
 
+describe('moving without dragging', () => {
+  // [key, x, y, w, h]: a widget's place on the 20-column grid
+  const griglia = (...caselle) =>
+    caselle.map(([i, x, y, w, h]) => ({ name: i, layout: { i, x, y, w, h } }))
+  const dove = (items) =>
+    Object.fromEntries(
+      items.map(({ layout: { i, x, y, w, h } }) => [i, [x, y, w, h]]),
+    )
+
+  it('goes up past the widget above, which goes below it, and back down', () => {
+    // a row up would come straight back: the grid packs upwards
+    const items = griglia(['a', 0, 0, 20, 8], ['b', 0, 8, 20, 3])
+    const su = spostaWidget(items, 'b', PASSI.su)
+    expect(dove(su)).toEqual({ a: [0, 3, 20, 8], b: [0, 0, 20, 3] })
+    expect(dove(spostaWidget(su, 'b', PASSI.giu))).toEqual(dove(items))
+  })
+
+  it('goes past a whole row of widgets side by side', () => {
+    const items = griglia(
+      ['a', 0, 0, 10, 3],
+      ['c', 10, 0, 10, 6],
+      ['b', 0, 6, 20, 3],
+    )
+    const su = spostaWidget(items, 'b', PASSI.su)
+    expect(dove(su)).toEqual({
+      a: [0, 3, 10, 3],
+      c: [10, 3, 10, 6],
+      b: [0, 0, 20, 3],
+    })
+    expect(dove(spostaWidget(su, 'b', PASSI.giu))).toEqual(dove(items))
+  })
+
+  it('goes down past the next widget in its columns, over a gap', () => {
+    // the left column ends at 6, the right one at 9: under c is a gap, then d
+    const items = griglia(
+      ['a', 0, 0, 10, 3],
+      ['c', 0, 3, 10, 3],
+      ['t', 10, 0, 10, 9],
+      ['d', 0, 9, 20, 3],
+    )
+    expect(passiPossibili(items, 'c')).toMatchObject({ su: true, giu: true })
+    expect(dove(spostaWidget(items, 'c', PASSI.giu))).toEqual({
+      a: [0, 0, 10, 3],
+      t: [10, 0, 10, 9],
+      d: [0, 9, 20, 3],
+      c: [0, 12, 10, 3],
+    })
+  })
+
+  it('moves sideways a column at a time, and what it covers goes below it', () => {
+    const items = griglia(['b', 0, 0, 5, 3], ['c', 5, 0, 5, 3])
+    expect(dove(spostaWidget(items, 'b', PASSI.destra))).toEqual({
+      b: [1, 0, 5, 3],
+      c: [5, 3, 5, 3],
+    })
+    // never off the grid
+    expect(dove(spostaWidget(items, 'b', PASSI.sinistra))).toEqual(dove(items))
+  })
+
+  it('grows and shrinks by a column or a row, within the grid and never under one', () => {
+    const items = griglia(['b', 0, 0, 20, 3], ['d', 0, 3, 20, 3])
+    expect(dove(spostaWidget(items, 'b', PASSI.piuAlto))).toEqual({
+      b: [0, 0, 20, 4],
+      d: [0, 4, 20, 3],
+    })
+    // the one below follows it up: the grid leaves no gap
+    expect(dove(spostaWidget(items, 'b', PASSI.piuBasso))).toEqual({
+      b: [0, 0, 20, 2],
+      d: [0, 2, 20, 3],
+    })
+    expect(dove(spostaWidget(items, 'b', PASSI.piuLargo))).toEqual(dove(items))
+    // at the right edge it grows to the left
+    const aDestra = griglia(['e', 15, 0, 5, 3])
+    expect(dove(spostaWidget(aDestra, 'e', PASSI.piuLargo))).toEqual({
+      e: [14, 0, 6, 3],
+    })
+    const piccolo = griglia(['p', 0, 0, 1, 1])
+    expect(dove(spostaWidget(piccolo, 'p', PASSI.piuStretto))).toEqual({
+      p: [0, 0, 1, 1],
+    })
+    expect(dove(spostaWidget(piccolo, 'p', PASSI.piuBasso))).toEqual({
+      p: [0, 0, 1, 1],
+    })
+  })
+
+  it('leaves the items it was given as they were, and keeps the rest of each', () => {
+    const items = griglia(['a', 0, 0, 20, 8], ['b', 0, 8, 20, 3])
+    items[1].config = { title: 'Incassi' }
+    const prima = JSON.stringify(items)
+    const dopo = spostaWidget(items, 'b', PASSI.su)
+    expect(JSON.stringify(items)).toBe(prima)
+    expect(dopo[1]).toMatchObject({ name: 'b', config: { title: 'Incassi' } })
+    // a widget nobody has: nothing moves
+    expect(spostaWidget(items, 'nessuno', PASSI.su)).toBe(items)
+  })
+
+  it('says which steps change anything, for the menu', () => {
+    const items = griglia(['a', 0, 0, 1, 1], ['b', 0, 1, 20, 3])
+    expect(passiPossibili(items, 'a')).toEqual({
+      su: false,
+      giu: true,
+      sinistra: false,
+      destra: true,
+      piuLargo: true,
+      piuStretto: false,
+      piuAlto: true,
+      piuBasso: false,
+    })
+    expect(passiPossibili(items, 'b')).toMatchObject({
+      su: true,
+      giu: false,
+      destra: false,
+      piuLargo: false,
+      piuStretto: true,
+      piuBasso: true,
+    })
+    expect(passiPossibili(items, 'nessuno')).toEqual({})
+  })
+})
+
 describe('the catalogue', () => {
   const widgets = [
     {
@@ -417,6 +540,81 @@ describe('charts', () => {
     expect(seriesColors([{ label: 'Other', other: true }])).toEqual([
       OTHER.light,
     ])
+  })
+
+  // the palette's checks, computed rather than eyeballed
+  const lineare = (hex) =>
+    [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+  const luminanza = (hex) => {
+    const [r, g, b] = lineare(hex)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  // WCAG's contrast ratio
+  const contrasto = (a, b) => {
+    const [chiaro, scuro] = [luminanza(a), luminanza(b)].sort((x, y) => y - x)
+    return (chiaro + 0.05) / (scuro + 0.05)
+  }
+  // OKLab ΔE ×100, as seen with protanopia or deuteranopia (Machado, Oliveira
+  // and Fernandes 2009, severity 1) or without
+  const MACHADO = {
+    protan: [
+      [0.152286, 1.052583, -0.204868],
+      [0.114503, 0.786281, 0.099216],
+      [-0.003882, -0.048116, 1.051998],
+    ],
+    deutan: [
+      [0.367322, 0.860646, -0.227968],
+      [0.280085, 0.672501, 0.047413],
+      [-0.01182, 0.04294, 0.968881],
+    ],
+  }
+  const oklab = ([r, g, b]) => {
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+    return [
+      0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+      1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+      0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+    ]
+  }
+  const visto = (hex, come) => {
+    const rgb = lineare(hex)
+    if (!come) return oklab(rgb)
+    return oklab(
+      MACHADO[come].map((riga) =>
+        Math.min(
+          1,
+          Math.max(0, riga[0] * rgb[0] + riga[1] * rgb[1] + riga[2] * rgb[2]),
+        ),
+      ),
+    )
+  }
+  const distanza = (a, b, come) => {
+    const [x, y] = [visto(a, come), visto(b, come)]
+    return 100 * Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2])
+  }
+
+  it('draws every series at 3:1 or more on its card, in both themes', () => {
+    // WCAG 1.4.11: a line or a bar with no value on it is told by its colour
+    for (const colore of PALETTE.light)
+      expect(contrasto(colore, '#ffffff')).toBeGreaterThanOrEqual(3)
+    for (const colore of PALETTE.dark)
+      expect(contrasto(colore, '#1d201f')).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps two neighbours in the order apart, colour-blind or not', () => {
+    for (const tavolozza of [PALETTE.light, PALETTE.dark]) {
+      for (let i = 1; i < tavolozza.length; i++) {
+        const [a, b] = [tavolozza[i - 1], tavolozza[i]]
+        expect(distanza(a, b)).toBeGreaterThanOrEqual(15)
+        expect(distanza(a, b, 'protan')).toBeGreaterThanOrEqual(8)
+        expect(distanza(a, b, 'deutan')).toBeGreaterThanOrEqual(8)
+      }
+    }
   })
 
   it('wraps names under vertical bars when each bar has room', () => {

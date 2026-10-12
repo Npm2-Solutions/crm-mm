@@ -911,10 +911,6 @@ msgstr "Un referto si oscura insieme alla sua visita"
 msgid "A request that was answered is kept"
 msgstr "Una richiesta che ha avuto risposta si conserva"
 
-#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
-msgid "A required checkbox with the link to the policy above."
-msgstr "Una casella obbligatoria con il link all'informativa qui sopra."
-
 #: crm/integrations/meta/errors.py
 msgid "A required field was missing from the message. That is ours to fix."
 msgstr "Nel messaggio mancava un campo obbligatorio. Tocca a noi correggerlo."
@@ -3120,10 +3116,6 @@ msgstr "Richiedilo a chi ha firmato una versione precedente"
 msgid "Ask for marketing consent"
 msgstr "Chiedi il consenso marketing"
 
-#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
-msgid "Ask for privacy consent"
-msgstr "Chiedi il consenso privacy"
-
 #: crm/moduli/richieste.py
 msgid "Ask the desk to hand the tablet over again"
 msgstr "Chiedi alla segreteria di consegnarti di nuovo il tablet"
@@ -3513,7 +3505,7 @@ msgstr "Completa in automatico le nuove aziende"
 #. Agreement'
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 msgid "Auto-generated from the portal view — do not edit directly unless you know what you're doing! "
-msgstr "Generato in automatico dalla schermata delle impostazioni: non modificarlo direttamente se non sai cosa stai facendo! "
+msgstr "Generato in automatico dalla schermata delle impostazioni: non modificarlo direttamente se non sai cosa stai facendo. "
 
 #. Label of the autocomplete (Autocomplete) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
@@ -10946,10 +10938,6 @@ msgstr "Non è stato possibile inviare il modello WhatsApp"
 msgid "Failed to send comment!"
 msgstr ""
 
-#: frontend/src/components/CommunicationArea.vue:260
-msgid "Failed to send email!"
-msgstr "Invio dell'email non riuscito!"
-
 #: frontend/src/components/Settings/Meta/MetaConnection.vue
 msgid "Failed to start login"
 msgstr "Non è stato possibile avviare l'accesso"
@@ -12985,11 +12973,11 @@ msgstr "Fattura"
 
 #: frontend/src/pages/Invoices.vue
 msgid "Invoice it"
-msgstr "Emetti la fattura"
+msgstr "Prepara la fattura"
 
 #: frontend/src/pages/Today.vue
 msgid "Invoice it to {0}"
-msgstr "Emetti la fattura a {0}"
+msgstr "Prepara la fattura a {0}"
 
 #: frontend/src/components/CycleDialog.vue
 msgid "Invoice the cycle"
@@ -20444,14 +20432,6 @@ msgid "Played when the practice is closed. Supports the same <code>{hours}</code
 msgstr "Si sente quando il centro è chiuso. Accetta gli stessi segnaposto <code>{hours}</code> e <code>{time}</code>."
 
 #: crm/api/service_booking.py
-msgid "Please accept the privacy policy to book"
-msgstr "Accetta l'informativa sulla privacy per prenotare"
-
-#: crm/scheduling/attese_pubblico.py
-msgid "Please accept the privacy policy to go on the waiting list"
-msgstr "Accetta l'informativa sulla privacy per entrare in lista d'attesa"
-
-#: crm/api/service_booking.py
 msgid "Please answer the question: {0}"
 msgstr "Rispondi alla domanda: {0}"
 
@@ -22283,10 +22263,6 @@ msgstr "Le richieste di richiamata finché la persona non viene la prima volta: 
 #: crm/fcrm/doctype/crm_tracking_settings/crm_tracking_settings.json
 msgid "Require Consent"
 msgstr "Chiedi il consenso"
-
-#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
-msgid "Require Privacy Consent"
-msgstr "Chiedi il consenso privacy"
 
 #: frontend/src/components/Settings/TrackingSettings.vue
 msgid "Require consent"
@@ -26583,10 +26559,6 @@ msgstr "Il centro non prende la lista d'attesa dall'area"
 #: crm/moduli/firme.py
 msgid "The centre has no signature provider yet: sign it on paper, or set one up"
 msgstr "Il centro non ha ancora un fornitore di firma: firmalo su carta, o impostane uno"
-
-#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
-msgid "The centre is ready. Have a good day at work!"
-msgstr "Il centro è pronto. Buon lavoro!"
 
 #: crm/moduli/richieste.py
 msgid "The centre sends no email yet: set up the outgoing email first"
@@ -35242,7 +35214,7 @@ msgstr "Chiaro"
 
 #: crm/marchio.py
 msgid "Welcome to Frappe!"
-msgstr "Benvenuto in DottorCloud!"
+msgstr "Ti diamo il benvenuto in DottorCloud"
 
 #: frontend/src/components/Settings/Scheduling/ServicesSettings.vue
 msgctxt "Service editor tab"
@@ -35341,11 +35313,6 @@ msgstr "Spente"
 msgctxt "Automation state"
 msgid "Active"
 msgstr "Attiva"
-
-#: frontend/src/pages/Automations.vue
-msgctxt "Automation state"
-msgid "Paused"
-msgstr "In pausa"
 
 #: frontend/src/pages/Automations.vue
 msgctxt "Automation state"
@@ -35575,10 +35542,6 @@ msgstr "Apri"
 msgctxt "Kind of notification"
 msgid "Notification"
 msgstr "Notifica"
-
-#: frontend/src/components/Mobile/MobileBottomNav.vue
-msgid "Unread notifications"
-msgstr "Notifiche da leggere"
 
 #: frontend/src/components/EventNotificationsArea.vue
 msgid "Starting now"
@@ -41471,7 +41434,7 @@ msgstr "Sera"
 
 #: frontend/src/utils/automation.js
 msgid "Welcome a new lead"
-msgstr "Benvenuto a un nuovo contatto"
+msgstr "Dai il benvenuto a chi ti contatta"
 
 #: frontend/src/utils/automation.js
 msgid "Email straight away, reminder after two days, task for the owner."
@@ -42678,7 +42641,7 @@ msgstr "Copia il codice"
 
 #: frontend/vite/frappeUi.js
 msgid "Copied!"
-msgstr "Copiato!"
+msgstr "Copiato"
 
 #: frontend/vite/frappeUi.js
 msgid "No icons found for \"{0}\""
@@ -43724,7 +43687,7 @@ msgstr "Accedi"
 
 #: frappe/www/login.html
 msgid "Welcome! Please sign in to continue."
-msgstr "Ti diamo il benvenuto! Accedi per continuare."
+msgstr "Ti diamo il benvenuto: accedi per continuare."
 
 #: frappe/www/login.html
 msgid "Sign Up"
@@ -43792,7 +43755,7 @@ msgstr "Scrivi la password"
 
 #: frappe/www/update-password.html
 msgid "Poor!"
-msgstr "Debole!"
+msgstr "Debole"
 
 #: frappe/www/update-password.html
 msgid "Good"
@@ -43800,7 +43763,7 @@ msgstr "Buona"
 
 #: frappe/www/update-password.html
 msgid "Great!"
-msgstr "Ottima!"
+msgstr "Ottima"
 
 #: frappe/templates/includes/login/login.js
 msgid "Email is required."
@@ -43879,10 +43842,6 @@ msgid "Pick a time slot first."
 msgstr "Prima scegli un orario."
 
 #: crm/www/book.html
-msgid "Booked! {0}: a confirmation email is on its way."
-msgstr "Prenotato! {0}: ti arriva un'email di conferma."
-
-#: crm/www/book.html
 msgid "Your booking: {0}"
 msgstr "La tua prenotazione: {0}"
 
@@ -43905,10 +43864,6 @@ msgstr "Prenotazione annullata."
 #: crm/www/book.html
 msgid "Pick a new time below."
 msgstr "Scegli qui sotto il nuovo orario."
-
-#: crm/www/book.html
-msgid "Rescheduled! A new confirmation email is on its way."
-msgstr "Spostata! Ti arriva una nuova email di conferma."
 
 #: frontend/src/components/IconPicker.vue
 msgid "More reactions"
@@ -45647,7 +45602,7 @@ msgstr "Azzera tutto"
 
 #: frontend/src/components/Calendar/VistaAgenda.vue
 msgid "View options"
-msgstr "Opzioni di visualizzazione"
+msgstr "Opzioni della vista"
 
 #: frontend/src/components/Calendar/VistaAgenda.vue
 msgid "Height of the hours"
@@ -50897,3 +50852,308 @@ msgstr "{0} numeri dell'account rispondono altrove - un centralino, un'altra app
 #: frontend/src/utils/numeri.js
 msgid "{0} refused the documents. Put them right and send them again."
 msgstr "{0} ha rifiutato i documenti. Correggili e mandali di nuovo."
+
+#: frontend/src/pages/Today.vue
+msgid "Finish the draft invoice of {0}"
+msgstr "Completa la bozza di fattura di {0}"
+#: frontend/src/components/SchedeDelRecord.vue
+msgid "{0}, other sections"
+msgstr "{0}, altre sezioni"
+
+#: frontend/vite/frappeUi.js
+msgid "Select row"
+msgstr "Seleziona la riga"
+
+#: frontend/src/components/Settings/Scheduling/TeamMatrix.vue
+msgid "Services and who does them"
+msgstr "I servizi e chi li esegue"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "{0} years · {1}"
+msgstr "{0} anni · {1}"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "Under a year · {0}"
+msgstr "Meno di un anno · {0}"
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "Deleted"
+msgstr "Eliminato"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Delete the link {0}?"
+msgstr "Vuoi eliminare il link {0}?"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Its {0} clicks are lost, and whoever opens it from a message already sent or an automation finds nothing."
+msgstr "I suoi {0} clic si perdono, e chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Delete the link"
+msgstr "Elimina il link"
+
+#: frontend/src/components/Modals/DealModal.vue
+msgid "Choose the person, or switch off «Choose Existing Person» to write a new one."
+msgstr "Scegli la persona, oppure spegni «Scegli una persona esistente» per scriverne una nuova."
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a professional in two places at once"
+msgstr "Impedisci che un professionista sia in due posti alla volta"
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a room or machine over its capacity"
+msgstr "Impedisci di superare la capienza di un ambulatorio o di un macchinario"
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Block a client in two places at once"
+msgstr "Impedisci che un cliente sia in due posti alla volta"
+
+#: crm/clinica/parole.py
+msgid "Block a patient in two places at once"
+msgstr "Impedisci che un paziente sia in due posti alla volta"
+
+#: frontend/src/utils/automation.js
+msgid "on the day of «{0}»"
+msgstr "il giorno di «{0}»"
+
+#: frontend/src/utils/automation.js
+msgid "{0} days after «{1}»"
+msgstr "{0} giorni dopo «{1}»"
+
+#: frontend/src/utils/automation.js
+msgid "{0} days before «{1}»"
+msgstr "{0} giorni prima di «{1}»"
+
+#: frontend/src/pages/AutomationEditor.vue
+#: frontend/src/pages/Automations.vue
+msgctxt "Automation state"
+msgid "Off"
+msgstr "Spenta"
+
+#: frontend/src/components/Settings/Scheduling/RemindersSettings.vue
+msgid "Switch on «Remind of the appointments» to choose when and how they leave."
+msgstr "Accendi «Ricorda gli appuntamenti» per scegliere quando e come partono."
+
+#: frontend/src/components/Settings/AssistantSettings.vue
+msgid "These are used once you switch the assistant on."
+msgstr "Si usano quando accendi l'assistente."
+
+#: frontend/src/utils/menu.js
+msgid "Page not found"
+msgstr "Pagina non trovata"
+
+#: frontend/src/pages/Today.vue
+#: frontend/src/pages/Invoices.vue
+msgid "Finish the draft invoice"
+msgstr "Completa la bozza di fattura"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "This is the usual way, not yet confirmed: tap how the person really paid, the cash closing counts on it."
+msgstr "È il modo predefinito, non ancora confermato: tocca come ha pagato davvero, la chiusura di cassa conta su questo."
+
+#: frontend/src/components/Settings/Settings.vue
+msgid "The page you asked for is not here"
+msgstr "La pagina che cercavi non è qui"
+
+#: frontend/src/components/Settings/Settings.vue
+msgid "It is not among the settings you can see: your level does not open it, or it is not on for this centre. Whoever manages the centre can tell you more."
+msgstr "Non è tra le impostazioni che puoi vedere: il tuo livello non la apre, oppure non è attiva per questo centro. Chi gestisce il centro può dirti di più."
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgid "Choose the service first: the free times depend on how long it lasts and who does it."
+msgstr "Prima scegli il servizio: gli orari liberi dipendono da quanto dura e da chi lo fa."
+
+#: frontend/src/components/Dashboard/widgets/NumberWidget.vue
+msgctxt "Dashboard meter"
+msgid "Progress"
+msgstr "Avanzamento"
+
+#: crm/fcrm/doctype/crm_automation_enrollment/crm_automation_enrollment.json
+msgid "Progress"
+msgstr "Avanzamento"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "1 year · {0}"
+msgstr "1 anno · {0}"
+
+#: frontend/src/utils/automation.js
+msgid "the day after «{0}»"
+msgstr "il giorno dopo «{0}»"
+
+#: frontend/src/utils/automation.js
+msgid "the day before «{0}»"
+msgstr "il giorno prima di «{0}»"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Whoever opens it from a message already sent or an automation finds nothing."
+msgstr "Chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Its one click is lost, and whoever opens it from a message already sent or an automation finds nothing."
+msgstr "Il suo unico clic si perde, e chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "It can be deleted only while nothing uses it: no appointment, service or price. To stop booking it and keep it, switch it off instead."
+msgstr "Si può eliminare solo se niente lo usa: nessun appuntamento, servizio o prezzo. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+#: frontend/src/components/Telephony/TelnyxCallUI.vue
+msgid "Show the call"
+msgstr "Mostra la chiamata"
+#: crm/notifiche/regole.py
+msgid "An appointment today has no outcome: did the person come?"
+msgstr "Un appuntamento di oggi è senza esito: la persona è venuta?"
+
+#: crm/notifiche/regole.py
+msgid "An appointment yesterday has no outcome: did the person come?"
+msgstr "Un appuntamento di ieri è senza esito: la persona è venuta?"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} has appointments, and they keep it: switch it off to stop booking it"
+msgstr "{0} ha degli appuntamenti, che lo tengono: per non prenotarlo più, spegnilo"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} is needed by the service {1}: take it off the service first, or switch it off to stop booking it"
+msgstr "{0} serve al servizio {1}: toglilo prima dal servizio, oppure spegnilo per non prenotarlo più"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} has a price of its own in the price list {1}: take that price away first, or switch it off to stop booking it"
+msgstr "{0} ha un prezzo suo nel listino {1}: togli prima quel prezzo, oppure spegnilo per non prenotarlo più"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} is matched to the booking platform {1}: take the match away there first, or switch it off to stop booking it"
+msgstr "{0} è abbinato alla piattaforma di prenotazione {1}: togli prima l'abbinamento, oppure spegnilo per non prenotarlo più"
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "New service level"
+msgstr "Nuovo livello di servizio"
+
+#: frontend/src/components/Settings/AssignmentRules/AssignmentRulesList.vue
+msgid "A rule gives each new person or deal to whoever should follow it: make one with «New rule»."
+msgstr "Una regola dà ogni persona o trattativa nuova a chi deve seguirla: creane una con «Nuova regola»."
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "A service level says how soon a request is answered: make one with «New service level»."
+msgstr "Un livello di servizio dice entro quando si risponde a una richiesta: creane uno con «Nuovo livello di servizio»."
+
+#: frontend/src/components/Settings/Pipelines/PipelineList.vue
+msgid "A pipeline lines up the stages a deal goes through: make one with «New Pipeline»."
+msgstr "Una pipeline mette in fila le fasi di una trattativa: creane una con «Nuova pipeline»."
+
+#: frontend/src/components/Settings/Hierarchy/Hierarchy.vue
+msgid "Who sees which people and deals follows the hierarchy: add the first user with «Add User»."
+msgstr "Chi vede quali persone e trattative segue la gerarchia: aggiungi il primo utente con «Aggiungi un utente»."
+
+#: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue
+msgid "A template is an email written once and sent again and again: make one with «New template»."
+msgstr "Un modello è un'email scritta una volta e mandata più volte: creane uno con «Nuovo modello»."
+
+#: frontend/src/components/Settings/Users.vue
+msgid "Whoever works with you gets their access and their levels here: add them with «Add User»."
+msgstr "Chi lavora con te ha qui il suo accesso e i suoi livelli: aggiungilo con «Aggiungi un utente»."
+
+#: frontend/src/components/CommunicationArea.vue
+msgid "The email was not sent"
+msgstr "L'email non è stata inviata"
+
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "The centre is ready: every first step is done."
+msgstr "Il centro è pronto: tutti i primi passi sono fatti."
+
+#: crm/www/book.html
+msgid "Booked for {0}: a confirmation email is on its way."
+msgstr "Prenotato per {0}: ti arriva un'email di conferma."
+
+#: crm/www/book.html
+msgid "Moved: a new confirmation email is on its way."
+msgstr "Spostata: ti arriva una nuova email di conferma."
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move or resize"
+msgstr "Sposta o ridimensiona"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move left"
+msgstr "Sposta a sinistra"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move right"
+msgstr "Sposta a destra"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Wider"
+msgstr "Più largo"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Narrower"
+msgstr "Più stretto"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Taller"
+msgstr "Più alto"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Shorter"
+msgstr "Più basso"
+
+#: frontend/src/components/Activities/ConversationView.vue
+msgid "Event scheduled"
+msgstr "Evento fissato"
+msgid "The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead."
+msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
+msgid "Ask to confirm the privacy notice was read"
+msgstr "Chiedi la presa visione dell'informativa"
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
+msgid "A required box with the link to the notice above: it appears on the page once its address is written."
+msgstr "Una casella obbligatoria con il link all'informativa qui sopra: compare sulla pagina quando ne scrivi l'indirizzo."
+
+#: crm/api/service_booking.py
+msgid "Please confirm you have read the privacy notice to book"
+msgstr "Conferma di aver letto l'informativa sulla privacy per prenotare"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "Please confirm you have read the privacy notice to go on the waiting list"
+msgstr "Conferma di aver letto l'informativa sulla privacy per entrare in lista d'attesa"
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+#: frontend/src/utils/notifiche.js
+msgid "More, 1 unread notification"
+msgstr "Altro, 1 notifica da leggere"
+
+#: frontend/src/utils/notifiche.js
+msgid "More, {0} unread notifications"
+msgstr "Altro, {0} notifiche da leggere"
+#: frontend/src/stores/session.js
+msgid "Could not log out: try again."
+msgstr "Non è stato possibile uscire: riprova."
+#: crm/api/event.py
+msgid "Reminder: appointment on {0}"
+msgstr "Promemoria: appuntamento di {0}"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "CRM Event Reminder"
+msgstr "Promemoria dell'evento"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "An event's reminder that left by email: to whom, and for which time. Written before it leaves, so that it leaves once."
+msgstr "Il promemoria di un evento partito per email: a chi e per quale ora. Viene scritto prima che parta, così parte una volta sola."
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "Reminder"
+msgstr "Promemoria"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "One of the event's own reminders, or one of the centre's (Settings > Agenda > Agenda & reminders)."
+msgstr "Uno dei promemoria dell'evento, o uno di quelli del centro (Impostazioni > Agenda > Agenda e promemoria)."
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "Event start"
+msgstr "Inizio dell'evento"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "The time it reminded of: an event moved is reminded again of its new time."
+msgstr "L'ora che ricordava: se l'evento viene spostato, il promemoria parte di nuovo per la nuova ora."

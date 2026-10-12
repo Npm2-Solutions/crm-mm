@@ -13,8 +13,8 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
-              :aria-label="__('Edit Fields Layout')"
               v-if="puo('viste.configura') && !isMobileView"
+              :aria-label="__('Edit Fields Layout')"
               variant="ghost"
               class="w-7"
               :tooltip="__('Edit Fields Layout')"
@@ -46,10 +46,13 @@
             :loading="isLeadCreating"
             @click="createNewLead"
           />
+          <!-- from a company's website: there only once one is written. The
+               person is added without a company's fields now, and a button
+               that could never be pressed took half the phone's bar -->
           <Button
+            v-if="lead.doc.website"
             :label="__('Enrich')"
             :loading="isEnriching"
-            :disabled="!lead.doc.website"
             :tooltip="__('Fill fields from the company website')"
             iconLeft="zap"
             @click="enrichFromWebsite"
