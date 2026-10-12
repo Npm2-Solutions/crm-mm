@@ -23,12 +23,14 @@
            do not fit side by side, so it becomes a list that pushes to a page
            and comes back, and it takes the whole screen (`.settings-modal` in
            telefono.css): as a card it kept frappe-ui's margins, 16px a side and
-           48px above, and was 32px taller than the screen. -->
+           48px above, and was 32px taller than the screen. On a desk or a
+           tablet it is a card as tall as what one sees less 8rem (`dvh`: a
+           tablet's 100vh is measured with its browser's bar hidden). -->
       <div
         ref="radice"
         class="settings-modal relative flex bg-surface-gray-1"
         :class="
-          isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100vh_-_8rem)]'
+          isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100dvh_-_8rem)]'
         "
       >
         <!-- on a desk too, a way out one can see: only Escape and a click
