@@ -204,11 +204,14 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 - **Una chiamata alla volta (corretto il 12/10/2026).** La finestra ne tiene una:
   una chiamata che arriva mentre un'altra è in corso o sta partendo squilla sugli
   altri telefoni del centro, e una chiamata in uscita non parte se, mentre il
-  server la controllava, ne è arrivata una (`finestraOccupata` in
-  `utils/chiamate.js`, provato; anche in quella di Telnyx). Prima la chiamata
-  arrivata prendeva la finestra e il suo nome, quella in uscita li riprendeva, e
-  la finestra perdeva la chiamata che aveva mostrato: quando chi chiamava
-  riattaccava, si chiudeva sulla chiamata in corso. Una chiamata che arriva
+  server la controllava, ne è arrivata una o ne è partita un'altra
+  (`finestraOccupata` in `utils/chiamate.js`, provato; anche in quella di
+  Telnyx). Prima la chiamata arrivata prendeva la finestra e il suo nome, quella
+  in uscita li riprendeva, e la finestra perdeva la chiamata che aveva mostrato:
+  quando chi chiamava riattaccava, si chiudeva sulla chiamata in corso; e con
+  due «Chiama» di seguito (il secondo cliccato prima che il primo partisse,
+  mentre il server rispondeva o si sceglieva il numero) la prima chiamata
+  partiva sotto il nome e il numero della seconda. Una chiamata che arriva
   mentre quella della finestra squilla ancora aspetta dietro di lei, e squilla
   anche lei (`nuovaChiamata`, provato): Twilio suona una sola suoneria per tutte
   le chiamate che squillano nel browser, e lasciarne una agli altri telefoni

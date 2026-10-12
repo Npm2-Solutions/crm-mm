@@ -692,8 +692,9 @@ async function makeOutgoingCall(number) {
     )
     return
   }
-  // a call came in while the server answered: it keeps the window and its name
-  if (_call) {
+  // a call came in, or another started going out, while the server answered:
+  // it keeps the window and its name
+  if (finestraOccupata(_call, callStatus.value)) {
     toast.error(__('Finish the call in progress first.'))
     return
   }
