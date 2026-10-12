@@ -29,6 +29,24 @@ describe('an amount typed on a phone', () => {
     expect(flt('1.234.567', null, '#.###,##')).toBe(1234567)
   })
 
+  it('reads a space between thousands as a group, whatever the site writes', () => {
+    // a paste from a French-format spreadsheet or a bank's export
+    expect(flt('1 250', null, '#.###,##')).toBe(1250)
+    expect(flt('1 250,50', null, '#.###,##')).toBe(1250.5)
+    expect(flt('1 250 000', null, '#.###,##')).toBe(1250000)
+    expect(flt('-1 250', null, '#.###,##')).toBe(-1250)
+    expect(flt('1 250.50', null, '#,###.##')).toBe(1250.5)
+    // a no-break space, a narrow one, a thin one
+    expect(flt('1 250,50', null, '#.###,##')).toBe(1250.5)
+    expect(flt('1 250,50', null, '#.###,##')).toBe(1250.5)
+    expect(flt('1 250,50', null, '#.###,##')).toBe(1250.5)
+    // a currency's code or symbol in front, or behind, stays what it was
+    expect(flt('EUR 1 250,00', null, '#.###,##')).toBe(1250)
+    expect(flt('€ 1.250,00', null, '#.###,##')).toBe(1250)
+    expect(flt('65,00 €', null, '#.###,##')).toBe(65)
+    expect(flt('1 250,00 €', null, '#.###,##')).toBe(1250)
+  })
+
   it('reads numbers as numbers', () => {
     expect(flt(12.5, null, '#.###,##')).toBe(12.5)
     expect(flt('', null, '#,###.##')).toBe(0)

@@ -1127,7 +1127,9 @@ row, the bar's words beside their icons).
   `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
   keyboard: iPhone's decimal pad has only the comma. A DocType's amount reads
   the keyboard's separator whatever the site's format (`flt()` in
-  `utils/numberFormat.js`): «12,5» is 12.5 where the site writes 1,234.56.
+  `utils/numberFormat.js`): «12,5» is 12.5 where the site writes 1,234.56,
+  and a blank with three digits after it groups thousands («1 250,50» pasted
+  from a sheet is 1250.5, never 1).
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
   setting's words above, its field under them as wide as the screen, a switch
   beside its words; a page's save bar is the screen's bar, its button as wide
