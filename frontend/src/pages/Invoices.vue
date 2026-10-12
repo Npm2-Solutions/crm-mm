@@ -25,6 +25,8 @@
       </Dropdown>
     </template>
     <template #right-header>
+      <!-- on a phone the lists pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <Button
         v-if="puo('fatture.configura')"
         variant="ghost"
@@ -495,6 +497,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import ReceivedInvoices from '@/components/Invoices/ReceivedInvoices.vue'
 import ConventionClaims from '@/components/Invoices/ConventionClaims.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { formatDate } from '@/utils'

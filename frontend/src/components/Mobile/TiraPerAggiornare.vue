@@ -39,5 +39,8 @@ defineProps({
   pronta: { type: Boolean, default: false },
   inCorso: { type: Boolean, default: false },
   trascinando: { type: Boolean, default: false },
+  // the page's «Refresh» calls it (PulsanteAggiorna.vue), never the mark:
+  // named here so that `v-bind` of the pull's state leaves it off the box
+  aggiornaOra: { type: Function, default: null },
 })
 </script>

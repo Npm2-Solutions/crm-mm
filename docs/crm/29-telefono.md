@@ -389,7 +389,13 @@ Con il tocco, come in un'app:
   che si gira quando basta lasciare, poi il segno che gira finché la lista non
   è tornata (`composables/tiraPerAggiornare.js`). Si tira la scatola che
   scorre, che c'è anche quando la lista è vuota: «Nessuna notifica» si tira
-  come una lista piena, per vedere se ne è arrivata una.
+  come una lista piena, per vedere se ne è arrivata una. Chi non può tirare
+  (VoiceOver scorre senza toccare la lista, un sensore o un puntatore a testa
+  non hanno un dito) ha «Ricarica» nella testata di ognuna, come le chat e la
+  panoramica, e nelle notifiche accanto alle schede, perché la testata ha già
+  «Segna tutto come letto» (`Mobile/PulsanteAggiorna.vue`): fa lo stesso con
+  un tocco, la lista resta dov'è e il tasto gira finché non è tornata; un
+  aggiornamento alla volta, che venga dal dito o dal tasto (`aggiornaOra`).
 - **Tornando indietro, una lista è com'era.** Aperta una persona (una
   trattativa, una chat) e tornati indietro, la lista ha ancora le parole
   cercate, le righe che aveva e il punto a cui era arrivata; poi si aggiorna da
@@ -1068,7 +1074,7 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
 | `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
 | `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
-| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
+| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, `PulsanteAggiorna.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue`, `pages/Invoices.vue`, `Today.vue`, `WaitingList.vue`, `Dashboard.vue`, le pagine delle liste (`Leads.vue`, `Contacts.vue`, `Organizations.vue`, `CallLogs.vue`, `Notes.vue`, `Tasks.vue`, `Deals.vue`, `Calendar.vue`, `MobileNotification.vue`) | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. «Ricarica» fa lo stesso con un tocco (`aggiornaOra`), un aggiornamento alla volta. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css`, `index.html`, `area.html` | La cornice che segue la tastiera, il tocco da app; Android accorcia la pagina da sé (`interactive-widget`), su iPhone la pagina non scorre mai e un campo si porta in vista nella sua scatola (`inVista`), senza inseguire lo scorrimento (dodicesima parte). Testato in `tests/unit/tastieraAperta.test.js` |

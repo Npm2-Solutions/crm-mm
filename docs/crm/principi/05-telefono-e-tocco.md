@@ -633,7 +633,7 @@ Questa famiglia raccoglie le regole per usare DottorCloud con un dito: sul telef
 
 **Come si verifica.** Test unitario tiraPerAggiornare.test.js. Playwright con tocco: tirare dalla cima di ogni lista, anche vuota, e verificare la nuova richiesta; con la lista scorsa il gesto non parte. Ricerca nel codice: ogni pagina che usa TiraPerAggiornare offre anche «Ricarica» senza gesto.
 
-**Errori da evitare.** Le liste del telefono (Persone, Da fare, Note, Chiamate, Aziende, Contatti, Trattative, giornata dell'Agenda, Accoglienza, Lista d'attesa, Fatture) hanno il gesto ma nessun «Ricarica» senza trascinare: sul telefono le liste non montano ViewControls; nell'app installata non c'è nemmeno il ricarica del browser (verifica sul codice, 11/10/2026). Il gesto del browser ricaricava tutta l'app con un modulo scritto a metà (doc 29, settima parte). Far partire il gesto quando la lista non è in cima o dentro un foglio.
+**Errori da evitare.** Le liste del telefono (Persone, Da fare, Note, Chiamate, Aziende, Contatti, Trattative, giornata dell'Agenda, Accoglienza, Lista d'attesa, Fatture) avevano il gesto ma nessun «Ricarica» senza trascinare: sul telefono le liste non montano ViewControls; nell'app installata non c'è nemmeno il ricarica del browser (verifica sul codice, 11/10/2026; corretto il 12/10/2026: «Ricarica» nella testata, Mobile/PulsanteAggiorna.vue). Il gesto del browser ricaricava tutta l'app con un modulo scritto a metà (doc 29, settima parte). Far partire il gesto quando la lista non è in cima o dentro un foglio.
 
 **Fonti.**
 

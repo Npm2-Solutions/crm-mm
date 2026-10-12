@@ -91,6 +91,8 @@ const righe = computed(() => notifications.data?.rows || [])
 // pulled down on a phone: the same page of rows again, from the server
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => notifications.reload())
+// the pull, which the phone's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ tira })
 
 // the reader's clock: the server's moments are moved onto it before the days
 // are cut, as the conversations' list does

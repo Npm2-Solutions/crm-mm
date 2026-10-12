@@ -229,7 +229,7 @@ is never a menu entry.
 | File | Role |
 |---|---|
 | `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number; notes by their title or words, their first words in plain text — tested in `crm/tests/test_sul_telefono.py` |
-| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoNote`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More; one Tab stop, the arrows, Home and End along it, its panels named by the open tab: `idDellaScheda`), `PulsanteAggiungi` (the page's «+»), `DescrizioneRipiegata` (a tab's explaining line, two lines and «Show more») |
+| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoNote`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More; one Tab stop, the arrows, Home and End along it, its panels named by the open tab: `idDellaScheda`), `PulsanteAggiungi` (the page's «+»), `PulsanteAggiorna` (the header's «Refresh»: the list's pull in one tap), `DescrizioneRipiegata` (a tab's explaining line, two lines and «Show more») |
 | `frontend/src/pages/Altro.vue` + `composables/vociAccount.js`, `visteSalvate.js` | The phone's «More» page (`/altro`): the profile, the notifications, the menu entries the bar has no room for, the saved views, the first steps, the account's entries the sidebar's dropdown draws too; the card that puts the app on the home screen (`Mobile/InstallaApp.vue`, `utils/installa.js`: the browser's offer on Android, Safari's two taps on an iPhone, nothing once installed; the client area's own on its home, `area/components/InstallCard.vue`) |
 | `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
 | `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls, how many tabs a record's bar holds and where a key moves among them (`quanteNellaBarra`, `schedaColTasto`) — tested |
@@ -1024,7 +1024,10 @@ row, the bar's words beside their icons).
   `SchedeDelTelefono`; pulled down from its top it reloads
   (`useTiraPerAggiornare` and `TiraPerAggiornare`: the browser's own pull is
   off, it reloaded the whole app), on the box that scrolls, there even when the
-  list is empty; a back finds it as it was left, its search, rows and scroll,
+  list is empty, and «Refresh» at its top does the same with one tap, for
+  whoever cannot pull (`PulsanteAggiorna`, the pull's `aggiornaOra()`:
+  VoiceOver scrolls without a touch, a switch has no finger); a back finds it
+  as it was left, its search, rows and scroll,
   then brought up to date (`useRitorno`; a list found by typing is
   `useElencoDelTelefono`), while the menu opens it from the top; the crumb or
   the tab a record came from goes back to it (`tornaConLeBriciole`: an

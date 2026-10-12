@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Notes" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoNote?.tira" />
       <Button
         v-if="!isMobileView && puo('note.scrivi')"
         variant="solid"
@@ -140,6 +142,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoNote from '@/components/Mobile/ElencoNote.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'

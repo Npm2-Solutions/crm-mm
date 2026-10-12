@@ -143,5 +143,6 @@ function rigaDi(contatto) {
   )
 }
 
-defineExpose({ ricarica: cerca })
+// `tira`: the pull, which the page's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ ricarica: cerca, tira })
 </script>

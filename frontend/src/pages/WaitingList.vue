@@ -14,6 +14,8 @@
       <ViewBreadcrumbs routeName="Waiting List" label="Waiting list" />
     </template>
     <template #right-header>
+      <!-- on a phone the line pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <TabButtons
         v-model="closed"
         :buttons="[
@@ -163,6 +165,8 @@ import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'

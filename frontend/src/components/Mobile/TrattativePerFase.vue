@@ -295,6 +295,8 @@ watch(
 
 defineExpose({
   ricarica: () => conteggiResource.submit({ pipeline: pipeline.value }),
+  // the pull, which the page's «Refresh» runs too (PulsanteAggiorna)
+  tira,
   // where a deal started now would go: a closed stage is no place to start
   dove: () => {
     const fase = fasi.value.find((f) => f.name === scelta.value)

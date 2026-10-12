@@ -190,5 +190,6 @@ async function fatta(cosa) {
   }
 }
 
-defineExpose({ ricarica })
+// `tira`: the pull, which the page's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ ricarica, tira })
 </script>

@@ -14,6 +14,8 @@
       <ViewBreadcrumbs routeName="Today" label="Reception desk" />
     </template>
     <template #right-header>
+      <!-- on a phone the day pulled down, in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="tira" />
       <div class="flex items-center gap-1">
         <Button
           variant="ghost"
@@ -348,6 +350,7 @@ import { useSedi } from '@/composables/sedi'
 import { nomeDellaSede, opzioniDelleSedi, sedeValida } from '@/utils/sedi'
 import { avviaLaVisita, linkDellaVisita } from '@/utils/visiteOnline'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import { aRichiesta, apertoUnaVolta } from '@/utils/aRichiesta'
 import { isMobileView } from '@/composables/breakpoints'
 import { useFattura } from '@/composables/fattura'

@@ -114,6 +114,8 @@ const { events, eventsResource } = useEventNotifications()
 // pulled down on a phone: the events again, from the server
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => eventsResource.reload())
+// the pull, which the phone's «Refresh» runs too (PulsanteAggiorna)
+defineExpose({ tira })
 const { toggle } = notificationsStore()
 
 function handleEventClick(e) {

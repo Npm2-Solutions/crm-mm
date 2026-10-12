@@ -10,6 +10,8 @@
       <ViewBreadcrumbs v-model="viewControls" routeName="Deals" />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="trattativePerFase?.tira" />
       <CustomActions
         v-if="dealsListView?.customListActions"
         :actions="dealsListView.customListActions"
@@ -309,6 +311,7 @@ import DealPanel from '@/components/Deals/DealPanel.vue'
 import DealModal from '@/components/Modals/DealModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import TrattativePerFase from '@/components/Mobile/TrattativePerFase.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'

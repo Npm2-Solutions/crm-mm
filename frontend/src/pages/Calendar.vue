@@ -15,6 +15,12 @@
       <ViewBreadcrumbs routeName="Calendar" label="Agenda" />
     </template>
     <template #right-header>
+      <!-- on a phone the day's list pulled down, in one tap, for whoever
+           cannot pull -->
+      <PulsanteAggiorna
+        v-if="isMobileView && vista === 'elenco'"
+        :tira="agendaDelGiorno?.tira"
+      />
       <!-- making one is for who books (doc 30): an event or an appointment.
            «New» opens the panel on whatever was made last, and the panel's
            first line switches between the two. -->
@@ -157,6 +163,7 @@
 
       <AgendaDelGiorno
         v-if="vista === 'elenco'"
+        ref="agendaDelGiorno"
         v-model:date="giorno"
         :appointments="appuntamentiDelGiorno"
         :events="shownEvents"
@@ -294,6 +301,7 @@ import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
 import AgendaDelGiorno from '@/components/Mobile/AgendaDelGiorno.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
@@ -1061,7 +1069,9 @@ const countLabel = computed(() => {
   return parts.join(' · ')
 })
 
-// the day pulled down on a phone: its appointments and its events
+// the day pulled down on a phone: its appointments and its events; the
+// header's «Refresh» runs the same pull (the list's `tira`)
+const agendaDelGiorno = ref(null)
 function ricaricaIlGiorno() {
   return Promise.all([reloadScheduler(), events.reload()])
 }

@@ -14,6 +14,8 @@
       />
     </template>
     <template #right-header>
+      <!-- on a phone the list's pull in one tap, for whoever cannot pull -->
+      <PulsanteAggiorna v-if="isMobileView" :tira="elencoPersone?.tira" />
       <CustomActions
         v-if="leadsListView?.customListActions"
         :actions="leadsListView.customListActions"
@@ -49,7 +51,7 @@
   </LayoutHeader>
   <!-- on a phone: typed to find, one line each, the + where the thumb is -->
   <template v-if="isMobileView">
-    <ElencoPersone />
+    <ElencoPersone ref="elencoPersone" />
     <PulsanteAggiungi
       v-if="puo('persone.scrivi')"
       :label="__('New person')"
@@ -127,6 +129,7 @@ import OutOfCareDialog from '@/components/Clinic/OutOfCareDialog.vue'
 import SendToListDialog from '@/components/Automations/SendToListDialog.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import ElencoPersone from '@/components/Mobile/ElencoPersone.vue'
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
 import { isMobileView } from '@/composables/breakpoints'
 import { getMeta } from '@/stores/meta'
@@ -149,6 +152,7 @@ const { getLeadStatus } = statusesStore()
 const { on } = useBroadcast()
 
 const leadsListView = ref(null)
+const elencoPersone = ref(null)
 const showLeadModal = ref(false)
 const showOutOfCare = ref(false)
 const showSendToList = ref(false)
