@@ -88,7 +88,7 @@ Frappe per la produzione.
 3. L'app, sul ramo da provare (il repository è privato: la chiave di deploy):
 
    ```bash
-   bench get-app crm git@github.com:Npm2-Solutions/crm-mm.git --branch <ramo>
+   bench get-app crm git@github.com:Npm2-Solutions/crm-npm2.git --branch <ramo>
    ```
 
 4. WhatsApp chiede l'app `frappe_whatsapp` (doc 12), la stessa versione dei siti in

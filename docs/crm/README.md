@@ -4,7 +4,7 @@ I documenti del CRM di base, quello su cui stanno i verticali e i marchi
 ([`../README.md`](../README.md)). Sono numerati e il numero non cambia: il codice li
 cita come «doc 57». Sono nati come «Progetto GHL-Parity», l'obiettivo che segue.
 
-> **Obiettivo**: portare DottorCloud (`crm-mm`, nato da un CRM open source) alla parità funzionale
+> **Obiettivo**: portare DottorCloud (`crm-npm2`, nato da un CRM open source) alla parità funzionale
 > con GoHighLevel — funnel, marketing automation omnicanale, telefonia/SMS/inbox
 > unificata, corsi & membership, calendari di prenotazione, white-label SaaS e
 > reputation management — riusando al massimo l'ecosistema open-source Frappe.

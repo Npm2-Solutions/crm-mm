@@ -360,7 +360,7 @@ T = {
 	"version": 4,
 	"meta": {
 		"source": "github",
-		"repo": "Npm2-Solutions/crm-mm",
+		"repo": "Npm2-Solutions/crm-npm2",
 		"ref": "develop@4d5b871",
 		"basedOn": "frappe-ui 1.0.0-beta.29 (Espresso)",
 		"paths": {

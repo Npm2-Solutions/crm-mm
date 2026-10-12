@@ -5,12 +5,12 @@
 	"description": "DottorCloud, il gestionale per i centri medici",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Npm2-Solutions/crm-mm.git"
+		"url": "git+https://github.com/Npm2-Solutions/crm-npm2.git"
 	},
 	"author": "NPM2 Solutions Srl",
 	"license": "GPL-3.0",
 	"bugs": {
-		"url": "https://github.com/Npm2-Solutions/crm-mm/issues"
+		"url": "https://github.com/Npm2-Solutions/crm-npm2/issues"
 	},
 	"scripts": {
 		"postinstall": "cd frontend && yarn install --check-files",
