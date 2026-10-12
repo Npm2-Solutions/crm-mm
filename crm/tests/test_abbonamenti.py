@@ -711,13 +711,33 @@ class UnaLezione(AbbonamentiCase):
 		self.fatturata(lezione, self.marta)
 		self.assertNotIn(lezione.name, [r["name"] for r in fatture.appointments_to_invoice()])
 
-	def fatturata(self, appuntamento, persona):
+	def test_una_bozza_resta_da_riprendere(self):
+		ieri = datetime.datetime.combine(add_days(getdate(), -1), datetime.time(10), tzinfo=UTC)
+		lezione = self.classe(ieri, self.marta, self.paolo)
+		righe = {r.party: r.name for r in frappe.get_doc("CRM Appointment", lezione.name).participants}
+
+		def voce():
+			return next((r for r in fatture.appointments_to_invoice() if r["name"] == lezione.name), None)
+
+		# a draft is not an invoice: Marta's place stays, with her draft to take up again
+		bozza = self.fatturata(lezione, self.marta, emessa=False)
+		self.assertEqual(voce()["participants_left"], [righe[self.marta.name], righe[self.paolo.name]])
+		self.assertEqual(voce()["drafts"], {righe[self.marta.name]: bozza})
+		self.assertEqual(voce()["draft"], bozza)
+		# issued, the place is invoiced
+		self.fatturata(lezione, self.marta)
+		self.assertEqual(voce()["participants_left"], [righe[self.paolo.name]])
+
+	def fatturata(self, appuntamento, persona, emessa=True):
+		"""An invoice of the appointment to `persona`: issued, or a draft left."""
 		fattura = frappe.new_doc("CRM Invoice")
 		fattura.name = frappe.generate_hash(length=10)
 		fattura.appointment = appuntamento.name
 		fattura.party_type = "CRM Lead"
 		fattura.party = persona.name
+		fattura.docstatus = 1 if emessa else 0
 		fattura.db_insert()
+		return fattura.name
 
 
 class ITipi(AbbonamentiCase):
