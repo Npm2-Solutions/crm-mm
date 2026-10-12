@@ -605,17 +605,36 @@ class TestNumbersOfTheCentresCountry(IntegrationTestCase):
 		self.assertEqual(get_contact_by_phone_number("+39 02 4567 0123"), {"mobile_no": "0245670123"})
 
 	def test_a_number_saved_with_its_spaces_is_found_by_its_digits(self):
-		# as an older record or another program's address book holds it (DottorCloud
-		# writes `+390212345678`): the search reads the digits of what is saved
-		persona = self.persona("Spazi", "+39 02 1234 5678")
-		contatto = frappe.db.get_value("CRM Lead", persona, "contact")
-		frappe.db.set_value("CRM Lead", persona, "mobile_no", "+39 02 1234 5678", update_modified=False)
+		# the address book keeps a number as `+390212345678`, an older entry or one
+		# brought from another program as somebody wrote it: the search reads the
+		# digits of what is saved. A deal's contact, with no person in front of it to
+		# answer first (a person's own number is kept as typed, spaces and all)
+		azienda = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Numeri in rubrica Srl"}
+		).insert(ignore_permissions=True)
+		contatto = frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Rubrica",
+				"last_name": "Numeri",
+				"phone_nos": [{"phone": "+39 02 1234 5678", "is_primary_mobile_no": 1}],
+			}
+		).insert(ignore_permissions=True)
 		frappe.db.set_value(
-			"Contact Phone", {"parent": contatto}, "phone", "+39 02 1234 5678", update_modified=False
+			"Contact Phone", {"parent": contatto.name}, "phone", "+39 02-1234 5678", update_modified=False
 		)
+		trattativa = frappe.get_doc(
+			{"doctype": "CRM Deal", "organization": azienda.name, "deal_owner": "Administrator"}
+		)
+		trattativa.append("contacts", {"contact": contatto.name, "is_primary": 1})
+		trattativa.insert(ignore_permissions=True)
 
 		for scritto in ("0212345678", "02 1234 5678", "+390212345678"):
-			self.assertEqual(find_contact_by_phone_number(scritto).get("lead"), persona, scritto)
+			trovato = find_contact_by_phone_number(scritto)
+			self.assertEqual(
+				(trovato.get("name"), trovato.get("deal")), (contatto.name, trattativa.name), scritto
+			)
+		self.assertEqual(get_contact_lead_or_deal_from_number("0212345678"), (trattativa.name, "CRM Deal"))
 
 	def test_the_call_made_from_the_keypad_is_the_persons(self):
 		persona = self.persona("Chiamata", "+39 333 123 4567")
