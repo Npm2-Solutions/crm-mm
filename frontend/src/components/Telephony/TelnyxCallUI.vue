@@ -593,8 +593,12 @@ async function handleIncomingCall(chiamata) {
   const numero = chiamata.options?.remoteCallerNumber || ''
   log.value = `Incoming call from ${numero}`
   perIlNumero(numero)
-  // a call coming in takes the popup from a call not yet made
+  // a call coming in takes the popup from a call not yet made, and leaves its
+  // numbers and its country behind: the AGCOM warning was about that call
   scelta.value = false
+  paeseChiamato.value = ''
+  numeri.value = []
+  mostrato.value = ''
   showCallPopup.value = true
   _call = chiamata
   // the centre's own number shown (a phone rang too): the server says who it

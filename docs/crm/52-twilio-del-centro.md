@@ -184,7 +184,10 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   server mostra il numero scelto solo se è uno dei numeri del centro
   (`CRM Caller ID`), altrimenti la linea di chi chiama. Un cellulare italiano
   mostrato su una chiamata verso l'Italia ha l'avviso: «dal novembre 2025 queste
-  chiamate vengono bloccate: scegli un numero fisso».
+  chiamate vengono bloccate: scegli un numero fisso». Una chiamata che arriva
+  mentre si sceglie il numero prende la finestra e lascia la scelta con i suoi
+  numeri, il paese e l'avviso (corretto il 12/10/2026: l'avviso compariva sulla
+  chiamata in arrivo una volta presa; anche in quella di Telnyx).
 - **Il tastierino (fatto).** Durante la chiamata manda i toni ai menu automatici
   degli altri («premi 1 per…»); i tasti premuti restano scritti sopra.
 - **Chi chiama (corretto il 12/10/2026).** La finestra della chiamata, in arrivo

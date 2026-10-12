@@ -587,8 +587,12 @@ function handleIncomingCall(call) {
   }
   log.value = `Incoming call from ${call.parameters.From}`
   perIlNumero(call.parameters.From)
-  // a call coming in takes the popup from a call not yet made
+  // a call coming in takes the popup from a call not yet made, and leaves its
+  // numbers and its country behind: the AGCOM warning was about that call
   scelta.value = false
+  paeseChiamato.value = ''
+  numeri.value = []
+  mostrato.value = ''
 
   showCallPopup.value = true
   _call = call
