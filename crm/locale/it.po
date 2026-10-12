@@ -3513,7 +3513,7 @@ msgstr "Completa in automatico le nuove aziende"
 #. Agreement'
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 msgid "Auto-generated from the portal view — do not edit directly unless you know what you're doing! "
-msgstr "Generato in automatico dalla schermata delle impostazioni: non modificarlo direttamente se non sai cosa stai facendo! "
+msgstr "Generato in automatico dalla schermata delle impostazioni: non modificarlo direttamente se non sai cosa stai facendo. "
 
 #. Label of the autocomplete (Autocomplete) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
@@ -10945,10 +10945,6 @@ msgstr "Non è stato possibile inviare il modello WhatsApp"
 #: frontend/src/components/CommunicationArea.vue:276
 msgid "Failed to send comment!"
 msgstr ""
-
-#: frontend/src/components/CommunicationArea.vue:260
-msgid "Failed to send email!"
-msgstr "Invio dell'email non riuscito!"
 
 #: frontend/src/components/Settings/Meta/MetaConnection.vue
 msgid "Failed to start login"
@@ -26584,10 +26580,6 @@ msgstr "Il centro non prende la lista d'attesa dall'area"
 msgid "The centre has no signature provider yet: sign it on paper, or set one up"
 msgstr "Il centro non ha ancora un fornitore di firma: firmalo su carta, o impostane uno"
 
-#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
-msgid "The centre is ready. Have a good day at work!"
-msgstr "Il centro è pronto. Buon lavoro!"
-
 #: crm/moduli/richieste.py
 msgid "The centre sends no email yet: set up the outgoing email first"
 msgstr "Il centro non invia ancora email: prima configura la posta in uscita"
@@ -35242,7 +35234,7 @@ msgstr "Chiaro"
 
 #: crm/marchio.py
 msgid "Welcome to Frappe!"
-msgstr "Benvenuto in DottorCloud!"
+msgstr "Ti diamo il benvenuto in DottorCloud"
 
 #: frontend/src/components/Settings/Scheduling/ServicesSettings.vue
 msgctxt "Service editor tab"
@@ -41466,7 +41458,7 @@ msgstr "Sera"
 
 #: frontend/src/utils/automation.js
 msgid "Welcome a new lead"
-msgstr "Benvenuto a un nuovo contatto"
+msgstr "Dai il benvenuto a chi ti contatta"
 
 #: frontend/src/utils/automation.js
 msgid "Email straight away, reminder after two days, task for the owner."
@@ -42673,7 +42665,7 @@ msgstr "Copia il codice"
 
 #: frontend/vite/frappeUi.js
 msgid "Copied!"
-msgstr "Copiato!"
+msgstr "Copiato"
 
 #: frontend/vite/frappeUi.js
 msgid "No icons found for \"{0}\""
@@ -43719,7 +43711,7 @@ msgstr "Accedi"
 
 #: frappe/www/login.html
 msgid "Welcome! Please sign in to continue."
-msgstr "Ti diamo il benvenuto! Accedi per continuare."
+msgstr "Ti diamo il benvenuto: accedi per continuare."
 
 #: frappe/www/login.html
 msgid "Sign Up"
@@ -43787,7 +43779,7 @@ msgstr "Scrivi la password"
 
 #: frappe/www/update-password.html
 msgid "Poor!"
-msgstr "Debole!"
+msgstr "Debole"
 
 #: frappe/www/update-password.html
 msgid "Good"
@@ -43795,7 +43787,7 @@ msgstr "Buona"
 
 #: frappe/www/update-password.html
 msgid "Great!"
-msgstr "Ottima!"
+msgstr "Ottima"
 
 #: frappe/templates/includes/login/login.js
 msgid "Email is required."
@@ -43874,10 +43866,6 @@ msgid "Pick a time slot first."
 msgstr "Prima scegli un orario."
 
 #: crm/www/book.html
-msgid "Booked! {0}: a confirmation email is on its way."
-msgstr "Prenotato! {0}: ti arriva un'email di conferma."
-
-#: crm/www/book.html
 msgid "Your booking: {0}"
 msgstr "La tua prenotazione: {0}"
 
@@ -43900,10 +43888,6 @@ msgstr "Prenotazione annullata."
 #: crm/www/book.html
 msgid "Pick a new time below."
 msgstr "Scegli qui sotto il nuovo orario."
-
-#: crm/www/book.html
-msgid "Rescheduled! A new confirmation email is on its way."
-msgstr "Spostata! Ti arriva una nuova email di conferma."
 
 #: frontend/src/components/IconPicker.vue
 msgid "More reactions"
@@ -51091,3 +51075,19 @@ msgstr "Un modello è un'email scritta una volta e mandata più volte: creane un
 #: frontend/src/components/Settings/Users.vue
 msgid "Whoever works with you gets their access and their levels here: add them with «Add User»."
 msgstr "Chi lavora con te ha qui il suo accesso e i suoi livelli: aggiungilo con «Aggiungi un utente»."
+
+#: frontend/src/components/CommunicationArea.vue
+msgid "The email was not sent"
+msgstr "L'email non è stata inviata"
+
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "The centre is ready: every first step is done."
+msgstr "Il centro è pronto: tutti i primi passi sono fatti."
+
+#: crm/www/book.html
+msgid "Booked for {0}: a confirmation email is on its way."
+msgstr "Prenotato per {0}: ti arriva un'email di conferma."
+
+#: crm/www/book.html
+msgid "Moved: a new confirmation email is on its way."
+msgstr "Spostata: ti arriva una nuova email di conferma."

@@ -28,7 +28,7 @@
         <p class="text-p-sm text-ink-gray-6">
           {{
             stato.finiti
-              ? __('The centre is ready. Have a good day at work!')
+              ? __('The centre is ready: every first step is done.')
               : __(
                   'What to do to start with {brand}: each step ticks itself once it is done.',
                 )
