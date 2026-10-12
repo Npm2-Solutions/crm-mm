@@ -187,6 +187,32 @@ settimana, aggiunge:
 
 Un mese non li chiede.
 
+### La copia negli eventi del calendario
+
+Con «Copia gli appuntamenti negli eventi del calendario» (`CRM Scheduling
+Settings.sync_to_event`, acceso all'inizio) ogni appuntamento ha la sua copia, un
+`Event` privato (`sync_event` in `crm_appointment.py`), per il calendario del
+framework. È del primo professionista, chiunque abbia prenotato, e ogni
+professionista dell'appuntamento ne è partecipante con il suo utente e il suo
+indirizzo: un evento privato lo legge chi lo possiede e ogni utente il cui nome,
+che è il suo indirizzo, sta scritto su una delle sue righe. Chi viene c'è con la
+sua scheda (persona, contatto o trattativa), mai con un indirizzo: con il suo,
+l'utente dell'area cliente che ha quel nome trovava la copia nei suoi elenchi e ne
+leggeva la descrizione, cioè le note dell'appuntamento, e agli stessi indirizzi
+vanno i promemoria degli eventi per email (`crm/api/event.py`) e, dove una copia
+va su Google, i suoi inviti. Il framework però, quando salva un evento, scrive
+l'indirizzo di un contatto su ogni riga che non ne ha: quello del contatto stesso,
+o quello che trova per la persona o la trattativa della riga.
+Subito dopo, qualunque cosa salvi la copia (l'appuntamento, la scrivania del
+framework, uno script), DottorCloud lascia l'indirizzo solo sulle righe dei
+professionisti, a ciascuno il suo (`copia_solo_ai_professionisti`, un `before_save`
+dell'`Event` che il framework chiama dopo il proprio). Un evento che il centro crea
+da sé resta com'è. Le copie che c'erano le ha corrette la patch
+`the_calendar_copy_keeps_no_address_of_who_comes` (12/10/2026).
+
+Nella griglia una copia non si disegna e non conta come impegno: l'appuntamento è
+già disegnato com'è (`_impegni`, `_plain_events`).
+
 ## File
 
 - `frontend/src/utils/agenda.js` (puro, provato in `tests/unit/agenda.test.js`):
@@ -205,3 +231,7 @@ Un mese non li chiede.
 - `crm/api/appointments.py` (`_giornate`, `orari_di`, `_impegni`), provato in
   `crm/tests/test_scheduling.py`; `FCRM Settings.calendar_grid_step`, la pagina
   `Settings/CalendarSettings.vue`.
+- `crm/fcrm/doctype/crm_appointment/crm_appointment.py` (`sync_event`,
+  `copia_solo_ai_professionisti`, agganciata in `crm/hooks.py`) e la patch
+  `crm/patches/v1_0/the_calendar_copy_keeps_no_address_of_who_comes.py`, provate in
+  `crm/tests/test_copia_nel_calendario.py`.

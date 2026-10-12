@@ -112,7 +112,13 @@ colleague's column takes no tap and no drop from a practitioner, as the server
 would refuse it. An appointment's calendar copy (`Event`, `sync_event`) is its first
 professional's, every professional of it a participant by their user; the people who
 come are linked by their record, never by their email (it would read the copy to
-the area's user and get the framework's reminders).
+the area's user and get the events' reminders). The framework writes a Contact's
+address on every participant row without one when an Event is saved
+(`set_participants_email`): an `Event` `before_save` of ours, which runs after the
+framework's own, leaves an address only on the professionals' rows, each their own,
+whatever saves a copy (`copia_solo_ai_professionisti`; the copies made before it,
+the patch `the_calendar_copy_keeps_no_address_of_who_comes`); an Event the centre
+makes itself is the framework's.
 A call asked once whose refusal its `onError` says is `chiedi()` (`utils/chiedi.js`),
 and a resource's `submit()` so answered ends in `.catch(() => {})`: frappe-ui throws
 again what it handed to `onError`, and a `createResource({ auto: true })` refused
