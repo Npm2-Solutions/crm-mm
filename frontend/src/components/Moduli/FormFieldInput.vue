@@ -423,6 +423,7 @@ import LucideSignature from '~icons/lucide/signature'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
 import { useEtichettaDelCampo } from '@/composables/nomeAlControllo'
 import { answerInWords } from '@/utils/moduli'
+import { dopoLaFreccia } from '@/utils/frecce'
 import { dateFormat, formatDate } from '@/utils'
 import { Badge, Button, Checkbox, FormControl } from 'frappe-ui'
 import { computed, getCurrentInstance, ref } from 'vue'
@@ -512,18 +513,13 @@ function frecce(evento) {
   if (props.field.multiple || props.readonly) return
   if (evento.altKey || evento.ctrlKey || evento.metaKey) return
   const pulsanti = [...evento.currentTarget.querySelectorAll('[role="radio"]')]
-  const qui = pulsanti.indexOf(evento.target)
-  const dove = {
-    ArrowDown: qui + 1,
-    ArrowRight: qui + 1,
-    ArrowUp: qui - 1,
-    ArrowLeft: qui - 1,
-    Home: 0,
-    End: pulsanti.length - 1,
-  }[evento.key]
-  if (qui < 0 || dove === undefined) return
+  const dopo = dopoLaFreccia(
+    evento.key,
+    pulsanti.indexOf(evento.target),
+    pulsanti.length,
+  )
+  if (dopo === undefined) return
   evento.preventDefault()
-  const dopo = (dove + pulsanti.length) % pulsanti.length
   emit(options.value[dopo].value)
   pulsanti[dopo].focus()
 }
