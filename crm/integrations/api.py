@@ -258,8 +258,7 @@ def get_contact_by_phone_number(phone_number: str):
 	error would name the record, and a phone number is just the thing someone
 	would try one after another to learn who is in the CRM.
 	"""
-	search = _phone_search(phone_number)
-	contact = get_contact(**search)
+	contact, nobody = _whose(phone_number)
 
 	if contact.get("lead"):
 		visible = frappe.has_permission("CRM Lead", "read", contact["lead"])
@@ -270,7 +269,7 @@ def get_contact_by_phone_number(phone_number: str):
 	else:
 		visible = True
 
-	return contact if visible else {"mobile_no": search["phone_number"]}
+	return contact if visible else nobody
 
 
 def find_contact_by_phone_number(phone_number: str) -> dict:
@@ -279,31 +278,56 @@ def find_contact_by_phone_number(phone_number: str) -> dict:
 	For the server's own callers: a call or a message arrives through a webhook,
 	as Guest, and still has to be filed on the person it came from.
 	"""
-	return get_contact(**_phone_search(phone_number))
+	return _whose(phone_number)[0]
 
 
-def _phone_search(phone_number: str) -> dict:
-	"""How `get_contact` is asked about a number."""
+def _whose(phone_number: str) -> tuple[dict, dict]:
+	"""What `get_contact` answers for the first reading of the number that is
+	somebody's, and what it answers for a number nobody has: the first reading,
+	as it was searched.
+
+	A match the user may not open is answered the same way whichever reading found
+	it: the digits of the second reading (`612345678` for `33612345678`) would tell
+	them that somebody has that number.
+	"""
+	nobody = None
+	for search in _phone_searches(phone_number):
+		contact = get_contact(**search)
+		nobody = nobody or {"mobile_no": search["phone_number"]}
+		if contact.get("name"):
+			return contact, nobody
+	return nobody, nobody
+
+
+def _phone_searches(phone_number: str) -> list[dict]:
+	"""How `get_contact` is asked about a number, one reading after the other.
+
+	Each reading is the number's national digits, an Italian landline's 0 with them
+	(`0212345678`, as every number saved for Milan holds it), and the country to
+	compare them in. A number without its plus is read in the site's country first:
+	what somebody typed on the keypad. Then as the international number WhatsApp
+	and webhooks hand over (`_as_international`): in Italy `33612345678` is also a
+	mobile's voicemail box, which nobody has, and the French mobile it is belongs
+	to somebody.
+	"""
 	number = parse_phone_number(phone_number)
+	searches, read = [], set()
+	for reading in (number, _as_international(phone_number)):
+		e164 = reading.get("formats", {}).get("E164")
+		if reading.get("is_valid") and e164 not in read:
+			read.add(e164)
+			searches.append({"phone_number": reading["national_number"], "country": reading["country"]})
 
-	if number.get("is_valid"):
-		return {"phone_number": number.get("national_number"), "country": number.get("country")}
-
-	international = _as_international(phone_number)
-	if international.get("is_valid"):
-		return {"phone_number": international.get("national_number"), "country": international.get("country")}
-
-	return {"phone_number": phone_number, "country": number.get("country"), "exact_match": True}
+	return searches or [{"phone_number": phone_number, "country": number.get("country"), "exact_match": True}]
 
 
 def _as_international(phone_number: str) -> dict:
 	"""Read a plus-less number as the international one it is.
 
-	WhatsApp hands over "393703400189" and webhooks generally drop the plus. With
-	no plus `phonenumbers` falls back to the default region — India — and reads
-	that same number as Indian: +91393703400189. The `LIKE` finds the right
-	contact and `are_same_phone_number` then rejects it, comparing an Italian
-	number against an Indian one. Found and thrown away in the same breath.
+	WhatsApp hands over "4915112345678" and webhooks generally drop the plus. With
+	no plus `phonenumbers` reads a number in the site's country, where this German
+	mobile is no number at all: read with its plus, it is the number it is, and is
+	looked for in its own country.
 	"""
 	digits = digits_of(phone_number)
 	# a national number would become a different country's if we prefixed it blindly
@@ -495,7 +519,14 @@ def get_recording_url(call_log_name: str):
 	return response
 
 
-def get_contact(phone_number: str, country: str = "IN", exact_match: bool = False):
+def get_contact(phone_number: str, country: str | None = None, exact_match: bool = False):
+	"""Whose number this is: a deal's contact, else a person, else any contact.
+
+	`phone_number` is looked for inside the numbers saved, however they were
+	written, and each one found is compared with it in `country`, the region a
+	number without its prefix is read in: the site's country where it is not said
+	(`are_same_phone_number`).
+	"""
 	if not phone_number:
 		return {"mobile_no": phone_number}
 

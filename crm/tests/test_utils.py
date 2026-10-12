@@ -84,11 +84,17 @@ class TestUtils(UnitTestCase):
 		self.assertEqual(seconds_to_duration(7322), "2h 2m 2s")  # 2*3600 + 2*60 + 2
 
 	def test_are_same_phone_number_normalized_input(self):
-		# Indian number with country code and different formats
-		self.assertTrue(are_same_phone_number("+91 9845552671", "9845552671"))
-		self.assertTrue(are_same_phone_number("+91-984-555-2671", "9845552671"))
-		self.assertTrue(are_same_phone_number("+91 (984) 555-2671", "9845552671"))
-		self.assertTrue(are_same_phone_number("+91 984-555-2671", "9845552671"))
+		# Indian number with country code and different formats, read in India: a
+		# number without its prefix is the site's country's otherwise
+		self.assertTrue(are_same_phone_number("+91 9845552671", "9845552671", default_region="IN"))
+		self.assertTrue(are_same_phone_number("+91-984-555-2671", "9845552671", default_region="IN"))
+		self.assertTrue(are_same_phone_number("+91 (984) 555-2671", "9845552671", default_region="IN"))
+		self.assertTrue(are_same_phone_number("+91 984-555-2671", "9845552671", default_region="IN"))
+
+		# Italian numbers, the 0 of a landline being part of it
+		self.assertTrue(are_same_phone_number("+39 333 123 4567", "333-123-4567", default_region="IT"))
+		self.assertTrue(are_same_phone_number("+390212345678", "0212345678", default_region="IT"))
+		self.assertTrue(are_same_phone_number("+39 06 1234 5678", "06-1234-5678", default_region="IT"))
 
 		# US number with country code and different formats
 		self.assertTrue(are_same_phone_number("+1 415 555 2671", "4155552671", default_region="US"))
@@ -99,8 +105,8 @@ class TestUtils(UnitTestCase):
 	def test_are_same_phone_number_invalid_input(self):
 		# Invalid numbers should return False
 		self.assertFalse(
-			are_same_phone_number("+1 415 555 2671", "4155552671")
-		)  # Missing default region as US
+			are_same_phone_number("+1 415 555 2671", "4155552671", default_region="IT")
+		)  # Missing default region as US: read in Italy, whatever the site's country
 		self.assertFalse(
 			are_same_phone_number("+91 984-555-2671", "9845552671", default_region="US")
 		)  # Wrong default region
@@ -158,6 +164,57 @@ class TestUtils(UnitTestCase):
 
 		self.assertTrue(result["success"])
 		self.assertEqual(result["country"], "IN")
+
+	def test_an_italian_landline_keeps_its_zero(self):
+		"""In Italy the 0 is part of the number. `phonenumbers` keeps it apart from the
+		digits, and without it a call from Milan was compared as 212345678, no number."""
+		for scritto in ("+390212345678", "+39 02 1234 5678", "0039 02 1234 5678", "02 1234 5678"):
+			self.assertEqual(
+				parse_phone_number(scritto, default_country="IT")["national_number"], "0212345678", scritto
+			)
+		self.assertEqual(
+			parse_phone_number("06 1234 5678", default_country="IT")["national_number"], "0612345678"
+		)
+		# a mobile has no 0 to keep
+		self.assertEqual(
+			parse_phone_number("+39 333 123 4567", default_country="IT")["national_number"], "3331234567"
+		)
+
+
+class TestNumbersOfTheCentresCountry(IntegrationTestCase):
+	"""A number written without its prefix is read in the centre's country, Italy here:
+	India, the default these had, made `333 123 4567` a number of Kolkata."""
+
+	def setUp(self):
+		frappe.db.set_single_value("System Settings", "country", "Italy", update_modified=False)
+
+	def tearDown(self):
+		# the country goes back with the rollback, and what this request kept of the settings
+		frappe.db.rollback()
+		frappe.clear_document_cache("System Settings", "System Settings")
+
+	def test_a_mobile_without_its_prefix_is_italian(self):
+		result = parse_phone_number("3331234567")
+
+		self.assertTrue(result["is_valid"])
+		self.assertEqual(result["country"], "IT")
+		self.assertEqual(result["formats"]["E164"], "+393331234567")
+
+	def test_a_landline_without_its_prefix_is_italian(self):
+		result = parse_phone_number("02 1234 5678")
+
+		self.assertEqual(result["country"], "IT")
+		self.assertEqual(result["national_number"], "0212345678")
+		self.assertEqual(result["formats"]["E164"], "+390212345678")
+
+	def test_the_same_number_written_any_way(self):
+		for scritto in ("333 123 4567", "333-123-4567", "3331234567", "+393331234567"):
+			self.assertTrue(are_same_phone_number("+39 333 123 4567", scritto), scritto)
+		for scritto in ("02 1234 5678", "02-1234-5678", "0212345678"):
+			self.assertTrue(are_same_phone_number("+39 02 1234 5678", scritto), scritto)
+		self.assertFalse(are_same_phone_number("+39 333 123 4567", "333 123 4568"))
+		# the region asked for still wins
+		self.assertFalse(are_same_phone_number("+39 333 123 4567", "333 123 4567", default_region="IN"))
 
 
 class TestUpdateModifiedTimestamp(IntegrationTestCase):
