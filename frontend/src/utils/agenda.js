@@ -467,23 +467,29 @@ export function etichettaDelPeriodo(vista, giorno, lingua = 'it-IT') {
 // ------------------------------------------------------------------ the month
 
 /**
+ * How many of its `tante` rows a day of the month lists at its height, in
+ * px, each a target of 1.5rem (WCAG 2.5.8). The cell is laid out in rem (its
+ * padding, its number, each row and its gap: 16px a rem unless the browser's
+ * text is set larger, `rem`), its border and the «more» line in px (12px type
+ * at 1.6). All of them where they fit; else as many as fit beside «more», one
+ * at least, three at most, as a month on a laptop's screen wants. Not
+ * measured yet (no height, or none before the layout): three.
+ */
+export function quantiNelGiorno(altezza, tante = Infinity, rem = 16) {
+  const quanto = Number(altezza)
+  if (!(quanto > 0)) return Math.min(3, tante)
+  const riga = 1.625 * rem
+  const tutte = Math.floor((quanto - 2.25 * rem - 1) / riga)
+  if (tante <= Math.min(3, tutte)) return tante
+  const conAltri = Math.floor((quanto - 2.375 * rem - 20.2) / riga)
+  return Math.min(3, Math.max(1, conAltri))
+}
+
+/**
  * A day of the month as its cell says it: how many appointments, the first
  * few by their time and their person, how many more. `cose` are the day's
  * rows as the grid takes them (`startMinutes`, the appointment or the event).
  */
-/**
- * How many appointments of 24px (WCAG 2.5.8) a day of the month holds at its
- * height: the cell's padding and border (13px), its number (24px) and the
- * «more» line with its gap (21px) take the rest, each appointment 24px and a
- * gap of 2. One at least, three at most: a taller day would only make the
- * month scroll, and a whole month on a laptop's screen is the point of it.
- */
-export function quantiNelGiorno(altezza) {
-  const libere = Number(altezza) - 58
-  if (!Number.isFinite(libere)) return 3
-  return Math.min(3, Math.max(1, Math.floor(libere / 26)))
-}
-
 export function giornoDelMese(cose = [], quanti = 3) {
   const ordinate = [...cose].sort(
     (x, y) =>

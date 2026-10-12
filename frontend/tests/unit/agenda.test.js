@@ -356,15 +356,42 @@ describe('giornoDelMese', () => {
 
 describe('quantiNelGiorno', () => {
   it('fits the 24px appointments a day of the month has room for', () => {
-    // 13 of padding and border, 24 of the number, 21 of «more», 26 each
-    expect(quantiNelGiorno(108)).toBe(1) // 6.75rem, the least a week gets
-    expect(quantiNelGiorno(110)).toBe(2)
-    expect(quantiNelGiorno(135)).toBe(2)
-    expect(quantiNelGiorno(136)).toBe(3)
+    // at 16px a rem: 13 of padding and border, 24 of the number, 26 a row,
+    // 21.2 of «more» with its gap
+    expect(quantiNelGiorno(96, 9)).toBe(1) // 6rem, the least a week gets
+    expect(quantiNelGiorno(110, 9)).toBe(1) // two and «more» need 110.2
+    expect(quantiNelGiorno(110.5, 9)).toBe(2)
+    expect(quantiNelGiorno(136, 9)).toBe(2) // three and «more» need 136.2
+    expect(quantiNelGiorno(136.5, 9)).toBe(3)
     // never none, never more than three
-    expect(quantiNelGiorno(60)).toBe(1)
-    expect(quantiNelGiorno(400)).toBe(3)
-    // not measured yet: as many as a day ever shows
+    expect(quantiNelGiorno(60, 9)).toBe(1)
+    expect(quantiNelGiorno(400, 9)).toBe(3)
+  })
+
+  it('lists them all where they fit without «more»', () => {
+    expect(quantiNelGiorno(96, 2)).toBe(2) // 37 + 2 × 26 = 89
+    expect(quantiNelGiorno(114, 3)).toBe(2) // three need 115
+    expect(quantiNelGiorno(115, 3)).toBe(3)
+    expect(quantiNelGiorno(400, 3)).toBe(3)
+    expect(quantiNelGiorno(400, 4)).toBe(3)
+    expect(quantiNelGiorno(96, 0)).toBe(0)
+  })
+
+  it('counts in the root’s rem, which the browser’s text size changes', () => {
+    // at 20px a rem a row is 32.5 and «more» stays 19.2px: three and «more»
+    // need 165.2, where 16px a rem fits them in 136.2
+    expect(quantiNelGiorno(150, 9)).toBe(3)
+    expect(quantiNelGiorno(150, 9, 20)).toBe(2)
+    expect(quantiNelGiorno(130, 9, 20)).toBe(1)
+    expect(quantiNelGiorno(165, 9, 20)).toBe(2)
+    expect(quantiNelGiorno(166, 9, 20)).toBe(3)
+    expect(quantiNelGiorno(120, 2, 20)).toBe(2) // 6rem: 46 + 2 × 32.5 = 111
+  })
+
+  it('shows three while the day is not measured', () => {
+    for (const altezza of [undefined, null, 0, '', NaN, -5])
+      expect(quantiNelGiorno(altezza, 9)).toBe(3)
+    expect(quantiNelGiorno(0, 2)).toBe(2)
     expect(quantiNelGiorno(undefined)).toBe(3)
   })
 })
