@@ -45,8 +45,11 @@
           <div class="text-2xl-medium">
             {{ nomeDiChi || '\u00a0' }}
           </div>
+          <!-- the number of the call, as it came or was dialled: the server's
+               answer has the person's main mobile, not always the number that
+               calls, and for nobody the digits without their country -->
           <div class="text-sm text-ink-gray-5">
-            {{ contact?.mobile_no || phoneNumber }}
+            {{ phoneNumber }}
           </div>
         </div>
         <CountUpTimer ref="counterUp">

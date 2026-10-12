@@ -197,6 +197,10 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   rispondeva, e per tutta la chiamata se non rispondeva; la finestra di Telnyx
   usava quella di Twilio, con il numero di Twilio, e non nominava mai nessuno
   (`composables/chiChiama.js`, `cercaChiChiama` in `utils/chiamate.js`, provato).
+  Sotto il nome c'è il numero della chiamata, come è arrivato o come è stato
+  composto: la risposta del server dava il cellulare principale della persona
+  (anche quando chiamava da un altro suo numero) e, per un numero di nessuno, le
+  cifre senza il prefisso del paese («612345678» per un cellulare francese).
 - **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
   Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
   responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un
