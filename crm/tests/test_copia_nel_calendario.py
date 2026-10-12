@@ -14,10 +14,13 @@ Only the professionals' rows keep an address now, whatever saves the copy; an
 Event the centre makes itself is the framework's.
 """
 
+from unittest import mock
+
 import frappe
 from frappe.utils import add_to_date, now_datetime
 
 from crm.area import accesso
+from crm.patches.v1_0 import the_calendar_copy_keeps_no_address_of_who_comes as patch
 from crm.scheduling.availability import forget_settings
 from crm.tests.test_scheduling import SchedulingCase
 
@@ -191,3 +194,33 @@ class LaCopiaNelCalendario(SchedulingCase):
 		voce = self.voce_della_rubrica(anna)
 		evento = self.evento_del_centro(voce)
 		self.assertEqual(self.indirizzi(evento.name), {("Contact", voce): anna})
+
+	# -- the copies saved before ----------------------------------------------
+
+	def test_le_copie_di_prima_perdono_l_indirizzo_di_chi_viene(self):
+		anna = self.utente_dell_area("copia.prima@example.com")
+		voce = self.voce_della_rubrica(anna)
+		copia = self.copia("Contact", voce)
+		# as a copy was saved until now: her entry's address on her row, and on Dott.
+		# Verdi's too, typed over his own in the Desk
+		for tipo, nome in (("Contact", voce), ("User", self.verdi)):
+			riga = frappe.db.get_value(
+				"Event Participants",
+				{"parent": copia.name, "reference_doctype": tipo, "reference_docname": nome},
+				"name",
+			)
+			frappe.db.set_value("Event Participants", riga, "email", anna, update_modified=False)
+		self.assertTrue(self.apre(anna, copia.name))
+		self.assertIn(copia.name, self.elenco(anna))
+		# and an Event the centre made itself, with the same entry on it
+		evento = self.evento_del_centro(voce)
+
+		patch.execute()
+		self.assertEqual(self.indirizzi(copia.name), {**self.dei_professionisti(), ("Contact", voce): None})
+		self.letta_solo_dai_professionisti(copia.name, anna)
+		self.assertEqual(self.indirizzi(evento.name), {("Contact", voce): anna})
+
+		# run again, it has nothing left to write
+		with mock.patch.object(frappe.db, "set_value") as scrive:
+			patch.execute()
+		scrive.assert_not_called()
