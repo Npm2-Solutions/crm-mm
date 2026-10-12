@@ -1,10 +1,14 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // Notifications on this device: what the browser can do, the server's key,
-// where a touched notification opens.
+// whose the browser is, where a touched notification opens.
 import {
+  MEMORIA,
   chiaveDelServer,
   cosaSaFare,
+  daChiedere,
   esadecimale,
+  memoriaDi,
+  memorieVecchie,
   percorsoDellApp,
   statoDelDispositivo,
 } from '@/utils/spinta'
@@ -77,6 +81,40 @@ describe('chiaveDelServer', () => {
     expect(byte).toBeInstanceOf(Uint8Array)
     expect(byte.length).toBe(65)
     expect(byte[0]).toBe(4)
+  })
+})
+
+describe('the memo of whose the browser is', () => {
+  const ANNA = 'anna@centro.it'
+  const BRUNO = 'bruno@centro.it'
+
+  it('is one for the browser: who, and which subscription', () => {
+    expect(MEMORIA).toBe('crm-spinta')
+    expect(memoriaDi(ANNA, 'f1')).toBe('anna@centro.it|f1')
+    expect(memoriaDi(null, '')).toBe('|')
+  })
+
+  it('asks the server unless it says this person, with this subscription', () => {
+    expect(daChiedere(memoriaDi(ANNA, 'f1'), ANNA, 'f1')).toBe(false)
+    // a colleague signed in after Anna: asked, and handed the device
+    expect(daChiedere(memoriaDi(ANNA, 'f1'), BRUNO, 'f1')).toBe(true)
+    // and Anna again after him: asked as well, never «already synced»
+    expect(daChiedere(memoriaDi(BRUNO, 'f1'), ANNA, 'f1')).toBe(true)
+    // another subscription (the site's key changed), or nobody remembered
+    expect(daChiedere(memoriaDi(ANNA, 'f1'), ANNA, 'f2')).toBe(true)
+    expect(daChiedere(null, ANNA, 'f1')).toBe(true)
+  })
+
+  it('finds the memos older versions kept one per person', () => {
+    expect(
+      memorieVecchie([
+        'crm-spinta:anna@centro.it',
+        'crm-spinta',
+        'crm-spinta:bruno@centro.it',
+        'crmAgenda',
+      ]),
+    ).toEqual(['crm-spinta:anna@centro.it', 'crm-spinta:bruno@centro.it'])
+    expect(memorieVecchie(null)).toEqual([])
   })
 })
 
