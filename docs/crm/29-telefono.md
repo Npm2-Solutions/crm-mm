@@ -794,7 +794,10 @@ Restano com'erano: le caselle per scegliere più righe di una lista (14 punti:
 frappe-ui le disegna come `input`, che non tiene un anello, e scegliere più
 righe da un tablet è raro) e i riquadri della dashboard di traverso: lì la
 griglia è quella che il centro ha sistemato, e un titolo lungo resta tagliato
-come su un computer stretto.
+come su un computer stretto. Le caselle, dal 12/10/2026, si prendono da tutta
+la loro cella, 30 punti per 39 intorno ai 14 della casella (`vite/frappeUi.js`
+su `ListRow`): un tocco o un clic appena fuori dalla casella non faceva niente,
+o apriva la riga.
 
 ## Nona parte: la pagina ingrandita (05/10/2026)
 
