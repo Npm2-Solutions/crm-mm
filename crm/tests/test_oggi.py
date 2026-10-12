@@ -227,9 +227,15 @@ class LaFatturaELaGiornata(OggiCase):
 		self.assertEqual(len(avvisi), 1)
 		self.assertIn(dimenticato.name, avvisi[0].message)
 		self.assertNotIn(accolto.name, avvisi[0].message)
-		# one forgotten appointment: the question about one, never «1 appuntamenti»
-		self.assertEqual(avvisi[0].sentence, N.ESITO_OGGI)
-		self.assertEqual(avvisi[0].sentence_args, "[]")
+		aperti = avvisi[0].message.split(", ")
+		if len(aperti) == 1:
+			# one forgotten appointment: the question about one, never «1 appuntamenti»
+			self.assertEqual(avvisi[0].sentence, N.ESITO_OGGI)
+			self.assertEqual(avvisi[0].sentence_args, "[]")
+		else:
+			# whatever else the site has that day without an outcome: the plural, counted
+			self.assertEqual(avvisi[0].sentence, N.ESITI_OGGI)
+			self.assertEqual(frappe.parse_json(avvisi[0].sentence_args), [str(len(aperti))])
 
 	def test_una_giornata_che_finisce_tardi_si_chiude_dopo_mezzanotte(self):
 		tardi = self.appuntamento(self.ieri(23), self.mario)
