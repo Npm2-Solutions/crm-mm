@@ -541,3 +541,13 @@
   ):focus-visible {
   --tw-ring-color: var(--colore-del-fuoco);
 }
+
+/* 26. Under reduced motion nothing pulses: what a page draws while it waits
+       (the dashboard's placeholders, frappe-ui's Skeleton) and a recording's
+       dot keep still, since Espresso keeps only fades there (markup:
+       Tailwind's animate-pulse, whatever component draws it) */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}

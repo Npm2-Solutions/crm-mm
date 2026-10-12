@@ -443,7 +443,7 @@ Questa famiglia raccoglie i principi su come DottorCloud risponde a chi lo usa: 
 
 **Come si verifica.** (1) onCLS con attribuzione (largestShiftTarget) nei test Playwright con rete lenta. (2) DevTools: Layout Shift Regions. (3) Screenshot ogni 100 ms durante il caricamento confrontati con pixelmatch, come nello studio.
 
-**Errori da evitare.** Animare top, height o margin invece di transform. Uno skeleton con forma o numero di righe diversi dal contenuto. Un «Nessun risultato» che compare e viene sostituito dopo un secondo. I segnaposto della Dashboard usano animate-pulse senza motion-safe, e lo Skeleton di frappe-ui pulsa allo stesso modo (animate-pulse), mentre Espresso vuole che con prefers-reduced-motion restino solo le dissolvenze (brand/dottorcloud/design-system/espresso/README.md, «Movimento»).
+**Errori da evitare.** Animare top, height o margin invece di transform. Uno skeleton con forma o numero di righe diversi dal contenuto. Un «Nessun risultato» che compare e viene sostituito dopo un secondo. I segnaposto della Dashboard usavano animate-pulse senza motion-safe, e lo Skeleton di frappe-ui pulsa allo stesso modo (animate-pulse), mentre Espresso vuole che con prefers-reduced-motion restino solo le dissolvenze (brand/dottorcloud/design-system/espresso/README.md, «Movimento»): corretto il 12/10/2026, espresso.css (§26) ferma animate-pulse con prefers-reduced-motion.
 
 **Vedi anche.** [UX-SCHELETRO](#ux-scheletro--skeleton-screen-per-pagine-e-regioni)
 
@@ -536,7 +536,7 @@ Questa famiglia raccoglie i principi su come DottorCloud risponde a chi lo usa: 
 
 **Come si verifica.** (1) Rete lenta: lo skeleton ha le righe e le colonne della lista e al cambio onCLS non registra spostamenti. (2) prefers-reduced-motion nei DevTools: niente pulsazione. (3) Lettore di schermo: si sente lo stato, non decine di blocchi vuoti.
 
-**Errori da evitare.** Dieci blocchi uguali davanti a una griglia di forma diversa. Uno skeleton per attese oltre 10 s, dove serve una percentuale. Skeleton e spinner insieme. La pulsazione con la riduzione del movimento attiva: oggi pulsano sia i segnaposto della Dashboard sia lo Skeleton di frappe-ui (animate-pulse senza motion-safe).
+**Errori da evitare.** Dieci blocchi uguali davanti a una griglia di forma diversa. Uno skeleton per attese oltre 10 s, dove serve una percentuale. Skeleton e spinner insieme. La pulsazione con la riduzione del movimento attiva: pulsavano sia i segnaposto della Dashboard sia lo Skeleton di frappe-ui (animate-pulse senza motion-safe); corretto il 12/10/2026 con una regola di espresso.css (§26).
 
 **Vedi anche.** [PERF-CLS](#perf-cls--cls-niente-si-sposta-da-solo)
 
