@@ -971,8 +971,9 @@ standard_dropdown_items = [
 # worker that finds them there never imports this file.
 # Itala pushes its updates with `Authorization: Bearer`: taken away from that one
 # address before Frappe authenticates the request (crm/invoicing/sdi/webhook.py)
-# an archived private file is opened from the agency's archive, after the framework's
-# own check (crm/archivio/archivio.py)
+# a private file is never kept by the browser (`Cache-Control: private, no-store`
+# over the framework's hour behind nginx), and an archived one is opened from the
+# agency's archive, after the framework's own check (crm/archivio/archivio.py)
 before_request = [
 	"crm.registrazione.carica",
 	"crm.invoicing.sdi.webhook.prima_della_richiesta",

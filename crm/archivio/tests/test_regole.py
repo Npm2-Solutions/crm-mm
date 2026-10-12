@@ -6,10 +6,12 @@ bucket's address, the keys, what the plan includes, which files move."""
 
 import datetime
 import hashlib
+import hmac
 import unittest
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, unquote, urlsplit
 
 from crm.archivio import regole as R
+from crm.archivio import s3
 
 # AWS's examples of Signature Version 4 for S3 ("Authenticating Requests: Using
 # the Authorization Header" and "Using Query Parameters")
@@ -21,6 +23,26 @@ HOST = "examplebucket.s3.amazonaws.com"
 
 def firma(intestazioni):
 	return intestazioni["authorization"].rsplit("Signature=", 1)[1]
+
+
+def firma_valida(url: str) -> bool:
+	"""What the bucket does with a link: the signature worked out again over the
+	path and every parameter the link carries but the signature itself."""
+	parti = urlsplit(url)
+	parametri = dict(parse_qsl(parti.query, keep_blank_values=True))
+	data = parametri.pop("X-Amz-Signature")
+	quando = datetime.datetime.strptime(parametri["X-Amz-Date"], "%Y%m%dT%H%M%SZ")
+	giorno = quando.strftime("%Y%m%d")
+	ambito = f"{giorno}/us-east-1/s3/aws4_request"
+	canonica, _firmate = R._richiesta_canonica(
+		"GET", unquote(parti.path), parametri, {"host": parti.netloc}, R.NON_FIRMATO
+	)
+	attesa = hmac.new(
+		R.chiave_di_firma(SEGRETO, giorno, "us-east-1"),
+		R._da_firmare(quando, ambito, canonica).encode(),
+		hashlib.sha256,
+	).hexdigest()
+	return hmac.compare_digest(data, attesa)
 
 
 class LaFirma(unittest.TestCase):
@@ -74,6 +96,8 @@ class LaFirma(unittest.TestCase):
 		)
 		self.assertTrue(url.startswith(f"https://{HOST}/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&"))
 		self.assertTrue(url.endswith("aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404"))
+		# the bucket's check below finds AWS's own signature on AWS's own link
+		self.assertTrue(firma_valida(url))
 
 	def test_il_link_porta_il_nome_e_il_tipo(self):
 		url = R.url_firmato(
@@ -94,6 +118,31 @@ class LaFirma(unittest.TestCase):
 			domanda["response-content-disposition"], ["inline; filename*=UTF-8''referto%20%C3%A8.pdf"]
 		)
 		self.assertEqual(domanda["X-Amz-Expires"], [str(R.DURATA_DEL_LINK)])
+
+	def test_il_link_dell_archivio_non_lascia_niente_nel_browser(self):
+		# what a browser opening an archived file is sent to (`s3.link`): its name,
+		# its type, and nothing to keep - an object answers with only its
+		# Last-Modified, and a browser reused one ten days old after its link expired
+		conf = R.Configurazione(
+			endpoint="https://s3.amazonaws.com",
+			bucket="examplebucket",
+			access_key=ACCESSO,
+			secret_key=SEGRETO,
+			virtual=True,
+		)
+		url = s3.link(conf, "test.txt", "referto è.pdf", "application/pdf")
+		self.assertEqual(urlsplit(url).netloc, HOST)
+		domanda = parse_qs(urlsplit(url).query)
+		self.assertEqual(domanda["response-cache-control"], ["private, no-store"])
+		self.assertEqual(domanda["response-content-type"], ["application/pdf"])
+		self.assertEqual(
+			domanda["response-content-disposition"], ["inline; filename*=UTF-8''referto%20%C3%A8.pdf"]
+		)
+		# inside the signature: a link that lost it is refused by the bucket
+		self.assertTrue(firma_valida(url))
+		senza = url.replace("response-cache-control=private%2C%20no-store&", "")
+		self.assertNotEqual(senza, url)
+		self.assertFalse(firma_valida(senza))
 
 
 class IlBucket(unittest.TestCase):

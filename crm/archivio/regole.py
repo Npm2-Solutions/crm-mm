@@ -27,6 +27,10 @@ ATTESA = 60
 #: that a link copied from the browser is worth nothing tomorrow.
 DURATA_DEL_LINK = 300
 
+#: What a browser keeps of a private file, on the server or in the bucket:
+#: nothing. Whoever opens it again asks again, and after signing out is refused.
+NON_TENERE = "private, no-store"
+
 #: Files moved in one round at most, and bytes: the next round takes the rest.
 FILE_PER_GIRO = 500
 BYTE_PER_GIRO = 20 * 1024**3

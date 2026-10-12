@@ -10,7 +10,8 @@
   disk". A file brought back to be read leaves again the same way.
 - **Opening** (`prima_della_richiesta`): `/private/files/…` of an archived file is
   answered by a link to the bucket that lasts minutes, after the framework's own
-  check (`find_file_by_url`) and its access log.
+  check (`find_file_by_url`) and its access log. No private file is kept by the
+  browser, archived or not (`regole.NON_TENERE`).
 - **Reading** (`riporta`, from `crm.overrides.file`): code that reads a file's
   content finds it on the disk again, brought back whole.
 - **Deleting** (`al_cestino`, `orfani`): the last File with that address gone, the
@@ -305,11 +306,23 @@ def riporta(file_url: str | None) -> bool:
 
 
 def prima_della_richiesta() -> None:
-	"""`/private/files/…` of an archived file: whoever may read it, as the
-	framework decides, goes to the bucket by a link that lasts minutes. Anybody
-	else, and any file still on the server, is the framework's to answer."""
+	"""`/private/files/…`: whatever the answer, the browser keeps nothing. Of an
+	archived file, whoever may read it, as the framework decides, goes to the
+	bucket by a link that lasts minutes. Anybody else, and any file still on the
+	server, is the framework's to answer.
+
+	Behind nginx the framework answers a private file with
+	`private,max-age=3600,stale-while-revalidate=86400`: a report stayed in the
+	browser, and after signing out its address showed it again without asking the
+	server. What a request puts in `frappe.local.response_headers` (new at every
+	request, before the hooks) goes over the framework's own headers last
+	(`frappe.app.process_response`), on the file, its X-Accel-Redirect and its 403
+	alike."""
 	richiesta = getattr(frappe.local, "request", None)
-	if not richiesta or richiesta.method != "GET" or not richiesta.path.startswith("/private/files/"):
+	if not richiesta or not richiesta.path.startswith("/private/files/"):
+		return
+	frappe.local.response_headers["Cache-Control"] = regole.NON_TENERE
+	if richiesta.method != "GET":
 		return
 	file_url = richiesta.path
 	record = archiviato(file_url)
@@ -340,7 +353,7 @@ def prima_della_richiesta() -> None:
 		raise NotFound
 	nome = file.file_name or file_url.rsplit("/", 1)[-1]
 	risposta = redirect(s3.link(c, record.object_key, nome, mimetypes.guess_type(nome)[0]), code=302)
-	risposta.headers["Cache-Control"] = "private, no-store"
+	risposta.headers["Cache-Control"] = regole.NON_TENERE
 	risposta.headers["Referrer-Policy"] = "no-referrer"
 	raise HTTPException(response=risposta)
 

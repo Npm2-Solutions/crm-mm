@@ -143,9 +143,15 @@ def link(
 	conf: Configurazione, chiave: str, nome: str, tipo: str | None = None, scade: int = regole.DURATA_DEL_LINK
 ) -> str:
 	"""The link a browser follows to the object, for ``scade`` seconds, with the
-	file's name and type in the answer."""
+	file's name and type in the answer, and nothing for the browser to keep: an
+	object answers with only its Last-Modified, and from that a browser reused
+	one ten days old after its link had expired. Signed with the rest: whoever
+	takes it off the link breaks the signature."""
 	host, percorso, base = conf.indirizzo(chiave)
-	parametri = {"response-content-disposition": regole.disposizione(nome)}
+	parametri = {
+		"response-content-disposition": regole.disposizione(nome),
+		"response-cache-control": regole.NON_TENERE,
+	}
 	if tipo:
 		parametri["response-content-type"] = tipo
 	return regole.url_firmato(

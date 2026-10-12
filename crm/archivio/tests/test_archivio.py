@@ -8,9 +8,9 @@ A signed consent of Centro Aurora is written as a private file. An hour later it
 is on the archive and the server keeps an empty file with its name; whoever reads
 it in code finds it whole, and an hour after that it leaves again without being
 sent twice. Opening its address sends whoever may read it to the bucket, and
-nobody else. The logo stays on the server. Deleted, its object goes with it; a
-file deleted by the database leaves nothing behind at night. The space counts
-each address once.
+nobody else; archived or not, the browser keeps none of it. The logo stays on the
+server. Deleted, its object goes with it; a file deleted by the database leaves
+nothing behind at night. The space counts each address once.
 """
 
 import os
@@ -18,9 +18,14 @@ import types
 from unittest.mock import patch
 
 import frappe
+from frappe.app import process_response
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_to_date, now_datetime
-from werkzeug.exceptions import HTTPException
+from frappe.utils.response import download_private_file
+from werkzeug.datastructures import Headers
+from werkzeug.exceptions import Forbidden, HTTPException
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
 
 from crm.archivio import archivio, regole, s3
 
@@ -76,6 +81,11 @@ class TestArchivio(IntegrationTestCase):
 		self.conf = patch.dict(frappe.local.conf, {archivio.CONF: CONF})
 		self.conf.start()
 		self.addCleanup(self.conf.stop)
+		# what the hook writes in the answer's headers stays with this test, as it
+		# stays with its request
+		intestazioni = patch.object(frappe.local, "response_headers", Headers(), create=True)
+		intestazioni.start()
+		self.addCleanup(intestazioni.stop)
 		# only this test's files move: on a site that holds a centre's files a round
 		# over all of them, into the bucket in memory, left them empty on the disk
 		self.indirizzi = set()
@@ -196,6 +206,45 @@ class TestArchivio(IntegrationTestCase):
 		richiesta = types.SimpleNamespace(method="GET", path=doc.file_url, headers={})
 		with patch.object(frappe.local, "request", richiesta, create=True):
 			self.assertIsNone(archivio.prima_della_richiesta())
+
+	def scarica(self, file_url, nginx=False):
+		"""What the framework answers a GET of a private file, after the hooks: the
+		file through nginx (X-Accel-Redirect) or werkzeug, or its refusal."""
+		frappe.local.response_headers = Headers()
+		intestazioni = {"X-Use-X-Accel-Redirect": "True"} if nginx else {}
+		richiesta = Request(EnvironBuilder(path=file_url, headers=intestazioni).get_environ())
+		# the dev server sends no-store whatever the answer: `bench serve` never
+		# showed the hour the framework gives a private file behind nginx
+		with (
+			patch.object(frappe.local, "request", richiesta, create=True),
+			patch.object(frappe, "_dev_server", 0),
+		):
+			self.assertIsNone(archivio.prima_della_richiesta())
+			try:
+				risposta = download_private_file(file_url)
+			except HTTPException as rifiuto:
+				risposta = rifiuto.get_response(richiesta.environ)
+			process_response(risposta)
+		risposta.close()
+		return risposta
+
+	def test_il_browser_non_tiene_un_file_privato(self):
+		doc = self.nuovo(ore_fa=0)
+		# behind nginx the framework says `private,max-age=3600,…`, and after signing
+		# out the same address showed the file without asking the server; werkzeug's
+		# no-cache still keeps a copy on the disk
+		dietro_nginx = self.scarica(doc.file_url, nginx=True)
+		self.assertTrue(dietro_nginx.headers["X-Accel-Redirect"].startswith("/protected/"))
+		self.assertEqual(dietro_nginx.headers.getlist("Cache-Control"), [regole.NON_TENERE])
+
+		dal_framework = self.scarica(doc.file_url)
+		self.assertEqual(dal_framework.status_code, 200)
+		self.assertEqual(dal_framework.headers.getlist("Cache-Control"), [regole.NON_TENERE])
+
+		frappe.set_user("Guest")
+		rifiutato = self.scarica(doc.file_url, nginx=True)
+		self.assertEqual(rifiutato.status_code, Forbidden.code)
+		self.assertEqual(rifiutato.headers.getlist("Cache-Control"), [regole.NON_TENERE])
 
 	def test_tolto_il_file_l_oggetto_va(self):
 		doc = self.nuovo()

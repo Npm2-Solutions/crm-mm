@@ -287,12 +287,16 @@ its own document needs nothing more: the answer reaches the person.
 | File | Role |
 |---|---|
 | `crm/archivio/regole.py` | Pure: AWS Signature V4 (headers and the browser's link, tested on AWS's own examples), the bucket's address, the keys (`<prefix>/<site>/<sha[:2]>/<sha>/<name>`: the bucket is NPM2's, shared with other projects, and every site has its own folder), which files move (private only), what the plan includes (`SPAZIO_COMPRESO` by size: 300 GB, 600 GB, 1 TB, 2 TB from Polyclinic; `CRM Plan.storage_gb` over it), the warning at 80% — tested with plain `unittest` |
-| `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link, the bucket's versions and CORS (`imposta_il_bucket`) |
-| `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); `/private/files/…` of an archived one sends whoever the framework lets read it to the bucket for five minutes (`prima_della_richiesta`, its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory, each test moving only its own files (`sposta(solo=…)`: a round over a whole test bench, into that bucket, left every private file of it empty) |
+| `crm/archivio/s3.py` | The agency's bucket (`dottorcloud_archivio` in `common_site_config.json` or a site's config) through `requests`: put, head, get to a file, delete, the link (signed with `response-cache-control: private, no-store`: an object answers with only its Last-Modified, and a browser reused one after its link expired), the bucket's versions and CORS (`imposta_il_bucket`) |
+| `crm/archivio/archivio.py` + `CRM Archived File`, `crm/overrides/file.py` | Every hour the private files written over an hour ago go to the bucket and an empty file keeps their name on the server (`sposta`); every answer at `/private/files/…`, archived or not, a refusal too, says `private, no-store` (`prima_della_richiesta` through `frappe.local.response_headers`, over the framework's `max-age=3600` behind nginx), and an archived one sends whoever the framework lets read it to the bucket for five minutes (its access log kept); `File.get_content` and the rest bring it back first (`riporta`), and it leaves again an hour later; deleted, its object goes after the commit, and at night what the database deleted (`orfani`); the space each address once (`spazio`), on Settings > The centre > Features — tested with a bucket in memory, each test moving only its own files (`sposta(solo=…)`: a round over a whole test bench, into that bucket, left every private file of it empty) |
 
 A private file is read through its `File` (`get_content()`), never by opening its
 path: an archived one is an empty file on the server until something asks for it.
-A public file stays on the server.
+A public file stays on the server. No browser keeps a private file: what serves one
+says `Cache-Control: private, no-store` (`regole.NON_TENERE`), the bucket's link
+asks the bucket the same, and signing out sends no `Clear-Site-Data` (its «cache»
+empties the browser's whole cache before the answer, its «storage» the push
+subscription and the preferences).
 
 ### The centre's Twilio account (docs/crm/52)
 | File | Role |
