@@ -359,8 +359,10 @@
        calendar of a date, popovers - and on the cards of a page (markup:
        frappe-ui's menu-content and PopoverPanel; a bordered `rounded-lg` or
        `rounded-xl` box is a card, and so is a label drawn as one around the
-       choice it holds: the theme, a first opening's language, invoicing's
-       choices) */
+       choice or the switch it holds: the theme's cards, invoicing's choices,
+       the demo data on a first opening, a switch's row in the waiting list's
+       and the services' settings. A card drawn as a button - a first
+       opening's languages, a platform to connect - keeps its four corners) */
 [data-marchio='dottorcloud'] .menu-content,
 [data-marchio='dottorcloud'] [data-slot='content-body'][data-panel],
 [data-marchio='dottorcloud'] :is(div, label).rounded-lg.border,
