@@ -239,7 +239,8 @@ class TestCRMCallLog(IntegrationTestCase):
 		# _caller and _receiver are dicts with label and image
 		self.assertIsInstance(parsed["_caller"], dict)
 		self.assertIn("label", parsed["_caller"])
-		self.assertEqual(parsed["_caller"]["label"], "Unknown")  # Phone number resolves to Unknown
+		# nobody has the number: said in the reader's words
+		self.assertEqual(parsed["_caller"]["label"], frappe._("Unknown"))
 		self.assertIsInstance(parsed["_receiver"], dict)
 		self.assertIn("label", parsed["_receiver"])
 		self.assertEqual(parsed["from"], "+1234567890")
@@ -273,7 +274,8 @@ class TestCRMCallLog(IntegrationTestCase):
 		self.assertIsInstance(parsed["_caller"], dict)
 		self.assertEqual(parsed["_caller"]["label"], "Administrator")
 		self.assertIsInstance(parsed["_receiver"], dict)
-		self.assertEqual(parsed["_receiver"]["label"], "Unknown")  # Phone number resolves to Unknown
+		# nobody has the number: said in the reader's words
+		self.assertEqual(parsed["_receiver"]["label"], frappe._("Unknown"))
 		self.assertEqual(parsed["from"], "+1234567890")
 		self.assertEqual(parsed["to"], "+0987654321")
 
