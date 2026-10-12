@@ -5,7 +5,8 @@
 
 - **Joining from /prenota**: when no time suits, or a class is full, the page
   asks the days, the parts of the day and until when, then the same details and
-  ticks as a booking. The person is found or made as a booking finds them
+  ticks as a booking (the privacy notice read, where it has an address; marketing,
+  where the centre asks it). The person is found or made as a booking finds them
   (`find_or_create_person`), and so is the one they wait for when it is somebody
   else; the ticks go in the consent register with the entry.
 - **The page of the link**, `/lista-attesa/<link>`: an offer's link, or the one
@@ -86,8 +87,9 @@ def join_waiting_list(
 	require_phone = SB._effective(doc).get("require_phone")
 	if (require_phone is None or cint(require_phone)) and not phone:
 		frappe.throw(_("A phone number is required"))
-	if cint(config.get("require_privacy_consent")) and not cint(consent):
-		frappe.throw(_("Please accept the privacy policy to go on the waiting list"))
+	# the booking page's rule: the notice read, where there is one to read
+	if SB._chiede_la_presa_visione(config) and not cint(consent):
+		frappe.throw(_("Please confirm you have read the privacy notice to go on the waiting list"))
 
 	lezione = A.sessione_da_id(doc.name, session)
 	staff_user = (

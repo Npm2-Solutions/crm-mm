@@ -911,10 +911,6 @@ msgstr "Un referto si oscura insieme alla sua visita"
 msgid "A request that was answered is kept"
 msgstr "Una richiesta che ha avuto risposta si conserva"
 
-#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
-msgid "A required checkbox with the link to the policy above."
-msgstr "Una casella obbligatoria con il link all'informativa qui sopra."
-
 #: crm/integrations/meta/errors.py
 msgid "A required field was missing from the message. That is ours to fix."
 msgstr "Nel messaggio mancava un campo obbligatorio. Tocca a noi correggerlo."
@@ -3119,10 +3115,6 @@ msgstr "Richiedilo a chi ha firmato una versione precedente"
 #: frontend/src/components/Settings/Booking/BookingPageSettings.vue
 msgid "Ask for marketing consent"
 msgstr "Chiedi il consenso marketing"
-
-#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
-msgid "Ask for privacy consent"
-msgstr "Chiedi il consenso privacy"
 
 #: crm/moduli/richieste.py
 msgid "Ask the desk to hand the tablet over again"
@@ -20440,14 +20432,6 @@ msgid "Played when the practice is closed. Supports the same <code>{hours}</code
 msgstr "Si sente quando il centro è chiuso. Accetta gli stessi segnaposto <code>{hours}</code> e <code>{time}</code>."
 
 #: crm/api/service_booking.py
-msgid "Please accept the privacy policy to book"
-msgstr "Accetta l'informativa sulla privacy per prenotare"
-
-#: crm/scheduling/attese_pubblico.py
-msgid "Please accept the privacy policy to go on the waiting list"
-msgstr "Accetta l'informativa sulla privacy per entrare in lista d'attesa"
-
-#: crm/api/service_booking.py
 msgid "Please answer the question: {0}"
 msgstr "Rispondi alla domanda: {0}"
 
@@ -22279,10 +22263,6 @@ msgstr "Le richieste di richiamata finché la persona non viene la prima volta: 
 #: crm/fcrm/doctype/crm_tracking_settings/crm_tracking_settings.json
 msgid "Require Consent"
 msgstr "Chiedi il consenso"
-
-#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
-msgid "Require Privacy Consent"
-msgstr "Chiedi il consenso privacy"
 
 #: frontend/src/components/Settings/TrackingSettings.vue
 msgid "Require consent"
@@ -51123,3 +51103,23 @@ msgstr "Più basso"
 #: frontend/src/components/Activities/ConversationView.vue
 msgid "Event scheduled"
 msgstr "Evento fissato"
+msgid "The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead."
+msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
+msgid "Ask to confirm the privacy notice was read"
+msgstr "Chiedi la presa visione dell'informativa"
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+#: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
+msgid "A required box with the link to the notice above: it appears on the page once its address is written."
+msgstr "Una casella obbligatoria con il link all'informativa qui sopra: compare sulla pagina quando ne scrivi l'indirizzo."
+
+#: crm/api/service_booking.py
+msgid "Please confirm you have read the privacy notice to book"
+msgstr "Conferma di aver letto l'informativa sulla privacy per prenotare"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "Please confirm you have read the privacy notice to go on the waiting list"
+msgstr "Conferma di aver letto l'informativa sulla privacy per entrare in lista d'attesa"

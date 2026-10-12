@@ -303,7 +303,8 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		"title": page_title(config),
 		"intro": config.get("booking_page_intro") or "",
 		"privacy_policy_url": config.get("privacy_policy_url") or "",
-		"require_consent": cint(config.get("require_privacy_consent")),
+		# «I have read the privacy notice», linked to it: only where there is one to read
+		"require_consent": cint(_chiede_la_presa_visione(config)),
 		# an optional box, never ticked for them: the words are the centre's
 		"marketing_consent": _marketing_offerto(config),
 		# when no time suits, or a class is full: the waiting list, where the centre offers it
@@ -771,8 +772,8 @@ def book(
 		frappe.throw(_("A phone number is required"))
 	if cint(doc.get("require_notes")) and not notes:
 		frappe.throw(_("Please answer the question: {0}").format(doc.get("online_question") or _("Notes")))
-	if cint(config.get("require_privacy_consent")) and not cint(consent):
-		frappe.throw(_("Please accept the privacy policy to book"))
+	if _chiede_la_presa_visione(config) and not cint(consent):
+		frappe.throw(_("Please confirm you have read the privacy notice to book"))
 	from crm.invoicing import anagrafica
 
 	codice_fiscale = anagrafica.codice_scritto(fiscal_code)
@@ -931,6 +932,23 @@ def book(
 	return {**public_view(appointment, token), "email_sent": mandata}
 
 
+def _chiede_la_presa_visione(config) -> bool:
+	"""Whether the page asks to confirm the privacy notice was read: where the centre
+	wants it and the notice has an address. The one rule of the page, the booking,
+	the waiting list and the register.
+
+	A booking asks no consent: the booking is what the person asked for (art. 6(1)(b)
+	GDPR) and the care is the professional's (art. 9(2)(h)). The box is the
+	acknowledgement of the `privacy_notice` kind, «I have read the privacy notice»
+	with its link. Without an address it read «I agree to the processing of my
+	data…»: a consent, required to book, where none is needed and with no notice
+	to read.
+	"""
+	return bool(
+		cint(config.get("require_privacy_consent")) and (config.get("privacy_policy_url") or "").strip()
+	)
+
+
 def _marketing_offerto(config) -> dict | None:
 	"""The marketing box of the page, if the centre asks for it and the consent is on."""
 	if not cint(config.get("ask_marketing_consent")):
@@ -945,13 +963,13 @@ def _testo_della_spunta(testo: str | None, config) -> str:
 	"""What the privacy tick said, as the page wrote it in the visitor's language.
 
 	The page sends its own words; they are kept, whitespace folded and cut short,
-	with the policy's address when the page linked to it. From a page that sent
-	nothing (one cached from before) the kind's own text stands in.
+	with the address of the notice they link to. From a page that sent nothing (one
+	cached from before) the kind's own text stands in.
 	"""
 	from crm.moduli.consensi import testo_attuale
 
 	parole = " ".join((testo or "").split())[:500] or testo_attuale("privacy_notice") or ""
-	indirizzo = config.get("privacy_policy_url")
+	indirizzo = (config.get("privacy_policy_url") or "").strip()
 	if indirizzo and indirizzo not in parole:
 		parole = f"{parole} ({indirizzo})"
 	return parole
@@ -962,7 +980,9 @@ def _registra_consensi(lead, appointment, config, consent, consent_text, marketi
 
 	The privacy tick was checked and never written down: nothing said what the
 	person had read, or when. Now it is an answer like any other, with the page's
-	words, the booking it came with and where it came from.
+	words, the booking it came with and where it came from - only where the page
+	asked it (`_chiede_la_presa_visione`): a tick sent by a page that showed none
+	is not an answer.
 
 	Booked for somebody else, the one booking read the notice for both: their own
 	data are on the page too. The marketing tick is theirs alone - they are the
@@ -980,7 +1000,7 @@ def _registra_consensi(lead, appointment, config, consent, consent_text, marketi
 		if getattr(frappe.local, "request", None)
 		else None,
 	}
-	if cint(config.get("require_privacy_consent")) and cint(consent):
+	if _chiede_la_presa_visione(config) and cint(consent):
 		testo = _testo_della_spunta(consent_text, config)
 		consensi.registra_risposta(booker, "privacy_notice", testo=testo, **dove)
 		if lead != booker:

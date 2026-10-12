@@ -299,10 +299,15 @@ class LeFamiglieSuPrenota(SchedulingCase):
 
 	def test_la_privacy_la_legge_chi_prenota_per_tutti_e_due(self):
 		consensi.assicura_tipi()
-		self.with_settings(require_privacy_consent=1)
+		# the box is asked where the notice has an address to read
+		self.with_settings(require_privacy_consent=1, privacy_policy_url="https://example.com/privacy")
 		riga = self.riga(
 			self.prenota(
-				9, for_name="Luca Rossi", for_relation=legami.GENITORE, consent=1, consent_text="Letto"
+				9,
+				for_name="Luca Rossi",
+				for_relation=legami.GENITORE,
+				consent=1,
+				consent_text="Ho letto l'informativa sulla privacy",
 			)
 		)
 		sua = frappe.get_all(

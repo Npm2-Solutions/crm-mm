@@ -534,6 +534,8 @@ def _impostazioni(finti: int) -> None:
 		{
 			"timezone": "Europe/Rome",
 			"online_booking_enabled": 1,
+			# /prenota asks the notice read only where it has an address to open
+			"privacy_policy_url": f"https://www.{R.DOMINIO}/privacy",
 			"require_privacy_consent": 1,
 			"ask_marketing_consent": 1,
 			"booking_page_title": R.NOME_DEL_CENTRO,
