@@ -224,11 +224,14 @@ paziente, le notifiche arrivavano a chi non c'era più.
   in tempo il browser lascia l'abbonamento (potrebbe ancora passarlo a lui);
   un'apertura che comincia quando l'uscita è già partita non lo passa a
   nessuno. Prima l'uscita aspettava l'apertura senza guardare se era finita,
-  e una che cominciava dopo non chiedeva niente a nessuno: in entrambi i casi,
-  su una rete lenta, il dispositivo poteva tornare a chi era appena uscito.
+  e una che cominciava dopo, trovato il promemoria già tolto, chiedeva al
+  server e glielo ripassava: in entrambi i casi, su una rete lenta, il
+  dispositivo poteva tornare a chi era appena uscito.
 - **Una sessione scaduta senza uscire** lo lascia all'ultimo che l'ha usato,
   finché qualcuno non entra in quel browser: allora passa a lui. Su un computer
-  condiviso si esce.
+  condiviso si esce. Lo stesso vale per un'uscita dalla scrivania del framework
+  (`/desk`, «Amministrazione»), che non passa da `utils/esci.js`: non lascia il
+  dispositivo e non pulisce il browser.
 - **La stessa uscita pulisce il browser**, una per tutte (`utils/esci.js`): la
   scrivania, il tablet e l'area. Solo quando il server ha chiuso la sessione se
   ne vanno le copie di frappe-ui delle versioni di prima (IndexedDB
