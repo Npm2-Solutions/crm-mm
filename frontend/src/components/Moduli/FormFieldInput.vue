@@ -101,6 +101,7 @@
           :aria-required="
             !field.multiple && required && !readonly ? 'true' : undefined
           "
+          @keydown="frecce"
         >
           <button
             v-for="option in options"
@@ -108,6 +109,9 @@
             type="button"
             :role="field.multiple ? 'checkbox' : 'radio'"
             :aria-checked="picked(option.value)"
+            :tabindex="
+              field.multiple ? undefined : option.value === fermata ? 0 : -1
+            "
             class="touch-target flex w-full min-w-0 items-center gap-2.5 rounded-md border px-3 py-2 text-left text-base"
             :class="
               picked(option.value)
@@ -490,6 +494,38 @@ function picked(value) {
   return props.field.multiple
     ? Array.isArray(current) && current.includes(value)
     : current === value
+}
+
+// A single choice is one stop of the Tab key, as a radio group is: the answer
+// picked, else the first. The arrows go to the next or the one before (round
+// the ends), Home and End to the first and the last, and pick it: they set the
+// answer, never take it away as a click on the picked one does. Every option
+// was a stop of its own and the arrows did nothing, under a screen reader
+// that announced a group of radio buttons.
+const fermata = computed(() =>
+  options.value.some((option) => option.value === props.modelValue)
+    ? props.modelValue
+    : options.value[0]?.value,
+)
+
+function frecce(evento) {
+  if (props.field.multiple || props.readonly) return
+  if (evento.altKey || evento.ctrlKey || evento.metaKey) return
+  const pulsanti = [...evento.currentTarget.querySelectorAll('[role="radio"]')]
+  const qui = pulsanti.indexOf(evento.target)
+  const dove = {
+    ArrowDown: qui + 1,
+    ArrowRight: qui + 1,
+    ArrowUp: qui - 1,
+    ArrowLeft: qui - 1,
+    Home: 0,
+    End: pulsanti.length - 1,
+  }[evento.key]
+  if (qui < 0 || dove === undefined) return
+  evento.preventDefault()
+  const dopo = (dove + pulsanti.length) % pulsanti.length
+  emit(options.value[dopo].value)
+  pulsanti[dopo].focus()
 }
 
 function pick(value) {
