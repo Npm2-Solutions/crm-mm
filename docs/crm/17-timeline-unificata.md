@@ -331,7 +331,8 @@ Gli SMS ora ne sono esclusi come gia' lo erano WhatsApp, email e chiamate.
 
 «2026-08-16» sui separatori e' diventato «Domenica 16 agosto»: Oggi, Ieri, il
 giorno della settimana per l'ultima settimana, la data (con l'anno solo se non e'
-quest'anno) dopo. Le parole vengono da `Intl`, nella lingua dell'utente del CRM
+quest'anno) dopo. (Dal 12/10/2026 anche l'ultima settimana ha la sua data: piu'
+sotto, «Il futuro non chiude la chat».) Le parole vengono da `Intl`, nella lingua dell'utente del CRM
 (`appLocale()`, dal boot) come le date della dashboard: «Yesterday» nel catalogo
 italiano non aveva nemmeno una traduzione. Una prima versione usava la lingua del
 browser, e un account inglese su un browser italiano leggeva le date in italiano
@@ -627,3 +628,26 @@ I file: `crm/api/conversations.py` (`answered`, `their_notifications_read`,
 `announce`), `crm/integrations/whatsapp/coexistence.py`, la patch,
 `pages/Conversations.vue`, `components/Activities/Activities.vue`; i test in
 `crm/tests/test_conversations.py`.
+
+## Il futuro non chiude la chat (12/10/2026)
+
+Due cose viste nello studio UX di ottobre 2026 (i principi 02, 04 e 07).
+
+- **Gli appuntamenti futuri stavano in fondo.** La storia metteva un
+  appuntamento, e un evento del calendario, al momento in cui *è*: quello di
+  giovedì prossimo finiva dopo i messaggi di oggi, e la chat, che si apre in
+  fondo, si apriva su di lui, sotto «Ieri», senza niente a dire dov'era «adesso».
+  Ora un appuntamento ancora da venire sta dove è stato prenotato, l'unica cosa
+  che di lui è successa, e la sua carta dice «Appuntamento prenotato» con il
+  momento per cui lo è, come vuole la tabella in cima («Appuntamento prenotato
+  per giovedì 14:30»); un evento dice «Evento fissato». Quando il suo momento
+  arriva va lì, come una chiamata. Il prossimo appuntamento resta nella testata
+  della scheda e nel Riepilogo.
+- **I giorni dell'ultima settimana non avevano la data.** «Giovedì» da solo
+  andava contato all'indietro, e si leggeva come il giovedì che viene. Ora vale
+  la regola di sopra, Oggi e Ieri a parole e tutto il resto con la data:
+  «Giovedì 8 ottobre».
+
+I file: `crm/api/activities.py` (`calendar_moment`), `utils/conversation.js`
+(`bookedAhead`, `dayLabel`), `components/Activities/ConversationView.vue`; i test
+in `tests/unit/conversation.test.js` e `crm/tests/test_scheduling.py`.

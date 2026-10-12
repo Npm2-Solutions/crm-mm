@@ -480,7 +480,12 @@ conversation or its notification, opens their chat; the same summary sits beside
 the chat in Conversations. A module with something to say about a person
 registers a line of the summary, its own key, from its `registra()`; the page
 draws the keys it knows. The people live at `/crm/persone/<name>`: a link the
-server writes (an email, a push, the Desk) says so.
+server writes (an email, a push, the Desk) says so. The chat is what happened, so
+it opens on its last message: a row of the history (`crm/api/activities.py`, a
+`crm_timeline_gatherers` hook's too) is filed at a moment that has come, never
+one ahead - an appointment still to come where it was booked
+(`calendar_moment`), its card saying so (`bookedAhead`) - and every day past
+yesterday has its date (`dayLabel`).
 
 ### What a list offers to choose (docs/crm/55)
 | File | Role |

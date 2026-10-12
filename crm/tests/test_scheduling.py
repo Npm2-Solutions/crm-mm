@@ -9,7 +9,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import appointments as A
-from crm.api.activities import appointments_on
+from crm.api.activities import appointments_on, calendar_moment
 from crm.scheduling import intervals as iv
 from crm.scheduling import pricing
 from crm.scheduling.availability import find_conflicts, get_slots
@@ -753,6 +753,23 @@ class LaFonteDelPrezzoInParole(IntegrationTestCase):
 		)
 		for modello in pricing.FONTI:
 			self.assertIn(f'_("{modello}")', codice, modello)
+
+
+class LAppuntamentoNellaChat(IntegrationTestCase):
+	"""Where an appointment sits in a person's history (doc 17)."""
+
+	def test_finche_non_arriva_sta_dove_e_stato_prenotato(self):
+		adesso = datetime.datetime(2026, 10, 12, 10, 0)
+		prenotato = datetime.datetime(2026, 10, 9, 17, 30)
+		# still to come: where it was booked, not below today's messages
+		domani = frappe._dict(starts_on=datetime.datetime(2026, 10, 13, 15, 0), creation=prenotato)
+		self.assertEqual(calendar_moment(domani, adesso), prenotato)
+		# come: at its moment, the way a call is
+		ieri = frappe._dict(starts_on=datetime.datetime(2026, 10, 11, 15, 0), creation=prenotato)
+		self.assertEqual(calendar_moment(ieri, adesso), ieri.starts_on)
+		self.assertEqual(calendar_moment(frappe._dict(starts_on=adesso, creation=prenotato), adesso), adesso)
+		# no moment: where it was written
+		self.assertEqual(calendar_moment(frappe._dict(starts_on=None, creation=prenotato), adesso), prenotato)
 
 
 # ---------------------------------------------------------------------------

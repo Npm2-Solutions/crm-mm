@@ -473,7 +473,7 @@ La soglia di Doherty, una delle leggi di Laws of UX, sta nella famiglia 1 con i 
 
 **Come si verifica.** Per ogni lista: il primo testo letto, a vista e dal lettore di schermo (ordine del DOM), è l'identificativo umano? Prova di ricordo dopo uno sguardo di pochi secondi alla barra di navigazione.
 
-**Errori da evitare.** (studio UX, ottobre 2026) In Accoglienza la riga mostra il servizio prima del paziente e sul telefono il nome è al terzo rigo; nelle chiamate la persona cambia colonna a seconda della direzione; sul telefono le fatture «Da inviare» hanno il numero prima del nome; nella Chat gli appuntamenti futuri stanno in fondo, dove si cerca l'ultimo messaggio.
+**Errori da evitare.** (studio UX, ottobre 2026) In Accoglienza la riga mostra il servizio prima del paziente e sul telefono il nome è al terzo rigo; nelle chiamate la persona cambia colonna a seconda della direzione; sul telefono le fatture «Da inviare» hanno il numero prima del nome; nella Chat gli appuntamenti futuri stavano in fondo, dove si cerca l'ultimo messaggio (corretto il 12/10/2026).
 
 **Fonti.**
 

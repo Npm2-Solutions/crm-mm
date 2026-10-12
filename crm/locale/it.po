@@ -51119,3 +51119,7 @@ msgstr "Più alto"
 #: frontend/src/components/Dashboard/DashboardGrid.vue
 msgid "Shorter"
 msgstr "Più basso"
+
+#: frontend/src/components/Activities/ConversationView.vue
+msgid "Event scheduled"
+msgstr "Evento fissato"

@@ -161,6 +161,21 @@ export function isConversational(item) {
 }
 
 /**
+ * Is this appointment or event in the history where it was booked, still to
+ * come? The server files one at its moment once that has come, and until then
+ * at its booking (crm/api/activities.py, `calendar_moment`): filed at a moment
+ * ahead, it sat below today's messages, at the end the chat opens on. Its card
+ * then says it was booked, and for when (doc 17: «Appuntamento prenotato per
+ * giovedì 14:30»).
+ */
+export function bookedAhead(item) {
+  const channel = channelOf(item)
+  if (channel !== 'appointment' && channel !== 'event') return false
+  const starts = item?.data?.starts_on
+  return Boolean(starts) && timeKey(item.creation) < timeKey(starts)
+}
+
+/**
  * The stream for one channel, or for all of them together.
  *
  * `all` keeps everything — the four channels, the calls, and the record's own
@@ -376,9 +391,10 @@ function relativeDay(offset, locale) {
  * The label on a day's marker.
  *
  * «Oggi» and «Ieri», because that is what somebody looking at a date is really
- * asking. The weekday for the rest of the past week — «martedì» is nearer than
- * «22 settembre» when it was four days ago. The date for anything older, with
- * the weekday while it is this year and the year once it is not.
+ * asking. Every other day with its date: the weekday beside it while it is this
+ * year, the year once it is not (doc 17: «Oggi e Ieri a parole, tutto il resto
+ * con la data»). The weekday alone for the rest of the past week left «Giovedì»
+ * to be counted back, and read as next Thursday as easily as the last.
  */
 export function dayLabel(day, today, locale) {
   const date = wallClock(day)
@@ -386,12 +402,6 @@ export function dayLabel(day, today, locale) {
   if (!date || !now) return String(day || '')
   const offset = daysBetween(date, now)
   if (offset >= -1 && offset <= 1) return relativeDay(-offset, locale)
-  if (offset > 1 && offset < 7) {
-    return capitalized(
-      new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date),
-      locale,
-    )
-  }
   const thisYear = date.getFullYear() === now.getFullYear()
   return capitalized(
     new Intl.DateTimeFormat(locale, {
@@ -467,9 +477,9 @@ export function laterLabel(at, now, locale) {
 }
 
 /**
- * A moment in full, for the one thing in a chat that is not filed under the day
- * it happened: an appointment is in the history when it was booked for, and
- * «mer 8 ott, 15:00» is the fact about it.
+ * A moment in full, for an appointment or an event in a chat: until it comes it
+ * is filed under the day it was booked (`bookedAhead`), and «mer 8 ott, 15:00»
+ * is the fact about it.
  */
 export function momentLabel(at, locale) {
   const date = wallClock(at)
