@@ -39,10 +39,12 @@
           class="relative flex min-w-0 flex-col gap-0.5 overflow-hidden border-b border-r border-outline-gray-2 p-1.5 [&:nth-child(7n)]:border-r-0"
           :class="delMese(data) ? '' : 'bg-surface-gray-1'"
         >
-          <!-- the whole day opens it -->
+          <!-- the whole day opens it; its keyboard ring is drawn inside it,
+               where the cell's clip does not reach (a contrast theme draws
+               no ring but this outline) -->
           <button
             type="button"
-            class="absolute inset-0 rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-4 active:bg-surface-gray-2"
+            class="absolute inset-0 rounded-none focus-visible:[outline-offset:-2px] active:bg-surface-gray-2"
             :aria-label="parolaDelGiorno(data)"
             @click="$emit('giorno', data)"
           />

@@ -49,12 +49,13 @@ Il design system diceva già come va un appuntamento (AgendaEvent, nella
   professionisti insieme non si leggono: per quello c'è il Giorno.
 - **Mese**: ogni giorno con quanti appuntamenti ha e i primi per orario e
   persona, alti 24 px perché si tocchino: tutti se ci stanno, altrimenti quanti
-  ne stanno accanto ad «altri N», da uno a tre secondo l'altezza della
-  settimana (`quantiNelGiorno`, in rem: con il testo del browser più grande ne
-  stanno meno). Le settimane si dividono l'altezza dello schermo, mai sotto i
-  6rem: un mese di sei settimane sta intero su un portatile. Un tocco sul giorno
-  lo apre, su una riga apre l'appuntamento. Sul telefono il numero e quanti ne
-  ha.
+  ne stanno accanto ad «altri N», almeno uno, secondo l'altezza della settimana
+  (`quantiNelGiorno`, in rem: con il testo del browser più grande ne stanno
+  meno). Le settimane si dividono l'altezza dello schermo, mai sotto i 6rem: un
+  mese di sei settimane sta intero in una finestra del browser alta circa
+  700 px, come su un portatile da 1536×864; in una più bassa la griglia scorre.
+  Un tocco sul giorno lo apre, su una riga apre l'appuntamento. Sul telefono il
+  numero e quanti ne ha.
 - **Telefono**: il giorno si apre come elenco (come prima); Giorno e Mese sono una
   scelta più in là, la Settimana no (sette colonne su un telefono non dicono niente).
   La vista si sceglie da un tasto alto come gli altri della riga («Lista»,

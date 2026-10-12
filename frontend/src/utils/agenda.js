@@ -472,17 +472,18 @@ export function etichettaDelPeriodo(vista, giorno, lingua = 'it-IT') {
  * padding, its number, each row and its gap: 16px a rem unless the browser's
  * text is set larger, `rem`), its border and the «more» line in px (12px type
  * at 1.6). All of them where they fit; else as many as fit beside «more», one
- * at least, three at most, as a month on a laptop's screen wants. Not
- * measured yet (no height, or none before the layout): three.
+ * at least. The grid gives a week its height, never the rows: a day that
+ * lists more does not make the month taller. Not measured yet (no height, or
+ * none before the layout): three.
  */
 export function quantiNelGiorno(altezza, tante = Infinity, rem = 16) {
   const quanto = Number(altezza)
   if (!(quanto > 0)) return Math.min(3, tante)
   const riga = 1.625 * rem
   const tutte = Math.floor((quanto - 2.25 * rem - 1) / riga)
-  if (tante <= Math.min(3, tutte)) return tante
+  if (tante <= tutte) return tante
   const conAltri = Math.floor((quanto - 2.375 * rem - 20.2) / riga)
-  return Math.min(3, Math.max(1, conAltri))
+  return Math.max(1, conAltri)
 }
 
 /**

@@ -363,17 +363,18 @@ describe('quantiNelGiorno', () => {
     expect(quantiNelGiorno(110.5, 9)).toBe(2)
     expect(quantiNelGiorno(136, 9)).toBe(2) // three and «more» need 136.2
     expect(quantiNelGiorno(136.5, 9)).toBe(3)
-    // never none, never more than three
+    // never none, and as many as a tall week holds
     expect(quantiNelGiorno(60, 9)).toBe(1)
-    expect(quantiNelGiorno(400, 9)).toBe(3)
+    expect(quantiNelGiorno(400, 20)).toBe(13)
   })
 
   it('lists them all where they fit without «more»', () => {
     expect(quantiNelGiorno(96, 2)).toBe(2) // 37 + 2 × 26 = 89
     expect(quantiNelGiorno(114, 3)).toBe(2) // three need 115
     expect(quantiNelGiorno(115, 3)).toBe(3)
-    expect(quantiNelGiorno(400, 3)).toBe(3)
-    expect(quantiNelGiorno(400, 4)).toBe(3)
+    expect(quantiNelGiorno(140, 4)).toBe(3) // four need 141
+    expect(quantiNelGiorno(141, 4)).toBe(4)
+    expect(quantiNelGiorno(400, 4)).toBe(4)
     expect(quantiNelGiorno(96, 0)).toBe(0)
   })
 
@@ -386,6 +387,8 @@ describe('quantiNelGiorno', () => {
     expect(quantiNelGiorno(165, 9, 20)).toBe(2)
     expect(quantiNelGiorno(166, 9, 20)).toBe(3)
     expect(quantiNelGiorno(120, 2, 20)).toBe(2) // 6rem: 46 + 2 × 32.5 = 111
+    expect(quantiNelGiorno(143, 3, 20)).toBe(2) // three need 143.5
+    expect(quantiNelGiorno(143.5, 3, 20)).toBe(3)
   })
 
   it('shows three while the day is not measured', () => {
