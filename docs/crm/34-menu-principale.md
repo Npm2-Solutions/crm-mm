@@ -49,7 +49,9 @@ testata al posto del titolo (`SORELLE` in `utils/menu.js`, disegnato da
 Il selettore mostra solo le pagine che il livello apre: una sola, nessun
 selettore. Sul telefono tre pagine non stanno accanto ai pulsanti della testata:
 lì il nome della pagina aperta è il titolo, e le altre sono nel suo menu
-(«Accoglienza ▾»). Una pagina senza voce tiene accesa la voce in cui vive (anche una
+(«Accoglienza ▾»). Il titolo cede ai pulsanti: dove non c'è posto si taglia
+(«Accogl… ▾»), non passa sotto le frecce del giorno. Una pagina senza voce
+tiene accesa la voce in cui vive (anche una
 persona tiene accese le Persone), nella barra laterale come in quella del
 telefono (`utils/navigation.js`).
 

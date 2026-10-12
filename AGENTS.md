@@ -987,7 +987,9 @@ row, the bar's words beside their icons).
   (`minmax(min-content, 1fr)`), the record's tabs are as many as fit beside
   «More» (`quanteNellaBarra`), a sentence wraps rather than stopping
   half-way, and a key that is a word on a desk may be its icon on a phone
-  (with its `aria-label`).
+  (with its `aria-label`). In the header the title gives way to the page's
+  keys, cut with «…», never under them (`LayoutHeader`): what it draws in a
+  frappe-ui Button shrinks only with `min-w-0 !shrink`.
 - What a finger drags never takes the page's scroll: a list that reorders has
   a handle, or waits on a finger (`:delay="200" :delay-on-touch-only="true"`:
   the mouse of a touch screen's PC drags at once);

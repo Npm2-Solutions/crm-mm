@@ -18,11 +18,16 @@
         v-if="leadsListView?.customListActions"
         :actions="leadsListView.customListActions"
       />
-      <!-- a practitioner opens the record of somebody not in their care, saying why -->
+      <!-- a practitioner opens the record of somebody not in their care, saying
+           why. On a phone its icon, named: in words, beside «Persone |
+           Aziende», it ran under them at 360 points -->
       <Button
         v-if="apreFuoriEquipe"
-        :label="__('Out of your care')"
-        iconLeft="lucide-lock-open"
+        :label="isMobileView ? undefined : __('Out of your care')"
+        :iconLeft="isMobileView ? undefined : 'lucide-lock-open'"
+        :icon="isMobileView ? 'lucide-lock-open' : undefined"
+        :tooltip="isMobileView ? __('Out of your care') : undefined"
+        :aria-label="__('Out of your care')"
         @click="showOutOfCare = true"
       />
       <!-- a campaign to the people on screen (crm/automation/campagne.py); on a

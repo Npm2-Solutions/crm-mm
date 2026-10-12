@@ -12,13 +12,14 @@
         :items="[{ label: __('Invoices'), route: { name: 'Invoices' } }]"
       />
       <!-- the company's name gives way on a phone, it does not run under the
-           buttons -->
-      <Dropdown
-        v-if="companies.data?.length > 1"
-        class="min-w-0"
-        :options="companyOptions"
-      >
-        <Button variant="ghost" iconRight="chevron-down" class="max-w-full">
+           buttons: the button shrinks (frappe-ui's does not, and a class on
+           the Dropdown reaches no element), and its name is cut with «…» -->
+      <Dropdown v-if="companies.data?.length > 1" :options="companyOptions">
+        <Button
+          variant="ghost"
+          iconRight="chevron-down"
+          class="min-w-0 max-w-full !shrink"
+        >
           <span class="truncate">{{ company || __('All companies') }}</span>
         </Button>
       </Dropdown>

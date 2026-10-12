@@ -1046,7 +1046,8 @@ Fonti: [Chrome, viewport resize behavior](https://developer.chrome.com/blog/view
 | `frontend/src/components/Mobile/ElencoAziende.vue`, `ElencoContatti.vue`, `ElencoChiamate.vue` + `crm/api/sul_telefono.py` (`get_organizations`, `get_contacts`, `get_calls`) | Le liste di aziende, contatti e chiamate |
 | `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
 | `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | L'accoglienza sul telefono |
-| `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu |
+| `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu; il titolo cede ai tasti della testata, tagliato con «…» (a 320 punti «Accoglienza» passava sotto le frecce del giorno) |
+| `frontend/src/pages/Invoices.vue`, `Leads.vue` | Nella testata il nome dell'azienda che emette si taglia con «…» (la classe sul Dropdown non arrivava a nessun elemento) e «Fuori dalla tua équipe» è la sua icona, con il suo nome: a 360 punti passavano sotto i tasti |
 | `frontend/src/pages/MobileOrganization.vue`, `MobileContact.vue` | Le trattative e i contatti di un'azienda e di un contatto, per nome della scheda |
 | `frontend/tests/unit/automationParole.test.js` | Ogni parola del catalogo delle automazioni ha il suo italiano, nessuna nomina un altro prodotto |
 | `frontend/src/components/Mobile/ElencoNote.vue`, `pages/Notes.vue` + `crm/api/sul_telefono.py` (`get_notes`) | Le note sul telefono |
