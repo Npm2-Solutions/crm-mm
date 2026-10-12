@@ -185,6 +185,18 @@ senza nessuno in mezzo che le legga.
   l'ora del suo promemoria era già passata (stamattina, con quello «1 giorno
   prima») riceveva l'email mentre cominciava, «Inizia domani»; a schermo l'avviso
   di un evento in corso resta.
+- **La scheda Eventi va con l'orologio del centro** (12/10/2026). Il pannello
+  chiedeva al server gli eventi che finiscono da adesso in poi con un istante UTC
+  («2026-10-12T12:05:00.000Z»), che il server legge come l'ora del centro: in
+  Italia la scheda prendeva gli eventi finiti fino a due ore prima (un'ora
+  d'inverno), e un evento finito andava fra «In arrivo». La lista resta nella
+  pagina, e riaperta la chiedeva con l'adesso della prima apertura. Ora la chiede
+  con l'adesso del centro a ogni apertura e a ogni ricarica, ogni minuto rimette
+  gli eventi sotto il loro titolo, e uno finito esce dalla lista; se non resta
+  niente, la scheda dice che non ci sono eventi (`filtriDegliEventi` e
+  `tipoDellEvento` in `utils/avvisiDegliEventi.js`, provati). Anche quello che il
+  browser scrive di suo (quando ha chiuso un avviso, quando l'ha preso) è sull'ora
+  del centro.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
@@ -310,7 +322,9 @@ paziente, le notifiche arrivavano a chi non c'era più.
   giorni), provato in
   `crm/tests/test_avvisi_degli_eventi.py`; nel browser `data/notifications.js`,
   `components/EventNotificationPopup.vue` e `utils/avvisiDegliEventi.js`,
-  provato in `tests/unit/avvisiDegliEventi.test.js`.
+  provato in `tests/unit/avvisiDegliEventi.test.js`; la scheda Eventi del
+  pannello, `components/EventNotificationsArea.vue` (`useEventNotifications`),
+  sulle stesse regole.
 - Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
   dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
   `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi

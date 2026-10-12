@@ -7,9 +7,12 @@ import {
   CAMPI,
   avvisiDaTenere,
   eDellUtente,
+  filtriDegliEventi,
   fineDellEvento,
   soloIlNecessario,
+  tipoDellEvento,
 } from '@/utils/avvisiDegliEventi'
+import { adessoDelCentro, oraDelCentro } from '@/utils/scheduler'
 
 const NOTE = 'Dolore lombare, peggiora la sera'
 
@@ -181,5 +184,141 @@ describe('the reminders a browser keeps', () => {
         utente: 'neri@centro.it',
       }),
     ).toEqual([])
+  })
+})
+
+// The Events tab of the notifications, in Rome at 14:05 of 12 October 2026
+// (summer time): 12:05 in UTC
+const ISTANTE = new Date('2026-10-12T12:05:00Z')
+const ADESSO = oraDelCentro(adessoDelCentro('Europe/Rome', ISTANTE))
+
+function evento(starts_on, ends_on) {
+  return { name: 'EV-0002', subject: 'Riunione', starts_on, ends_on }
+}
+
+describe('what the Events tab asks the server for', () => {
+  it('the session’s open events not over on the centre’s clock', () => {
+    expect(ADESSO).toBe('2026-10-12 14:05:00')
+    expect(filtriDegliEventi('neri@centro.it', ADESSO)).toEqual({
+      status: 'Open',
+      owner: 'neri@centro.it',
+      ends_on: ['>=', '2026-10-12 14:05:00'],
+    })
+  })
+
+  it('leaves out what ended before now, never as a UTC instant', () => {
+    const [, da] = filtriDegliEventi('neri@centro.it', ADESSO).ends_on
+    expect(da).not.toContain('T')
+    // the server compares an event's end, kept on the centre's clock, as text
+    const finita = '2026-10-12 13:00:00'
+    expect(finita >= da).toBe(false)
+    // the UTC instant was read as 12:05: an hour after its end, still in
+    expect(finita >= '2026-10-12 12:05:00').toBe(true)
+    expect('2026-10-12 14:30:00' >= da).toBe(true)
+  })
+})
+
+describe('under which heading the Events tab files an event', () => {
+  it('upcoming when it starts more than five minutes from now', () => {
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 14:30:00', '2026-10-12 15:00:00'),
+        ADESSO,
+      ),
+    ).toBe('upcoming')
+    expect(
+      tipoDellEvento(
+        evento('2026-10-13 09:00:00', '2026-10-13 10:00:00'),
+        ADESSO,
+      ),
+    ).toBe('upcoming')
+  })
+
+  it('starting now within five minutes of its start, before or after', () => {
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 14:08:00', '2026-10-12 15:00:00'),
+        ADESSO,
+      ),
+    ).toBe('startingNow')
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 14:02:00', '2026-10-12 15:00:00'),
+        ADESSO,
+      ),
+    ).toBe('startingNow')
+  })
+
+  it('ongoing from then until its end', () => {
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 13:30:00', '2026-10-12 14:30:00'),
+        ADESSO,
+      ),
+    ).toBe('ongoing')
+    // until its last minute
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 13:30:00', '2026-10-12 14:05:00'),
+        ADESSO,
+      ),
+    ).toBe('ongoing')
+  })
+
+  it('nowhere once it is over: it went under «Upcoming»', () => {
+    // ended an hour before, which the UTC instant let through
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 12:00:00', '2026-10-12 13:00:00'),
+        ADESSO,
+      ),
+    ).toBeNull()
+    // a short one over within five minutes of its start
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 14:01:00', '2026-10-12 14:04:00'),
+        ADESSO,
+      ),
+    ).toBeNull()
+  })
+
+  it('without an end, a moment: starting now, then over', () => {
+    expect(tipoDellEvento(evento('2026-10-12 14:03:00'), ADESSO)).toBe(
+      'startingNow',
+    )
+    expect(tipoDellEvento(evento('2026-10-12 13:50:00'), ADESSO)).toBeNull()
+    expect(tipoDellEvento(evento('2026-10-12 16:00:00'), ADESSO)).toBe(
+      'upcoming',
+    )
+  })
+
+  it('across midnight, and however the server writes the time', () => {
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 23:50:00', '2026-10-13 00:30:00'),
+        '2026-10-13 00:10:00',
+      ),
+    ).toBe('ongoing')
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12T14:30:00', '2026-10-12 15:00:00.000000'),
+        ADESSO,
+      ),
+    ).toBe('upcoming')
+    expect(tipoDellEvento(evento('2026-10-12 14:30'), ADESSO)).toBe('upcoming')
+  })
+
+  it('nowhere where it says no time, or now is not one', () => {
+    expect(
+      tipoDellEvento(evento(null, '2026-10-12 15:00:00'), ADESSO),
+    ).toBeNull()
+    expect(tipoDellEvento(evento('2026-10-12'), ADESSO)).toBeNull()
+    expect(tipoDellEvento(undefined, ADESSO)).toBeNull()
+    expect(
+      tipoDellEvento(
+        evento('2026-10-12 14:30:00', '2026-10-12 15:00:00'),
+        null,
+      ),
+    ).toBeNull()
   })
 })

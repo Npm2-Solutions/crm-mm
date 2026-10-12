@@ -3,31 +3,38 @@
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { useEvent } from '@/composables/event'
-import { dayjs } from 'frappe-ui'
-import isBetween from 'dayjs/plugin/isBetween'
 import { useStorage } from '@vueuse/core'
 import { getUserSettings, useUserSettings } from '@/data/userSettings'
 import {
   avvisiDaTenere,
   eDellUtente,
+  filtriDegliEventi,
   soloIlNecessario,
 } from '@/utils/avvisiDegliEventi'
 import { adessoDelCentro, oraDelCentro } from '@/utils/scheduler'
 import { ref, computed, onUnmounted, onMounted } from 'vue'
 
-dayjs.extend(isBetween)
+// Now as the centre's clock writes it, the way the server keeps an event's
+// times and reads what the browser sends: "2026-10-12 14:05:00"
+const adesso = () => oraDelCentro(adessoDelCentro())
 
+// The Events tab of the notifications: the session's open events not over yet,
+// asked with now as it is at every opening (the list stays in the page) and at
+// every pull (`ricarica`)
 export const useEventNotifications = () => {
   const { user } = sessionStore()
 
-  return useEvent({
-    filters: {
-      status: 'Open',
-      owner: user,
-      ends_on: ['>=', dayjs().toISOString()],
-    },
+  const eventi = useEvent({
+    filters: filtriDegliEventi(user, adesso()),
     notifications: false,
   })
+
+  function ricarica() {
+    eventi.eventsResource.update({ filters: filtriDegliEventi(user, adesso()) })
+    return eventi.eventsResource.reload()
+  }
+
+  return { ...eventi, ricarica }
 }
 
 // The reminders that came, kept in this browser between pages: one list for
@@ -51,7 +58,7 @@ export const useEventNotificationAlert = () => {
     return {
       utente: session.user,
       completati: completedEvents.value,
-      adesso: oraDelCentro(adessoDelCentro()),
+      adesso: adesso(),
     }
   }
 
@@ -85,7 +92,7 @@ export const useEventNotificationAlert = () => {
     try {
       await saveUserSettings('Event', 'notifications', {
         completedEvents: completedEvents.value,
-        lastUpdated: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+        lastUpdated: adesso(),
       })
     } catch (error) {
       console.error('Error saving notification settings:', error)
@@ -130,7 +137,7 @@ export const useEventNotificationAlert = () => {
       utente,
       completed: false,
       notification: soloIlNecessario(data),
-      createdAt: dayjs().toISOString(),
+      createdAt: adesso(),
     })
   }
 

@@ -6,7 +6,10 @@
 // the reminders of their own events (`crm/api/event.py`); the browser keeps them
 // in localStorage, one list per browser and not per user, so it keeps only the
 // session's, only what the popup draws - never the description, which on an
-// appointment's calendar copy is its notes - and nothing done or over.
+// appointment's calendar copy is its notes - and nothing done or over. And the
+// Events tab of the notifications: what it asks the server for, and under which
+// heading it files each event. Both on the centre's clock, as the server keeps
+// an event's times: never a UTC instant, nor the phone's own clock.
 
 /** What the popup draws of an event: all the browser keeps of it. */
 export const CAMPI = [
@@ -92,4 +95,52 @@ export function avvisiDaTenere(
       notification: soloIlNecessario(avviso.notification),
       createdAt: avviso.createdAt,
     }))
+}
+
+// ------------------------------------------------------------ the Events tab
+
+/**
+ * What the Events tab asks the server for: the open events of `utente` not
+ * over at `adesso`, the centre's clock as the server keeps an event's times
+ * ("2026-10-12 14:05:00", `oraDelCentro(adessoDelCentro())`). Now as a UTC
+ * instant ("2026-10-12T12:05:00.000Z") was read by the server as 12:05 on the
+ * centre's clock: in Italy the tab took the events that had ended up to two
+ * hours before.
+ */
+export function filtriDegliEventi(utente, adesso) {
+  return { status: 'Open', owner: utente, ends_on: ['>=', adesso] }
+}
+
+// How near its start an event is «starting now», before or after: in minutes
+const ATTORNO = 5
+
+// A time of the centre's ("2026-10-12 14:05:00") as minutes, in no time zone:
+// the Events tab compares the centre's own times with each other
+function minutiDi(quando) {
+  const parti = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/.exec(
+    String(quando ?? ''),
+  )
+  if (!parti) return null
+  const [anno, mese, giorno, ore, minuti, secondi] = parti
+    .slice(1, 7)
+    .map((n) => Number(n ?? 0))
+  return Date.UTC(anno, mese - 1, giorno, ore, minuti, secondi) / 60000
+}
+
+/**
+ * Under which heading the Events tab files an event at `adesso` (the centre's
+ * clock, as `oraDelCentro()` writes it): 'startingNow' within five minutes of
+ * its start, 'upcoming' further on, 'ongoing' from then to its end; null once
+ * it is over - its end gone, or five minutes from its start where it has none -
+ * and where it says no time. An event over was filed under «Upcoming».
+ */
+export function tipoDellEvento(evento, adesso) {
+  const ora = minutiDi(adesso)
+  const inizio = minutiDi(evento?.starts_on)
+  if (ora === null || inizio === null) return null
+  const fine = minutiDi(evento.ends_on)
+  if (fine === null ? inizio < ora - ATTORNO : fine < ora) return null
+  if (inizio > ora + ATTORNO) return 'upcoming'
+  if (inizio >= ora - ATTORNO) return 'startingNow'
+  return 'ongoing'
 }

@@ -1,5 +1,7 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { usersStore } from '@/stores/users'
-import { dayjs, createListResource } from 'frappe-ui'
+import { dayjs, createListResource, getCachedListResource } from 'frappe-ui'
 import { sameArrayContents } from '@/utils'
 import { computed, ref } from 'vue'
 import { allTimeSlots } from '@/components/Calendar/utils'
@@ -27,9 +29,15 @@ export function useEvent({
     }
   }
 
+  const cache = ['calendar-events', docname]
+  // a list kept in the page is asked again at once when it is asked for
+  // (createListResource), with the filters it was made with: it takes the
+  // ones it is asked with now - the Events tab's now, read at every opening
+  getCachedListResource(cache)?.update({ filters })
+
   const eventsResource = createListResource({
     doctype: 'Event',
-    cache: ['calendar-events', docname],
+    cache,
     fields: [
       'name',
       'status',
