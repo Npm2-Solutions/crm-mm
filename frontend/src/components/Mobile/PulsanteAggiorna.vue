@@ -9,21 +9,30 @@
   alone left them no way to bring a list up to date (WCAG 2.5.1, 2.5.7). It
   turns while the list comes back, after a pull too, and a tap meanwhile asks
   for nothing more: one reload at a time.
+
+  It turns without frappe-ui's `loading`, which disables the button: a key
+  pressed from a keyboard (a page zoomed to 400% draws the phone's layout)
+  lost its focus to the page's top at every press. The list's mark says
+  «Updating the list…» to a screen reader (TiraPerAggiornare.vue), so the
+  spinner here is for the eye only.
 -->
 <template>
   <Button
     v-if="tira"
     variant="ghost"
-    icon="lucide-refresh-ccw"
-    :loading="tira.inCorso"
     :tooltip="__('Refresh')"
     :aria-label="__('Refresh')"
     @click="tira.aggiornaOra()"
-  />
+  >
+    <template #icon>
+      <LoadingIndicator v-if="tira.inCorso" class="size-4" aria-hidden="true" />
+      <span v-else class="lucide-refresh-ccw size-4" aria-hidden="true" />
+    </template>
+  </Button>
 </template>
 
 <script setup>
-import { Button } from 'frappe-ui'
+import { Button, LoadingIndicator } from 'frappe-ui'
 
 // the list's pull, as useTiraPerAggiornare gives it back: there once the
 // list is drawn

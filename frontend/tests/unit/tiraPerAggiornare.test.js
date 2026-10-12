@@ -1,6 +1,7 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // A list pulled down from its top reloads, as in a phone's own apps; the
 // page's «Refresh» reloads it the same way, with one tap.
+import PulsanteAggiorna from '@/components/Mobile/PulsanteAggiorna.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import {
   MASSIMO_TIRATA,
@@ -10,7 +11,26 @@ import {
 } from '@/composables/tiraPerAggiornare'
 import { createApp, h, nextTick, ref } from 'vue'
 
-vi.mock('frappe-ui', () => ({ LoadingIndicator: { render: () => null } }))
+vi.mock('frappe-ui', async () => {
+  const { h } = await import('vue')
+  return {
+    LoadingIndicator: { render: () => null },
+    // frappe-ui's Button as far as the key goes: a native button, disabled
+    // while `loading` as frappe-ui's own is
+    Button: {
+      inheritAttrs: false,
+      props: { loading: Boolean, disabled: Boolean, tooltip: String },
+      setup(props, { attrs, slots }) {
+        return () =>
+          h(
+            'button',
+            { ...attrs, disabled: props.disabled || props.loading },
+            slots.icon?.(),
+          )
+      },
+    },
+  }
+})
 
 describe('tirata', () => {
   it('follows half the finger, up to a limit', () => {
@@ -206,6 +226,38 @@ describe('useTiraPerAggiornare', () => {
     await fatto
     await nextTick()
     expect(regione.textContent.trim()).toBe('')
+    app.unmount()
+    smonta()
+  })
+
+  it('keeps the keyboard on «Refresh» while the list comes back', async () => {
+    let finisci
+    const aggiorna = vi.fn(() => new Promise((r) => (finisci = r)))
+    const { stato, smonta } = monta(aggiorna)
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    const app = createApp({
+      render: () => h(PulsanteAggiorna, { tira: stato }),
+    })
+    app.config.globalProperties.__ = globalThis.__
+    app.mount(radice)
+    const tasto = radice.querySelector('button')
+    expect(tasto.getAttribute('aria-label')).toBe('Refresh')
+    tasto.focus()
+    tasto.click()
+    await nextTick()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    expect(stato.inCorso).toBe(true)
+    // a button disabled under the focus drops it to the page's top
+    expect(tasto.disabled).toBe(false)
+    expect(document.activeElement).toBe(tasto)
+    // pressed again meanwhile, it asks for nothing more
+    tasto.click()
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    finisci()
+    await nextTick()
+    await nextTick()
+    expect(stato.inCorso).toBe(false)
     app.unmount()
     smonta()
   })

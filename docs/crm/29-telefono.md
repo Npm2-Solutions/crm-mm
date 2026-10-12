@@ -394,8 +394,11 @@ Con il tocco, come in un'app:
   non hanno un dito) ha «Ricarica» nella testata di ognuna, come le chat e la
   panoramica, e nelle notifiche accanto alle schede, perché la testata ha già
   «Segna tutto come letto» (`Mobile/PulsanteAggiorna.vue`): fa lo stesso con
-  un tocco, la lista resta dov'è e il tasto gira finché non è tornata; un
-  aggiornamento alla volta, che venga dal dito o dal tasto (`aggiornaOra`).
+  un tocco, senza far scendere la lista, e il tasto gira finché non è
+  tornata; un aggiornamento alla volta, che venga dal dito o dal tasto
+  (`aggiornaOra`). Mentre gira resta un tasto come prima, non spento: spento,
+  chi lo premeva dalla tastiera (una pagina ingrandita al 400% ha il
+  disegno del telefono) perdeva il fuoco, che tornava in cima alla pagina.
   Mentre torna, un lettore di schermo sente «Aggiorno l'elenco…», da una
   regione che c'è fin dall'inizio: arrivava già scritta, dentro un riquadro
   nascosto fino a quel momento, e così non si sentiva
