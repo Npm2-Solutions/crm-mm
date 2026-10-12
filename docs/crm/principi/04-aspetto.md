@@ -579,7 +579,7 @@ La soglia di Doherty, una delle leggi di Laws of UX, sta nella famiglia 1 con i 
 
 **Come si verifica.** Zoom del browser al 200% e al 400% su ogni schermata (WCAG 1.4.4 e 1.4.10); axe `meta-viewport`; script che elenca i nodi di testo visibili con una dimensione calcolata sotto 12 px; prova su iPhone con «Testo più grande» e su Android con i caratteri al 130% (le pagine di ogni giorno devono reggere a 280 px).
 
-**Errori da evitare.** (studio UX, ottobre 2026) Etichette tutte maiuscole a 11 px («MARKETING» nella barra laterale, «OGGI» nelle notifiche); orari dei blocchi d'agenda e date sull'asse dei grafici a 11 px (`dc-evento__ora` ed `fontSize: 11` in dashboardCharts.js: ancora così); un documento che si apre solo da un titolo alto 16 px. Verificato nel codice il 12/10/2026: nel blocco sottile dell'agenda (`dc-evento--sottile`) ora e nome sono a 10,5 px, e i contatori sul pulsante del telefono (PhoneButton.vue) e nella barra dell'area (area/App.vue) a 10 px.
+**Errori da evitare.** (studio UX, ottobre 2026) Etichette tutte maiuscole a 11 px («MARKETING» nella barra laterale, «OGGI» nelle notifiche); orari dei blocchi d'agenda e date sull'asse dei grafici a 11 px (`dc-evento__ora` ed `fontSize: 11` in dashboardCharts.js: ancora così); un documento che si apre solo da un titolo alto 16 px. Verificato nel codice il 12/10/2026: nel blocco sottile dell'agenda (`dc-evento--sottile`) ora e nome sono a 10,5 px; i contatori sul pulsante del telefono (PhoneButton.vue) e nella barra dell'area (area/App.vue) erano a 10 px (corretto il 12/10/2026: 12 px, `text-xs`).
 
 **Fonti.**
 
