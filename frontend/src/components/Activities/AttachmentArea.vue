@@ -4,9 +4,12 @@
 <template>
   <div v-if="attachments.length">
     <div v-for="(attachment, i) in attachments" :key="attachment.name">
+      <!-- the row opens the file from its name, a link stretched over the row
+           (.riga-stesa): a div with a click reached no key. The time and the
+           buttons come after it and are drawn over it; the thumbnail says
+           nothing of its own, the name being written beside it -->
       <div
-        class="activity flex justify-between gap-2 hover:bg-surface-gray-1 rounded text-base p-2.5 cursor-pointer"
-        @click="openFile(attachment)"
+        class="activity relative flex justify-between gap-2 hover:bg-surface-gray-1 rounded text-base p-2.5"
       >
         <div class="flex gap-2 truncate">
           <div
@@ -17,24 +20,30 @@
               v-if="isImage(attachment.file_type)"
               class="size-full object-cover"
               :src="attachment.file_url"
-              :alt="attachment.file_name"
+              alt=""
             />
             <component
               :is="fileIcon(attachment.file_type)"
               v-else
               class="size-4 text-ink-gray-7"
+              aria-hidden="true"
             />
           </div>
           <div class="flex flex-col justify-center gap-1 truncate">
-            <div class="text-base text-ink-gray-8 truncate">
+            <a
+              :href="attachment.file_url"
+              target="_blank"
+              rel="noopener"
+              class="riga-stesa text-base text-ink-gray-8 truncate after:rounded"
+            >
               {{ attachment.file_name }}
-            </div>
+            </a>
             <div class="mb-1 text-sm text-ink-gray-5">
               {{ convertSize(attachment.file_size) }}
             </div>
           </div>
         </div>
-        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <div class="relative flex flex-col items-end gap-2 flex-shrink-0">
           <TimelineTimestamp :date="attachment.creation" />
           <div class="flex gap-1">
             <Button
@@ -57,6 +66,7 @@
               </template>
             </Button>
             <Button
+              :aria-label="__('Delete Attachment')"
               :tooltip="__('Delete Attachment')"
               class="!size-5"
               @click.stop="() => deleteAttachment(attachment.name)"
@@ -94,10 +104,6 @@ defineProps({
 const emit = defineEmits(['reload'])
 
 const { $dialog } = globalStore()
-
-function openFile(attachment) {
-  window.open(attachment.file_url, '_blank')
-}
 
 function togglePrivate(fileName, isPrivate) {
   let changeTo = isPrivate ? __('public') : __('private')
