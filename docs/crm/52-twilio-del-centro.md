@@ -201,6 +201,14 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   composto: la risposta del server dava il cellulare principale della persona
   (anche quando chiamava da un altro suo numero) e, per un numero di nessuno, le
   cifre senza il prefisso del paese («612345678» per un cellulare francese).
+- **Una chiamata alla volta (corretto il 12/10/2026).** La finestra ne tiene una:
+  una chiamata che arriva mentre un'altra squilla o sta partendo squilla sugli
+  altri telefoni del centro, e una chiamata in uscita non parte se, mentre il
+  server la controllava, ne è arrivata una (`finestraOccupata` in
+  `utils/chiamate.js`, provato; anche in quella di Telnyx). Prima la chiamata
+  arrivata prendeva la finestra e il suo nome, quella in uscita li riprendeva, e
+  la finestra perdeva la chiamata che aveva mostrato: quando chi chiamava
+  riattaccava, si chiudeva sulla chiamata in corso.
 - **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
   Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
   responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un

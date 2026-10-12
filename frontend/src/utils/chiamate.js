@@ -5,8 +5,9 @@
  * Calls going out from DottorCloud (doc 52), without a screen: the countries the
  * centre may call as the server reads them (`crm/telephony/uscita_regole.py`),
  * a country's name in the reader's language, the number a call shows to start
- * with, the keypad; and for every call, in or out, who calls. The words are
- * English, translated where they are drawn.
+ * with, the keypad; and for every call, in or out, who calls and whether the
+ * window is taken by another. The words are English, translated where they are
+ * drawn.
  */
 
 import { nomeDelPaese } from './paesi'
@@ -114,6 +115,20 @@ export const TASTI = [
   ['7', '8', '9'],
   ['*', '0', '#'],
 ]
+
+/**
+ * Whether the call's window is taken (Twilio's and Telnyx's): by a call it
+ * shows, ringing or on, other than `nuova`, or by one being placed (`stato`
+ * 'initiating': the server or the carrier has not answered yet, and there is no
+ * call object). One call at a time: no call goes out over it, and one coming in
+ * rings on the centre's other phones. A call coming in while another was being
+ * placed took the window and its name, then the call going out took them back,
+ * and the window lost the call it had shown.
+ */
+export function finestraOccupata(attuale, stato, nuova = null) {
+  if (attuale) return attuale !== nuova
+  return stato === 'initiating'
+}
 
 /**
  * Who calls, asked one number at a time, for the call's window (Twilio's and

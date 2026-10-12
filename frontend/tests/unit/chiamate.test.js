@@ -9,6 +9,7 @@ import {
   cercaChiChiama,
   comeSalvati,
   conIlPaese,
+  finestraOccupata,
   nomeDelPaese,
   nomeDiChiChiama,
   numeroIniziale,
@@ -226,6 +227,33 @@ describe('who calls', () => {
     expect(nomeDiChiChiama(null, false, t)).toBe('«Unknown»')
     expect(nomeDiChiChiama(NESSUNO, false, t)).toBe('«Unknown»')
     expect(nomeDiChiChiama({ full_name: '' }, false, t)).toBe('«Unknown»')
+  })
+})
+
+describe('one call at a time', () => {
+  const SQUILLA = { id: 'in arrivo' }
+  const ALTRA = { id: "un'altra" }
+
+  it('the window is free with no call and none being placed', () => {
+    expect(finestraOccupata(null, '')).toBe(false)
+    expect(finestraOccupata(null, '', ALTRA)).toBe(false)
+  })
+
+  it('is taken by a call it shows, ringing or on', () => {
+    expect(finestraOccupata(SQUILLA, '')).toBe(true)
+    expect(finestraOccupata(SQUILLA, 'ringing', ALTRA)).toBe(true)
+  })
+
+  it('is taken by a call being placed, before the carrier has one', () => {
+    // a call coming in then rings on the centre's other phones
+    expect(finestraOccupata(null, 'initiating', ALTRA)).toBe(true)
+    expect(finestraOccupata(null, 'initiating')).toBe(true)
+  })
+
+  it('a call is never in its own way', () => {
+    // Telnyx tells of the ringing call again: still the one shown
+    expect(finestraOccupata(SQUILLA, '', SQUILLA)).toBe(false)
+    expect(finestraOccupata(SQUILLA, 'initiating', SQUILLA)).toBe(false)
   })
 })
 

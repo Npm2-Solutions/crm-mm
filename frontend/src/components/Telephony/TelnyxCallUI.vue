@@ -337,6 +337,7 @@ import { useDoctypeModal } from '@/composables/doctypeModal'
 import {
   TASTI,
   bloccataInItalia,
+  finestraOccupata,
   incertaInItalia,
   numeroIniziale,
   siSceglie,
@@ -553,8 +554,9 @@ function addClientListeners() {
 
 function aggiorna(chiamata) {
   if (inArrivo(chiamata)) {
-    // one call at a time: another one ringing meanwhile is turned away
-    if (_call && _call !== chiamata) {
+    // one call at a time: another one ringing meanwhile, or one coming in
+    // while a call is being placed, is turned away
+    if (finestraOccupata(_call, callStatus.value, chiamata)) {
       chiamata.hangup()
       return
     }
@@ -655,7 +657,7 @@ async function makeOutgoingCall(number) {
     toast.error(__('The phone is not ready yet: try again in a moment.'))
     return
   }
-  if (_call || callStatus.value === 'initiating') {
+  if (finestraOccupata(_call, callStatus.value)) {
     toast.error(__('Finish the call in progress first.'))
     return
   }
@@ -674,6 +676,11 @@ async function makeOutgoingCall(number) {
     toast.error(
       error.messages?.[0] || __('The call could not start: try again.'),
     )
+    return
+  }
+  // a call came in while the server answered: it keeps the window and its name
+  if (_call) {
+    toast.error(__('Finish the call in progress first.'))
     return
   }
   if (!esito.ok) {

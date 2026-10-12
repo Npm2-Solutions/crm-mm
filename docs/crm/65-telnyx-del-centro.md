@@ -99,7 +99,9 @@
   (`who_is_calling`) e la finestra chiede di quel numero; la risposta sul numero
   del centro, se arriva dopo, non conta. Fino al 12/10/2026 la finestra di Telnyx
   usava la ricerca di quella di Twilio, con il numero di Twilio, e non nominava
-  mai nessuno.
+  mai nessuno. Sotto il nome c'è il numero della chiamata, e la finestra ne tiene
+  una alla volta come quella di Twilio: chi chiama mentre una chiamata sta
+  partendo viene lasciato agli altri telefoni (`finestraOccupata`).
 - **Le registrazioni**: Telnyx dà un link che scade in dieci minuti, quindi un
   lavoro le scarica subito in un file privato del registro della chiamata
   (`registrazioni.py`); il lettore le serve da lì, a pezzi.

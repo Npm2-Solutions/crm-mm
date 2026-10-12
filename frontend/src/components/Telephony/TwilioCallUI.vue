@@ -334,6 +334,7 @@ import { useDoctypeModal } from '@/composables/doctypeModal'
 import {
   TASTI,
   bloccataInItalia,
+  finestraOccupata,
   incertaInItalia,
   numeroIniziale,
   siSceglie,
@@ -561,6 +562,13 @@ function toggleMute() {
 }
 
 function handleIncomingCall(call) {
+  // one call at a time: another one ringing, or a call being placed, keeps the
+  // window, and this one rings on the centre's other phones - as the SDK leaves
+  // an invite while a call is on
+  if (finestraOccupata(_call, callStatus.value, call)) {
+    call.ignore()
+    return
+  }
   log.value = `Incoming call from ${call.parameters.From}`
   perIlNumero(call.parameters.From)
   // a call coming in takes the popup from a call not yet made
@@ -624,7 +632,7 @@ async function makeOutgoingCall(number) {
     toast.error(__('The phone is not ready yet: try again in a moment.'))
     return
   }
-  if (_call || callStatus.value === 'initiating') {
+  if (finestraOccupata(_call, callStatus.value)) {
     toast.error(__('Finish the call in progress first.'))
     return
   }
@@ -640,6 +648,11 @@ async function makeOutgoingCall(number) {
     toast.error(
       error.messages?.[0] || __('The call could not start: try again.'),
     )
+    return
+  }
+  // a call came in while the server answered: it keeps the window and its name
+  if (_call) {
+    toast.error(__('Finish the call in progress first.'))
     return
   }
   if (!esito.ok) {
