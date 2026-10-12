@@ -195,6 +195,45 @@ comparivano da soli.
   L'account Administrator non riceve le notifiche dei messaggi delle persone (né
   da assegnato né da proprietario): serve un utente del centro.
 
+## Il dispositivo è di chi è entrato, e l'uscita lo lascia (12/10/2026)
+
+Su un computer della segreteria che usano in tre, o sul tablet passato a un
+paziente, le notifiche arrivavano a chi non c'era più.
+
+- **Segue chi entra.** A ogni apertura il browser controlla che il server lo
+  conosca come di chi è entrato, e dove non è così il server glielo passa
+  (`subscribe`). Il browser se lo ricordava con un promemoria per persona
+  (`crm-spinta:<utente>`): rientrata Anna dopo Bruno, il suo promemoria diceva
+  ancora «a posto», non si chiedeva niente e il dispositivo restava di Bruno,
+  con i suoi messaggi («💬 Laura Bassi (3)» e le prime parole) mentre lavorava
+  Anna. Ora il promemoria è uno per il browser, chi e quale abbonamento
+  (`crm-spinta`): quando entra qualcuno dopo un altro il browser chiede sempre
+  al server, e il dispositivo passa a lui. Quelli per persona delle versioni di
+  prima si tolgono alla prima apertura.
+- **L'uscita lo lascia.** Uscendo, dal menu dell'account, da «Accesso negato» o
+  passando il tablet, il browser chiede al server di dimenticarlo per quella
+  sessione prima che finisca, e aspetta al più due secondi: risposto in tempo,
+  tiene il suo abbonamento, e chi entra dopo lo riceve alla prima apertura. Se
+  il server non risponde in tempo, o il promemoria dice che l'ultimo a
+  sincronizzarlo era un altro (il server dimentica solo la riga della sessione),
+  è il browser a lasciare l'abbonamento: lì non arriva più niente, il servizio
+  di chi fa il browser risponde che non c'è più e il server lo dimentica al
+  primo invio. Chi esce mentre la prima apertura sta ancora sincronizzando
+  aspetta che finisca: ciò che passa a lui viene lasciato con il resto.
+- **Una sessione scaduta senza uscire** lo lascia all'ultimo che l'ha usato,
+  finché qualcuno non entra in quel browser: allora passa a lui. Su un computer
+  condiviso si esce.
+- **La stessa uscita pulisce il browser**, una per tutte (`utils/esci.js`): la
+  scrivania, il tablet e l'area. Solo quando il server ha chiuso la sessione se
+  ne vanno le copie di frappe-ui delle versioni di prima (IndexedDB
+  `keyval-store`: ora ciò che una pagina chiede resta nella pagina), le bozze di
+  chi esce, gli avvisi dell'agenda e ogni chiave dell'app che non è una
+  preferenza del dispositivo (`utils/dopoLUscita.js`); restano la vista
+  dell'agenda, il menu ripiegato, la larghezza della colonna, il tema, gli
+  inviti messi da parte. Un'uscita che il server non accetta non toglie niente:
+  la sessione continua con le sue bozze, e la pagina dice «Non è stato possibile
+  uscire: riprova.».
+
 ## Come è fatta
 
 - `crm/notifiche/avvisi.py`: `avvisa()`, la porta da cui entra ogni notifica. Ci
@@ -235,6 +274,12 @@ comparivano da soli.
   `composables/spinta.js`, `Settings/NotificationsSettings.vue`,
   `Mobile/NotificheSulTelefono.vue`; il router segna letta la notifica toccata
   (`?notifica=`).
+- Il dispositivo e l'uscita: `composables/spinta.js` (`sincronizza` a ogni
+  apertura, `lascia` all'uscita), le scelte senza browser in `utils/spinta.js`
+  (`memoriaDi`, `daChiedere`, `tieneLAbbonamento`, `entroIlTempo`); l'uscita
+  in `utils/esci.js`, presa da `stores/session.js` (il menu, «Accesso negato»,
+  `Moduli/SendFormsDialog.vue` per il tablet) e da `area/store.js`; le chiavi
+  che vanno e quelle che restano in `utils/dopoLUscita.js`.
 
 ## Verifiche
 
@@ -251,3 +296,10 @@ comparivano da soli.
   parte `high`; il primo rifiuto nel registro con la ragione del servizio.
 - `crm.notifiche.tests` (33 test) e i moduli che scrivono notifiche: area, agenda,
   automazioni, WhatsApp, permessi, sola lettura.
+- `tests/unit/spintaNelBrowser.test.js`, contro un server finto che tiene una
+  riga per abbonamento come `spinta.py`: Anna, Bruno e di nuovo Anna sullo
+  stesso browser, il dispositivo passa ogni volta (sul codice di prima restava
+  di Bruno); l'uscita col server che dimentica, che rifiuta, con l'abbonamento
+  di un altro. `tests/unit/esci.test.js` e `dopoLUscita.test.js`: l'ordine
+  dell'uscita, niente tolto se il server rifiuta, ogni chiave che l'app scrive
+  decisa.

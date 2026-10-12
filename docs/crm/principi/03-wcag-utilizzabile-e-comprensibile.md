@@ -171,7 +171,7 @@ Questa famiglia raccoglie tutti i criteri di successo A e AA dei principi 2 (Uti
 
 **Soglie ed eccezioni.** Livello AAA, adottato come obiettivo. Sufficienti: G105, G181. Fallimento: F12.
 
-**In DottorCloud.** I moduli si salvano a metà sul server (crm/moduli/compilazioni.py, save_answers); i messaggi in scrittura (email, nota, WhatsApp, SMS) restano nel browser con useDraft (composables/drafts.js, localStorage per utente, doctype e record); Lead.vue, Deal.vue e le pagine delle regole di assegnazione e degli SLA avvisano prima di lasciare la pagina (useUnsavedChangesWarning, beforeunload). Su un computer condiviso al banco una bozza nel browser espone dati personali o sanitari: in locale solo ciò che non è sensibile, bozze cancellate all'uscita, meglio bozze sul server legate all'utente.
+**In DottorCloud.** I moduli si salvano a metà sul server (crm/moduli/compilazioni.py, save_answers); i messaggi in scrittura (email, nota, WhatsApp, SMS) restano nel browser con useDraft (composables/drafts.js, localStorage per utente, doctype e record); Lead.vue, Deal.vue e le pagine delle regole di assegnazione e degli SLA avvisano prima di lasciare la pagina (useUnsavedChangesWarning, beforeunload). Su un computer condiviso al banco una bozza nel browser espone dati personali o sanitari: in locale solo ciò che non è sensibile, bozze cancellate all'uscita (corretto il 12/10/2026: utils/esci.js), meglio bozze sul server legate all'utente.
 
 **Come si verifica.** A metà di un modulo cancellare il cookie di sessione, rientrare e verificare che tutto ci sia; controllare che cosa resta nel localStorage dopo l'uscita.
 

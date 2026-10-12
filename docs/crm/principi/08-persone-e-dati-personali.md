@@ -283,7 +283,7 @@ Un nome senza ruolo sulla scheda di un paziente («Marco Fontana») diventa «di
 - il pannello dell'appuntamento chiede conferma prima di chiudersi con X, Esc o Indietro (`discardFirst`; `utils/indietro.js`, `chiudeConIndietro`) e, dopo lo studio, anche quando si cambia pagina dalla barra in basso del telefono (`onBeforeRouteLeave` in `AppointmentPanel.vue`; corretto);
 - una fattura lasciata a metà si riprende: l'appuntamento con una bozza resta tra quelli da fatturare (`appointments_to_invoice` in `crm/invoicing/api.py`) e «Emetti la fattura» riapre quella bozza invece di farne una seconda (`fatturaDellIncontro` in `composables/fattura.js`; corretto).
 
-Cosa manca: i messaggi in corso li tiene `composables/drafts.js` (`useDraft`) nel `localStorage` del browser, per utente e per scheda: non si perdono, ma restano sul PC condiviso (vedi PRIV-NULLA-NEL-BROWSER). Meglio una bozza sul server dell'utente, oppure cancellarli all'uscita.
+I messaggi in corso li tiene `composables/drafts.js` (`useDraft`) nel `localStorage` del browser, per utente e per scheda: non si perdono, ma restavano sul PC condiviso anche dopo l'uscita (vedi PRIV-NULLA-NEL-BROWSER). Corretto il 12/10/2026: l'uscita toglie le bozze di chi esce (`utils/esci.js`), mentre una sessione scaduta le lascia a chi rientra. Resta meglio una bozza sul server dell'utente.
 
 **Come si verifica.** Scenario a mano a metà di una visita: premere Indietro su Android, toccare un'altra voce della barra, lasciar scadere la sessione (con una scadenza breve sul sito di prova) e rientrare. Ogni volta il testo deve esserci ancora. Un test E2E per `onBeforeRouteLeave`. Un test del server sulle regole che decidono cosa resta da fatturare, bozze comprese.
 
@@ -322,7 +322,7 @@ OWASP ASVS 5.0.0 (maggio 2025) chiede di documentare il timeout di inattività e
 - mostrarla in Impostazioni › Il centro;
 - avvisare nella pagina prima della scadenza, con un dialogo annunciato come `role=alertdialog`.
 
-Già a posto: l'uscita è nel menu dell'account (`composables/vociAccount.js`, che `UserDropdown.vue` e, sul telefono, «Altro» disegnano); quando si passa il tablet al paziente, la sessione dell'operatore si chiude prima della consegna (`Moduli/SendFormsDialog.vue`, `call('logout')`).
+Già a posto: l'uscita è nel menu dell'account (`composables/vociAccount.js`, che `UserDropdown.vue` e, sul telefono, «Altro» disegnano); quando si passa il tablet al paziente, la sessione dell'operatore si chiude prima della consegna (`Moduli/SendFormsDialog.vue`, `esciVerso` in `stores/session.js`).
 
 **Come si verifica.** Sul sito di prova impostare una scadenza di 2 minuti, lasciare una visita a metà e aspettare l'avviso e poi la scadenza: al rientro il testo deve esserci ancora. Verificare l'annuncio con NVDA e con VoiceOver. Dopo ogni migrate controllare il valore con `frappe.get_system_settings('session_expiry')`.
 
@@ -390,7 +390,7 @@ Dopo l'uscita, il tasto Indietro non mostra la pagina di prima.
 
 **Soglie ed eccezioni.** Dopo l'uscita, zero dati di persone in `keyval-store` (IndexedDB) e in localStorage. La risposta di uscita porta `Clear-Site-Data` con «cache» e «storage», oppure il client fa la pulizia equivalente.
 
-**In DottorCloud.** frappe-ui salva in IndexedDB (`idb-keyval`, database `keyval-store`) ogni risorsa creata con `cache:` (`node_modules/frappe-ui/src/resources/local.ts`), e nessuna uscita la svuota: `stores/session.js` porta a `/login` senza alcun `deleteDatabase`. Oggi hanno `cache:` anche risorse con dati di persone:
+**In DottorCloud.** frappe-ui salvava in IndexedDB (`idb-keyval`, database `keyval-store`) ogni risorsa creata con `cache:` (`node_modules/frappe-ui/src/resources/local.ts`), e nessuna uscita la svuotava: `stores/session.js` portava a `/login` senza alcun `deleteDatabase`. Avevano così una copia nel browser anche risorse con dati di persone:
 
 - la linea del tempo (`Activities.vue`: `['activity', docname]`, `['whatsapp_messages', …]`, `['sms_messages', …]`);
 - il riepilogo (`SummaryArea.vue`: `['person-summary', lead]`);
@@ -398,11 +398,11 @@ Dopo l'uscita, il tasto Indietro non mostra la pagina di prima.
 - le chiamate (`CallArea.vue`, `pages/CallLogs.vue`), il pannello del telefono (`composables/pannelloTelefono.js`) e il giro di chiamate (`pages/Dialer.vue`);
 - le ricerche del `Link` (`Controls/Link.vue`) e il contatto di chi chiama (`TwilioCallUI.vue`).
 
-In localStorage restano le bozze dei messaggi (`useDraft` in `composables/drafts.js`) e gli avvisi degli eventi (`eventNotificationAlerts` in `data/notifications.js`). Cosa fare:
+In localStorage restavano le bozze dei messaggi (`useDraft` in `composables/drafts.js`) e gli avvisi degli eventi (`eventNotificationAlerts` in `data/notifications.js`). Corretto il 12/10/2026:
 
-- togliere `cache` da queste risorse, come lo studio ha già fatto per il profilo fiscale in `PersonHeader.vue`;
-- ripulire all'uscita: `Clear-Site-Data` dal server, più `indexedDB.deleteDatabase('keyval-store')` e la cancellazione delle chiavi di `useDraft` nel client;
-- all'uscita, chiamare `crm.notifiche.spinta.unsubscribe` per il browser in uso.
+- la copia di una risorsa resta nella pagina: il build riscrive `local.ts` (`frontend/vite/frappeUi.js`) e `cache:` condivide la risorsa solo dentro la pagina; ciò che le versioni di prima avevano lasciato in `keyval-store` si toglie all'avvio (`main.js`) e a ogni uscita;
+- l'uscita, una per tutte (`utils/esci.js`: la scrivania, il tablet passato al paziente, l'area), quando il server ha chiuso la sessione toglie `keyval-store`, le bozze di chi esce, gli avvisi degli eventi e ogni chiave dell'app che non è una preferenza (`utils/dopoLUscita.js`); un'uscita che il server rifiuta non toglie niente. Il server non manda `Clear-Site-Data`: la pulizia equivalente la fa il client;
+- all'uscita, prima di chiudere la sessione, il browser chiede `crm.notifiche.spinta.unsubscribe` per sé (`lascia` in `composables/spinta.js`), e se il server non risponde in due secondi lascia l'abbonamento da sé.
 
 Già a posto: le risposte del framework hanno `Cache-Control: no-store` se un endpoint non dice altro (`NO_CACHE_HEADERS` in `frappe/app.py`), e un file archiviato si apre da un rimando `private, no-store` (`crm/archivio/archivio.py`). Un file privato non ancora archiviato, servito dal framework dietro nginx (`send_private_file` con `X-Accel-Redirect`), portava `Cache-Control: private,max-age=3600,stale-while-revalidate=86400` (corretto il 12/10/2026: ogni risposta a `/private/files/…` porta `private, no-store`, e il link firmato al bucket chiede lo stesso). Le preferenze di vista (`crmAgenda`, `crmActivityChannel`) possono restare: non sono dati di persone.
 
@@ -412,7 +412,7 @@ Già a posto: le risposte del framework hanno `Cache-Control: no-store` se un en
 
 - Il profilo fiscale in IndexedDB, che mostrava a un collega senza permessi, sullo stesso PC, la data di nascita letta dall'utente precedente (studio UX, ottobre 2026; corretto).
 - Dimenticare che `Clear-Site-Data` con «storage» toglie anche il service worker: all'uscita va bene, perché si vuole smettere di ricevere notifiche, ma va saputo.
-- Le bozze dei messaggi in localStorage (`useDraft`) che sopravvivono all'uscita.
+- Le bozze dei messaggi in localStorage (`useDraft`) che sopravvivono all'uscita (corretto il 12/10/2026).
 - Considerare la navigazione in incognito una soluzione: usare la propria sessione su un PC condiviso è la situazione normale.
 
 **Fonti.**
@@ -576,7 +576,7 @@ Cosa manca:
 
 **Perché.** Il Garante (provvedimento del 9 novembre 2005 sul rispetto della dignità nelle strutture sanitarie) chiede, nelle sale d'attesa, un ordine di chiamata che non usi il nome della persona, per esempio un codice numerico o alfanumerico dato alla prenotazione o all'accettazione, salvo nei colloqui con il personale, e distanze di cortesia allo sportello e quando si raccolgono informazioni sulla salute. OWASP ASVS 5.0.0 (14.2.6) chiede di mascherare nell'interfaccia i dati sensibili, salvo quando l'utente li apre espressamente. Le Privacy Principles del W3C TAG (2.4) ricordano che la sensibilità dipende dal contesto; Apple HIG (Notifications) ricorda che non si può prevedere chi c'è accanto quando un'informazione compare sullo schermo.
 
-**In DottorCloud.** Il tablet consegnato (`Moduli/SendFormsDialog.vue`) chiude la sessione dell'operatore prima di mostrare la pagina del paziente (`call('logout')`, poi `handed.url`): va mantenuto così. In Accoglienza (`pages/Today.vue`) la riga mostra ora, servizio, professionista e nome. Per i banconi visibili ai pazienti va valutata una vista «riservata», con l'iniziale del cognome e il servizio indicato per categoria, e nessun testo di nota a schermo intero. DottorCloud non ha schermi per la sala d'attesa: se ne avrà, chiameranno con un codice, non con il nome.
+**In DottorCloud.** Il tablet consegnato (`Moduli/SendFormsDialog.vue`) chiude la sessione dell'operatore prima di mostrare la pagina del paziente (`esciVerso(handed.url)` in `stores/session.js`: dal 12/10/2026 lascia anche le notifiche del dispositivo e pulisce il browser, `utils/esci.js`): va mantenuto così. In Accoglienza (`pages/Today.vue`) la riga mostra ora, servizio, professionista e nome. Per i banconi visibili ai pazienti va valutata una vista «riservata», con l'iniziale del cognome e il servizio indicato per categoria, e nessun testo di nota a schermo intero. DottorCloud non ha schermi per la sala d'attesa: se ne avrà, chiameranno con un codice, non con il nome.
 
 **Come si verifica.** Sopralluogo, o una foto del bancone, in un centro pilota: cosa si legge a un metro di distanza? Test del tablet: dopo la consegna, nessuna pagina dell'operatore si raggiunge con Indietro.
 
