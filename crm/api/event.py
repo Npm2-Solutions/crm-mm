@@ -25,11 +25,12 @@ In DottorCloud (docs/crm/43, 56):
   enabled System Users (`_destinatari`), each in their own room on the screen; by
   email Administrator is left out.
 - A reminder leaves at its time, at the first round after it, never before
-  (`e_il_momento`). A round runs every four minutes ("minutes", "hours") and every
-  hour ("hours", "days", "weeks"), and a reminder is due at every round of its window
-  after its time: so an email leaves once, written in the register
-  (`CRM Event Reminder`) before it leaves, and one written there does not leave
-  again. The screen's needs no register: the browser shows an event's reminder once.
+  (`e_il_momento`), and by email never once its event began. A round runs every four
+  minutes ("minutes", "hours") and every hour ("hours", "days", "weeks"), and a
+  reminder is due at every round of its window after its time: so an email leaves
+  once, written in the register (`CRM Event Reminder`) before it leaves, and one
+  written there does not leave again. The screen's needs no register: the browser
+  shows an event's reminder once.
 - It says the event's title and when, never the description, which on an
   appointment's calendar copy is its notes. By email such a copy is only «an
   appointment»: its title is the service and the people.
@@ -104,7 +105,13 @@ def _process_event_notifications_by_interval(interval):
 			)
 
 			if not e_il_momento(
-				current_time, trigger_datetime, event_start, notification.get("ends_on"), interval
+				current_time,
+				trigger_datetime,
+				event_start,
+				notification.get("ends_on"),
+				interval,
+				# under way the screen still shows it; an email would say it has yet to start
+				in_corso=notification.get("notification_type") != "Email",
 			):
 				continue
 
@@ -241,7 +248,9 @@ def fin_dove_cercare(adesso: datetime, interval: str, anticipo: int) -> datetime
 	return fino_a
 
 
-def e_il_momento(adesso: datetime, trigger: datetime, inizio: datetime, fine, interval: str) -> bool:
+def e_il_momento(
+	adesso: datetime, trigger: datetime, inizio: datetime, fine, interval: str, in_corso: bool = True
+) -> bool:
 	"""Whether a reminder due at ``trigger`` leaves in the round at ``adesso``: from
 	that time to the end of its window after it, or - its time passed while the event
 	is under way, a round that did not run then - until the event ends. An event with
@@ -249,8 +258,10 @@ def e_il_momento(adesso: datetime, trigger: datetime, inizio: datetime, fine, in
 
 	Never before its time: the window went as far before it as after it, and the one
 	email the register lets leave left at its start - «1 hour before» two hours
-	before, saying «It starts in an hour.»"""
-	if fine and inizio <= adesso < fine and adesso > trigger:
+	before, saying «It starts in an hour.» And an email never while its event is under
+	way (``in_corso`` False): of a visit booked after its time it left as the visit
+	began, «It starts tomorrow.»"""
+	if in_corso and fine and inizio <= adesso < fine and adesso > trigger:
 		return True
 	return trigger <= adesso <= trigger + timedelta(**_get_trigger_window_duration(interval))
 

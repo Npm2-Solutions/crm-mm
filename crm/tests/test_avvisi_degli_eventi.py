@@ -105,6 +105,13 @@ class LeRegoleDeiPromemoria(unittest.TestCase):
 		self.assertFalse(
 			E.e_il_momento(inizio + datetime.timedelta(minutes=20), ora, inizio, None, "minutes")
 		)
+		# on the screen only: an email under way would say it starts in ten minutes
+		self.assertFalse(
+			E.e_il_momento(
+				inizio + datetime.timedelta(minutes=20), ora, inizio, fine, "minutes", in_corso=False
+			)
+		)
+		self.assertTrue(E.e_il_momento(ora, ora, inizio, fine, "minutes", in_corso=False))
 
 	def test_mai_prima_della_sua_ora(self):
 		# «1 hour before» a visit at 11 is due at 10: the window went as far before its
@@ -711,6 +718,30 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 		email = self.lo_scheduler(*(add_to_date(oggi, hours=ora) for ora in range(25)))
 		self.assertEqual([(quando, a) for quando, a, _o, _t in email], [(oggi.replace(hour=9), (self.neri,))])
 		self.assertEqual(self.registrati(evento), [(self.neri, "Email")])
+
+	def test_un_email_tardiva_non_parte_a_evento_cominciato(self):
+		# a visit booked a few minutes ago for within the hour, with the centre's «2
+		# hours before» by email: its time had passed before it was booked, and the
+		# email left as it began, «It starts in 2 hours.» - «It starts tomorrow.» for a
+		# «1 day before» of a visit booked that morning. On the screen it still shows
+		ora = now_datetime().replace(minute=0, second=0, microsecond=0)
+		for tipo in ("Email", "Notification"):
+			frappe.get_doc(
+				{
+					"doctype": "Event Notifications",
+					"parenttype": "FCRM Settings",
+					"parentfield": "event_notifications",
+					"parent": "FCRM Settings",
+					"type": tipo,
+					"before": 2,
+					"interval": "hours",
+				}
+			).db_insert()
+		evento = self.evento(add_to_date(ora, hours=1), [], proprietario=self.neri)
+		email = self.lo_scheduler(*(add_to_date(ora, minutes=4 * giro) for giro in range(1, 27)))
+		self.assertEqual(email, [])
+		self.assertEqual(self.registrati(evento), [])
+		self.assertEqual(sorted(set(self.stanze(evento))), [f"user:{self.neri}"])
 
 	# ------------------------------------------------------------------ what the round reads
 

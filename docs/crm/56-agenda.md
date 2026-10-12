@@ -166,8 +166,9 @@ prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
   l'agenda, mai le note (doc 43, 12/10/2026). Ognuno parte alla sua ora, mai
   prima: quelli di minuti e ore entro quattro minuti, quelli di giorni e
   settimane entro l'ora (prima quello «1 giorno prima» di un appuntamento fra le 8
-  e le 16 non partiva mai). Nessun centro ne ha finché non li imposta: DottorCloud
-  non ne mette di suoi.
+  e le 16 non partiva mai); per email mai ad appuntamento cominciato (preso la
+  mattina stessa, con quello «1 giorno prima», lo riceveva mentre cominciava).
+  Nessun centro ne ha finché non li imposta: DottorCloud non ne mette di suoi.
 
 ### Il server
 

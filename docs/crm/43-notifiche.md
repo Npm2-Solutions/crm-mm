@@ -181,7 +181,10 @@ senza nessuno in mezzo che le legga.
   evento di tutto il giorno partiva alla mezzanotte del giorno stesso, con
   «Inizia domani». Ora parte al primo giro dopo la sua ora (`e_il_momento`): i
   promemoria di minuti e ore entro quattro minuti, quelli di giorni e settimane
-  entro l'ora.
+  entro l'ora. E per email mai a evento cominciato: un appuntamento preso quando
+  l'ora del suo promemoria era già passata (stamattina, con quello «1 giorno
+  prima») riceveva l'email mentre cominciava, «Inizia domani»; a schermo l'avviso
+  di un evento in corso resta.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
