@@ -1045,7 +1045,7 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 	# a class is invoiced a place at a time: it stays here while somebody who paid
 	# for their own place has no invoice of it
 	nomi = [i.name for i in incontri]
-	# a draft is not an invoice: «Emetti la fattura» saves one and opens it, and
+	# a draft is not an invoice: «Prepara la fattura» saves one and opens it, and
 	# closed without issuing, the place left this list while nothing had been
 	# issued. It stays, with its draft to take up again (never a second one)
 	fatturati = _gia_fatturati(nomi, emesse=True)

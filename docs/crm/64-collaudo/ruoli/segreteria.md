@@ -145,8 +145,8 @@ con il suo codice (per esempio SEG-07): come, in [segnalazioni.md](../segnalazio
   niente; la lezione dice quanti posti restano.
   Note: ______________________________________________
 
-- [ ] **SEG-19 · La fattura.** All'Accoglienza, su chi ha finito: «Emetti la fattura»,
-  pagata con la carta.
+- [ ] **SEG-19 · La fattura.** All'Accoglienza, su chi ha finito: «Prepara la fattura»,
+  pagata con la carta, poi «Emetti».
   *Atteso:* la finestra ha il segno «Prova»; il numero è della serie `PROVA`; il PDF
   ha la fascia «Fattura di prova: non ha valore fiscale»; il Sistema TS dice «Prova:
   controllata, non inviata»; l'appuntamento esce da quelli da fatturare.

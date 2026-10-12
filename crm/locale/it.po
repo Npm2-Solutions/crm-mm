@@ -12973,11 +12973,11 @@ msgstr "Fattura"
 
 #: frontend/src/pages/Invoices.vue
 msgid "Invoice it"
-msgstr "Emetti la fattura"
+msgstr "Prepara la fattura"
 
 #: frontend/src/pages/Today.vue
 msgid "Invoice it to {0}"
-msgstr "Emetti la fattura a {0}"
+msgstr "Prepara la fattura a {0}"
 
 #: frontend/src/components/CycleDialog.vue
 msgid "Invoice the cycle"

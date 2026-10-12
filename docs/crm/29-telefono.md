@@ -494,7 +494,7 @@ Con il tocco, come in un'app:
     un'email sta su una riga: grassetto, corsivo, elenchi, link, immagine
     (`phoneToolbar` in `components/editor/config.ts`), non le due righe del
     computer;
-  - **«Emetti la fattura»** su un appuntamento di cui l'agenda non sa chi ha
+  - **«Prepara la fattura»** su un appuntamento di cui l'agenda non sa chi ha
     fatto la prestazione dava un errore e nessuna strada: ora si apre la
     fattura con quello che l'agenda sa e chiede solo «Chi l'ha eseguito»
     (`appointment_invoice_proposal`, `nuovaFattura(cliente, { bozza })`); sotto
@@ -599,7 +599,7 @@ Con il tocco, come in un'app:
   l'appuntamento. Ora dice cosa toglie: «Annulla l'arrivo», o «Annulla
   l'esito» dopo «Presente» o «Assente». Dopo «Presente» la fattura era in
   Fatture, in mezzo agli appuntamenti delle ultime due settimane: ora
-  «Emetti la fattura» sta sull'appuntamento stesso, finché non è fatturato,
+  «Prepara la fattura» sta sull'appuntamento stesso, finché non è fatturato,
   e apre la fattura già compilata (`useFattura().fatturaDellIncontro`, la
   stessa strada della pagina Fatture).
 - **Un appuntamento per una persona nuova, provato davvero.** Dal «+»

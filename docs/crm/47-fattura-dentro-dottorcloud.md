@@ -59,7 +59,7 @@ Tre cose, poi, erano sbagliate:
   destinatario in un privato la ritenuta va via (un privato non è sostituto
   d'imposta), cambiandolo in un'azienda torna se l'azienda emittente la applica.
 - **Si apre da ovunque**: «Nuova fattura» e «Apri» nella pagina delle fatture,
-  «Emetti la fattura» di un appuntamento (la bozza già compilata dall'agenda), di un
+  «Prepara la fattura» di un appuntamento (la bozza già compilata dall'agenda), di un
   ciclo e di una rata di un abbonamento, la fattura nella storia della persona. Il
   Desk non si apre più.
 - **A una persona fisica la fattura va a suo nome**; a un'azienda, a nome

@@ -99,7 +99,7 @@ In ognuna la conferma nomina «Noemi Carbone, nata il 2 giu 1961» e dice cosa s
 
 - «Sei sicuro?» senza dire di chi.
 - La stessa conferma ovunque, che si clicca senza leggere (vedi SAN-ALLERTE-GRADUATE).
-- Un pulsante «Emetti la fattura» che non emette ma prepara una bozza (studio UX, ottobre 2026, gravità 3): l'etichetta è ancora questa («Invoice it» in `crm/locale/it.po`).
+- Un pulsante «Emetti la fattura» che non emette ma prepara una bozza (studio UX, ottobre 2026, gravità 3): l'etichetta era ancora questa («Invoice it» in `crm/locale/it.po`), corretta il 12/10/2026 in «Prepara la fattura»; «Emetti» resta al dialogo, che emette.
 
 **Fonti.**
 

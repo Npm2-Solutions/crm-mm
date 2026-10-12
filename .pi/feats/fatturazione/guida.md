@@ -278,7 +278,7 @@ scrivere. La finestra scrive solo cliente, pagamento e righe; cassa, ritenuta, b
 e canale li decidono l'azienda e il motore — anche la ritenuta di una bozza gia'
 salvata, se cambia il destinatario: mai verso un privato.
 
-Si apre da *Nuova fattura* e *Apri* nel pannello, da *Emetti la fattura* di un
+Si apre da *Nuova fattura* e *Apri* nel pannello, da *Prepara la fattura* di un
 appuntamento, di un ciclo o di una rata di abbonamento, e dalla fattura nella storia
 della persona.
 

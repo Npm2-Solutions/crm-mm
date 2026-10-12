@@ -164,14 +164,14 @@ export async function emettiLaBozza(
 	return esito(page, /emessa/i)
 }
 
-/** At the reception desk, the «Emetti la fattura» of somebody's appointment: in
+/** At the reception desk, the «Prepara la fattura» of somebody's appointment: in
  * the block of the day that names them (a class's says whose place it is). */
 export function fatturaDi(page: Page, nome: string) {
 	return page
 		.getByRole('link', { name: nome })
 		.first()
-		.locator('xpath=ancestor::div[.//button[starts-with(normalize-space(.), "Emetti la fattura")]][1]')
-		.getByRole('button', { name: /^Emetti la fattura/ })
+		.locator('xpath=ancestor::div[.//button[starts-with(normalize-space(.), "Prepara la fattura")]][1]')
+		.getByRole('button', { name: /^Prepara la fattura/ })
 		.first()
 }
 
