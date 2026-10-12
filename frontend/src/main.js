@@ -13,6 +13,7 @@ import { indossa } from './utils/marchio'
 import { ascoltaLInstallazione } from './utils/installa'
 import { ricaricaSeManca } from './utils/ricarica'
 import { percorsoDellApp } from './utils/spinta'
+import { togliLeCopie } from './utils/esci'
 import App from './App.vue'
 
 import {
@@ -55,6 +56,10 @@ ascoltaLInstallazione()
 // a part that no longer exists on the server (a new version came out while the
 // page was open): the page loads again, once (utils/ricarica.js)
 ricaricaSeManca()
+// what older versions of frappe-ui kept of people in this browser's IndexedDB
+// goes, before anything is drawn, and nothing waits for it: what a resource
+// fetches now stays in the page (vite/frappeUi.js, utils/esci.js)
+togliLeCopie()
 
 // a notification touched while DottorCloud is open goes to its page without
 // loading it again, and says so at once: a page that does not answer is

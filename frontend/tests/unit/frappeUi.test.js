@@ -6,11 +6,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import dayjs from 'dayjs/esm'
+import { transformWithOxc } from 'vite'
 import {
   FILE,
   FILE_FRAPPE,
   FILE_MOLECOLE,
   FILE_ICONE,
+  FILE_RISORSE,
+  FILE_DATI,
   NOMI,
   SELETTORE,
   traduciFrappeUi,
@@ -32,10 +35,41 @@ const ICONE = path.resolve(
   import.meta.dirname,
   '../../node_modules/frappe-ui/icons',
 )
+const SORGENTI = path.resolve(
+  import.meta.dirname,
+  '../../node_modules/frappe-ui/src',
+)
+const RISORSE = path.join(SORGENTI, 'resources')
+const DATI = path.join(SORGENTI, 'data-fetching')
 
 function tradotto(file, cartella = COMPONENTI) {
   const id = path.join(cartella, file)
   return traduciFrappeUi(fs.readFileSync(id, 'utf8'), id)
+}
+
+// the rewritten copies of the resources, run as the browser runs them: their
+// TypeScript taken away, nothing else
+async function copieDelleRisorse() {
+  const id = path.join(RISORSE, 'local.ts')
+  const { code } = await transformWithOxc(tradotto('local.ts', RISORSE), id)
+  return new Function(
+    `${code.replace(/^export /gm, '')}; return { saveLocal, getLocal, deleteLocal }`,
+  )()
+}
+
+// frappe-ui's files that import idb-keyval, its tests and stories left out
+function chiUsaIndexedDB(cartella, trovati = []) {
+  for (const voce of fs.readdirSync(cartella, { withFileTypes: true })) {
+    const percorso = path.join(cartella, voce.name)
+    if (voce.isDirectory()) chiUsaIndexedDB(percorso, trovati)
+    else if (
+      /\.(ts|js|vue)$/.test(voce.name) &&
+      !/\.(test|spec|story|cy)\./.test(voce.name) &&
+      fs.readFileSync(percorso, 'utf8').includes('idb-keyval')
+    )
+      trovati.push(path.relative(SORGENTI, percorso))
+  }
+  return trovati.sort()
 }
 
 function nomi(lang) {
@@ -73,6 +107,101 @@ describe('frappe-ui in the user’s language', () => {
       expect(() => tradotto(file, ICONE), file).not.toThrow()
       expect(tradotto(file, ICONE), file).not.toBeNull()
     }
+    for (const file of FILE_RISORSE) {
+      expect(() => tradotto(file, RISORSE), file).not.toThrow()
+      expect(tradotto(file, RISORSE), file).not.toBeNull()
+    }
+    for (const file of FILE_DATI) {
+      expect(() => tradotto(file, DATI), file).not.toThrow()
+      expect(tradotto(file, DATI), file).not.toBeNull()
+    }
+  })
+
+  describe('nothing about people outlives the page', () => {
+    let primaDelTest
+    beforeEach(() => {
+      primaDelTest = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    })
+    afterEach(() => {
+      if (primaDelTest)
+        Object.defineProperty(globalThis, 'indexedDB', primaDelTest)
+      else delete globalThis.indexedDB
+    })
+
+    it('keeps a resource’s copy in the page, never in IndexedDB', async () => {
+      const codice = tradotto('local.ts', RISORSE)
+      expect(codice).not.toContain('idb-keyval')
+      // nothing turned into text for nobody either
+      expect(codice).not.toContain('JSON.stringify')
+      // a browser that has IndexedDB: the copies never open it
+      const aperture = []
+      globalThis.indexedDB = {
+        open: (...come) => {
+          aperture.push(come)
+          throw new Error('IndexedDB opened')
+        },
+      }
+      const { saveLocal, getLocal, deleteLocal } = await copieDelleRisorse()
+      const chiave = JSON.stringify(['person-appointments', 'CRM-LEAD-0001'])
+      const persone = [{ name: 'CRM-LEAD-0001', lead_name: 'Laura Bassi' }]
+      await expect(saveLocal(chiave, persone)).resolves.toBeUndefined()
+      // what resources.js and documentResource.js draw before the server
+      // answers: nothing, so a page waits for the server's own answer
+      await expect(getLocal(chiave)).resolves.toBeFalsy()
+      await expect(deleteLocal(chiave)).resolves.toBeUndefined()
+      expect(aperture).toEqual([])
+    })
+
+    it('keeps frappe-ui’s newer data layer in the page’s memory too', async () => {
+      const negozio = tradotto('idbStore.ts', DATI)
+      expect(negozio).not.toContain('!!window.indexedDB')
+      // run as the browser runs it, idb-keyval's calls standing by to say
+      // whether anybody reached them
+      const raggiunti = []
+      const idbKeyval = Object.fromEntries(
+        ['get', 'set', 'del', 'setMany', 'keys'].map((nome) => [
+          nome,
+          () => raggiunti.push(nome),
+        ]),
+      )
+      globalThis.indexedDB = {}
+      const id = path.join(DATI, 'idbStore.ts')
+      const { code } = await transformWithOxc(negozio, id)
+      const { IDBStore } = new Function(
+        'idbKeyval',
+        `const { get, set, del, setMany, keys } = idbKeyval;
+        ${code.replace(/^import .*$/m, '').replace(/^export /gm, '')}
+        return { IDBStore }`,
+      )(idbKeyval)
+      const memoria = new IDBStore()
+      await memoria.set('lista', [{ lead_name: 'Laura Bassi' }])
+      await expect(memoria.get('lista')).resolves.toEqual([
+        { lead_name: 'Laura Bassi' },
+      ])
+      await memoria.delete('lista')
+      await expect(memoria.get('lista')).resolves.toBeNull()
+      expect(raggiunti).toEqual([])
+    })
+
+    it('finds no other way of frappe-ui’s into IndexedDB than the two it rewrites', () => {
+      // an upgrade that writes the browser's database from a third file fails
+      // here: that file is rewritten too, or nothing about people stays out
+      expect(chiUsaIndexedDB(SORGENTI)).toEqual([
+        path.join('data-fetching', 'idbStore.ts'),
+        path.join('resources', 'local.ts'),
+      ])
+      // and the resources, the documents and the lists keep their copies
+      // through local.ts
+      for (const file of [
+        'resources.js',
+        'documentResource.js',
+        'listResource.js',
+      ]) {
+        expect(fs.readFileSync(path.join(RISORSE, file), 'utf8'), file).toMatch(
+          /from '\.\/local'/,
+        )
+      }
+    })
   })
 
   it("names the boxes that choose a list's rows", () => {

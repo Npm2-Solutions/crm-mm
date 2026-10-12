@@ -20,6 +20,9 @@
  * list before anybody asks, a Markdown format nobody uses; and what it mounts
  * for nobody: tooltips on a phone, which a touch never opens, and dialogs and
  * menus before anybody opens them.
+ *
+ * And it keeps in the page what frappe-ui kept in the browser: the copy of what
+ * a resource fetched, written into IndexedDB, outlived the logout.
  */
 
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
@@ -815,9 +818,51 @@ const SOSTITUZIONI_ICONE = {
   ],
 }
 
+// frappe-ui's resources: a resource with a `cache` key kept a copy of what it
+// fetched in the browser's IndexedDB (idb-keyval's 'keyval-store') and drew it
+// at the next opening before the server answered, even for a resource that
+// never asks. No logout emptied it: on a shared computer the next session was
+// drawn from the last one's people - a list's names and numbers, a person's
+// record, the next appointment for a colleague who does not read the agenda.
+// The copy now lives in the page only: resources.js keeps its map of resources
+// in memory, so `cache` still shares one resource within the page
+// (getCachedResource), and saving, reading and deleting the copy resolve to
+// nothing without opening IndexedDB. What older versions left there goes when
+// the app starts (main.js) and at every logout (utils/esci.js).
+const SOSTITUZIONI_RISORSE = {
+  'local.ts': [
+    [
+      "import { del, get, set } from 'idb-keyval'",
+      `// DottorCloud (frontend/vite/frappeUi.js): nothing kept in the browser
+const get = (_chiave: IDBValidKey): Promise<string | undefined> =>
+  Promise.resolve(undefined)
+const set = (_chiave: IDBValidKey, _valore: unknown): Promise<void> =>
+  Promise.resolve()
+const del = (_chiave: IDBValidKey): Promise<void> => Promise.resolve()`,
+    ],
+    // nor turned into text for nobody, at every answer
+    ['return set(key, JSON.stringify(data))', 'return set(key, data)'],
+  ],
+}
+
+// frappe-ui's newer data layer (useList, useDoc, useCall: none of DottorCloud's
+// screens uses it yet) keeps its copies the same way, in the same database:
+// in the page's memory, which it already falls back on where IndexedDB is not
+const SOSTITUZIONI_DATI = {
+  'idbStore.ts': [
+    [
+      "this.useIndexedDB = typeof window !== 'undefined' && !!window.indexedDB",
+      `// DottorCloud (frontend/vite/frappeUi.js): nothing kept in the browser
+    this.useIndexedDB = false`,
+    ],
+  ],
+}
+
 const RADICI = {
   '/frappe-ui/src/components/': SOSTITUZIONI,
   '/frappe-ui/src/molecules/': SOSTITUZIONI_MOLECOLE,
+  '/frappe-ui/src/resources/': SOSTITUZIONI_RISORSE,
+  '/frappe-ui/src/data-fetching/': SOSTITUZIONI_DATI,
   '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
   '/frappe-ui/icons/': SOSTITUZIONI_ICONE,
 }
@@ -839,6 +884,12 @@ export const FILE_MOLECOLE = Object.keys(SOSTITUZIONI_MOLECOLE)
 
 /** The same, under frappe-ui's icons. */
 export const FILE_ICONE = Object.keys(SOSTITUZIONI_ICONE)
+
+/** The same, under frappe-ui's resources. */
+export const FILE_RISORSE = Object.keys(SOSTITUZIONI_RISORSE)
+
+/** The same, under frappe-ui's data-fetching. */
+export const FILE_DATI = Object.keys(SOSTITUZIONI_DATI)
 
 /** The module's code in the user's language, or null when it is not one to rewrite. */
 export function traduciFrappeUi(codice, id) {
