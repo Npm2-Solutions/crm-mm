@@ -62,7 +62,7 @@ La soglia di Doherty, una delle leggi di Laws of UX, sta nella famiglia 1 con i 
 
 **Come si verifica.** Test con 3–5 persone per ruolo sugli scenari critici, misurando compiti riusciti, errori (persona sbagliata, dato fiscale sbagliato) e tempo; nel rapporto i giudizi sull'aspetto stanno separati dai problemi d'uso; ogni rilievo con gravità 0–4 e principio, come nello studio UX.
 
-**Errori da evitare.** Schermate ordinate e coerenti con problemi gravi nascosti (studio UX, ottobre 2026): «Nuova fattura» apriva con «Bonifico» già scelto (gravità 3; oggi il metodo resta segnato come non confermato, con tre modi rapidi, in InvoiceDialog.vue); i campi #f1f4f3 senza bordo su bianco, a 1,11:1, puliti ma quasi invisibili; all'ingresso dell'area clienti il pulsante spento «Mandami il codice» identico al campo email (gravità 3); sul telefono «Emetti la fattura» che crea solo una bozza (gravità 3). Mai chiudere una revisione con «è bello».
+**Errori da evitare.** Schermate ordinate e coerenti con problemi gravi nascosti (studio UX, ottobre 2026): «Nuova fattura» apriva con «Bonifico» già scelto (gravità 3; oggi il metodo resta segnato come non confermato, con tre modi rapidi, in InvoiceDialog.vue); i campi #f1f4f3 senza bordo su bianco, a 1,11:1, puliti ma quasi invisibili; all'ingresso dell'area clienti il pulsante spento «Mandami il codice» identico al campo email (gravità 3); sul telefono «Emetti la fattura» che crea solo una bozza (gravità 3; corretto il 12/10/2026 in «Prepara la fattura»). Mai chiudere una revisione con «è bello».
 
 **Fonti.**
 
@@ -240,7 +240,7 @@ La soglia di Doherty, una delle leggi di Laws of UX, sta nella famiglia 1 con i 
 
 **Come si verifica.** Per ogni nuovo pattern, confrontarlo con due o tre prodotti che lo staff usa; prova del primo clic; revisione delle parole contro il glossario e ricerca di nomi diversi per la stessa funzione.
 
-**Errori da evitare.** (studio UX, ottobre 2026) Nella Chat il futuro sta in fondo, sotto il passato, dove i messenger mettono l'ultimo messaggio (ancora da fare); la settimana salta il sabato, cioè oggi, senza dirlo; la finestra delle Impostazioni senza X sul computer (corretto); ✓ e ✓✓ per «segna come letta», che nei messenger vogliono dire inviato e letto; sul telefono «Emetti la fattura» che crea solo una bozza (gravità 3); in alto a destra una «C» senza parole che è il responsabile della persona.
+**Errori da evitare.** (studio UX, ottobre 2026) Nella Chat il futuro sta in fondo, sotto il passato, dove i messenger mettono l'ultimo messaggio (ancora da fare); la settimana salta il sabato, cioè oggi, senza dirlo; la finestra delle Impostazioni senza X sul computer (corretto); ✓ e ✓✓ per «segna come letta», che nei messenger vogliono dire inviato e letto; sul telefono «Emetti la fattura» che crea solo una bozza (gravità 3; corretto il 12/10/2026 in «Prepara la fattura»); in alto a destra una «C» senza parole che è il responsabile della persona.
 
 **Vedi anche.** [NN-H4](01-interazione.md#nn-h4--coerenza-e-standard)
 
@@ -418,7 +418,7 @@ La soglia di Doherty, una delle leggi di Laws of UX, sta nella famiglia 1 con i 
 
 **Come si verifica.** Mappa di ogni percorso con i picchi (errori, attese, pagamenti) e la fine; al termine delle prove chiedere che cosa si ricorda e com'è andata; revisione delle schermate finali: c'è il riferimento? c'è il passo successivo?
 
-**Errori da evitare.** (studio UX, ottobre 2026) Una cosa segnata fatta per sbaglio si recupera solo per pochi secondi; «Nuova fattura» mostra un errore rosso ed «Emetti» spento prima di qualsiasi inserimento; la pagina d'errore senza titolo né intestazione; sul telefono «Emetti la fattura» che alla fine non emette.
+**Errori da evitare.** (studio UX, ottobre 2026) Una cosa segnata fatta per sbaglio si recupera solo per pochi secondi; «Nuova fattura» mostra un errore rosso ed «Emetti» spento prima di qualsiasi inserimento; la pagina d'errore senza titolo né intestazione; sul telefono «Emetti la fattura» che alla fine non emette (corretto il 12/10/2026 in «Prepara la fattura»).
 
 **Fonti.**
 
