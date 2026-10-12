@@ -33,7 +33,9 @@
       />
     </div>
     <div v-else class="shrink-0 px-2 pb-3">
-      <section v-for="s in giorni" :key="s.key" :aria-label="__(s.label)">
+      <!-- a day is its heading, not a region: named, each section was a
+           landmark of its own, the day said twice -->
+      <section v-for="s in giorni" :key="s.key">
         <!-- under the panel's title a third level; on the page, under the
              page's own name, the second -->
         <ElementoNativo
