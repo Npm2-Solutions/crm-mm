@@ -162,19 +162,27 @@
         <!-- the settings, where one looks for them: not only in the menu under
              the name -->
         <div class="mt-auto flex flex-col gap-1 pt-2">
+          <!-- the demo data's way out, in red, first and a line away from the
+               rest: right above the settings, where a hand goes every day, it
+               was a slip away (its confirmation stays) -->
+          <template v-if="puo('dati_prova.gestisci') && isDemoDataCreated">
+            <SidebarItem
+              :label="__('Remove the demo data')"
+              class="!text-ink-red-6 hover:!bg-surface-red-2"
+              @click="() => clearDemoData()"
+            >
+              <template #prefix>
+                <BrushCleaningIcon class="size-4" />
+              </template>
+            </SidebarItem>
+            <div
+              class="mx-2 my-2 border-t border-outline-gray-2"
+              aria-hidden="true"
+            />
+          </template>
           <div class="mb-1 flex flex-col gap-2">
             <FirstStepsCard :collapsed="isCollapsed" />
           </div>
-          <SidebarItem
-            v-if="puo('dati_prova.gestisci') && isDemoDataCreated"
-            :label="__('Remove the demo data')"
-            class="!text-ink-red-6 hover:!bg-surface-red-2"
-            @click="() => clearDemoData()"
-          >
-            <template #prefix>
-              <BrushCleaningIcon class="size-4" />
-            </template>
-          </SidebarItem>
           <SidebarItem :label="__('Settings')" @click="openSettings">
             <template #prefix>
               <LucideSettings class="size-4 text-ink-gray-7" />
