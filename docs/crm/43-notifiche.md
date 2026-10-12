@@ -219,8 +219,13 @@ paziente, le notifiche arrivavano a chi non c'era più.
   è il browser a lasciare l'abbonamento, appena il server ha chiuso la
   sessione: lì non arriva più niente, il servizio di chi fa il browser risponde
   che non c'è più e il server lo dimentica al primo invio. Chi esce mentre la
-  prima apertura sta ancora sincronizzando aspetta che finisca: ciò che passa
-  a lui viene lasciato con il resto.
+  prima apertura sta ancora sincronizzando aspetta che finisca, al più due
+  secondi: ciò che passa a lui viene lasciato con il resto, e se non è finita
+  in tempo il browser lascia l'abbonamento (potrebbe ancora passarlo a lui);
+  un'apertura che comincia quando l'uscita è già partita non lo passa a
+  nessuno. Prima l'uscita aspettava l'apertura senza guardare se era finita,
+  e una che cominciava dopo non chiedeva niente a nessuno: in entrambi i casi,
+  su una rete lenta, il dispositivo poteva tornare a chi era appena uscito.
 - **Una sessione scaduta senza uscire** lo lascia all'ultimo che l'ha usato,
   finché qualcuno non entra in quel browser: allora passa a lui. Su un computer
   condiviso si esce.
@@ -308,6 +313,8 @@ paziente, le notifiche arrivavano a chi non c'era più.
   stesso browser, il dispositivo passa ogni volta (sul codice di prima restava
   di Bruno); l'uscita col server che dimentica, che rifiuta, con l'abbonamento
   di un altro; un'uscita rifiutata con la rete giù, che lascia il dispositivo a
-  chi resta. Ogni accesso è una pagina nuova, come nel browser.
+  chi resta; un'apertura che comincia a uscita partita, o che dopo due secondi
+  sta ancora passando il dispositivo. Ogni accesso è una pagina nuova, come nel
+  browser.
   `tests/unit/esci.test.js` e `dopoLUscita.test.js`: l'ordine dell'uscita,
   niente tolto se il server rifiuta, ogni chiave che l'app scrive decisa.

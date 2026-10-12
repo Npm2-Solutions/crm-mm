@@ -36,6 +36,9 @@ const ATTESA = 2000
 // an opening's sync while it is on its way: a logout waits for it, or what it
 // hands over would land after the logout let the device go
 let inCorso = null
+// a logout on its way: an opening's sync that starts after it hands the
+// device to nobody
+let uscendo = false
 
 export const statoQui = computed(() => statoDelDispositivo(capacita.value))
 
@@ -172,7 +175,11 @@ export function sincronizza() {
 
 async function sincronizzaOra() {
   aggiorna()
-  if (statoQui.value !== 'pronto' || Notification.permission !== 'granted')
+  if (
+    uscendo ||
+    statoQui.value !== 'pronto' ||
+    Notification.permission !== 'granted'
+  )
     return
   togliLeVecchie()
   const abbonamento = await abbonamentoQui()
@@ -190,18 +197,20 @@ async function sincronizzaOra() {
  * browser keeps its subscription, so whoever signs in here next is handed it
  * at their first opening. Where the server does not answer within two
  * seconds, or the memo says somebody else was the last to sync it (what the
- * server forgot for this session was then not it), the browser lets go of it
- * instead: nothing reaches the device, its push service answers that it is
- * gone, and the server forgets it at its next notification. That waits for
- * the server to end the session: answered here as what is left to do then
- * (utils/esci.js), so that a logout it refuses leaves the device to the
- * session that goes on. The memo goes either way. Never throws, and never
- * waits long: the logout goes on.
+ * server forgot for this session was then not it), or the opening's sync may
+ * still hand it over, the browser lets go of it instead: nothing reaches the
+ * device, its push service answers that it is gone, and the server forgets it
+ * at its next notification. That waits for the server to end the session:
+ * answered here as what is left to do then (utils/esci.js), so that a logout
+ * it refuses leaves the device to the session that goes on. The memo goes
+ * either way. Never throws, and never waits long: the logout goes on.
  */
 export async function lascia() {
-  // the opening's sync still on its way lands first: what it hands over is
-  // let go with the rest
-  if (inCorso) await entroIlTempo(inCorso, ATTESA)
+  // from now on an opening's sync hands the device to nobody
+  uscendo = true
+  // the one still on its way lands first: what it hands over is let go with
+  // the rest. One that has not landed in time may still hand it over
+  const atterrata = inCorso ? await entroIlTempo(inCorso, ATTESA) : true
   const memoria = laMemoria()
   dimentica()
   const abbonamento = await abbonamentoQui().catch(() => null)
@@ -216,7 +225,7 @@ export async function lascia() {
       memoria,
       utente: sessionStore().user,
       impronta: segno,
-      dimenticato,
+      dimenticato: atterrata && dimenticato,
     })
   )
     return null
@@ -232,9 +241,11 @@ export async function lascia() {
 /**
  * A logout the server refused: the session goes on, and the device with it.
  * What `lascia` had the server forget is handed back now, not at the next
- * opening: the memo goes, so the server is asked.
+ * opening: the memo goes, whatever a sync that landed late remembered, so the
+ * server is asked.
  */
 export function resta() {
+  uscendo = false
   dimentica()
   return sincronizza()
 }

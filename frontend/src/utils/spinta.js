@@ -88,7 +88,8 @@ export function memorieVecchie(chiavi) {
 
 /**
  * Whether this browser keeps its subscription at a logout: only when the
- * server forgot it for the session in time (`dimenticato`), and the memo does
+ * server forgot it for the session in time, with no opening's sync still on
+ * its way that could hand it over again (`dimenticato`), and the memo does
  * not say it was somebody else's - the server forgets only the session's own,
  * and another's would go on arriving. Kept, the device waits for whoever signs
  * in next, who is handed it at their first opening; let go, nothing reaches it.

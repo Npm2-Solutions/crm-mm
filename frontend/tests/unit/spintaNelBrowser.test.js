@@ -14,17 +14,20 @@ const BRUNO = 'bruno@centro.it'
 
 const sessione = vi.hoisted(() => ({ user: null }))
 // the server: whose each subscription is, by its endpoint's fingerprint, what
-// it was asked, and whether it refuses (down)
+// it was asked, whether it refuses (down), and the requests it has not taken
+// yet (on their way)
 const server = vi.hoisted(() => ({
   righe: new Map(),
   chiesto: [],
   rifiuta: false,
+  trattenuti: new Map(),
 }))
 
 vi.mock('@/stores/session', () => ({ sessionStore: () => sessione }))
 vi.mock('frappe-ui', () => ({
   call: async (metodo, argomenti = {}) => {
     server.chiesto.push(metodo)
+    await server.trattenuti.get(metodo)
     if (server.rifiuta) throw new Error('502 Bad Gateway')
     // only a session of the centre's (`_del_centro`): a logout ended it
     if (!sessione.user) throw new Error('403 Forbidden')
@@ -95,6 +98,11 @@ function esce(chiudi = async () => (sessione.user = null)) {
   return esci(chiudi, { utenti: [sessione.user], prima: pagina.lascia })
 }
 
+// what the browser does by itself meanwhile (a digest, a request) has its turn
+async function finche(fatto) {
+  while (!fatto()) await new Promise((avanti) => setImmediate(avanti))
+}
+
 beforeAll(() => {
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
@@ -121,6 +129,7 @@ beforeEach(() => {
   localStorage.clear()
   server.righe.clear()
   server.rifiuta = false
+  server.trattenuti.clear()
   browser.abbonamento = null
 })
 
@@ -270,5 +279,58 @@ describe('a logout the server refuses', () => {
     expect(localStorage.getItem('crm-spinta')).toBe(
       `${ANNA}|${impronta(browser.abbonamento.endpoint)}`,
     )
+  })
+})
+
+describe('the logout and the opening’s sync, side by side', () => {
+  it('an opening’s sync that starts once the logout is on its way hands nothing over', async () => {
+    // Anna out: the device is nobody's, the browser keeps its subscription
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await esce()
+    // Bruno signs in, and is out before his opening's sync had started: it
+    // starts while the server is ending his session
+    await entra(BRUNO)
+    await esce(async () => {
+      await pagina.sincronizza()
+      sessione.user = null
+    })
+    expect(diChi()).toBeNull()
+  })
+
+  it('a hand-over still on its way after two seconds: the browser lets go once the session is over', async () => {
+    await entra(ANNA)
+    await pagina.attiva(CHIAVE)
+    await esce()
+    const segno = impronta(browser.abbonamento.endpoint)
+    // Bruno's opening hands the device to him, on a network that keeps the
+    // request on its way
+    await entra(BRUNO)
+    let arriva
+    server.trattenuti.set(
+      'crm.notifiche.spinta.subscribe',
+      new Promise((avanti) => (arriva = avanti)),
+    )
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const apertura = pagina.sincronizza()
+      await finche(() =>
+        server.chiesto.includes('crm.notifiche.spinta.subscribe'),
+      )
+      // he is out meanwhile: the logout waits two seconds for the opening,
+      // and the server takes the hand-over just before it ends his session
+      const uscita = esce(async () => {
+        arriva()
+        await apertura
+        sessione.user = null
+      })
+      vi.advanceTimersByTime(2000)
+      await uscita
+    } finally {
+      vi.useRealTimers()
+    }
+    // the server has it as his, and nothing reaches the device all the same
+    expect(server.righe.get(segno)).toBe(BRUNO)
+    expect(browser.abbonamento).toBeNull()
   })
 })
