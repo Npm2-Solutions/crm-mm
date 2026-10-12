@@ -51035,3 +51035,8 @@ msgstr "Il suo unico clic si perde, e chi lo apre da un messaggio già inviato o
 #: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
 msgid "The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead."
 msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+#: frontend/src/components/Telephony/TelnyxCallUI.vue
+msgid "Show the call"
+msgstr "Mostra la chiamata"

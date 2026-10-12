@@ -16,11 +16,17 @@
       :style="style"
     >
       <div class="flex min-h-4 flex-row-reverse items-center gap-1">
-        <MinimizeIcon
+        <!-- a button with its words: the icon took a click and no key -->
+        <button
           v-if="!scelta"
-          class="h-4 w-4 cursor-pointer"
+          ref="riduci"
+          type="button"
+          class="touch-target rounded"
+          :aria-label="__('Minimize')"
           @click="toggleCallWindow"
-        />
+        >
+          <MinimizeIcon class="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
       <div class="flex flex-col items-center justify-center gap-3">
         <Avatar
@@ -175,6 +181,7 @@
             @click="openNoteModal"
           />
           <Button
+            :aria-label="__('Hang Up')"
             class="rounded-full bg-surface-red-7 hover:bg-surface-red-8 text-ink-base"
             :tooltip="__('Hang Up')"
             @click="hangUpCall"
@@ -225,11 +232,13 @@
       </div>
     </div>
   </div>
+  <!-- the bar opens the call from the name, a button stretched over it
+       (.riga-stesa): a div with a click reached no key. The call's buttons
+       come after it and are drawn over it -->
   <div
     v-show="showSmallCallWindow"
-    class="ml-2 flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg bg-surface-gray-10 px-2 py-[7px] text-base text-ink-gray-2"
+    class="relative ml-2 flex select-none items-center justify-between gap-3 rounded-lg bg-surface-gray-10 px-2 py-[7px] text-base text-ink-gray-2"
     v-bind="$attrs"
-    @click="toggleCallWindow"
   >
     <div class="flex items-center gap-2">
       <Avatar
@@ -238,9 +247,15 @@
         :label="contact.full_name"
         class="relative flex !h-5 !w-5 items-center justify-center"
       />
-      <div class="max-w-[120px] truncate">
+      <button
+        ref="espandi"
+        type="button"
+        class="riga-stesa max-w-[120px] truncate text-left after:rounded-lg"
+        @click="toggleCallWindow"
+      >
         {{ contact?.full_name ?? __('Unknown') }}
-      </div>
+        <span class="sr-only">{{ __('Show the call') }}</span>
+      </button>
     </div>
     <div v-if="onCall" class="flex items-center gap-2">
       <div class="my-1 min-w-[40px] text-center">
@@ -250,7 +265,7 @@
         :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         @click.stop="hangUpCall"
       >
         <template #icon>
@@ -269,7 +284,7 @@
         :aria-label="__('Hang Up')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         @click.stop="cancelCall"
       >
         <template #icon>
@@ -282,15 +297,16 @@
         :aria-label="__('Accept Call')"
         variant="solid"
         theme="green"
-        class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-base"
+        class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-base motion-reduce:animate-none"
         :tooltip="__('Accept Call')"
         :icon="PhoneIcon"
         @click.stop="acceptIncomingCall"
       />
       <Button
+        :aria-label="__('Reject Call')"
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full text-ink-base"
+        class="relative !h-6 !w-6 rounded-full text-ink-base"
         :tooltip="__('Reject Call')"
         @click.stop="rejectIncomingCall"
       >
@@ -324,7 +340,7 @@ import {
 } from '@vueuse/core'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { Avatar, call, createResource, toast } from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 const { capture } = useTelemetry()
 
@@ -790,9 +806,15 @@ function cancelCall() {
   }
 }
 
+// the popup and the bar take each other's place: the keyboard goes with them,
+// or it was left on a button no longer drawn
+const riduci = ref(null)
+const espandi = ref(null)
+
 function toggleCallWindow() {
   showCallPopup.value = !showCallPopup.value
   showSmallCallWindow.value = !showSmallCallWindow.value
+  nextTick(() => (showCallPopup.value ? riduci : espandi).value?.focus())
 }
 
 defineExpose({ makeOutgoingCall, setup: startupClient })
@@ -834,6 +856,15 @@ defineExpose({ makeOutgoingCall, setup: startupClient })
   100% {
     transform: scale(1.3);
     opacity: 0;
+  }
+}
+
+/* the rings stand still for whoever asked for less motion: they went on as
+   long as a call rang */
+@media (prefers-reduced-motion: reduce) {
+  .pulse::before,
+  .pulse::after {
+    animation: none;
   }
 }
 </style>

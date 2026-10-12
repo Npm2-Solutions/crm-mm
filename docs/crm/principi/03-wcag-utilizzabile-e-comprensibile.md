@@ -153,7 +153,7 @@ Questa famiglia raccoglie tutti i criteri di successo A e AA dei principi 2 (Uti
 
 **Come si verifica.** Inventario delle animazioni infinite e delle transizioni lunghe (cercare 'infinite' nei CSS e nei componenti); aprire una pagina che si aggiorna da sola e verificare che ciò che si legge non si sposti; ripetere con la riduzione del movimento attiva. axe copre solo blink e marquee.
 
-**Errori da evitare.** .pulse in TwilioCallUI.vue senza prefers-reduced-motion né fine, per tutto lo squillo di una chiamata in arrivo (rilevato nel codice l'11/10/2026; precisato il 12/10/2026).
+**Errori da evitare.** .pulse in TwilioCallUI.vue senza fine, per tutto lo squillo di una chiamata in arrivo, e senza prefers-reduced-motion fino alla correzione del 12/10/2026 (rilevato nel codice l'11/10/2026; precisato il 12/10/2026).
 
 **Vedi anche.** [MOT-AUTOMATICO](04-aspetto.md#mot-automatico--movimento-automatico-lampeggi-aggiornamenti-e-messaggi-a-tempo)
 
