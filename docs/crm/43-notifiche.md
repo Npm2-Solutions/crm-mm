@@ -60,7 +60,8 @@ anche dei difetti veri:
 - **Quando ne arriva una** compare un avviso nel blocco verde profondo del marchio,
   come nel video, con il segno del tipo, la frase, le prime parole e «Apri». Non
   compare se il pannello o la pagina delle notifiche sono già aperti. Sul telefono
-  il pallino sta su «Altro».
+  il pallino sta su «Altro», e chi non lo vede lo sente nel nome della voce:
+  «Altro, 5 notifiche da leggere» (`utils/notifiche.js`, `nomeDiAltro`).
 - **La lingua è quella di chi legge**: la frase resta in inglese con i suoi nomi a
   parte e viene tradotta quando la si legge. Quelle scritte prima prendono la
   frase di oggi (03/10/2026): un messaggio, una menzione, un'assegnazione o una
