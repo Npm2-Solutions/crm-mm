@@ -506,13 +506,6 @@
     transform: translateY(100%);
   }
 }
-@media (max-width: 767px) and (prefers-reduced-motion: reduce),
-  (max-height: 499px) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
-  .dialog-content[data-state='open'],
-  .dialog-content[data-state='closed'] {
-    animation: none;
-  }
-}
 
 /* 5. A menu, the choices of a select, a combobox's list on a phone: a sheet of
       actions from the bottom, its rows 48px, the screen behind veiled. reka-ui
@@ -661,6 +654,27 @@
     div[style*='position: fixed']
     > [role='listbox'][data-slot='content'] {
     box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6) !important;
+  }
+}
+/* Less motion asked of the phone (iOS's Reduce Motion, Android's Remove
+   animations): no sheet rises nor falls, a dialog's (4.), a menu's, a
+   select's or a link field's list, a popover of choices (5.) are there at
+   once and go at once. After the rules that move them, as heavy as they are:
+   the later one wins */
+@media (max-width: 767px) and (prefers-reduced-motion: reduce),
+  (max-height: 499px) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
+  .dialog-content[data-state='open'],
+  .dialog-content[data-state='closed'],
+  [data-reka-popper-content-wrapper] > [role='menu'],
+  [data-reka-popper-content-wrapper] > [role='listbox'],
+  div[style*='position: fixed'] > [role='listbox'][data-slot='content'],
+  [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [role='listbox']),
+  [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [data-foglio]) {
+    animation: none;
   }
 }
 
