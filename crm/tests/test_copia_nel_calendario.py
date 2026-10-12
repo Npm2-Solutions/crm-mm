@@ -22,6 +22,7 @@ from frappe.utils import add_to_date, now_datetime
 
 from crm.area import accesso
 from crm.patches.v1_0 import the_calendar_copy_keeps_no_address_of_who_comes as patch
+from crm.patches.v1_0 import the_calendar_copy_sends_no_digest as patch_del_riepilogo
 from crm.scheduling.availability import forget_settings
 from crm.tests.test_scheduling import SchedulingCase
 
@@ -245,3 +246,35 @@ class LaCopiaNelCalendario(SchedulingCase):
 		with mock.patch.object(frappe.db, "set_value") as scrive:
 			patch.execute()
 		scrive.assert_not_called()
+
+	# -- the framework's nightly digest ------------------------------------------
+
+	def nel_riepilogo(self, evento) -> bool:
+		"""Whether the framework's nightly digest of the Event's day lists it for
+		its owner (`send_event_digest` reads `get_events(..., for_reminder=True)`)."""
+		from frappe.desk.doctype.event.event import get_events
+
+		giorno = evento.starts_on
+		return evento.name in [
+			e.name for e in get_events(giorno, giorno, user=evento.owner, for_reminder=True)
+		]
+
+	def test_la_copia_non_va_nel_riepilogo_della_notte(self):
+		voce = self.voce_della_rubrica("copia.riepilogo@example.com")
+		copia = self.copia("Contact", voce)
+		self.assertEqual(copia.send_reminder, 0)
+		self.assertFalse(self.nel_riepilogo(copia))
+
+	def test_le_copie_di_prima_escono_dal_riepilogo(self):
+		voce = self.voce_della_rubrica("copia.riepilogo.prima@example.com")
+		copia = self.copia("Contact", voce)
+		# as a copy was made until now: «Send reminder» on, as the framework starts it
+		frappe.db.set_value("Event", copia.name, "send_reminder", 1, update_modified=False)
+		evento = self.evento_del_centro(voce)
+		self.assertTrue(self.nel_riepilogo(frappe.get_doc("Event", copia.name)))
+
+		patch_del_riepilogo.execute()
+		self.assertEqual(frappe.db.get_value("Event", copia.name, "send_reminder"), 0)
+		self.assertFalse(self.nel_riepilogo(frappe.get_doc("Event", copia.name)))
+		# an Event the centre made itself keeps the framework's digest
+		self.assertEqual(frappe.db.get_value("Event", evento.name, "send_reminder"), 1)

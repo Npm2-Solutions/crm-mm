@@ -329,6 +329,10 @@ class CRMAppointment(Document):
 			"event_type": "Private",
 			"description": self.notes,
 			"color": self.color,
+			# never in the framework's nightly digest («Upcoming Events for Today»,
+			# in English and on a 12-hour clock), which mailed the copy's owner its
+			# subject and its notes: the reminders are DottorCloud's (crm/api/event.py)
+			"send_reminder": 0,
 			"reference_doctype": "CRM Appointment",
 			"reference_docname": self.name,
 		}

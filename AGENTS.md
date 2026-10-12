@@ -118,7 +118,9 @@ address on every participant row without one when an Event is saved
 framework's own, leaves an address only on the professionals' rows, each their own,
 whatever saves a copy (`copia_solo_ai_professionisti`; the copies made before it,
 the patch `the_calendar_copy_keeps_no_address_of_who_comes`); an Event the centre
-makes itself is the framework's.
+makes itself is the framework's. A copy is made with `send_reminder` 0: the
+framework's nightly digest mailed its owner the copy's title and notes
+(`the_calendar_copy_sends_no_digest` for the copies made before).
 A call asked once whose refusal its `onError` says is `chiedi()` (`utils/chiedi.js`),
 and a resource's `submit()` so answered ends in `.catch(() => {})`: frappe-ui throws
 again what it handed to `onError`, and a `createResource({ auto: true })` refused

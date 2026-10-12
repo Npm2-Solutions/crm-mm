@@ -209,6 +209,12 @@ professionisti, a ciascuno il suo (`copia_solo_ai_professionisti`, un `before_sa
 dell'`Event` che il framework chiama dopo il proprio). Un evento che il centro crea
 da sé resta com'è. Le copie che c'erano le ha corrette la patch
 `the_calendar_copy_keeps_no_address_of_who_comes` (12/10/2026).
+Una copia non va nemmeno nel riepilogo notturno del framework («Upcoming Events
+for Today», in inglese e con l'orologio a 12 ore), che mandava per email al primo
+professionista il titolo e le note delle copie del suo giorno: `sync_event` la
+crea con «Send reminder» spento, e la patch `the_calendar_copy_sends_no_digest`
+lo ha spento sulle copie che c'erano (12/10/2026). I promemoria sono quelli di
+DottorCloud (`crm/api/event.py`).
 
 Nella griglia una copia non si disegna e non conta come impegno: l'appuntamento è
 già disegnato com'è (`_impegni`, `_plain_events`).
