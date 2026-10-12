@@ -322,9 +322,10 @@ function save() {
 function remove(resource) {
   $dialog({
     title: __('Delete {0}?', [resource.resource_name]),
-    // words for a room, a machine, a vehicle alike: the title names it
+    // words for a room, a machine, a vehicle alike: the title names it. What an
+    // appointment, a service or a price uses stays (CRMResource.on_trash says so)
     message: __(
-      'The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead.',
+      'It can be deleted only while nothing uses it: no appointment, service or price. To stop booking it and keep it, switch it off instead.',
     ),
     actions: [
       {

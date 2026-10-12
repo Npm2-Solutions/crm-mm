@@ -51033,8 +51033,8 @@ msgid "Its one click is lost, and whoever opens it from a message already sent o
 msgstr "Il suo unico clic si perde, e chi lo apre da un messaggio già inviato o da un'automazione non trova più niente."
 
 #: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
-msgid "The appointments that use it keep their day and time. To stop booking it and keep it, switch it off instead."
-msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
+msgid "It can be deleted only while nothing uses it: no appointment, service or price. To stop booking it and keep it, switch it off instead."
+msgstr "Si può eliminare solo se niente lo usa: nessun appuntamento, servizio o prezzo. Per non prenotarlo più e tenerlo, spegnilo invece di eliminarlo."
 
 #: frontend/src/components/Telephony/TwilioCallUI.vue
 #: frontend/src/components/Telephony/TelnyxCallUI.vue
@@ -51047,3 +51047,19 @@ msgstr "Un appuntamento di oggi è senza esito: la persona è venuta?"
 #: crm/notifiche/regole.py
 msgid "An appointment yesterday has no outcome: did the person come?"
 msgstr "Un appuntamento di ieri è senza esito: la persona è venuta?"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} has appointments, and they keep it: switch it off to stop booking it"
+msgstr "{0} ha degli appuntamenti, che lo tengono: per non prenotarlo più, spegnilo"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} is needed by the service {1}: take it off the service first, or switch it off to stop booking it"
+msgstr "{0} serve al servizio {1}: toglilo prima dal servizio, oppure spegnilo per non prenotarlo più"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} has a price of its own in the price list {1}: take that price away first, or switch it off to stop booking it"
+msgstr "{0} ha un prezzo suo nel listino {1}: togli prima quel prezzo, oppure spegnilo per non prenotarlo più"
+
+#: crm/fcrm/doctype/crm_resource/crm_resource.py
+msgid "{0} is matched to the booking platform {1}: take the match away there first, or switch it off to stop booking it"
+msgstr "{0} è abbinato alla piattaforma di prenotazione {1}: togli prima l'abbinamento, oppure spegnilo per non prenotarlo più"

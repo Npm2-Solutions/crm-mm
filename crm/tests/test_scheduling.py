@@ -401,6 +401,36 @@ class TestResources(SchedulingCase):
 		slot = next(s for s in get_slots("Visita", start.date(), start.date()) if s.start == start)
 		self.assertEqual(slot.resources, [], "the room is taken but it was only optional")
 
+	def test_a_room_in_use_is_kept_in_words(self):
+		# the framework's refusal named an appointment's code and linked the Desk
+		anna = self.make_user("anna_sched@example.com")
+		room = self.make_resource("Sala da tenere", capacity=1)
+		self.make_service("Visita in sala", [anna])
+		self.make_appointment(
+			"Visita in sala", self.tomorrow(10), [anna], resources=[{"resource": room.name, "quantity": 1}]
+		)
+		with self.assertRaises(frappe.LinkExistsError) as rifiuto:
+			frappe.delete_doc("CRM Resource", room.name)
+		self.assertIn("Sala da tenere", str(rifiuto.exception))
+		self.assertNotIn("/desk/", str(rifiuto.exception))
+		self.assertTrue(frappe.db.exists("CRM Resource", room.name))
+
+	def test_a_room_a_service_needs_names_the_service(self):
+		anna = self.make_user("anna_sched@example.com")
+		room = self.make_resource("Sala del servizio", capacity=1)
+		service = self.make_service("Servizio con la sala", [anna])
+		service.append("resources", {"resource": room.name, "quantity": 1, "required": 1})
+		service.save()
+		with self.assertRaises(frappe.LinkExistsError) as rifiuto:
+			frappe.delete_doc("CRM Resource", room.name)
+		self.assertIn("Servizio con la sala", str(rifiuto.exception))
+		self.assertNotIn("/desk/", str(rifiuto.exception))
+
+	def test_a_room_nothing_uses_goes(self):
+		room = self.make_resource("Sala fatta per sbaglio")
+		frappe.delete_doc("CRM Resource", room.name)
+		self.assertFalse(frappe.db.exists("CRM Resource", room.name))
+
 
 # ---------------------------------------------------------------------------
 # group sessions
