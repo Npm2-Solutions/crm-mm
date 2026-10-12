@@ -51091,3 +51091,31 @@ msgstr "Prenotato per {0}: ti arriva un'email di conferma."
 #: crm/www/book.html
 msgid "Moved: a new confirmation email is on its way."
 msgstr "Spostata: ti arriva una nuova email di conferma."
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move or resize"
+msgstr "Sposta o ridimensiona"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move left"
+msgstr "Sposta a sinistra"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Move right"
+msgstr "Sposta a destra"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Wider"
+msgstr "Più largo"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Narrower"
+msgstr "Più stretto"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Taller"
+msgstr "Più alto"
+
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+msgid "Shorter"
+msgstr "Più basso"

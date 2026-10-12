@@ -83,6 +83,15 @@ si duplica, si rinomina, si imposta (pipeline, righe, misura) e si aggiungono
 titoli di sezione e spazi vuoti. La griglia e' di 20 colonne; sul telefono i
 widget si impilano in ordine di lettura, i numeri due per riga.
 
+Trascinare non e' l'unico modo (WCAG 2.5.7, dal 12/10/2026): ogni widget ha il
+menu «Sposta o ridimensiona», con un tocco o con la tastiera, un passo alla
+volta: su, giu', a sinistra, a destra, piu' largo, piu' stretto, piu' alto, piu'
+basso. La griglia spinge tutto verso l'alto, quindi un passo su o giu' supera i
+widget piu' vicini nelle sue colonne invece di una riga, che tornerebbe subito
+indietro; quello che il widget copre va sotto. Il passo che non cambierebbe
+niente e' spento (`spostaWidget`, `passiPossibili` in `utils/dashboard.js`). Al
+tocco si trascina dalla maniglia a puntini.
+
 Dal menu: nuova dashboard (vuota o da un modello, solo per me o per il team),
 impostazioni (nome, icona, periodo di apertura, **"solo il mio lavoro"** — la
 dashboard personale in cui ogni widget conta solo chi la guarda), duplica,
@@ -237,7 +246,7 @@ numeri nuovi.
 | `crm/patches/v1_0/an_invoicing_dashboard.py` | La dashboard Fatturazione sui siti che hanno gia' le altre |
 | `frontend/src/pages/Dashboard.vue` | La pagina: scelta, periodo, persona, modifica |
 | `frontend/src/components/Dashboard/` | Griglia, libreria, dialoghi, cornice e le sette forme di widget |
-| `frontend/src/utils/dashboard.js` | Periodi, formati, griglia, ricerca — puri, testati |
+| `frontend/src/utils/dashboard.js` | Periodi, formati, griglia (e un widget spostato senza trascinare), ricerca — puri, testati |
 | `frontend/src/utils/dashboardCharts.js` | Palette e opzioni ECharts — pure, testate |
 
 Test: `crm/tests/test_dashboard_widgets.py` (ogni widget su MariaDB, i KPI di

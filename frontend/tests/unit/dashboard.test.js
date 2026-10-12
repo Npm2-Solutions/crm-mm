@@ -15,10 +15,13 @@ import {
   larghezzaDiUno,
   mobileOrder,
   newItem,
+  PASSI,
+  passiPossibili,
   perRiga,
   newKey,
   periodRange,
   searchCatalog,
+  spostaWidget,
   toSavedLayout,
   usage,
 } from '@/utils/dashboard'
@@ -317,6 +320,126 @@ describe('the grid', () => {
       a: 2,
       b: 1,
     })
+  })
+})
+
+describe('moving without dragging', () => {
+  // [key, x, y, w, h]: a widget's place on the 20-column grid
+  const griglia = (...caselle) =>
+    caselle.map(([i, x, y, w, h]) => ({ name: i, layout: { i, x, y, w, h } }))
+  const dove = (items) =>
+    Object.fromEntries(
+      items.map(({ layout: { i, x, y, w, h } }) => [i, [x, y, w, h]]),
+    )
+
+  it('goes up past the widget above, which goes below it, and back down', () => {
+    // a row up would come straight back: the grid packs upwards
+    const items = griglia(['a', 0, 0, 20, 8], ['b', 0, 8, 20, 3])
+    const su = spostaWidget(items, 'b', PASSI.su)
+    expect(dove(su)).toEqual({ a: [0, 3, 20, 8], b: [0, 0, 20, 3] })
+    expect(dove(spostaWidget(su, 'b', PASSI.giu))).toEqual(dove(items))
+  })
+
+  it('goes past a whole row of widgets side by side', () => {
+    const items = griglia(
+      ['a', 0, 0, 10, 3],
+      ['c', 10, 0, 10, 6],
+      ['b', 0, 6, 20, 3],
+    )
+    const su = spostaWidget(items, 'b', PASSI.su)
+    expect(dove(su)).toEqual({
+      a: [0, 3, 10, 3],
+      c: [10, 3, 10, 6],
+      b: [0, 0, 20, 3],
+    })
+    expect(dove(spostaWidget(su, 'b', PASSI.giu))).toEqual(dove(items))
+  })
+
+  it('goes down past the next widget in its columns, over a gap', () => {
+    // the left column ends at 6, the right one at 9: under c is a gap, then d
+    const items = griglia(
+      ['a', 0, 0, 10, 3],
+      ['c', 0, 3, 10, 3],
+      ['t', 10, 0, 10, 9],
+      ['d', 0, 9, 20, 3],
+    )
+    expect(passiPossibili(items, 'c')).toMatchObject({ su: true, giu: true })
+    expect(dove(spostaWidget(items, 'c', PASSI.giu))).toEqual({
+      a: [0, 0, 10, 3],
+      t: [10, 0, 10, 9],
+      d: [0, 9, 20, 3],
+      c: [0, 12, 10, 3],
+    })
+  })
+
+  it('moves sideways a column at a time, and what it covers goes below it', () => {
+    const items = griglia(['b', 0, 0, 5, 3], ['c', 5, 0, 5, 3])
+    expect(dove(spostaWidget(items, 'b', PASSI.destra))).toEqual({
+      b: [1, 0, 5, 3],
+      c: [5, 3, 5, 3],
+    })
+    // never off the grid
+    expect(dove(spostaWidget(items, 'b', PASSI.sinistra))).toEqual(dove(items))
+  })
+
+  it('grows and shrinks by a column or a row, within the grid and never under one', () => {
+    const items = griglia(['b', 0, 0, 20, 3], ['d', 0, 3, 20, 3])
+    expect(dove(spostaWidget(items, 'b', PASSI.piuAlto))).toEqual({
+      b: [0, 0, 20, 4],
+      d: [0, 4, 20, 3],
+    })
+    // the one below follows it up: the grid leaves no gap
+    expect(dove(spostaWidget(items, 'b', PASSI.piuBasso))).toEqual({
+      b: [0, 0, 20, 2],
+      d: [0, 2, 20, 3],
+    })
+    expect(dove(spostaWidget(items, 'b', PASSI.piuLargo))).toEqual(dove(items))
+    // at the right edge it grows to the left
+    const aDestra = griglia(['e', 15, 0, 5, 3])
+    expect(dove(spostaWidget(aDestra, 'e', PASSI.piuLargo))).toEqual({
+      e: [14, 0, 6, 3],
+    })
+    const piccolo = griglia(['p', 0, 0, 1, 1])
+    expect(dove(spostaWidget(piccolo, 'p', PASSI.piuStretto))).toEqual({
+      p: [0, 0, 1, 1],
+    })
+    expect(dove(spostaWidget(piccolo, 'p', PASSI.piuBasso))).toEqual({
+      p: [0, 0, 1, 1],
+    })
+  })
+
+  it('leaves the items it was given as they were, and keeps the rest of each', () => {
+    const items = griglia(['a', 0, 0, 20, 8], ['b', 0, 8, 20, 3])
+    items[1].config = { title: 'Incassi' }
+    const prima = JSON.stringify(items)
+    const dopo = spostaWidget(items, 'b', PASSI.su)
+    expect(JSON.stringify(items)).toBe(prima)
+    expect(dopo[1]).toMatchObject({ name: 'b', config: { title: 'Incassi' } })
+    // a widget nobody has: nothing moves
+    expect(spostaWidget(items, 'nessuno', PASSI.su)).toBe(items)
+  })
+
+  it('says which steps change anything, for the menu', () => {
+    const items = griglia(['a', 0, 0, 1, 1], ['b', 0, 1, 20, 3])
+    expect(passiPossibili(items, 'a')).toEqual({
+      su: false,
+      giu: true,
+      sinistra: false,
+      destra: true,
+      piuLargo: true,
+      piuStretto: false,
+      piuAlto: true,
+      piuBasso: false,
+    })
+    expect(passiPossibili(items, 'b')).toMatchObject({
+      su: true,
+      giu: false,
+      destra: false,
+      piuLargo: false,
+      piuStretto: true,
+      piuBasso: true,
+    })
+    expect(passiPossibili(items, 'nessuno')).toEqual({})
   })
 })
 

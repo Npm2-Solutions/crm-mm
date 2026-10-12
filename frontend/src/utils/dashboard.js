@@ -367,6 +367,125 @@ export function highlightedNumbers(items, kindOf) {
   return new Set([...first.values()].map((number) => number.i))
 }
 
+// -- moving without dragging -------------------------------------------------------
+//
+// What a drag does on the grid, a step at a time from a widget's menu, with a tap
+// or the keyboard: a drag is never the only way (WCAG 2.5.7, 2.1.1).
+
+// The steps the menu offers: a place up, down, left or right; a column or a row
+// more or less
+export const PASSI = {
+  su: { dy: -1 },
+  giu: { dy: 1 },
+  sinistra: { dx: -1 },
+  destra: { dx: 1 },
+  piuLargo: { dw: 1 },
+  piuStretto: { dw: -1 },
+  piuAlto: { dh: 1 },
+  piuBasso: { dh: -1 },
+}
+
+function inColonna(a, b) {
+  return a.x < b.x + b.w && b.x < a.x + a.w
+}
+
+function siCoprono(a, b) {
+  return inColonna(a, b) && a.y < b.y + b.h && b.y < a.y + a.h
+}
+
+// The widgets nearest above `casella` in its columns (`verso` -1), or below it
+// (1): one, or a row of them side by side
+function vicini(casella, altre, verso) {
+  const prima = verso < 0
+  const lato = altre.filter(
+    (altra) =>
+      inColonna(altra, casella) &&
+      (prima
+        ? altra.y + altra.h <= casella.y
+        : altra.y >= casella.y + casella.h),
+  )
+  if (!lato.length) return []
+  const bordo = (altra) => (prima ? altra.y + altra.h : altra.y)
+  const piuVicino = prima
+    ? Math.max(...lato.map(bordo))
+    : Math.min(...lato.map(bordo))
+  return lato.filter((altra) => bordo(altra) === piuVicino)
+}
+
+// The grid packed upwards as grid-layout-plus packs it (`verticalCompact`): row
+// by row, left to right, each widget rises while the row above it is free and
+// goes below whatever it covers. `ferma`, placed first, stays where it is.
+function impacca(caselle, ferma = null) {
+  const posate = ferma ? [ferma] : []
+  const resto = caselle
+    .filter((casella) => casella !== ferma)
+    .sort((a, b) => a.y - b.y || a.x - b.x)
+  for (const casella of resto) {
+    while (
+      casella.y > 0 &&
+      !posate.some((posata) =>
+        siCoprono(posata, { ...casella, y: casella.y - 1 }),
+      )
+    )
+      casella.y -= 1
+    let sopra
+    while ((sopra = posate.find((posata) => siCoprono(posata, casella))))
+      casella.y = sopra.y + sopra.h
+    posate.push(casella)
+  }
+}
+
+/**
+ * `items` with the widget `key` moved or resized by a step of `PASSI`, as the
+ * grid will show it; the items given are left as they were.
+ *
+ * The grid packs its widgets upwards, so a row up or down would come straight
+ * back: a step up or down goes past the nearest widgets in its columns - up, it
+ * takes their place and they go below it; down, it goes below them. Sideways and
+ * in size it moves by a column or a row, within the grid's columns and never
+ * under one; whatever it then covers goes below it. The rest is packed as the
+ * grid packs it, so the grid finds nothing to move.
+ */
+export function spostaWidget(items, key, passo = {}, colonne = GRID_COLUMNS) {
+  const caselle = items.map((item) => ({ ...item.layout }))
+  const mossa = caselle.find((casella) => casella.i === key)
+  if (!mossa) return items
+  const altre = caselle.filter((casella) => casella !== mossa)
+  const { dx = 0, dy = 0, dw = 0, dh = 0 } = passo
+  mossa.w = Math.min(colonne, Math.max(1, mossa.w + dw))
+  mossa.h = Math.max(1, mossa.h + dh)
+  mossa.x = Math.min(colonne - mossa.w, Math.max(0, mossa.x + dx))
+  const accanto = dy ? vicini(mossa, altre, dy) : []
+  if (accanto.length)
+    mossa.y =
+      dy < 0
+        ? Math.min(...accanto.map((altra) => altra.y))
+        : Math.max(...accanto.map((altra) => altra.y + altra.h))
+  // what it covers goes below it, then the gaps close
+  impacca(caselle, mossa)
+  impacca(caselle)
+  return items.map((item, n) => ({ ...item, layout: caselle[n] }))
+}
+
+// Which steps change anything for the widget `key`: the menu offers the others
+// switched off
+export function passiPossibili(items, key, colonne = GRID_COLUMNS) {
+  const caselle = items.map((item) => item.layout)
+  const casella = caselle.find((altra) => altra?.i === key)
+  if (!casella) return {}
+  const altre = caselle.filter((altra) => altra !== casella)
+  return {
+    su: vicini(casella, altre, -1).length > 0,
+    giu: vicini(casella, altre, 1).length > 0,
+    sinistra: casella.x > 0,
+    destra: casella.x + casella.w < colonne,
+    piuLargo: casella.w < colonne,
+    piuStretto: casella.w > 1,
+    piuAlto: true,
+    piuBasso: casella.h > 1,
+  }
+}
+
 // -- the switcher --------------------------------------------------------------------
 
 // The switcher's groups: the team's dashboards, the viewer's own, and — for a

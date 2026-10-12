@@ -93,7 +93,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)`; who reads a widget is the capability of its category (`registry.READERS`: doc 30's numbers) or its own `reader`, a template's `reader` says whom it is for (`store.reads`, `store.offers`) |
 | `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
 | `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
-| `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |
+| `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid (a widget moved or resized a step at a time from its menu, «Move or resize», never only by dragging: `spostaWidget`, `passiPossibili`), catalogue search, palette, ECharts options — tested |
 | `docs/crm/28-dashboard.md` | What it does and why |
 
 ### The agenda's screen (docs/crm/56)
@@ -988,8 +988,9 @@ row, the bar's words beside their icons).
   the mouse of a touch screen's PC drags at once);
   a widget of the dashboard moves from its grip, the only place that does not
   pan (`touch-action: none`, `Dashboard/DashboardGrid.vue`: grid-layout-plus
-  says so only on Android). An appointment is not dragged by a finger: its
-  hours change in its panel.
+  says so only on Android), or a step at a time from its menu. An appointment
+  is not dragged by a finger: its hours change in its panel. What is dragged
+  is done without dragging too (WCAG 2.5.7): a tap, a menu, a field.
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
   What the pointer shows beside a thing (a message's actions) is, where nothing
   hovers, a bar a tap shows, inside the screen, taking no tap while hidden, its
