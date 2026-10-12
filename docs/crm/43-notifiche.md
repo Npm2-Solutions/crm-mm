@@ -139,6 +139,18 @@ senza nessuno in mezzo che le legga.
 - **Sul telefono**: la notifica toccata porta DottorCloud in primo piano e gli dice
   dove andare, senza ricaricare; se la pagina non risponde entro due secondi e
   mezzo (addormentata, o di una versione di prima) viene caricata lì.
+- **Il promemoria di un evento del calendario va solo a chi è l'evento**
+  (12/10/2026). L'avviso che compare in basso a destra quando un evento sta per
+  cominciare andava alla stanza del sito, dove entra il browser di ogni utente
+  della scrivania (la segreteria, il marketing, gli altri professionisti,
+  l'agenzia), con la descrizione: nella copia di un appuntamento, le sue note. Ora
+  va a chi possiede l'evento e ai suoi partecipanti che sono utenti attivi del
+  centro, trovati per nome o per email, ognuno nella sua stanza, con quello che
+  l'avviso mostra e senza la descrizione (`crm/api/event.py`). Resta da fare: il
+  giro che cerca gli eventi guarda solo quelli dell'utente con cui gira (lo
+  scheduler, Administrator), e un promemoria «minuti» o «ore» può partire più
+  volte nella sua finestra; farlo arrivare a ogni professionista, una volta sola,
+  chiede un registro di quello che è partito.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
@@ -203,6 +215,9 @@ comparivano da soli.
   layout, e l'avviso); `utils/notifiche.js`, provato in `tests/unit/notifiche.test.js`.
 - `composables/conversationScroll.js` (`target`): la conversazione si apre sul
   messaggio indicato dall'indirizzo.
+- I promemoria degli eventi del calendario: `crm/api/event.py`
+  (`_send_system_notification`, `_destinatari`), provato in
+  `crm/tests/test_avvisi_degli_eventi.py`.
 - Le push: `crm/notifiche/spinta_regole.py` (cifrare, firmare, il nome del
   dispositivo, senza sito, provato sull'esempio della RFC 8291 byte per byte),
   `crm/notifiche/spinta.py` (le chiavi del sito in `FCRM Settings`, i dispositivi

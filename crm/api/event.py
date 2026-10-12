@@ -1,3 +1,4 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 """
 Event notification handling for CRM.
 
@@ -381,7 +382,46 @@ def _format_time_remaining(before_value, interval):
 	return una if frappe.utils.cint(before_value) == 1 else molte.format(before_value)
 
 
+#: What a reminder tells the browser about its event: never the description,
+#: which on an appointment's calendar copy is its notes (`sync_event`).
+CAMPI_DEL_PROMEMORIA = (
+	"event_name",
+	"subject",
+	"starts_on",
+	"ends_on",
+	"all_day_event",
+	"owner",
+	"event_participants",
+)
+
+
 def _send_system_notification(notification):
-	"""Send system notification for an event"""
-	# nosemgrep: frappe-realtime-pick-room — the bell is on every screen: Notifications.vue listens site-wide, not in a doc room
-	frappe.publish_realtime("event_notification", notification)
+	"""The reminder on the screen of whom the event is for: its owner and its
+	participants who are users of the centre, each in their own room.
+
+	It went to the site's room, which every desk user's browser joins (the
+	reception, marketing, the other professionals, the agency), with the
+	description, and each browser kept it."""
+	messaggio = {campo: notification.get(campo) for campo in CAMPI_DEL_PROMEMORIA}
+	for utente in _destinatari(notification):
+		frappe.publish_realtime("event_notification", messaggio, user=utente)
+
+
+def _destinatari(notification) -> list[str]:
+	"""The enabled System Users an event is for: its owner and its participants,
+	which the event keeps by email - a user's name, or the email of a user whose
+	name is not one (Administrator)."""
+	chi = {
+		str(valore).strip()
+		for valore in (notification.get("owner"), *(notification.get("event_participants") or []))
+		if valore and str(valore).strip()
+	}
+	if not chi:
+		return []
+	return frappe.get_all(
+		"User",
+		filters={"enabled": 1, "user_type": "System User"},
+		or_filters={"name": ["in", sorted(chi)], "email": ["in", sorted(chi)]},
+		pluck="name",
+		order_by="name asc",
+	)
