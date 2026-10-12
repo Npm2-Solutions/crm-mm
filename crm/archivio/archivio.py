@@ -96,10 +96,14 @@ def _pieno(percorso_locale: str) -> bool:
 # Moving
 
 
-def sposta() -> dict:
+def sposta(solo: set[str] | None = None) -> dict:
 	"""Every hour: the private files written a while ago, then the ones brought
 	back to be read, to the bucket. A file that fails is logged and tried at the
-	next round; the bucket unreachable stops the round."""
+	next round; the bucket unreachable stops the round.
+
+	``solo``: only these addresses. The tests move theirs alone: on a site that
+	holds a centre's files a round over all of them, into a bucket that lives in
+	the test's memory, left every private file of the site empty (12/10/2026)."""
 	c = conf()
 	esito = {"moved": 0, "emptied": 0, "bytes": 0, "failed": 0}
 	if not c:
@@ -107,11 +111,11 @@ def sposta() -> dict:
 	soglia = add_to_date(now_datetime(), minutes=-regole.ATTESA)
 	budget = [regole.FILE_PER_GIRO, regole.BYTE_PER_GIRO]
 	try:
-		for riga in _da_archiviare(soglia):
+		for riga in _da_archiviare(soglia, solo):
 			if budget[0] <= 0 or budget[1] <= 0:
 				break
 			_archivia_uno(c, riga.file_url, esito, budget)
-		for riga in _da_svuotare(soglia):
+		for riga in _da_svuotare(soglia, solo):
 			if budget[0] <= 0 or budget[1] <= 0:
 				break
 			_archivia_uno(c, riga.file_url, esito, budget, riportato=True)
@@ -126,8 +130,11 @@ def sposta() -> dict:
 	return esito
 
 
-def _da_archiviare(soglia):
-	"""The private files on the server only, oldest first, one row per address."""
+def _da_archiviare(soglia, solo=None):
+	"""The private files on the server only, oldest first, one row per address
+	(of ``solo`` alone, where it is given)."""
+	if solo is not None and not solo:
+		return []
 	return frappe.db.sql(
 		"""
 		select f.file_url, min(f.creation) as creation
@@ -137,17 +144,28 @@ def _da_archiviare(soglia):
 			and f.file_url like %(privati)s
 			and f.creation < %(soglia)s
 			and a.name is null
+			and (%(tutti)s or f.file_url in %(solo)s)
 		group by f.file_url
 		order by creation
 		limit %(quanti)s
 		""",
-		{"soglia": soglia, "quanti": regole.FILE_PER_GIRO, "privati": "/private/files/%"},
+		{
+			"soglia": soglia,
+			"quanti": regole.FILE_PER_GIRO,
+			"privati": "/private/files/%",
+			"tutti": solo is None,
+			"solo": tuple(solo or ("",)),
+		},
 		as_dict=True,
 	)
 
 
-def _da_svuotare(soglia):
-	"""The archived files brought back to be read a while ago."""
+def _da_svuotare(soglia, solo=None):
+	"""The archived files brought back to be read a while ago (of ``solo``
+	alone, where it is given)."""
+	if solo is not None and not solo:
+		return []
+	soltanto = {} if solo is None else {"file_url": ["in", list(solo)]}
 	nomi = set()
 	try:
 		nomi = {n.decode() if isinstance(n, bytes) else n for n in frappe.cache.smembers(RIPORTATI)}
@@ -155,7 +173,7 @@ def _da_svuotare(soglia):
 		nomi = set()
 	righe = frappe.get_all(
 		"CRM Archived File",
-		filters={"restored_on": ["<", soglia]},
+		filters={"restored_on": ["<", soglia], **soltanto},
 		fields=["name", "file_url"],
 		limit=regole.FILE_PER_GIRO,
 	)
@@ -163,7 +181,7 @@ def _da_svuotare(soglia):
 	altri = [n for n in nomi if n not in visti]
 	if altri:
 		righe += frappe.get_all(
-			"CRM Archived File", filters={"name": ["in", altri]}, fields=["name", "file_url"]
+			"CRM Archived File", filters={"name": ["in", altri], **soltanto}, fields=["name", "file_url"]
 		)
 	return righe
 

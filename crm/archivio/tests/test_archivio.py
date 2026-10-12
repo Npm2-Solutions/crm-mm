@@ -76,6 +76,13 @@ class TestArchivio(IntegrationTestCase):
 		self.conf = patch.dict(frappe.local.conf, {archivio.CONF: CONF})
 		self.conf.start()
 		self.addCleanup(self.conf.stop)
+		# only this test's files move: on a site that holds a centre's files a round
+		# over all of them, into the bucket in memory, left them empty on the disk
+		self.indirizzi = set()
+		sposta = self.sposta = archivio.sposta
+		solo_i_suoi = patch.object(archivio, "sposta", lambda: sposta(solo=self.indirizzi))
+		solo_i_suoi.start()
+		self.addCleanup(solo_i_suoi.stop)
 		frappe.cache.delete_value(archivio.CHIAVE_SPAZIO)
 		frappe.cache.delete_value(archivio.RIPORTATI)
 		self.file = []
@@ -93,6 +100,7 @@ class TestArchivio(IntegrationTestCase):
 			{"doctype": "File", "file_name": nome, "is_private": privato, "content": contenuto}
 		).insert(ignore_permissions=True)
 		self.file.append(doc.name)
+		self.indirizzi.add(doc.file_url)
 		frappe.db.set_value(
 			"File", doc.name, "creation", add_to_date(now_datetime(), hours=-ore_fa), update_modified=False
 		)
@@ -142,6 +150,15 @@ class TestArchivio(IntegrationTestCase):
 		self.assertEqual(self.bucket.messi, messi)
 		self.assertEqual(os.path.getsize(self.locale(doc)), 0)
 		self.assertFalse(archivio.archiviato(doc.file_url).restored_on)
+
+	def test_un_giro_su_alcuni_file_lascia_stare_gli_altri(self):
+		mio = self.nuovo()
+		altro = self.nuovo(nome="altro-consenso-archivio.txt", contenuto=b"Consenso di Marco Neri")
+		self.assertEqual(self.sposta(solo={mio.file_url})["moved"], 1)
+		self.assertTrue(archivio.archiviato(mio.file_url))
+		self.assertFalse(archivio.archiviato(altro.file_url))
+		self.assertGreater(os.path.getsize(self.locale(altro)), 0)
+		self.assertEqual(self.sposta(solo=set())["moved"], 0)
 
 	def test_un_file_appena_scritto_aspetta(self):
 		doc = self.nuovo(ore_fa=0)
