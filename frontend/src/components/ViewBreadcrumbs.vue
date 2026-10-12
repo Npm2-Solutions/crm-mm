@@ -29,6 +29,7 @@
       class="mr-1 shrink-0"
       :options="sorelle"
       :modelValue="routeName"
+      :aria-label="__('Pages')"
     />
     <router-link
       v-else

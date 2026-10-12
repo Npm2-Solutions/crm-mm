@@ -96,6 +96,7 @@
             v-if="!isMobileView"
             :modelValue="vista"
             :buttons="vistePerIlComputer"
+            :aria-label="__('Period')"
             @update:modelValue="cambiaVista"
           />
           <VistaDelTelefono

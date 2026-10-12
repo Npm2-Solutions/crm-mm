@@ -45642,7 +45642,7 @@ msgstr "Azzera tutto"
 
 #: frontend/src/components/Calendar/VistaAgenda.vue
 msgid "View options"
-msgstr "Opzioni di visualizzazione"
+msgstr "Opzioni della vista"
 
 #: frontend/src/components/Calendar/VistaAgenda.vue
 msgid "Height of the hours"
