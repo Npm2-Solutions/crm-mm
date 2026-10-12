@@ -247,8 +247,17 @@ const SOSTITUZIONI = {
   'ListView/ListSelectBanner.vue': [frase('Select all')],
   // a row's box and the header's, named: a screen reader read twenty-one
   // «checkbox, not checked» down every list, never whose row it was (WCAG
-  // 4.1.2). A row's box takes the name its first column shows
+  // 4.1.2). A row's box takes the name its first column shows. And the box,
+  // 14px, is not all one hits: a click on its cell did nothing, a click just
+  // past it opened the row (WCAG 2.5.8 asks 24px). The cell is the box's
+  // target, 30 by 39px around it - into the row's own padding on the left,
+  // as far on the right - and a click there is the box's, shift too; it
+  // looks as it did
   'ListView/ListRow.vue': [
+    [
+      /class="w-fit pe-2 py-3 flex"(\s+)@click\.stop\.prevent(\s)/,
+      'class="w-fit -ms-2 ps-2 pe-2 py-3 flex cursor-pointer"$1@click.stop.prevent="handleCheckboxClick"$2',
+    ],
     [
       `:modelValue="isSelected"
             :disabled="row.disabled"`,

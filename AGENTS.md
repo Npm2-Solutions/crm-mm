@@ -1006,7 +1006,10 @@ row, the bar's words beside their icons).
   no room for a ring, are 40px on a phone (`strumenti-compositore`, a composer's
   tools; `icone-a-dito` elsewhere, a conversation's decisions). A row a link
   opens is opened from the whole row (the link's `after:absolute after:inset-0`,
-  the row's other controls above it). Long dialogs put `.dialog-footer` on their actions
+  the row's other controls above it). The box that chooses a row of the desk's
+  lists is chosen from its whole cell, 30 by 39px around it (`vite/frappeUi.js`
+  on frappe-ui's `ListRow`): a click just past the 14px box opened the row.
+  Long dialogs put `.dialog-footer` on their actions
   (frappe-ui's own `#actions` row gets the same treatment in `index.css`).
 - Titles have no fixed height; a header stacks title, description, then actions.
 - In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.

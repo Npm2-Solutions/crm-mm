@@ -84,6 +84,21 @@ describe('frappe-ui in the user’s language', () => {
     )
   })
 
+  it("takes a click on a row box's cell as the box's, around it", () => {
+    const riga = tradotto('ListView/ListRow.vue')
+    // the cell reaches 8px on each side of the 14px box: 30px wide
+    expect(riga).toContain(
+      'class="w-fit -ms-2 ps-2 pe-2 py-3 flex cursor-pointer"',
+    )
+    // what the box does, shift and all, never the row's link nor its click
+    expect(riga).toMatch(
+      /@click\.stop\.prevent="handleCheckboxClick"\s+@dblclick\.stop/,
+    )
+    expect(riga).not.toMatch(/@click\.stop\.prevent\s/)
+    // the box keeps its own click, which stops there: one toggle, not two
+    expect(riga).toContain('@click.stop="handleCheckboxClick"')
+  })
+
   it("takes the icon picker's words through the translator", () => {
     const codice = tradotto('IconPicker.vue', ICONE)
     expect(codice).toContain(`__('No icons found for "{0}"', [searchTerm])`)

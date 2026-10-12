@@ -293,7 +293,7 @@ Questa famiglia raccoglie i principi su come DottorCloud risponde a chi lo usa: 
 
 **Come si verifica.** (1) Ogni rilievo registra i tre fattori, la gravità, le schermate e se è locale o sistemico. (2) Almeno due valutatori e un giro di verifica che può smentire. (3) Nessun rilascio con rilievi di gravità 4 aperti.
 
-**Errori da evitare.** Nelle revisioni del codice delle correzioni dello studio (quattro giri, 81 rilievi) 52 sono stati confermati, 3 sono rimasti contesi e 26 smentiti, 15 su 29 nel solo secondo giro (studio UX, ottobre 2026, revisioni): senza verifica una parte dei problemi segnalati non è reale. Guardare l'impatto e non la frequenza fa sottovalutare un componente condiviso: la casella da 14 px dentro righe cliccabili produce 292 bersagli troppo piccoli su 10 schermate (studio UX, resta.json, gravità 2).
+**Errori da evitare.** Nelle revisioni del codice delle correzioni dello studio (quattro giri, 81 rilievi) 52 sono stati confermati, 3 sono rimasti contesi e 26 smentiti, 15 su 29 nel solo secondo giro (studio UX, ottobre 2026, revisioni): senza verifica una parte dei problemi segnalati non è reale. Guardare l'impatto e non la frequenza fa sottovalutare un componente condiviso: la casella da 14 px dentro righe cliccabili produceva 292 bersagli troppo piccoli su 10 schermate (studio UX, resta.json, gravità 2; corretto il 12/10/2026).
 
 **Fonti.**
 
@@ -753,7 +753,7 @@ Questa famiglia raccoglie i principi su come DottorCloud risponde a chi lo usa: 
 
 **Come si verifica.** (1) axe: nested-interactive, label, button-name, target-size. (2) Tastiera: ogni riga si raggiunge e si apre, la casella è separata. (3) L'ordine predefinito serve il compito (Da fare per scadenza, le scadute in cima con la parola «Scaduta»). (4) Indietro ripristina la lista.
 
-**Errori da evitare.** La lista delle trattative non diceva di chi fosse ogni trattativa (studio UX, ottobre 2026; desktop-liste#0, gravità 3, corretto). Le cose da fare scadute non si distinguevano e la lista è ordinata per ultima modifica (desktop-liste#2, gravità 3: le scadute ora si vedono, l'ordine per scadenza è ancora da fare). La settima colonna è tagliata senza segno che la tabella scorre (desktop-persone#9). Righe-pulsante con dentro la casella da 14 px: 292 bersagli troppo piccoli su 10 schermate (studio UX, resta.json, gravità 2). Le caselle di selezione non avevano un nome per il lettore di schermo (desktop-liste#4, gravità 3; corretto con «Seleziona Maria Rossi»).
+**Errori da evitare.** La lista delle trattative non diceva di chi fosse ogni trattativa (studio UX, ottobre 2026; desktop-liste#0, gravità 3, corretto). Le cose da fare scadute non si distinguevano e la lista è ordinata per ultima modifica (desktop-liste#2, gravità 3: le scadute ora si vedono, l'ordine per scadenza è ancora da fare). La settima colonna è tagliata senza segno che la tabella scorre (desktop-persone#9). Righe-pulsante con dentro la casella da 14 px: 292 bersagli troppo piccoli su 10 schermate (studio UX, resta.json, gravità 2; corretto il 12/10/2026). Le caselle di selezione non avevano un nome per il lettore di schermo (desktop-liste#4, gravità 3; corretto con «Seleziona Maria Rossi»).
 
 **Vedi anche.** [WCAG-1.3.1-TABELLE](02-wcag-percepibile-e-robusto.md#wcag-131-tabelle--tabelle-e-liste-a-colonne-ogni-cella-con-la-sua-intestazione), [APG-TABELLA](03-wcag-utilizzabile-e-comprensibile.md#apg-tabella--liste-come-tabelle-griglie-solo-dove-servono-ordinamento-annunciato)
 
@@ -818,7 +818,7 @@ Questa famiglia raccoglie i principi su come DottorCloud risponde a chi lo usa: 
 
 **Come si verifica.** (1) «Seleziona tutte» dice se seleziona la pagina o tutti i risultati. (2) Il conteggio è visibile e annunciato. (3) La conferma distruttiva nomina tipo e numero («Vuoi eliminare 3 persone?») e la conseguenza. (4) Dopo l'azione un esito con il numero delle riuscite e delle non riuscite.
 
-**Errori da evitare.** Le caselle di riga non avevano un nome ed erano di 14 px (studio UX, ottobre 2026; desktop-persone#5, gravità 3): il nome è stato aggiunto, ma restano caselle da 14 px dentro righe cliccabili, 292 bersagli troppo piccoli su 10 schermate (resta.json). «Vuoi davvero eliminare {0} elementi?» (it.po, BulkDeleteLinkedDocModal.vue) non dice che cosa si elimina né che cosa si perde. Nessun riepilogo di quante azioni sono riuscite. Un'azione su più persone (messaggi, campagne) che parte senza anteprima.
+**Errori da evitare.** Le caselle di riga non avevano un nome ed erano di 14 px (studio UX, ottobre 2026; desktop-persone#5, gravità 3): il nome è stato aggiunto, ma restavano caselle da 14 px dentro righe cliccabili, 292 bersagli troppo piccoli su 10 schermate (resta.json; corretto il 12/10/2026). «Vuoi davvero eliminare {0} elementi?» (it.po, BulkDeleteLinkedDocModal.vue) non dice che cosa si elimina né che cosa si perde. Nessun riepilogo di quante azioni sono riuscite. Un'azione su più persone (messaggi, campagne) che parte senza anteprima.
 
 **Fonti.**
 
