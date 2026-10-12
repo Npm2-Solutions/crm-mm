@@ -6,11 +6,13 @@ import {
   chiaveDelServer,
   cosaSaFare,
   daChiedere,
+  entroIlTempo,
   esadecimale,
   memoriaDi,
   memorieVecchie,
   percorsoDellApp,
   statoDelDispositivo,
+  tieneLAbbonamento,
 } from '@/utils/spinta'
 
 const PRONTO = {
@@ -115,6 +117,89 @@ describe('the memo of whose the browser is', () => {
       ]),
     ).toEqual(['crm-spinta:anna@centro.it', 'crm-spinta:bruno@centro.it'])
     expect(memorieVecchie(null)).toEqual([])
+  })
+})
+
+describe('tieneLAbbonamento', () => {
+  const ANNA = 'anna@centro.it'
+  const sua = memoriaDi(ANNA, 'f1')
+
+  it('keeps it for whoever signs in next once the server forgot it in time', () => {
+    expect(
+      tieneLAbbonamento({
+        memoria: sua,
+        utente: ANNA,
+        impronta: 'f1',
+        dimenticato: true,
+      }),
+    ).toBe(true)
+    // nobody remembered (the opening had not synced yet): the server forgot
+    // what was the session's, and nobody else had it
+    expect(
+      tieneLAbbonamento({
+        memoria: null,
+        utente: ANNA,
+        impronta: 'f1',
+        dimenticato: true,
+      }),
+    ).toBe(true)
+  })
+
+  it('lets it go when the server did not answer in time', () => {
+    expect(
+      tieneLAbbonamento({
+        memoria: sua,
+        utente: ANNA,
+        impronta: 'f1',
+        dimenticato: false,
+      }),
+    ).toBe(false)
+  })
+
+  it('lets it go when it was somebody else’s, which the server does not forget', () => {
+    expect(
+      tieneLAbbonamento({
+        memoria: memoriaDi('bruno@centro.it', 'f1'),
+        utente: ANNA,
+        impronta: 'f1',
+        dimenticato: true,
+      }),
+    ).toBe(false)
+    expect(
+      tieneLAbbonamento({
+        memoria: memoriaDi(ANNA, 'f0'),
+        utente: ANNA,
+        impronta: 'f1',
+        dimenticato: true,
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('entroIlTempo', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('says whether a promise was kept in time', async () => {
+    await expect(entroIlTempo(Promise.resolve('sì'), 2000)).resolves.toBe(true)
+    await expect(
+      entroIlTempo(Promise.reject(new Error('no')), 2000),
+    ).resolves.toBe(false)
+    // a server that never answers is not waited for past its time
+    const attesa = entroIlTempo(new Promise(() => {}), 2000)
+    await vi.advanceTimersByTimeAsync(1999)
+    let detto = null
+    attesa.then((esito) => (detto = esito))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(detto).toBeNull()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(detto).toBe(false)
+    // and an answer after its time changes nothing
+    let rispondi
+    const tardi = entroIlTempo(new Promise((r) => (rispondi = r)), 100)
+    await vi.advanceTimersByTimeAsync(100)
+    rispondi()
+    await expect(tardi).resolves.toBe(false)
   })
 })
 

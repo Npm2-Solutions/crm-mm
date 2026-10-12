@@ -86,6 +86,40 @@ export function memorieVecchie(chiavi) {
   )
 }
 
+/**
+ * Whether this browser keeps its subscription at a logout: only when the
+ * server forgot it for the session in time (`dimenticato`), and the memo does
+ * not say it was somebody else's - the server forgets only the session's own,
+ * and another's would go on arriving. Kept, the device waits for whoever signs
+ * in next, who is handed it at their first opening; let go, nothing reaches it.
+ */
+export function tieneLAbbonamento({ memoria, utente, impronta, dimenticato }) {
+  return (
+    Boolean(dimenticato) && (!memoria || !daChiedere(memoria, utente, impronta))
+  )
+}
+
+/**
+ * Whether `promessa` is kept within `millisecondi`: true when it resolves in
+ * time, false when it fails or takes longer - then it is no longer waited
+ * for, and goes on by itself.
+ */
+export function entroIlTempo(promessa, millisecondi) {
+  return new Promise((risolvi) => {
+    const scaduto = setTimeout(() => risolvi(false), millisecondi)
+    Promise.resolve(promessa).then(
+      () => {
+        clearTimeout(scaduto)
+        risolvi(true)
+      },
+      () => {
+        clearTimeout(scaduto)
+        risolvi(false)
+      },
+    )
+  })
+}
+
 /** A digest's bytes as the server writes them: hexadecimal, lower case. */
 export function esadecimale(buffer) {
   return Array.from(new Uint8Array(buffer), (byte) =>

@@ -1,9 +1,9 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // Notifications on a browser that colleagues share (composables/spinta.js): the
-// device follows whoever signs in, against a server that keeps one row per
-// subscription as crm/notifiche/spinta.py does.
+// device follows whoever signs in, and a logout lets it go, against a server
+// that keeps one row per subscription as crm/notifiche/spinta.py does.
 import { createHash } from 'node:crypto'
-import { attiva, sincronizza } from '@/composables/spinta'
+import { attiva, lascia, sincronizza } from '@/composables/spinta'
 
 // the key a browser subscribes with (any P-256 point the browser takes)
 const CHIAVE =
@@ -12,14 +12,19 @@ const ANNA = 'anna@centro.it'
 const BRUNO = 'bruno@centro.it'
 
 const sessione = vi.hoisted(() => ({ user: null }))
-// the server: whose each subscription is, by its endpoint's fingerprint, and
-// what it was asked
-const server = vi.hoisted(() => ({ righe: new Map(), chiesto: [] }))
+// the server: whose each subscription is, by its endpoint's fingerprint, what
+// it was asked, and whether it refuses (down, the session already gone)
+const server = vi.hoisted(() => ({
+  righe: new Map(),
+  chiesto: [],
+  rifiuta: false,
+}))
 
 vi.mock('@/stores/session', () => ({ sessionStore: () => sessione }))
 vi.mock('frappe-ui', () => ({
   call: async (metodo, argomenti = {}) => {
     server.chiesto.push(metodo)
+    if (server.rifiuta) throw new Error('502 Bad Gateway')
     const dispositivi = () =>
       [...server.righe]
         .filter(([, utente]) => utente === sessione.user)
@@ -100,6 +105,7 @@ afterAll(() => {
 beforeEach(() => {
   localStorage.clear()
   server.righe.clear()
+  server.rifiuta = false
   browser.abbonamento = null
 })
 
@@ -157,5 +163,52 @@ describe('the device follows whoever signs in', () => {
     await sincronizza()
     expect(server.chiesto).toEqual([])
     expect(browser.abbonamento).toBeNull()
+  })
+})
+
+describe('a logout lets the device go', () => {
+  it('the server forgets it, and whoever signs in next is handed it', async () => {
+    entra(ANNA)
+    await attiva(CHIAVE)
+    const prima = browser.abbonamento
+    await lascia()
+    // nobody's: nothing reaches the device
+    expect(diChi()).toBeNull()
+    expect(localStorage.getItem('crm-spinta')).toBeNull()
+    // the browser kept its subscription, for Bruno's first opening
+    expect(browser.abbonamento).toBe(prima)
+    entra(BRUNO)
+    await sincronizza()
+    expect(diChi()).toBe(BRUNO)
+  })
+
+  it('the browser lets go of it when the server does not forget it', async () => {
+    entra(ANNA)
+    await attiva(CHIAVE)
+    const segno = impronta(browser.abbonamento.endpoint)
+    server.rifiuta = true
+    await lascia()
+    // nothing reaches the device: its push service now says it is gone, and
+    // the server forgets the row at its next notification
+    expect(browser.abbonamento).toBeNull()
+    expect(server.righe.get(segno)).toBe(ANNA)
+    expect(localStorage.getItem('crm-spinta')).toBeNull()
+  })
+
+  it('the browser lets go of somebody else’s, which the server does not forget for this session', async () => {
+    // Anna's session ran out without a logout; Bruno signs in and is out again
+    // before his first opening had synced the device
+    entra(ANNA)
+    await attiva(CHIAVE)
+    entra(BRUNO)
+    await lascia()
+    expect(browser.abbonamento).toBeNull()
+    expect(localStorage.getItem('crm-spinta')).toBeNull()
+  })
+
+  it('asks nothing where the browser has no subscription', async () => {
+    entra(ANNA)
+    await lascia()
+    expect(server.chiesto).toEqual([])
   })
 })

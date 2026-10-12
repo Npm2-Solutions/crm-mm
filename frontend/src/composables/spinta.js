@@ -3,8 +3,9 @@
 
 // Notifications on this phone or computer, the browser's side
 // (crm/notifiche/spinta.py): the service worker over /crm, the permission, the
-// subscription the server keeps. Imported by the notifications' settings and,
-// once the app is idle, where the person had turned them on already.
+// subscription the server keeps. Imported by the notifications' settings, once
+// the app is idle where the person had turned them on already, and at a
+// logout, to let the device go (stores/session.js, utils/esci.js).
 
 import {
   AMBITO,
@@ -13,10 +14,12 @@ import {
   chiaveDelServer,
   cosaSaFare,
   daChiedere,
+  entroIlTempo,
   esadecimale,
   memoriaDi,
   memorieVecchie,
   statoDelDispositivo,
+  tieneLAbbonamento,
 } from '@/utils/spinta'
 import { questoDispositivo } from '@/utils/installa'
 import { sessionStore } from '@/stores/session'
@@ -26,6 +29,9 @@ import { computed, ref } from 'vue'
 const capacita = ref(cosaSaFare(window, questoDispositivo()))
 // the subscription of this browser, if it has one: its address's fingerprint
 const impronta = ref('')
+
+/** How long a logout waits for the server, and for the browser, to let go. */
+const ATTESA = 2000
 
 export const statoQui = computed(() => statoDelDispositivo(capacita.value))
 
@@ -165,4 +171,41 @@ export async function sincronizza() {
   if (stato.devices.some((d) => d.endpoint_hash === impronta.value))
     ricorda(impronta.value)
   else await attiva(stato.public_key)
+}
+
+/**
+ * At a logout, while the session is still there: this device stops receiving
+ * the session's notifications. The server forgets it for the session, and the
+ * browser keeps its subscription, so whoever signs in here next is handed it
+ * at their first opening. Where the server does not answer within two
+ * seconds, or the memo says somebody else was the last to sync it (what the
+ * server forgot for this session was then not it), the browser lets go of it
+ * instead: nothing reaches the device, its push service answers that it is
+ * gone, and the server forgets it at its next notification. The memo goes
+ * either way. Never throws, and never waits long: the logout goes on.
+ */
+export async function lascia() {
+  const memoria = laMemoria()
+  dimentica()
+  const abbonamento = await abbonamentoQui().catch(() => null)
+  if (!abbonamento) return
+  const segno = impronta.value
+  const dimenticato = await entroIlTempo(
+    call('crm.notifiche.spinta.unsubscribe', { endpoint_hash: segno }),
+    ATTESA,
+  )
+  if (
+    tieneLAbbonamento({
+      memoria,
+      utente: sessionStore().user,
+      impronta: segno,
+      dimenticato,
+    })
+  )
+    return
+  await entroIlTempo(
+    Promise.resolve().then(() => abbonamento.unsubscribe()),
+    ATTESA,
+  )
+  impronta.value = ''
 }
