@@ -51040,3 +51040,10 @@ msgstr "Gli appuntamenti che lo usano tengono giorno e ora. Per non prenotarlo p
 #: frontend/src/components/Telephony/TelnyxCallUI.vue
 msgid "Show the call"
 msgstr "Mostra la chiamata"
+#: crm/notifiche/regole.py
+msgid "An appointment today has no outcome: did the person come?"
+msgstr "Un appuntamento di oggi è senza esito: la persona è venuta?"
+
+#: crm/notifiche/regole.py
+msgid "An appointment yesterday has no outcome: did the person come?"
+msgstr "Un appuntamento di ieri è senza esito: la persona è venuta?"

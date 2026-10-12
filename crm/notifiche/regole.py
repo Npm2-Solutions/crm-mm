@@ -65,6 +65,9 @@ EMAIL_MOLTI = "You received {1} emails from {0}"
 EMAIL_TRATTATIVA = "You received an email on the deal {0}"
 EMAIL_TRATTATIVA_MOLTI = "You received {1} emails on the deal {0}"
 
+#: The end of the day's question: one appointment has a sentence of its own.
+ESITO_OGGI = "An appointment today has no outcome: did the person come?"
+ESITO_IERI = "An appointment yesterday has no outcome: did the person come?"
 ESITI_OGGI = "{0} appointments today have no outcome: did they come?"
 ESITI_IERI = "{0} appointments yesterday have no outcome: did they come?"
 
@@ -152,6 +155,8 @@ FRASI = (
 	EMAIL_MOLTI,
 	EMAIL_TRATTATIVA,
 	EMAIL_TRATTATIVA_MOLTI,
+	ESITO_OGGI,
+	ESITO_IERI,
 	ESITI_OGGI,
 	ESITI_IERI,
 	DOMANDA_AREA,

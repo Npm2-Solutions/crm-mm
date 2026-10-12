@@ -16,6 +16,7 @@ import frappe
 from frappe.utils import get_datetime
 
 from crm.api import oggi
+from crm.notifiche import regole as N
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
 from crm.scheduling import esiti
@@ -219,11 +220,16 @@ class LaFatturaELaGiornata(OggiCase):
 		self.assertEqual(self.riga(accolto, self.mario).status, "Attended")
 		self.assertEqual(frappe.db.get_value("CRM Appointment", accolto.name, "status"), "Completed")
 		avvisi = frappe.get_all(
-			"CRM Notification", filters={"type": "Agenda", "to_user": DESK}, fields=["message"]
+			"CRM Notification",
+			filters={"type": "Agenda", "to_user": DESK},
+			fields=["message", "sentence", "sentence_args"],
 		)
 		self.assertEqual(len(avvisi), 1)
 		self.assertIn(dimenticato.name, avvisi[0].message)
 		self.assertNotIn(accolto.name, avvisi[0].message)
+		# one forgotten appointment: the question about one, never «1 appuntamenti»
+		self.assertEqual(avvisi[0].sentence, N.ESITO_OGGI)
+		self.assertEqual(avvisi[0].sentence_args, "[]")
 
 	def test_una_giornata_che_finisce_tardi_si_chiude_dopo_mezzanotte(self):
 		tardi = self.appuntamento(self.ieri(23), self.mario)

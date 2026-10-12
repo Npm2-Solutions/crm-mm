@@ -569,7 +569,7 @@ Questa famiglia raccoglie le regole sulle parole di DottorCloud: l'italiano dei 
 
 **Come si verifica.** Script sul catalogo: msgid con un segnaposto seguito da un sostantivo plurale e senza variante al singolare (un'euristica grossolana ne trova alcune centinaia, molte false, protette dal chiamante: vanno viste una per una); test unitari con n = 0, 1, 2 per ogni helper che compone un conteggio (frontend/tests/unit/quando.test.js è il modello).
 
-**Errori da evitare.** Studio UX (ottobre 2026): «1 giorni», «1 anni», «i suoi 1 clic», «in 1 weeks» (corretti); «Abbonamenti 1» sopra tre righe. Ancora nel codice: ESITI_OGGI ed ESITI_IERI di crm/notifiche/regole.py sono chiamati da crm/scheduling/esiti.py con il numero degli appuntamenti senza esito anche quando è 1, e la notifica dice «1 appuntamenti di oggi sono senza esito: le persone sono venute?».
+**Errori da evitare.** Studio UX (ottobre 2026): «1 giorni», «1 anni», «i suoi 1 clic», «in 1 weeks» (corretti); «Abbonamenti 1» sopra tre righe. Corretto il 12/10/2026: ESITI_OGGI ed ESITI_IERI di crm/notifiche/regole.py erano chiamati da crm/scheduling/esiti.py con il numero degli appuntamenti senza esito anche quando era 1, e la notifica diceva «1 appuntamenti di oggi sono senza esito: le persone sono venute?»; ora un appuntamento solo ha la sua frase (ESITO_OGGI, ESITO_IERI).
 
 **Fonti.**
 
