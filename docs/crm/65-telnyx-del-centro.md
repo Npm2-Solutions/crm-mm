@@ -101,7 +101,11 @@
   usava la ricerca di quella di Twilio, con il numero di Twilio, e non nominava
   mai nessuno. Sotto il nome c'è il numero della chiamata, e la finestra ne tiene
   una alla volta come quella di Twilio: chi chiama mentre una chiamata sta
-  partendo viene lasciato agli altri telefoni (`finestraOccupata`).
+  partendo viene lasciato agli altri telefoni (`finestraOccupata`). Una seconda
+  chiamata mentre la prima squilla viene chiusa (occupato), non messa in attesa
+  come in quella di Twilio (doc 52): l'SDK di Telnyx suonerebbe una sola
+  suoneria per tutte (`_ringtone`), ma DottorCloud non gliene dà una
+  (`ringtoneFile`), e chiudere la seconda non ferma nulla.
 - **Le registrazioni**: Telnyx dà un link che scade in dieci minuti, quindi un
   lavoro le scarica subito in un file privato del registro della chiamata
   (`registrazioni.py`); il lettore le serve da lì, a pezzi.

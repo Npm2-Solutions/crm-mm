@@ -12,6 +12,7 @@ import {
   finestraOccupata,
   nomeDelPaese,
   nomeDiChiChiama,
+  nuovaChiamata,
   numeroIniziale,
   paesi,
   paesiDaAggiungere,
@@ -254,6 +255,37 @@ describe('one call at a time', () => {
     // Telnyx tells of the ringing call again: still the one shown
     expect(finestraOccupata(SQUILLA, '', SQUILLA)).toBe(false)
     expect(finestraOccupata(SQUILLA, 'initiating', SQUILLA)).toBe(false)
+  })
+})
+
+describe('a call coming in to Twilio’s window', () => {
+  const PRIMA = { id: 'la prima' }
+  const SECONDA = { id: 'la seconda' }
+
+  it('is shown where the window is free', () => {
+    expect(nuovaChiamata(null, '', SECONDA)).toBe('mostra')
+    expect(nuovaChiamata(null, '', SECONDA, false)).toBe('mostra')
+  })
+
+  it('waits, ringing, while the call shown still rings here', () => {
+    // ignoring it would stop the one tone the browser plays for both
+    expect(nuovaChiamata(PRIMA, '', SECONDA, true)).toBe('aspetta')
+  })
+
+  it('is ignored when the call shown is on, or going out', () => {
+    // nothing else rings here: ignoring it silences only its own tone
+    expect(nuovaChiamata(PRIMA, '', SECONDA, false)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'ringing', SECONDA, false)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'in-progress', SECONDA, false)).toBe('ignora')
+  })
+
+  it('is ignored while a call is being placed', () => {
+    expect(nuovaChiamata(null, 'initiating', SECONDA)).toBe('ignora')
+    expect(nuovaChiamata(PRIMA, 'initiating', SECONDA, true)).toBe('ignora')
+  })
+
+  it('the call shown, told again, is still shown', () => {
+    expect(nuovaChiamata(PRIMA, '', PRIMA, true)).toBe('mostra')
   })
 })
 

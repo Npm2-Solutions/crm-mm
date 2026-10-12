@@ -336,6 +336,7 @@ import {
   bloccataInItalia,
   finestraOccupata,
   incertaInItalia,
+  nuovaChiamata,
   numeroIniziale,
   siSceglie,
 } from '@/utils/chiamate'
@@ -357,6 +358,9 @@ let _call = null
 // each call going out is an attempt: one cancelled, or overtaken by another,
 // while Twilio was still connecting it is hung up as soon as it exists
 let tentativo = 0
+// the calls ringing here behind the one the window shows, first come first:
+// ignoring any of them stops the one tone Twilio plays for all
+let inAttesa = []
 
 let showCallPopup = ref(false)
 let showSmallCallWindow = ref(false)
@@ -562,11 +566,23 @@ function toggleMute() {
 }
 
 function handleIncomingCall(call) {
-  // one call at a time: another one ringing, or a call being placed, keeps the
-  // window, and this one rings on the centre's other phones - as the SDK leaves
-  // an invite while a call is on
-  if (finestraOccupata(_call, callStatus.value, call)) {
+  // one call at a time: the window keeps the call it shows, or the one being
+  // placed
+  const decisione = nuovaChiamata(
+    _call,
+    callStatus.value,
+    call,
+    _call?.status() === 'pending',
+  )
+  // a call on, or going out: this one rings on the centre's other phones - as
+  // the SDK leaves an invite while a call is on
+  if (decisione === 'ignora') {
     call.ignore()
+    return
+  }
+  // the call shown still rings: this one waits behind it, ringing too
+  if (decisione === 'aspetta') {
+    aspetta(call)
     return
   }
   log.value = `Incoming call from ${call.parameters.From}`
@@ -578,26 +594,45 @@ function handleIncomingCall(call) {
   _call = call
 
   // add event listener to call object
-  call.on('cancel', handleDisconnectedIncomingCall)
-  call.on('disconnect', handleDisconnectedIncomingCall)
-  call.on('reject', handleDisconnectedIncomingCall)
+  const finita = () => handleDisconnectedIncomingCall(call)
+  call.on('cancel', finita)
+  call.on('disconnect', finita)
+  call.on('reject', finita)
+}
+
+// a call waiting leaves the line when it stops ringing here: its caller hung
+// up, or a colleague answered it
+function aspetta(chiamata) {
+  inAttesa.push(chiamata)
+  const togli = () => {
+    inAttesa = inAttesa.filter((c) => c !== chiamata)
+  }
+  chiamata.on('cancel', togli)
+  chiamata.on('reject', togli)
+  chiamata.on('disconnect', togli)
 }
 
 async function acceptIncomingCall() {
   log.value = 'Accepted incoming call.'
   onCall.value = true
+  // the calls waiting ring on the centre's other phones: here the tone stops,
+  // as the SDK stops it at the answer
+  const lasciate = inAttesa
+  inAttesa = []
+  for (const chiamata of lasciate) chiamata.ignore()
   await _call.accept()
   counterUp.value.start()
 }
 
 function rejectIncomingCall() {
-  _call.reject()
   log.value = 'Rejected incoming call'
   showCallPopup.value = false
   showSmallCallWindow.value = false
 
   callStatus.value = ''
   muted.value = false
+  // its 'reject' empties the window, and gives it to a call waiting
+  _call.reject()
 }
 
 function hangUpCall() {
@@ -615,7 +650,9 @@ function hangUpCall() {
   counterUp.value.stop()
 }
 
-function handleDisconnectedIncomingCall() {
+function handleDisconnectedIncomingCall(chiamata) {
+  // a call the window no longer shows closes nothing
+  if (chiamata !== _call) return
   log.value = `Call ended from handle disconnected Incoming call.`
   showCallPopup.value = false
   showSmallCallWindow.value = false
@@ -624,6 +661,11 @@ function handleDisconnectedIncomingCall() {
   onCall.value = false
   aChiamataFinita()
   counterUp.value.stop()
+  // ended unanswered: the first call still ringing behind it is shown, the one
+  // whose tone sounds
+  inAttesa = inAttesa.filter((c) => c.status() === 'pending')
+  const prossima = inAttesa.shift()
+  if (prossima) handleIncomingCall(prossima)
 }
 
 async function makeOutgoingCall(number) {

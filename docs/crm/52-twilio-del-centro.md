@@ -202,13 +202,22 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   (anche quando chiamava da un altro suo numero) e, per un numero di nessuno, le
   cifre senza il prefisso del paese («612345678» per un cellulare francese).
 - **Una chiamata alla volta (corretto il 12/10/2026).** La finestra ne tiene una:
-  una chiamata che arriva mentre un'altra squilla o sta partendo squilla sugli
+  una chiamata che arriva mentre un'altra è in corso o sta partendo squilla sugli
   altri telefoni del centro, e una chiamata in uscita non parte se, mentre il
   server la controllava, ne è arrivata una (`finestraOccupata` in
   `utils/chiamate.js`, provato; anche in quella di Telnyx). Prima la chiamata
   arrivata prendeva la finestra e il suo nome, quella in uscita li riprendeva, e
   la finestra perdeva la chiamata che aveva mostrato: quando chi chiamava
-  riattaccava, si chiudeva sulla chiamata in corso.
+  riattaccava, si chiudeva sulla chiamata in corso. Una chiamata che arriva
+  mentre quella della finestra squilla ancora aspetta dietro di lei, e squilla
+  anche lei (`nuovaChiamata`, provato): Twilio suona una sola suoneria per tutte
+  le chiamate che squillano nel browser, e lasciarne una agli altri telefoni
+  (`ignore()`) la ferma per tutte, così la prima restava nella finestra senza
+  suono. Se la prima viene presa, quelle in attesa vanno agli altri telefoni; se
+  finisce senza risposta (chi chiama riattacca, la prende un collega, la si
+  rifiuta), la finestra mostra la prima in attesa che squilla ancora, quella che
+  si sente. Nella finestra di Telnyx l'SDK non suona nessuna suoneria
+  (DottorCloud non gliene dà una), e la seconda chiamata viene chiusa come prima.
 - **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
   Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
   responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un

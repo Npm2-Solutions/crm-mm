@@ -131,6 +131,23 @@ export function finestraOccupata(attuale, stato, nuova = null) {
 }
 
 /**
+ * What Twilio's window does with a call coming in: 'mostra' where the window is
+ * free; 'aspetta' while the call it shows still rings in this browser
+ * (`squilla`: that call's `status() === 'pending'`) and none is being placed;
+ * 'ignora' else - a call on, or one going out - and it rings on the centre's
+ * other phones. Twilio plays one looping tone for every call ringing in the
+ * browser, and ignoring any of them stops it: a second call ignored while the
+ * first rang left the first in the window with no sound. A call that waits
+ * rings on, is shown when the one before it ends unanswered, and is ignored
+ * once that one is answered (the tone stopped then).
+ */
+export function nuovaChiamata(attuale, stato, nuova, squilla = false) {
+  if (!finestraOccupata(attuale, stato, nuova)) return 'mostra'
+  if (attuale && squilla && stato !== 'initiating') return 'aspetta'
+  return 'ignora'
+}
+
+/**
  * Who calls, asked one number at a time, for the call's window (Twilio's and
  * Telnyx's): `chiedi(numero)` asks the server, `aggiorna(contatto, cercando)`
  * tells the window. What it gives back is called with the call's number each
