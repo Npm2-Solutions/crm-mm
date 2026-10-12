@@ -51063,3 +51063,31 @@ msgstr "{0} ha un prezzo suo nel listino {1}: togli prima quel prezzo, oppure sp
 #: crm/fcrm/doctype/crm_resource/crm_resource.py
 msgid "{0} is matched to the booking platform {1}: take the match away there first, or switch it off to stop booking it"
 msgstr "{0} è abbinato alla piattaforma di prenotazione {1}: togli prima l'abbinamento, oppure spegnilo per non prenotarlo più"
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "New service level"
+msgstr "Nuovo livello di servizio"
+
+#: frontend/src/components/Settings/AssignmentRules/AssignmentRulesList.vue
+msgid "A rule gives each new person or deal to whoever should follow it: make one with «New rule»."
+msgstr "Una regola dà ogni persona o trattativa nuova a chi deve seguirla: creane una con «Nuova regola»."
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "A service level says how soon a request is answered: make one with «New service level»."
+msgstr "Un livello di servizio dice entro quando si risponde a una richiesta: creane uno con «Nuovo livello di servizio»."
+
+#: frontend/src/components/Settings/Pipelines/PipelineList.vue
+msgid "A pipeline lines up the stages a deal goes through: make one with «New Pipeline»."
+msgstr "Una pipeline mette in fila le fasi di una trattativa: creane una con «Nuova pipeline»."
+
+#: frontend/src/components/Settings/Hierarchy/Hierarchy.vue
+msgid "Who sees which people and deals follows the hierarchy: add the first user with «Add User»."
+msgstr "Chi vede quali persone e trattative segue la gerarchia: aggiungi il primo utente con «Aggiungi un utente»."
+
+#: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue
+msgid "A template is an email written once and sent again and again: make one with «New template»."
+msgstr "Un modello è un'email scritta una volta e mandata più volte: creane uno con «Nuovo modello»."
+
+#: frontend/src/components/Settings/Users.vue
+msgid "Whoever works with you gets their access and their levels here: add them with «Add User»."
+msgstr "Chi lavora con te ha qui il suo accesso e i suoi livelli: aggiungilo con «Aggiungi un utente»."

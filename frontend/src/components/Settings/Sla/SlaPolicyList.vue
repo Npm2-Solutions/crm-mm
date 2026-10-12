@@ -12,7 +12,7 @@
   >
     <template #header-actions>
       <Button
-        :label="__('New')"
+        :label="__('New service level')"
         variant="solid"
         icon-left="lucide-plus"
         @click="createNewSlaPolicy"
@@ -59,7 +59,11 @@
             !slaPolicyListResource.list.data?.length
           "
           title="No SLA Policies Found"
-          description="Add one to get started."
+          :description="
+            __(
+              'A service level says how soon a request is answered: make one with «New service level».',
+            )
+          "
           :icon="ShieldCheck"
         />
         <div v-else class="-ml-2">

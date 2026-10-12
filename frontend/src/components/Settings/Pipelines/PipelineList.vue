@@ -8,7 +8,7 @@
   >
     <template #header-actions>
       <Button
-        :label="__('New')"
+        :label="__('New Pipeline')"
         variant="solid"
         icon-left="lucide-plus"
         @click="openNewPipelineDialog"
@@ -26,7 +26,11 @@
           v-if="!pipelines.data?.length"
           name="Pipeline"
           :title="__('No pipelines yet')"
-          :description="__('Add one to get started.')"
+          :description="
+            __(
+              'A pipeline lines up the stages a deal goes through: make one with «New Pipeline».',
+            )
+          "
           :icon="KanbanIcon"
         />
         <template v-else>

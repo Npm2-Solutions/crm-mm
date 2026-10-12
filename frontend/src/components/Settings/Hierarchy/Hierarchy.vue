@@ -116,7 +116,9 @@
           :description="
             search || roleFilter !== 'All'
               ? __('No users match the current filter.')
-              : __('Add one to get started.')
+              : __(
+                  'Who sees which people and deals follows the hierarchy: add the first user with «Add User».',
+                )
           "
           icon="users"
         />

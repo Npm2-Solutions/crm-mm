@@ -24,7 +24,7 @@
         class="flex items-start space-x-2 w-3/12 justify-end impostazioni-strette:w-auto impostazioni-strette:justify-start"
       >
         <Button
-          :label="__('New')"
+          :label="__('New rule')"
           icon-left="lucide-plus"
           variant="solid"
           @click="goToNew()"

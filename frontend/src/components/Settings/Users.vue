@@ -41,7 +41,7 @@
             },
           ]"
           :button="{
-            label: __('New'),
+            label: __('Add User'),
             iconLeft: 'plus',
             variant: 'solid',
           }"
@@ -64,7 +64,11 @@
     <EmptyState
       v-if="!users.loading && users.data?.crmUsers?.length == 1"
       :title="__('No other users yet')"
-      :description="__('Add one to get started.')"
+      :description="
+        __(
+          'Whoever works with you gets their access and their levels here: add them with «Add User».',
+        )
+      "
       icon="user"
     />
 

@@ -27,7 +27,7 @@
         class="flex items-start space-x-2 w-3/12 justify-end impostazioni-strette:w-auto impostazioni-strette:justify-start"
       >
         <Button
-          :label="__('New')"
+          :label="__('New template')"
           icon-left="lucide-plus"
           variant="solid"
           @click="emit('updateStep', 'new-template')"
@@ -52,7 +52,11 @@
     <EmptyState
       v-else-if="!templates.loading && !templates.data?.length"
       :title="__('No email templates yet')"
-      :description="__('Add one to get started.')"
+      :description="
+        __(
+          'A template is an email written once and sent again and again: make one with «New template».',
+        )
+      "
       :icon="EmailTemplateIcon"
     />
 
