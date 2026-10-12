@@ -68,8 +68,10 @@
             :options="moreOptions"
             align="end"
           >
+            <!-- «Options», not «More»: on a phone «More» is the bar's own
+                 place (/altro), and two of them read as the same door -->
             <template #default>
-              <Button :aria-label="__('More')">
+              <Button :aria-label="__('Options')">
                 <template #icon>
                   <LucideEllipsis class="size-4" />
                 </template>

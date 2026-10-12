@@ -1020,7 +1020,7 @@ Questa famiglia raccoglie tutti i criteri di successo A e AA dei principi 2 (Uti
 
 **Come si verifica.** Da tastiera ogni «⋯»: apertura, frecce, Esc, ritorno del focus; nome del pulsante annunciato.
 
-**Errori da evitare.** Tre «Altro» con significati diversi sulla stessa schermata del telefono; il «…» del cruscotto si chiama «Altro» come la voce della barra in basso (studio UX, ottobre 2026).
+**Errori da evitare.** Tre «Altro» con significati diversi sulla stessa schermata del telefono; il «…» del cruscotto si chiamava «Altro» come la voce della barra in basso (studio UX, ottobre 2026; corretto il 12/10/2026: si chiama «Opzioni»).
 
 **Vedi anche.** [ARIA-MENU](02-wcag-percepibile-e-robusto.md#aria-menu--menu-solo-per-azioni-aperti-da-un-pulsante-che-dice-se-è-aperto), [MOB-MENU-FOGLIO](05-telefono-e-tocco.md#mob-menu-foglio--menu-e-scelte-un-foglio-di-righe-da-48)
 
