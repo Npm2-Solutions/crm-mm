@@ -13,17 +13,43 @@ The notification system processes events that are either:
 Global notifications are configured in CRM Settings under the Calendar tab and are applied
 to events that don't have custom notifications set. This ensures all events can receive
 reminders even if users don't configure them individually.
+
+In DottorCloud (docs/crm/43, 56):
+
+- The round looks at every event whose reminder can be due, whoever's it is: it runs
+  as the scheduler's Administrator, and it looked only at the events of the user it
+  ran as, so a professional never had the reminders of their own events nor of their
+  appointments' calendar copies. It reads only the events whose reminder can fall in
+  its window, and no event at all while nothing has a reminder of its unit.
+- A reminder goes to whom its event is for: its owner and its participants who are
+  enabled System Users (`_destinatari`), each in their own room on the screen; by
+  email Administrator is left out.
+- An email leaves once. A round runs every four minutes ("minutes", "hours"), every
+  hour ("hours"), every day, every week, and a reminder is due at every round inside
+  its window: each email is written in the register (`CRM Event Reminder`) before it
+  leaves, and one written there does not leave again. The screen's needs no register:
+  the browser shows an event's reminder once.
+- It says the event's title and when, never the description, which on an
+  appointment's calendar copy is its notes. By email such a copy is only «an
+  appointment»: its title is the service and the people.
 """
 
+import hashlib
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import add_to_date, get_time, now_datetime
+from frappe.query_builder.functions import Count, IfNull, Max
+from frappe.utils import add_to_date, cint, get_time, now_datetime
 
 from crm.marchio import con_nome
 from crm.posta.aspetto import pulsante
 
+#: The register of the reminders that left by email, each written before it leaves.
+REGISTRO = "CRM Event Reminder"
+#: The way of a reminder the register keeps: the screen's needs none.
+EMAIL = "Email"
 #: An appointment's calendar copy (`sync_event`): its title is the service and the
 #: people, its description the appointment's notes.
 APPUNTAMENTO = "CRM Appointment"
@@ -52,7 +78,8 @@ def trigger_weekly_event_notifications():
 
 def _process_event_notifications_by_interval(interval):
 	"""
-	Process event notifications for a specific interval.
+	Process event notifications for a specific interval: every event's, each to whom
+	its event is for.
 
 	Args:
 		interval (str): The interval type ('minutes', 'hours', 'days', 'weeks')
@@ -62,52 +89,16 @@ def _process_event_notifications_by_interval(interval):
 		return
 
 	current_time = now_datetime()
-	current_user = frappe.session.user
-	all_events_data = frappe.db.sql(
-		"""
-		SELECT
-			e.name as event_name,
-			e.subject,
-			e.starts_on,
-			e.ends_on,
-			e.owner,
-			e.all_day as all_day_event,
-			e.reference_doctype,
-			en.type as notification_type,
-			en.before as before_value,
-			en.time as time_of_day,
-			en.interval as notification_interval,
-			ep.email as participant_email,
-			ep_all.participant_emails_csv,
-			CASE WHEN en.parent IS NULL THEN 0 ELSE 1 END as has_custom_notifications
-		FROM `tabEvent` e
-		LEFT JOIN `tabEvent Notifications` en ON e.name = en.parent AND en.interval = %s
-		LEFT JOIN `tabEvent Participants` ep ON e.name = ep.parent AND ep.email = %s
-		LEFT JOIN (
-			SELECT parent, GROUP_CONCAT(email) AS participant_emails_csv
-			FROM `tabEvent Participants`
-			GROUP BY parent
-		) AS ep_all ON ep_all.parent = e.name
-		WHERE (e.starts_on >= %s OR (%s >= e.starts_on AND %s < e.ends_on))
-		AND (e.owner = %s OR ep.email = %s)
-		AND e.status != 'Cancelled'
-		ORDER BY e.starts_on, e.name
-	""",
-		(interval, current_user, current_time, current_time, current_time, current_user, current_user),
-		as_dict=True,
-	)
+	del_centro = _promemoria_del_centro(interval)
+	anticipo = _anticipo_piu_lungo(interval, del_centro)
+	if anticipo is None:
+		# nobody set a reminder of this unit: no event to read
+		return
 
-	for event_data in all_events_data:
-		participant_emails_csv = event_data.pop("participant_emails_csv", None)
-		event_data["event_participants"] = _split_participant_emails(participant_emails_csv)
-
-	notifications = _process_unified_event_data(all_events_data, interval)
-
-	for notification in notifications:
+	for notification in _promemoria_degli_eventi(interval, current_time, anticipo, del_centro):
 		try:
 			event_start = notification.get("starts_on")
-			event_end = notification.get("ends_on")
-			before_value = notification.get("before_value", 1)
+			before_value = cint(notification.get("before_value"))
 
 			trigger_datetime = _calculate_trigger_datetime(
 				event_start,
@@ -117,20 +108,9 @@ def _process_event_notifications_by_interval(interval):
 				notification.get("time_of_day"),
 			)
 
-			event_is_in_progress = event_start <= current_time < event_end
-			trigger_time_passed = current_time > trigger_datetime
-
-			if event_is_in_progress and trigger_time_passed:
-				trigger_window_start = trigger_datetime
-				trigger_window_end = event_end
-			else:
-				window_duration = _get_trigger_window_duration(interval)
-				trigger_window_start = add_to_date(
-					trigger_datetime, **{k: -v for k, v in window_duration.items()}
-				)
-				trigger_window_end = add_to_date(trigger_datetime, **window_duration)
-
-			if not (trigger_window_start <= current_time <= trigger_window_end):
+			if not e_il_momento(
+				current_time, trigger_datetime, event_start, notification.get("ends_on"), interval
+			):
 				continue
 
 			if notification.get("notification_type") == "Email":
@@ -145,89 +125,143 @@ def _process_event_notifications_by_interval(interval):
 			continue
 
 
-def _process_unified_event_data(all_events_data, interval):
-	"""
-	Process unified event data that includes both events with and without custom notifications.
-
-	Args:
-		all_events_data (list): List of event data from the unified query
-		interval (str): The interval type ('minutes', 'hours', 'days', 'weeks')
-
-	Returns:
-		list: List of processed notifications ready for sending
-	"""
-	notifications = []
-	events_without_notifications = []
-
-	for event_data in all_events_data:
-		if event_data.get("has_custom_notifications") == 1:
-			notifications.append(event_data)
-		else:
-			event_key = event_data.get("event_name")
-			if not any(e.get("event_name") == event_key for e in events_without_notifications):
-				events_without_notifications.append(event_data)
-	if events_without_notifications:
-		global_notifications = _apply_global_notifications_to_events(events_without_notifications, interval)
-		notifications.extend(global_notifications)
-
-	return notifications
+def _promemoria_del_centro(interval) -> list:
+	"""The centre's reminders of this unit (Settings > Agenda > Agenda & reminders),
+	for the events with none of their own: each marked for all-day events or for the
+	others."""
+	tabelle = {"event_notifications": 0, "all_day_event_notifications": 1}
+	righe = frappe.get_all(
+		"Event Notifications",
+		filters={
+			"parenttype": "FCRM Settings",
+			"parent": "FCRM Settings",
+			"parentfield": ["in", list(tabelle)],
+			"interval": interval,
+		},
+		fields=["name", "parentfield", "type", "before", "time"],
+		order_by="idx asc",
+	)
+	for riga in righe:
+		riga.tutto_il_giorno = tabelle[riga.parentfield]
+	return righe
 
 
-def _apply_global_notifications_to_events(events_without_notifications, interval):
-	"""
-	Apply global CRM Settings notifications to events that don't have custom notifications.
+def _anticipo_piu_lungo(interval, del_centro) -> int | None:
+	"""How many units before its event the earliest reminder of this unit leaves, the
+	events' own and the centre's: None where nobody set one."""
+	N = frappe.qb.DocType("Event Notifications")
+	((propri, quanti),) = (
+		frappe.qb.from_(N)
+		.select(Max(IfNull(N.before, 0)), Count(N.name))
+		.where((N.parenttype == "Event") & (N.parentfield == "notifications") & (N.interval == interval))
+	).run()
+	anticipi = [cint(riga.before) for riga in del_centro]
+	if quanti:
+		anticipi.append(cint(propri))
+	return max(anticipi) if anticipi else None
 
-	Args:
-		events_without_notifications (list): List of events without custom notifications
-		interval (str): The interval type ('minutes', 'hours', 'days', 'weeks')
 
-	Returns:
-		list: List of notification dictionaries using global settings
-	"""
+def _promemoria_degli_eventi(interval, adesso, anticipo, del_centro) -> list:
+	"""Each reminder of this unit of the events it can be due for now, whoever's they
+	are: the event's own, else the centre's - for all-day events, or for the others.
 
-	fcrm_settings = frappe.get_single("FCRM Settings")
-	global_notifications = []
-	if hasattr(fcrm_settings, "event_notifications"):
-		for notification in fcrm_settings.event_notifications:
-			if notification.interval == interval:
-				notification._table_type = "regular"
-				global_notifications.append(notification)
-
-	if hasattr(fcrm_settings, "all_day_event_notifications"):
-		for notification in fcrm_settings.all_day_event_notifications:
-			if notification.interval == interval:
-				notification._table_type = "all_day"
-				global_notifications.append(notification)
-
-	if not global_notifications:
+	Only the events that start before a reminder of this unit can fall in the window
+	(`fin_dove_cercare`), and the ones under way."""
+	E = frappe.qb.DocType("Event")
+	eventi = (
+		frappe.qb.from_(E)
+		.select(
+			E.name.as_("event_name"),
+			E.subject,
+			E.starts_on,
+			E.ends_on,
+			E.owner,
+			E.all_day.as_("all_day_event"),
+			E.reference_doctype,
+			E.reference_docname,
+		)
+		.where(E.status != "Cancelled")
+		.where(
+			((E.starts_on >= adesso) & (E.starts_on <= fin_dove_cercare(adesso, interval, anticipo)))
+			| ((E.starts_on <= adesso) & (E.ends_on > adesso))
+		)
+		.orderby(E.starts_on)
+		.orderby(E.name)
+	).run(as_dict=True)
+	if not eventi:
 		return []
-	notifications = []
-	for event in events_without_notifications:
-		for global_notification in global_notifications:
-			if (global_notification._table_type == "all_day" and not event.all_day_event) or (
-				global_notification._table_type == "regular" and event.all_day_event
-			):
-				continue
 
-			# read by attribute as an event's own are: a plain dict failed the email
-			notification = frappe._dict(
-				{
-					"event_name": event.event_name,
-					"notification_type": global_notification.type,
-					"before_value": global_notification.before,
-					"time_of_day": global_notification.time,
-					"subject": event.subject,
-					"starts_on": event.starts_on,
-					"ends_on": event.ends_on,
-					"owner": event.owner,
-					"all_day_event": event.all_day_event,
-					"reference_doctype": event.reference_doctype,
-					"event_participants": event.get("event_participants", []),
-				}
+	nomi = [evento.event_name for evento in eventi]
+	propri = defaultdict(list)
+	for riga in frappe.get_all(
+		"Event Notifications",
+		filters={
+			"parenttype": "Event",
+			"parentfield": "notifications",
+			"parent": ["in", nomi],
+			"interval": interval,
+		},
+		fields=["name", "parent", "type", "before", "time"],
+		order_by="idx asc",
+	):
+		propri[riga.parent].append(riga)
+	partecipanti = defaultdict(list)
+	for riga in frappe.get_all(
+		"Event Participants",
+		filters={"parenttype": "Event", "parentfield": "event_participants", "parent": ["in", nomi]},
+		fields=["parent", "email"],
+		order_by="idx asc",
+	):
+		if riga.email and riga.email.strip():
+			partecipanti[riga.parent].append(riga.email.strip())
+
+	promemoria = []
+	for evento in eventi:
+		evento.event_participants = partecipanti.get(evento.event_name, [])
+		righe = propri.get(evento.event_name) or [
+			riga for riga in del_centro if riga.tutto_il_giorno == cint(evento.all_day_event)
+		]
+		for riga in righe:
+			promemoria.append(
+				frappe._dict(
+					evento,
+					# which reminder it is: the event's own row, or the centre's
+					reminder=riga.name,
+					notification_type=riga.type,
+					before_value=cint(riga.before),
+					time_of_day=riga.time,
+				)
 			)
-			notifications.append(notification)
+	return promemoria
 
-	return notifications
+
+def fin_dove_cercare(adesso: datetime, interval: str, anticipo: int) -> datetime:
+	"""The latest start of an event whose reminder of this unit, ``anticipo`` units
+	before it at most, can be due in the round at ``adesso``, its window included. An
+	all-day event is reminded at an hour of a day before it (`time`): up to a day
+	later than its start says."""
+	fino_a = adesso + _durata(interval, anticipo) + timedelta(**_get_trigger_window_duration(interval))
+	if interval in ("days", "weeks"):
+		fino_a += timedelta(days=1)
+	return fino_a
+
+
+def e_il_momento(adesso: datetime, trigger: datetime, inizio: datetime, fine, interval: str) -> bool:
+	"""Whether a reminder due at ``trigger`` leaves in the round at ``adesso``: inside
+	its window around that time, or - its time passed while the event is under way,
+	a round that did not run then - until the event ends. An event with no end is
+	never under way."""
+	if fine and inizio <= adesso < fine and adesso > trigger:
+		return True
+	finestra = timedelta(**_get_trigger_window_duration(interval))
+	return trigger - finestra <= adesso <= trigger + finestra
+
+
+def _durata(interval: str, quanti: int) -> timedelta:
+	"""``quanti`` of a unit as a span of time; an unknown unit is hours, as the trigger
+	reads it."""
+	unita = interval if interval in ("minutes", "hours", "days", "weeks") else "hours"
+	return timedelta(**{unita: cint(quanti)})
 
 
 def _calculate_trigger_datetime(event_start, before_value, interval, all_day_event, time_of_day):
@@ -301,46 +335,105 @@ def _get_trigger_window_duration(interval):
 	return window_mapping.get(interval, {"hours": 1})
 
 
-def _split_participant_emails(participant_emails_csv):
-	"""Return a clean list of participant emails from a comma-separated string."""
+# ------------------------------------------------------------------ the register
 
-	if not participant_emails_csv:
-		return []
 
-	return [email.strip() for email in participant_emails_csv.split(",") if email and email.strip()]
+def nome_del_promemoria(evento, promemoria, destinatario, canale, inizio) -> str:
+	"""A reminder's name in the register: its key's fingerprint - the event, which of
+	its reminders (its own row, or the centre's), to whom, by which way, for which
+	time. The same key gives the same name, and the database takes it once; the time
+	is in it, so an event moved is reminded again of its new one."""
+	quando = inizio.strftime("%Y-%m-%d %H:%M:%S") if hasattr(inizio, "strftime") else str(inizio or "")
+	chiave = "\n".join(
+		str(parte or "")
+		for parte in (evento, promemoria, destinatario, canale, quando.replace("T", " ")[:19])
+	)
+	return hashlib.sha256(chiave.encode()).hexdigest()[:32]
+
+
+def _segna(notification, utente: str, canale: str = EMAIL) -> bool:
+	"""Write down that this reminder leaves for ``utente`` by ``canale``, before it
+	does: False where it is written already - it left in an earlier round of its
+	window, or another round is sending it (this one and the hourly one both take
+	the hours)."""
+	nome = nome_del_promemoria(
+		notification.event_name, notification.reminder, utente, canale, notification.starts_on
+	)
+	if frappe.db.exists(REGISTRO, nome):
+		return False
+	try:
+		frappe.get_doc(
+			{
+				"doctype": REGISTRO,
+				"event": notification.event_name,
+				"reminder": notification.reminder,
+				"recipient": utente,
+				"channel": canale,
+				"starts_on": notification.starts_on,
+			}
+		).insert(ignore_permissions=True)
+	except frappe.DuplicateEntryError:
+		# the framework's «already exists» is for a screen: nobody reads it here
+		frappe.clear_last_message()
+		return False
+	return True
+
+
+def _conferma() -> None:
+	"""Kept now, whatever happens next: a reminder written down before it leaves, its
+	email after."""
+	if not frappe.flags.in_test:
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — a reminder is written down before it leaves, as an appointment's is
+
+
+# ------------------------------------------------------------------ the email
 
 
 def _send_email_notification(notification, event_start, before_value, interval):
-	"""The reminder by email to whom the event is for: the enabled System Users who
-	own it or take part in it (`_utenti`), Administrator left out, whose address is
-	the setup's. Never to an address on the event that is nobody's of the centre: a
-	participant's row may carry a client's (the framework fills it in from a
-	contact).
+	"""The reminder by email to each of whom the event is for, once: the enabled
+	System Users who own it or take part in it (`_utenti`) - Administrator left out,
+	whose address is the setup's - each in their own language, each written in the
+	register before it leaves.
 
 	It says the event's title, when, how long to it and where to open it, never the
 	description, as the screen's reminder does: on an appointment's calendar copy the
 	description is its notes. Of such a copy it says only that it is an appointment:
 	its title is the service and the people, which stay out of an email to a
 	colleague, kept in a mailbox and shown on a phone's locked screen
-	(PRIV-NOTIFICHE-SENZA-SALUTE, docs/verticali/clinica/principi-sanitari.md)."""
+	(PRIV-NOTIFICHE-SENZA-SALUTE, docs/verticali/clinica/principi-sanitari.md). An
+	event about the demo is reminded on the screen, never by email, as a notification
+	about it is read only in the panel."""
+	from crm.demo import guardie
+	from crm.notifiche.posta import nella_lingua_di
 
-	try:
-		recipients = [
-			utente.email
-			for utente in _utenti(notification)
-			if utente.name != "Administrator" and utente.email
-		]
-		if not recipients:
-			return
-		_manda_l_email(notification, recipients, event_start, before_value, interval)
+	if guardie.solo_nel_pannello(
+		("Event", notification.event_name),
+		(notification.get("reference_doctype"), notification.get("reference_docname")),
+	):
+		return
 
-	except Exception as e:
-		frappe.log_error(f"Failed to send email for event {notification.event_name}: {e!s}")
+	for utente in _utenti(notification):
+		if utente.name == "Administrator" or not utente.email:
+			continue
+		if not _segna(notification, utente.name):
+			continue
+		# written down before it leaves: whatever happens next, it never leaves twice
+		_conferma()
+		try:
+			with nella_lingua_di(utente.name):
+				_manda_l_email(notification, utente.email, event_start, before_value, interval)
+			_conferma()
+		except Exception:
+			frappe.log_error(
+				title=f"Reminder of event {notification.event_name} not sent",
+				reference_doctype="Event",
+				reference_name=notification.event_name,
+			)
 
 
-def _manda_l_email(notification, recipients, event_start, before_value, interval):
+def _manda_l_email(notification, email, event_start, before_value, interval):
 	esc = frappe.utils.escape_html
-	tutto_il_giorno = frappe.utils.cint(notification.get("all_day_event"))
+	tutto_il_giorno = cint(notification.get("all_day_event"))
 	quando = frappe.utils.format_datetime(
 		event_start, "EEEE d MMMM" if tutto_il_giorno else "EEEE d MMMM, HH:mm"
 	)
@@ -364,7 +457,7 @@ def _manda_l_email(notification, recipients, event_start, before_value, interval
 	)
 
 	frappe.sendmail(
-		recipients=recipients,
+		recipients=[email],
 		subject=oggetto,
 		header=_("Event reminder"),
 		with_container=True,
@@ -395,6 +488,9 @@ def _format_time_remaining(before_value, interval):
 	}
 	una, molte = frasi.get(interval, frasi["hours"])
 	return una if frappe.utils.cint(before_value) == 1 else molte.format(before_value)
+
+
+# ------------------------------------------------------------------ on the screen
 
 
 #: What a reminder tells the browser about its event: never the description,

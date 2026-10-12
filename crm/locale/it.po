@@ -51133,3 +51133,27 @@ msgstr "Non è stato possibile uscire: riprova."
 #: crm/api/event.py
 msgid "Reminder: appointment on {0}"
 msgstr "Promemoria: appuntamento di {0}"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "CRM Event Reminder"
+msgstr "Promemoria dell'evento"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "An event's reminder that left by email: to whom, and for which time. Written before it leaves, so that it leaves once."
+msgstr "Il promemoria di un evento partito per email: a chi e per quale ora. Viene scritto prima che parta, così parte una volta sola."
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "Reminder"
+msgstr "Promemoria"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "One of the event's own reminders, or one of the centre's (Settings > Agenda > Agenda & reminders)."
+msgstr "Uno dei promemoria dell'evento, o uno di quelli del centro (Impostazioni > Agenda > Agenda e promemoria)."
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "Event start"
+msgstr "Inizio dell'evento"
+
+#: crm/fcrm/doctype/crm_event_reminder/crm_event_reminder.json
+msgid "The time it reminded of: an event moved is reminded again of its new time."
+msgstr "L'ora che ricordava: se l'evento viene spostato, il promemoria parte di nuovo per la nuova ora."

@@ -676,8 +676,10 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# a notification older than six months goes, read or not (Log Settings, crm.notifiche)
-default_log_clearing_doctypes = {"CRM Notification": 180}
+# a notification older than six months goes, read or not (Log Settings, crm.notifiche);
+# an event's reminder written down three months after the event started, when no round
+# looks at it again (crm.api.event)
+default_log_clearing_doctypes = {"CRM Notification": 180, "CRM Event Reminder": 90}
 
 # the framework's emails for an assignment, a mention, a document shared: they named
 # doctypes and IDs and opened the Desk. DottorCloud's notifications go by email in
@@ -820,6 +822,9 @@ ignore_links_on_delete = [
 	# a payment stays in the register when its appointment is deleted
 	"CRM Online Payment",
 	"CRM Stripe Event",
+	# an event's reminder that left stays written down: its event (an appointment's
+	# calendar copy goes when the appointment is cancelled) and its user go anyway
+	"CRM Event Reminder",
 ]
 
 # Request Events

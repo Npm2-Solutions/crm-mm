@@ -155,6 +155,16 @@ prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
   predefinito della DocType dove non c'è niente, mai sopra una scelta. Gli orari mostrati non sono
   un'impostazione: vengono dagli orari del centro e dai turni (Impostazioni >
   Agenda > Orari e turni).
+- **I promemoria degli eventi** (le «Notifiche degli eventi» del centro, o quelle
+  che un evento ha di suo) arrivano a chi l'evento riguarda: a chi lo possiede e ai
+  partecipanti che sono utenti attivi del centro. La copia di un appuntamento è
+  del primo professionista e ogni professionista ne è partecipante, così ognuno
+  riceve il promemoria dei suoi appuntamenti; le persone che vengono no (le
+  avvisa il centro, doc 59). A schermo con il titolo; per email una volta sola,
+  scritta nel registro prima di partire, con il titolo (della copia di un
+  appuntamento solo «appuntamento»), il giorno, l'ora e il pulsante che apre
+  l'agenda, mai le note (doc 43, 12/10/2026). Nessun centro ne ha finché non li
+  imposta: DottorCloud non ne mette di suoi.
 
 ### Il server
 

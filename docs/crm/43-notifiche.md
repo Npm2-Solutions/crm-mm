@@ -151,11 +151,27 @@ senza nessuno in mezzo che le legga.
   quello di un evento che non è di chi è entrato, ne tiene solo quello che
   l'avviso mostra e per chi l'ha preso, e toglie gli avvisi chiusi, di eventi
   finiti sull'orologio del centro o di chi c'era prima su quel browser
-  (`utils/avvisiDegliEventi.js`). Resta da fare: il
-  giro che cerca gli eventi guarda solo quelli dell'utente con cui gira (lo
-  scheduler, Administrator), e un promemoria «minuti» o «ore» può partire più
-  volte nella sua finestra; farlo arrivare a ogni professionista, una volta sola,
-  chiede un registro di quello che è partito.
+  (`utils/avvisiDegliEventi.js`).
+- **Il promemoria di un evento arriva a ogni professionista, e per email una volta
+  sola** (12/10/2026). Il giro che cerca gli eventi guardava solo quelli
+  dell'utente con cui gira (lo scheduler, Administrator): un professionista non
+  riceveva mai i promemoria dei suoi eventi né delle copie dei suoi appuntamenti,
+  nemmeno quelli che il centro imposta in Impostazioni > Agenda > Agenda e
+  promemoria. E un promemoria partiva a ogni giro dentro la sua finestra (ogni
+  quattro minuti): due o tre email per uno «minuti», una trentina per uno «ore».
+  Ora il giro guarda gli eventi di tutti, ma solo quelli il cui promemoria può
+  cadere nella finestra, e nessuno quando non c'è un promemoria di quell'unità.
+  Ogni email si scrive nel registro (`CRM Event Reminder`: l'evento, quale
+  promemoria, a chi, per quale ora) prima di partire, così parte una volta sola
+  per persona; un evento spostato si ricorda di nuovo per la nuova ora. Va a chi
+  possiede l'evento e ai partecipanti che sono utenti attivi del centro (mai
+  Administrator, mai l'indirizzo di un cliente, nemmeno quando il suo account
+  dell'area ha quell'indirizzo), ognuno nella sua lingua. Dice il titolo, quando,
+  fra quanto e dove aprirlo, mai la descrizione; della copia di un appuntamento,
+  il cui titolo è servizio e persona, solo che è un appuntamento (doc 44). Un
+  appuntamento dei dati di prova si ricorda solo a schermo. L'avviso a schermo
+  non ha bisogno del registro: il browser mostra una volta sola quello di un
+  evento.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
@@ -273,7 +289,11 @@ paziente, le notifiche arrivavano a chi non c'era più.
 - `composables/conversationScroll.js` (`target`): la conversazione si apre sul
   messaggio indicato dall'indirizzo.
 - I promemoria degli eventi del calendario: `crm/api/event.py`
-  (`_send_system_notification`, `_destinatari`), provato in
+  (`_send_system_notification`, `_destinatari`; gli eventi da guardare,
+  `_promemoria_degli_eventi` e `fin_dove_cercare`; l'email e il suo registro,
+  `_send_email_notification`, `_segna`, `nome_del_promemoria`) e `CRM Event
+  Reminder` (Log Settings ne toglie le righe degli eventi cominciati da più di 90
+  giorni), provato in
   `crm/tests/test_avvisi_degli_eventi.py`; nel browser `data/notifications.js`,
   `components/EventNotificationPopup.vue` e `utils/avvisiDegliEventi.js`,
   provato in `tests/unit/avvisiDegliEventi.test.js`.

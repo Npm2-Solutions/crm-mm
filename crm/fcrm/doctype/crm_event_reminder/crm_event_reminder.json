@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 14:00:00.000000",
+ "description": "An event's reminder that left by email: to whom, and for which time. Written before it leaves, so that it leaves once.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event",
+  "reminder",
+  "starts_on",
+  "column_break_who",
+  "recipient",
+  "channel"
+ ],
+ "fields": [
+  {
+   "fieldname": "event",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Event",
+   "options": "Event",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "One of the event's own reminders, or one of the centre's (Settings > Agenda > Agenda & reminders).",
+   "fieldname": "reminder",
+   "fieldtype": "Data",
+   "label": "Reminder",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "The time it reminded of: an event moved is reminded again of its new time.",
+   "fieldname": "starts_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Event start",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recipient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sent to",
+   "options": "User",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Email",
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "Email",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-12 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Event Reminder",
+ "naming_rule": "By script",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "read_only": 1,
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "event",
+ "track_changes": 0
+}
