@@ -35543,10 +35543,6 @@ msgctxt "Kind of notification"
 msgid "Notification"
 msgstr "Notifica"
 
-#: frontend/src/components/Mobile/MobileBottomNav.vue
-msgid "Unread notifications"
-msgstr "Notifiche da leggere"
-
 #: frontend/src/components/EventNotificationsArea.vue
 msgid "Starting now"
 msgstr "Iniziano adesso"
@@ -51123,3 +51119,10 @@ msgstr "Conferma di aver letto l'informativa sulla privacy per prenotare"
 #: crm/scheduling/attese_pubblico.py
 msgid "Please confirm you have read the privacy notice to go on the waiting list"
 msgstr "Conferma di aver letto l'informativa sulla privacy per entrare in lista d'attesa"
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+msgid "More, 1 unread notification"
+msgstr "Altro, 1 notifica da leggere"
+
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+msgid "More, {0} unread notifications"
+msgstr "Altro, {0} notifiche da leggere"
