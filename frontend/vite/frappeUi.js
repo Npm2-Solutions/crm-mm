@@ -60,7 +60,7 @@ function nomiDeiGiorni(stile) {
 // there for everybody, and the letters over its columns are read from the
 // same day. frappe-ui's grid followed dayjs's language (Monday in Italian) while
 // its letters were an English list from Sunday, which put «S» (Saturday) over
-// Sunday the 4th.
+// Sunday the 4th. A day typed by hand is read the day first (`giornoScritto`).
 export const SELETTORE = `
 // DottorCloud: the picker in the user's language (frontend/vite/frappeUi.js)
 function linguaDelSelettore() {
@@ -90,6 +90,32 @@ export function inizialiDeiGiorni() {
   return Array.from({ length: 7 }, (_, giorno) =>
     formato.format(new Date(2000, 0, 3 + giorno)),
   )
+}
+// A day typed by hand, «1/10/2026», «1.10.26», «1-10 9:30»: the day first, the
+// month first only where the field's format starts with it (MM/DD/YYYY), a
+// year of two digits as dayjs reads YY, none this year (\`anno\`). Its value as
+// dayjs reads it («2026-10-01», «2026-10-01 09:30:00»), null for a day that
+// does not exist (31/02), undefined for a text not written so (a value from
+// the server, a month in words): that one goes on to frappe-ui's reading.
+export function giornoScritto(testo, formato, anno = new Date().getFullYear()) {
+  const scritto = String(testo ?? '').trim()
+  if (!/^[0-9]{1,2}[./ -][0-9]{1,2}(?![0-9])/.test(scritto)) return undefined
+  const parti = scritto.match(
+    /^([0-9]{1,2})[./ -]([0-9]{1,2})(?:[./ -]([0-9]{4}|[0-9]{2}))?(?:[ ,]+([0-9]{1,2})[:.]([0-9]{2})(?:[:.]([0-9]{2}))?)?$/,
+  )
+  if (!parti) return null
+  const [, primo, secondo, y, ore, minuti, secondi = '00'] = parti
+  const [giorno, mese] = String(formato || '').startsWith('M')
+    ? [+secondo, +primo]
+    : [+primo, +secondo]
+  const pieno = !y ? anno : y.length === 2 ? +y + (+y > 68 ? 1900 : 2000) : +y
+  if (pieno < 1000 || mese < 1 || mese > 12 || giorno < 1) return null
+  if (giorno > new Date(Date.UTC(pieno, mese, 0)).getUTCDate()) return null
+  const due = (n) => String(n).padStart(2, '0')
+  const data = pieno + '-' + due(mese) + '-' + due(giorno)
+  if (!ore) return data
+  if (+ore > 23 || +minuti > 59 || +secondi > 59) return null
+  return data + ' ' + due(ore) + ':' + minuti + ':' + secondi
 }
 `
 
@@ -260,6 +286,26 @@ const handleCheckboxClick = (event) => {`,
     [
       "const start = monthStart(year, monthIndex).startOf('week')",
       'const start = dalLunedi(monthStart(year, monthIndex))',
+    ],
+  ],
+  // A day typed by hand is read the day first, as the centre writes it, and
+  // the month first only where the field's format puts it there. What the
+  // format did not take frappe-ui handed to `dayjs(raw)`, which is
+  // `new Date(raw)` and reads the American way: «1/10/2026» and «1.10.2026»
+  // were 10 January, «12/10/26» 10 December, «1/10» 10 January 2001.
+  'DatePicker/composables.ts': [
+    [
+      "import { monthStart, getDateValue } from './utils'",
+      `import { giornoScritto, monthStart, getDateValue } from './utils'
+// DottorCloud (frontend/vite/frappeUi.js): this year on the centre's clock
+import { adessoDelCentro } from '@/utils/scheduler'`,
+    ],
+    [
+      'const dLoose = dayjs(raw)',
+      `// DottorCloud (frontend/vite/frappeUi.js): a day typed by hand, the day first
+    const scritto = giornoScritto(raw, format, adessoDelCentro().getFullYear())
+    if (scritto !== undefined) return scritto ? dayjs(scritto) : null
+    const dLoose = dayjs(raw)`,
     ],
   ],
   'DatePicker/CalendarPanel.vue': [

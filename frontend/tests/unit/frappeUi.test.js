@@ -43,11 +43,11 @@ function nomi(lang) {
   return new Function(`${NOMI}; return { nomiDeiMesi, nomiDeiGiorni }`)()
 }
 
-// the date picker's names and its Monday
+// the date picker's names, its Monday and a day typed by hand
 function selettore(lang) {
   window.lang = lang
   return new Function(
-    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni, dalLunedi }`,
+    `${SELETTORE.replace(/^export /gm, '')}; return { mesiDelSelettore, inizialiDeiGiorni, dalLunedi, giornoScritto }`,
   )()
 }
 
@@ -288,6 +288,83 @@ describe('frappe-ui in the user’s language', () => {
     const { mesiDelSelettore, inizialiDeiGiorni } = selettore('en')
     expect(mesiDelSelettore()[9]).toBe('Oct')
     expect(inizialiDeiGiorni()).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+  })
+
+  it('reads a day typed by hand the day first, before frappe-ui’s American reading', () => {
+    const composable = tradotto('DatePicker/composables.ts')
+    expect(composable).toContain(
+      "import { giornoScritto, monthStart, getDateValue } from './utils'",
+    )
+    expect(composable).toContain(
+      "import { adessoDelCentro } from '@/utils/scheduler'",
+    )
+    // the field's own format first, then the day typed, and only then dayjs(raw)
+    const scritto = composable.indexOf('giornoScritto(raw, format,')
+    expect(scritto).toBeGreaterThan(
+      composable.indexOf('dayjs(raw, format, true)'),
+    )
+    expect(scritto).toBeLessThan(
+      composable.indexOf('const dLoose = dayjs(raw)'),
+    )
+    const { giornoScritto } = selettore('it')
+    const giorno = (testo, formato = 'DD/MM/YYYY') =>
+      giornoScritto(testo, formato, 2026)
+    for (const testo of [
+      '1/10/2026',
+      '1-10-2026',
+      '1.10.2026',
+      '01.10.2026',
+      '1 10 2026',
+      '1.10.26',
+      ' 1/10/2026 ',
+    ]) {
+      expect(giorno(testo), testo).toBe('2026-10-01')
+    }
+    expect(giorno('12/10/26 9:30')).toBe('2026-10-12 09:30:00')
+    expect(giorno('12/10/2026 9.30')).toBe('2026-10-12 09:30:00')
+    expect(giorno('12/10/2026 09:30:15')).toBe('2026-10-12 09:30:15')
+    // two digits of a year as dayjs reads YY, none this year
+    expect(giorno('1/2/80')).toBe('1980-02-01')
+    expect(giorno('1/2/68')).toBe('2068-02-01')
+    expect(giornoScritto('1/10', 'DD/MM/YYYY', 2027)).toBe('2027-10-01')
+    // with no format, or the server's, the day first as well
+    expect(giorno('1/10/2026', undefined)).toBe('2026-10-01')
+    expect(giorno('1/10/2026', 'YYYY-MM-DD')).toBe('2026-10-01')
+    // the month first only where the field's format starts with it
+    expect(giorno('1/10/2026', 'MM/DD/YYYY')).toBe('2026-01-10')
+    expect(giorno('10-1-2026', 'MM-DD-YYYY HH:mm')).toBe('2026-10-01')
+    // a day that does not exist is no day, never the next one
+    for (const testo of [
+      '31/02/2026',
+      '29/02/2027',
+      '0/10/2026',
+      '1/13/2026',
+      '1/10/202',
+      '1/10/2026 24:00',
+      '1/10/2026 9:60',
+      '1/10/2026 dopo',
+    ]) {
+      expect(giorno(testo), testo).toBeNull()
+    }
+    expect(giorno('29/02/2028')).toBe('2028-02-29')
+    // what is not written so goes on to frappe-ui: the server's value, a month
+    // in words, a time alone
+    for (const testo of [
+      '2026-10-01',
+      '2026-10-01 09:30:00',
+      '2026-10-01 09:30:00.123456',
+      '1 Oct 2026',
+      '9:30',
+      '',
+      null,
+    ]) {
+      expect(giorno(testo), testo).toBeUndefined()
+    }
+    // dayjs reads what it gives as the day typed
+    expect(dayjs(giorno('1/10/2026')).format('YYYY-MM-DD')).toBe('2026-10-01')
+    expect(dayjs(giorno('12/10/26 9:30')).format('DD/MM/YYYY HH:mm')).toBe(
+      '12/10/2026 09:30',
+    )
   })
 
   it('says how many more events a day holds in the user’s language', () => {
