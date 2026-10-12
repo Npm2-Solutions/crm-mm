@@ -179,6 +179,19 @@
 [data-marchio='dottorcloud'] input[type='checkbox'] {
   border-radius: 4px 4px 4px 2px;
 }
+/* an empty box's edge is what shows it is there: 3:1 or more on white and on a
+   list's header in both themes (outline-gray-4 gave 2.83:1 and 2.50:1);
+   frappe-ui's hover, focus and press keep their own (markup: its Checkbox) */
+[data-marchio='dottorcloud']
+  input[type='checkbox'].border-outline-gray-4:not(
+    :checked,
+    :indeterminate,
+    :hover,
+    :focus,
+    :active
+  ) {
+  border-color: var(--outline-gray-5);
+}
 [data-marchio='dottorcloud'] input[type='radio']:checked {
   background-color: var(--brand-action);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%23ffffff' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");

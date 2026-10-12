@@ -165,8 +165,8 @@ ou = {
 	"outline-gray-1": "Filetti: bordi delle carte, separatori delle liste, bordo sotto le schede.",
 	"outline-gray-2": "Bordo dei controlli outline (pulsante, campo); come in Espresso è un bordo leggero: il controllo si riconosce anche dalla forma e dal fondo.",
 	"outline-gray-3": "Hover del bordo dei controlli outline.",
-	"outline-gray-4": "Focus dei campi e bordo della checkbox vuota (3:1 sul bianco: il segno che deve vedersi).",
-	"outline-gray-5": "Bordi forti.",
+	"outline-gray-4": "Focus dei campi. frappe-ui ci disegna anche la checkbox vuota, che espresso.css (§5) porta a outline-gray-5.",
+	"outline-gray-5": "Bordi forti e bordo della checkbox vuota (3:1 sul bianco e sul fondo delle intestazioni: il segno che deve vedersi).",
 }
 for k in out_l:
 	c(k, t(out_l[k]), t(out_d[k]), ou[k])
@@ -335,7 +335,8 @@ checks = (
 		("on-danger", ["danger"], 4.5),
 		("text-link", ["surface-base"], 4.5),
 		("focus", ["surface-base", "surface-gray-2"], 3),
-		("outline-gray-4", ["surface-base"], 2.4),
+		# the empty checkbox's edge (espresso.css §5): a control's boundary, 3:1
+		("outline-gray-5", ["surface-base", "surface-gray-2"], 3),
 	]
 	+ [(s, ["surface-base", s + "-subtle"], 4.5) for s in ["success", "warning", "danger", "info"]]
 	+ [

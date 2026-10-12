@@ -83,9 +83,9 @@
 /* ---------- Checkbox, Radio, Switch ---------- */
 .dc-check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-gray-8); cursor: pointer; }
 .dc-check input { appearance: none; margin: 0; flex: none; width: 14px; height: 14px; display: grid; place-items: center;
-  background: var(--surface-base); border: 1px solid var(--outline-gray-4); border-radius: 4px 4px 4px var(--radius-tail); transition: background-color 120ms, border-color 120ms; }
+  background: var(--surface-base); border: 1px solid var(--outline-gray-5); border-radius: 4px 4px 4px var(--radius-tail); transition: background-color 120ms, border-color 120ms; }
 .dc-check--md input { width: 16px; height: 16px; }
-.dc-check input:hover { border-color: var(--outline-gray-5); }
+.dc-check input:hover { border-color: var(--ink-gray-7); }
 .dc-check input:checked, .dc-check input:indeterminate { background: var(--brand-solid); border-color: var(--brand-solid); }
 .dc-check input[type="checkbox"]:checked::after { content: ""; width: 7px; height: 4px; border: 1.75px solid var(--on-brand-solid); border-top: 0; border-right: 0; transform: translateY(-1px) rotate(-45deg); }
 .dc-check--md input[type="checkbox"]:checked::after { width: 8px; height: 4.5px; border-width: 2px; }
