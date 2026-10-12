@@ -206,6 +206,21 @@ describe('a logout lets the device go', () => {
     expect(localStorage.getItem('crm-spinta')).toBeNull()
   })
 
+  it('lets go of what the opening’s sync, still on its way, hands over', async () => {
+    entra(ANNA)
+    await attiva(CHIAVE)
+    entra(ANNA)
+    await sincronizza()
+    // Bruno signs in, and out again while his first opening is still syncing
+    entra(BRUNO)
+    const apertura = sincronizza()
+    await lascia()
+    await apertura
+    // nobody's: none of his notifications after he is out
+    expect(diChi()).toBeNull()
+    expect(localStorage.getItem('crm-spinta')).toBeNull()
+  })
+
   it('asks nothing where the browser has no subscription', async () => {
     entra(ANNA)
     await lascia()

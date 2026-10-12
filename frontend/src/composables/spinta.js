@@ -33,6 +33,10 @@ const impronta = ref('')
 /** How long a logout waits for the server, and for the browser, to let go. */
 const ATTESA = 2000
 
+// an opening's sync while it is on its way: a logout waits for it, or what it
+// hands over would land after the logout let the device go
+let inCorso = null
+
 export const statoQui = computed(() => statoDelDispositivo(capacita.value))
 
 function aggiorna() {
@@ -159,7 +163,14 @@ export async function disattiva() {
  * after somebody else is asked about, and handed the device. Asks nothing of
  * the person.
  */
-export async function sincronizza() {
+export function sincronizza() {
+  inCorso ||= sincronizzaOra().finally(() => {
+    inCorso = null
+  })
+  return inCorso
+}
+
+async function sincronizzaOra() {
   aggiorna()
   if (statoQui.value !== 'pronto' || Notification.permission !== 'granted')
     return
@@ -185,6 +196,9 @@ export async function sincronizza() {
  * either way. Never throws, and never waits long: the logout goes on.
  */
 export async function lascia() {
+  // the opening's sync still on its way lands first: what it hands over is
+  // let go with the rest
+  if (inCorso) await entroIlTempo(inCorso, ATTESA)
   const memoria = laMemoria()
   dimentica()
   const abbonamento = await abbonamentoQui().catch(() => null)
