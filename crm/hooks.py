@@ -577,6 +577,14 @@ doc_events = {
 		],
 		"after_delete": ["crm.scheduling.attese.appuntamento_eliminato"],
 	},
+	# an appointment's calendar copy reads to its professionals by their address, never
+	# to who comes: the framework's own before_save writes a Contact's address on every
+	# participant row without one (Event.set_participants_email), and Document.hook
+	# (frappe/model/document.py, `compose`, Frappe 16.51) runs the controller's method
+	# first and the apps' doc_events after it, so this one comes after the framework's
+	"Event": {
+		"before_save": ["crm.fcrm.doctype.crm_appointment.crm_appointment.copia_solo_ai_professionisti"],
+	},
 	# a new shift, a service or a room changed: the waiting lists are looked at again
 	"CRM Staff Schedule": {
 		"on_update": [
