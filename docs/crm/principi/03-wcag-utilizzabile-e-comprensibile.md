@@ -68,7 +68,7 @@ Questa famiglia raccoglie tutti i criteri di successo A e AA dei principi 2 (Uti
 
 **Come si verifica.** Percorrere con Tab, Shift+Tab, Invio, Spazio, frecce ed Esc i flussi interi: prenotazione online, fattura dall'appuntamento, firma di un modulo, ogni pagina delle Impostazioni. axe copre solo casi stretti di 2.1.1 (scrollable-region-focusable, frame-focusable-content, server-side-image-map); nested-interactive, mappata su 4.1.2, segnala controlli dentro controlli. Cercare nel codice @click su div o span senza tabindex né ruolo.
 
-**Errori da evitare.** Righe delle Impostazioni come div @click in nove liste (turni, ambulatori, pipeline, modelli email, regole di assegnazione, tempi di risposta, piattaforme, fatturazione, link tracciati); in Turni del team non c'era altra via, perché «Imposta gli orari» escludeva chi aveva già orari propri (studio UX, ottobre 2026; corretto con utils/rigaCliccabile.js). Righe di RecordList.vue e TrackedLinksSettings.vue come div @click (studio UX, ottobre 2026). Tema scelto da tre riquadri che il Tab non raggiungeva (studio UX, ottobre 2026; ora radio native in ThemeSwitcher.vue). Righe dei documenti come div role=button con dentro «Apri», «Trasmetti», «Comunica»: 200 nodi nested-interactive (studio UX, ottobre 2026). La prima direttiva aveva fatto pulsanti di righe che contenevano «Sincronizza» ed «Elimina» (revisione del codice, ottobre 2026), da qui .riga-stesa. CollapsibleSection.vue: intestazione div @click senza tabindex, ruolo né aria-expanded (rilevato nel codice l'11/10/2026, ancora così il 12/10/2026).
+**Errori da evitare.** Righe delle Impostazioni come div @click in nove liste (turni, ambulatori, pipeline, modelli email, regole di assegnazione, tempi di risposta, piattaforme, fatturazione, link tracciati); in Turni del team non c'era altra via, perché «Imposta gli orari» escludeva chi aveva già orari propri (studio UX, ottobre 2026; corretto con utils/rigaCliccabile.js). Righe di RecordList.vue e TrackedLinksSettings.vue come div @click (studio UX, ottobre 2026). Tema scelto da tre riquadri che il Tab non raggiungeva (studio UX, ottobre 2026; ora radio native in ThemeSwitcher.vue). Righe dei documenti come div role=button con dentro «Apri», «Trasmetti», «Comunica»: 200 nodi nested-interactive (studio UX, ottobre 2026). La prima direttiva aveva fatto pulsanti di righe che contenevano «Sincronizza» ed «Elimina» (revisione del codice, ottobre 2026), da qui .riga-stesa. CollapsibleSection.vue: intestazione div @click senza tabindex, ruolo né aria-expanded (rilevato nel codice l'11/10/2026, corretto il 12/10/2026).
 
 **Fonti.**
 
@@ -1060,7 +1060,7 @@ Questa famiglia raccoglie tutti i criteri di successo A e AA dei principi 2 (Uti
 
 **Come si verifica.** Tab raggiunge ogni intestazione; Invio e Spazio aprono e chiudono; lo screen reader annuncia lo stato.
 
-**Errori da evitare.** CollapsibleSection.vue con l'intestazione div @click, senza tabindex, ruolo né aria-expanded, e le intestazioni scritte a mano con lo stesso difetto (rilevato nel codice l'11/10/2026, elenco completato il 12/10/2026).
+**Errori da evitare.** CollapsibleSection.vue con l'intestazione div @click, senza tabindex, ruolo né aria-expanded, e le intestazioni scritte a mano con lo stesso difetto (rilevato nel codice l'11/10/2026, elenco completato il 12/10/2026; corretti il 12/10/2026 CollapsibleSection.vue e il gruppo delle viste salvate di AppSidebar.vue).
 
 **Vedi anche.** [UX-DISCLOSURE](01-interazione.md#ux-disclosure--divulgazione-progressiva)
 

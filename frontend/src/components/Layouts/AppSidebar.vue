@@ -112,21 +112,26 @@
             :opened="section.opened"
           >
             <template #header="{ opened, hide, toggle }">
-              <SidebarLabel
-                v-if="!hide"
-                divider
-                class="mb-1 mt-4 select-none"
-                :class="!isCollapsed && 'cursor-pointer'"
-                @click="toggle()"
-              >
-                <span class="flex items-center gap-1.5">
+              <!-- the group's heading holds the button that folds it (APG
+                   accordion): the label took a click and no key, and said
+                   neither that it folds nor whether it was open. With the
+                   menu folded to its icons the heading is a line, and its
+                   button no stop for Tab -->
+              <SidebarLabel v-if="!hide" divider class="mb-1 mt-4 select-none">
+                <button
+                  type="button"
+                  class="flex min-w-0 items-center gap-1.5 rounded text-left"
+                  :aria-expanded="opened"
+                  :tabindex="isCollapsed ? -1 : 0"
+                  @click="toggle()"
+                >
                   <span
                     class="lucide-chevron-right -ml-0.5 size-4 shrink-0 text-ink-gray-9 transition-transform duration-300 ease-in-out"
                     :class="{ 'rotate-90': opened }"
                     aria-hidden="true"
                   />
                   <span class="truncate">{{ __(section.name) }}</span>
-                </span>
+                </button>
               </SidebarLabel>
             </template>
             <nav class="flex flex-col gap-1">
