@@ -82,21 +82,22 @@ class LeRegoleDeiPromemoria(unittest.TestCase):
 
 	def test_fin_dove_guarda(self):
 		adesso = datetime.datetime(2026, 10, 12, 9, 0)
-		# ten minutes ahead, and the window of five
-		self.assertEqual(E.fin_dove_cercare(adesso, "minutes", 10), datetime.datetime(2026, 10, 12, 9, 15))
-		self.assertEqual(E.fin_dove_cercare(adesso, "hours", 2), datetime.datetime(2026, 10, 12, 12, 0))
+		# ten minutes ahead: a reminder is never due before its time
+		self.assertEqual(E.fin_dove_cercare(adesso, "minutes", 10), datetime.datetime(2026, 10, 12, 9, 10))
+		self.assertEqual(E.fin_dove_cercare(adesso, "hours", 2), datetime.datetime(2026, 10, 12, 11, 0))
 		# an all-day event is reminded at an hour of its day before: a day more
-		self.assertEqual(E.fin_dove_cercare(adesso, "days", 1), datetime.datetime(2026, 10, 14, 17, 0))
-		self.assertEqual(E.fin_dove_cercare(adesso, "weeks", 1), datetime.datetime(2026, 10, 24, 9, 0))
+		self.assertEqual(E.fin_dove_cercare(adesso, "days", 1), datetime.datetime(2026, 10, 14, 9, 0))
+		self.assertEqual(E.fin_dove_cercare(adesso, "weeks", 1), datetime.datetime(2026, 10, 20, 9, 0))
 
 	def test_quando_parte(self):
 		inizio = datetime.datetime(2026, 10, 12, 10, 0)
 		fine = datetime.datetime(2026, 10, 12, 10, 45)
 		ora = datetime.datetime(2026, 10, 12, 9, 50)
-		# within five minutes of its time, either side
+		# from its time to five minutes after it, never before it
 		self.assertTrue(E.e_il_momento(ora, ora, inizio, fine, "minutes"))
 		self.assertTrue(E.e_il_momento(ora + datetime.timedelta(minutes=4), ora, inizio, fine, "minutes"))
 		self.assertFalse(E.e_il_momento(ora + datetime.timedelta(minutes=6), ora, inizio, fine, "minutes"))
+		self.assertFalse(E.e_il_momento(ora - datetime.timedelta(minutes=4), ora, inizio, fine, "minutes"))
 		# under way, its time long gone: a round that did not run then
 		self.assertTrue(E.e_il_momento(inizio + datetime.timedelta(minutes=20), ora, inizio, fine, "minutes"))
 		self.assertFalse(E.e_il_momento(fine, ora, inizio, fine, "minutes"))
@@ -104,6 +105,23 @@ class LeRegoleDeiPromemoria(unittest.TestCase):
 		self.assertFalse(
 			E.e_il_momento(inizio + datetime.timedelta(minutes=20), ora, inizio, None, "minutes")
 		)
+
+	def test_mai_prima_della_sua_ora(self):
+		# «1 hour before» a visit at 11 is due at 10: the window went as far before its
+		# time as after it, and the one email the register lets leave left at 9
+		inizio = datetime.datetime(2026, 10, 13, 11, 0)
+		fine = datetime.datetime(2026, 10, 13, 11, 45)
+		ora = datetime.datetime(2026, 10, 13, 10, 0)
+		for prima in (55, 30, 1):
+			momento = ora - datetime.timedelta(minutes=prima)
+			self.assertFalse(E.e_il_momento(momento, ora, inizio, fine, "hours"), momento)
+		self.assertTrue(E.e_il_momento(ora, ora, inizio, fine, "hours"))
+		self.assertTrue(E.e_il_momento(ora + datetime.timedelta(minutes=56), ora, inizio, fine, "hours"))
+		# «1 day before» a visit at ten, at ten the day before: not seven hours early
+		domani = datetime.datetime(2026, 10, 14, 10, 0)
+		fine = domani + datetime.timedelta(minutes=45)
+		self.assertFalse(E.e_il_momento(datetime.datetime(2026, 10, 13, 3, 0), ora, domani, fine, "days"))
+		self.assertTrue(E.e_il_momento(ora, ora, domani, fine, "days"))
 
 	def test_il_registro_non_va_nell_archivio_del_centro(self):
 		# keys only: nothing a centre needs elsewhere (crm/esportazione)
@@ -189,16 +207,56 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 	def giri(self, interval, *quando):
 		"""The round of ``interval`` at each of these moments: (to, subject, message) of
 		every email it handed over."""
+		return [
+			(a, oggetto, testo)
+			for _momento, a, oggetto, testo in self.nei_giri(
+				*(
+					(lambda: E._process_event_notifications_by_interval(interval), momento)
+					for momento in quando
+				)
+			)
+		]
+
+	def nei_giri(self, *giri):
+		"""Each (job, moment) run at its moment: (moment, to, subject, message) of every
+		email they handed over."""
 		email = []
+		adesso = None
 
 		def manda(**kwargs):
-			email.append((tuple(kwargs["recipients"]), kwargs["subject"], kwargs["message"]))
+			email.append((adesso, tuple(kwargs["recipients"]), kwargs["subject"], kwargs["message"]))
 
 		with patch.object(E.frappe, "sendmail", side_effect=manda):
-			for momento in quando:
-				with patch.object(E, "now_datetime", return_value=momento):
-					E._process_event_notifications_by_interval(interval)
+			for lavoro, adesso in giri:
+				with patch.object(E, "now_datetime", return_value=adesso):
+					lavoro()
 		return email
+
+	def lo_scheduler(self, *momenti):
+		"""The reminders' jobs as the hooks schedule them, at these moments: the round of
+		every few minutes at each, the hourly one on the hour, the daily one at
+		midnight, the weekly one at Sunday's midnight. (moment, to, subject, message) of
+		every email they handed over."""
+		lavori = frappe.get_hooks("scheduler_events", app_name="crm")
+
+		def di(frequenza):
+			return [
+				frappe.get_attr(metodo)
+				for metodo in lavori.get(frequenza, [])
+				if metodo.startswith("crm.api.event.")
+			]
+
+		giri = []
+		for momento in momenti:
+			fanno = di("all")
+			if momento.minute == 0:
+				fanno += di("hourly")
+				if momento.hour == 0:
+					fanno += di("daily")
+					if momento.weekday() == 6:
+						fanno += di("weekly")
+			giri += [(lavoro, momento) for lavoro in fanno]
+		return self.nei_giri(*giri)
 
 	def registrati(self, evento):
 		return sorted(
@@ -594,6 +652,64 @@ class GliAvvisiDegliEventi(IntegrationTestCase):
 		)
 		email = self.giri("days", adesso, add_to_date(adesso, hours=1))
 		self.assertEqual([a for a, _oggetto, _testo in email], [(self.neri,)])
+		self.assertEqual(self.registrati(evento), [(self.neri, "Email")])
+
+	# ------------------------------------------------------------------ at its time
+
+	def test_un_ora_prima_parte_alla_sua_ora(self):
+		# «1 hour before» a visit, as the scheduler runs the rounds: at its hour. The
+		# window went an hour before it as well, and the one email the register lets
+		# leave left at its start: two hours before, «It starts in an hour.»
+		ora = now_datetime().replace(minute=0, second=0, microsecond=0)
+		self.evento(
+			add_to_date(ora, hours=2),
+			[{"type": "Email", "before": 1, "interval": "hours"}],
+			proprietario=self.neri,
+		)
+		email = self.lo_scheduler(*(add_to_date(ora, minutes=4 * giro) for giro in range(31)))
+		self.assertEqual(
+			[(quando, a) for quando, a, _o, _t in email], [(add_to_date(ora, hours=1), (self.neri,))]
+		)
+		self.assertIn("Inizia tra un'ora.", html.unescape(email[0][3]))
+
+	def test_un_giorno_prima_parte_il_giorno_prima_alla_sua_ora(self):
+		# «1 day before» a visit at ten: the day before at ten. The days were looked at
+		# only at midnight, eight hours either side of their time: a visit between
+		# eight and four was never reminded
+		oggi = now_datetime().replace(hour=0, minute=0, second=0, microsecond=0)
+		alle_dieci = oggi.replace(hour=10)
+		self.evento(
+			add_to_date(alle_dieci, days=1),
+			[{"type": "Email", "before": 1, "interval": "days"}],
+			proprietario=self.neri,
+		)
+		email = self.lo_scheduler(*(add_to_date(oggi, hours=ora) for ora in range(25)))
+		self.assertEqual([(quando, a) for quando, a, _o, _t in email], [(alle_dieci, (self.neri,))])
+		self.assertIn("Inizia domani.", html.unescape(email[0][3]))
+
+	def test_tutto_il_giorno_all_ora_che_il_centro_ha_scelto(self):
+		# the centre's «1 day before at 09:00» of an all-day event: the day before at
+		# nine. It left at the midnight the event began, «It starts tomorrow.»
+		oggi = now_datetime().replace(hour=0, minute=0, second=0, microsecond=0)
+		domani = add_to_date(oggi, days=1)
+		frappe.get_doc(
+			{
+				"doctype": "Event Notifications",
+				"parenttype": "FCRM Settings",
+				"parentfield": "all_day_event_notifications",
+				"parent": "FCRM Settings",
+				"type": "Email",
+				"before": 1,
+				"interval": "days",
+				"time": "09:00:00",
+			}
+		).db_insert()
+		evento = self.evento(domani, [], proprietario=self.neri, all_day=1)
+		frappe.db.set_value(
+			"Event", evento, "ends_on", domani.replace(hour=23, minute=59), update_modified=False
+		)
+		email = self.lo_scheduler(*(add_to_date(oggi, hours=ora) for ora in range(25)))
+		self.assertEqual([(quando, a) for quando, a, _o, _t in email], [(oggi.replace(hour=9), (self.neri,))])
 		self.assertEqual(self.registrati(evento), [(self.neri, "Email")])
 
 	# ------------------------------------------------------------------ what the round reads

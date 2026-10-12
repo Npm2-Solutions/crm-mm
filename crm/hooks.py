@@ -693,6 +693,8 @@ make_email_body_message = ["crm.posta.servizio.intestazioni"]
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
+		# the event reminders of hours, days and weeks before, each at its hour: once a
+		# day or a week, most of them fell between two rounds (crm.api.event)
 		"crm.api.event.trigger_hourly_event_notifications",
 		"crm.integrations.meta.conversions.flush",
 		# a conversation parked until this morning has to come back on its own,
@@ -719,7 +721,6 @@ scheduler_events = {
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
 		"crm.integrations.meta.insights.sync_ad_spend",
-		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		# the centre's archive holds everything: it goes after a week
 		"crm.esportazione.esporta.togli_le_vecchie",
@@ -739,7 +740,6 @@ scheduler_events = {
 		# where the centre switched them on, the reminders of what a person still owes
 		"crm.invoicing.solleciti.ogni_giorno",
 	],
-	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
 		"crm.integrations.meta.leads.reconcile_synced_pages",
 		# the private files written a while ago, to the agency's archive (crm.archivio)

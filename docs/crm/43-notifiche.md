@@ -172,6 +172,16 @@ senza nessuno in mezzo che le legga.
   appuntamento dei dati di prova si ricorda solo a schermo. L'avviso a schermo
   non ha bisogno del registro: il browser mostra una volta sola quello di un
   evento.
+- **Il promemoria di un evento parte alla sua ora, mai prima** (12/10/2026). La
+  sua finestra andava tanto prima dell'ora quanto dopo, e con il registro l'unica
+  email partiva all'inizio della finestra: quella «1 ora prima» due ore prima,
+  con «Inizia tra un'ora». E i promemoria di giorni e settimane si guardavano
+  solo a mezzanotte, quelli di settimane solo la domenica: quello «1 giorno prima»
+  di un appuntamento fra le 8 e le 16 non partiva mai, quello «alle 9» di un
+  evento di tutto il giorno partiva alla mezzanotte del giorno stesso, con
+  «Inizia domani». Ora parte al primo giro dopo la sua ora (`e_il_momento`): i
+  promemoria di minuti e ore entro quattro minuti, quelli di giorni e settimane
+  entro l'ora.
 
 ## Arrivano davvero: dal lavoro in coda e dopo una pausa (06/10/2026)
 
@@ -290,7 +300,8 @@ paziente, le notifiche arrivavano a chi non c'era più.
   messaggio indicato dall'indirizzo.
 - I promemoria degli eventi del calendario: `crm/api/event.py`
   (`_send_system_notification`, `_destinatari`; gli eventi da guardare,
-  `_promemoria_degli_eventi` e `fin_dove_cercare`; l'email e il suo registro,
+  `_promemoria_degli_eventi` e `fin_dove_cercare`; quando parte, `e_il_momento`,
+  ogni ora per giorni e settimane; l'email e il suo registro,
   `_send_email_notification`, `_segna`, `nome_del_promemoria`) e `CRM Event
   Reminder` (Log Settings ne toglie le righe degli eventi cominciati da più di 90
   giorni), provato in

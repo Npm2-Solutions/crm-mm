@@ -163,8 +163,11 @@ prima se c'è qualcosa di scritto da scartare; dentro un campo non fa niente).
   avvisa il centro, doc 59). A schermo con il titolo; per email una volta sola,
   scritta nel registro prima di partire, con il titolo (della copia di un
   appuntamento solo «appuntamento»), il giorno, l'ora e il pulsante che apre
-  l'agenda, mai le note (doc 43, 12/10/2026). Nessun centro ne ha finché non li
-  imposta: DottorCloud non ne mette di suoi.
+  l'agenda, mai le note (doc 43, 12/10/2026). Ognuno parte alla sua ora, mai
+  prima: quelli di minuti e ore entro quattro minuti, quelli di giorni e
+  settimane entro l'ora (prima quello «1 giorno prima» di un appuntamento fra le 8
+  e le 16 non partiva mai). Nessun centro ne ha finché non li imposta: DottorCloud
+  non ne mette di suoi.
 
 ### Il server
 

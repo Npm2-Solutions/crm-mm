@@ -24,11 +24,12 @@ In DottorCloud (docs/crm/43, 56):
 - A reminder goes to whom its event is for: its owner and its participants who are
   enabled System Users (`_destinatari`), each in their own room on the screen; by
   email Administrator is left out.
-- An email leaves once. A round runs every four minutes ("minutes", "hours"), every
-  hour ("hours"), every day, every week, and a reminder is due at every round inside
-  its window: each email is written in the register (`CRM Event Reminder`) before it
-  leaves, and one written there does not leave again. The screen's needs no register:
-  the browser shows an event's reminder once.
+- A reminder leaves at its time, at the first round after it, never before
+  (`e_il_momento`). A round runs every four minutes ("minutes", "hours") and every
+  hour ("hours", "days", "weeks"), and a reminder is due at every round of its window
+  after its time: so an email leaves once, written in the register
+  (`CRM Event Reminder`) before it leaves, and one written there does not leave
+  again. The screen's needs no register: the browser shows an event's reminder once.
 - It says the event's title and when, never the description, which on an
   appointment's calendar copy is its notes. By email such a copy is only «an
   appointment»: its title is the service and the people.
@@ -62,18 +63,12 @@ def trigger_offset_event_notifications():
 
 
 def trigger_hourly_event_notifications():
-	"""Trigger event notifications for hourly intervals."""
-	_process_event_notifications_by_interval("hours")
-
-
-def trigger_daily_event_notifications():
-	"""Trigger event notifications for daily intervals."""
-	_process_event_notifications_by_interval("days")
-
-
-def trigger_weekly_event_notifications():
-	"""Trigger event notifications for weekly intervals."""
-	_process_event_notifications_by_interval("weeks")
+	"""Trigger event notifications for hourly intervals, and for days and weeks: a
+	reminder leaves at the first round after its time (`e_il_momento`), and the days
+	were looked at only at midnight, the weeks only on Sunday at midnight - a «1 day
+	before» of a visit at ten never left, an all-day event's «at 9» left at midnight."""
+	for interval in ("hours", "days", "weeks"):
+		_process_event_notifications_by_interval(interval)
 
 
 def _process_event_notifications_by_interval(interval):
@@ -237,24 +232,27 @@ def _promemoria_degli_eventi(interval, adesso, anticipo, del_centro) -> list:
 
 def fin_dove_cercare(adesso: datetime, interval: str, anticipo: int) -> datetime:
 	"""The latest start of an event whose reminder of this unit, ``anticipo`` units
-	before it at most, can be due in the round at ``adesso``, its window included. An
-	all-day event is reminded at an hour of a day before it (`time`): up to a day
-	later than its start says."""
-	fino_a = adesso + _durata(interval, anticipo) + timedelta(**_get_trigger_window_duration(interval))
+	before it at most, can be due in the round at ``adesso``: a reminder is never due
+	before its time (`e_il_momento`). An all-day event is reminded at an hour of a day
+	before it (`time`): up to a day later than its start says."""
+	fino_a = adesso + _durata(interval, anticipo)
 	if interval in ("days", "weeks"):
 		fino_a += timedelta(days=1)
 	return fino_a
 
 
 def e_il_momento(adesso: datetime, trigger: datetime, inizio: datetime, fine, interval: str) -> bool:
-	"""Whether a reminder due at ``trigger`` leaves in the round at ``adesso``: inside
-	its window around that time, or - its time passed while the event is under way,
-	a round that did not run then - until the event ends. An event with no end is
-	never under way."""
+	"""Whether a reminder due at ``trigger`` leaves in the round at ``adesso``: from
+	that time to the end of its window after it, or - its time passed while the event
+	is under way, a round that did not run then - until the event ends. An event with
+	no end is never under way.
+
+	Never before its time: the window went as far before it as after it, and the one
+	email the register lets leave left at its start - «1 hour before» two hours
+	before, saying «It starts in an hour.»"""
 	if fine and inizio <= adesso < fine and adesso > trigger:
 		return True
-	finestra = timedelta(**_get_trigger_window_duration(interval))
-	return trigger - finestra <= adesso <= trigger + finestra
+	return trigger <= adesso <= trigger + timedelta(**_get_trigger_window_duration(interval))
 
 
 def _durata(interval: str, quanti: int) -> timedelta:
@@ -323,7 +321,9 @@ def _get_trigger_window_duration(interval):
 		interval (str): The interval type ('minutes', 'hours', 'days', 'weeks')
 
 	Returns:
-		dict: Window duration to be used symmetrically around the trigger time
+		dict: How long after its time a reminder may still leave: a round of its unit
+		falls in it (every four minutes for minutes and hours, every hour for days
+		and weeks), and one held up a while still leaves
 	"""
 	window_mapping = {
 		"minutes": {"minutes": 5},
