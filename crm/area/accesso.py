@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import re
 import secrets
 
 import frappe
@@ -345,7 +346,8 @@ def verify_code(code: str, email: str | None = None) -> dict:
 		frappe.throw(_("The code has expired: ask for a new one"))
 	if cint(salvato.get("attempts")) >= TENTATIVI:
 		frappe.throw(_("Too many wrong codes: ask for a new one"))
-	if not _uguali(_impronta(indirizzo + (code or "").strip()), salvato.get("hash")):
+	# its digits: a code pasted as «246 810» or «246-810» is the right one, not a try lost
+	if not _uguali(_impronta(indirizzo + re.sub(r"\D", "", code or "")), salvato.get("hash")):
 		salvato["attempts"] = cint(salvato.get("attempts")) + 1
 		frappe.cache.set_value(chiave, salvato, expires_in_sec=MINUTI_CODICE * 60)
 		frappe.throw(_("The code is not right"))

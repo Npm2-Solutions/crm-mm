@@ -248,6 +248,11 @@ class LaConsegna(DocumentiCase):
 		eventi = [e.event for e in traccia.eventi(consegna.CONSEGNA, nome)]
 		self.assertEqual(eventi, ["online", "code_wrong", "opened", "downloaded"])
 
+	def test_il_codice_letto_a_voce_si_scrive_con_lo_spazio(self):
+		codice = self.online(self.documento, send_email=0)["code"]
+		aperto = self.apri(f"{codice[:3]} {codice[3:]}")
+		self.assertEqual(aperto["title"], "Contratto annuale")
+
 	def test_una_regola_del_modulo(self):
 		regola = consegna.Regola(
 			ferma=lambda doc: "A contract stays at the centre" if doc.document_type == R.CONTRATTO else None,

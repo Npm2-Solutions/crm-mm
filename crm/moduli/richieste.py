@@ -32,6 +32,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 import secrets
 
 import frappe
@@ -731,7 +732,8 @@ def verify_code(token: str, code: str) -> dict:
 		frappe.throw(_("The code has expired: ask for a new one"))
 	if cint(capo.code_attempts) >= TENTATIVI_CODICE:
 		frappe.throw(_("Too many wrong codes: ask for a new one"))
-	if not _uguali(_impronta(capo.token_hash + (code or "").strip()), capo.code_hash):
+	# its digits: a code pasted as «123 456» or «123-456» is the right one, not a try lost
+	if not _uguali(_impronta(capo.token_hash + re.sub(r"\D", "", code or "")), capo.code_hash):
 		capo.db_set("code_attempts", cint(capo.code_attempts) + 1)
 		traccia.traccia(RICHIESTA, capo.name, "code_wrong")
 		frappe.throw(_("The code is not right"))

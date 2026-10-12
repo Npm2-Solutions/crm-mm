@@ -424,11 +424,11 @@ Questa famiglia riguarda ogni punto in cui qualcuno scrive o sceglie un dato in 
 
 **Soglie ed eccezioni.** WCAG 3.3.8 livello AA (nuovo nella 2.2). GOV.UK: nel suo pattern il codice vale 15 minuti (in DottorCloud la durata la dice il server).
 
-**In DottorCloud.** area/pages/Login.vue: un solo input sotto sei caselle disegnate, one-time-code, inputmode=numeric, le non-cifre tolte nel browser; passkey; link via email che entra con un tocco (crm/area/collegamento.py); la frase «Se questo indirizzo ha un’area, il codice sta arrivando. Vale {0} minuti.». In /modulo (crm/www/modulo.html) e /documento (crm/www/documento.html) il campo è uno solo, con one-time-code e inputmode=numeric, ma il codice non viene ripulito: il browser e il server (verify_code in crm/moduli/richieste.py, open_document in crm/documenti/consegna.py) tolgono solo gli spazi ai lati. L'email del codice (crm/posta/aspetto.py, codice()) separa le cifre con la spaziatura delle lettere e non con spazi veri, così la copia resta pulita.
+**In DottorCloud.** area/pages/Login.vue: un solo input sotto sei caselle disegnate, one-time-code, inputmode=numeric, le non-cifre tolte nel browser; passkey; link via email che entra con un tocco (crm/area/collegamento.py); la frase «Se questo indirizzo ha un’area, il codice sta arrivando. Vale {0} minuti.». In /modulo (crm/www/modulo.html) e /documento (crm/www/documento.html) il campo è uno solo, con one-time-code e inputmode=numeric, e dal 12/10/2026 il codice è ripulito: il browser ne tiene le cifre e il server (verify_code in crm/area/accesso.py e crm/moduli/richieste.py, open_document in crm/documenti/consegna.py) legge solo quelle. L'email del codice (crm/posta/aspetto.py, codice()) separa le cifre con la spaziatura delle lettere e non con spazi veri, così la copia resta pulita.
 
 **Come si verifica.** Incollare «123456», «123 456», «123-456» e « 123456» (spazio davanti) in ogni campo codice: entrano tutte e sei le cifre e il codice è accettato. Un gestore di password riempie email e password della pagina d'accesso. Ricerca nel codice di gestori di paste che chiamano preventDefault.
 
-**Errori da evitare.** Verifica sul codice (11/10/2026): i campi codice hanno maxlength=6 (Login.vue, modulo.html, documento.html): il browser tronca il testo incollato prima che lo script tolga gli spazi, così «123 456» o un codice con uno spazio davanti diventano cinque cifre; in /modulo e /documento un trattino o uno spazio in mezzo fanno rifiutare un codice giusto. Meglio un limite largo e la pulizia nello script e sul server. Da evitare: sei input separati con salto automatico; un codice che scade senza dire quanto dura.
+**Errori da evitare.** Verifica sul codice (11/10/2026): i campi codice hanno maxlength=6 (Login.vue, modulo.html, documento.html): il browser tronca il testo incollato prima che lo script tolga gli spazi, così «123 456» o un codice con uno spazio davanti diventano cinque cifre; in /modulo e /documento un trattino o uno spazio in mezzo fanno rifiutare un codice giusto. Meglio un limite largo e la pulizia nello script e sul server (corretto il 12/10/2026: nessun maxlength, le cifre tenute nel browser e lette sul server). Da evitare: sei input separati con salto automatico; un codice che scade senza dire quanto dura.
 
 **Vedi anche.** [WCAG-3.3.8](03-wcag-utilizzabile-e-comprensibile.md#wcag-338--entrare-senza-test-di-memoria-incolla-gestore-di-password-link-passkey-338-aa)
 
@@ -954,7 +954,7 @@ Questa famiglia riguarda ogni punto in cui qualcuno scrive o sceglie un dato in 
 
 **Come si verifica.** Incollare un testo più lungo del limite: niente viene tagliato e l'errore dice di quanto si è oltre. Il lettore di schermo annuncia il conteggio. tests/unit/conversation.test.js per smsSegments.
 
-**Errori da evitare.** Verifica sul codice (11/10/2026): in SMSBox.vue il perché di «Caratteri speciali» sta solo in un tooltip, che sul telefono non si apre, e il conteggio non è in una regione viva; maxlength in book.html, in moduli_campi.js e nei campi codice. Da evitare: un limite stretto scelto senza dati; un conteggio che si legge a ogni tasto premuto.
+**Errori da evitare.** Verifica sul codice (11/10/2026): in SMSBox.vue il perché di «Caratteri speciali» sta solo in un tooltip, che sul telefono non si apre, e il conteggio non è in una regione viva; maxlength in book.html e in moduli_campi.js (nei campi codice tolto il 12/10/2026). Da evitare: un limite stretto scelto senza dati; un conteggio che si legge a ogni tasto premuto.
 
 **Fonti.**
 

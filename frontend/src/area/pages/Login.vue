@@ -100,7 +100,9 @@
       </form>
       <form v-else class="flex flex-col gap-4" @submit.prevent="verify">
         <!-- six boxes over the one field that takes the code: the phone fills it
-             from the email, and a paste goes in whole -->
+             from the email, and a paste goes in whole. The field keeps the
+             code's digits, never its first six characters: with a maxlength a
+             «123 456» or « 123456» pasted lost a digit before anything read it -->
         <label class="area-code">
           <span
             v-for="i in 6"
@@ -120,9 +122,11 @@
             :aria-label="__('The code')"
             inputmode="numeric"
             autocomplete="one-time-code"
-            maxlength="6"
             @input="
-              (e) => (code = e.target.value.replace(/\D/g, '').slice(0, 6))
+              (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                code = e.target.value
+              }
             "
             @focus="focused = true"
             @blur="focused = false"
