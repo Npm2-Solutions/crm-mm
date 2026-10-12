@@ -477,9 +477,10 @@ class LaLezione(AtteseCase):
 		self.assertEqual((voce.class_session, voce.source, voce.days), (self.lezione.name, R.ONLINE, []))
 		# a seat in a class is waited for until the class
 		self.assertEqual(getdate(voce.until), self.tomorrow(18).date())
-		# the tick is in the register, with the entry it came with
-		self.assertTrue(
-			frappe.db.exists(
+		# the tick is in the register, with the entry it came with and the words the
+		# box showed, the notice's address after them: a booking's own
+		self.assertEqual(
+			frappe.db.get_value(
 				"CRM Consent",
 				{
 					"lead": self.sara.name,
@@ -487,7 +488,9 @@ class LaLezione(AtteseCase):
 					"source_doctype": A.VOCE,
 					"source_name": voce.name,
 				},
-			)
+				"text",
+			),
+			"Ho letto l'informativa sulla privacy (https://example.com/privacy)",
 		)
 
 
