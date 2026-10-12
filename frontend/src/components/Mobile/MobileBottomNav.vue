@@ -15,7 +15,7 @@
     <MobileNavItem
       :to="{ name: 'More' }"
       :label="__('More')"
-      :aria-label="nomeDiAltro"
+      :aria-label="nomeAltro"
       :active="!activeTab"
     >
       <template #default="{ active }">
@@ -44,6 +44,7 @@ import { callEnabled } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
 import { barraDelTelefono, menuDi } from '@/utils/menu'
 import { bottomNavTabFor } from '@/utils/navigation'
+import { nomeDiAltro } from '@/utils/notifiche'
 import { MobileNav, MobileNavItem } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -77,11 +78,7 @@ const activeTab = computed(() =>
 
 // «Altro, 5 notifiche da leggere»: the visible word first, then the dot and
 // how many (an aria-label on the dot, a span with no role, was never read)
-const nomeDiAltro = computed(() => {
-  const quante = unreadNotificationsCount.value
-  if (!quante) return __('More')
-  return quante === '1'
-    ? __('More, 1 unread notification')
-    : __('More, {0} unread notifications', [quante])
-})
+const nomeAltro = computed(() =>
+  nomeDiAltro(unreadNotificationsCount.value, __),
+)
 </script>

@@ -51120,9 +51120,10 @@ msgstr "Conferma di aver letto l'informativa sulla privacy per prenotare"
 msgid "Please confirm you have read the privacy notice to go on the waiting list"
 msgstr "Conferma di aver letto l'informativa sulla privacy per entrare in lista d'attesa"
 #: frontend/src/components/Mobile/MobileBottomNav.vue
+#: frontend/src/utils/notifiche.js
 msgid "More, 1 unread notification"
 msgstr "Altro, 1 notifica da leggere"
 
-#: frontend/src/components/Mobile/MobileBottomNav.vue
+#: frontend/src/utils/notifiche.js
 msgid "More, {0} unread notifications"
 msgstr "Altro, {0} notifiche da leggere"
